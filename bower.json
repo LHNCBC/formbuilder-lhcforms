@@ -1,0 +1,53 @@
+{
+  "name": "formbuilder",
+  "version": "0.0.0",
+  "dependencies": {
+    "jquery-ui": "1.11.4",
+    "lodash": "~4.17.4",
+    "angular": "1.5.x",
+    "angular-animate": "1.5.x",
+    "angular-aria": "1.5.x",
+    "angular-messages": "1.5.x",
+    "angular-cookies": "1.5.x",
+    "angular-file-upload": "~2.3.4",
+    "angular-material": "~1.1.4",
+    "angular-material-icons": "~0.5.0",
+    "angular-resource": "1.5.x",
+    "angular-route": "1.5.x",
+    "angular-sanitize": "1.5.x",
+    "angular-strap": "~2.3.3",
+    "angular-touch": "1.5.x",
+    "angular-ui-bootstrap-bower": "0.11.2",
+    "angular-ui-date": "0.0.7",
+    "angular-ui-layout": "~1.3.1",
+    "angular-ui-tree": "2.22.5",
+    "es5-shim": "~4.1.14",
+    "bootstrap": "3.3.5",
+    "json3": "3.3.2",
+    "lforms": "~12.10.1",
+    "ngSmoothScroll": "~2.0.0",
+    "traverse": "0.6.7",
+    "angular-spinner": "~0.8.0",
+    "fhir.js": "git://github.com/akanduru/fhir.js#ng-fhir"
+  },
+  "overrides": {
+    "jquery-ui": {
+      "main": [
+        "ui/core.js",
+        "ui/widget.js",
+        "ui/button.js",
+        "ui/dialog.js",
+        "ui/datepicker.js",
+        "themes/start/jquery-ui.min.css"
+      ]
+    }
+  },
+  "devDependencies": {
+    "angular-mocks": "1.5.x",
+    "angular-scenario": "1.5.x"
+  },
+  "appPath": "client",
+  "resolutions": {
+    "angular": "1.5.x"
+  }
+}

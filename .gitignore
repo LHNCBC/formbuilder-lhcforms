@@ -1,0 +1,9 @@
+node_modules
+public
+.tmp
+.idea
+client/bower_components
+dist
+logs
+client/app/firebase/firebase-client-authorization.js
+client/index.html

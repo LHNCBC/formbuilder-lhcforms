@@ -1,0 +1,144 @@
+<div id="whole-page" ng-controller="FormBuilderCtrl" ng-init="showTermsOfUse()">
+  <div ng-show="termsOfUseAccepted === 'yes'">
+    <div id="fixedTop">
+      <div ng-include="'app/header.html'"></div>
+      <a target="_self" id="exportAnchor" class="hide">Export</a>
+      <input type="file" id="fileInput" nv-file-select uploader="uploader"
+             class="hide" multiple/>
+      <md-menu-bar class="menu-bar">
+        <md-menu>
+          <button class="btn-primary" ng-click="$mdMenu.open()">
+            Export
+          </button>
+          <md-menu-content>
+            <md-menu-item>
+              <md-button ng-click="export()">Export to file...</md-button>
+            </md-menu-item>
+            <md-menu-item>
+              <md-button ng-disabled="!isUserSignedIn" ng-click="exportToFhir($event)">Create a new FHIR resource on a server...</md-button>
+            </md-menu-item>
+            <md-menu-item>
+              <md-button ng-disabled="!isUserSignedIn || !formBuilderData.id" ng-click="updateOnFhir($event)">Update a FHIR resource on a server ({{getFhirServer().displayName}})</md-button>
+            </md-menu-item>
+          </md-menu-content>
+        </md-menu>
+        <md-menu>
+          <button class="btn-primary" ng-click="$mdMenu.open()">
+            Import
+          </button>
+          <md-menu-content>
+            <md-menu-item>
+              <md-button ng-click="import()">Import from file...</md-button>
+            </md-menu-item>
+            <md-menu-item>
+              <md-button ng-disabled="!isUserSignedIn" ng-click="searchFhir($event, '')">Load from FHIR server...</md-button>
+            </md-menu-item>
+          </md-menu-content>
+        </md-menu>
+      </md-menu-bar>
+    </div>
+
+    <div id="resizableMiddle">
+      <!-- Nested node template -->
+      <div id="main-container" layout="row">
+        <md-sidenav id="sidebar" md-component-id="left" md-is-locked-open="true"
+                    class="md-sidenav-left">
+          <div>
+            <md-input-container id="formTitleInputContainer">
+              <label>Form Name</label>
+              <input id="formTitleInput" ng-model="formBuilderData.headers[2].value">
+            </md-input-container>
+          </div>
+          <div class="vbox" id="sidebar-container" ng-controller="SideNavCtrl">
+            <md-button id="addNewButton"
+                       class="md-raised md-primary"
+                       aria-label="Add new or Import from LOINC"
+                       ng-click="showAddItemDialog(this, $event, dataConstants.APPEND_TO_ROOT)">
+              Add new or Import from LOINC
+            </md-button>
+            <div class="boxItem" id="tree-container-id" ng-controller="popupMenuCtrl as menuCtrl">
+              <div ui-tree="treeOptions" data-empty-placeholder-enabled="false" data-drag-delay="100">
+                <ol ui-tree-nodes="" id="question-root"
+                    ng-model="formBuilderData.treeData">
+                  <li ng-repeat="node in formBuilderData.treeData" ui-tree-node
+                      ng-include="'app/form-builder/nodes-renderer.html'"></li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </md-sidenav>
+        <md-content id="main-content">
+          <div ui-layout="{ flow: 'column'}">
+            <div class="boxItem" ui-layout-container id="item-builder-panel">
+              <md-tabs md-border-bottom class="full-height">
+                <md-tab>
+                  <md-tab-label>Build basic properties</md-tab-label>
+                  <md-tab-body>
+                    <lforms id="basic-item-builder-panel" lf-data="selectedNode.lfData.basic"></lforms>
+                    <ol ng-show="selectedNode.lfData.basic" class="fine-print">
+                      <li>SDC extension to FHIR Questionnaire</li>
+                      <li>LHC-Forms extension to FHIR Questionnaire</li>
+                    </ol>
+                  </md-tab-body>
+                </md-tab>
+                <md-tab>
+                  <md-tab-label>Build advanced properties</md-tab-label>
+                  <md-tab-body>
+                    <lforms id="advanced-item-builder-panel"  lf-data="selectedNode.lfData.advanced"></lforms>
+                    <ol ng-show="selectedNode.lfData.advanced" class="fine-print">
+                      <li>SDC extension to FHIR Questionnaire</li>
+                      <li>LHC-Forms extension to FHIR Questionnaire</li>
+                    </ol>
+                  </md-tab-body>
+                </md-tab>
+              </md-tabs>
+            </div>
+            <div class="boxItem" ui-layout-container id="preview-panel">
+              <div ng-controller="FormBuilderPreviewCtrl" class="full-height">
+                <md-tabs md-border-bottom class="full-height">
+                  <md-tab>
+                    <md-tab-label>
+                      <div ng-click="refreshPreview()">Preview widget <span
+                        class="glyphicon glyphicon-refresh"><md-tooltip>Refresh preview</md-tooltip></span>
+                      </div>
+                    </md-tab-label>
+                    <md-tab-body>
+                      <lforms lf-data="previewLfData"></lforms>
+                    </md-tab-body>
+                  </md-tab>
+                  <md-tab>
+                    <md-tab-label>
+                      <div ng-click="refreshPreview()">FHIR output <span
+                        class="glyphicon glyphicon-refresh"><md-tooltip>Refresh preview</md-tooltip></span>
+                      </div>
+                    </md-tab-label>
+                    <md-tab-body>
+                      <pre class="formbuilder-pre">{{previewFhirSrc}}</pre>
+                    </md-tab-body>
+                  </md-tab>
+                  <md-tab>
+                    <md-tab-label>
+                      <div ng-click="refreshPreview()">LHC-Forms output <span
+                        class="glyphicon glyphicon-refresh"><md-tooltip>Refresh preview</md-tooltip></span>
+                      </div>
+                    </md-tab-label>
+                    <md-tab-body>
+                      <pre class="formbuilder-pre">{{previewSrc}}</pre>
+                    </md-tab-body>
+                  </md-tab>
+                </md-tabs>
+              </div>
+            </div>
+          </div>
+        </md-content>
+      </div>
+    </div>
+
+    <div id="fixedBottom">
+      <div ng-include="'app/footer.html'"></div>
+    </div>
+  </div>
+
+  <span us-spinner="{radius:30, width:8, length: 16}"
+        spinner-key="spinner-1"></span>
+</div>
