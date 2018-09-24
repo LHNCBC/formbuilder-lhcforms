@@ -1,0 +1,374 @@
+.vbox {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+
+  /*Align children vetically*/
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+
+  -webkit-align-content: flex-start;
+  -ms-flex-line-pack: start;
+  align-content: flex-start;
+}
+
+/*Stack child items horizontally*/
+.hbox {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+
+  /*Align children horizontally*/
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+
+  -webkit-align-content: flex-start;
+  -ms-flex-line-pack: start;
+  align-content: flex-start;
+}
+
+/*Stretch item along parent's main-axis*/
+.boxItem {
+  -webkit-box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1 1 auto;
+}
+
+.btn {
+  margin-right: 2px;
+}
+
+.btn-xs, .btn-group-xs > .btn {
+  font-size: 8px;
+}
+
+.angular-ui-tree-handle {
+  background: #f8faff;
+  border: 1px solid #dae2ea;
+  /*color: #7c9eb2;*/
+  color: black;
+  font-weight: normal;
+  padding: 2px 2px;
+}
+
+.angular-ui-tree-handle:hover {
+  color: #438eb9;
+  background: #f4f6f7;
+  border-color: #dce2e8;
+}
+
+.angular-ui-tree-placeholder {
+  background: #f0f9ff;
+  border: 2px dashed #bed2db;
+  margin: 0px;
+  min-height: 20px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+.group-title {
+  background-color: #687074 !important;
+  color: #FFF !important;
+}
+
+#formTitleInputContainer {
+  margin-bottom: 0px;
+  width: 100%;
+}
+
+#formTitleInputContainer label {
+  margin: 0px;
+}
+
+#formTitleInputContainer > .md-errors-spacer {
+  display: none;
+}
+
+
+#addNewButton {
+  margin-left: 2px;
+}
+
+.md-fab ng-md-icon svg {
+  vertical-align: middle;
+}
+
+.tree-node.active {
+  background: #458AC5;
+  color: white;
+  border-color: #dde3e9;
+}
+
+.tree-node .more-options {
+  color: #458AC5;
+}
+
+.tree-node.panelnode:not(.active) {
+  background-color: #E8E8E8;
+  font-weight: bold;
+}
+
+.tree-node.active a {
+  color: white;
+}
+
+.tree-node a {
+  text-decoration: none;
+}
+
+.flex-container {
+  display: flex;
+}
+
+.flex-item-stretch {
+  flex: auto;
+  align-self: stretch;
+}
+
+md-sidenav fieldset {
+  /* border-width: 0px;*/
+}
+
+md-sidenav fieldset legend {
+  font-size: inherit;
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+md-sidenav md-radio-button {
+  display: inline;
+}
+
+md-sidenav .radio-group {
+}
+
+.hide {
+  display: none;
+}
+
+.inline {
+  display: inline;
+}
+
+.form-header-title {
+  font-weight: bold;
+}
+
+#tree-container-id {
+  overflow-y: auto;
+  border: 1px solid lightgrey;
+  background-color: rgb(250,250,250);
+}
+
+.collapse.width {
+  height: auto;
+  -webkit-transition: width 0.35s ease;
+  -moz-transition: width 0.35s ease;
+  -o-transition: width 0.35s ease;
+  transition: width 0.35s ease;
+}
+
+#whole-page, .full-height, html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.form-title-banner {
+  font-size: large;
+}
+
+#whole-page {
+  display: flex;
+  flex-direction: column;
+}
+
+#main-container {
+  background-color: #f7f7f7;
+  height: 100%;
+}
+
+#sidebar {
+  margin: 5px;
+}
+
+#main-content {
+  flex: 1;
+}
+
+.menu-bar {
+  background-color: #c7ddef;
+}
+
+md-menu-bar button {
+  height: 25px;
+}
+
+md-menu-bar {
+  padding: 0 5px;
+}
+
+.nodeMenuContent {
+  max-height: 370px;
+}
+
+.no-flicker.ng-enter-prepare, .no-flicker.ng-leave-prepare, .no-flicker.ng-move-prepare {
+  opacity: 0;
+}
+
+#fixedTop {
+  position:absolute;
+  top:0px;
+  left:0px;
+  height:110px;
+  right:0px;
+  overflow:hidden;
+}
+
+#fixedBottom {
+  position:absolute;
+  bottom:0px;
+  height:65px;
+  left:0px;
+  right:0px;
+  overflow:hidden;
+}
+
+#resizableMiddle {
+  position:absolute;
+  top:110px;
+  bottom:65px;
+  left:0px;
+  right:0px;
+  overflow:auto;
+}
+
+/* Styles for the header */
+#header {
+ /* margin-bottom: 20px; */
+  position: relative;
+ /* font-size: 12px;*/
+  font-family: 'Droid Sans',Arial,Helvetica,sans-serif;
+  color: #202020;
+  border-top: 2px solid #0BACB6;
+  border-bottom: 7px solid #17b4e3;
+  /*line-height: normal;*/
+  padding-bottom: 12px;
+}
+#logo {
+  position: relative;
+  top: 5px;
+  font-size: 18px;
+  display: block;
+  margin-bottom: 5px;
+}
+#header a {
+  color: #1E4193;
+  text-decoration: none;
+}
+#logo img {
+  float: left;
+  margin-right: 10px;
+  margin-left: 20px;
+  border-right: 1px solid #0BACB6;
+  padding-right: 0.75em;
+}
+#logo, #log img {
+  display: block;
+}
+#logo .site-name-slogan {
+  font-size: 14px;
+  position: relative;
+  top: 10px;
+  left: -2px;
+}
+#logo .site-name-slogan span {
+  display: block;
+  font-size: 24px;
+  position: relative;
+  left: -2px;
+}
+#logo .site-name-slogan .slogan {
+  color: #202020;
+  font-size: 12px;
+  position: relative;
+  left: 1px;
+}
+#siteNameBox {
+  margin-top: 20px;
+}
+#siteName {
+  font-size: 200%;
+}
+
+#logoImg {
+  height: 60px;
+  width: auto;
+}
+
+#formTitleInput {
+  font-weight: bold;
+  border: 1px solid lightgrey;
+}
+/* End of styles for the header */
+
+
+/* Styles for the footer */
+#fine-print {
+  border-top: 2px solid #0BACB6;
+  clear: left;
+  text-align: center;
+  font-size: 11px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+#fine-print ul.horz-list li {
+  list-style-type: none;
+  display: inline;
+  padding-left: 8px;
+  padding-right: 10px;
+  border-right: 1px solid #999;
+}
+#fine-print ul.horz-list li.last-item {
+  border-right: none;
+}
+#usagov {
+  margin-bottom: -2px;
+  vertical-align: bottom;
+}
+
+.full-height {
+  height: 100%;
+  overflow: auto;
+}
+
+/* Override some pre tag properties */
+.formbuilder-pre {
+  /* Let the container provide the scroll bars */
+  overflow: visible;
+  /* Remove border and background color to blend with container*/
+  border: 0px;
+  background-color: transparent;
+}
+
+.stripe-odd {
+  background-color: rgba(0,0,0,0.03);
+}
+
+.lf-social-icon {
+  width: 64px;
+  height: 64px;
+}
+
+.fine-print {
+  font-size: 80%;
+  border-top: 1px solid #0BACB6;
+  clear: left;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+/* End of styles for the footer */

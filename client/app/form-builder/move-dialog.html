@@ -1,0 +1,29 @@
+<md-dialog aria-labelledby="__moveDialogTitle" ng-controller="moveDlgCtrl as moveCtrl">
+  <form>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2 id="__moveDialogTitle">{{ moveCtrl.moveDialogTitle[moveType] }}</h2>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div class="md-dialog-content">
+        <label for="selectTargetId">Pick a target item: </label>
+        <input placeholder="Search"
+               type="text"
+               id="selectTargetId"
+               name="selectTargetId"
+               ng-required="false"
+               ng-model="moveCtrl.selectedTarget"
+               autocomplete-lhc="moveCtrl.autocompNodes.opts">
+      </div>
+      <md-dialog-actions layout="row">
+        <md-button aria-label="Move" ng-disabled="!moveCtrl.selectedTarget.label" ng-click="moveCtrl.move(this, moveType)" class="md-primary">
+          Move
+        </md-button>
+        <md-button aria-label="Cancel dialog" ng-click="moveCtrl.cancel()" class="md-primary">
+          Cancel
+        </md-button>
+      </md-dialog-actions>
+    </md-dialog-content>
+  </form>
+</md-dialog>

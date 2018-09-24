@@ -1,0 +1,63 @@
+<md-dialog aria-labelledby="titleId" style="width: 60%">
+  <form ng-cloak>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2 id="titleId">My FHIR Questionnaire Resources</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="fhirCtrl.closeDlg(false)">
+          <md-icon md-svg-src="/assets/images/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <div style="padding: 0px 24px 0px 24px;">
+      <div layout="row">
+        <h4 ng-show="fhirCtrl.fhirResults.total === 1">{{fhirCtrl.fhirResults.total}} resource found from FHIR server:</h4>
+        <h4 ng-show="fhirCtrl.fhirResults.total !== 1">{{fhirCtrl.fhirResults.total}} resources found from FHIR server:</h4>
+        <md-input-container
+          style="margin: 5px;"
+          layout="row"
+          layout-align="center start"
+          class="md-primary"
+        >
+          <md-select
+            ng-model="fhirCtrl.fhirServer"
+            ng-model-options="{trackBy: '$value.id'}"
+            ng-change="fhirCtrl.search()"
+            aria-label="Select FHIR server"
+          >
+            <md-option ng-value="server" ng-repeat="server in fhirCtrl.fhirServerList">{{ server.displayName }}</md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+      <div layout="row">
+        <md-button ng-disabled="!fhirCtrl.hasLink('previous')" ng-click="fhirCtrl.getPage($event, 'previous')" class="md-primary">Previous</md-button>
+        <md-button ng-disabled="!fhirCtrl.hasLink('next')" ng-click="fhirCtrl.getPage($event, 'next')" class="md-primary">Next</md-button>
+      </div>
+
+    </div>
+    <md-dialog-content>
+      <div class="md-dialog-content">
+        <div>
+          <!-- <div ng-include="'app/form-builder/fhir-search.html'"></div> -->
+          <div ng-messages="fhirCtrl.fhirError">{{fhirCtrl.fhirError.message}}</div>
+        </div>
+        <div>
+          <md-list style="border: lightgrey solid 2px; padding: 0px;" class="md-dense" ng-show="fhirCtrl.fhirResults.total > 0">
+            <md-list-item ng-click="fhirCtrl.loadResource($event, item.resource.id)"  ng-class-odd="'stripe-odd'" class="md-3-line" ng-repeat="item in fhirCtrl.fhirResults.entry track by $index">
+              <div style="display: grid; grid-template-columns: 40px 1fr 40px; align-items: start; justify-items: start; grid-gap: 3px 3px">
+                <div>{{ fhirCtrl.fhirResultsCount + $index + 1 }}</div>
+                <div class="md-list-item-text" layout="column">
+                  <p>ID: {{ item.resource.id }} (version: {{ item.resource.meta.versionId}})</p>
+                  <p>{{ item.resource.title }}</p>
+                  <p>{{ item.resource.publisher }} {{item.resource.date | date: 'MMM d, y h:mm:ss a Z'}}</p>
+                </div>
+                <md-icon md-svg-src="/assets/images/delete-forever.svg"  ng-click="fhirCtrl.deleteResource($event, item.resource.id)" aria-label="Delete this resource" class="md-secondary md-hue-3" ></md-icon>
+              </div>
+            </md-list-item>
+            <md-tooltip>Click to load this item into form builder</md-tooltip>
+          </md-list>
+        </div>
+      </div>
+    </md-dialog-content>
+  </form>
+</md-dialog>
