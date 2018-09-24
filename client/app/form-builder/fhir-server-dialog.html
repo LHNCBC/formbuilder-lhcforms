@@ -1,0 +1,30 @@
+<md-dialog aria-labelledby="titleId" style="width: 60%">
+  <form ng-cloak>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2 id="titleId">Choose a destination FHIR server</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="fhirCtrl.closeDlg(false)">
+          <md-icon md-svg-src="/assets/images/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div class="md-dialog-content">
+      <h2>FHIR servers List</h2>
+      <md-divider></md-divider>
+      <md-radio-group ng-model="fhirCtrl.fhirServer" ng-model-options="{trackBy: '$value.id'}">
+        <md-radio-button ng-repeat='server in fhirCtrl.fhirServerList' flex ng-value="server" class="md-primary" >
+          <h5>{{server.displayName}}</h5>
+          <h6>{{server.endpoint}}</h6>
+          <p>{{server.desc}}</p>
+        </md-radio-button>
+      </md-radio-group>
+      </div>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <md-button aria-label="Continue" class="md-raised md-primary" ng-click="fhirCtrl.setFhirServer(fhirCtrl.fhirServer); fhirCtrl.closeDlg(true)">Continue</md-button>
+      <md-button aria-label="Cancel" class="md-raised md-primary" ng-click="fhirCtrl.closeDlg(false)">Cancel</md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

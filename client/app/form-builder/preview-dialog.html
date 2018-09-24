@@ -1,0 +1,19 @@
+<md-dialog aria-label="Preview Widget">
+  <form>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Preview the form</h2>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div ng-controller="FormBuilderPreviewCtrl">
+        <div ng-include="getTemplateUrl()"></div>
+      </div>
+    </md-dialog-content>
+    <div class="md-dialog-actions" layout="row">
+      <md-button ng-click="closeDialog()" class="md-primary">
+        Close
+      </md-button>
+    </div>
+  </form>
+</md-dialog>

@@ -1,0 +1,20 @@
+{
+  "comments": [
+    "In this file, 'comments' keys are adopted for file comments.",
+    "",
+    "Configuration settings to start lforms-app in pm2.",
+    "Make sure all directories exists and writable ",
+    "to create pid file, log file, and error file etc.",
+    ""
+  ],
+
+  "apps": [{
+    "name"             : "formbuilder",
+    "script"           : "./server/app.js",
+    "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+    "env"              : {
+      "NODE_ENV": "production"
+    }
+  }]
+}
+
