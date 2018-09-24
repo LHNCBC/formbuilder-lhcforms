@@ -74,7 +74,7 @@ angular.module('formBuilder')
       
       $scope.termsOfUseAccepted = 'unknown';
 
-      $scope.isUserSignedIn = false;
+      $scope.isUserSignedIn = !firebaseService.isEnabled(); // If disabled, no control on fhir server access.
 
       // See https://github.com/nervgh/angular-file-upload/wiki/Introduction on
       // usage of angular-file-upload.
@@ -492,6 +492,14 @@ angular.module('formBuilder')
       $scope.signOut = function () {
         gtag('event', 'logout', {event_category: 'engagement'});
         firebaseService.signOut();
+      };
+
+
+      /**
+       *  Find out the firebase service
+       */
+      $scope.isFirebaseEnabled = function () {
+        return firebaseService.isEnabled();
       };
 
       /************** angular-spinner ****************

@@ -18,9 +18,6 @@ let all = {
   port: 9020,
   
   https: true,
-  firebaseClientConfig: require(path.join(__dirname, '../firebase-authorization/firebase-client-authorization.json')),
-  // https certificate
-  firebaseAuthFile: path.join(__dirname, '../firebase-authorization/firebase-adminsdk-authorization.json'),
   keySslFile: path.join(__dirname, '../ssl/server.key'),
   certSslFile: path.join(__dirname, '../ssl/server.crt'),
   caSslFile: path.join(__dirname, '../ssl/ca.crt'),

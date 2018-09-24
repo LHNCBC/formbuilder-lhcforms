@@ -4,7 +4,7 @@
  * and wraps the firebase authentication service.
  */
 angular.module('formBuilder')
-  .service('firebaseService', function($rootScope) {
+  .service('firebaseService', ['$window', '$rootScope', function($window, $rootScope) {
     // the backend data url
     var dataUrl = '/fhir-api';
 
@@ -15,34 +15,44 @@ angular.module('formBuilder')
     return {
 
       /**
+       * Find if this service is enabled.
+       * @returns {boolean}
+       */
+      isEnabled: function() {
+        return fireApp ? true : false;
+      },
+
+
+      /**
        * Get the connection to Google firebase
        */
       initFirebase: function() {
-        // Initialize firebase
-        fireApp = firebase.initializeApp(firebaseConfig);
+        // Initialize firebase, if config exists.
+        if($window.firebaseConfig) {
+          fireApp = firebase.initializeApp($window.firebaseConfig);
 
-        console.log(fireApp.name);  // "[DEFAULT]"
+          console.log(fireApp.name);  // "[DEFAULT]"
 
-        // listen for authentication event
-        fireApp.auth().onAuthStateChanged(function (user) {
-          console.log("got user..", user);
+          // listen for authentication event
+          fireApp.auth().onAuthStateChanged(function (user) {
+            console.log("got user..", user);
 
-          if (user) {
-            user.getIdToken(true).then(function(idToken) {
-              user.idToken = idToken;
-              $rootScope.$broadcast('LF_FIREBASE_AUTH_SIGNEDIN', user);
-              $rootScope.auth.bearer = idToken;
-              console.log(idToken);
-            }).catch(function(error) {
-              console.log(error);
-            });
+            if (user) {
+              user.getIdToken(true).then(function(idToken) {
+                user.idToken = idToken;
+                $rootScope.$broadcast('LF_FIREBASE_AUTH_SIGNEDIN', user);
+                $rootScope.auth.bearer = idToken;
+                console.log(idToken);
+              }).catch(function(error) {
+                console.log(error);
+              });
 
-          }
-          else {
-            $rootScope.$broadcast('LF_FIREBASE_AUTH_SIGNEDOUT')
-          }
-        })
-
+            }
+            else {
+              $rootScope.$broadcast('LF_FIREBASE_AUTH_SIGNEDOUT')
+            }
+          })
+        }
       },
 
 
@@ -186,4 +196,4 @@ angular.module('formBuilder')
 
       }
     };
-  });
+  }]);

@@ -4,7 +4,7 @@
   </a>
   <div id="siteNameBox" layout="row" layout-align="space-between">
     <a href="/"><span id="siteName">Form Builder for LHC-Forms/FHIR Questionnaire</span></a>
-    <div>
+    <div ng-if="isFirebaseEnabled()">
       <div ng-if="!isUserSignedIn">
         <md-button class="md-primary" ng-click="showSignInDialog()">
           Sign in

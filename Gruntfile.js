@@ -537,13 +537,6 @@ module.exports = function (grunt) {
     },
     // Create files from templates
     template: {
-      client_auth: {
-        options: {
-          data: envConfig.firebaseClientConfig
-        },
-        src: ['<%= yeoman.client %>/app/firebase/firebase-client-authorization.js.tpl'],
-        dest: '<%= yeoman.client %>/app/firebase/firebase-client-authorization.js'
-      },
       index_html: {
         options: {
           data: envConfig,
@@ -679,6 +672,7 @@ module.exports = function (grunt) {
         'wiredep',
         'autoprefixer',
         'express:dev',
+        'update_webdriver',
         'protractor'
       ]);
     }
@@ -692,6 +686,11 @@ module.exports = function (grunt) {
   grunt.registerTask('prune_modules', function() {
     grunt.log.ok('Prune the dev dependencies from dist');
     executeCmd('npm prune --production', {cwd: './dist'});
+  });
+
+  grunt.registerTask('update_webdriver', function() {
+    grunt.log.ok('Update webdriver');
+    executeCmd('./node_modules/.bin/webdriver-manager update  --versions.chrome=2.41');
   });
 
   grunt.registerTask('build', function(target) {
