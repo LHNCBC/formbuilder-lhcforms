@@ -537,12 +537,40 @@ module.exports = function (grunt) {
     },
     // Create files from templates
     template: {
+      client_auth: {
+        options: {
+          data: envConfig.firebaseClientConfig
+        },
+        src: '<%= yeoman.client %>/app/firebase/firebase-client-authorization.js.tpl',
+        dest: '<%= yeoman.client %>/app/firebase/firebase-client-authorization.js',
+        filter: function (src) {
+          let destFile = grunt.task.current.data.dest;
+          if(grunt.file.exists(destFile)) {
+            grunt.file.delete(destFile);
+            grunt.log.oklns('Deleted previous '+destFile);
+          }
+          let ret = grunt.task.current.data.options.data ? true : false;
+          if(!ret) {
+            grunt.log.oklns('No firebase client configuration detected. The authorization file will not be generated.');
+          }
+
+          return ret;
+        }
+      },
       index_html: {
         options: {
-          data: envConfig,
+          data: envConfig
         },
-        src: ['<%= yeoman.client %>/index.html.tpl'],
-        dest: '<%= yeoman.client %>/index.html'
+        src: '<%= yeoman.client %>/index.html.tpl',
+        dest: '<%= yeoman.client %>/index.html',
+        filter: function (src) {
+          let destFile = grunt.task.current.data.dest;
+          if(grunt.file.exists(destFile)) {
+            grunt.file.delete(destFile);
+            grunt.log.oklns('Deleted previous '+destFile);
+          }
+          return true;
+        }
       }
     }
   });
