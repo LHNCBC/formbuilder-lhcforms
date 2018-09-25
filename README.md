@@ -1,6 +1,3 @@
-### Pre-requisites
-This application uses Firebase authentication 
-
 ### Installation 
 1. Install **node** package globally on your system.
 1. Clone git repository of formbuilder.
@@ -19,16 +16,15 @@ path for the rest of the installation.
            
         $ bower install
            
-1. Edit formbuilder.conf.js to configure for your setup. This is where you specify valid SSL files and Firebase service 
-account details to run the application.
-    1. Specify your ssl key, certificate and authority files.
-    1. Specify firebase account information for client and server configuration.
+1. Edit formbuilder.conf.js to configure the application for your setup. 
+ 
+    1. If choosing https option, specify your ssl key, certificate and authority files.
     1. Specify server's host name (or IP) and port number.
     1. Specify Google Analytics gtag tracking id.
               
-1. Compile templates.
+1. Run grunt task to generate index.html from template.
            
-        $ bower template
+        $ grunt template
            
 1. Start formbuilder server for development.
 

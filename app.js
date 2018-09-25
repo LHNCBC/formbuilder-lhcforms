@@ -14,9 +14,11 @@ function verifyConfig(config) {
   console.log(JSON.stringify(config, null, 2));
   let messages = [];
   if(config) {
-    config.keySslFile || messages.push('keySslFile: Please specify required ssl key file.');
-    config.certSslFile || messages.push('certSslFile: Please specify ssl certificate file.');
-    config.caSslFile || messages.push('caSslFile: Please specify ssl certificate authority file.');
+    if(config.https) {
+      config.keySslFile || messages.push('keySslFile: Please specify required ssl key file.');
+      config.certSslFile || messages.push('certSslFile: Please specify ssl certificate file.');
+      config.caSslFile || messages.push('caSslFile: Please specify ssl certificate authority file.');
+    }
   }
   else {
     messages.push('Missing configuration options');

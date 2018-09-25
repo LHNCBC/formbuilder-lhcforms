@@ -1,9 +1,6 @@
 'use strict';
 
-const path = require('path');
-const fs = require('fs');
-// Read http option. The default is to use https.
-// For docker use case, user could opt for http using USE_HTTP env variable.
+// const path = require('path');
 
 // All configurations will extend these options
 // ============================================
@@ -12,17 +9,17 @@ let all = {
   
   // Root path of server
   root: __dirname,
-  gtag: 'UA-XXXXXXXX-X',
+  // Tracking ID for google analytics.
+  gtag: '',
   
   host: '::',
   port: 9020,
   
-  https: true,
-  keySslFile: path.join(__dirname, '../ssl/server.key'),
-  certSslFile: path.join(__dirname, '../ssl/server.crt'),
-  caSslFile: path.join(__dirname, '../ssl/ca.crt'),
-  // Disable use of RC4
-  honorCipherOrder: true
+  https: false, // To enable https, set this to true and specify the ssl files below.
+  // keySslFile: path.join(__dirname, '../ssl/server.key'),
+  // certSslFile: path.join(__dirname, '../ssl/server.crt'),
+  // caSslFile: path.join(__dirname, '../ssl/ca.crt'),
+  // honorCipherOrder: true
 };
 
 // Export the config object based on the NODE_ENV
