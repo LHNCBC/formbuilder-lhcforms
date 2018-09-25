@@ -4,9 +4,9 @@ const fs = require('fs');
 module.exports = function(config) {
   let express = require('express');
 
-// Setup server
+  // Setup server
   let app = express();
-// Remove x-powered-by:express default express header
+  // Remove x-powered-by:express default express header
   app.disable('x-powered-by');
   app.locals.config = config;
   
@@ -28,7 +28,7 @@ module.exports = function(config) {
     app.locals.fireAdmin = fireAdmin;
   }
 
-// Setup server
+  // Setup server
   require('./express')(app);
   require('./routes')(app);
   

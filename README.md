@@ -1,5 +1,5 @@
 ### Installation 
-1. Install **node** package globally on your system.
+1. Install **nodejs** package globally on your system.
 1. Clone git repository of formbuilder.
 
         $ git clone https://github.com/lhncbc/formbuilder.git
@@ -9,8 +9,8 @@ environment. You can make a similar rc file to suit your shell. Please make sure
 path for the rest of the installation. 
 
         $ cd formbuilder
-        $ source bashrc.formbuilder
         $ npm ci
+        $ source bashrc.formbuilder
         
 1. Install required bower packages:
            
