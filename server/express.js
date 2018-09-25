@@ -25,6 +25,7 @@ module.exports = function(app) {
   app.use(cookieParser());
 
   if(app.locals.config.https) {
+    let hsts = require('hsts');
     app.use(hsts({
       // 31536000000 = One year in millis
       maxAge: 31536000000
