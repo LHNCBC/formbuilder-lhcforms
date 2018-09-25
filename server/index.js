@@ -23,8 +23,6 @@ module.exports = function(config) {
       }
     });
 
-    console.log(fireApp.name);  // "[DEFAULT]"
-
     app.locals.fireAdmin = fireAdmin;
   }
 
