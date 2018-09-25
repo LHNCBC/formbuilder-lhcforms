@@ -24,6 +24,14 @@ module.exports = function(app) {
   app.use(methodOverride());
   app.use(cookieParser());
 
+  if(app.locals.config.https) {
+    app.use(hsts({
+      // 31536000000 = One year in millis
+      maxAge: 31536000000
+    }));
+  }
+
+
   if ('production' === env) {
     // basic HTTP authentication in production mode
     app.use(favicon(path.join(app.locals.config.root, 'public', 'favicon.ico')));
