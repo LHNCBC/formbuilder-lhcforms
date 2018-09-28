@@ -649,25 +649,6 @@ describe('GET /', function () {
     });
   });
 
-  describe('Login/Logout', function () {
-    beforeAll(function () {
-      fb.cleanupSideBar();
-    });
-
-    it('should sign in and sign out anonymously', function () {
-      expect(fb.signIn.isDisplayed()).toBeTruthy();
-      fb.signIn.click();
-      expect(fb.signInAnonymously.isDisplayed()).toBeTruthy();
-      fb.signInAnonymously.click();
-      let EC = protractor.ExpectedConditions;
-      // Wait for signOut to showup.
-      browser.wait(EC.visibilityOf(fb.signOut), 5000);
-      expect(fb.signOut.isDisplayed()).toBeTruthy();
-      fb.signOut.click();
-      expect(fb.signIn.isDisplayed()).toBeTruthy();
-    });
-  });
-
   describe('FHIR resource operations on the server', function () {
     // Note - The tests in this block are in an order. Any changes to
     // a test suite could impact the following assertions.
@@ -678,16 +659,8 @@ describe('GET /', function () {
     const uhnServerName = 'UHN HAPI Server';
 
     beforeAll(function () {
-      expect(fb.signIn.isDisplayed()).toBeTruthy();
-      fb.signIn.click();
-      fb.signInAnonymously.click();
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
-    });
-
-    afterAll(function () {
-      fb.signOut.click();
-      expect(fb.signIn.isDisplayed()).toBeTruthy();
     });
 
     it('should create', function () {

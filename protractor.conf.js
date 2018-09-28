@@ -145,5 +145,6 @@ exports.config = {
     // disable ng-animate during the testing
     browser.addMockModule('disableNgAnimate', disableNgAnimate);
     browser.addMockModule('disableCssAnimate', disableCssAnimate);
+    browser.driver.manage().window().setSize(1600, 1400);
   }
 };

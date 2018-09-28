@@ -14,10 +14,11 @@ function verifyConfig(config) {
   console.log(JSON.stringify(config, null, 2));
   let messages = [];
   if(config) {
-    config.firebaseAuthFile || messages.push('firebaseAuthFile: Please specify required firebase service authorization file.');
-    config.keySslFile || messages.push('keySslFile: Please specify required ssl key file.');
-    config.certSslFile || messages.push('certSslFile: Please specify ssl certificate file.');
-    config.caSslFile || messages.push('caSslFile: Please specify ssl certificate authority file.');
+    if(config.https) {
+      config.keySslFile || messages.push('keySslFile: Please specify required ssl key file.');
+      config.certSslFile || messages.push('certSslFile: Please specify ssl certificate file.');
+      config.caSslFile || messages.push('caSslFile: Please specify ssl certificate authority file.');
+    }
   }
   else {
     messages.push('Missing configuration options');
@@ -45,26 +46,72 @@ function filePath(filename) {
 const optionDefinitions = [
   // Master config file. See formbuilder.conf.js for example of the format
   // Any options set on the command line will override config.
-  {name: 'config', alias: 'c', type: filePath},
-  {name: 'env', alias: 'e', type: String},
+  {name: "help", alias: 'h', type: Boolean, description: 'Print this usage guide.'},
+  {name: 'config', alias: 'c', type: filePath, description: 'Provide configuration file. See {bold formbuilder.conf.js} for details and modify to suit your requirements.'},
+  {name: 'env', alias: 'e', type: String, description: 'Set node environment. Default is {bold development}.'},
   
-  {name: 'host', alias: 'h', type: String},
-  {name: 'port', alias: 'p', type: Number, defaultValue: 9020},
+  {name: 'host', type: String, description: 'Host name or IP address to which the server binds the network interface. Default is "::", i.e binds to all local network interfaces.'},
+  {name: 'port', alias: 'p', type: Number, defaultValue: 9020, description: 'Port number on which the server listens to.\n'},
   
   // SSL options
-  {name: 'keySslFile', alias: 'k', type: filePath},
-  {name: 'certSslFile', alias: 't', type: filePath},
-  {name: 'caSslFile', alias: 'a', type: filePath},
-  {name: 'honorCipherOrder', alias: 'r', type: Boolean, defaultValue: true},
-
-  // Firebase options
-  {name: 'firebaseAuthFile', alias: 'f', type: filePath},
-  {name: 'firebaseURL', alias: 'u', type: String},
-  {name: 'databaseAuthVariableOverrideUid', alias: 'o', type: String}
+  {name: 'keySslFile', alias: 'k', type: filePath, description: 'Provide SSL key file.'},
+  {name: 'certSslFile', alias: 't', type: filePath, description: 'Provide SSL certificate file.'},
+  {name: 'caSslFile', alias: 'a', type: filePath, description: 'Provide SSL certificate authority file.'},
+  {name: 'honorCipherOrder', alias: 'r', type: Boolean, defaultValue: true, description: 'Set to to follow cipher order. The default is true.'},
 ];
 
+const usage_sections = [
+  {
+    header: 'Usage',
+    content: [
+      '$ node app [options] ...',
+    ]
+  },
+  {
+    header: 'Synopsis',
+    content: [
+      'The options are typically set in formbuilder.conf.js file. You can override any of those options from the command line arguments. By default, the server looks for the configuration file in the directory where app.js is. You could also provide your own configuration file with -c option.',
+    ]
+  },
+  {
+    header: 'Options',
+    optionList: optionDefinitions
+  },
+  {
+    header: 'Examples',
+    content: [
+      {
+        example: '$ node app --config formbuilder.conf.js\n'
+      },
+      {
+        example: '$ # An example to override configuration options from command line.'
+      },
+      {
+        example: '$ node app --config formbuilder.conf.js --keySslFile ssl/ssl.key --certSslFile ssl/ssl.cert caSslFile ssl/ca.cert'
+      }
+    ]
+  },
+  {
+    content: 'Project home: {underline https://github.com/lhncbc/formbuilder}'
+  }
+];
+
+
 const commandLineArgs = require('command-line-args');
-const options = commandLineArgs(optionDefinitions);
+let options = null;
+try {
+  options = commandLineArgs(optionDefinitions);
+  if(options.help) {
+    console.log(require('command-line-usage')(usage_sections));
+    process.exit(0);
+  }
+}
+catch (e) {
+  console.error(e.message);
+  console.log(require('command-line-usage')(usage_sections));
+  process.exit(1);
+}
+
 let initConfig = {};
 
 if(options.config) {

@@ -48,6 +48,9 @@
   },
   "appPath": "client",
   "resolutions": {
-    "angular": "1.5.x"
+    "angular": "1.5.x",
+    "angular-animate": "1.5.x",
+    "angular-aria": "1.5.x",
+    "angular-messages": "1.5.x"
   }
 }

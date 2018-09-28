@@ -4,29 +4,29 @@ const fs = require('fs');
 module.exports = function(config) {
   let express = require('express');
 
-// Setup server
+  // Setup server
   let app = express();
-// Remove x-powered-by:express default express header
+  // Remove x-powered-by:express default express header
   app.disable('x-powered-by');
   app.locals.config = config;
   
-// connect to google firebase with a service account
-  let fireAdmin = require("firebase-admin");
-  //let fireServiceAccount = require("./config/firebase-authorization/firebase-adminsdk-authorization.json");
-  let fireServiceAccount = require(config.firebaseAuthFile);
-  
-  let fireApp = fireAdmin.initializeApp({
-    credential: fireAdmin.credential.cert(fireServiceAccount),
-    databaseURL: config.firebaseClientConfig.databaseURL,
-    databaseAuthVariableOverride: {
-      uid: config.databaseAuthVariableOverrideUid
-    }
-  });
+  if(config.firebaseAuthFile) {
+    let fireAdmin = require("firebase-admin");
+    // connect to google firebase with a service account
+    let fireServiceAccount = require(config.firebaseAuthFile);
 
-// Setup server
-  console.log(fireApp.name);  // "[DEFAULT]"
-  
-  app.locals.fireAdmin = fireAdmin;
+    let fireApp = fireAdmin.initializeApp({
+      credential: fireAdmin.credential.cert(fireServiceAccount),
+      databaseURL: config.firebaseClientConfig.databaseURL,
+      databaseAuthVariableOverride: {
+        uid: config.databaseAuthVariableOverrideUid
+      }
+    });
+
+    app.locals.fireAdmin = fireAdmin;
+  }
+
+  // Setup server
   require('./express')(app);
   require('./routes')(app);
   

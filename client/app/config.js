@@ -67,7 +67,7 @@ angular.module('formBuilderConfig', ['ngMaterial'])
         id: 2,
         displayName: 'UHN HAPI Server - STU3',
         endpoint: 'http://hapi.fhir.org/baseDstu3',
-        desc: "Public FHIR server at fhir.org (no 'delete')"
+        desc: "Public FHIR server at fhir.org"
       },
       // {id: 3, displayName: 'HealthConnex STU3 server', endpoint:'http://sqlonfhir-stu3.azurewebsites.net/fhir', version:3, everythingOperation:true},
       {id: 4, displayName: 'clinFHIR R3', endpoint:'http://snapp.clinfhir.com:8081/baseDstu3', version:3}

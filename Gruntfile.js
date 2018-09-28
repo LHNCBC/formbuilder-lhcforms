@@ -541,15 +541,36 @@ module.exports = function (grunt) {
         options: {
           data: envConfig.firebaseClientConfig
         },
-        src: ['<%= yeoman.client %>/app/firebase/firebase-client-authorization.js.tpl'],
-        dest: '<%= yeoman.client %>/app/firebase/firebase-client-authorization.js'
+        src: '<%= yeoman.client %>/app/firebase/firebase-client-authorization.js.tpl',
+        dest: '<%= yeoman.client %>/app/firebase/firebase-client-authorization.js',
+        filter: function (src) {
+          let destFile = grunt.task.current.data.dest;
+          if(grunt.file.exists(destFile)) {
+            grunt.file.delete(destFile);
+            grunt.log.oklns('Deleted previous '+destFile);
+          }
+          let ret = grunt.task.current.data.options.data ? true : false;
+          if(!ret) {
+            grunt.log.oklns('No firebase client configuration detected. The authorization file will not be generated.');
+          }
+
+          return ret;
+        }
       },
       index_html: {
         options: {
-          data: envConfig,
+          data: envConfig
         },
-        src: ['<%= yeoman.client %>/index.html.tpl'],
-        dest: '<%= yeoman.client %>/index.html'
+        src: '<%= yeoman.client %>/index.html.tpl',
+        dest: '<%= yeoman.client %>/index.html',
+        filter: function (src) {
+          let destFile = grunt.task.current.data.dest;
+          if(grunt.file.exists(destFile)) {
+            grunt.file.delete(destFile);
+            grunt.log.oklns('Deleted previous '+destFile);
+          }
+          return true;
+        }
       }
     }
   });
@@ -679,6 +700,7 @@ module.exports = function (grunt) {
         'wiredep',
         'autoprefixer',
         'express:dev',
+        'update_webdriver',
         'protractor'
       ]);
     }
@@ -692,6 +714,11 @@ module.exports = function (grunt) {
   grunt.registerTask('prune_modules', function() {
     grunt.log.ok('Prune the dev dependencies from dist');
     executeCmd('npm prune --production', {cwd: './dist'});
+  });
+
+  grunt.registerTask('update_webdriver', function() {
+    grunt.log.ok('Update webdriver');
+    executeCmd('./node_modules/.bin/webdriver-manager update  --versions.chrome=2.41');
   });
 
   grunt.registerTask('build', function(target) {
