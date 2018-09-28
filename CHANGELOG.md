@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [1.0.1]  2018-09-28
+### Changed
+- Rename package 
+
 ## [1.0.0]  2018-09-12
 ### Changed
 - Cleanup code to release as open source
