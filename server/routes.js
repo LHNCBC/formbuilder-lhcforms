@@ -15,7 +15,7 @@ module.exports = function(app) {
 
   var firebaseFhirOpts = {
     firebaseAdmin: app.locals.fireAdmin, // required
-    defaultFhirUrl: 'http://lhc-docker.nlm.nih.gov:8080', // required
+    defaultFhirUrl: 'http://hapi.fhir.org', // required
     mountPath: '/fhir-api',
     proxyPath: '/baseDstu3'
   };

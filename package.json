@@ -1,5 +1,5 @@
 {
-  "name": "lforms-formbuilder",
+  "name": "formbuilder-lhcforms",
   "version": "1.0.0",
   "main": "server/app.js",
   "dependencies": {
