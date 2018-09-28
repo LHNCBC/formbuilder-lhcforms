@@ -95,6 +95,5 @@
   "scripts": {
     "start": "node ./app.js -c ./formbuilder.conf.js",
     "test": "node ./node_modules/.bin/webdriver-manager update --versions.chrome=2.41; grunt test"
-  },
-  "private": true
+  }
 }
