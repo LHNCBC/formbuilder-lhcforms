@@ -279,6 +279,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   this.updateNodeLFData = function(node) {
     var lfData = {};
+    updateUnitsURL(node.lfData.basic);
     lfData.basic = node.lfData.basic.getFormData();
     lfData.basic.name = node.lfData.basic.name;
     lfData.basic.code = node.lfData.basic.code;
@@ -286,7 +287,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData.basic.template = node.lfData.basic.template;
     lfData.basic.templateOptions = node.lfData.basic.templateOptions;
     lfData.basic = new LFormsData(lfData.basic);
-    updateUnitsURL(lfData.basic);
 
     lfData.advanced = node.lfData.advanced.getFormData();
     lfData.advanced.name = node.lfData.advanced.name;
