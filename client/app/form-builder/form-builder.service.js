@@ -286,6 +286,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData.basic.template = node.lfData.basic.template;
     lfData.basic.templateOptions = node.lfData.basic.templateOptions;
     lfData.basic = new LFormsData(lfData.basic);
+    updateUnitsURL(lfData.basic);
 
     lfData.advanced = node.lfData.advanced.getFormData();
     lfData.advanced.name = node.lfData.advanced.name;
@@ -1566,5 +1567,38 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       }
     }
   }
+
+
+  /**
+   * Adjust auto-complete search url for units during run time. The modified
+   * search floats the units with matching loinc property of the question
+   * to the top.
+   *
+   * @param lfData - Form builder model of the question.
+   */
+  function updateUnitsURL(lfData) {
+    var dataType = lfData.itemHash['/dataType/1'].value.code;
+    if(dataType === 'REAL' || dataType === 'INT') {
+      var code = lfData.itemHash['/questionCode/1'].value;
+      // Change, only if it is a loinc or derived from a loinc question.
+      var matched = /^(Modified_)?(\d+\-\d)$/.exec(code);
+      if(matched) {
+        var loinc = matched[2];
+        var autoCompOptions = lfData.itemHash['/units/1']._autocompOptions;
+
+        // Avoid changing twice.
+        if(!autoCompOptions.url.match(/bq=loinc_property:/)) {
+          $http.get(dataConstants.searchLoincPropertyURL+'&terms='+loinc).then(function (resp) {
+            var loinc_property = resp.data[3][0][0];
+            if(loinc_property) {
+              autoCompOptions.url += '&bq=(loinc_property:'+loinc_property+')^20';
+              autoCompOptions.suggestionMode = Def.Autocompleter.NO_COMPLETION_SUGGESTIONS;
+            }
+          });
+        }
+      }
+    }
+  }
+
 
 }]);

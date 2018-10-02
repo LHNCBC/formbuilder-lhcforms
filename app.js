@@ -52,7 +52,8 @@ const optionDefinitions = [
   
   {name: 'host', type: String, description: 'Host name or IP address to which the server binds the network interface. Default is "::", i.e binds to all local network interfaces.'},
   {name: 'port', alias: 'p', type: Number, defaultValue: 9020, description: 'Port number on which the server listens to.\n'},
-  
+  {name: 'https', alias: 's', type: Boolean, defaultValue: false, description: 'Use https protocol. Default is false. If true, must specify ssl settings\n'},
+
   // SSL options
   {name: 'keySslFile', alias: 'k', type: filePath, description: 'Provide SSL key file.'},
   {name: 'certSslFile', alias: 't', type: filePath, description: 'Provide SSL certificate file.'},
@@ -118,7 +119,9 @@ if(options.config) {
   initConfig = require(options.config);
   delete options.config;
 }
-
+else if(fs.existsSync('./formbuilder.conf.js')) {
+  initConfig = require('./formbuilder.conf.js');
+}
 let config = Object.assign({}, initConfig, options);
 
 process.env.NODE_ENV = options.env || process.env.NODE_ENV || 'development';

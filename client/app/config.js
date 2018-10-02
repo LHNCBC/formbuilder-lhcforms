@@ -8,6 +8,7 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     TARGET_FHIR_AUTH_HEADER: 'x-target-fhir-server-authorization',
 
     formDefURL: 'https://clin-table-search.lhc.nlm.nih.gov/loinc_form_definitions?',
+    searchLoincPropertyURL: 'https://clin-table-search.lhc.nlm.nih.gov/api/loinc_items/v3/search?type=question&df=PROPERTY&sf=LOINC_NUM',
     searchQuestionsURL: 'https://clin-table-search.lhc.nlm.nih.gov/api/loinc_items/v3/search?type=question&ef=text,answers,units,datatype&df=LOINC_NUM,text',
     searchFormsURL: 'https://clin-table-search.lhc.nlm.nih.gov/api/loinc_items/v3/search?type=form&available=true&df=LOINC_NUM,text',
 
