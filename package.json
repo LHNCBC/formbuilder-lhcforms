@@ -1,7 +1,13 @@
 {
-  "name": "formbuilder",
-  "version": "1.0.0",
+  "name": "formbuilder-lhcforms",
+  "version": "1.0.1",
   "main": "server/app.js",
+  "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/lhncbc/formbuilder-lhcforms"
+  },
   "dependencies": {
     "basic-auth": "^1.1.0",
     "basic-auth-connect": "^1.0.0",
@@ -95,6 +101,5 @@
   "scripts": {
     "start": "node ./app.js -c ./formbuilder.conf.js",
     "test": "node ./node_modules/.bin/webdriver-manager update --versions.chrome=2.41; grunt test"
-  },
-  "private": true
+  }
 }
