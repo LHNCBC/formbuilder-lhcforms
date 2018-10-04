@@ -279,24 +279,25 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   this.updateNodeLFData = function(node) {
     var lfData = {};
-    updateUnitsURL(node.lfData.basic);
     lfData.basic = node.lfData.basic.getFormData();
     lfData.basic.name = node.lfData.basic.name;
     lfData.basic.code = node.lfData.basic.code;
     lfData.basic.type = node.lfData.basic.type;
     lfData.basic.template = node.lfData.basic.template;
     lfData.basic.templateOptions = node.lfData.basic.templateOptions;
-    lfData.basic = new LFormsData(lfData.basic);
 
-    lfData.advanced = node.lfData.advanced.getFormData();
-    lfData.advanced.name = node.lfData.advanced.name;
-    lfData.advanced.code = node.lfData.advanced.code;
-    lfData.advanced.type = node.lfData.advanced.type;
-    lfData.advanced.template = node.lfData.advanced.template;
-    lfData.advanced.templateOptions = node.lfData.advanced.templateOptions;
-    lfData.advanced = new LFormsData(lfData.advanced);
-
-    node.lfData = lfData;
+    return updateUnitsURL(lfData.basic).then(function (basicLfData) {
+      lfData.basic = new LFormsData(basicLfData);
+      lfData.advanced = node.lfData.advanced.getFormData();
+      lfData.advanced.name = node.lfData.advanced.name;
+      lfData.advanced.code = node.lfData.advanced.code;
+      lfData.advanced.type = node.lfData.advanced.type;
+      lfData.advanced.template = node.lfData.advanced.template;
+      lfData.advanced.templateOptions = node.lfData.advanced.templateOptions;
+      lfData.advanced = new LFormsData(lfData.advanced);
+      node.lfData = lfData;
+      return node;
+    });
   };
 
 
@@ -1577,28 +1578,44 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @param lfData - Form builder model of the question.
    */
   function updateUnitsURL(lfData) {
-    var dataType = lfData.itemHash['/dataType/1'].value.code;
-    if(dataType === 'REAL' || dataType === 'INT') {
-      var code = lfData.itemHash['/questionCode/1'].value;
-      // Change, only if it is a loinc or derived from a loinc question.
+    var deferred = $q.defer();
+    var httpCall = false;
+    var dataType = thisService.getFormBuilderField(lfData.items, 'dataType').value.code;
+    if(dataType === 'INT' || dataType === 'REAL') {
+      var unitsItem = thisService.getFormBuilderField(lfData.items, 'units');
+      var code = thisService.getFormBuilderField(lfData.items, 'questionCode').value;
       var matched = /^(Modified_)?(\d+\-\d)$/.exec(code);
       if(matched) {
         var loinc = matched[2];
-        var autoCompOptions = lfData.itemHash['/units/1']._autocompOptions;
+        httpCall = true;
+        $http.get(dataConstants.searchLoincPropertyURL+'&terms='+loinc).then(function (resp) {
+          var loincProperties = resp.data[3][0];
+          if(loincProperties) {
+            var quotedStrings = [];
+            loincProperties.forEach(function (prop) {
+              quotedStrings.push(JSON.stringify(prop));
+            });
 
-        // Avoid changing twice.
-        if(!autoCompOptions.url.match(/bq=loinc_property:/)) {
-          $http.get(dataConstants.searchLoincPropertyURL+'&terms='+loinc).then(function (resp) {
-            var loinc_property = resp.data[3][0][0];
-            if(loinc_property) {
-              autoCompOptions.url += '&bq=(loinc_property:'+loinc_property+')^20';
-              autoCompOptions.suggestionMode = Def.Autocompleter.NO_COMPLETION_SUGGESTIONS;
+            if(quotedStrings.length > 0) {
+              unitsItem.externallyDefined += '&bq=loinc_property:('+encodeURIComponent(quotedStrings.join(' '))+')^20';
             }
-          });
-        }
+          }
+          deferred.resolve(lfData);
+        }, function (err) {
+          console.error('Failed to retrieve LOINC property of '+loinc, err);
+          deferred.resolve(lfData); // ignore the error.
+        });
       }
     }
+
+    if(!httpCall) {
+      deferred.resolve(lfData);
+    }
+
+    return deferred.promise;
   }
 
+  // Expose for unit testing
+  this._updateUnitsURL = updateUnitsURL;
 
 }]);

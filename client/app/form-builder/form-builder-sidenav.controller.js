@@ -136,9 +136,10 @@
         // Select new node
         $scope.setSelectedNode(node);
 
-        formBuilderService.updateNodeLFData($scope.selectedNode);
-        $scope.previewWidget();
-        setDirtyCheckWatches($scope);
+        formBuilderService.updateNodeLFData($scope.selectedNode).then(function () {
+          $scope.previewWidget();
+          setDirtyCheckWatches($scope);
+        });
       };
 
 
