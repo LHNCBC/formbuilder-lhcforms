@@ -1589,16 +1589,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         var loinc = matched[2];
         httpCall = true;
         $http.get(dataConstants.searchLoincPropertyURL+'&terms='+loinc).then(function (resp) {
-          var loincProperties = resp.data[3][0];
-          if(loincProperties) {
-            var quotedStrings = [];
-            loincProperties.forEach(function (prop) {
-              quotedStrings.push(JSON.stringify(prop));
-            });
-
-            if(quotedStrings.length > 0) {
-              unitsItem.externallyDefined += '&bq=loinc_property:('+encodeURIComponent(quotedStrings.join(' '))+')^20';
-            }
+          var displayFields = resp.data[3][0];
+          if(displayFields.length > 0) {
+            unitsItem.externallyDefined += '&bq=loinc_property:(' + encodeURIComponent('"' + displayFields[0] + '"') + ')^20';
           }
           deferred.resolve(lfData);
         }, function (err) {

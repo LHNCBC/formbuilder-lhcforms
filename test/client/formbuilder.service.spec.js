@@ -67,16 +67,21 @@ describe('formbuilder.service ', function () {
     });
 
 
-    it('with single loinc property', function (done) {
-      loincPropertyResp[3][0].push('aaa');
-      var expectedUrl = unitsItem.externallyDefined+'&bq=loinc_property:(%22aaa%22)^20';
+    it('with no loinc property', function (done) {
+      var expectedUrl = unitsItem.externallyDefined;
       assertUpdateUnitsURL(expectedUrl, done);
     });
 
-    it('with multiple loinc properties', function (done) {
+    it('with loinc property', function (done) {
       loincPropertyResp[3][0].push('aaa bbb');
-      loincPropertyResp[3][0].push('xxx yyy');
-      var expectedUrl = unitsItem.externallyDefined+'&bq=loinc_property:(%22aaa%20bbb%22%20%22xxx%20yyy%22)^20';
+      loincPropertyResp[3][0].push('xxx yyy'); // Should ignore the second one.
+      var expectedUrl = unitsItem.externallyDefined+'&bq=loinc_property:(%22aaa%20bbb%22)^20';
+      assertUpdateUnitsURL(expectedUrl, done);
+    });
+
+    it('loinc property with special characters', function (done) {
+      loincPropertyResp[3][0].push('aaa;"&<>\'bbb');
+      var expectedUrl = unitsItem.externallyDefined+'&bq=loinc_property:(%22aaa%3B%22%26%3C%3E\'bbb%22)^20';
       assertUpdateUnitsURL(expectedUrl, done);
     });
 
