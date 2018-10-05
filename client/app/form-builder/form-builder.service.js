@@ -285,17 +285,19 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData.basic.type = node.lfData.basic.type;
     lfData.basic.template = node.lfData.basic.template;
     lfData.basic.templateOptions = node.lfData.basic.templateOptions;
-    lfData.basic = new LFormsData(lfData.basic);
 
-    lfData.advanced = node.lfData.advanced.getFormData();
-    lfData.advanced.name = node.lfData.advanced.name;
-    lfData.advanced.code = node.lfData.advanced.code;
-    lfData.advanced.type = node.lfData.advanced.type;
-    lfData.advanced.template = node.lfData.advanced.template;
-    lfData.advanced.templateOptions = node.lfData.advanced.templateOptions;
-    lfData.advanced = new LFormsData(lfData.advanced);
-
-    node.lfData = lfData;
+    return updateUnitsURL(lfData.basic).then(function (basicLfData) {
+      lfData.basic = new LFormsData(basicLfData);
+      lfData.advanced = node.lfData.advanced.getFormData();
+      lfData.advanced.name = node.lfData.advanced.name;
+      lfData.advanced.code = node.lfData.advanced.code;
+      lfData.advanced.type = node.lfData.advanced.type;
+      lfData.advanced.template = node.lfData.advanced.template;
+      lfData.advanced.templateOptions = node.lfData.advanced.templateOptions;
+      lfData.advanced = new LFormsData(lfData.advanced);
+      node.lfData = lfData;
+      return node;
+    });
   };
 
 
@@ -1566,5 +1568,47 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       }
     }
   }
+
+
+  /**
+   * Adjust auto-complete search url for units during run time. The modified
+   * search floats the units with matching loinc property of the question
+   * to the top.
+   *
+   * @param lfData - Form builder model of the question.
+   */
+  function updateUnitsURL(lfData) {
+    var deferred = $q.defer();
+    var httpCall = false;
+    var dataType = thisService.getFormBuilderField(lfData.items, 'dataType').value.code;
+    if(dataType === 'INT' || dataType === 'REAL') {
+      var unitsItem = thisService.getFormBuilderField(lfData.items, 'units');
+      var code = thisService.getFormBuilderField(lfData.items, 'questionCode').value;
+      var matched = /^(Modified_)?(\d+\-\d)$/.exec(code);
+      if(matched) {
+        var loinc = matched[2];
+        httpCall = true;
+        $http.get(dataConstants.searchLoincPropertyURL+'&terms='+loinc).then(function (resp) {
+          var displayFields = resp.data[3][0];
+          if(displayFields.length > 0) {
+            unitsItem.externallyDefined += '&bq=loinc_property:(' + encodeURIComponent('"' + displayFields[0] + '"') + ')^20';
+          }
+          deferred.resolve(lfData);
+        }, function (err) {
+          console.error('Failed to retrieve LOINC property of '+loinc, err);
+          deferred.resolve(lfData); // ignore the error.
+        });
+      }
+    }
+
+    if(!httpCall) {
+      deferred.resolve(lfData);
+    }
+
+    return deferred.promise;
+  }
+
+  // Expose for unit testing
+  this._updateUnitsURL = updateUnitsURL;
 
 }]);
