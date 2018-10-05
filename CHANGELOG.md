@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [1.0.3]  2018-10-05
+### Fixed
+- Fixed npm audited vulnerabilities.
+
 ## [1.0.2]  2018-10-02
 ### Added
 - In units field, units associated with item's loinc property are 
