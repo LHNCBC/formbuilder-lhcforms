@@ -14,7 +14,6 @@ module.exports = function (grunt) {
     protractor: 'grunt-protractor-runner',
     injector: 'grunt-asset-injector',
     buildcontrol: 'grunt-build-control',
-    nsp: 'grunt-nsp'
   });
 
   var serverFiles = [
@@ -67,11 +66,6 @@ module.exports = function (grunt) {
       server: {
         url: envConfig.https ? 'https://<%= yeoman.host %>:<%= express.options.port %>' : 'http://<%= yeoman.host %>:<%= express.options.port %>'
       }
-    },
-
-    nsp: {
-      package: grunt.file.readJSON('./package.json'),
-      shrinkwrap: grunt.file.readJSON('./package-lock.json')
     },
 
     watch: {
@@ -309,17 +303,6 @@ module.exports = function (grunt) {
     },
 
     // The following *-min tasks produce minified files in the dist folder
-    imagemin: {
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '<%= yeoman.client %>/assets/images',
-          src: '{,*/}*.{png,jpg,jpeg,gif}',
-          dest: '<%= yeoman.dist %>/public/assets/images'
-        }]
-      }
-    },
-
     svgmin: {
       dist: {
         files: [{
@@ -463,7 +446,6 @@ module.exports = function (grunt) {
         }
       },
       dist: [
-        'imagemin',
         'svgmin'
       ]
     },
