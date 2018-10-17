@@ -1,6 +1,27 @@
 {
   "name": "formbuilder",
   "version": "0.0.0",
+  "main": [
+    "client/app/app.js",
+    "client/app/config.js",
+    "client/app/cached-templates.js",
+    "client/app/fhir/fhir.service.js",
+    "client/app/firebase/firebase.service.js",
+    "client/app/form-builder/adv-form-builder-def.js",
+    "client/app/form-builder/answer-lists.js",
+    "client/app/form-builder/fhir-dlg-controller.js",
+    "client/app/form-builder/form-builder-def.js",
+    "client/app/form-builder/form-builder-preview-controller.js",
+    "client/app/form-builder/form-builder-sidenav.controller.js",
+    "client/app/form-builder/form-builder.controller.js",
+    "client/app/form-builder/form-builder.service.js",
+    "client/app/form-builder/move-dialog.controller.js",
+    "client/app/form-builder/popup-menu.controller.js",
+    "client/app/lform-filters.js",
+    "client/app/routes.js",
+    "client/app/app.css",
+    "client/app/form-builder/formbuilder.css"
+  ],
   "dependencies": {
     "jquery-ui": "1.11.4",
     "lodash": "~4.17.4",

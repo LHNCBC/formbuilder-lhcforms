@@ -21,7 +21,7 @@ function error(error_code, req, res) {
 
   res.status(result.status);
   res.render(viewFilePath, function (err, html) {
-    if (err) { return res.json(result, result.status); }
+    if (err) { return res.status(result.status).json(result); }
 
     res.send(html);
   });
