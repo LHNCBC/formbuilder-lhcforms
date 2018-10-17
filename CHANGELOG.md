@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [1.0.4]  2018-10-17
+### Fixed
+- Fixed bower packaging issues.
+
 ## [1.0.3]  2018-10-05
 ### Fixed
 - Fixed npm audited vulnerabilities.

@@ -1,6 +1,6 @@
 {
   "name": "formbuilder",
-  "version": "0.0.0",
+  "version": "1.0.4",
   "main": [
     "client/app/app.js",
     "client/app/config.js",
