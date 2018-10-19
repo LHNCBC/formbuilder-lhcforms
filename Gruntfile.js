@@ -263,7 +263,7 @@ module.exports = function (grunt) {
         flow: {
           html: {
             steps: {
-              js: ['concat', 'uglify'],
+              js: ['concat', 'uglifyjs'],
               // no concat for css files. let cssmin do the concatenation,
               // where it can know the origin of the css files in order to do
               // the relative-path correction for referenced resources.
