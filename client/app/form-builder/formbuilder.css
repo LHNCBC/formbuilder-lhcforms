@@ -270,14 +270,14 @@ md-menu-bar {
   color: #1E4193;
   text-decoration: none;
 }
-#logo img {
+#logo md-icon {
   float: left;
   margin-right: 10px;
-  margin-left: 20px;
   border-right: 1px solid #0BACB6;
-  padding-right: 0.75em;
+  padding-right: 10px;
+  padding-left: 10px;
 }
-#logo, #log img {
+#logo, #logo md-icon {
   display: block;
 }
 #logo .site-name-slogan {
@@ -307,7 +307,7 @@ md-menu-bar {
 
 #logoImg {
   height: 60px;
-  width: auto;
+  width: 80px;
 }
 
 #formTitleInput {
@@ -339,6 +339,7 @@ md-menu-bar {
 #usagov {
   margin-bottom: -2px;
   vertical-align: bottom;
+  width: 60px;
 }
 
 .full-height {
@@ -362,6 +363,7 @@ md-menu-bar {
 .lf-social-icon {
   width: 64px;
   height: 64px;
+  padding: 10px;
 }
 
 .fine-print {
