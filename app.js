@@ -128,7 +128,7 @@ process.env.NODE_ENV = options.env || process.env.NODE_ENV || 'development';
 
 verifyConfig(config);
 
-let app = require('./server')(config);
+let app = require('./server').createFormbuilder(config);
 app.start();
 // Expose app
 exports = module.exports = app;

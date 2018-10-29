@@ -2,6 +2,15 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [2.0.0]  2018-10-29
+### Changed.
+- Changed module exports of the server. Newly exported functions 
+will help to pre-configure the express app with customized middlewares before doing 
+form builder specific configurations. 
+
+This is a breaking change due to signature changes in import/require statements if using
+this as an npm package.
+
 ## [1.0.4]  2018-10-17
 ### Fixed
 - Fixed bower packaging issues.
