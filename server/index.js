@@ -1,25 +1,41 @@
 const fs = require('fs');
 
-// Expose app
-module.exports = function(config) {
-  let express = require('express');
+/**
+ * Create a formbuilder express object and configure it, to preserve earlier behavior
+ *
+ * @param formbuilderConf - Form builder configuration (i.e. formbuilder.conf.js)
+ * @returns {*}
+ */
+function createFormbuilder(formbuilderConf) {
+  return configFormbuilder(require('express')(), formbuilderConf);
+}
 
-  // Setup server
-  let app = express();
+/**
+ * Configure the given express object.
+ *
+ * This is useful to do formbuilder configuration on an already created and customized object
+ *
+ * @param app - Express app to be added with form builder configurations.
+ * @param formbuilderConf - Form builder configuration (i.e. formbuilder.conf.js)
+ *
+ *
+ */
+
+function configFormbuilder(app, formbuilderConf) {
   // Remove x-powered-by:express default express header
   app.disable('x-powered-by');
-  app.locals.config = config;
+  app.locals.config = formbuilderConf;
   
-  if(config.firebaseAuthFile) {
+  if(formbuilderConf.firebaseAuthFile) {
     let fireAdmin = require("firebase-admin");
     // connect to google firebase with a service account
-    let fireServiceAccount = require(config.firebaseAuthFile);
+    let fireServiceAccount = require(formbuilderConf.firebaseAuthFile);
 
     let fireApp = fireAdmin.initializeApp({
       credential: fireAdmin.credential.cert(fireServiceAccount),
-      databaseURL: config.firebaseClientConfig.databaseURL,
+      databaseURL: formbuilderConf.firebaseClientConfig.databaseURL,
       databaseAuthVariableOverride: {
-        uid: config.databaseAuthVariableOverrideUid
+        uid: formbuilderConf.databaseAuthVariableOverrideUid
       }
     });
 
@@ -48,4 +64,9 @@ module.exports = function(config) {
   };
   
   return app;
+}
+
+module.exports = {
+  createFormbuilder: createFormbuilder,
+  configFormbuilder: configFormbuilder
 };
