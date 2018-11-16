@@ -97,7 +97,7 @@ angular.module('formBuilder')
           switch($scope.detectDataFormat(importedData)) {
             case 'fhir':
               try {
-                importedData = LForms.FHIR_SDC.convertQuestionnaireToLForms(importedData);
+                importedData = LForms.FHIR.STU3.SDC.convertQuestionnaireToLForms(importedData);
               }
               catch (err) {
                 err.message += ': Failed to convert the selected FHIR Questionnaire. File loading is aborted.';
@@ -213,7 +213,7 @@ angular.module('formBuilder')
           if(previewSrcObj.id) {
             $scope.previewLfData.id = previewSrcObj.id;
           }
-          var fhirData = LForms.FHIR_SDC.convertLFormsToQuestionnaire($scope.previewLfData);
+          var fhirData = LForms.FHIR.STU3.SDC.convertLFormsToQuestionnaire($scope.previewLfData);
           $scope.previewFhirSrc = toJsonFilter(fhirData, ['_', '$']);
         }
         else {
@@ -314,7 +314,7 @@ angular.module('formBuilder')
         });
         fhirService.read(resourceId).then(function (response) {
           try {
-            $scope.$broadcast('REPLACE_FORM', LForms.FHIR_SDC.convertQuestionnaireToLForms(response.data));
+            $scope.$broadcast('REPLACE_FORM', LForms.FHIR.STU3.SDC.convertQuestionnaireToLForms(response.data));
           }
           catch(err) {
             err.message += ': Failed to convert selected questionnaire';

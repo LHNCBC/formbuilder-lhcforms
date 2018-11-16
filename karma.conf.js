@@ -74,11 +74,9 @@ module.exports = function(config) {
       'client/bower_components/lforms/app/scripts/lib/lforms-util.js',
       'client/bower_components/lforms/app/scripts/lib/polyfill.js',
       'client/bower_components/lforms/app/scripts/lib/lforms-hl7.js',
-      'client/bower_components/lforms/app/scripts/lib/lforms-fhir-diagnostic-report.js',
-      'client/bower_components/lforms/app/scripts/lib/lforms-fhir-sdc.js',
-      'client/bower_components/lforms/app/scripts/lib/lforms-fhir-sdc-converter.js',
       'client/bower_components/lforms/app/scripts/lib/lforms-validate.js',
       'client/bower_components/lforms/app/scripts/lib/lforms-data.js',
+      'client/bower_components/lforms/app/scripts/fhir/versions.js',
       'client/bower_components/lforms/app/lforms.tpl.js',
       'client/bower_components/traverse/traverse.js',
       'client/bower_components/spin.js/spin.js',
@@ -86,6 +84,7 @@ module.exports = function(config) {
       'client/bower_components/fhir.js/ngFhir.js',
       /* endbower */
 
+      'client/bower_components/lforms/app/scripts/fhir/STU3/lformsFHIR.js',
       'client/bower_components/angular-mocks/angular-mocks.js',
 
       'client/app/**/*.js',

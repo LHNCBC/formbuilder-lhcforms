@@ -49,6 +49,7 @@
     <!-- build:js({client,node_modules}) app/vendor.js -->
       <!-- bower:js -->
       <!-- endbower -->
+    <script src="bower_components/lforms/app/scripts/fhir/STU3/lformsFHIR.js"></script>
     <!-- endbuild -->
 
         <!-- build:js({.tmp,client}) app/app.js -->

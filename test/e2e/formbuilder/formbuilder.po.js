@@ -76,8 +76,8 @@ var FormBuilder = function () {
   this.refreshButtons = element.all(by.css('md-tabs span.glyphicon-refresh'));
   this.previewRefreshButton = this.refreshButtons.first();
   this.previewWidgetBPDeviceCuffAnswerListEl = element(by.css('input[name^="BP device Cuff size"]'));
-  this.previewWidgetBPDeviceInvent = element(by.css('textarea[name^="BP device Inventory #"]'));
-  this.previewWidgetBPDeviceModel = element(by.css('textarea[name^="BP device Model #"]'));
+  this.previewWidgetBPDeviceInvent = element(by.css('input[name^="BP device Inventory #"]'));
+  this.previewWidgetBPDeviceModel = element(by.css('input[name^="BP device Model #"]'));
   this.answerListResults = element.all(by.css('#searchResults ul li'));
 
   this.previewPanel = element(by.id('preview-panel'));
