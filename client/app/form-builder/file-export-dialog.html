@@ -1,0 +1,29 @@
+<md-dialog aria-labelledby="titleId" style="width: 60%">
+    <form ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2 id="titleId">Choose a data format to export</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="ctrl.closeDlg(false)">
+                    <md-icon md-svg-src="/assets/images/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content>
+            <div class="md-dialog-content">
+                <h2>Pick an export format</h2>
+                <md-divider></md-divider>
+                <md-radio-group ng-model="ctrl.format">
+                    <md-radio-button ng-repeat='format in ctrl.formatList'  ng-value="format" flex class="md-primary" >
+                        <h5>{{format.displayName}}</h5>
+                        <h5 ng-show="format.version">{{format.version}}</h5>
+                    </md-radio-button>
+                </md-radio-group>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button aria-label="Continue" class="md-raised md-primary" ng-click="ctrl.closeDlg(ctrl.format)">Continue</md-button>
+            <md-button aria-label="Cancel" class="md-raised md-primary" ng-click="ctrl.closeDlg(false)">Cancel</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

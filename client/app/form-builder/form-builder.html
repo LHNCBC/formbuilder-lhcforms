@@ -12,7 +12,7 @@
           </button>
           <md-menu-content>
             <md-menu-item>
-              <md-button ng-click="export()">Export to file...</md-button>
+              <md-button ng-click="export($event)">Export to file...</md-button>
             </md-menu-item>
             <md-menu-item>
               <md-button ng-disabled="!isUserSignedIn" ng-click="exportToFhir($event)">Create a new FHIR resource on a server...</md-button>

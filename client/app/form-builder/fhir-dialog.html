@@ -2,7 +2,7 @@
   <form ng-cloak>
     <md-toolbar>
       <div class="md-toolbar-tools">
-        <h2 id="titleId">Response from FHIR Server</h2>
+        <h2 id="titleId">{{fhirCtrl.dialogTitle}}</h2>
         <span flex></span>
         <md-button class="md-icon-button" ng-click="fhirCtrl.closeDlg()">
           <md-icon md-svg-src="/assets/images/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
@@ -12,6 +12,7 @@
     <md-dialog-content>
       <div class="md-dialog-content">
         <p ng-show="fhirCtrl.fhirError" style="color: red">{{fhirCtrl.fhirError.message}}</p>
+        <p ng-show="fhirCtrl.message">{{fhirCtrl.message}}</p>
         <pre ng-show="fhirCtrl.fhirError.data">{{fhirCtrl.fhirError.data | json}}</pre>
         <pre ng-show="fhirCtrl.fhirResponse">{{fhirCtrl.fhirResponse | json}}</pre>
       </div>
