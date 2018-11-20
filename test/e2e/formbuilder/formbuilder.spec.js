@@ -1,7 +1,6 @@
 'use strict';
 
 var fb = require('./formbuilder.po').formbuilder;
-const q = require('q');
 const fs = require('fs');
 
 
@@ -12,14 +11,14 @@ const fs = require('fs');
  * @returns {Q.Promise<any>}
  */
 function watchFilePromise(filename) {
-  const defer = q.defer();
-  fs.watchFile(filename, {interval: 10}, function(curr, prev) {
-    if(curr.size > 0) {
-      fs.unwatchFile(filename);
-      defer.resolve();
-    }
+  return new Promise(function(resolve, reject){
+    fs.watchFile(filename, {interval: 10}, function(curr, prev) {
+      if(curr.size > 0) {
+        fs.unwatchFile(filename);
+        resolve();
+      }
+    });
   });
-  return defer.promise;
 }
 
 /**
@@ -52,7 +51,7 @@ function loadLFormFromDisk(fileName, format) {
     expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
     ret = fb.previewJsonSource.getText();
   }
-  else if (format === 'fhir') {
+  else if (format === 'STU3') {
     fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
     expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
     ret = fb.previewJsonSource.getText();
@@ -501,7 +500,7 @@ describe('GET /', function () {
     // protractor.conf.js for profile preferences.
     // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
     var filename = '/tmp/NewLForm.lforms.json';
-    var fhirFilename = '/tmp/NewLForm.fhir.json';
+    var fhirFilename = '/tmp/NewLForm.STU3.json';
     var lformsOriginalJson = null;
     var fhirOriginalJson = null;
 
@@ -538,11 +537,9 @@ describe('GET /', function () {
       fb.exportFileFHIRFormat.click();
       fb.continueButton.click();
 
-      watchFilePromise(filename).then(function () {
-        return watchFilePromise(fhirFilename);
-      }).then(function () {
+      Promise.all([watchFilePromise(filename), watchFilePromise(fhirFilename)]).then(function() {
         done();
-      }).fail(function(err) {
+      }).catch(function(err) {
         done(err);
       });
     });
@@ -595,7 +592,7 @@ describe('GET /', function () {
 
     it('Should load a FHIR Questionnaire form from disk', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
-      loadLFormFromDisk(fhirFilename, 'fhir').then(function (previewSrc) {
+      loadLFormFromDisk(fhirFilename, 'STU3').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
         assertFHIRQuestionnaire(newJson, fhirOriginalJson);
         done();
