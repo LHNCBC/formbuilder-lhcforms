@@ -4,7 +4,16 @@
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
   <head>
-    <!-- TODO - Move gtag to private location -->
+    <!-- Address click jacking protection -->
+    <style> html {display : none; } </style>
+    <script>
+      if ( self === top ) {
+        document.documentElement.style.display = 'block';
+      }
+      else {
+        top.location = self.location;
+      }
+    </script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=<%= gtag %>"></script>
     <script>
