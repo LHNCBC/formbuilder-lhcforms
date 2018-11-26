@@ -4,7 +4,16 @@
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
   <head>
-    <!-- TODO - Move gtag to private location -->
+    <!-- Address click jacking protection -->
+    <style> html {display : none; } </style>
+    <script>
+      if ( self === top ) {
+        document.documentElement.style.display = 'block';
+      }
+      else {
+        top.location = self.location;
+      }
+    </script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=<%= gtag %>"></script>
     <script>
@@ -49,6 +58,7 @@
     <!-- build:js({client,node_modules}) app/vendor.js -->
       <!-- bower:js -->
       <!-- endbower -->
+    <script src="bower_components/lforms/app/scripts/fhir/STU3/lformsFHIR.js"></script>
     <!-- endbuild -->
 
         <!-- build:js({.tmp,client}) app/app.js -->

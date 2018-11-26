@@ -1,6 +1,6 @@
 {
   "name": "formbuilder",
-  "version": "1.0.4",
+  "version": "2.1.0",
   "main": [
     "client/app/app.js",
     "client/app/config.js",
@@ -45,7 +45,7 @@
     "es5-shim": "~4.1.14",
     "bootstrap": "3.3.5",
     "json3": "3.3.2",
-    "lforms": "~12.10.1",
+    "lforms": "~13.3.0",
     "ngSmoothScroll": "~2.0.0",
     "traverse": "0.6.7",
     "angular-spinner": "~0.8.0",

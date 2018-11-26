@@ -11,6 +11,7 @@ let bodyParser = require('body-parser');
 let methodOverride = require('method-override');
 let cookieParser = require('cookie-parser');
 let path = require('path');
+let csp = require('helmet-csp');
 
 module.exports = function(app) {
   let env = app.get('env');
@@ -32,6 +33,24 @@ module.exports = function(app) {
     }));
   }
 
+  // Set CSP header
+  app.use(csp({
+    // Specify directives as normal.
+    directives: {
+     // defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://www.googletagmanager.com', 'https://www.gstatic.com'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
+      imgSrc: ["'self'", 'data:'],
+      fontSrc: ["'self'", 'fonts.gstatic.com']
+    },
+
+    // This module will detect common mistakes in your directives and throw errors
+    // if it finds any. To disable this, enable "loose mode".
+    loose: false,
+
+    // Set to true if you want to disable CSP on Android where it can be buggy.
+    disableAndroid: false,
+  }));
 
   if ('production' === env) {
     // basic HTTP authentication in production mode

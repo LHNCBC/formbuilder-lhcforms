@@ -93,10 +93,54 @@ angular.module('formBuilder')
             event_category: 'engagement',
             event_label: 'local-file'
           });
-          var importedData = JSON.parse(event.target.result);
-          $scope.$broadcast('REPLACE_FORM', importedData);
+          var importedData = null;
+          try {
+            importedData = JSON.parse(event.target.result);
+          }
+          catch(err) {
+            err.message += ': Content is not in json format. Aborted file loading.';
+            showFhirResponse(event, {fhirError: err});
+            return;
+          }
+          switch($scope.detectDataFormat(importedData)) {
+            case 'STU3':
+              try {
+                importedData = LForms.Util.convertFHIRQuestionnaireToLForms(importedData, 'STU3');
+              }
+              catch (err) {
+                err.message += ': Failed to convert the selected FHIR Questionnaire. File loading is aborted.';
+                showFhirResponse(event, {fhirError: err});
+                break;
+              }
+              // Fall through
+            case 'lforms':
+              $scope.$broadcast('REPLACE_FORM', importedData);
+              break;
+            default:
+              showFhirResponse(event, {fhirError: {message: 'Unsupported data format. File loading is aborted.'}});
+              break;
+          }
         };
         reader.readAsText(item._file);
+      };
+
+
+      /**
+       * Detect format of the json object, used when loading data from a file to see which format it belongs to.
+       * @param dataObj - Lforms or Questionnaire
+       * @returns {*} - Return 'lforms' or 'STU3'
+       */
+      $scope.detectDataFormat = function(dataObj) {
+        var ret = null;
+        if(dataObj) {
+          if(dataObj.resourceType === "Questionnaire") {
+            ret = 'STU3';
+          }
+          else if(dataObj.items) {
+            ret = 'lforms';
+          }
+        }
+        return ret;
       };
 
 
@@ -177,7 +221,7 @@ angular.module('formBuilder')
           if(previewSrcObj.id) {
             $scope.previewLfData.id = previewSrcObj.id;
           }
-          var fhirData = LForms.FHIR_SDC.convertLFormsToQuestionnaire($scope.previewLfData);
+          var fhirData = LForms.Util.convertLFormsToFHIRData('Questionnaire', 'STU3', $scope.previewLfData);
           $scope.previewFhirSrc = toJsonFilter(fhirData, ['_', '$']);
         }
         else {
@@ -207,30 +251,40 @@ angular.module('formBuilder')
        * Handle file export button
        *
        */
-      $scope.export = function() {
-        gtag('event', 'file-export', {
-          event_category: 'engagement',
-          event_label: 'local-file'
+      $scope.export = function(ev) {
+
+        if(!$scope.previewSrc) {
+          showFhirResponse(ev, {dialogTitle: 'Alert', message: 'The form content is empty. Nothing to export.'});
+          return;
+        }
+        $scope.showFileExportDialog(ev).then(function (answer) {
+          if(answer) {
+            gtag('event', 'file-export', {
+              event_category: 'engagement',
+              event_label: 'local-file'
+            });
+            $scope.previewWidget();
+            var content = answer.format === 'STU3' ? $scope.previewFhirSrc : $scope.previewSrc;
+            var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
+            var exportFileName = $scope.formBuilderData.headers[2].value ? $scope.formBuilderData.headers[2].value :
+              'NewLForm';
+
+            // Use hidden anchor to do file download.
+            var downloadLink = angular.element(document.getElementById('exportAnchor'));
+            var urlFactory = (window.URL || window.webkitURL);
+            if(objectUrl != null) {
+              // First release any resources on existing object url
+              urlFactory.revokeObjectURL(objectUrl);
+            }
+            objectUrl = urlFactory.createObjectURL(blob);
+            downloadLink.attr('href', objectUrl);
+            downloadLink.attr('download', exportFileName + '.' + answer.format + '.json');
+            downloadLink[0].click();
+          }
         });
 
-        $scope.previewWidget();
-        var content = $scope.previewSrc;
-        var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
-        var exportFileName = $scope.formBuilderData.headers[2].value ? $scope.formBuilderData.headers[2].value :
-          'NewLForm';
-
-        // Use hidden anchor to do file download.
-        var downloadLink = angular.element(document.getElementById('exportAnchor'));
-        var urlFactory = (window.URL || window.webkitURL);
-        if(objectUrl != null) {
-          // First release any resources on existing object url
-          urlFactory.revokeObjectURL(objectUrl);
-        }
-        objectUrl = urlFactory.createObjectURL(blob);
-        downloadLink.attr('href', objectUrl);
-        downloadLink.attr('download', exportFileName + '.json');
-        downloadLink[0].click();
       };
+
 
       /**
        * Handle file import button
@@ -267,11 +321,18 @@ angular.module('formBuilder')
           value: resourceId
         });
         fhirService.read(resourceId).then(function (response) {
-          $scope.$broadcast('REPLACE_FORM', LForms.FHIR_SDC.convertQuestionnaireToLForms(response.data));
+          try {
+            $scope.$broadcast('REPLACE_FORM', LForms.Util.convertFHIRQuestionnaireToLForms(response.data, 'STU3'));
+          }
+          catch(err) {
+            err.message += ': Failed to convert selected questionnaire';
+            showFhirResponse(ev, {fhirError: err});
+          }
         }, function (err) {
           showFhirResponse(ev, {fhirError: err});
         });
       };
+
 
       /**
        * Handle export to FHIR server, a FHIR create operation
@@ -378,6 +439,42 @@ angular.module('formBuilder')
 
 
       /**
+       * Display list of exported file formats.
+       *
+       * @param ev - Event object
+       * @param localScope - Optional custom scope object to pass to angular dialog
+       * @returns {promise}
+       */
+      $scope.showFileExportDialog = function(ev, localScope) {
+        if(!localScope) {
+          localScope = {};
+        }
+
+        var controller = function () {
+          var self = this;
+          self.closeDlg = function(answer) {
+            $mdDialog.hide(answer);
+          };
+          self.formatList = [
+            {displayName: 'FHIR Questionnaire (STU3)', format: 'STU3'},
+            {displayName: 'LHC Forms', format: 'lforms'}
+          ];
+          self.format = self.formatList[0];
+        };
+
+        return $mdDialog.show({
+          controller: controller,
+          templateUrl: 'app/form-builder/file-export-dialog.html',
+          targetEvent: ev,
+          clickOutsideToClose: true,
+          locals: localScope,
+          bindToController: true,
+          controllerAs: 'ctrl'
+        });
+      };
+
+
+      /**
        * Get selected fhir server.
        *
        * @returns {object} - FHIR server object.
@@ -403,6 +500,13 @@ angular.module('formBuilder')
        * @param dialogOptions
        */
       function showFhirResponse(ev, localScope, dialogOptions) {
+        if(!localScope) {
+          localScope = {};
+        }
+
+        if(!localScope.dialogTitle) {
+          localScope.dialogTitle = 'Response from FHIR Server';
+        }
         var dlgOpts = {
           controller: function() {
             this.closeDlg = function(answer){

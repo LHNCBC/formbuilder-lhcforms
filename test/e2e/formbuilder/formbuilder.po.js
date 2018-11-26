@@ -76,8 +76,8 @@ var FormBuilder = function () {
   this.refreshButtons = element.all(by.css('md-tabs span.glyphicon-refresh'));
   this.previewRefreshButton = this.refreshButtons.first();
   this.previewWidgetBPDeviceCuffAnswerListEl = element(by.css('input[name^="BP device Cuff size"]'));
-  this.previewWidgetBPDeviceInvent = element(by.css('textarea[name^="BP device Inventory #"]'));
-  this.previewWidgetBPDeviceModel = element(by.css('textarea[name^="BP device Model #"]'));
+  this.previewWidgetBPDeviceInvent = element(by.css('input[name^="BP device Inventory #"]'));
+  this.previewWidgetBPDeviceModel = element(by.css('input[name^="BP device Model #"]'));
   this.answerListResults = element.all(by.css('#searchResults ul li'));
 
   this.previewPanel = element(by.id('preview-panel'));
@@ -93,6 +93,8 @@ var FormBuilder = function () {
   this.exportMenu = element(by.cssContainingText('md-menu-bar > md-menu > button', 'Export'));
   this.importMenu = element(by.cssContainingText('md-menu-bar > md-menu > button', 'Import'));
   this.exportToFile = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Export to file...'));
+  this.exportFileFHIRFormat = this.dialog.element(by.cssContainingText('md-radio-button', 'FHIR Questionnaire'));
+  this.exportFileLFormsFormat = this.dialog.element(by.cssContainingText('md-radio-button', 'LHC Forms'));
   this.createFhir = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Create a new FHIR resource on a server'));
   this.updateFhir = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Update a FHIR resource on a server'));
   this.showFhirResources = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Load from FHIR server...'));
@@ -107,7 +109,7 @@ var FormBuilder = function () {
   this.fhirErrorData = this.dialog.all(by.css('md-dialog-content pre')).get(0);
   this.fhirResponse = this.dialog.all(by.css('md-dialog-content pre')).get(1);
   this.fhirServerList = this.dialog.all(by.repeater('server in fhirCtrl.fhirServerList'));
-  this.fhirServerContinueButton = this.dialog.element(by.buttonText('Continue'));
+  this.continueButton = this.dialog.element(by.buttonText('Continue'));
   this.units = element(by.id('/units/1'));
   this.unitDeleteButton = element.all(by.xpath('//ul[../input[@id="/units/1"]]/li/button')).get(0);
 

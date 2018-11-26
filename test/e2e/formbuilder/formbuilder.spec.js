@@ -1,7 +1,25 @@
 'use strict';
 
 var fb = require('./formbuilder.po').formbuilder;
+const fs = require('fs');
 
+
+/**
+ * Watch a file for its content change.
+ *
+ * @param filename - File to watch.
+ * @returns {Q.Promise<any>}
+ */
+function watchFilePromise(filename) {
+  return new Promise(function(resolve, reject){
+    fs.watchFile(filename, {interval: 10}, function(curr, prev) {
+      if(curr.size > 0) {
+        fs.unwatchFile(filename);
+        resolve();
+      }
+    });
+  });
+}
 
 /**
  * Select node from sidebar tree using node title.
@@ -21,18 +39,46 @@ function assertNodeSelection(nodeTitle) {
  * @param fileName {string} - The lforms json file on the disk
  * @return Promise - If resolved, it gives lforms preview source string
  */
-function loadLFormFromDisk(fileName) {
+function loadLFormFromDisk(fileName, format) {
   // Make the file input element visible, otherwise browser doesn't accept the sendKeys().
   browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
   fb.fileInput.sendKeys(fileName);
   browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
 
-  fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-  expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-  return fb.previewJsonSource.getText();
+  let ret = null;
+  if(format === 'lforms') {
+    fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+    expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+    ret = fb.previewJsonSource.getText();
+  }
+  else if (format === 'STU3') {
+    fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
+    expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+    ret = fb.previewJsonSource.getText();
+  }
+  return ret;
 }
 
 
+/**
+ * Assert FHIR Questionnaire equality, ignoring certain fields.
+ *
+ * @param actual - Actual FHIR Questionnaire instance
+ * @param expected -  Expected FHIR Questionnaire instance
+ */
+function assertFHIRQuestionnaire(actual, expected) {
+  // Date is not supported in lforms, and it is created every time there is a conversion. Remove them for now.
+  const ignoreFields = ['date'];
+  [actual, expected].forEach(function(q) {
+    ignoreFields.forEach(function (field) {
+      if(q[field]) {
+        delete q[field];
+      }
+    })
+  });
+
+  expect(actual).toEqual(expected);
+}
 /**
  * Assert expected count of items from autocomplete list
  * @param count
@@ -85,7 +131,7 @@ function assertCreateFhirResource(resourceTitle, partialFhirServerName) {
   }).first();
   expect(fhirServerElement.isDisplayed()).toBeTruthy();
   fhirServerElement.click();
-  fb.fhirServerContinueButton.click();
+  fb.continueButton.click();
   expect(fb.fhirResponse.isDisplayed()).toBeTruthy();
   fb.fhirResponse.getText().then(function(text){
     let createdResource = JSON.parse(text);
@@ -452,37 +498,56 @@ describe('GET /', function () {
   describe('Export import', function () {
     // The download path is set to /tmp in firefoxProfile. See
     // protractor.conf.js for profile preferences.
-    var filename = '/tmp/NewLForm.json';
-    var fs = require('fs');
-    var originalJson = null;
+    // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
+    var filename = '/tmp/NewLForm.lforms.json';
+    var fhirFilename = '/tmp/NewLForm.STU3.json';
+    var lformsOriginalJson = null;
+    var fhirOriginalJson = null;
 
-    beforeAll(function () {
+    beforeAll(function (done) {
       fb.cleanupSideBar();
-      fb.searchAndAddLoincPanel('vital signs pnl', 1);
+      fb.searchAndAddLoincPanel('heart rate', 1);
       if (fs.existsSync(filename)) {
         // Make sure the browser doesn't have to rename the download.
         fs.unlinkSync(filename);
       }
+      if (fs.existsSync(fhirFilename)) {
+        // Make sure the browser doesn't have to rename the download.
+        fs.unlinkSync(fhirFilename);
+      }
       fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
       expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
       fb.previewJsonSource.getText().then(function (text) {
-        originalJson = JSON.parse(text);
+        lformsOriginalJson = JSON.parse(text);
+      });
+
+      fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
+      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+      fb.previewJsonSource.getText().then(function (text) {
+        fhirOriginalJson = JSON.parse(text);
       });
 
       fb.exportMenu.click();
       fb.exportToFile.click();
-      var writeStarted = false;
-      fs.watchFile(filename, {interval: 10}, function (curr, prev) {
-        if ((curr.size > 0) && (curr.size === prev.size)) {
-          fs.unwatchFile(filename);
-        }
+      fb.exportFileLFormsFormat.click();
+      fb.continueButton.click();
+
+      fb.exportMenu.click();
+      fb.exportToFile.click();
+      fb.exportFileFHIRFormat.click();
+      fb.continueButton.click();
+
+      Promise.all([watchFilePromise(filename), watchFilePromise(fhirFilename)]).then(function() {
+        done();
+      }).catch(function(err) {
+        done(err);
       });
     });
 
-    it('Should save the JSON output to a file', function () {
+    it('Should save lforms format to a file', function () {
 
       var newJson = JSON.parse(fs.readFileSync(filename, {encoding: 'utf8'}));
-      expect(newJson).toEqual(originalJson);
+      expect(newJson).toEqual(lformsOriginalJson);
       // Edit the file outside the formbuilder.
       // Add an undefined attribute to an item in the file.
       // This tests the functionality of manually adding an attribute to the saved file.
@@ -491,35 +556,52 @@ describe('GET /', function () {
       var unrecognized = {a: 1, b: [2, 3, 4], c: {str: "some text"}};
       newJson.items[0]['unrecognized'] = unrecognized;
       fs.writeFileSync(filename, JSON.stringify(newJson, null, 2));
-      // Add the attribute to originalJson so that
+      // Add the attribute to lformsOriginalJson so that
       // json preview source after loading from the file matches with it.
-      originalJson.items[0]['unrecognized'] = unrecognized;
+      lformsOriginalJson.items[0]['unrecognized'] = unrecognized;
     });
 
-    it('Should load the form from disk', function (done) {
-      loadLFormFromDisk(filename).then(function (text) {
+    it('Should save FHIR Questionnaire format to a file', function () {
+      var newJson = JSON.parse(fs.readFileSync(fhirFilename, {encoding: 'utf8'}));
+      assertFHIRQuestionnaire(newJson, fhirOriginalJson);
+    });
+
+    it('Should load an LForms form from disk', function (done) {
+      loadLFormFromDisk(filename, 'lforms').then(function (text) {
         var newJson = JSON.parse(text);
         // Keep the commented out code for future debugging
         // fs.writeFileSync('uploaded.json', JSON.stringify(newJson, null, 2));
-        // fs.writeFileSync('originalJson.json', JSON.stringify(originalJson, null, 2));
-        expect(originalJson).toEqual(newJson);
+        // fs.writeFileSync('lformsOriginalJson.json', JSON.stringify(lformsOriginalJson, null, 2));
+        expect(lformsOriginalJson).toEqual(newJson);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));
       });
     });
 
-    it('Should load a form into an empty form builder', function (done) {
+    it('Should load an LForms form into an empty form builder', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
-      loadLFormFromDisk(filename).then(function (previewSrc) {
+      loadLFormFromDisk(filename, 'lforms').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
-        expect(newJson).toEqual(originalJson);
+        expect(newJson).toEqual(lformsOriginalJson);
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+
+    it('Should load a FHIR Questionnaire form from disk', function (done) {
+      fb.cleanupSideBar(); // Clear any existing form items
+      loadLFormFromDisk(fhirFilename, 'STU3').then(function (previewSrc) {
+        var newJson = JSON.parse(previewSrc);
+        assertFHIRQuestionnaire(newJson, fhirOriginalJson);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));
       });
     });
   });
+
 
   describe('Popup menu of an item', function () {
     var parent = 'BP Pnl';
