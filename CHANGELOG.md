@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [2.1.1]  2018-11-27
+### Fixed.
+-  Fix bower package name.
+
 ## [2.1.0]  2018-10-29
 ### Added.
 -  Support to export and import FHIR Questionnaire to local disk.
