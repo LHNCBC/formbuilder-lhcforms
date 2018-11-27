@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [2.1.2]  2018-11-27
+### Fixed.
+-  Add google analytics to white list of content security policy.
+
 ## [2.1.1]  2018-11-27
 ### Fixed.
 -  Fix bower package name.
