@@ -45,7 +45,7 @@
     "es5-shim": "~4.1.14",
     "bootstrap": "3.3.5",
     "json3": "3.3.2",
-    "lforms": "ssh://git@git-scm.nlm.nih.gov:7999/lfor/lforms.git#e730d79c602",
+    "lforms": "13.9.1",
     "ngSmoothScroll": "~2.0.0",
     "traverse": "0.6.7",
     "angular-spinner": "~0.8.0",
