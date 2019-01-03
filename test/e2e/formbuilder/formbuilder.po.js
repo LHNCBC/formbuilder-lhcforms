@@ -70,6 +70,13 @@ var FormBuilder = function () {
   this.dataControlDataFormat1 = element(by.id('/useDataControl/dataControl/dataFormat/1/1/1'));
   this.dataControlOnAttribute1 = element(by.id('/useDataControl/dataControl/onAttribute/1/1/1'));
 
+  this.useDisplayControlYes = element(by.id('/useDisplayControl/1true'));
+  this.displayControlQuestionLayoutVertical = element(by.id('/useDisplayControl/displayControl/questionLayout/1/1/1vertical'));
+  this.displayControlQuestionLayoutHorizontal = element(by.id('/useDisplayControl/displayControl/questionLayout/1/1/1horizontal'));
+  this.displayControlAnswerLayoutTypeCombo = element(by.id('/useDisplayControl/displayControl/answerLayout/type/1/1/1/1COMBO_BOX'));
+  this.displayControlAnswerLayoutTypeRadio = element(by.id('/useDisplayControl/displayControl/answerLayout/type/1/1/1/1RADIO_CHECKBOX'));
+  this.displayControlAnswerLayoutColumns = element(by.id('/useDisplayControl/displayControl/answerLayout/columns/1/1/1/1'));
+
   this.selectedNode = this.questionTree.element(by.css('div.angular-ui-tree-handle.active'));
   this.answersDelButton3 = this.basicPanelEl.element(by.id('del-/answers/3'));
 

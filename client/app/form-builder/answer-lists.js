@@ -8,6 +8,32 @@
  */
 var answerLists = {
 
+  "displayControlQuestionLayout": [
+    {
+      "text": "Vertical layout",
+      "code": "vertical"
+    },
+    {
+      "text": "Horizontal layout",
+      "code": "horizontal"
+    },
+    {
+      "text": "Matrix layout",
+      "code": "matrix"
+    }
+  ],
+
+  "displayControlAnswerLayoutType": [
+    {
+      "text": "Combo box",
+      "code": "COMBO_BOX"
+    },
+    {
+      "text": "Radio/check boxes",
+      "code": "RADIO_CHECKBOX"
+    }
+  ],
+
   "dataControlConstruction": [
     {
       "text": "Simple",

@@ -494,6 +494,127 @@ var advFormBuilderDef = {
       }]
     },
     {
+      // ********** Use display control flag **************************,
+      "questionCode": "useDisplayControl",
+      "question": "Create display control to customize the display of this item? [2]",
+      "dataType": "CNE",
+      "answers": "boolean",
+      "header": false,
+      "codingInstructions": "Choose to create display control from other items (build displayControl).",
+      "value": {
+        "text": "No",
+        "code": false
+      },
+      "items": [{
+        // ************* Display control *******************************
+        "questionCode": "displayControl",
+        "question": "Control how to display this and child items.",
+        "header": true,
+        "codingInstructions": "Specify the layout of the child items under this heading.",
+        "skipLogic": {
+          "action": "show",
+          "logic": "ALL",
+          "conditions": [
+            {
+              "source": "useDisplayControl",
+              "trigger": {
+                "code": true
+              }
+            }
+          ]
+        },
+        "items": [
+          {
+            "questionCode": "questionLayout",
+            "question": "Specify answer layout when they are group choice",
+            "header": false,
+            "dataType": "CNE",
+            "answers": "displayControlQuestionLayout",
+            "defaultAnswer": {
+              "code": "vertical"
+            },
+            "skipLogic": {
+              "action": "show",
+              "logic": "ALL",
+              "conditions": [
+                {
+                  "source": "_isHeader",
+                  "trigger": {
+                    "value": "Yes"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "questionCode": "answerLayout",
+            "question": "Specify answer layout when they are group choice",
+            "header": true,
+            "skipLogic": {
+              "action": "show",
+              "logic": "ALL",
+              "conditions": [
+                {
+                  "source": "_isHeader",
+                  "trigger": {
+                    "value": "No"
+                  }
+                }
+              ]
+            },
+            "items": [
+              {
+                "questionCode": "type",
+                "question": "Specify layout type",
+                "header": false,
+                "answers": "displayControlAnswerLayoutType",
+                "dataType": "CNE",
+                "displayControl": {
+                  "answerLayout": {
+                    "type": "RADIO_CHECKBOX",
+                    "columns": "1"
+                  }
+                },
+                "defaultAnswer": {
+                  "code": "COMBO_BOX"
+                }
+              },
+              {
+                "questionCode": "columns",
+                "question": "Specify number of columns",
+                "header": false,
+                "dataType": "INT",
+                "skipLogic": {
+                  "action": "show",
+                  "logic": "ALL",
+                  "conditions": [
+                    {
+                      "source": "type",
+                      "trigger": {
+                        "code": "RADIO_CHECKBOX"
+                      }
+                    }
+                  ]
+                },
+                "restrictions": [
+                  {
+                    "name": "minInclusive",
+                    "value": "0"
+                  },
+                  {
+                    "name": "maxInclusive",
+                    "value": "6"
+                  }
+                ]
+              }
+            ]
+
+          }
+
+        ]
+      }]
+    },
+    {
       // *********** codingInstructions ************************,
       "questionCode": "copyrightNotice",
       "question": "Copyright Notice",

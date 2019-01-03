@@ -495,6 +495,46 @@ describe('GET /', function () {
 
   });
 
+  describe('Display control', function () {
+
+    beforeAll(function () {
+      fb.cleanupSideBar();
+      fb.searchAndAddLoincPanel('gas ', 1);
+    });
+
+    afterEach(function () {
+      fb.scrollToTop(fb.itemBuilderPanel);
+      fb.scrollToTop(fb.previewPanel);
+    });
+
+    it('Should test building display control', function () {
+      // First one is a header node, work with questionLayout
+      fb.advancedEditTab.click();
+      fb.useDisplayControlYes.click();
+      // Default is vertical
+      expect(fb.displayControlQuestionLayoutVertical.isSelected()).toBe(true);
+      fb.displayControlQuestionLayoutHorizontal.click();
+      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+
+      // Pick non header node to work with answerLayout
+      assertNodeSelection('pH BldA');
+      fb.useDisplayControlYes.click();
+      expect(fb.displayControlAnswerLayoutTypeCombo.isSelected()).toBe(true);
+      fb.displayControlAnswerLayoutTypeRadio.click();
+      expect(fb.displayControlAnswerLayoutColumns.isDisplayed()).toBe(true);
+      fb.displayControlAnswerLayoutColumns.sendKeys('2');
+      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+
+      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+      fb.previewJsonSource.getText().then(function (text) {
+        var lforms = JSON.parse(text);
+        expect(lforms.items[0].displayControl.questionLayout).toBe('horizontal');
+        expect(lforms.items[0].items[0].displayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
+        expect(lforms.items[0].items[0].displayControl.answerLayout.columns).toBe(2);
+      });
+    });
+  });
+
   describe('Export import', function () {
     // The download path is set to /tmp in firefoxProfile. See
     // protractor.conf.js for profile preferences.

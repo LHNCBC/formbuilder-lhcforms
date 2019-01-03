@@ -732,6 +732,21 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           }
           break;
 
+        case "useDisplayControl":
+          if(item.value && item.value.code) {
+            var displayControl = {answerLayout: {}};
+            var fbDisplayControl = thisService.getFormBuilderField(item.items, 'displayControl');
+            displayControl.questionLayout = thisService.getFormBuilderField(fbDisplayControl.items, 'questionLayout').value.code;
+            var answerLayout = thisService.getFormBuilderField(fbDisplayControl.items, 'answerLayout');
+            displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
+            var columns = thisService.getFormBuilderField(answerLayout.items, 'columns').value;
+            if(columns) {
+              displayControl.answerLayout.columns = columns;
+            }
+            ret['displayControl'] = displayControl;
+          }
+          break;
+
         default:
           // Unrecognized fields.
           if(item.value) {
@@ -1041,7 +1056,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       Indented items are lforms properties that show up as children of form builder main item list,
       for example skip logic is a child of useSkipLogic. Identify those form builder items.
      */
-    var indentedItemsMap = {'restrictions': 'useRestrictions', 'skipLogic': 'useSkipLogic', 'dataControl': 'useDataControl'};
+    var indentedItemsMap = {'restrictions': 'useRestrictions', 'skipLogic': 'useSkipLogic', 'dataControl': 'useDataControl', 'displayControl': 'useDisplayControl'};
     if(indentedItemsMap[name]) {
       indexInfo = dataConstants.INITIAL_FIELD_INDICES[indentedItemsMap[name]];
       parentItem = thisService.getFormBuilderField(lfItem[indexInfo.category].items, indentedItemsMap[name]);
@@ -1106,6 +1121,11 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         updateDataControl(parentItem, val);
         break;
 
+      case "displayControl":
+        parentItem.value = {text: 'Yes', code: true};
+        updateDisplayControl(parentItem, val);
+        break;
+
       case "restrictions":
         parentItem.value = {text: 'Yes', code: true};
         updateRestrictions(parentItem, val);
@@ -1149,6 +1169,35 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           subItem.value = val;
         }
         break;
+    }
+  }
+
+
+  /**
+   * Update formbuilder model with imported display control
+   *
+   * @param useDisplayControlItem - Use display control item.
+   * @param importedDisplayControl - Object of display control from imported panel
+   */
+  function updateDisplayControl(useDisplayControlItem, importedDisplayControl) {
+    if(importedDisplayControl) {
+      var fbDisplayControl = angular.copy(useDisplayControlItem.items[0]);
+      if(importedDisplayControl.questionLayout) {
+        var fbQuestionLayout = lodash.find(fbDisplayControl.items, {questionCode: 'questionLayout'});
+        fbQuestionLayout.value = {code: importedDisplayControl.questionLayout};
+      }
+
+      if(importedDisplayControl.answerLayout) {
+        var fbAnswerLayout = lodash.find(fbDisplayControl.items, {questionCode: 'answerLayout'});
+        if(importedDisplayControl.answerLayout.type) {
+          var fbAnswerLayoutType = lodash.find(fbAnswerLayout.items, {questionCode: 'type'});
+          fbAnswerLayoutType.value = {code: importedDisplayControl.answerLayout.type};
+        }
+        if(importedDisplayControl.answerLayout.columns) {
+          var fbAnswerLayoutColumns = lodash.find(fbAnswerLayout.items, {questionCode: 'columns'});
+          fbAnswerLayoutColumns.value = importedDisplayControl.answerLayout.columns;
+        }
+      }
     }
   }
 
