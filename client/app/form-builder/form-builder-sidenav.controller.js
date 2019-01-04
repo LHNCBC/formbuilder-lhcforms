@@ -709,6 +709,17 @@
           }
         }, true);
 
+        // Watch dataType for use in advanced panel.
+        var dataTypeExp = scope.watchExpressionArray[4];
+        scope.watchDeregisters[dataTypeExp] = scope.$watch(dataTypeExp, function(newValue, oldValue) {
+          if(scope.selectedNode && isDirty(oldValue, newValue)) {
+            var dataType = formBuilderService.getFormBuilderField(scope.selectedNode.lfData.basic.items, 'dataType');
+            var _hiddenDataType = formBuilderService.getFormBuilderField(scope.selectedNode.lfData.advanced.items, '_dataType');
+            _hiddenDataType.value = dataType.value.code;
+            scope.selectedNode.isDirty = true;
+          }
+        }, true);
+
         // Setup watches for rest of the expression list.
         scope.watchExpressionArray.slice(4).forEach(function (exp) {
           scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
