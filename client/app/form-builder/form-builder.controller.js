@@ -221,7 +221,7 @@ angular.module('formBuilder')
           if(previewSrcObj.id) {
             $scope.previewLfData.id = previewSrcObj.id;
           }
-          var fhirData = LForms.Util.convertLFormsToFHIRData('Questionnaire', 'STU3', $scope.previewLfData);
+          var fhirData = LForms.Util.getFormFHIRData('Questionnaire', 'STU3', $scope.previewLfData);
           $scope.previewFhirSrc = toJsonFilter(fhirData, ['_', '$']);
         }
         else {

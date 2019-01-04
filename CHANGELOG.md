@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [2.1.3]  2018-12-26
+### Changed.
+-  Updated lforms package which has support for parsing argonaut questionnaires.
+
 ## [2.1.2]  2018-11-27
 ### Fixed.
 -  Add google analytics to white list of content security policy.
