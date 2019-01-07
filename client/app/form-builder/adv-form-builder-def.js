@@ -36,6 +36,21 @@ var advFormBuilderDef = {
       "value": "No"
     },
     {
+      // ********** Hidden item to store dataType from basic widget ********,
+      "questionCode": "_dataType",
+      "question": "You should never see this!",
+      "dataType": "ST",
+      "header": false,
+      "displayControl": {
+        "css": [
+          {
+            "name": "display",
+            "value": "none"
+          }
+        ]
+      }
+    },
+    {
       // ********** Use Restrictions flag **************************,
       "questionCode": "useRestrictions",
       "question": "Add restrictions",
@@ -496,21 +511,44 @@ var advFormBuilderDef = {
     {
       // ********** Use display control flag **************************,
       "questionCode": "useDisplayControl",
-      "question": "Create display control to customize the display of this item? [2]",
+      "question": "Customize display? [2]",
       "dataType": "CNE",
       "answers": "boolean",
       "header": false,
-      "codingInstructions": "Choose to create display control from other items (build displayControl).",
+      "codingInstructions": "Specify layout of answers for CNE/CWE data type or layout of questions under a section.",
       "value": {
         "text": "No",
         "code": false
       },
+      "skipLogic": {
+        "action": "show",
+        "logic": "ANY",
+        "conditions": [
+          {
+            "source": "_isHeader",
+            "trigger": {
+              "value": "Yes"
+            }
+          },
+          {
+            "source": "_dataType",
+            "trigger": {
+              "value": "CNE"
+            }
+          },
+          {
+            "source": "_dataType",
+            "trigger": {
+              "value": "CWE"
+            }
+          }
+        ]
+      },
       "items": [{
         // ************* Display control *******************************
         "questionCode": "displayControl",
-        "question": "Control how to display this and child items.",
+        "question": "Specify layout of answer items / child items",
         "header": true,
-        "codingInstructions": "Specify the layout of the child items under this heading.",
         "skipLogic": {
           "action": "show",
           "logic": "ALL",
@@ -526,7 +564,7 @@ var advFormBuilderDef = {
         "items": [
           {
             "questionCode": "questionLayout",
-            "question": "Specify answer layout when they are group choice",
+            "question": "Specify layout of child items",
             "header": false,
             "dataType": "CNE",
             "answers": "displayControlQuestionLayout",
@@ -548,16 +586,22 @@ var advFormBuilderDef = {
           },
           {
             "questionCode": "answerLayout",
-            "question": "Specify answer layout when they are group choice",
+            "question": "Specify layout of answer items",
             "header": true,
             "skipLogic": {
               "action": "show",
-              "logic": "ALL",
+              "logic": "ANY",
               "conditions": [
                 {
-                  "source": "_isHeader",
+                  "source": "_dataType",
                   "trigger": {
-                    "value": "No"
+                    "value": "CNE"
+                  }
+                },
+                {
+                  "source": "_dataType",
+                  "trigger": {
+                    "value": "CWE"
                   }
                 }
               ]
