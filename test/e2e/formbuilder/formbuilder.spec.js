@@ -517,7 +517,7 @@ describe('GET /', function () {
       fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
 
       // Pick non header node to work with answerLayout
-      assertNodeSelection('pH BldA');
+      assertNodeSelection('Inhaled O2 flow');
       fb.useDisplayControlYes.click();
       expect(fb.displayControlAnswerLayoutTypeCombo.isSelected()).toBe(true);
       fb.displayControlAnswerLayoutTypeRadio.click();
@@ -529,8 +529,8 @@ describe('GET /', function () {
       fb.previewJsonSource.getText().then(function (text) {
         var lforms = JSON.parse(text);
         expect(lforms.items[0].displayControl.questionLayout).toBe('horizontal');
-        expect(lforms.items[0].items[0].displayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
-        expect(lforms.items[0].items[0].displayControl.answerLayout.columns).toBe(2);
+        expect(lforms.items[0].items[15].displayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
+        expect(lforms.items[0].items[15].displayControl.answerLayout.columns).toBe(2);
       });
     });
   });

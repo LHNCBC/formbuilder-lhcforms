@@ -743,6 +743,16 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
             if(columns) {
               displayControl.answerLayout.columns = columns;
             }
+            var listColHeaders = thisService.getFormBuilderFields(fbDisplayControl.items, 'listColHeaders');
+            var headers = [];
+            listColHeaders.forEach(function(h) {
+              if(h.value && h.value.trim().length > 0) {
+                headers.push(h.value.trim());
+              }
+            });
+            if(headers.length > 0) {
+              displayControl.listColHeaders = headers;
+            }
             ret['displayControl'] = displayControl;
           }
           break;
@@ -1181,7 +1191,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   function updateDisplayControl(useDisplayControlItem, importedDisplayControl) {
     if(importedDisplayControl) {
-      var fbDisplayControl = angular.copy(useDisplayControlItem.items[0]);
+      var fbDisplayControl = useDisplayControlItem.items[0];
       if(importedDisplayControl.questionLayout) {
         var fbQuestionLayout = lodash.find(fbDisplayControl.items, {questionCode: 'questionLayout'});
         fbQuestionLayout.value = {code: importedDisplayControl.questionLayout};
@@ -1196,6 +1206,21 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         if(importedDisplayControl.answerLayout.columns) {
           var fbAnswerLayoutColumns = lodash.find(fbAnswerLayout.items, {questionCode: 'columns'});
           fbAnswerLayoutColumns.value = importedDisplayControl.answerLayout.columns;
+        }
+      }
+
+      if(importedDisplayControl.listColHeaders && importedDisplayControl.listColHeaders.length > 0) {
+        var fbColHeaders = [];
+        var fbColHeaderIndex = thisService.getFormBuilderFieldIndex(fbDisplayControl.items, 'listColHeaders');
+        importedDisplayControl.listColHeaders.forEach(function(header){
+          // Clone the default, and modify with imported values.
+          var fbColHeader = angular.copy(fbDisplayControl.items[fbColHeaderIndex]);
+          fbColHeader.value = header;
+          fbColHeaders.push(fbColHeader);
+        });
+
+        if(fbColHeaders.length > 0 ) {
+          fbDisplayControl.items.splice(fbDisplayControl.items, [fbColHeaderIndex,1].concat(fbColHeaders));
         }
       }
     }

@@ -653,6 +653,35 @@ var advFormBuilderDef = {
               }
             ]
 
+          },
+          {
+            "questionCode": "listColHeaders",
+            "question": "Column Header for answer list",
+            "codingInstructions": "Specify column headers for this auto complete list. Make sure to match number of headers to number of fields in the search results.",
+            "header": false,
+            "dataType": "ST",
+            "questionCardinality": {
+              "min": "1",
+              "max": "*"
+            },
+            "skipLogic": {
+              "action": "show",
+              "logic": "ANY",
+              "conditions": [
+                {
+                  "source": "_dataType",
+                  "trigger": {
+                    "value": "CNE"
+                  }
+                },
+                {
+                  "source": "_dataType",
+                  "trigger": {
+                    "value": "CWE"
+                  }
+                }
+              ]
+            }
           }
 
         ]
