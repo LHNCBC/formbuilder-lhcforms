@@ -174,16 +174,16 @@ describe('GET /', function () {
   });
 
   describe('Add New or import from LOINC', function () {
-    describe('LOINC import panel', function () {
-      beforeEach(function() {
+    describe('LOINC import panel/question', function () {
+      beforeEach(function () {
         fb.cleanupSideBar();
         fb.addButton.click();
         fb.importLOINCRadio.click();
       });
 
-      afterEach(function() {
+      afterEach(function () {
         // Click the cancel button if the dialog is still open
-        fb.importDialogCancel.isPresent().then(function(present) {
+        fb.importDialogCancel.isPresent().then(function (present) {
           if (present)
             fb.importDialogCancel.click();
         });
@@ -202,21 +202,21 @@ describe('GET /', function () {
         fb.importButton.click();
       }
 
-      it('should not import when the field is empty', function() {
+      it('should not import when the field is empty', function () {
         expect(fb.importButton.isEnabled()).toBeTruthy();
         clickImportButton();
         browser.sleep(100);
         expect(fb.importButton.isPresent()).toBeTruthy();
       });
 
-      it('should not import if an invalid value is entered', function() {
+      it('should not import if an invalid value is entered', function () {
         fb.sendKeys(fb.searchBox, 'zzz');
         clickImportButton();
         browser.sleep(100);
         expect(fb.importButton.isPresent()).toBeTruthy();
       });
 
-      it('should import if a valid value is entered after an invalid one', function() {
+      it('should import if a valid value is entered after an invalid one', function () {
         // For some reason entering two characters doesn't seem to bring the
         // correct auto complete list using protractor/chrome driver.
         //fb.autoCompSelectByText(fb.searchBox, 'ar', 'Gas panel');
@@ -226,7 +226,7 @@ describe('GET /', function () {
         expect(fb.panelTitle.getAttribute('innerText')).toContain('Gas');
       });
 
-      it('should not import if an invalid value is entered after a valid one', function() {
+      it('should not import if an invalid value is entered after a valid one', function () {
         fb.autoCompSelectByText(fb.searchBox, 'arb', 'Arbovirus');
         fb.searchBox.click(); // restore focus that was lost for some unknown reason
         fb.searchBox.sendKeys('z');
@@ -235,7 +235,7 @@ describe('GET /', function () {
         expect(fb.importButton.isPresent()).toBeTruthy();
       });
 
-      it('should import the correct panel if a second panel is selected after the first', function() {
+      it('should import the correct panel if a second panel is selected after the first', function () {
         fb.autoCompSelectByText(fb.searchBox, 'hep', 'Acute ');
         fb.searchBox.clear();
         fb.searchBox.click(); // restore focus to field
@@ -243,6 +243,38 @@ describe('GET /', function () {
         fb.searchBox.sendKeys(protractor.Key.DOWN);
         clickImportButton();
         expect(fb.panelTitle.getAttribute('innerText')).toContain('Vital');
+      });
+
+      it('should import question with answers', function () {
+        fb.typeQuestionRadio.click();
+        fb.searchBox.clear();
+        fb.searchBox.click(); // restore focus to field
+        fb.sendKeys(fb.searchBox, '21858-6');
+        fb.searchBox.sendKeys(protractor.Key.DOWN);
+        clickImportButton();
+        fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+        expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+        fb.previewJsonSource.getText().then(function (text) {
+          var lforms = JSON.parse(text);
+          expect(lforms.items[0].answers.length).toBe(10);
+        });
+      });
+
+      it('should import question with units', function () {
+        fb.typeQuestionRadio.click();
+        fb.searchBox.clear();
+        fb.searchBox.click(); // restore focus to field
+        fb.sendKeys(fb.searchBox, '3141-9');
+        fb.searchBox.sendKeys(protractor.Key.DOWN);
+        clickImportButton();
+        fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+        expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+        fb.previewJsonSource.getText().then(function (text) {
+          var lforms = JSON.parse(text);
+          expect(lforms.items[0].units.length).toBe(2);
+          expect(lforms.items[0].units[0].name).toBe('[lb_av]');
+          expect(lforms.items[0].units[1].name).toBe('kg');
+        });
       });
     });
 

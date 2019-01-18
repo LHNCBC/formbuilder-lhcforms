@@ -405,10 +405,10 @@
             var questionData = {
               questionCode: response.code,
               questionCodeSystem: dataConstants.LOINC,
-              dataType: response.datatype == 'NM' ? 'REAL' : response.datatype,
-              question: response.text,
-              units: convertUnitsFromLoincToLforms(response.units),
-              answers: convertAnswerListFromLoincToLforms(response.answers)
+              dataType: response.data.datatype == 'NM' ? 'REAL' : response.data.datatype,
+              question: response.data.text,
+              units: convertUnitsFromLoincToLforms(response.data.units),
+              answers: convertAnswerListFromLoincToLforms(response.data.answers)
             };
 
             $scope.startSpin();
