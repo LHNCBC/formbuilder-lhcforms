@@ -507,7 +507,7 @@ describe('GET /', function () {
       fb.scrollToTop(fb.previewPanel);
     });
 
-    it('Should test building display control', function () {
+    fit('Should test building display control', function () {
       // First one is a header node, work with questionLayout
       fb.advancedEditTab.click();
       fb.useDisplayControlYes.click();
@@ -523,14 +523,23 @@ describe('GET /', function () {
       fb.displayControlAnswerLayoutTypeRadio.click();
       expect(fb.displayControlAnswerLayoutColumns.isDisplayed()).toBe(true);
       fb.displayControlAnswerLayoutColumns.sendKeys('2');
+
+      //listColHeaders
+      fb.displayControlAddColHeaders1.sendKeys('test1');
+      fb.displayControlAddColHeadersButton.click();
+      fb.displayControlAddColHeaders2.sendKeys('test2');
       fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
 
       expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
       fb.previewJsonSource.getText().then(function (text) {
         var lforms = JSON.parse(text);
+        var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
         expect(lforms.items[0].displayControl.questionLayout).toBe('horizontal');
-        expect(lforms.items[0].items[15].displayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
-        expect(lforms.items[0].items[15].displayControl.answerLayout.columns).toBe(2);
+        expect(inhaledO2ItemDisplayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
+        expect(inhaledO2ItemDisplayControl.answerLayout.columns).toBe(2);
+        expect(inhaledO2ItemDisplayControl.listColHeaders.length).toBe(2);
+        expect(inhaledO2ItemDisplayControl.listColHeaders[0]).toBe('test1');
+        expect(inhaledO2ItemDisplayControl.listColHeaders[1]).toBe('test2');
       });
     });
   });
