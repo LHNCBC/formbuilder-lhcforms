@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [2.2.0]  2018-01-03
+## [2.2.0]  2018-01-29
 ### Added.
--  Added displayControl. Only questionLayout, answerLayout, and listColHeaders are implemented.
+-  Added displayControl. Supports questionLayout, answerLayout, and listColHeaders for now.
+
+## [2.1.4]  2018-01-16
+### Fixed.
+-  Fixed a bug to include answer list and units when importing a LOINC question.
 
 ## [2.1.3]  2018-12-26
 ### Changed.
