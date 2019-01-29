@@ -4,7 +4,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [2.2.0]  2018-01-03
 ### Added.
--  Added displayControl. Only FHIR supported features (questionLayout and answerLayout) are implemented.
+-  Added displayControl. Only questionLayout, answerLayout, and listColHeaders are implemented.
 
 ## [2.1.3]  2018-12-26
 ### Changed.

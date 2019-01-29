@@ -507,7 +507,7 @@ describe('GET /', function () {
       fb.scrollToTop(fb.previewPanel);
     });
 
-    fit('Should test building display control', function () {
+    it('Should test building display control', function () {
       // First one is a header node, work with questionLayout
       fb.advancedEditTab.click();
       fb.useDisplayControlYes.click();
