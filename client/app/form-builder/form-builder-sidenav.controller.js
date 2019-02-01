@@ -40,7 +40,7 @@
         dataConstants.WATCH_FIELDS.forEach(function (field) {
           var indexInfo = dataConstants.INITIAL_FIELD_INDICES[field];
           if(indexInfo) {
-            ret.push('selectedNode.lfData.'+indexInfo.category+'.items['+indexInfo.index+'].value');
+            ret.push('selectedNode.lfData.'+indexInfo.category+'.itemHash["/'+field+'/1'+'"].value');
           }
           /*
           var indices = formBuilderService.getFormBuilderFieldIndices(dataConstants.formBuilderDef.items, field);
@@ -666,6 +666,7 @@
               code = '';
             }
             scope.selectedNode.lfData.basic.name = scope.selectedNode.id + ' ' + newValue + code;
+            scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
             if(newValue !== oldValue) {
               scope.selectedNode.isDirty = true;
             }
@@ -681,6 +682,7 @@
             }
             scope.selectedNode.lfData.basic.name = scope.selectedNode.id + ' ' +
               formBuilderService.getFormBuilderField(scope.selectedNode.lfData.basic.items, 'question').value + code;
+            scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
           }
         }, true);
 
@@ -720,8 +722,19 @@
           }
         }, true);
 
+        // Watch externallyDefined for use in listColHeaders of displayControl in advanced panel.
+        var externallyDefinedExp = scope.watchExpressionArray[5];
+        scope.watchDeregisters[externallyDefinedExp] = scope.$watch(externallyDefinedExp, function(newValue, oldValue) {
+          if(scope.selectedNode && isDirty(oldValue, newValue)) {
+            var externallyDefined = formBuilderService.getFormBuilderField(scope.selectedNode.lfData.basic.items, 'externallyDefined');
+            var _hiddenExternallyDefined = formBuilderService.getFormBuilderField(scope.selectedNode.lfData.advanced.items, '_externallyDefined');
+            _hiddenExternallyDefined.value = (externallyDefined.value.trim().length > 0) ? true : false;
+            scope.selectedNode.isDirty = true;
+          }
+        }, true);
+
         // Setup watches for rest of the expression list.
-        scope.watchExpressionArray.slice(4).forEach(function (exp) {
+        scope.watchExpressionArray.slice(6).forEach(function (exp) {
           scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
             if(isDirty(oldValue, newValue)) {
               if(scope.selectedNode) {

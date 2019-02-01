@@ -550,6 +550,9 @@ describe('GET /', function () {
 
       // Pick non header node to work with answerLayout
       assertNodeSelection('Inhaled O2 flow');
+      fb.basicEditTab.click();
+      fb.externallyDefined.sendKeys('https://clinicaltables.nlm.nih.gov');
+      fb.advancedEditTab.click();
       fb.useDisplayControlYes.click();
       expect(fb.displayControlAnswerLayoutTypeCombo.isSelected()).toBe(true);
       fb.displayControlAnswerLayoutTypeRadio.click();

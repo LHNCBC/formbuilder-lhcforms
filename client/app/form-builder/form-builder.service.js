@@ -1159,7 +1159,19 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
       case "dataType":
         updateDataType(subItem, importedItem, val);
+        // Update hidden item
+        var dt = thisService.getFormBuilderField(lfItem.advanced.items, '_dataType');
+        dt.value = subItem.value.code;
         break;
+
+      case "externallyDefined":
+        if(val) {
+          subItem.value = val;
+          var ed = thisService.getFormBuilderField(lfItem.advanced.items, '_externallyDefined');
+          ed.value = subItem.value;
+        }
+        break;
+
       case "answers":
         var aListItems = createAnswerListValues(subItem, val);
         if(aListItems && aListItems.length > 0) {

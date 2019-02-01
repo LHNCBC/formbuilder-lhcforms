@@ -51,6 +51,21 @@ var advFormBuilderDef = {
       }
     },
     {
+      // ********** Hidden item to indicate externallyDefined from basic widget ********,
+      "questionCode": "_externallyDefined",
+      "question": "You should never see this!",
+      "dataType": "BL",
+      "header": false,
+      "displayControl": {
+        "css": [
+          {
+            "name": "display",
+            "value": "none"
+          }
+        ]
+      }
+    },
+    {
       // ********** Use Restrictions flag **************************,
       "questionCode": "useRestrictions",
       "question": "Add restrictions",
@@ -669,15 +684,9 @@ var advFormBuilderDef = {
               "logic": "ANY",
               "conditions": [
                 {
-                  "source": "_dataType",
+                  "source": "_externallyDefined",
                   "trigger": {
-                    "value": "CNE"
-                  }
-                },
-                {
-                  "source": "_dataType",
-                  "trigger": {
-                    "value": "CWE"
+                    "value": true
                   }
                 }
               ]

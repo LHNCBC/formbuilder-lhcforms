@@ -76,6 +76,7 @@ var FormBuilder = function () {
   this.displayControlAnswerLayoutTypeCombo = element(by.id('/useDisplayControl/displayControl/answerLayout/type/1/1/1/1COMBO_BOX'));
   this.displayControlAnswerLayoutTypeRadio = element(by.id('/useDisplayControl/displayControl/answerLayout/type/1/1/1/1RADIO_CHECKBOX'));
   this.displayControlAnswerLayoutColumns = element(by.id('/useDisplayControl/displayControl/answerLayout/columns/1/1/1/1'));
+  this.externallyDefined = element(by.id('/externallyDefined/1'));
   this.displayControlAddColHeadersButton = element(by.id('add-/useDisplayControl/displayControl/listColHeaders/1/1/1'));
   this.displayControlAddColHeaders1 = element(by.id('/useDisplayControl/displayControl/listColHeaders/1/1/1'));
   this.displayControlAddColHeaders2 = element(by.id('/useDisplayControl/displayControl/listColHeaders/1/1/2'));
