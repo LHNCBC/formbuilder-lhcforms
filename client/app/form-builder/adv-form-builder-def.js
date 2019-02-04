@@ -594,8 +594,8 @@ var advFormBuilderDef = {
               "trigger": {
                 "code": true
               }
-            }
-,            {
+            },
+            {
               "source": "_dataType",
               "trigger": {
                 "value": "CNECWE"
@@ -662,8 +662,14 @@ var advFormBuilderDef = {
         },
         "skipLogic": {
             "action": "show",
-            "logic": "ANY",
+            "logic": "ALL",
             "conditions": [
+              {
+                "source": "displayControl",
+                "trigger": {
+                  "code": true
+                }
+              },
               {
                 "source": "_externallyDefined",
                 "trigger": {

@@ -745,7 +745,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
               var answerLayout = thisService.getFormBuilderField(item.items, 'answerLayout');
               displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
               var columns = thisService.getFormBuilderField(answerLayout.items, 'columns').value;
-              if(columns) {
+              if(displayControl.answerLayout.type === 'RADIO_CHECKBOX' && columns) {
                 displayControl.answerLayout.columns = columns;
               }
             }
