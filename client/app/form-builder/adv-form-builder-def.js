@@ -653,7 +653,7 @@ var advFormBuilderDef = {
       {
         "questionCode": "listColHeaders",
         "question": "Column Header for answer list",
-        "codingInstructions": "Specify column headers for this auto complete list. Make sure to match number of headers to number of fields in the search results.",
+        "codingInstructions": "Specify column headers for this auto completion list. Make sure to match number of headers to number of fields in the search results.",
         "header": false,
         "dataType": "ST",
         "questionCardinality": {
