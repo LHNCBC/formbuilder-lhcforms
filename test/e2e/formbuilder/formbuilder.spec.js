@@ -542,7 +542,7 @@ describe('GET /', function () {
     it('Should test building display control', function () {
       // First one is a header node, work with questionLayout
       fb.advancedEditTab.click();
-      fb.useDisplayControlYes.click();
+      fb.displayControlYes.click();
       // Default is vertical
       expect(fb.displayControlQuestionLayoutVertical.isSelected()).toBe(true);
       fb.displayControlQuestionLayoutHorizontal.click();
@@ -553,7 +553,7 @@ describe('GET /', function () {
       fb.basicEditTab.click();
       fb.externallyDefined.sendKeys('https://clinicaltables.nlm.nih.gov');
       fb.advancedEditTab.click();
-      fb.useDisplayControlYes.click();
+      fb.displayControlYes.click();
       expect(fb.displayControlAnswerLayoutTypeCombo.isSelected()).toBe(true);
       fb.displayControlAnswerLayoutTypeRadio.click();
       expect(fb.displayControlAnswerLayoutColumns.isDisplayed()).toBe(true);

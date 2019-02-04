@@ -732,18 +732,24 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           }
           break;
 
-        case "useDisplayControl":
+        case "displayControl":
           if(item.value && item.value.code) {
-            var displayControl = {answerLayout: {}};
-            var fbDisplayControl = thisService.getFormBuilderField(item.items, 'displayControl');
-            displayControl.questionLayout = thisService.getFormBuilderField(fbDisplayControl.items, 'questionLayout').value.code;
-            var answerLayout = thisService.getFormBuilderField(fbDisplayControl.items, 'answerLayout');
-            displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
-            var columns = thisService.getFormBuilderField(answerLayout.items, 'columns').value;
-            if(columns) {
-              displayControl.answerLayout.columns = columns;
+            var displayControl = {};
+            var _isHeader = thisService.getFormBuilderField(formBuilderItems, '_isHeader').value;
+            if(_isHeader === 'Yes') {
+              displayControl.questionLayout = thisService.getFormBuilderField(item.items, 'questionLayout').value.code;
             }
-            var listColHeaders = thisService.getFormBuilderFields(fbDisplayControl.items, 'listColHeaders');
+            var _dataType = thisService.getFormBuilderField(formBuilderItems, '_dataType').value;
+            if(_dataType === 'CNECWE') {
+              displayControl.answerLayout = {};
+              var answerLayout = thisService.getFormBuilderField(item.items, 'answerLayout');
+              displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
+              var columns = thisService.getFormBuilderField(answerLayout.items, 'columns').value;
+              if(columns) {
+                displayControl.answerLayout.columns = columns;
+              }
+            }
+            var listColHeaders = thisService.getFormBuilderFields(item.items, 'listColHeaders');
             var headers = [];
             listColHeaders.forEach(function(h) {
               if(h.value && h.value.trim().length > 0) {
@@ -1066,7 +1072,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       Indented items are lforms properties that show up as children of form builder main item list,
       for example skip logic is a child of useSkipLogic. Identify those form builder items.
      */
-    var indentedItemsMap = {'restrictions': 'useRestrictions', 'skipLogic': 'useSkipLogic', 'dataControl': 'useDataControl', 'displayControl': 'useDisplayControl'};
+    var indentedItemsMap = {'restrictions': 'useRestrictions', 'skipLogic': 'useSkipLogic', 'dataControl': 'useDataControl'};
     if(indentedItemsMap[name]) {
       indexInfo = dataConstants.INITIAL_FIELD_INDICES[indentedItemsMap[name]];
       parentItem = thisService.getFormBuilderField(lfItem[indexInfo.category].items, indentedItemsMap[name]);
@@ -1132,8 +1138,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         break;
 
       case "displayControl":
-        parentItem.value = {text: 'Yes', code: true};
-        updateDisplayControl(parentItem, val);
+        updateDisplayControl(subItem, val);
         break;
 
       case "restrictions":
@@ -1161,7 +1166,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         updateDataType(subItem, importedItem, val);
         // Update hidden item
         var dt = thisService.getFormBuilderField(lfItem.advanced.items, '_dataType');
-        dt.value = subItem.value.code;
+        dt.value = (subItem.value.code === 'CNE' || subItem.value.code === 'CWE') ? 'CNECWE' : subItem.value.code;
         break;
 
       case "externallyDefined":
@@ -1201,9 +1206,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @param useDisplayControlItem - Use display control item.
    * @param importedDisplayControl - Object of display control from imported panel
    */
-  function updateDisplayControl(useDisplayControlItem, importedDisplayControl) {
+  function updateDisplayControl(fbDisplayControl, importedDisplayControl) {
     if(importedDisplayControl) {
-      var fbDisplayControl = useDisplayControlItem.items[0];
+      fbDisplayControl.value = {code: true};
       if(importedDisplayControl.questionLayout) {
         var fbQuestionLayout = lodash.find(fbDisplayControl.items, {questionCode: 'questionLayout'});
         fbQuestionLayout.value = {code: importedDisplayControl.questionLayout};

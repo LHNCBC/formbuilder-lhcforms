@@ -717,7 +717,7 @@
           if(scope.selectedNode && isDirty(oldValue, newValue)) {
             var dataType = formBuilderService.getFormBuilderField(scope.selectedNode.lfData.basic.items, 'dataType');
             var _hiddenDataType = formBuilderService.getFormBuilderField(scope.selectedNode.lfData.advanced.items, '_dataType');
-            _hiddenDataType.value = dataType.value.code;
+            _hiddenDataType.value = (dataType.value.code === 'CNE' || dataType.value.code === 'CWE') ? 'CNECWE' : dataType.value.code;
             scope.selectedNode.isDirty = true;
           }
         }, true);
@@ -728,7 +728,7 @@
           if(scope.selectedNode && isDirty(oldValue, newValue)) {
             var externallyDefined = formBuilderService.getFormBuilderField(scope.selectedNode.lfData.basic.items, 'externallyDefined');
             var _hiddenExternallyDefined = formBuilderService.getFormBuilderField(scope.selectedNode.lfData.advanced.items, '_externallyDefined');
-            _hiddenExternallyDefined.value = (externallyDefined.value.trim().length > 0) ? true : false;
+            _hiddenExternallyDefined.value = (externallyDefined.value.trim().length > 0);
             scope.selectedNode.isDirty = true;
           }
         }, true);
