@@ -539,26 +539,61 @@ describe('GET /', function () {
       fb.scrollToTop(fb.previewPanel);
     });
 
-    it('Should test building display control', function () {
+    it('should test question layout', function () {
       // First one is a header node, work with questionLayout
       fb.advancedEditTab.click();
       fb.displayControlYes.click();
       // Default is vertical
       expect(fb.displayControlQuestionLayoutVertical.isSelected()).toBe(true);
+      // Answer layout should be absent
+      expect(fb.displayControlAnswerLayoutTypeCombo.isPresent()).toBe(false);
+      expect(fb.displayControlAnswerLayoutColumns.isPresent()).toBe(false);
+      expect(fb.displayControlAddColHeaders1.isPresent()).toBe(false);
+
       fb.displayControlQuestionLayoutHorizontal.click();
       fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+      fb.previewJsonSource.getText().then(function (text) {
+        var lforms = JSON.parse(text);
+        expect(lforms.items[0].displayControl.questionLayout).toBe('horizontal');
+      });
+    });
 
+    it('should test with answer layout type radio checkboxes', function () {
+      // Pick non header node to work with answerLayout
+      assertNodeSelection('Inhaled O2 flow');
+      fb.advancedEditTab.click();
+      fb.displayControlYes.click();
+      // Question layout should be absent
+      expect(fb.displayControlQuestionLayoutVertical.isPresent()).toBeFalsy();
+      expect(fb.displayControlAnswerLayoutTypeCombo.isSelected()).toBe(true); // Default
+      expect(fb.displayControlAnswerLayoutColumns.isPresent()).toBeFalsy();
+      fb.displayControlAnswerLayoutTypeRadio.click();
+      expect(fb.displayControlAnswerLayoutColumns.isDisplayed()).toBeTruthy();
+      fb.displayControlAnswerLayoutColumns.sendKeys('2');
+
+      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+
+      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+      fb.previewJsonSource.getText().then(function (text) {
+        var lforms = JSON.parse(text);
+        var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
+        expect(inhaledO2ItemDisplayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
+        expect(inhaledO2ItemDisplayControl.answerLayout.columns).toBe(2);
+      });
+    });
+
+    it('Should test answer layout with type combo box and col list headers', function () {
       // Pick non header node to work with answerLayout
       assertNodeSelection('Inhaled O2 flow');
       fb.basicEditTab.click();
       fb.externallyDefined.sendKeys('https://clinicaltables.nlm.nih.gov');
       fb.advancedEditTab.click();
       fb.displayControlYes.click();
-      expect(fb.displayControlAnswerLayoutTypeCombo.isSelected()).toBe(true);
       fb.displayControlAnswerLayoutTypeRadio.click();
-      expect(fb.displayControlAnswerLayoutColumns.isDisplayed()).toBe(true);
-      fb.displayControlAnswerLayoutColumns.sendKeys('2');
-
+      expect(fb.displayControlAddColHeaders1.isPresent()).toBeFalsy();
+      fb.displayControlAnswerLayoutTypeCombo.click();
+      expect(fb.displayControlAddColHeaders1.isPresent()).toBeTruthy();
       //listColHeaders
       fb.displayControlAddColHeaders1.sendKeys('test1');
       fb.displayControlAddColHeadersButton.click();
@@ -569,9 +604,7 @@ describe('GET /', function () {
       fb.previewJsonSource.getText().then(function (text) {
         var lforms = JSON.parse(text);
         var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
-        expect(lforms.items[0].displayControl.questionLayout).toBe('horizontal');
-        expect(inhaledO2ItemDisplayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
-        expect(inhaledO2ItemDisplayControl.answerLayout.columns).toBe(2);
+        expect(inhaledO2ItemDisplayControl.answerLayout.type).toBe('COMBO_BOX');
         expect(inhaledO2ItemDisplayControl.listColHeaders.length).toBe(2);
         expect(inhaledO2ItemDisplayControl.listColHeaders[0]).toBe('test1');
         expect(inhaledO2ItemDisplayControl.listColHeaders[1]).toBe('test2');
@@ -685,7 +718,6 @@ describe('GET /', function () {
       });
     });
   });
-
 
   describe('Popup menu of an item', function () {
     var parent = 'BP Pnl';

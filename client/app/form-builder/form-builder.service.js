@@ -740,7 +740,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
               displayControl.questionLayout = thisService.getFormBuilderField(item.items, 'questionLayout').value.code;
             }
             var _dataType = thisService.getFormBuilderField(formBuilderItems, '_dataType').value;
-            if(_dataType === 'CNECWE') {
+            if(_dataType === '__CNE_OR_CWE__') {
               displayControl.answerLayout = {};
               var answerLayout = thisService.getFormBuilderField(item.items, 'answerLayout');
               displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
@@ -1166,7 +1166,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         updateDataType(subItem, importedItem, val);
         // Update hidden item
         var dt = thisService.getFormBuilderField(lfItem.advanced.items, '_dataType');
-        dt.value = (subItem.value.code === 'CNE' || subItem.value.code === 'CWE') ? 'CNECWE' : subItem.value.code;
+        dt.value = (subItem.value.code === 'CNE' || subItem.value.code === 'CWE') ? '__CNE_OR_CWE__' : subItem.value.code;
         break;
 
       case "externallyDefined":
@@ -1410,7 +1410,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
             break;
         }
       }
-      else {
+      else if(!importedItem.items) {
         ret = 'ST';
       }
     }
