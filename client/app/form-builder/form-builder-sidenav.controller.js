@@ -662,43 +662,49 @@
             // Watch question and questionCode to update item name (which goes as formbuilder panel title).
             case 'question':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                var code = scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].value;
-                if(code && code.length > 0) {
-                  code = ' [' + code + ']';
-                }
-                if (!code) {
-                  code = '';
-                }
-                scope.selectedNode.lfData.basic.name = scope.selectedNode.id + ' ' + newValue + code;
-                scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
-                if(newValue !== oldValue) {
-                  scope.selectedNode.isDirty = true;
+                if(scope.selectedNode) {
+                  var code = scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].value;
+                  if(code && code.length > 0) {
+                    code = ' [' + code + ']';
+                  }
+                  if (!code) {
+                    code = '';
+                  }
+                  scope.selectedNode.lfData.basic.name = scope.selectedNode.id + ' ' + newValue + code;
+                  scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
+                  if(newValue !== oldValue) {
+                    scope.selectedNode.isDirty = true;
+                  }
                 }
               }, true);
               break;
 
             case 'questionCode':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                var code = '';
-                if(newValue && newValue.length > 0) {
-                  code = ' [' + newValue + ']';
+                if(scope.selectedNode) {
+                  var code = '';
+                  if(newValue && newValue.length > 0) {
+                    code = ' [' + newValue + ']';
+                  }
+                  scope.selectedNode.lfData.basic.name = scope.selectedNode.id + ' ' +
+                    scope.selectedNode.lfData.basic.itemHash['/question/1'].value + code;
+                  scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
                 }
-                scope.selectedNode.lfData.basic.name = scope.selectedNode.id + ' ' +
-                  scope.selectedNode.lfData.basic.itemHash['/question/1'].value + code;
-                scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
               }, true);
               break;
 
             // Watch questionCodeSystem to toggle read only attribute of questionCode. If LOINC set it to read only.
             case 'questionCodeSystem':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                if(isDirty(oldValue, newValue) ) {
-                  if(newValue.code === dataConstants.CUSTOM) {
-                    scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].editable = '1';
-                    scope.selectedNode.isDirty = true;
-                  }
-                  else if(newValue.code === dataConstants.LOINC) {
-                    scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].editable = '0';
+                if(scope.selectedNode) {
+                  if(isDirty(oldValue, newValue) ) {
+                    if(newValue.code === dataConstants.CUSTOM) {
+                      scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].editable = '1';
+                      scope.selectedNode.isDirty = true;
+                    }
+                    else if(newValue.code === dataConstants.LOINC) {
+                      scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].editable = '0';
+                    }
                   }
                 }
               }, true);
@@ -707,12 +713,13 @@
             // Watch header to toggle some advanced items.
             case 'header':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
+                if(scope.selectedNode) {
+                  scope.selectedNode.lfData.advanced.itemHash['/_isHeader/1'].value =
+                    (newValue && newValue.text) ? newValue.text : 'No';
 
-                scope.selectedNode.lfData.advanced.itemHash['/_isHeader/1'].value =
-                  (newValue && newValue.text) ? newValue.text : 'No';
-
-                if(isDirty(oldValue, newValue)) {
-                  scope.selectedNode.isDirty = true;
+                  if(isDirty(oldValue, newValue)) {
+                    scope.selectedNode.isDirty = true;
+                  }
                 }
               }, true);
               break;
@@ -720,18 +727,20 @@
             // Watch dataType for use in advanced panel.
             case 'dataType':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                // The data type is needed in advanced panel for skip logic of some items such as display control.
-                // To avoid complicated boolean logic on skip logic conditions with source items of type CNE/CWE,
-                // a made up string '__CNE_OR_CWE__' is created.
-                var val = null;
-                if(newValue && newValue.code) {
-                  val = (newValue.code === 'CNE' || newValue.code === 'CWE') ? '__CNE_OR_CWE__' : newValue.code;
-                }
+                if(scope.selectedNode) {
+                  // The data type is needed in advanced panel for skip logic of some items such as display control.
+                  // To avoid complicated boolean logic on skip logic conditions with source items of type CNE/CWE,
+                  // a made up string '__CNE_OR_CWE__' is created.
+                  var val = null;
+                  if(newValue && newValue.code) {
+                    val = (newValue.code === 'CNE' || newValue.code === 'CWE') ? '__CNE_OR_CWE__' : newValue.code;
+                  }
 
-                scope.selectedNode.lfData.advanced.itemHash['/_dataType/1'].value = val;
+                  scope.selectedNode.lfData.advanced.itemHash['/_dataType/1'].value = val;
 
-                if(isDirty(oldValue, newValue)) {
-                  scope.selectedNode.isDirty = true;
+                  if(isDirty(oldValue, newValue)) {
+                    scope.selectedNode.isDirty = true;
+                  }
                 }
               }, true);
               break;
@@ -739,10 +748,12 @@
             // Watch externallyDefined for use in listColHeaders of displayControl in advanced panel.
             case 'externallyDefined':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                scope.selectedNode.lfData.advanced.itemHash['/_externallyDefined/1'].value =
-                  !!(newValue && newValue.trim().length > 0);
-                if(isDirty(oldValue, newValue)) {
-                  scope.selectedNode.isDirty = true;
+                if(scope.selectedNode) {
+                  scope.selectedNode.lfData.advanced.itemHash['/_externallyDefined/1'].value =
+                    !!(newValue && newValue.trim().length > 0);
+                  if(isDirty(oldValue, newValue)) {
+                    scope.selectedNode.isDirty = true;
+                  }
                 }
               }, true);
               break;
@@ -750,14 +761,16 @@
             // Watch displayControl answer layout type to toggle
             case 'displayControlAnswerLayoutType':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                var val = null;
-                if(newValue && newValue.code) {
-                  val = newValue.code;
-                }
+                if(scope.selectedNode) {
+                  var val = null;
+                  if(newValue && newValue.code) {
+                    val = newValue.code;
+                  }
 
-                scope.selectedNode.lfData.advanced.itemHash['/_var_displayControlAnswerLayoutType/1'].value = val;
-                if(isDirty(oldValue, newValue)) {
-                  scope.selectedNode.isDirty = true;
+                  scope.selectedNode.lfData.advanced.itemHash['/_var_displayControlAnswerLayoutType/1'].value = val;
+                  if(isDirty(oldValue, newValue)) {
+                    scope.selectedNode.isDirty = true;
+                  }
                 }
               }, true);
               break;
@@ -765,8 +778,8 @@
             // Setup watches for rest of the expression list.
             default:
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                if(isDirty(oldValue, newValue)) {
-                  if(scope.selectedNode) {
+                if(scope.selectedNode) {
+                  if(isDirty(oldValue, newValue)) {
                     if(!scope.loading) {
                       scope.selectedNode.isDirty = true;
                     }
