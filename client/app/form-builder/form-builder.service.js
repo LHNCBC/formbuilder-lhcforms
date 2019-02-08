@@ -740,7 +740,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
               displayControl.questionLayout = thisService.getFormBuilderField(item.items, 'questionLayout').value.code;
             }
             var _dataType = thisService.getFormBuilderField(formBuilderItems, '_dataType').value;
-            if(_dataType === '__CNE_OR_CWE__') {
+            var _extarnallyDefined = thisService.getFormBuilderField(formBuilderItems, '_externallyDefined').value;
+            if(_dataType === '__CNE_OR_CWE__' && !_extarnallyDefined) {
               displayControl.answerLayout = {};
               var answerLayout = thisService.getFormBuilderField(item.items, 'answerLayout');
               displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
@@ -749,17 +750,22 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                 displayControl.answerLayout.columns = columns;
               }
             }
-            var listColHeaders = thisService.getFormBuilderFields(item.items, 'listColHeaders');
-            var headers = [];
-            listColHeaders.forEach(function(h) {
-              if(h.value && h.value.trim().length > 0) {
-                headers.push(h.value.trim());
+            else if(_extarnallyDefined) {
+              var listColHeaders = thisService.getFormBuilderFields(item.items, 'listColHeaders');
+              var headers = [];
+              listColHeaders.forEach(function(h) {
+                if(h.value && h.value.trim().length > 0) {
+                  headers.push(h.value.trim());
+                }
+              });
+              if(headers.length > 0) {
+                displayControl.listColHeaders = headers;
               }
-            });
-            if(headers.length > 0) {
-              displayControl.listColHeaders = headers;
             }
-            ret['displayControl'] = displayControl;
+
+            if(Object.keys(displayControl).length > 0) {
+              ret['displayControl'] = displayControl;
+            }
           }
           break;
 

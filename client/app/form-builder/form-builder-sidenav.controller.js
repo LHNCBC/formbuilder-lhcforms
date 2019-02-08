@@ -51,9 +51,8 @@
         calculationMethod:  'selectedNode.lfData.basic.itemHash["/calculationMethod/1"].value',
 
         // Advanced tab
-        useRestrictions:                'selectedNode.lfData.advanced.itemHash["/useRestrictions/1"].value',
-        useSkipLogic:                   'selectedNode.lfData.advanced.itemHash["/useSkipLogic/1"].value',
-        displayControlAnswerLayoutType: 'selectedNode.lfData.advanced.itemHash["/displayControl/answerLayout/type/1/1/1"].value'
+        useRestrictions:    'selectedNode.lfData.advanced.itemHash["/useRestrictions/1"].value',
+        useSkipLogic:       'selectedNode.lfData.advanced.itemHash["/useSkipLogic/1"].value'
       };
 
       /**
@@ -751,23 +750,6 @@
                 if(scope.selectedNode) {
                   scope.selectedNode.lfData.advanced.itemHash['/_externallyDefined/1'].value =
                     !!(newValue && newValue.trim().length > 0);
-                  if(isDirty(oldValue, newValue)) {
-                    scope.selectedNode.isDirty = true;
-                  }
-                }
-              }, true);
-              break;
-
-            // Watch displayControl answer layout type to toggle
-            case 'displayControlAnswerLayoutType':
-              scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                if(scope.selectedNode) {
-                  var val = null;
-                  if(newValue && newValue.code) {
-                    val = newValue.code;
-                  }
-
-                  scope.selectedNode.lfData.advanced.itemHash['/_var_displayControlAnswerLayoutType/1'].value = val;
                   if(isDirty(oldValue, newValue)) {
                     scope.selectedNode.isDirty = true;
                   }
