@@ -732,6 +732,43 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           }
           break;
 
+        case "displayControl":
+          if(item.value && item.value.code) {
+            var displayControl = {};
+            var _isHeader = thisService.getFormBuilderField(formBuilderItems, '_isHeader').value;
+            if(_isHeader === 'Yes') {
+              displayControl.questionLayout = thisService.getFormBuilderField(item.items, 'questionLayout').value.code;
+            }
+            var _dataType = thisService.getFormBuilderField(formBuilderItems, '_dataType').value;
+            var _externallyDefined = thisService.getFormBuilderField(formBuilderItems, '_externallyDefined').value;
+            if(_dataType === '__CNE_OR_CWE__' && !_externallyDefined) {
+              displayControl.answerLayout = {};
+              var answerLayout = thisService.getFormBuilderField(item.items, 'answerLayout');
+              displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
+              var columns = thisService.getFormBuilderField(answerLayout.items, 'columns').value;
+              if(displayControl.answerLayout.type === 'RADIO_CHECKBOX' && columns) {
+                displayControl.answerLayout.columns = columns;
+              }
+            }
+            else if(_externallyDefined) {
+              var listColHeaders = thisService.getFormBuilderFields(item.items, 'listColHeaders');
+              var headers = [];
+              listColHeaders.forEach(function(h) {
+                if(h.value && h.value.trim().length > 0) {
+                  headers.push(h.value.trim());
+                }
+              });
+              if(headers.length > 0) {
+                displayControl.listColHeaders = headers;
+              }
+            }
+
+            if(Object.keys(displayControl).length > 0) {
+              ret['displayControl'] = displayControl;
+            }
+          }
+          break;
+
         default:
           // Unrecognized fields.
           if(item.value) {
@@ -1106,6 +1143,10 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         updateDataControl(parentItem, val);
         break;
 
+      case "displayControl":
+        updateDisplayControl(subItem, val);
+        break;
+
       case "restrictions":
         parentItem.value = {text: 'Yes', code: true};
         updateRestrictions(parentItem, val);
@@ -1129,7 +1170,19 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
       case "dataType":
         updateDataType(subItem, importedItem, val);
+        // Update hidden item
+        var dt = thisService.getFormBuilderField(lfItem.advanced.items, '_dataType');
+        dt.value = (subItem.value.code === 'CNE' || subItem.value.code === 'CWE') ? '__CNE_OR_CWE__' : subItem.value.code;
         break;
+
+      case "externallyDefined":
+        if(val) {
+          subItem.value = val;
+          var ed = thisService.getFormBuilderField(lfItem.advanced.items, '_externallyDefined');
+          ed.value = subItem.value;
+        }
+        break;
+
       case "answers":
         var aListItems = createAnswerListValues(subItem, val);
         if(aListItems && aListItems.length > 0) {
@@ -1149,6 +1202,50 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           subItem.value = val;
         }
         break;
+    }
+  }
+
+
+  /**
+   * Update formbuilder model with imported display control
+   *
+   * @param useDisplayControlItem - Use display control item.
+   * @param importedDisplayControl - Object of display control from imported panel
+   */
+  function updateDisplayControl(fbDisplayControl, importedDisplayControl) {
+    if(importedDisplayControl) {
+      fbDisplayControl.value = {code: true};
+      if(importedDisplayControl.questionLayout) {
+        var fbQuestionLayout = lodash.find(fbDisplayControl.items, {questionCode: 'questionLayout'});
+        fbQuestionLayout.value = {code: importedDisplayControl.questionLayout};
+      }
+
+      if(importedDisplayControl.answerLayout) {
+        var fbAnswerLayout = lodash.find(fbDisplayControl.items, {questionCode: 'answerLayout'});
+        if(importedDisplayControl.answerLayout.type) {
+          var fbAnswerLayoutType = lodash.find(fbAnswerLayout.items, {questionCode: 'type'});
+          fbAnswerLayoutType.value = {code: importedDisplayControl.answerLayout.type};
+        }
+        if(importedDisplayControl.answerLayout.columns) {
+          var fbAnswerLayoutColumns = lodash.find(fbAnswerLayout.items, {questionCode: 'columns'});
+          fbAnswerLayoutColumns.value = importedDisplayControl.answerLayout.columns;
+        }
+      }
+
+      if(importedDisplayControl.listColHeaders && importedDisplayControl.listColHeaders.length > 0) {
+        var fbColHeaders = [];
+        var fbColHeaderIndex = thisService.getFormBuilderFieldIndex(fbDisplayControl.items, 'listColHeaders');
+        importedDisplayControl.listColHeaders.forEach(function(header){
+          // Clone the default, and modify with imported values.
+          var fbColHeader = angular.copy(fbDisplayControl.items[fbColHeaderIndex]);
+          fbColHeader.value = header;
+          fbColHeaders.push(fbColHeader);
+        });
+
+        if(fbColHeaders.length > 0 ) {
+          fbDisplayControl.items.splice(fbDisplayControl.items, [fbColHeaderIndex,1].concat(fbColHeaders));
+        }
+      }
     }
   }
 
@@ -1319,7 +1416,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
             break;
         }
       }
-      else {
+      else if(!importedItem.items) {
         ret = 'ST';
       }
     }

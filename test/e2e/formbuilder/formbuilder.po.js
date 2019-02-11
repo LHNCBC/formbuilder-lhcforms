@@ -70,6 +70,17 @@ var FormBuilder = function () {
   this.dataControlDataFormat1 = element(by.id('/useDataControl/dataControl/dataFormat/1/1/1'));
   this.dataControlOnAttribute1 = element(by.id('/useDataControl/dataControl/onAttribute/1/1/1'));
 
+  this.displayControlYes = element(by.id('/displayControl/1true'));
+  this.displayControlQuestionLayoutVertical = element(by.id('/displayControl/questionLayout/1/1vertical'));
+  this.displayControlQuestionLayoutHorizontal = element(by.id('/displayControl/questionLayout/1/1horizontal'));
+  this.displayControlAnswerLayoutTypeCombo = element(by.id('/displayControl/answerLayout/type/1/1/1COMBO_BOX'));
+  this.displayControlAnswerLayoutTypeRadio = element(by.id('/displayControl/answerLayout/type/1/1/1RADIO_CHECKBOX'));
+  this.displayControlAnswerLayoutColumns = element(by.id('/displayControl/answerLayout/columns/1/1/1'));
+  this.externallyDefined = element(by.id('/externallyDefined/1'));
+  this.displayControlAddColHeadersButton = element(by.id('add-/displayControl/listColHeaders/1/1'));
+  this.displayControlAddColHeaders1 = element(by.id('/displayControl/listColHeaders/1/1'));
+  this.displayControlAddColHeaders2 = element(by.id('/displayControl/listColHeaders/1/2'));
+
   this.selectedNode = this.questionTree.element(by.css('div.angular-ui-tree-handle.active'));
   this.answersDelButton3 = this.basicPanelEl.element(by.id('del-/answers/3'));
 

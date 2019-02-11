@@ -7,9 +7,7 @@
              class="hide" multiple/>
       <md-menu-bar class="menu-bar">
         <md-menu>
-          <button class="btn-primary" ng-click="$mdMenu.open()">
-            Export
-          </button>
+          <button class="btn-primary" ng-click="$mdMenu.open()">Export <md-icon md-svg-src="/assets/images/ic_arrow_drop_down_18px.svg"></md-icon></button>
           <md-menu-content>
             <md-menu-item>
               <md-button ng-click="export($event)">Export to file...</md-button>
@@ -23,9 +21,7 @@
           </md-menu-content>
         </md-menu>
         <md-menu>
-          <button class="btn-primary" ng-click="$mdMenu.open()">
-            Import
-          </button>
+          <button class="btn-primary" ng-click="$mdMenu.open()">Import <md-icon md-svg-src="/assets/images/ic_arrow_drop_down_18px.svg"></md-icon></button>
           <md-menu-content>
             <md-menu-item>
               <md-button ng-click="import()">Import from file...</md-button>
@@ -35,6 +31,7 @@
             </md-menu-item>
           </md-menu-content>
         </md-menu>
+        <button class="btn-primary"  ng-controller="FormBuilderPreviewCtrl" ng-click="refreshPreview()">Refresh Preview</button>
       </md-menu-bar>
     </div>
 

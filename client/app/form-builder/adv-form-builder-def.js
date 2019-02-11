@@ -36,6 +36,36 @@ var advFormBuilderDef = {
       "value": "No"
     },
     {
+      // ********** Hidden item to store dataType from basic widget ********,
+      "questionCode": "_dataType",
+      "question": "You should never see this!",
+      "dataType": "ST",
+      "header": false,
+      "displayControl": {
+        "css": [
+          {
+            "name": "display",
+            "value": "none"
+          }
+        ]
+      }
+    },
+    {
+      // ********** Hidden item to indicate externallyDefined from basic widget ********,
+      "questionCode": "_externallyDefined",
+      "question": "You should never see this!",
+      "dataType": "BL",
+      "header": false,
+      "displayControl": {
+        "css": [
+          {
+            "name": "display",
+            "value": "none"
+          }
+        ]
+      }
+    },
+    {
       // ********** Use Restrictions flag **************************,
       "questionCode": "useRestrictions",
       "question": "Add restrictions",
@@ -492,6 +522,170 @@ var advFormBuilderDef = {
           }
         ]
       }]
+    },
+    {
+      // ********** Use display control flag **************************,
+      "questionCode": "displayControl",
+      "question": "Customize display? [2]",
+      "dataType": "CNE",
+      "answers": "boolean",
+      "header": false,
+      "codingInstructions": "Specify layout of answers for CNE/CWE data type or layout of questions under a section.",
+      "value": {
+        "text": "No",
+        "code": false
+      },
+      "skipLogic": {
+        "action": "show",
+        "logic": "ANY",
+        "conditions": [
+          {
+            "source": "_isHeader",
+            "trigger": {
+              "value": "Yes"
+            }
+          },
+          {
+            "source": "_dataType",
+            "trigger": {
+              "value": "__CNE_OR_CWE__" // Made up string to identify CNE/CWE
+            }
+          }
+        ]
+      },
+      "items": [{
+        "questionCode": "questionLayout",
+        "question": "Specify layout of child items",
+        "header": false,
+        "dataType": "CNE",
+        "answers": "displayControlQuestionLayout",
+        "defaultAnswer": {
+            "code": "vertical"
+          },
+        "skipLogic": {
+            "action": "show",
+            "logic": "ALL",
+            "conditions": [
+              {
+                "source": "displayControl",
+                "trigger": {
+                  "code": true
+                }
+              },
+              {
+                "source": "_isHeader",
+                "trigger": {
+                  "value": "Yes"
+                }
+              }
+            ]
+          }
+      },
+      {
+        "questionCode": "answerLayout",
+        "question": "Specify layout of answer list",
+        "header": true,
+        "skipLogic": {
+          "action": "show",
+          "logic": "ALL",
+          "conditions": [
+            {
+              "source": "displayControl",
+              "trigger": {
+                "code": true
+              }
+            },
+            {
+              "source": "_dataType",
+              "trigger": {
+                "value": "__CNE_OR_CWE__"
+              }
+            },
+            {
+              "source": "_externallyDefined",
+              "trigger": {
+                "value": false
+              }
+            }
+          ]
+        },
+        "items": [
+          {
+            "questionCode": "type",
+            "question": "Specify layout type",
+            "header": false,
+            "answers": "displayControlAnswerLayoutType",
+            "dataType": "CNE",
+            "displayControl": {
+              "answerLayout": {
+                "type": "RADIO_CHECKBOX",
+                "columns": "1"
+              }
+            },
+            "defaultAnswer": {
+              "code": "COMBO_BOX"
+            }
+          },
+          {
+            "questionCode": "columns",
+            "question": "Specify number of columns",
+            "header": false,
+            "dataType": "INT",
+            "skipLogic": {
+              "action": "show",
+              "logic": "ALL",
+              "conditions": [
+                {
+                  "source": "type",
+                  "trigger": {
+                    "code": "RADIO_CHECKBOX"
+                  }
+                }
+              ]
+            },
+            "restrictions": [
+              {
+                "name": "minInclusive",
+                "value": "0"
+              },
+              {
+                "name": "maxInclusive",
+                "value": "6"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "questionCode": "listColHeaders",
+        "question": "Column Header for answer list",
+        "codingInstructions": "Specify column headers for this auto completion list. Make sure to match number of headers to number of fields in the search results.",
+        "header": false,
+        "dataType": "ST",
+        "questionCardinality": {
+          "min": "1",
+          "max": "*"
+        },
+        "skipLogic": {
+            "action": "show",
+            "logic": "ALL",
+            "conditions": [
+              {
+                "source": "displayControl",
+                "trigger": {
+                  "code": true
+                }
+              },
+              {
+                "source": "_externallyDefined",
+                "trigger": {
+                  "value": true
+                }
+              }
+            ]
+          }
+      }
+      ]
     },
     {
       // *********** codingInstructions ************************,
