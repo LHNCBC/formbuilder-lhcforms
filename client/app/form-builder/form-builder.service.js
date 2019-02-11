@@ -740,8 +740,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
               displayControl.questionLayout = thisService.getFormBuilderField(item.items, 'questionLayout').value.code;
             }
             var _dataType = thisService.getFormBuilderField(formBuilderItems, '_dataType').value;
-            var _extarnallyDefined = thisService.getFormBuilderField(formBuilderItems, '_externallyDefined').value;
-            if(_dataType === '__CNE_OR_CWE__' && !_extarnallyDefined) {
+            var _externallyDefined = thisService.getFormBuilderField(formBuilderItems, '_externallyDefined').value;
+            if(_dataType === '__CNE_OR_CWE__' && !_externallyDefined) {
               displayControl.answerLayout = {};
               var answerLayout = thisService.getFormBuilderField(item.items, 'answerLayout');
               displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
@@ -750,7 +750,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                 displayControl.answerLayout.columns = columns;
               }
             }
-            else if(_extarnallyDefined) {
+            else if(_externallyDefined) {
               var listColHeaders = thisService.getFormBuilderFields(item.items, 'listColHeaders');
               var headers = [];
               listColHeaders.forEach(function(h) {
