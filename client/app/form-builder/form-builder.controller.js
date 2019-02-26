@@ -35,6 +35,17 @@ angular.module('formBuilder')
              firebaseService) {
 
 
+      $scope.formatList = [
+        {displayName: 'FHIR Questionnaire (R4)', format: 'R4'},
+        {displayName: 'FHIR Questionnaire (STU3)', format: 'STU3'},
+        {displayName: 'LHC Forms', format: 'lforms'}
+      ];
+      $scope.selectedFormat = $scope.formatList[0];
+
+      $scope.previewSource = {};
+      for(var i = 0; i < $scope.formatList.length; i++) {
+        $scope.previewSource[$scope.formatList[i].format] = null;
+      }
       /*************************************************/
 
 
@@ -214,19 +225,23 @@ angular.module('formBuilder')
        * @param jsonInput
        */
       function setPreviewData(jsonInput) {
-        $scope.previewSrc = toJsonFilter(jsonInput, ['_', '$']);
+        $scope.previewSource['lforms'] = toJsonFilter(jsonInput, ['_', '$']);
         if(jsonInput.items.length > 0) {
-          var previewSrcObj = JSON.parse($scope.previewSrc);
+          var previewSrcObj = JSON.parse($scope.previewSource['lforms']);
           $scope.previewLfData = new LFormsData(previewSrcObj);
           if(previewSrcObj.id) {
             $scope.previewLfData.id = previewSrcObj.id;
           }
-          var fhirData = LForms.Util.getFormFHIRData('Questionnaire', 'STU3', $scope.previewLfData);
-          $scope.previewFhirSrc = toJsonFilter(fhirData, ['_', '$']);
+          $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
+            var fhirData = LForms.Util.getFormFHIRData('Questionnaire', ele.format, $scope.previewLfData);
+            $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
+          });
         }
         else {
           $scope.previewLfData = null;
-          $scope.previewFhirSrc = null;
+          $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
+            $scope.previewSource[ele.format] = null;
+          });
         }
       }
 
@@ -253,18 +268,14 @@ angular.module('formBuilder')
        */
       $scope.export = function(ev) {
 
-        if(!$scope.previewSrc) {
-          showFhirResponse(ev, {dialogTitle: 'Alert', message: 'The form content is empty. Nothing to export.'});
-          return;
-        }
-        $scope.showFileExportDialog(ev).then(function (answer) {
+        $scope.showFileExportDialog(ev, {formatList: $scope.formatList, selectedFormat: $scope.selectedFormat}).then(function (answer) {
           if(answer) {
             gtag('event', 'file-export', {
               event_category: 'engagement',
               event_label: 'local-file'
             });
             $scope.previewWidget();
-            var content = answer.format === 'STU3' ? $scope.previewFhirSrc : $scope.previewSrc;
+            var content = $scope.previewSource[answer.format];
             var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
             var exportFileName = $scope.formBuilderData.headers[2].value ? $scope.formBuilderData.headers[2].value :
               'NewLForm';
@@ -322,7 +333,8 @@ angular.module('formBuilder')
         });
         fhirService.read(resourceId).then(function (response) {
           try {
-            $scope.$broadcast('REPLACE_FORM', LForms.Util.convertFHIRQuestionnaireToLForms(response.data, 'STU3'));
+            var fServer = $scope.getFhirServer();
+            $scope.$broadcast('REPLACE_FORM', LForms.Util.convertFHIRQuestionnaireToLForms(response.data, fServer.version));
           }
           catch(err) {
             err.message += ': Failed to convert selected questionnaire';
@@ -340,14 +352,14 @@ angular.module('formBuilder')
        * @param ev - event object
        */
       $scope.exportToFhir = function(ev) {
-        $scope.showFhirServerDialog(ev).then(function (answer) {
-          if(answer) {
+        $scope.showFhirServerDialog(ev).then(function (server) {
+          if(server) {
             $scope.previewWidget();
             gtag('event', 'fhir-create', {
               event_category: 'engagement',
               event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER]
             });
-            fhirService.create($scope.previewFhirSrc, $scope.userProfile)
+            fhirService.create($scope.previewSource[$scope.getFhirServer().version], $scope.userProfile)
               .then(function (response) {
                 $scope.formBuilderData.id = response.data.id;
                 showFhirResponse(ev, {fhirResponse: response.data});
@@ -369,8 +381,9 @@ angular.module('formBuilder')
           event_category: 'engagement',
           event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER]
         });
-        fhirService.update($scope.previewFhirSrc, $scope.userProfile)
-          .then(function (response) {
+
+        fhirService.update($scope.previewSource[$scope.getFhirServer().version], $scope.userProfile)
+          .then(function () {
             showFhirResponse(ev, {fhirResponse: 'Successfully updated the resource.'});
           }, function (err) {
             err.message = 'Failed to update the resource.';
@@ -455,11 +468,6 @@ angular.module('formBuilder')
           self.closeDlg = function(answer) {
             $mdDialog.hide(answer);
           };
-          self.formatList = [
-            {displayName: 'FHIR Questionnaire (STU3)', format: 'STU3'},
-            {displayName: 'LHC Forms', format: 'lforms'}
-          ];
-          self.format = self.formatList[0];
         };
 
         return $mdDialog.show({
@@ -482,7 +490,7 @@ angular.module('formBuilder')
       $scope.getFhirServer = function() {
         var ret = null;
         var fhirEndpoint = $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER] || dataConstants.fhirServerList[0].endpoint;
-        dataConstants.fhirServerList.some(function (server, index) {
+        dataConstants.fhirServerList.some(function (server) {
           var match = server.endpoint === fhirEndpoint;
           ret = match ? server : null;
           return match;
@@ -581,7 +589,7 @@ angular.module('formBuilder')
             $scope.signInAnonymously = function() {
               firebaseService.signInAnonymously();
             };
-            $scope.$on('LF_FIREBASE_AUTH_SIGNEDIN', function(event, currentUser) {
+            $scope.$on('LF_FIREBASE_AUTH_SIGNEDIN', function() {
               console.log("signin event received");
               $scope.closeDialog();
             });
@@ -649,7 +657,7 @@ angular.module('formBuilder')
       /**
        * Stop event listener
        */
-      $rootScope.$on('us-spinner:stop', function(event, key) {
+      $rootScope.$on('us-spinner:stop', function() {
         $scope.spinneractive = false;
       });
 
@@ -662,14 +670,14 @@ angular.module('formBuilder')
         $scope.$apply();
       });
 
-      $rootScope.$on('LF_FIREBASE_AUTH_SIGNEDOUT', function (ev, user) {
+      $rootScope.$on('LF_FIREBASE_AUTH_SIGNEDOUT', function () {
         $scope.userProfile = null;
         $scope.isUserSignedIn = false;
         $scope.$apply();
       });
 
 
-      $rootScope.$on('LF_FIREBASE_AUTH_RESOURCE_CREATED', function (ev, resource) {
+      $rootScope.$on('LF_FIREBASE_AUTH_RESOURCE_CREATED', function () {
         $scope.$apply();
       });
     }]);

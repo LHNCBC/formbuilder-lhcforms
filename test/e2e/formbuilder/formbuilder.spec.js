@@ -53,6 +53,13 @@ function loadLFormFromDisk(fileName, format) {
   }
   else if (format === 'STU3') {
     fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
+    fb.previewFHIRQuestionnaireSTU3Radio.click();
+    expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+    ret = fb.previewJsonSource.getText();
+  }
+  else if (format === 'R4') {
+    fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
+    fb.previewFHIRQuestionnaireR4Radio.click();
     expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
     ret = fb.previewJsonSource.getText();
   }
@@ -617,9 +624,11 @@ describe('GET /', function () {
     // protractor.conf.js for profile preferences.
     // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
     var filename = '/tmp/NewLForm.lforms.json';
-    var fhirFilename = '/tmp/NewLForm.STU3.json';
+    var fhirFilenameSTU3 = '/tmp/NewLForm.STU3.json';
+    var fhirFilenameR4 = '/tmp/NewLForm.R4.json';
     var lformsOriginalJson = null;
-    var fhirOriginalJson = null;
+    var fhirOriginalJsonSTU3 = null;
+    var fhirOriginalJsonR4 = null;
 
     beforeAll(function (done) {
       fb.cleanupSideBar();
@@ -628,9 +637,13 @@ describe('GET /', function () {
         // Make sure the browser doesn't have to rename the download.
         fs.unlinkSync(filename);
       }
-      if (fs.existsSync(fhirFilename)) {
+      if (fs.existsSync(fhirFilenameR4)) {
         // Make sure the browser doesn't have to rename the download.
-        fs.unlinkSync(fhirFilename);
+        fs.unlinkSync(fhirFilenameR4);
+      }
+      if (fs.existsSync(fhirFilenameSTU3)) {
+        // Make sure the browser doesn't have to rename the download.
+        fs.unlinkSync(fhirFilenameSTU3);
       }
       fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
       expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
@@ -639,9 +652,17 @@ describe('GET /', function () {
       });
 
       fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
+      fb.previewFHIRQuestionnaireR4Radio.click();
       expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
       fb.previewJsonSource.getText().then(function (text) {
-        fhirOriginalJson = JSON.parse(text);
+        fhirOriginalJsonR4 = JSON.parse(text);
+      });
+
+      fb.previewFHIRQuestionnaireSTU3Radio.click();
+      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+      fb.previewJsonSource.getText().then(function (text) {
+        fhirOriginalJsonSTU3 = JSON.parse(text);
+        console.log(text);
       });
 
       fb.exportMenu.click();
@@ -651,10 +672,15 @@ describe('GET /', function () {
 
       fb.exportMenu.click();
       fb.exportToFile.click();
-      fb.exportFileFHIRFormat.click();
+      fb.exportFileFHIRFormatR4.click();
       fb.continueButton.click();
 
-      Promise.all([watchFilePromise(filename), watchFilePromise(fhirFilename)]).then(function() {
+      fb.exportMenu.click();
+      fb.exportToFile.click();
+      fb.exportFileFHIRFormatSTU3.click();
+      fb.continueButton.click();
+
+      Promise.all([watchFilePromise(filename), watchFilePromise(fhirFilenameR4), watchFilePromise(fhirFilenameSTU3)]).then(function() {
         done();
       }).catch(function(err) {
         done(err);
@@ -678,9 +704,11 @@ describe('GET /', function () {
       lformsOriginalJson.items[0]['unrecognized'] = unrecognized;
     });
 
-    it('Should save FHIR Questionnaire format to a file', function () {
-      var newJson = JSON.parse(fs.readFileSync(fhirFilename, {encoding: 'utf8'}));
-      assertFHIRQuestionnaire(newJson, fhirOriginalJson);
+    it('Should save FHIR Questionnaire formats to a file', function () {
+      var newJson = JSON.parse(fs.readFileSync(fhirFilenameR4, {encoding: 'utf8'}));
+      assertFHIRQuestionnaire(newJson, fhirOriginalJsonR4);
+      newJson = JSON.parse(fs.readFileSync(fhirFilenameSTU3, {encoding: 'utf8'}));
+      assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
     });
 
     it('Should load an LForms form from disk', function (done) {
@@ -707,11 +735,21 @@ describe('GET /', function () {
       });
     });
 
-    it('Should load a FHIR Questionnaire form from disk', function (done) {
+    it('Should load a FHIR Questionnaire R4 form from disk', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
-      loadLFormFromDisk(fhirFilename, 'STU3').then(function (previewSrc) {
+      loadLFormFromDisk(fhirFilenameR4, 'R4').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
-        assertFHIRQuestionnaire(newJson, fhirOriginalJson);
+        assertFHIRQuestionnaire(newJson, fhirOriginalJsonR4);
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+    it('Should load a FHIR Questionnaire STU3 form from disk', function (done) {
+      fb.cleanupSideBar(); // Clear any existing form items
+      loadLFormFromDisk(fhirFilenameSTU3, 'STU3').then(function (previewSrc) {
+        var newJson = JSON.parse(previewSrc);
+        assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));

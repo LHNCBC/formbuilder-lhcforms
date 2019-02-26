@@ -96,6 +96,8 @@ var FormBuilder = function () {
   this.previewJsonRefreshButton = this.refreshButtons.get(2);
   this.previewFhirJsonRefreshButton = this.refreshButtons.get(1);
   this.previewJsonSource = this.previewPanel.element(by.css('md-tab-content.md-active pre'));
+  this.previewFHIRQuestionnaireR4Radio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'FHIR Questionnaire (R4)'));
+  this.previewFHIRQuestionnaireSTU3Radio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'FHIR Questionnaire (STU3)'));
 
   this.previewVitalSignsPanelModified = this.previewPanelEl.element(by.cssContainingText('label', 'Vital Signs Panel'));
   this.previewRespRate = element(by.css('input[name="Resp rate"]'));
@@ -104,7 +106,8 @@ var FormBuilder = function () {
   this.exportMenu = element(by.cssContainingText('md-menu-bar > md-menu > button', 'Export'));
   this.importMenu = element(by.cssContainingText('md-menu-bar > md-menu > button', 'Import'));
   this.exportToFile = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Export to file...'));
-  this.exportFileFHIRFormat = this.dialog.element(by.cssContainingText('md-radio-button', 'FHIR Questionnaire'));
+  this.exportFileFHIRFormatSTU3 = this.dialog.element(by.cssContainingText('md-radio-button', 'FHIR Questionnaire (STU3)'));
+  this.exportFileFHIRFormatR4 = this.dialog.element(by.cssContainingText('md-radio-button', 'FHIR Questionnaire (R4)'));
   this.exportFileLFormsFormat = this.dialog.element(by.cssContainingText('md-radio-button', 'LHC Forms'));
   this.createFhir = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Create a new FHIR resource on a server'));
   this.updateFhir = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Update a FHIR resource on a server'));

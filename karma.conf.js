@@ -70,6 +70,7 @@ module.exports = function(config) {
       /* endbower */
 
       'client/bower_components/lforms/app/scripts/fhir/STU3/lformsFHIR.js',
+      'client/bower_components/lforms/app/scripts/fhir/R4/lformsFHIR.js',
       'client/bower_components/angular-mocks/angular-mocks.js',
 
       'client/app/**/*.js',

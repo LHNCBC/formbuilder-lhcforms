@@ -16,6 +16,7 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     CODING_SYSTEM_ID: '/questionCodeSystem/1',
     CODE_ID: '/questionCode/1',
     HEADER_ID: '/header/1',
+    DATATYPE_ID: '/dataType/1',
     SKIPLOGIC_ID: '/useSkipLogic/skipLogic/1/1',
     USE_SKIPLOGIC_ID: '/useSkipLogic/1',
     USE_DATACONTROL_ID: '/useDataControl/1',
@@ -44,17 +45,26 @@ angular.module('formBuilderConfig', ['ngMaterial'])
                       // x-target-fhir-endpoint
          basicAuth:   // Optional basic authentication string to be assigned to
                       // x-target-fhir-server-authorization header.
+         version:     // FHIR version, ex: STU3, R4 ...
      }
     */
     fhirServerList: [
       {
+        id: 1,
+        displayName: 'UHN HAPI Server - R4',
+        endpoint: 'http://hapi.fhir.org/baseR4',
+        desc: "Public FHIR server at fhir.org",
+        version: 'R4'
+      },
+      {
         id: 2,
         displayName: 'UHN HAPI Server - STU3',
         endpoint: 'http://hapi.fhir.org/baseDstu3',
-        desc: "Public FHIR server at fhir.org"
+        desc: "Public FHIR server at fhir.org",
+        version: 'STU3'
       },
-      // {id: 3, displayName: 'HealthConnex STU3 server', endpoint:'http://sqlonfhir-stu3.azurewebsites.net/fhir', version:3, everythingOperation:true},
-      {id: 4, displayName: 'clinFHIR R3', endpoint:'http://snapp.clinfhir.com:8081/baseDstu3', version:3}
+      // {id: 3, displayName: 'HealthConnex STU3 server', endpoint:'http://sqlonfhir-stu3.azurewebsites.net/fhir', version:'STU3', everythingOperation:true},
+      {id: 4, displayName: 'clinFHIR R3', endpoint:'http://snapp.clinfhir.com:8081/baseDstu3', version: 'STU3'}
     ]
 
 }).run(function($rootScope, dataConstants) {
