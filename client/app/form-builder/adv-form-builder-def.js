@@ -66,21 +66,6 @@ var advFormBuilderDef = {
       }
     },
     {
-      // ********** Hidden item to indicate externallyDefined from basic widget ********,
-      "questionCode": "_var_displayControlAnswerLayoutType",
-      "question": "You should never see this!",
-      "dataType": "ST",
-      "header": false,
-      "displayControl": {
-        "css": [
-          {
-            "name": "display",
-            "value": "none"
-          }
-        ]
-      }
-    },
-    {
       // ********** Use Restrictions flag **************************,
       "questionCode": "useRestrictions",
       "question": "Add restrictions",
@@ -615,6 +600,12 @@ var advFormBuilderDef = {
               "trigger": {
                 "value": "__CNE_OR_CWE__"
               }
+            },
+            {
+              "source": "_externallyDefined",
+              "trigger": {
+                "value": false
+              }
             }
           ]
         },
@@ -689,12 +680,6 @@ var advFormBuilderDef = {
                 "source": "_externallyDefined",
                 "trigger": {
                   "value": true
-                }
-              },
-              {
-                "source": "_var_displayControlAnswerLayoutType",
-                "trigger": {
-                  "value": 'COMBO_BOX'
                 }
               }
             ]

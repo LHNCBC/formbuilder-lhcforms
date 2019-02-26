@@ -590,17 +590,21 @@ describe('GET /', function () {
       });
     });
 
-    it('Should test answer layout with type combo box and col list headers', function () {
-      // Pick non header node to work with answerLayout
+    it('Should test column list headers', function () {
       assertNodeSelection('Inhaled O2 flow');
+      fb.advancedEditTab.click();
+      fb.displayControlYes.click();
+      // Should see answer layout, but not column header list
+      expect(fb.displayControlAnswerLayoutTypeCombo.isDisplayed()).toBeTruthy();
+      expect(fb.displayControlAddColHeaders1.isPresent()).toBeFalsy();
+      // Make it externally defined.
       fb.basicEditTab.click();
       fb.externallyDefined.sendKeys('https://clinicaltables.nlm.nih.gov');
       fb.advancedEditTab.click();
-      fb.displayControlYes.click();
-      fb.displayControlAnswerLayoutTypeRadio.click();
-      expect(fb.displayControlAddColHeaders1.isPresent()).toBeFalsy();
-      fb.displayControlAnswerLayoutTypeCombo.click();
-      expect(fb.displayControlAddColHeaders1.isPresent()).toBeTruthy();
+      // Should not see answer layout, but should see column list headers
+      expect(fb.displayControlAnswerLayoutTypeCombo.isPresent()).toBeFalsy();
+      expect(fb.displayControlAddColHeaders1.isDisplayed()).toBeTruthy();
+
       //listColHeaders
       fb.displayControlAddColHeaders1.sendKeys('test1');
       fb.displayControlAddColHeadersButton.click();
@@ -611,7 +615,6 @@ describe('GET /', function () {
       fb.previewJsonSource.getText().then(function (text) {
         var lforms = JSON.parse(text);
         var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
-        expect(inhaledO2ItemDisplayControl.answerLayout.type).toBe('COMBO_BOX');
         expect(inhaledO2ItemDisplayControl.listColHeaders.length).toBe(2);
         expect(inhaledO2ItemDisplayControl.listColHeaders[0]).toBe('test1');
         expect(inhaledO2ItemDisplayControl.listColHeaders[1]).toBe('test2');
