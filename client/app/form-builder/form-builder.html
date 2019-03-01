@@ -105,29 +105,19 @@
                   </md-tab>
                   <md-tab>
                     <md-tab-label>
-                      <div ng-click="refreshPreview()">FHIR output <span
+                      <div ng-click="refreshPreview()">JSON output <span
                         class="glyphicon glyphicon-refresh"><md-tooltip>Refresh preview</md-tooltip></span>
                       </div>
                     </md-tab-label>
                     <md-tab-body>
                       <div class="tab-subheader">
                         <md-radio-group ng-model="selectedFormat" layout="row">
-                          <md-radio-button ng-repeat='format in formatList.slice(0, formatList.length - 1)'  flex ng-value="format" class="md-primary" >
+                          <md-radio-button ng-repeat='format in formatList'  flex ng-value="format" class="md-primary" >
                             <h5>{{format.displayName}}</h5>
                           </md-radio-button>
                         </md-radio-group>
                       </div>
                       <pre class="formbuilder-pre">{{previewSource[selectedFormat.format]}}</pre>
-                    </md-tab-body>
-                  </md-tab>
-                  <md-tab>
-                    <md-tab-label>
-                      <div ng-click="refreshPreview()">LHC-Forms output <span
-                        class="glyphicon glyphicon-refresh"><md-tooltip>Refresh preview</md-tooltip></span>
-                      </div>
-                    </md-tab-label>
-                    <md-tab-body>
-                      <pre class="formbuilder-pre">{{previewSource.lforms}}</pre>
                     </md-tab-body>
                   </md-tab>
                 </md-tabs>

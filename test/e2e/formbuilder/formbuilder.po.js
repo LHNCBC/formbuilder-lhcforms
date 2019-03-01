@@ -93,11 +93,11 @@ var FormBuilder = function () {
 
   this.previewPanel = element(by.id('preview-panel'));
   this.previewPanelEl = this.previewPanel.element(by.css('lforms'));
-  this.previewJsonRefreshButton = this.refreshButtons.get(2);
-  this.previewFhirJsonRefreshButton = this.refreshButtons.get(1);
+  this.previewJsonRefreshButton = this.refreshButtons.get(1);
   this.previewJsonSource = this.previewPanel.element(by.css('md-tab-content.md-active pre'));
   this.previewFHIRQuestionnaireR4Radio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'FHIR Questionnaire (R4)'));
   this.previewFHIRQuestionnaireSTU3Radio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'FHIR Questionnaire (STU3)'));
+  this.previewFHIRQuestionnaireLFormsRadio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'LHC Forms'));
 
   this.previewVitalSignsPanelModified = this.previewPanelEl.element(by.cssContainingText('label', 'Vital Signs Panel'));
   this.previewRespRate = element(by.css('input[name="Resp rate"]'));

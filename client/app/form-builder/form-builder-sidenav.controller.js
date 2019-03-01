@@ -721,9 +721,11 @@
                   if (isDirty(oldValue, newValue)) {
                     var dataType = scope.selectedNode.lfData.basic.itemHash['/dataType/1'];
                     if (newValue.code) {
+                      // User changed header to true, set the data type to section.
                       dataType.value = {code: 'SECTION'};
                     } else if(dataType.value && dataType.value.code === 'SECTION') {
-                      scope.selectedNode.lfData.basic.itemHash['/dataType/1'].value = {code: 'ST'};
+                      // Header is set to false, if data is a section, change it to default.
+                      dataType.value = {code: 'ST'};
                     }
                     scope.selectedNode.isDirty = true;
                   }
