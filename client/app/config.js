@@ -63,8 +63,19 @@ angular.module('formBuilderConfig', ['ngMaterial'])
         desc: "Public FHIR server at fhir.org",
         version: 'STU3'
       },
-      // {id: 3, displayName: 'HealthConnex STU3 server', endpoint:'http://sqlonfhir-stu3.azurewebsites.net/fhir', version:'STU3', everythingOperation:true},
-      {id: 4, displayName: 'clinFHIR R3', endpoint:'http://snapp.clinfhir.com:8081/baseDstu3', version: 'STU3'}
+      // {
+      //   id: 3,
+      //   displayName: 'HealthConnex STU3 server',
+      //   endpoint:'http://sqlonfhir-stu3.azurewebsites.net/fhir',
+      //   version:'STU3',
+      //   everythingOperation:true
+      // },
+      {
+        id: 4,
+        displayName: 'clinFHIR R3',
+        endpoint:'http://snapp.clinfhir.com:8081/baseDstu3',
+        version: 'STU3'
+      }
     ]
 
 }).run(function($rootScope, dataConstants) {
