@@ -5,6 +5,9 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [3.0.0]  2019-02-07
 ### Added.
 -  Support exporting/importing R4 versions of FHIR format.
+### Changed.
+-  Breaking change: Added FHIR version number to the FHIR server definition in client/config.js. It is mandatory that the 
+servers are tagged with supported FHIR version such as R4, STU3 etc.
 
 ## [2.2.0]  2019-01-29
 ### Added.
