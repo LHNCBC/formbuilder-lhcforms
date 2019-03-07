@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "main": "server/index.js",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
@@ -36,7 +36,6 @@
     "traverse": "^0.6.6"
   },
   "devDependencies": {
-    "JSONPath": "^0.10.0",
     "ajv": "^6.9.1",
     "bower": "^1.8.8",
     "chai": "^4.2.0",

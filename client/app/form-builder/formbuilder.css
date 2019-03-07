@@ -360,6 +360,11 @@ md-menu-bar {
   background-color: rgba(0,0,0,0.03);
 }
 
+.tab-subheader {
+  background-color: rgba(255,255,255,1);
+  padding: 10px;
+  border-bottom: 1px solid lightgrey;
+}
 .lf-social-icon {
   width: 64px;
   height: 64px;

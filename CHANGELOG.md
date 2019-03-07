@@ -2,11 +2,18 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [2.2.0]  2018-01-29
+## [3.0.0]  2019-02-07
+### Added.
+-  Support exporting/importing R4 versions of FHIR format.
+### Changed.
+-  Breaking change: Added FHIR version number to the FHIR server definition in client/config.js. It is mandatory that the 
+servers are tagged with supported FHIR version such as R4, STU3 etc.
+
+## [2.2.0]  2019-01-29
 ### Added.
 -  Added displayControl. Supports questionLayout, answerLayout, and listColHeaders for now.
 
-## [2.1.4]  2018-01-16
+## [2.1.4]  2019-01-16
 ### Fixed.
 -  Fixed a bug to include answer list and units when importing a LOINC question.
 

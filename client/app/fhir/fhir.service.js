@@ -33,7 +33,6 @@ fb.service('fhirService', [
    */
   thisService.update = function(resourceStr, userProfile) {
     var resource = JSON.parse(resourceStr);
-    var resource = JSON.parse(resourceStr);
     resource.publisher = getPublisherStr(userProfile);
     return $fhir.update({resource: resource});
   };
@@ -92,15 +91,14 @@ fb.service('fhirService', [
    */
   thisService.bundleUrlLink = function (url) {
     var baseUrl = $window.location.href + '/fhir-api?';
-    var url = url.replace(/^.*\/baseDstu3\?/, baseUrl);
-    return $fhir.getBundleByUrl(url);
+    var str = url.replace(/^.*\/baseDstu3\?/, baseUrl);
+    return $fhir.getBundleByUrl(str);
   };
 
 
   /**
    * Get FHIR results using a url. The paginated results are obtained using a url in the result bundle
    * @param url - The URL referring to the resource bundle on the FHIR server.
-   * @param userProfile - A user profile with login information
    * @returns {Object} - FHIR resource bundle
    */
   thisService.getBundleByUrl = function (url) {

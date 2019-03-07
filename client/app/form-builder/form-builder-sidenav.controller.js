@@ -71,8 +71,8 @@
          */
         dropped: function (event) {
           // Identify click event
-          if (event.source.index == event.dest.index &&
-            event.source.nodesScope == event.dest.nodesScope) {
+          if (event.source.index === event.dest.index &&
+            event.source.nodesScope === event.dest.nodesScope) {
             event.source.nodeScope.click(event.source.nodeScope);
             return false;
           }
@@ -274,6 +274,7 @@
        * @param {Object} importedItem - Optional. An imported item to add as the child item,
        *        typically from lforms-service. If not provided, an empty new item will
        *        be created as the child item.
+       * @param insertType - Constant to indicate insertion type such as before, after etc.
        */
       $scope.insertNewItem = function (scope, importedItem, insertType) {
         var newNode = formBuilderService.createTreeNode();
@@ -282,6 +283,7 @@
           if(scope.importLoincItem.mode === dataConstants.PANEL) {
             // Set header
             newNode.lfData.basic.itemHash[dataConstants.HEADER_ID].value = {text: 'Yes', code: true};
+            newNode.lfData.basic.itemHash[dataConstants.DATATYPE_ID].value = {code: 'SECTION'};
           }
           setItemName(newNode, scope.name);
         }
@@ -405,7 +407,7 @@
             var questionData = {
               questionCode: response.code,
               questionCodeSystem: dataConstants.LOINC,
-              dataType: response.data.datatype == 'NM' ? 'REAL' : response.data.datatype,
+              dataType: response.data.datatype === 'NM' ? 'REAL' : response.data.datatype,
               question: response.data.text,
               units: convertUnitsFromLoincToLforms(response.data.units),
               answers: convertAnswerListFromLoincToLforms(response.data.answers)
@@ -716,7 +718,15 @@
                   scope.selectedNode.lfData.advanced.itemHash['/_isHeader/1'].value =
                     (newValue && newValue.text) ? newValue.text : 'No';
 
-                  if(isDirty(oldValue, newValue)) {
+                  if (isDirty(oldValue, newValue)) {
+                    var dataType = scope.selectedNode.lfData.basic.itemHash['/dataType/1'];
+                    if (newValue.code) {
+                      // User changed header to true, set the data type to section.
+                      dataType.value = {code: 'SECTION'};
+                    } else if(dataType.value && dataType.value.code === 'SECTION') {
+                      // Header is set to false, if data is a section, change it to default.
+                      dataType.value = {code: 'ST'};
+                    }
                     scope.selectedNode.isDirty = true;
                   }
                 }

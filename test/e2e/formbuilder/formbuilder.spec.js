@@ -34,6 +34,25 @@ function assertNodeSelection(nodeTitle) {
 
 
 /**
+ * Get json output for a given format.
+ *
+ * @param format - Valid strings are 'lforms', 'STU3', and 'R4'
+ * @returns {Promise} - A promise which resolves to json string.
+ */
+function getJSONSource(format) {
+  let formatButtonMap = {
+    lforms: fb.previewFHIRQuestionnaireLFormsRadio,
+    STU3: fb.previewFHIRQuestionnaireSTU3Radio,
+    R4: fb.previewFHIRQuestionnaireR4Radio
+  };
+
+  fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+  formatButtonMap[format].click();
+  expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
+  return fb.previewJsonSource.getText();
+}
+
+/**
  * Load lforms json from the file system.
  *
  * @param fileName {string} - The lforms json file on the disk
@@ -45,18 +64,7 @@ function loadLFormFromDisk(fileName, format) {
   fb.fileInput.sendKeys(fileName);
   browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
 
-  let ret = null;
-  if(format === 'lforms') {
-    fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-    expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-    ret = fb.previewJsonSource.getText();
-  }
-  else if (format === 'STU3') {
-    fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
-    expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-    ret = fb.previewJsonSource.getText();
-  }
-  return ret;
+  return getJSONSource(format);
 }
 
 
@@ -252,9 +260,7 @@ describe('GET /', function () {
         fb.sendKeys(fb.searchBox, '21858-6');
         fb.searchBox.sendKeys(protractor.Key.DOWN);
         clickImportButton();
-        fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-        expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-        fb.previewJsonSource.getText().then(function (text) {
+        getJSONSource('lforms').then(function (text) {
           var lforms = JSON.parse(text);
           expect(lforms.items[0].answers.length).toBe(10);
         });
@@ -267,9 +273,7 @@ describe('GET /', function () {
         fb.sendKeys(fb.searchBox, '3141-9');
         fb.searchBox.sendKeys(protractor.Key.DOWN);
         clickImportButton();
-        fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-        expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-        fb.previewJsonSource.getText().then(function (text) {
+        getJSONSource('lforms').then(function (text) {
           var lforms = JSON.parse(text);
           expect(lforms.items[0].units.length).toBe(2);
           expect(lforms.items[0].units[0].name).toBe('[lb_av]');
@@ -357,10 +361,12 @@ describe('GET /', function () {
       var bpSysUnitsPath = '$.items[0].items[0].items[2].items[0].units';
 
       fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+      fb.previewFHIRQuestionnaireLFormsRadio.click();
       expect(fb.getJsonFromText(fb.previewJsonSource, bpSysUnitsPath)).toEqual([[{name: 'mm[Hg]'}]]);
       fb.tableAutoCompSelectByText(fb.units, 'wc ', 'inch of water column');
       fb.unitDeleteButton.click();
       fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
+      fb.previewFHIRQuestionnaireLFormsRadio.click();
       expect(fb.getJsonFromText(fb.previewJsonSource, bpSysUnitsPath)).toEqual([[{name: '[in_i\'H2O]'}]]);
     });
 
@@ -401,9 +407,7 @@ describe('GET /', function () {
     });
 
     it('Should check json output for restrictions', function () {
-      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-      fb.previewJsonSource.getText().then(function (text) {
+      getJSONSource('lforms').then(function (text) {
         var previewLFData = JSON.parse(text);
         var selectedItem = previewLFData.items[0].items[0].items[1];
         expect(selectedItem.question).toBe('Resp rate');
@@ -455,9 +459,7 @@ describe('GET /', function () {
       expect(fb.previewWidgetBPDeviceModel.isDisplayed()).toBeTruthy();
       expect(fb.previewWidgetBPDeviceInvent.isPresent()).toBeFalsy();
       // Examine json output.
-      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-      fb.previewJsonSource.getText().then(function (text) {
+      getJSONSource('lforms').then(function (text) {
         var previewLFData = JSON.parse(text);
         var selectedItem = previewLFData.items[0].items[0].items[2].items[6];
         expect(selectedItem.question).toBe('BP device Inventory #');
@@ -551,9 +553,7 @@ describe('GET /', function () {
       expect(fb.displayControlAddColHeaders1.isPresent()).toBe(false);
 
       fb.displayControlQuestionLayoutHorizontal.click();
-      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-      fb.previewJsonSource.getText().then(function (text) {
+      getJSONSource('lforms').then(function (text) {
         var lforms = JSON.parse(text);
         expect(lforms.items[0].displayControl.questionLayout).toBe('horizontal');
       });
@@ -572,10 +572,7 @@ describe('GET /', function () {
       expect(fb.displayControlAnswerLayoutColumns.isDisplayed()).toBeTruthy();
       fb.displayControlAnswerLayoutColumns.sendKeys('2');
 
-      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-
-      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-      fb.previewJsonSource.getText().then(function (text) {
+      getJSONSource('lforms').then(function (text) {
         var lforms = JSON.parse(text);
         var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
         expect(inhaledO2ItemDisplayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
@@ -602,10 +599,8 @@ describe('GET /', function () {
       fb.displayControlAddColHeaders1.sendKeys('test1');
       fb.displayControlAddColHeadersButton.click();
       fb.displayControlAddColHeaders2.sendKeys('test2');
-      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
 
-      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-      fb.previewJsonSource.getText().then(function (text) {
+      getJSONSource('lforms').then(function (text) {
         var lforms = JSON.parse(text);
         var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
         expect(inhaledO2ItemDisplayControl.listColHeaders.length).toBe(2);
@@ -620,9 +615,11 @@ describe('GET /', function () {
     // protractor.conf.js for profile preferences.
     // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
     var filename = '/tmp/NewLForm.lforms.json';
-    var fhirFilename = '/tmp/NewLForm.STU3.json';
+    var fhirFilenameSTU3 = '/tmp/NewLForm.STU3.json';
+    var fhirFilenameR4 = '/tmp/NewLForm.R4.json';
     var lformsOriginalJson = null;
-    var fhirOriginalJson = null;
+    var fhirOriginalJsonSTU3 = null;
+    var fhirOriginalJsonR4 = null;
 
     beforeAll(function (done) {
       fb.cleanupSideBar();
@@ -631,20 +628,24 @@ describe('GET /', function () {
         // Make sure the browser doesn't have to rename the download.
         fs.unlinkSync(filename);
       }
-      if (fs.existsSync(fhirFilename)) {
+      if (fs.existsSync(fhirFilenameR4)) {
         // Make sure the browser doesn't have to rename the download.
-        fs.unlinkSync(fhirFilename);
+        fs.unlinkSync(fhirFilenameR4);
       }
-      fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-      fb.previewJsonSource.getText().then(function (text) {
+      if (fs.existsSync(fhirFilenameSTU3)) {
+        // Make sure the browser doesn't have to rename the download.
+        fs.unlinkSync(fhirFilenameSTU3);
+      }
+      getJSONSource('lforms').then(function (text) {
         lformsOriginalJson = JSON.parse(text);
       });
 
-      fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
-      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-      fb.previewJsonSource.getText().then(function (text) {
-        fhirOriginalJson = JSON.parse(text);
+      getJSONSource('R4').then(function (text) {
+        fhirOriginalJsonR4 = JSON.parse(text);
+      });
+
+      getJSONSource('STU3').then(function (text) {
+        fhirOriginalJsonSTU3 = JSON.parse(text);
       });
 
       fb.exportMenu.click();
@@ -654,10 +655,15 @@ describe('GET /', function () {
 
       fb.exportMenu.click();
       fb.exportToFile.click();
-      fb.exportFileFHIRFormat.click();
+      fb.exportFileFHIRFormatR4.click();
       fb.continueButton.click();
 
-      Promise.all([watchFilePromise(filename), watchFilePromise(fhirFilename)]).then(function() {
+      fb.exportMenu.click();
+      fb.exportToFile.click();
+      fb.exportFileFHIRFormatSTU3.click();
+      fb.continueButton.click();
+
+      Promise.all([watchFilePromise(filename), watchFilePromise(fhirFilenameR4), watchFilePromise(fhirFilenameSTU3)]).then(function() {
         done();
       }).catch(function(err) {
         done(err);
@@ -681,9 +687,11 @@ describe('GET /', function () {
       lformsOriginalJson.items[0]['unrecognized'] = unrecognized;
     });
 
-    it('Should save FHIR Questionnaire format to a file', function () {
-      var newJson = JSON.parse(fs.readFileSync(fhirFilename, {encoding: 'utf8'}));
-      assertFHIRQuestionnaire(newJson, fhirOriginalJson);
+    it('Should save FHIR Questionnaire formats to a file', function () {
+      var newJson = JSON.parse(fs.readFileSync(fhirFilenameR4, {encoding: 'utf8'}));
+      assertFHIRQuestionnaire(newJson, fhirOriginalJsonR4);
+      newJson = JSON.parse(fs.readFileSync(fhirFilenameSTU3, {encoding: 'utf8'}));
+      assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
     });
 
     it('Should load an LForms form from disk', function (done) {
@@ -710,11 +718,21 @@ describe('GET /', function () {
       });
     });
 
-    it('Should load a FHIR Questionnaire form from disk', function (done) {
+    it('Should load a FHIR Questionnaire R4 form from disk', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
-      loadLFormFromDisk(fhirFilename, 'STU3').then(function (previewSrc) {
+      loadLFormFromDisk(fhirFilenameR4, 'R4').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
-        assertFHIRQuestionnaire(newJson, fhirOriginalJson);
+        assertFHIRQuestionnaire(newJson, fhirOriginalJsonR4);
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+    it('Should load a FHIR Questionnaire STU3 form from disk', function (done) {
+      fb.cleanupSideBar(); // Clear any existing form items
+      loadLFormFromDisk(fhirFilenameSTU3, 'STU3').then(function (previewSrc) {
+        var newJson = JSON.parse(previewSrc);
+        assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));
@@ -832,9 +850,7 @@ describe('GET /', function () {
     });
 
     it('should output FHIR questionnaire json', function () {
-      fb.scrollIntoViewAndClick(fb.previewFhirJsonRefreshButton);
-      expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-      fb.previewJsonSource.getText().then(function(text) {
+      getJSONSource('R4').then(function(text) {
         var fhirObj = JSON.parse(text);
         // One root level node: 1
         expect(fhirObj.item.length).toBe(1);
