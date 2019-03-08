@@ -38,7 +38,7 @@ module.exports = function(app) {
     // Specify directives as normal.
     directives: {
      // defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'https://apis.google.com', 'https://www.googletagmanager.com', 'https://www.gstatic.com', 'https://www.google-analytics.com'],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://*.google.com', 'https://www.googletagmanager.com', 'https://www.gstatic.com', 'https://www.google-analytics.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https://www.google-analytics.com'],
       fontSrc: ["'self'", 'fonts.gstatic.com']
