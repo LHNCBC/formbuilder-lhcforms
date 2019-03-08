@@ -872,8 +872,7 @@ describe('GET /', function () {
 
     const newTitle = 'Newly created form';
     const updatedTitle = 'Updated form';
-    const nlmServerName = 'NLM HAPI ';
-    const uhnServerName = 'UHN HAPI Server';
+    const uhnServerName = 'UHN HAPI Server - R4';
 
     beforeAll(function () {
       fb.cleanupSideBar();
