@@ -126,7 +126,6 @@
           // Remove watches before switching the node.
           deregisterDirtyCheckWatches($scope);
           if($scope.selectedNode.isDirty) {
-            formBuilderService.changeItemCodeToCustomCode([$scope.selectedNode]);
             $scope.updateIdsAndAncestralCustomCodes($scope.selectedNode);
             $scope.selectedNode.isDirty = false;
           }

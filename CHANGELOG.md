@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.0.3]  2019-03-22
+### Fixed.
+- Fix next/previous page display in FHIR results dialog.
+- Fix errors in mocking FHIR server for protractor tests. 
+
 ## [3.0.2]  2019-03-08
 ### Fixed.
 - Fix errors in tests. 

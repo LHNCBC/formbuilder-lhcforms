@@ -124,6 +124,8 @@ var FormBuilder = function () {
   this.fhirResponse = this.dialog.all(by.css('md-dialog-content pre')).get(1);
   this.fhirServerList = this.dialog.all(by.repeater('server in fhirCtrl.fhirServerList'));
   this.continueButton = this.dialog.element(by.buttonText('Continue'));
+  this.nextButton = this.dialog.element(by.buttonText('Next'));
+  this.prevButton = this.dialog.element(by.buttonText('Previous'));
   this.units = element(by.id('/units/1'));
   this.unitDeleteButton = element.all(by.xpath('//ul[../input[@id="/units/1"]]/li/button')).get(0);
 
