@@ -932,7 +932,6 @@ describe('GET /', function () {
       fb.dismissMenu();
     });
 
-    // Assume there is a resource on the server
     it('should do next/previous page', function () {
 
       fb.importMenu.click();
