@@ -500,7 +500,7 @@ module.exports = function (grunt) {
             grunt.file.delete(destFile);
             grunt.log.oklns('Deleted previous '+destFile);
           }
-          let ret = grunt.task.current.data.options.data ? true : false;
+          let ret = !!grunt.task.current.data.options.data;
           if(!ret) {
             grunt.log.oklns('No firebase client configuration detected. The authorization file will not be generated.');
           }
@@ -583,7 +583,7 @@ module.exports = function (grunt) {
         'injector',
         'wiredep',
         'autoprefixer',
-        'express:dev',
+        'express:test',
         'wait',
         'open',
         'watch'
@@ -650,7 +650,7 @@ module.exports = function (grunt) {
         'injector',
         'wiredep',
         'autoprefixer',
-        'express:dev',
+        'express:test',
         'update_webdriver',
         'protractor'
       ]);
