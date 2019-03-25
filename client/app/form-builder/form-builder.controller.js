@@ -310,6 +310,7 @@ angular.module('formBuilder')
           event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER],
           value: searchStr
         });
+        fhirService.setFhirServer($scope.getFhirServer());
         fhirService.search(searchStr, true)
           .then(function(response) {
             $scope.showFhirResults(ev, {fhirResults: response.data});

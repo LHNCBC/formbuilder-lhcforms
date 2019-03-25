@@ -53,6 +53,7 @@ function configFormbuilder(app, formbuilderConf) {
         key: fs.readFileSync(app.locals.config.keySslFile),
         cert: fs.readFileSync(app.locals.config.certSslFile),
         ca: fs.readFileSync(app.locals.config.caSslFile),
+        secureOptions: app.locals.config.secureOptions,
         honorCipherOrder: app.locals.config.honorCipherOrder
       };
       server = require('https').createServer(sslOptions, app);

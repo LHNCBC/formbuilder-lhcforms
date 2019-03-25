@@ -49,7 +49,8 @@
                 <div class="md-list-item-text" layout="column">
                   <p>ID: {{ item.resource.id }} (version: {{ item.resource.meta.versionId}})</p>
                   <p>{{ item.resource.title }}</p>
-                  <p>{{ item.resource.publisher }} {{item.resource.date | date: 'MMM d, y h:mm:ss a Z'}}</p>
+                  <p>{{ item.resource.publisher }}</p>
+                  <p>Last updated: {{item.resource.meta.lastUpdated | date: 'MMM d, y h:mm:ss a Z'}}</p>
                 </div>
                 <md-icon md-svg-src="/assets/images/delete-forever.svg"  ng-click="fhirCtrl.deleteResource($event, item.resource.id)" aria-label="Delete this resource" class="md-secondary md-hue-3" ></md-icon>
               </div>

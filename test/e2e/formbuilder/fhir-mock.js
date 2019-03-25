@@ -7,9 +7,23 @@ const resourceFilepath = '/tmp/tmp-questionnaire-resource';
 const updateResp = require('./fixtures/update-response.json');
 const deleteResp = require('./fixtures/delete-response.json');
 
-let pathIdExp = /^\/baseDstu3\/Questionnaire\/([0-9]+)$/;
-let searchExp = /^\/baseDstu3\/Questionnaire\?.*\b_id=([\w]+)\b.*$/;
-let reqExp = /^\/baseDstu3\/Questionnaire.*$/;
+let defSearchBundle = {};
+defSearchBundle['Dstu3'] = [];
+defSearchBundle['R4'] = [];
+defSearchBundle['Dstu3'].push(require('./fixtures/stu3-search-bundle-0.json'));
+defSearchBundle['Dstu3'].push(require('./fixtures/stu3-search-bundle-1.json'));
+defSearchBundle['Dstu3'].push(require('./fixtures/stu3-search-bundle-2.json'));
+defSearchBundle['Dstu3'].push(require('./fixtures/stu3-search-bundle-3.json'));
+defSearchBundle['R4'].push(require('./fixtures/r4-search-bundle-0.json'));
+defSearchBundle['R4'].push(require('./fixtures/r4-search-bundle-1.json'));
+defSearchBundle['R4'].push(require('./fixtures/r4-search-bundle-2.json'));
+defSearchBundle['R4'].push(require('./fixtures/r4-search-bundle-3.json'));
+
+let pathIdExp = /^\/base(Dstu3|R4)\/Questionnaire\/([0-9]+)$/;
+let searchByIdExp = /^\/base(Dstu3|R4)\/Questionnaire\?.*\b_id=([\w]+)\b.*$/;
+let questionnaireExp = /^\/base(Dstu3|R4)\/Questionnaire.*$/;
+let versionExp = /^\/base(Dstu3|R4)(\/|\?)/;
+let getPageExp = /^\/base(Dstu3|R4)\?.*\b(_getpagesoffset=(\d+))\b/;
 
 
 /**
@@ -18,14 +32,17 @@ let reqExp = /^\/baseDstu3\/Questionnaire.*$/;
  * @returns {*}
  */
 function parseId(uri) {
-  let match = searchExp.exec(uri);
+  let match = searchByIdExp.exec(uri);
   let id = null;
   if(match) {
-    id = match[1];
+    id = match[2];
   }
   
   if(!id) {
-    id = pathIdExp.exec(uri)[1];
+    match = pathIdExp.exec(uri);
+    if(match) {
+      id = match[2];
+    }
   }
   return id;
 }
@@ -61,36 +78,106 @@ function readResource(id) {
  */
 function searchReply(uri, requestBody) {
   let id = parseId(uri);
+  let ret = null;
   let entry = [];
-  let res = readResource(id);
-  if(res) {
-    entry.push({
-      fullUrl: this.basePath+this.req.path.replace(/\?.*$/, '/')+id,
-      resource: res,
-      search: {
-        mode: "search"
-      }
-    });
+  if(id) {
+    // id based search
+    let res = readResource(id);
+    if(res) {
+      entry.push({
+        fullUrl: suppressDefPortFromUrl(this.basePath)+this.req.path.replace(/\?.*$/, '/')+id,
+        resource: res,
+        search: {
+          mode: "search"
+        }
+      });
+    }
+
+    ret = {
+      resourceType: "Bundle",
+      id: "589a6863-02d0-4353-b944-7787f40b5d28",
+      meta: {
+        lastUpdated: dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo")
+      },
+      type: "searchset",
+      total: entry.length,
+      link: [
+        {
+          relation: "self",
+          "url": suppressDefPortFromUrl(this.basePath)+this.req.path
+        }
+      ],
+      entry: entry
+    };
   }
-  
-  return {
-    resourceType: "Bundle",
-    id: "589a6863-02d0-4353-b944-7787f40b5d28",
-    meta: {
-      lastUpdated: dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo")
-    },
-    type: "searchset",
-    total: entry.length,
-    link: [
-      {
-        relation: "self",
-        "url": this.basePath+this.req.path
-      }
-    ],
-    entry: entry
-  };
+  else {
+    // Search all questionnaires
+    let ver = versionExp.exec(uri)[1];
+    ret = defSearchBundle[ver][0]; // First page
+    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+    let createdRes = readResource("1");
+    if(createdRes) {
+      ret.entry[0] = { // Replace with first one. This will be used in the read call
+        fullUrl: suppressDefPortFromUrl(this.basePath)+this.req.path.replace(/\?.*$/, '/')+createdRes.id,
+        resource: createdRes,
+        search: {
+          mode: "search"
+        }
+      };
+
+    }
+  }
+
+  return ret;
 }
 
+
+/**
+ * Handle get next/prev page
+ * @param uri - Request uri
+ * @param requestBody - Request body
+ * @returns {*[]} - Reply to user.
+ */
+function getPageReply(uri, requestBody) {
+  let ret = null;
+  const match = getPageExp.exec(uri);
+  if(match) {
+    let pageOffset = match[3];
+    // The search bundles on the disk are tagged with
+    const pageOffsetToPage = {
+      '0': 0,
+      '5': 1,
+      '10': 2,
+      '15': 3
+    };
+
+    const ver = versionExp.exec(uri)[1];
+    ret = defSearchBundle[ver][pageOffsetToPage[pageOffset]];
+    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+  }
+  return ret;
+}
+
+
+
+/**
+ * Remove def port such as :80 and :443 from url
+ *
+ * @param url {string} - Url to parse.
+ * @returns {string} - Modified url
+ */
+function suppressDefPortFromUrl(url) {
+  let ret = url;
+  const exps = [
+    /(?<=https:\/\/[^\/:]+)(:443)(?:\b)/,
+    /(?<=http:\/\/[^\/:]+)(:80)(?:\b)/
+  ];
+  exps.forEach((exp) => {
+    ret = ret.replace(exp, '');
+  });
+
+  return ret;
+}
 
 /**
  * Handle general GET method
@@ -100,14 +187,7 @@ function searchReply(uri, requestBody) {
  */
 function stockReply(uri, requestBody) {
   console.log('Untrapped calls to '+this.req.host +': '+ uri);
-  let ret = null;
-  if(pathIdExp.exec(uri)) {
-    ret = searchReply.call(this, uri, requestBody);
-  }
-  else {
-    ret = readReply.call(this, uri, requestBody);
-  }
-  return ret;
+  return [404, 'Resource not found'];
 }
 
 
@@ -185,7 +265,11 @@ function deleteReply (uri, requestBody) {
   let id = parseId(uri);
   let res = readResource(id);
   if (id === res.id) {
-    fs.unlink(resourceFilepath);
+    fs.unlink(resourceFilepath+id, (err) => {
+      if(err) {
+        if(err) throw err;
+      }
+    });
     return [200, deleteResp];
   }
   else {
@@ -210,13 +294,15 @@ function fhirNock(url) {
   });
   
   ret.get(pathIdExp).reply(readReply);
-  ret.get(searchExp).reply(searchReply);
-  
-  ret.get(reqExp).reply(stockReply);
-  
-  ret.post(reqExp).reply(createReply);
-  ret.put(reqExp).reply(updateReply);
-  ret.delete(reqExp).reply(deleteReply);
+  ret.get(searchByIdExp).reply(searchReply);
+  ret.get(questionnaireExp).reply(searchReply);
+  ret.get(getPageExp).reply(getPageReply);
+
+  ret.post(questionnaireExp).reply(createReply);
+  ret.put(questionnaireExp).reply(updateReply);
+  ret.delete(questionnaireExp).reply(deleteReply);
+
+  ret.get(/^.*/).reply(stockReply);
   return ret;
 }
 

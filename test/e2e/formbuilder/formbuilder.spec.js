@@ -931,6 +931,63 @@ describe('GET /', function () {
       expect(fb.updateFhir.isEnabled()).toBeFalsy();
       fb.dismissMenu();
     });
+
+    it('should do next/previous page', function () {
+
+      fb.importMenu.click();
+      fb.showFhirResources.click();
+      expect(fb.dialog.isDisplayed()).toBeTruthy();
+      fb.fhirServerPulldownSelect(uhnServerName).click();
+
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeFalsy();
+      fb.nextButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+      fb.nextButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+      fb.nextButton.click();
+      expect(fb.nextButton.isEnabled()).toBeFalsy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+
+      fb.prevButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+      fb.prevButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+      fb.prevButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeFalsy();
+
+      fb.fhirServerPulldownSelect('UHN HAPI Server - STU3').click();
+
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeFalsy();
+      fb.nextButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+      fb.nextButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+      fb.nextButton.click();
+      expect(fb.nextButton.isEnabled()).toBeFalsy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+
+      fb.prevButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+      fb.prevButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeTruthy();
+      fb.prevButton.click();
+      expect(fb.nextButton.isEnabled()).toBeTruthy();
+      expect(fb.prevButton.isEnabled()).toBeFalsy();
+
+
+      fb.closeDialog(); // fhir results
+    });
   });
 
 });

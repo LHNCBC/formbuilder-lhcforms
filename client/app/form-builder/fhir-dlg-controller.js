@@ -1,6 +1,6 @@
 angular.module('formBuilder')
-.controller('fhirDlgController', ['$rootScope', '$mdDialog', 'fhirService', 'dataConstants',
-function ($rootScope, $mdDialog, fhirService, dataConstants) {
+.controller('fhirDlgController', ['$mdDialog', 'fhirService', 'dataConstants',
+function ($mdDialog, fhirService, dataConstants) {
   var self = this;
   self.fhirResultsCount = 0;
   self.onlyUserResources = true;
@@ -16,20 +16,7 @@ function ($rootScope, $mdDialog, fhirService, dataConstants) {
    * @param fhirServer - fhirServer object. See dataConstants.fhirServerList for its definition.
    */
   self.setFhirServer = function(fhirServer) {
-    if(fhirServer) {
-      if(!$rootScope.fhirHeaders) {
-        $rootScope.fhirHeaders = {};
-      }
-      if(fhirServer.endpoint) {
-        $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER] = fhirServer.endpoint;
-      }
-      if(fhirServer.basicAuth) {
-        $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_AUTH_HEADER] = fhirServer.basicAuth;
-      }
-      else {
-        delete $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_AUTH_HEADER];
-      }
-    }
+    fhirService.setFhirServer(fhirServer);
   };
 
 
@@ -37,7 +24,7 @@ function ($rootScope, $mdDialog, fhirService, dataConstants) {
    * Restore saved fhir server
    */
   self.restoreFhirServer = function() {
-    self.setFhirServer(self.savedFhirServer);
+    fhirService.setFhirServer(self.savedFhirServer);
   };
 
 
@@ -59,7 +46,7 @@ function ($rootScope, $mdDialog, fhirService, dataConstants) {
    * @param ev - event object
    */
   self.search = function(ev) {
-    self.setFhirServer(self.fhirServer);
+    fhirService.setFhirServer(self.fhirServer);
     fhirService.search(self.searchStr, self.onlyUserResources)
       .then(self.handleFhirResults, function(err) {
         self.handleError(ev, err);

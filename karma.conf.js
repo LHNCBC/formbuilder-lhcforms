@@ -15,11 +15,8 @@ module.exports = function(config) {
 
       /* bower:js */
       'client/bower_components/jquery/dist/jquery.js',
-      'client/bower_components/jquery-ui/ui/core.js',
       'client/bower_components/jquery-ui/ui/widget.js',
-      'client/bower_components/jquery-ui/ui/button.js',
-      'client/bower_components/jquery-ui/ui/dialog.js',
-      'client/bower_components/jquery-ui/ui/datepicker.js',
+      'client/bower_components/jquery-ui/ui/widgets/datepicker.js',
       'client/bower_components/lodash/lodash.js',
       'client/bower_components/angular/angular.js',
       'client/bower_components/angular-animate/angular-animate.js',
@@ -36,7 +33,6 @@ module.exports = function(config) {
       'client/bower_components/angular-strap/dist/angular-strap.tpl.js',
       'client/bower_components/angular-touch/angular-touch.js',
       'client/bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls.js',
-      'client/bower_components/angular-ui-date/src/date.js',
       'client/bower_components/angular-ui-layout/src/ui-layout.js',
       'client/bower_components/angular-ui-tree/dist/angular-ui-tree.js',
       'client/bower_components/es5-shim/es5-shim.js',

@@ -1,8 +1,10 @@
 var fb = angular.module('formBuilder');
 fb.service('fhirService', [
+  '$rootScope',
   '$window',
   '$fhir',
-  function($window, $fhir) {
+  'dataConstants',
+  function($rootScope, $window, $fhir, dataConstants) {
   var thisService = this;
 
 
@@ -67,7 +69,7 @@ fb.service('fhirService', [
    * @returns {*} Http promise
    */
   thisService.search = function(searchStr, selfOnly) {
-    var query = {};
+    var query = {$sort: ['-_lastUpdated']};
     if(searchStr) {
       query['name'] = searchStr;
     }
@@ -90,9 +92,7 @@ fb.service('fhirService', [
    * @returns {object} - An http promise
    */
   thisService.bundleUrlLink = function (url) {
-    var baseUrl = $window.location.href + '/fhir-api?';
-    var str = url.replace(/^.*\/baseDstu3\?/, baseUrl);
-    return $fhir.getBundleByUrl(str);
+    return $fhir.getBundleByUrl(getModifiedUrl(url));
   };
 
 
@@ -126,7 +126,30 @@ fb.service('fhirService', [
   };
 
 
-  /**
+    /**
+     * Set fhir server headers
+     *
+     * @param fhirServer - fhirServer object. See dataConstants.fhirServerList for its definition.
+     */
+    thisService.setFhirServer = function(fhirServer) {
+      if(fhirServer) {
+        if(!$rootScope.fhirHeaders) {
+          $rootScope.fhirHeaders = {};
+        }
+        if(fhirServer.endpoint) {
+          $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER] = fhirServer.endpoint;
+        }
+        if(fhirServer.basicAuth) {
+          $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_AUTH_HEADER] = fhirServer.basicAuth;
+        }
+        else {
+          delete $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_AUTH_HEADER];
+        }
+      }
+    };
+
+
+    /**
    * The URLs in the results are specific to backend FHIR server, which may not
    * be accessible to clients. Change the url to this origin server, which
    * handles all the FHIR server requests.
@@ -136,15 +159,30 @@ fb.service('fhirService', [
    */
   function updateLinkRelationUrls(bundle) {
     if(bundle && bundle.link) {
-      var baseUrl = $window.location.href;
-      baseUrl += baseUrl.match(/\/$/) ? '' : '/';
-      baseUrl += 'fhir-api?';
       bundle.link.forEach(function(relation){
-        relation.url = relation.url.replace(/^.*\/baseDstu3\?/, baseUrl);
+        relation.url = getModifiedUrl(relation.url);
       });
     }
 
     return bundle;
+  }
+
+
+  /**
+   * The FHIR server generates the url based on the FHIR server hostname. Access to that server is restricted. Change
+   * those urls to form builder server, so that it relays the calls to FHIR server.
+   *
+   *
+   * @param url - Given FHIR resource url
+   * @returns {*} - Modified url.
+   */
+  function getModifiedUrl(url) {
+    var baseUrl = $window.location.href;
+    // Make sure to have a slash before appending path.
+    baseUrl += baseUrl.match(/\/$/) ? '' : '/';
+    baseUrl += 'fhir-api';
+    var endpoint_url = $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER];
+    return url.replace(new RegExp(endpoint_url), baseUrl);
   }
 
   /**
