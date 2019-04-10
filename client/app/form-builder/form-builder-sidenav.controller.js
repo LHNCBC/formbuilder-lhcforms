@@ -155,6 +155,18 @@
 
 
       /**
+       * See if edits to this node impacts its ancestors
+       *
+       * @param node - Node to check for changes.
+       */
+      $scope.changeThisAndAncestralCustomCodes = function(node) {
+        var malignedNodes = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, node);
+        ancestors.push(malignedNodes);
+        formBuilderService.changeItemCodeToCustomCode(malignedNodes);
+      };
+
+
+      /**
        * Click handler to remove tree branch.
        *
        *  - Make sure to assign node selection to next logical node

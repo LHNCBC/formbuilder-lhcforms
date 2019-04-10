@@ -43,6 +43,10 @@ angular.module('formBuilder')
        */
       $scope.refreshPreview = function() {
         if($scope.selectedNode) {
+          if($scope.selectedNode.isDirty) {
+            $scope.changeThisAndAncestralCustomCodes($scope.selectedNode);
+            $scope.selectedNode.isDirty = false;
+          }
           $scope.selectedNode.previewItemData = formBuilderService.convertLfData($scope.selectedNode.lfData);
         }
         $scope.previewWidget();
