@@ -236,6 +236,12 @@ angular.module('formBuilder')
             var fhirData = LForms.Util.getFormFHIRData('Questionnaire', ele.format, $scope.previewLfData);
             $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
           });
+
+          //Customize preview in formbuilder.
+          $scope.previewLfData.templateOptions = $scope.previewLfData.templateOptions || {};
+          $scope.previewLfData.templateOptions.showFormHeader = false;
+          $scope.previewLfData.templateOptions.hideFormControls = true;
+          $scope.previewLfData.templateOptions.viewMode = 'md';
         }
         else {
           $scope.previewLfData = null;
@@ -254,10 +260,6 @@ angular.module('formBuilder')
 
         if (transformedObj) {
           formBuilderService.removeInvalidAnswers(transformedObj);
-          transformedObj.templateOptions = transformedObj.templateOptions || {};
-          transformedObj.templateOptions.showFormHeader = false;
-          transformedObj.templateOptions.hideFormControls = true;
-          transformedObj.templateOptions.viewMode = 'md';
           setPreviewData(transformedObj);
         }
       };

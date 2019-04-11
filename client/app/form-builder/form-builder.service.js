@@ -602,18 +602,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "useRestrictions":
           if(item.value && item.value.code) {
             var restrictions = thisService.getFormBuilderFields(item.items, 'restrictions');
-            var restrictionList = [];
+            var restrictionObj = {};
             restrictions.forEach(function(restriction) {
               if(restriction.items[0].value && restriction.items[0].value.code) {
                 var name = restriction.items[0].value.code;
                 if(restriction.items[1].value) {
                   var value = restriction.items[1].value;
-                  restrictionList.push({name: name, value: value});
+                  restrictionObj[name] = value;
                 }
               }
             });
-            if(restrictionList.length > 0) {
-              ret['restrictions'] = restrictionList;
+            if(Object.keys(restrictionObj).length > 0) {
+              ret['restrictions'] = restrictionObj;
             }
           }
           break;
@@ -1538,15 +1538,15 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @param importedValues - values to update
    */
   function updateRestrictions(useRestrictionsItem, importedValues) {
-    if(importedValues && lodash.isArray(importedValues)) {
+    if(importedValues) {
       var fbRestrictions = [];
-      importedValues.forEach(function (val) {
+      Object.keys(importedValues).forEach(function (key) {
         // Clone the default, and modify with imported values.
         var fbRestriction = angular.copy(useRestrictionsItem.items[0]);
         // Pick 'name' from answer list.
-        var fbVal = lodash.find(fbRestriction.items[0].answers, {code: val.name});
+        var fbVal = lodash.find(fbRestriction.items[0].answers, {code: key});
         fbRestriction.items[0].value = fbVal;
-        fbRestriction.items[1].value = val.value;
+        fbRestriction.items[1].value = importedValues[key];
         fbRestrictions.push(fbRestriction);
       });
 

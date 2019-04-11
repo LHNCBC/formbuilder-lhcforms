@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "main": [
     "client/app/app.js",
     "client/app/config.js",
