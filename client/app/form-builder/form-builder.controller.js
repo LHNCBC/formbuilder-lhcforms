@@ -543,7 +543,11 @@ angular.module('formBuilder')
        * @param lfFormData
        */
       $scope.updateLFData = function (lfFormData) {
-        $scope.formBuilderData = lfFormData;
+        $scope.formBuilderData.headers = lfFormData.headers;
+        var size = $scope.formBuilderData.treeData.length;
+        // The reference of $scope.formBuilderData.treeData is used in ui-tree of side bar. Update the contents the array,
+        // do not change the reference.
+        [].splice.apply($scope.formBuilderData.treeData, [0, size].concat(lfFormData.treeData));
       };
 
 
