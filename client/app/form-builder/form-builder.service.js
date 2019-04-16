@@ -79,8 +79,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   this.createLFData = function() {
     var lfData = {
-      basic: new LFormsData(angular.copy(lfDataCached.basic)),
-      advanced: new LFormsData(angular.copy(lfDataCached.advanced))
+      basic: new LForms.LFormsData(angular.copy(lfDataCached.basic)),
+      advanced: new LForms.LFormsData(angular.copy(lfDataCached.advanced))
     };
 
     return lfData;
@@ -210,8 +210,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData['basic'] = angular.copy(lfDataCached.basic);
     lfData['advanced'] = angular.copy(lfDataCached.advanced);
     updateQuestion(lfData, importedItem);
-    lfData.basic = new LFormsData(lfData.basic);
-    lfData.advanced = new LFormsData(lfData.advanced);
+    lfData.basic = new LForms.LFormsData(lfData.basic);
+    lfData.advanced = new LForms.LFormsData(lfData.advanced);
     return lfData;
   };
 
@@ -287,14 +287,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData.basic.templateOptions = node.lfData.basic.templateOptions;
 
     return updateUnitsURL(lfData.basic).then(function (basicLfData) {
-      lfData.basic = new LFormsData(basicLfData);
+      lfData.basic = new LForms.LFormsData(basicLfData);
       lfData.advanced = node.lfData.advanced.getFormData();
       lfData.advanced.name = node.lfData.advanced.name;
       lfData.advanced.code = node.lfData.advanced.code;
       lfData.advanced.type = node.lfData.advanced.type;
       lfData.advanced.template = node.lfData.advanced.template;
       lfData.advanced.templateOptions = node.lfData.advanced.templateOptions;
-      lfData.advanced = new LFormsData(lfData.advanced);
+      lfData.advanced = new LForms.LFormsData(lfData.advanced);
       node.lfData = lfData;
       return node;
     });
@@ -486,12 +486,16 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var ret = {};
     var answerCardinality = {min: "0",max: "1"};
     var dataType = null;
+    var tmp = null;
     if(randomFormBuilderItems) {
       dataType = lodash.find(formBuilderItems, {questionCode: 'dataType'}).value.code;
+      tmp = lodash.find(formBuilderItems, {questionCode: 'header'});
     }
     else {
       dataType = thisService.getFormBuilderField(formBuilderItems, 'dataType').value.code;
+      tmp = thisService.getFormBuilderField(formBuilderItems, 'header');
     }
+    var isHeader = tmp ? tmp.value ? tmp.value.code : false : false;
 
     lodash.forEach(formBuilderItems, function(item) {
       var attr = item.questionCode;
@@ -533,8 +537,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "type":
         case "header":
         case "editable":
-        case "dataType":
           if(item.value && typeof item.value.code !== 'undefined') {
+            ret[attr] = item.value.code;
+          }
+          break;
+
+        case "dataType":
+          // Don't output data type for headers.
+          if(!isHeader && item.value && typeof item.value.code !== 'undefined') {
             ret[attr] = item.value.code;
           }
           break;
@@ -735,8 +745,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "displayControl":
           if(item.value && item.value.code) {
             var displayControl = {};
-            var _isHeader = thisService.getFormBuilderField(formBuilderItems, '_isHeader').value;
-            if(_isHeader === 'Yes') {
+            if(isHeader) {
               displayControl.questionLayout = thisService.getFormBuilderField(item.items, 'questionLayout').value.code;
             }
             var _dataType = thisService.getFormBuilderField(formBuilderItems, '_dataType').value;

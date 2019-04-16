@@ -113,10 +113,14 @@ angular.module('formBuilder')
             showFhirResponse(event, {fhirError: err});
             return;
           }
-          switch($scope.detectDataFormat(importedData)) {
+
+          var version = LForms.Util.detectFHIRVersion(importedData);
+          version = !version ? 'lforms' : version;
+          switch(version) {
             case 'STU3':
+            case 'R4':
               try {
-                importedData = LForms.Util.convertFHIRQuestionnaireToLForms(importedData, 'STU3');
+                importedData = LForms.Util.convertFHIRQuestionnaireToLForms(importedData, version);
               }
               catch (err) {
                 err.message += ': Failed to convert the selected FHIR Questionnaire. File loading is aborted.';
@@ -133,25 +137,6 @@ angular.module('formBuilder')
           }
         };
         reader.readAsText(item._file);
-      };
-
-
-      /**
-       * Detect format of the json object, used when loading data from a file to see which format it belongs to.
-       * @param dataObj - Lforms or Questionnaire
-       * @returns {*} - Return 'lforms' or 'STU3'
-       */
-      $scope.detectDataFormat = function(dataObj) {
-        var ret = null;
-        if(dataObj) {
-          if(dataObj.resourceType === "Questionnaire") {
-            ret = 'STU3';
-          }
-          else if(dataObj.items) {
-            ret = 'lforms';
-          }
-        }
-        return ret;
       };
 
 
@@ -228,7 +213,7 @@ angular.module('formBuilder')
         $scope.previewSource['lforms'] = toJsonFilter(jsonInput, ['_', '$']);
         if(jsonInput.items.length > 0) {
           var previewSrcObj = JSON.parse($scope.previewSource['lforms']);
-          $scope.previewLfData = new LFormsData(previewSrcObj);
+          $scope.previewLfData = new LForms.LFormsData(previewSrcObj);
           if(previewSrcObj.id) {
             $scope.previewLfData.id = previewSrcObj.id;
           }
@@ -543,7 +528,11 @@ angular.module('formBuilder')
        * @param lfFormData
        */
       $scope.updateLFData = function (lfFormData) {
-        $scope.formBuilderData = lfFormData;
+        $scope.formBuilderData.headers = lfFormData.headers;
+        var size = $scope.formBuilderData.treeData.length;
+        // The reference of $scope.formBuilderData.treeData is used in ui-tree (side bar). Update content of the array,
+        // do not change the reference.
+        [].splice.apply($scope.formBuilderData.treeData, [0, size].concat(lfFormData.treeData));
       };
 
 

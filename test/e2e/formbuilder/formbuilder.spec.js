@@ -621,6 +621,7 @@ describe('GET /', function () {
     beforeAll(function (done) {
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('heart rate', 1);
+      fb.searchAndAddLoincPanel('weight change', 1);
       if (fs.existsSync(filename)) {
         // Make sure the browser doesn't have to rename the download.
         fs.unlinkSync(filename);
