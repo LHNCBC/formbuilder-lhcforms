@@ -543,6 +543,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           break;
 
         case "dataType":
+          // Don't output data type for headers.
           if(!isHeader && item.value && typeof item.value.code !== 'undefined') {
             ret[attr] = item.value.code;
           }
