@@ -213,7 +213,7 @@ angular.module('formBuilder')
         $scope.previewSource['lforms'] = toJsonFilter(jsonInput, ['_', '$']);
         if(jsonInput.items.length > 0) {
           var previewSrcObj = JSON.parse($scope.previewSource['lforms']);
-          $scope.previewLfData = new LFormsData(previewSrcObj);
+          $scope.previewLfData = new LForms.LFormsData(previewSrcObj);
           if(previewSrcObj.id) {
             $scope.previewLfData.id = previewSrcObj.id;
           }

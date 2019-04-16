@@ -79,8 +79,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   this.createLFData = function() {
     var lfData = {
-      basic: new LFormsData(angular.copy(lfDataCached.basic)),
-      advanced: new LFormsData(angular.copy(lfDataCached.advanced))
+      basic: new LForms.LFormsData(angular.copy(lfDataCached.basic)),
+      advanced: new LForms.LFormsData(angular.copy(lfDataCached.advanced))
     };
 
     return lfData;
@@ -210,8 +210,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData['basic'] = angular.copy(lfDataCached.basic);
     lfData['advanced'] = angular.copy(lfDataCached.advanced);
     updateQuestion(lfData, importedItem);
-    lfData.basic = new LFormsData(lfData.basic);
-    lfData.advanced = new LFormsData(lfData.advanced);
+    lfData.basic = new LForms.LFormsData(lfData.basic);
+    lfData.advanced = new LForms.LFormsData(lfData.advanced);
     return lfData;
   };
 
@@ -287,14 +287,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData.basic.templateOptions = node.lfData.basic.templateOptions;
 
     return updateUnitsURL(lfData.basic).then(function (basicLfData) {
-      lfData.basic = new LFormsData(basicLfData);
+      lfData.basic = new LForms.LFormsData(basicLfData);
       lfData.advanced = node.lfData.advanced.getFormData();
       lfData.advanced.name = node.lfData.advanced.name;
       lfData.advanced.code = node.lfData.advanced.code;
       lfData.advanced.type = node.lfData.advanced.type;
       lfData.advanced.template = node.lfData.advanced.template;
       lfData.advanced.templateOptions = node.lfData.advanced.templateOptions;
-      lfData.advanced = new LFormsData(lfData.advanced);
+      lfData.advanced = new LForms.LFormsData(lfData.advanced);
       node.lfData = lfData;
       return node;
     });
