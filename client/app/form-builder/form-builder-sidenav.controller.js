@@ -253,21 +253,6 @@
       }
 
 
-      /**
-       * Remove all at once.
-       */
-      $scope.removeAll = function () {
-        $scope.getRootNodesScope().childNodes().forEach(function(n) {
-          if(n) {
-            n.remove();
-          }
-        });
-        deregisterDirtyCheckWatches($scope);
-        $scope.setSelectedNode(null);
-        $scope.previewWidget();
-      };
-
-
        /**
        * Expand/collapse handler
        *
@@ -524,18 +509,13 @@
        * @param importedData - New form data
        */
       $scope.replaceForm = function(importedData) {
-        $scope.startSpin();
-        $scope.removeAll();
-        var rootNodesScope = $scope.getRootNodesScope();
-        $scope.updateLFData(formBuilderService.createFormBuilder(importedData));
-        if($scope.formBuilderData && $scope.formBuilderData.treeData) {
-          $scope.formBuilderData.treeData.forEach(function(node) {
-            var childNodes = rootNodesScope.childNodes();
-            rootNodesScope.insertNode(childNodes.length, node);
-          });
+        if(importedData) {
+          $scope.startSpin();
+          deregisterDirtyCheckWatches($scope);
+          $scope.updateLFData(formBuilderService.createFormBuilder(importedData));
+          $scope.selectNode($scope.formBuilderData.treeData[0]);
+          $scope.stopSpin();
         }
-        $scope.selectNode($scope.formBuilderData.treeData[0]);
-        $scope.stopSpin();
       };
 
 

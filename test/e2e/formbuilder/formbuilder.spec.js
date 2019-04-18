@@ -411,11 +411,8 @@ describe('GET /', function () {
         var previewLFData = JSON.parse(text);
         var selectedItem = previewLFData.items[0].items[0].items[1];
         expect(selectedItem.question).toBe('Resp rate');
-        expect(selectedItem.restrictions.length).toBe(2);
-        expect(selectedItem.restrictions[0].name).toBe('minExclusive');
-        expect(selectedItem.restrictions[0].value).toBe('50');
-        expect(selectedItem.restrictions[1].name).toBe('maxExclusive');
-        expect(selectedItem.restrictions[1].value).toBe('100');
+        expect(selectedItem.restrictions.minExclusive).toBe('50');
+        expect(selectedItem.restrictions.maxExclusive).toBe('100');
       });
     });
   });
@@ -624,6 +621,7 @@ describe('GET /', function () {
     beforeAll(function (done) {
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('heart rate', 1);
+      fb.searchAndAddLoincPanel('weight change', 1);
       if (fs.existsSync(filename)) {
         // Make sure the browser doesn't have to rename the download.
         fs.unlinkSync(filename);
@@ -673,6 +671,7 @@ describe('GET /', function () {
     it('Should save lforms format to a file', function () {
 
       var newJson = JSON.parse(fs.readFileSync(filename, {encoding: 'utf8'}));
+      expect(newJson.templateOptions).toBeUndefined();
       expect(newJson).toEqual(lformsOriginalJson);
       // Edit the file outside the formbuilder.
       // Add an undefined attribute to an item in the file.

@@ -2,6 +2,16 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.0.5]  2019-04-16
+### Fixed.
+- Fixed a bug in ui-tree display for multiple items on the root.
+- Fixed a bug in importing R4 version of Questionnaire from the local disk. 
+
+## [3.0.4]  2019-04-11
+### Fixed.
+- Fixed restrictions output format to conform to latest lforms spec.
+- Removed hard coded templateOptions in the lforms format for export. 
+
 ## [3.0.3]  2019-03-22
 ### Fixed.
 - Fix next/previous page display in FHIR results dialog.

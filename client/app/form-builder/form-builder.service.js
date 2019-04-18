@@ -79,8 +79,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   this.createLFData = function() {
     var lfData = {
-      basic: new LFormsData(angular.copy(lfDataCached.basic)),
-      advanced: new LFormsData(angular.copy(lfDataCached.advanced))
+      basic: new LForms.LFormsData(angular.copy(lfDataCached.basic)),
+      advanced: new LForms.LFormsData(angular.copy(lfDataCached.advanced))
     };
 
     return lfData;
@@ -210,8 +210,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData['basic'] = angular.copy(lfDataCached.basic);
     lfData['advanced'] = angular.copy(lfDataCached.advanced);
     updateQuestion(lfData, importedItem);
-    lfData.basic = new LFormsData(lfData.basic);
-    lfData.advanced = new LFormsData(lfData.advanced);
+    lfData.basic = new LForms.LFormsData(lfData.basic);
+    lfData.advanced = new LForms.LFormsData(lfData.advanced);
     return lfData;
   };
 
@@ -287,14 +287,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     lfData.basic.templateOptions = node.lfData.basic.templateOptions;
 
     return updateUnitsURL(lfData.basic).then(function (basicLfData) {
-      lfData.basic = new LFormsData(basicLfData);
+      lfData.basic = new LForms.LFormsData(basicLfData);
       lfData.advanced = node.lfData.advanced.getFormData();
       lfData.advanced.name = node.lfData.advanced.name;
       lfData.advanced.code = node.lfData.advanced.code;
       lfData.advanced.type = node.lfData.advanced.type;
       lfData.advanced.template = node.lfData.advanced.template;
       lfData.advanced.templateOptions = node.lfData.advanced.templateOptions;
-      lfData.advanced = new LFormsData(lfData.advanced);
+      lfData.advanced = new LForms.LFormsData(lfData.advanced);
       node.lfData = lfData;
       return node;
     });
@@ -486,12 +486,16 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var ret = {};
     var answerCardinality = {min: "0",max: "1"};
     var dataType = null;
+    var tmp = null;
     if(randomFormBuilderItems) {
       dataType = lodash.find(formBuilderItems, {questionCode: 'dataType'}).value.code;
+      tmp = lodash.find(formBuilderItems, {questionCode: 'header'});
     }
     else {
       dataType = thisService.getFormBuilderField(formBuilderItems, 'dataType').value.code;
+      tmp = thisService.getFormBuilderField(formBuilderItems, 'header');
     }
+    var isHeader = tmp ? tmp.value ? tmp.value.code : false : false;
 
     lodash.forEach(formBuilderItems, function(item) {
       var attr = item.questionCode;
@@ -533,8 +537,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "type":
         case "header":
         case "editable":
-        case "dataType":
           if(item.value && typeof item.value.code !== 'undefined') {
+            ret[attr] = item.value.code;
+          }
+          break;
+
+        case "dataType":
+          // Don't output data type for headers.
+          if(!isHeader && item.value && typeof item.value.code !== 'undefined') {
             ret[attr] = item.value.code;
           }
           break;
@@ -602,18 +612,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "useRestrictions":
           if(item.value && item.value.code) {
             var restrictions = thisService.getFormBuilderFields(item.items, 'restrictions');
-            var restrictionList = [];
+            var restrictionObj = {};
             restrictions.forEach(function(restriction) {
               if(restriction.items[0].value && restriction.items[0].value.code) {
                 var name = restriction.items[0].value.code;
                 if(restriction.items[1].value) {
                   var value = restriction.items[1].value;
-                  restrictionList.push({name: name, value: value});
+                  restrictionObj[name] = value;
                 }
               }
             });
-            if(restrictionList.length > 0) {
-              ret['restrictions'] = restrictionList;
+            if(Object.keys(restrictionObj).length > 0) {
+              ret['restrictions'] = restrictionObj;
             }
           }
           break;
@@ -735,8 +745,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "displayControl":
           if(item.value && item.value.code) {
             var displayControl = {};
-            var _isHeader = thisService.getFormBuilderField(formBuilderItems, '_isHeader').value;
-            if(_isHeader === 'Yes') {
+            if(isHeader) {
               displayControl.questionLayout = thisService.getFormBuilderField(item.items, 'questionLayout').value.code;
             }
             var _dataType = thisService.getFormBuilderField(formBuilderItems, '_dataType').value;
@@ -1538,15 +1547,15 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @param importedValues - values to update
    */
   function updateRestrictions(useRestrictionsItem, importedValues) {
-    if(importedValues && lodash.isArray(importedValues)) {
+    if(importedValues) {
       var fbRestrictions = [];
-      importedValues.forEach(function (val) {
+      Object.keys(importedValues).forEach(function (key) {
         // Clone the default, and modify with imported values.
         var fbRestriction = angular.copy(useRestrictionsItem.items[0]);
         // Pick 'name' from answer list.
-        var fbVal = lodash.find(fbRestriction.items[0].answers, {code: val.name});
+        var fbVal = lodash.find(fbRestriction.items[0].answers, {code: key});
         fbRestriction.items[0].value = fbVal;
-        fbRestriction.items[1].value = val.value;
+        fbRestriction.items[1].value = importedValues[key];
         fbRestrictions.push(fbRestriction);
       });
 
