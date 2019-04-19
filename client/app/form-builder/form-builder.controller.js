@@ -537,6 +537,17 @@ angular.module('formBuilder')
 
 
       /**
+       * See if edits to this node impacts its ancestors
+       *
+       * @param node - Node to check for changes.
+       */
+      $scope.changeThisAndAncestralCustomCodes = function(node) {
+        var malignedNodes = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, node);
+        formBuilderService.changeItemCodeToCustomCode(malignedNodes);
+      };
+
+
+      /**
        * Get an lfItem using a field name
        * @param lfData - LForms data object
        * @param fieldName - Field name

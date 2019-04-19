@@ -149,20 +149,7 @@
        */
       $scope.updateIdsAndAncestralCustomCodes = function(node) {
         formBuilderService.updateTreeIds($scope.formBuilderData.treeData);
-        var ancestors = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, node);
-        formBuilderService.changeItemCodeToCustomCode(ancestors);
-      };
-
-
-      /**
-       * See if edits to this node impacts its ancestors
-       *
-       * @param node - Node to check for changes.
-       */
-      $scope.changeThisAndAncestralCustomCodes = function(node) {
-        var malignedNodes = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, node);
-        ancestors.push(malignedNodes);
-        formBuilderService.changeItemCodeToCustomCode(malignedNodes);
+        $scope.changeThisAndAncestralCustomCodes(node);
       };
 
 
