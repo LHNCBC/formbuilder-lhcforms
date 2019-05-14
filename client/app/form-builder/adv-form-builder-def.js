@@ -263,6 +263,11 @@ var advFormBuilderDef = {
                 "question": "Select value to satisfy the condition",
                 "header": false,
                 "codingInstructions": "Specify a source field value to satisfy the condition.",
+                "displayControl": {
+                  "answerLayout": {
+                    "type": "COMBO_BOX"
+                  }
+                },
                 "skipLogic": {
                   "logic": "ANY",
                   "conditions": [
