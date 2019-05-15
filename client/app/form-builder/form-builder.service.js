@@ -965,7 +965,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var val = item.value;
     if(val) {
       if(Object(val) === val) {
-        val = lodash.find(item.answers, val);
+        val = lodash.find(item.answers, {code: val.code});
       }
       else {
         val = lodash.find(item.answers, {code: val});

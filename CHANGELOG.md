@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.0.6]  2019-05-14
+### Fixed.
+- Fixed a bug in importing items with CNE/CWE type triggers in skip logic.
+
 ## [3.0.5]  2019-04-16
 ### Fixed.
 - Fixed a bug in ui-tree display for multiple items on the root.
