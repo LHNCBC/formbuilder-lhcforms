@@ -40,7 +40,7 @@
       <!-- injector:css -->
       <!-- endinjector -->
     <!-- endbuild -->
-    <link href='//fonts.googleapis.com/css?family=Droid+Sans:400,700'
+    <link href='//fonts.googleapis.com/css?family=Droid+Sans:400,700|Material+Icons'
           rel='stylesheet' type='text/css'/>
   </head>
   <body ng-app="formBuilder">

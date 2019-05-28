@@ -1,0 +1,14 @@
+<md-list flex>
+    <md-list-item md-colors="{background: 'default-primary-700'}" ng-click="toggle.list1 = !toggle.list1">
+        <md-icon ng-if="!toggle.list1">expand_less</md-icon>
+        <md-icon ng-if="toggle.list1">expand_more</md-icon>
+        <span ng-if="toggle.list1" flex>Show Form Level Fields</span>
+        <span ng-if="!toggle.list1" flex>Hide Form Level Fields</span>
+        <md-icon ng-if="toggle.list1">expand_more</md-icon>
+        <md-icon ng-if="!toggle.list1">expand_less</md-icon>
+    </md-list-item>
+    <md-list-item ng-show="!toggle.list1">
+        <lforms id="basicHeaderPanel" lf-data="formBuilderData.formLevelFBData.basic"></lforms>
+        <lforms id="advHeaderPanel" lf-data="formBuilderData.formLevelFBData.advanced"></lforms>
+    </md-list-item>
+</md-list>

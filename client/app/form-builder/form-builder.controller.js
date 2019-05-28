@@ -75,14 +75,12 @@ angular.module('formBuilder')
        * @type {Array}
        */
       $scope.formBuilderData = {
-        headers: formBuilderService.getHeaders(),
+        formLevelFBData: formBuilderService.getHeaders(),
         treeData: []
       };
 
       $scope.selectedNode = null;
 
-      $scope.sourceJson = null;
-      
       $scope.termsOfUseAccepted = 'unknown';
 
       $scope.isUserSignedIn = !firebaseService.isEnabled(); // If disabled, no control on fhir server access.
@@ -198,29 +196,21 @@ angular.module('formBuilder')
 
 
       /**
-       * Initialize form builder setup.
-       */
-      $scope.setFormBuilderData = function() {
-        formBuilderService.cacheLFData();
-      };
-
-
-      /**
        * Initialize lform data for widget preview.
        * @param jsonInput
        */
       function setPreviewData(jsonInput) {
         $scope.previewSource['lforms'] = toJsonFilter(jsonInput, ['_', '$']);
-        if(jsonInput.items.length > 0) {
-          var previewSrcObj = JSON.parse($scope.previewSource['lforms']);
+        var previewSrcObj = JSON.parse($scope.previewSource['lforms']);
+        $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
+          var fhirData = LForms.FHIR[ele.format].SDC.convertLFormsToQuestionnaire(previewSrcObj);
+          $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
+        });
+        if(previewSrcObj.items.length > 0) {
           $scope.previewLfData = new LForms.LFormsData(previewSrcObj);
           if(previewSrcObj.id) {
             $scope.previewLfData.id = previewSrcObj.id;
           }
-          $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
-            var fhirData = LForms.Util.getFormFHIRData('Questionnaire', ele.format, $scope.previewLfData);
-            $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
-          });
 
           //Customize preview in formbuilder.
           $scope.previewLfData.templateOptions = $scope.previewLfData.templateOptions || {};
@@ -230,9 +220,6 @@ angular.module('formBuilder')
         }
         else {
           $scope.previewLfData = null;
-          $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
-            $scope.previewSource[ele.format] = null;
-          });
         }
       }
 
@@ -264,8 +251,8 @@ angular.module('formBuilder')
             $scope.previewWidget();
             var content = $scope.previewSource[answer.format];
             var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
-            var exportFileName = $scope.formBuilderData.headers[2].value ? $scope.formBuilderData.headers[2].value :
-              'NewLForm';
+            var formName = $scope.formBuilderData.formLevelFBData.basic.itemHash['/name/1'].value;
+            var exportFileName = formName ?  formName : 'NewLForm';
 
             // Use hidden anchor to do file download.
             var downloadLink = angular.element(document.getElementById('exportAnchor'));
@@ -528,7 +515,7 @@ angular.module('formBuilder')
        * @param lfFormData
        */
       $scope.updateLFData = function (lfFormData) {
-        $scope.formBuilderData.headers = lfFormData.headers;
+        $scope.formBuilderData.formLevelFBData = lfFormData.formLevelFBData;
         var size = $scope.formBuilderData.treeData.length;
         // The reference of $scope.formBuilderData.treeData is used in ui-tree (side bar). Update content of the array,
         // do not change the reference.
@@ -683,4 +670,6 @@ angular.module('formBuilder')
       $rootScope.$on('LF_FIREBASE_AUTH_RESOURCE_CREATED', function () {
         $scope.$apply();
       });
+
+      $scope.updateLFData($scope.formBuilderData);
     }]);

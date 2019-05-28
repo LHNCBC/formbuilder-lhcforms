@@ -37,15 +37,18 @@
 
     <div id="resizableMiddle">
       <!-- Nested node template -->
+      <div ng-include="'app/form-builder/formlevel-panel/collapsable-panel.html'" ng-controller="flCtrl"></div>
       <div id="main-container" layout="row">
         <md-sidenav id="sidebar" md-component-id="left" md-is-locked-open="true"
                     class="md-sidenav-left">
+          <!--
           <div>
             <md-input-container id="formTitleInputContainer">
               <label>Form Name</label>
               <input id="formTitleInput" ng-model="formBuilderData.headers[2].value">
             </md-input-container>
           </div>
+          -->
           <div class="vbox" id="sidebar-container" ng-controller="SideNavCtrl">
             <md-button id="addNewButton"
                        class="md-raised md-primary"

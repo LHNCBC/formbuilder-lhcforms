@@ -6,40 +6,9 @@
  */
 
 var fb = angular.module('formBuilder');
-fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConstants', function($window, lodash, $q, $http, dataConstants) {
+fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConstants', 'flService', function($window, lodash, $q, $http, dataConstants, flService) {
 
   var thisService = this; // Self reference for promises etc., where 'this' means something else
-
-  /**
-   * Define header data.
-   *
-   * @type {*[]}
-   */
-  var headers = [{
-    "id": "0.1",
-    "title": "Coding System",
-    "noButtons": true,
-    "type": "CNE",
-    answers: {
-      listItems: [
-        {text: dataConstants.LOINC, code: dataConstants.LOINC},
-        {text: dataConstants.CUSTOM, code: dataConstants.CUSTOM}
-      ],
-      defaultValue: {code: dataConstants.LOINC}
-    },
-    value: {text: dataConstants.LOINC, code: dataConstants.LOINC}
-  }, {
-    "id": "0.2",
-    "title": "Form Code",
-    "noButtons": true,
-    "type": "ST"
-  }, {
-    "id": "0.3",
-    "title": "Form Name",
-    "noButtons": true,
-    "type": "ST",
-    "value": 'NewLForm'
-  }];
 
   /**
    * Cached model of tree data structure.
@@ -63,10 +32,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   };
 
   this.getHeaders = function() {
-    return headers;
+    return {
+      basic: new LForms.LFormsData(angular.copy(lfDataCached.formLevelFBData.basic)),
+      advanced: new LForms.LFormsData(angular.copy(lfDataCached.formLevelFBData.advanced)),
+    };
   };
   // Cache the question builder data model.
   var lfDataCached = {
+    formLevelFBData: {},
     basic: null,
     advanced: null
   };
@@ -91,8 +64,12 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * The formBuilderDef widget is defined in form-builder-def.js.
    */
   this.cacheLFData = function() {
+    thisService.processAnswerLists(basicFormLevelFieldsDef);
+    thisService.processAnswerLists(advFormLevelFieldsDef);
     thisService.processAnswerLists(formBuilderDef);
     thisService.processAnswerLists(advFormBuilderDef);
+    lfDataCached.formLevelFBData.basic = angular.copy(basicFormLevelFieldsDef);
+    lfDataCached.formLevelFBData.advanced = angular.copy(advFormLevelFieldsDef);
     lfDataCached.basic = angular.copy(formBuilderDef);
     lfDataCached.advanced = angular.copy(advFormBuilderDef);
   };
@@ -146,9 +123,10 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   this.createFormBuilder = function(importedData) {
     var formBuilder = {};
-    formBuilder.headers = thisService.getHeaders();
+    var flData = angular.copy(lfDataCached.formLevelFBData);
+    flService.updateFormLevelFields(flData, importedData);
+    formBuilder.formLevelFBData = {basic: new LForms.LFormsData(flData.basic), advanced: new LForms.LFormsData(flData.advanced)};
     formBuilder.treeData = [];
-    updateHeaders(formBuilder, importedData);
     thisService.updateTree(formBuilder.treeData, importedData.items);
     thisService.processNodeTree(formBuilder.treeData);
     return formBuilder;
@@ -248,17 +226,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   this.transformFormBuilderToFormDef = function(formData) {
     var ret = {};
     if(formData) {
-      var type = formData.headers[0].value.code;
-      var code = formData.headers[1].value;
-      var name = formData.headers[2].value || '';
-      if(type && code) {
-        ret.type = type;
-        ret.code = code;
-      }
-      ret.name = name;
-      if(formData.id) {
-        ret.id = formData.id;
-      }
+      ret = flService.convertFormLevelDataToLForms(formData.formLevelFBData);
       ret.items = transformTreeToFormDef(formData.treeData);
     }
 
@@ -1640,27 +1608,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
-   * Update form headers
-   *
-   * @param {Object} lfData - Form builder data model
-   * @param {Object} importedData - Imported data object
-   */
-  function updateHeaders(lfData, importedData) {
-    if(importedData.id) {
-      lfData.id = importedData.id;
-    }
-    lfData.headers[0].value = {
-      text: importedData.type,
-      code: importedData.type
-    };
-    lfData.headers[1].value = importedData.code;
-    if(importedData.name) {
-      lfData.headers[2].value = importedData.name;
-    }
-  }
-
-
-  /**
    * @param {Object} obj - Object whose keys are renamed.
    * @param {String} oldkey
    * @param {String} newkey
@@ -1716,5 +1663,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
   // Expose for unit testing
   this._updateUnitsURL = updateUnitsURL;
+
+  this.cacheLFData();
 
 }]);
