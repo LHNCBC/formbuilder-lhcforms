@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.0.7]  2019-05-20
+### Changed.
+- Remove CSP middleware, let the package users handle the csp headers.
+- Fix critical npm audit alerts.
+
 ## [3.0.6]  2019-05-14
 ### Fixed.
 - Fixed a bug in importing items with CNE/CWE type triggers in skip logic.
