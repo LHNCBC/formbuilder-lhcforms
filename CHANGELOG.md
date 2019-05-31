@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [3.1.0]  2019-05-20
+## [3.0.7]  2019-05-20
 ### Changed.
 - Remove CSP middleware, let the package users handle the csp headers.
 - Fix critical npm audit alerts.
