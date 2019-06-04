@@ -4,7 +4,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [3.0.8]  2019-06-04
 ### Changed.
-- Update formbuilder package.
+- Update lforms package.
 
 ## [3.0.7]  2019-05-20
 ### Changed.
