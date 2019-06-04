@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.0.8]  2019-06-04
+### Changed.
+- Update lforms package.
+
 ## [3.0.7]  2019-05-20
 ### Changed.
 - Remove CSP middleware, let the package users handle the csp headers.
