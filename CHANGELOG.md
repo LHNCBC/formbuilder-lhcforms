@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.0.9]  2019-06-06
+### Changed.
+- Update node dependencies to fix npm audit vulnerabilities.
+
 ## [3.0.8]  2019-06-04
 ### Changed.
 - Update lforms package.
