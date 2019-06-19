@@ -1,0 +1,25 @@
+<div ui-tree-handle class="tree-node tree-node-content flex-container"  ng-init="_qItem = getItem(node.lfData, 'question');_codeItem = getItem(node.lfData, 'questionCode')"
+     ng-class="{active: node.id === selectedNode.id, 'panel-node': getItem(node.lfData, 'header').value.code === true}">
+    <button
+            ng-show="isHeaderItem(node.lfData) || node.nodes && node.nodes.length > 0"
+            class="btn btn-success btn-xs" data-nodrag
+            role="button"
+            ng-attr-aria-label="{{collapsed ? 'Show' : 'Hide'}} children of item {{node.id}} {{_qItem.value}}"
+            ng-click="toggle(this)">
+              <span class="glyphicon glyphicon-chevron-down"
+                    ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span>
+        <md-tooltip>{{collapsed ? 'Expand' : 'Collapse'}}</md-tooltip>
+    </button>
+    <div class="flex-item-stretch"
+         ng-click="click(this)">
+
+        <span>{{node.id}} {{ (_qItem && _qItem.value && _qItem.value.trim().length > 0) ? _qItem.value : node.title | truncateFilter:{'length': 20} }}</span>
+        <md-tooltip md-delay="100" ng-if="_qItem.value && _qItem.value.length > 0">{{node.id}} {{_qItem.value}}
+            <span ng-if="_codeItem && _codeItem.value && _codeItem.value.length > 0">[{{_codeItem.value}}]</span>
+        </md-tooltip>
+    </div>
+    <button data-nodrag md-menu-origin="" aria-label="Open more options menu for this item" class="glyphicon btn btn-xs more-options glyphicon-option-horizontal"
+            ng-click="menuCtrl.showPopupMenu(this, $event)">
+        <md-tooltip>More options</md-tooltip>
+    </button>
+</div>

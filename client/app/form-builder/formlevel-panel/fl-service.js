@@ -2,19 +2,33 @@ angular.module('formBuilder')
   .service('flService', ['lodash', function(lodash){
     var flService = this;
 
-    flService.convertFormLevelDataToLForms = function(fbFormLevelData) {
-      var lfFormLevelData = flService.convertFBFormLevelItems(fbFormLevelData.basic.items);
-      return lodash.assign(lfFormLevelData, flService.convertFBFormLevelItems(fbFormLevelData.advanced.items));
+    flService.exportFormLevelDataToLForms = function(fbFormLevelData) {
+      var lfFormLevelData = flService._convertFBFormLevelItems(fbFormLevelData.basic.items);
+      return lodash.assign(lfFormLevelData, flService._convertFBFormLevelItems(fbFormLevelData.advanced.items));
     };
 
 
-    flService.convertFBFormLevelItems = function (fbFormLevelItems) {
+    flService.importFormLevelFields = function (fbHeaderData, importedHeadersObj) {
+
+      flService._updateFBFormLevelFields(fbHeaderData.basic.items, importedHeadersObj);
+      flService._updateFBFormLevelFields(fbHeaderData.advanced.items, importedHeadersObj);
+
+    };
+
+
+    /***** Private ****/
+    /**
+     *
+     * @param fbFormLevelItems
+     * @private
+     */
+    flService._convertFBFormLevelItems = function (fbFormLevelItems) {
       var lfHeaders = {};
       for(var i = 0; i < fbFormLevelItems.length; i++) {
         var fbItem = fbFormLevelItems[i];
-        var item = flService.convertFBFormLevelItem(fbItem);
+        var item = flService._convertFBItem(fbItem);
         if(item !== null) {
-          if(isAnArray(fbItem.questionCardinality)) {
+          if(flService._isAnArray(fbItem.questionCardinality)) {
             if(!lfHeaders[fbItem.questionCode]) {
               lfHeaders[fbItem.questionCode] = [];
             }
@@ -29,8 +43,9 @@ angular.module('formBuilder')
       return lfHeaders;
     };
 
-    flService.convertFBFormLevelItem = function(fbItem) {
-      var ret = null, i = 0, children = null;
+
+    flService._convertFBItem = function(fbItem) {
+      var ret = null;
       if(fbItem.header || (fbItem.value !== null && fbItem.value !== undefined)) {
         switch (fbItem.localQuestionCode) {
           case 'id':
@@ -51,7 +66,7 @@ angular.module('formBuilder')
             }
             else {
               // Some times fbItem.value is date object?
-              ret = LForms.Util.dateToString(fbItem.value);
+              ret = fbItem.value.toISOString();
             }
 
             if(fbItem.localQuestionCode === 'date') {
@@ -82,13 +97,14 @@ angular.module('formBuilder')
           case 'Range':
           case 'SimpleQuantity':
           case 'UsageContext':
-             var obj = flService.convertFBFormLevelItems(fbItem.items);
+             var obj = flService._convertFBFormLevelItems(fbItem.items);
              if(obj && !angular.equals(obj, {})) {
-               ret = flService.convertFBFormLevelItems(fbItem.items);
+               ret = flService._convertFBFormLevelItems(fbItem.items);
              }
             break;
 
           default:
+            // ret = fbItem; // Copy unsupported field as it is.
             break;
         }
       }
@@ -96,22 +112,15 @@ angular.module('formBuilder')
     };
 
 
-    flService.updateFormLevelFields = function (fbHeaderData, importedHeadersObj) {
-
-      flService.updateFBFormLevelFields(fbHeaderData.basic.items, importedHeadersObj);
-      flService.updateFBFormLevelFields(fbHeaderData.advanced.items, importedHeadersObj);
-
-    };
-
-    flService.updateFBFormLevelFields = function (fbHeaders, importedHeadersObj) {
+    flService._updateFBFormLevelFields = function (fbHeaders, importedHeadersObj) {
       for(var i = 0; i < fbHeaders.length; i++) {
         var val = importedHeadersObj[fbHeaders[i].questionCode];
         if(val !== null && val !== undefined) {
-          if(isAnArray(fbHeaders[i].questionCardinality)) {
+          if(flService._isAnArray(fbHeaders[i].questionCardinality)) {
             var newItems = [];
             val.forEach(function (v){
               var newItem = angular.copy(fbHeaders[i]);
-              flService.updateFBItem(newItem, v);
+              flService._updateFBItem(newItem, v);
               newItems.push(newItem);
             });
 
@@ -121,7 +130,7 @@ angular.module('formBuilder')
             }
           }
           else {
-            flService.updateFBItem(fbHeaders[i], val);
+            flService._updateFBItem(fbHeaders[i], val);
           }
         }
       }
@@ -129,9 +138,9 @@ angular.module('formBuilder')
     };
 
 
-    flService.updateFBItem = function(fbItem, value) {
+    flService._updateFBItem = function(fbItem, value) {
       if(fbItem.header) {
-        flService.updateFBFormLevelFields(fbItem.items, value);
+        flService._updateFBFormLevelFields(fbItem.items, value);
       }
       else {
         if(value !== null && value !== undefined) {
@@ -157,7 +166,7 @@ angular.module('formBuilder')
     };
 
 
-    function isAnArray(cardinality) {
+    flService._isAnArray = function (cardinality) {
       var ret = false;
       if(cardinality) {
         if(cardinality.min && parseInt(cardinality.min) > 1) {
@@ -169,6 +178,6 @@ angular.module('formBuilder')
       }
 
       return ret;
-    }
+    };
 
   }]);

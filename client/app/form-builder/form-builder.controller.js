@@ -38,7 +38,7 @@ angular.module('formBuilder')
       $scope.formatList = [
         {displayName: 'FHIR Questionnaire (R4)', format: 'R4'},
         {displayName: 'FHIR Questionnaire (STU3)', format: 'STU3'},
-        {displayName: 'LHC Forms', format: 'lforms'}
+        {displayName: 'LHC-Forms', format: 'lforms'}
       ];
       $scope.selectedFormat = $scope.formatList[0];
 
@@ -74,10 +74,7 @@ angular.module('formBuilder')
        * Place holder for tree data
        * @type {Array}
        */
-      $scope.formBuilderData = {
-        formLevelFBData: formBuilderService.getHeaders(),
-        treeData: []
-      };
+      $scope.formBuilderData = formBuilderService.createFormBuilder();
 
       $scope.selectedNode = null;
 
@@ -251,7 +248,7 @@ angular.module('formBuilder')
             $scope.previewWidget();
             var content = $scope.previewSource[answer.format];
             var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
-            var formName = $scope.formBuilderData.formLevelFBData.basic.itemHash['/name/1'].value;
+            var formName = $scope.formBuilderData.treeData[0].lfData.basic.itemHash['/title/1'].value;
             var exportFileName = formName ?  formName : 'NewLForm';
 
             // Use hidden anchor to do file download.
@@ -337,6 +334,7 @@ angular.module('formBuilder')
             fhirService.create($scope.previewSource[$scope.getFhirServer().version], $scope.userProfile)
               .then(function (response) {
                 $scope.formBuilderData.id = response.data.id;
+                formBuilderService.getFormBuilderField($scope.formBuilderData.treeData[0].lfData.basic.items, 'id').value = response.data.id;
                 showFhirResponse(ev, {fhirResponse: response.data});
               }, function (err) {
                 showFhirResponse(ev, {fhirError: err});
@@ -515,7 +513,6 @@ angular.module('formBuilder')
        * @param lfFormData
        */
       $scope.updateLFData = function (lfFormData) {
-        $scope.formBuilderData.formLevelFBData = lfFormData.formLevelFBData;
         var size = $scope.formBuilderData.treeData.length;
         // The reference of $scope.formBuilderData.treeData is used in ui-tree (side bar). Update content of the array,
         // do not change the reference.
@@ -535,7 +532,8 @@ angular.module('formBuilder')
 
 
       /**
-       * Get an lfItem using a field name
+       * Get an lfItem using a field name. Looks at only top level fields, i.e nested items are not returned.
+       *
        * @param lfData - LForms data object
        * @param fieldName - Field name
        * @returns {*}
@@ -546,6 +544,74 @@ angular.module('formBuilder')
 
         if(indexInfo) {
           ret = lfData[indexInfo.category].items[indexInfo.index];
+        }
+        else {
+          var key = '/'+fieldName+'/1';
+          ret = lfData.basic.itemHash[key];
+          ret = ret ? ret : lfData.advanced.itemHash[key];
+        }
+        return ret;
+      };
+
+
+      /**
+       * Get an lfItem using a field name
+       * @param lfData - LForms data object
+       * @param fieldName - Field name
+       * @returns {*}
+       */
+      $scope.isForm = function (lfData) {
+        return formBuilderService.isNodeFbLfForm(lfData);
+      };
+
+
+      /**
+       * Get an lfItem using a field name
+       * @param lfData - LForms data object
+       * @param fieldName - Field name
+       * @returns {*}
+       */
+      $scope.isItem = function (lfData) {
+        return formBuilderService.isNodeFbLfItem(lfData);
+      };
+
+
+      /**
+       * Get an lfItem using a field name
+       * @param lfData - LForms data object
+       * @param fieldName - Field name
+       * @returns {*}
+       */
+      $scope.isHeaderItem = function (lfData) {
+        var ret = false;
+        if(formBuilderService.isNodeFbLfItem(lfData)) {
+          ret = lfData[dataConstants.INITIAL_FIELD_INDICES['header'].category]
+            .items[dataConstants.INITIAL_FIELD_INDICES['header'].index]
+            .value.code;
+        }
+        return ret;
+      };
+
+
+      /**
+       * Get an lfItem using a field name
+       * @param lfData - LForms data object
+       * @param fieldName - Field name
+       * @returns {*}
+       */
+      $scope.getNodeTitle = function (lfData) {
+        var ret = '';
+
+        var item = $scope.getItem(lfData,'question');
+        if(item) {
+          ret = item.value;
+        }
+        if(!ret) {
+
+          item = $scope.getItem(lfData,'title');
+          if(item) {
+            ret = item.value;
+          }
         }
         return ret;
       };

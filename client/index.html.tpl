@@ -30,6 +30,7 @@
 
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
+    <link rel="canonical" href="https://lhcformbuilder.nlm.nih.gov/" />
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     <!-- build:css(client) app/vendor.css -->
       <!-- bower:css -->

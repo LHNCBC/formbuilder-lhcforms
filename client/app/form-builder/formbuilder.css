@@ -108,11 +108,25 @@
   color: #458AC5;
 }
 
-.tree-node.panelnode:not(.active) {
+.tree-node.panel-node:not(.active), .tree-node.form-node:not(.active){
   background-color: #E8E8E8;
   font-weight: bold;
 }
 
+/*
+.tree-node.form-node:not(.active) {
+  background-color: #125792;
+  border-color: #dde3e9;
+  font-weight: bold;
+  color: white;
+}
+
+.tree-node.form-node.active {
+  background-color: #458AC5;
+  font-weight: bold;
+  border-color: #dde3e9;
+}
+*/
 .tree-node.active a {
   color: white;
 }

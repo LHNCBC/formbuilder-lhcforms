@@ -1,6 +1,6 @@
 var basicFormLevelFieldsDef = {
   "code": "basicFormLevelFields",
-  "name": "Basic Form Level Fields",
+  "name": "Basic Form Level Properties",
   "templateOptions": {
     "allowHTMLInInstructions": true,
     "hideFormControls": true,
@@ -23,6 +23,7 @@ var basicFormLevelFieldsDef = {
       "codingInstructions": "Name for this questionnaire (human friendly). <br/><b>FHIR Type: string</b>",
       "codingInstructionsFormat": "html",
       "header": false,
+      "defaultAnswer": "NewLForm"
     },
     {
       "questionCode": "name",
@@ -190,7 +191,7 @@ var basicFormLevelFieldsDef = {
           "questionCode": "start",
           "localQuestionCode": "dateTime",
           "question": "Start",
-          "dataType": "DT",
+          "dataType": "DTM",
           "header": false,
           "codingInstructions": "Starting time with inclusive boundary.<br/><b>FHIR type: dateTime</b>",
           "codingInstructionsFormat": "html",
@@ -200,7 +201,7 @@ var basicFormLevelFieldsDef = {
           "questionCode": "end",
           "localQuestionCode": "dateTime",
           "question": "End",
-          "dataType": "DT",
+          "dataType": "DTM",
           "header": false,
           "codingInstructions": "End time with inclusive boundary, if not ongoing.<br/><b>FHIR type: dateTime</b>",
           "codingInstructionsFormat": "html",

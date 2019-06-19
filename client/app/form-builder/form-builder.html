@@ -36,8 +36,6 @@
     </div>
 
     <div id="resizableMiddle">
-      <!-- Nested node template -->
-      <div ng-include="'app/form-builder/formlevel-panel/collapsable-panel.html'" ng-controller="flCtrl"></div>
       <div id="main-container" layout="row">
         <md-sidenav id="sidebar" md-component-id="left" md-is-locked-open="true"
                     class="md-sidenav-left">
@@ -50,15 +48,14 @@
           </div>
           -->
           <div class="vbox" id="sidebar-container" ng-controller="SideNavCtrl">
-            <md-button id="addNewButton"
-                       class="md-raised md-primary"
+            <button id="addNewButton"
                        aria-label="Add new or Import from LOINC"
                        ng-click="showAddItemDialog(this, $event, dataConstants.APPEND_TO_ROOT)">
               Add new or Import from LOINC
-            </md-button>
+            </button>
             <div class="boxItem" id="tree-container-id" ng-controller="popupMenuCtrl as menuCtrl">
               <div ui-tree="treeOptions" data-empty-placeholder-enabled="false" data-drag-delay="100">
-                <ol ui-tree-nodes="" id="question-root"
+                <ol ui-tree-nodes="" id="question-root"  data-nodrop-enabled="true"
                     ng-model="formBuilderData.treeData">
                   <li ng-repeat="node in formBuilderData.treeData" ui-tree-node
                       ng-include="'app/form-builder/nodes-renderer.html'"></li>

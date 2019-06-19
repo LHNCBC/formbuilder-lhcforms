@@ -20,7 +20,7 @@ fb.service('fhirService', [
     // This field could be handy to retrieve user's resources from fhir server.
     // For now combine name and email to make it unique and searchable by name.
     var resource = JSON.parse(resourceStr);
-    resource.publisher = getPublisherStr(userProfile);
+    resource.publisher = assignPublisher(resource, userProfile);
 
     return $fhir.create({resource: resource});
   };
@@ -35,7 +35,7 @@ fb.service('fhirService', [
    */
   thisService.update = function(resourceStr, userProfile) {
     var resource = JSON.parse(resourceStr);
-    resource.publisher = getPublisherStr(userProfile);
+    resource.publisher = assignPublisher(resource, userProfile);
     return $fhir.update({resource: resource});
   };
 
@@ -191,21 +191,16 @@ fb.service('fhirService', [
    * @param userProfile {object} - User's login profile
    * @returns {string}
    */
-  function getPublisherStr(userProfile) {
-    var ret = '';
-    if(userProfile) {
+  function assignPublisher(resource, userProfile) {
+    if(resource && !resource.publisher && userProfile) {
       if(userProfile.displayName) {
-        ret = userProfile.displayName;
+        var pubName = '';
+        pubName = userProfile.displayName;
         if(userProfile.email) {
-          ret += '; ' + userProfile.email;
+          pubName += '; ' + userProfile.email;
         }
+        resource.publisher = pubName;
       }
     }
-
-    if(!ret) {
-      ret = null;
-    }
-
-    return ret;
   }
 }]);

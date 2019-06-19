@@ -106,6 +106,7 @@ function assertAnswerListCount(count) {
  */
 function assertImportFromFhir(partialResourceTitle) {
   fb.cleanupSideBar();
+  fb.formNode.click();
   fb.formTitle.clear();
   fb.importMenu.click();
   fb.showFhirResources.click();
@@ -127,6 +128,7 @@ function assertImportFromFhir(partialResourceTitle) {
  * from the server list. If more than one match, first match is picked.
  */
 function assertCreateFhirResource(resourceTitle, partialFhirServerName) {
+  fb.formNode.click();
   fb.formTitle.clear();
   fb.formTitle.sendKeys(resourceTitle);
 
@@ -895,6 +897,7 @@ describe('GET /', function () {
 
     // Assume there is a loaded panel
     it('should update', function () {
+      fb.formNode.click();
       fb.formTitle.clear();
       fb.formTitle.sendKeys(updatedTitle);
       fb.exportMenu.click();

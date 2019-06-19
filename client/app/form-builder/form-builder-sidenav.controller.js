@@ -78,8 +78,11 @@
           }
           else {
             // Re-arrange the ids and update the widget on the content pane.
-            $scope.updateIdsAndAncestralCustomCodes(event.source.nodeScope.$modelValue);
-            $scope.selectNode(event.source.nodeScope.$modelValue);
+            formBuilderService.updateTreeIds($scope.formBuilderData.treeData);
+            var thisNode = event.source.nodeScope.$modelValue;
+            var ancestors = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, thisNode);
+            formBuilderService.changeItemCodeToCustomCode(ancestors);
+            $scope.selectNode(thisNode);
             return true;
           }
         },
@@ -129,7 +132,7 @@
             $scope.updateIdsAndAncestralCustomCodes($scope.selectedNode);
             $scope.selectedNode.isDirty = false;
           }
-          formBuilderService.processNodeTree($scope.formBuilderData.treeData);
+          formBuilderService.processNodeTree($scope.formBuilderData.treeData[0].nodes);
         }
 
         // Select new node
@@ -314,7 +317,7 @@
        */
       function calculateIds() {
         var qRoot = $scope.getRootNodesScope().$modelValue;
-        assignId(qRoot, []);
+        assignId(qRoot[0].nodes, []);
       }
 
 
@@ -378,15 +381,15 @@
        * @param scope - Scope from the template
        */
       $scope.importFromDialog = function (scope) {
-        if (!$scope.dialogCancelled && scope.autocompSearch.model &&
+        if (!scope.dialogCancelled && scope.autocompSearch.model &&
             scope.autocompSearch.model.code) {
           gtag('event', 'import-loinc-item', {
             event_category: 'engagement',
             event_label: scope.importLoincItem.mode,
             value: scope.autocompSearch.model.code
           });
-          var response = $scope.autocompSearch.model;
-          if($scope.importLoincItem.mode === dataConstants.QUESTION) {
+          var response = scope.autocompSearch.model;
+          if(scope.importLoincItem.mode === dataConstants.QUESTION) {
             var questionData = {
               questionCode: response.code,
               questionCodeSystem: dataConstants.LOINC,
@@ -402,9 +405,9 @@
             $scope.previewWidget();
             $scope.stopSpin();
           }
-          else if($scope.importLoincItem.mode === dataConstants.PANEL) {
+          else if(scope.importLoincItem.mode === dataConstants.PANEL) {
             $scope.startSpin();
-            var panelData =  $scope.autocompSearch.model;
+            var panelData =  scope.autocompSearch.model;
             formBuilderService.getLoincPanelData(panelData.code, function(response, error) {
               if(error) {
                 $scope._error = new Error(error);
@@ -456,8 +459,8 @@
       /**
        * Cancel button handler
        */
-      $scope.cancelDialog = function() {
-        $scope.dialogCancelled = true;
+      $scope.cancelDialog = function(scope) {
+        scope.dialogCancelled = true;
         $scope.closeDialog();
       };
 
@@ -484,7 +487,8 @@
        * @returns {Object} Root scope of the tree
        */
       $scope.getRootNodesScope = function () {
-        return angular.element(document.getElementById("question-root")).scope();
+        // Form node is first node at root. For our practical purpose, root is the form node.
+        return angular.element("#question-root .form-node").scope().$childNodesScope;
       };
 
       /**
@@ -676,6 +680,10 @@
       function setDirtyCheckWatches(scope) {
         // Set watches on newly selected node.
 
+        if(scope.selectedNode && formBuilderService.isNodeFbLfForm(scope.selectedNode.lfData)) {
+          return; // TODO - No watches on form level fields for time being
+        }
+
         Object.keys(scope.watchExpressions).forEach(function (expressionId) {
           var exp = scope.watchExpressions[expressionId];
           switch(expressionId) {
@@ -816,5 +824,6 @@
         });
       }
 
+      $scope.selectNode($scope.formBuilderData.treeData[0]);
     }]);
 })();

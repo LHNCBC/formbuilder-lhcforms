@@ -1,0 +1,29 @@
+<div ui-tree-handle class="tree-node tree-node-content flex-container"  ng-init="_qItem = getItem(node.lfData, 'question');_codeItem = getItem(node.lfData, 'questionCode')"
+     ng-class="{active: node.id === selectedNode.id, 'form-node': true}">
+<!--
+    <button
+            class="btn btn-success btn-xs" data-nodrag
+            role="button"
+            ng-attr-aria-label="{{collapsed ? 'Show' : 'Hide'}} items of form"
+            ng-click="toggle(this)">
+              <span class="glyphicon glyphicon-chevron-down"
+                    ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span>
+        <md-tooltip>{{collapsed ? 'Expand' : 'Collapse'}}</md-tooltip>
+    </button>
+-->
+    <div class="flex-item-stretch"
+         ng-click="click(this)">Form Level Properties<br/>
+        <!-- <span ng-include="'form_title.html'"></span> -->
+        <md-tooltip>Form Level Properties
+          <span md-delay="100" ng-include="'form_title.html'"></span>
+        </md-tooltip>
+    </div>
+    <!--
+    <md-button data-nodrag md-menu-origin="" id="addNewButton"
+            ng-click="showAddItemDialog(this, $event, dataConstants.APPEND_TO_ROOT)" class="md-raised">Add Items
+        <md-tooltip>Add items to form</md-tooltip>
+    </md-button>
+    -->
+</div>
+
+<script type="text/ng-template" id="form_title.html">{{__title = getItem(node.lfData, 'title').value; (__title && __title.trim().length > 0) ? '['+__title+']' : ''}}</script>

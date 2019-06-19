@@ -1,6 +1,6 @@
 var advFormLevelFieldsDef = {
   "code": "advFormLevelFields",
-  "name": "Advanced Form Level Fields",
+  "name": "Advanced Form Level Properties",
   "templateOptions": {
     "allowHTMLInInstructions": true,
     "hideFormControls": true,
