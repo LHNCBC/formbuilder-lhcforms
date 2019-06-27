@@ -1,7 +1,7 @@
 
 "use strict";
 
-fdescribe('fl.service', function () {
+describe('fl.service', function () {
 
   var flService, fbService, lodash, dataConstants;
   module.sharedInjector();
@@ -22,7 +22,7 @@ fdescribe('fl.service', function () {
   });
 
   it('convertFormLevelDataToLForms() - empty conversion', function () {
-    expect(flService.exportFormLevelDataToLForms(fbData.treeData[0].lfData)).toEqual({status: 'draft'}); // default
+    expect(flService.exportFormLevelDataToLForms(fbData.treeData[0].lfData)).toEqual({status: 'draft', name: 'New Form'}); // default
   });
 
   it('FHIR string types', function () {
@@ -38,7 +38,7 @@ fdescribe('fl.service', function () {
     assertImportExport('date', '11/27/2019', 'basic');
   });
 
-  fit('import/export formbuilder-headers.lforms.json', function () {
+  it('import/export formbuilder-headers.lforms.json', function () {
     var sample = fbService.createFormBuilder(lformsFormBuilderHeaders);
     expect(flService.exportFormLevelDataToLForms(sample.treeData[0].lfData)).toEqual(lformsFormBuilderHeaders); // default
   });

@@ -49,15 +49,15 @@
           -->
           <div class="vbox" id="sidebar-container" ng-controller="SideNavCtrl">
             <button id="addNewButton"
-                       aria-label="Add new or Import from LOINC"
+                       aria-label="Add Item"
                        ng-click="showAddItemDialog(this, $event, dataConstants.APPEND_TO_ROOT)">
-              Add new or Import from LOINC
+              Add Item
             </button>
+            <div ng-init="node = formBuilderData.treeData[0]" ng-include="'app/form-builder/form-node.html'"></div>
             <div class="boxItem" id="tree-container-id" ng-controller="popupMenuCtrl as menuCtrl">
               <div ui-tree="treeOptions" data-empty-placeholder-enabled="false" data-drag-delay="100">
-                <ol ui-tree-nodes="" id="question-root"  data-nodrop-enabled="true"
-                    ng-model="formBuilderData.treeData">
-                  <li ng-repeat="node in formBuilderData.treeData" ui-tree-node
+                <ol ui-tree-nodes="" id="question-root" ng-model="formBuilderData.treeData[0].nodes">
+                  <li ng-repeat="node in formBuilderData.treeData[0].nodes" ui-tree-node
                       ng-include="'app/form-builder/nodes-renderer.html'"></li>
                 </ol>
               </div>

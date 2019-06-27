@@ -1,7 +1,7 @@
 <!-- For sidebar tree -->
 
 
-  <div ng-model="node" ng-include="'app/form-builder/node.html'"></div>
+  <div ng-model="node" ng-include="'app/form-builder/item-node.html'"></div>
   <ol ui-tree-nodes="" ng-model="node.nodes"
       ng-class="{hidden: collapsed}">
     <li ng-repeat="node in node.nodes" ui-tree-node

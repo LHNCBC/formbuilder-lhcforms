@@ -16,21 +16,21 @@ var basicFormLevelFieldsDef = {
   },
   items: [
     {
-      "questionCode": "title",
-      "localQuestionCode": "string",
-      "question": "Title",
-      "dataType": "ST",
-      "codingInstructions": "Name for this questionnaire (human friendly). <br/><b>FHIR Type: string</b>",
-      "codingInstructionsFormat": "html",
-      "header": false,
-      "defaultAnswer": "NewLForm"
-    },
-    {
       "questionCode": "name",
       "localQuestionCode": "string",
       "question": "Name",
       "dataType": "ST",
       "codingInstructions": "Name for this questionnaire (computer friendly). <br/><b>FHIR Type: string</b>",
+      "codingInstructionsFormat": "html",
+      "header": false,
+      "defaultAnswer": "New Form"
+    },
+    {
+      "questionCode": "title",
+      "localQuestionCode": "string",
+      "question": "Title",
+      "dataType": "ST",
+      "codingInstructions": "Name for this questionnaire (human friendly). <br/><b>FHIR Type: string</b>",
       "codingInstructionsFormat": "html",
       "header": false
     },

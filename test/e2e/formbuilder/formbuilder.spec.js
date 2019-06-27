@@ -1,6 +1,6 @@
 'use strict';
 
-var fb = require('./formbuilder.po').formbuilder;
+const fb = require('./formbuilder.po').formbuilder;
 const fs = require('fs');
 
 
@@ -27,7 +27,7 @@ function watchFilePromise(filename) {
  * @param nodeTitle
  */
 function assertNodeSelection(nodeTitle) {
-  var node = fb.questionTree.element(by.cssContainingText('div.angular-ui-tree-handle .flex-item-stretch span', nodeTitle));
+  let node = fb.questionTree.element(by.cssContainingText('div.angular-ui-tree-handle .flex-item-stretch span', nodeTitle));
   node.click();
   expect(fb.questionText.getAttribute('value')).toMatch(nodeTitle);
 }
@@ -56,6 +56,7 @@ function getJSONSource(format) {
  * Load lforms json from the file system.
  *
  * @param fileName {string} - The lforms json file on the disk
+ * @param format {string} - One of output formats: lforms, STU3, R4
  * @return Promise - If resolved, it gives lforms preview source string
  */
 function loadLFormFromDisk(fileName, format) {
@@ -102,7 +103,7 @@ function assertAnswerListCount(count) {
 /**
  * Select a resource from FHIR results dialog and load it into form builder.
  *
- * @param resourceTitle - A string to identify an item from the list of results.
+ * @param partialResourceTitle - A string to identify an item from the list of results.
  */
 function assertImportFromFhir(partialResourceTitle) {
   fb.cleanupSideBar();
@@ -613,9 +614,9 @@ describe('GET /', function () {
     // The download path is set to /tmp in firefoxProfile. See
     // protractor.conf.js for profile preferences.
     // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
-    var filename = '/tmp/NewLForm.lforms.json';
-    var fhirFilenameSTU3 = '/tmp/NewLForm.STU3.json';
-    var fhirFilenameR4 = '/tmp/NewLForm.R4.json';
+    var filename = '/tmp/New-Form.lforms.json';
+    var fhirFilenameSTU3 = '/tmp/New-Form.STU3.json';
+    var fhirFilenameR4 = '/tmp/New-Form.R4.json';
     var lformsOriginalJson = null;
     var fhirOriginalJsonSTU3 = null;
     var fhirOriginalJsonR4 = null;

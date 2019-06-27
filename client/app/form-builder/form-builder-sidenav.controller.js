@@ -78,10 +78,9 @@
           }
           else {
             // Re-arrange the ids and update the widget on the content pane.
-            formBuilderService.updateTreeIds($scope.formBuilderData.treeData);
+            formBuilderService.updateTreeIds($scope.formBuilderData.treeData[0].nodes);
             var thisNode = event.source.nodeScope.$modelValue;
-            var ancestors = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, thisNode);
-            formBuilderService.changeItemCodeToCustomCode(ancestors);
+            $scope.changeThisAndAncestralCustomCodes(thisNode);
             $scope.selectNode(thisNode);
             return true;
           }
@@ -105,12 +104,17 @@
        *
        * @param {Object} scope - Scope of the node clicked
        */
-      $scope.click = function (scope) {
-        var node = scope.$modelValue;
+      $scope.click = function (scopeOrNode) {
+        var node = scopeOrNode.$modelValue;
         if(node) {
           // Select only if clicked on non selected node.
           if(!$scope.selectedNode || node.id !== $scope.selectedNode.id) {
             $scope.selectNode(node);
+          }
+        }
+        else {
+          if(!$scope.selectedNode || scopeOrNode.id !== $scope.selectedNode.id) {
+            $scope.selectNode(scopeOrNode);
           }
         }
       };
@@ -127,9 +131,10 @@
         // Save any edits or cleanups on currently selected node.
         if($scope.selectedNode) {
           // Remove watches before switching the node.
+          formBuilderService.updateTreeIds($scope.formBuilderData.treeData[0].nodes);
           deregisterDirtyCheckWatches($scope);
           if($scope.selectedNode.isDirty) {
-            $scope.updateIdsAndAncestralCustomCodes($scope.selectedNode);
+            $scope.changeThisAndAncestralCustomCodes($scope.selectedNode);
             $scope.selectedNode.isDirty = false;
           }
           formBuilderService.processNodeTree($scope.formBuilderData.treeData[0].nodes);
@@ -146,17 +151,6 @@
 
 
       /**
-       * See if edits to this node impacts its ancestors
-       *
-       * @param node - Node to check for changes.
-       */
-      $scope.updateIdsAndAncestralCustomCodes = function(node) {
-        formBuilderService.updateTreeIds($scope.formBuilderData.treeData);
-        $scope.changeThisAndAncestralCustomCodes(node);
-      };
-
-
-      /**
        * Click handler to remove tree branch.
        *
        *  - Make sure to assign node selection to next logical node
@@ -168,9 +162,7 @@
         scope.remove();
         if(nextSelect === null) {
           // No other nodes. This is the only one
-          $scope.setSelectedNode(null);
-          $scope.previewWidget();
-          return;
+          nextSelect = $scope.formBuilderData.treeData[0];
         }
 
         $scope.selectNode(nextSelect);
@@ -350,10 +342,6 @@
        */
       $scope.addNewFromDialog = function (scope) {
         if($scope.addOrImport.mode === 'add') {
-          gtag('event', 'add-custom-item', {
-            event_category: 'engagement',
-            event_label: scope.importLoincItem.mode
-          });
           $scope.insertNewItem(scope, null, scope.insertType);
           $scope.previewWidget();
           $scope.closeDialog();
@@ -383,11 +371,6 @@
       $scope.importFromDialog = function (scope) {
         if (!scope.dialogCancelled && scope.autocompSearch.model &&
             scope.autocompSearch.model.code) {
-          gtag('event', 'import-loinc-item', {
-            event_category: 'engagement',
-            event_label: scope.importLoincItem.mode,
-            value: scope.autocompSearch.model.code
-          });
           var response = scope.autocompSearch.model;
           if(scope.importLoincItem.mode === dataConstants.QUESTION) {
             var questionData = {
@@ -488,7 +471,7 @@
        */
       $scope.getRootNodesScope = function () {
         // Form node is first node at root. For our practical purpose, root is the form node.
-        return angular.element("#question-root .form-node").scope().$childNodesScope;
+        return angular.element("#question-root").scope().$nodesScope;
       };
 
       /**
@@ -612,7 +595,7 @@
           currentNode = nodes[0];
         }
         if(!$scope.selectedNode) {
-          $scope.selectNode($scope.formBuilderData.treeData[0]);
+          $scope.selectNode($scope.formBuilderData.treeData[0].nodes[0]);
         }
         else {
           $scope.selectNode(currentNode);

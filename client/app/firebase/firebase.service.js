@@ -86,7 +86,6 @@ angular.module('formBuilder')
           // access token:
           var credential = result.credential;
           console.log(result);
-          gtag('event', 'login', {method: 'Google'});
         }, function(error) {
           console.log(error);
 
@@ -125,7 +124,6 @@ angular.module('formBuilder')
           var credential = result.credential;
 
           console.log(result);
-          gtag('event', 'login', {method: 'Facebook'});
 
         }, function(error) {
 
@@ -162,7 +160,6 @@ angular.module('formBuilder')
           var secret = result.credential.secret;
           // The signed-in user info.
           var user = result.user;
-          gtag('event', 'login', {method: 'Twitter'});
         }).catch(function(error) {
           // Handle Errors here.
           var errorCode = error.code;
@@ -188,7 +185,6 @@ angular.module('formBuilder')
        */
       signInAnonymously: function() {
 
-        gtag('event', 'login', {method: 'Ananymous'});
         firebase.auth().signInAnonymously().catch(function(error) {
           // Handle Errors here.
           console.log('Error signing in anonymously: ('+error.code+') '+error.message);

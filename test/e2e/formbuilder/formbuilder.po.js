@@ -27,10 +27,10 @@ var FormBuilder = function () {
   this.newItemAddButton = this.dialog.element(by.buttonText('Add'));
   this.importDialogCancel = this.dialog.element(by.cssContainingText('button', 'Cancel'));
 
-  this.rootNodeList = element.all(by.css('.angular-ui-tree > ol > li > ol > li > div > div > div[ui-tree-handle]'));
-  this.nodeList = this.questionTree.all(by.css('.angular-ui-tree > ol > li li div[ui-tree-handle]'));
+  this.rootNodeList = element.all(by.css('.angular-ui-tree > ol > li > div > div[ui-tree-handle]'));
+  this.nodeList = this.questionTree.all(by.css('.angular-ui-tree > ol > li div[ui-tree-handle]'));
   this.firstNode = this.nodeList.get(0);
-  this.formNode = element(by.css('.angular-ui-tree > ol > li > div div[ui-tree-handle]'));
+  this.formNode = element(by.css('.form-node'));
 
   this.itemBuilderPanel = element(by.id('item-builder-panel'));
   this.basicPanelEl = element(by.id('basic-item-builder-panel'));
@@ -85,7 +85,7 @@ var FormBuilder = function () {
   this.selectedNode = this.questionTree.element(by.css('div.angular-ui-tree-handle.active'));
   this.answersDelButton3 = this.basicPanelEl.element(by.id('del-/answers/3'));
 
-  this.refreshButtons = element.all(by.css('md-tabs span.glyphicon-refresh'));
+  this.refreshButtons = element.all(by.css('md-tabs md-pagination-wrapper span.glyphicon-refresh'));
   this.previewRefreshButton = this.refreshButtons.first();
   this.previewWidgetBPDeviceCuffAnswerListEl = element(by.css('input[name^="BP device Cuff size"]'));
   this.previewWidgetBPDeviceInvent = element(by.css('input[name^="BP device Inventory #"]'));
@@ -202,7 +202,7 @@ var FormBuilder = function () {
    * @param nodeText {string} - Part of the node text to identify the node
    */
   this.clickMoreOptions = function (nodeText) {
-    var node = thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node]/div/div/div[@ui-tree-handle and contains(div[contains(@class, "flex-item-stretch")]/span/text(), "'+nodeText+'")]'));
+    var node = thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node]/div/div[@ui-tree-handle and contains(div[contains(@class, "flex-item-stretch")]/span/text(), "'+nodeText+'")]'));
     node.element(by.css('.more-options')).click();
   };
 
@@ -335,7 +335,7 @@ var FormBuilder = function () {
    * @returns {Object} - Element locator.
    */
   this.getNode = function(nodeText) {
-    return thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node and div/div/div[@ui-tree-handle]/div[contains(@class, "flex-item-stretch")]/span[contains(text(), "'+nodeText+'")]]'));
+    return thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node and div/div[@ui-tree-handle]/div[contains(@class, "flex-item-stretch")]/span[contains(text(), "'+nodeText+'")]]'));
   };
 
 

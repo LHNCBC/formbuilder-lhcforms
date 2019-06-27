@@ -238,7 +238,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   this.transformFormBuilderToFormDef = function(formData) {
     var ret = {};
     if(formData) {
-      ret = flService.exportFormLevelDataToLForms(formData.treeData[0].lfData); // TODO
+      ret = flService.exportFormLevelDataToLForms(formData.treeData[0].lfData);
       ret.items = transformTreeToFormDef(formData.treeData[0].nodes);
     }
 
@@ -1010,15 +1010,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    *
    */
   this.updateTreeIds = function(rootArray) {
-    if(thisService.isNodeFbLfForm(rootArray[0].lfData)) {
-      rootArray[0].id = null;
-      thisService.updateTreeIds(rootArray[0].nodes);
-    }
-    else {
-      traverseNodeTree(rootArray, function (node, path) {
-        node.id = path.join('.');
-      });
-    }
+    traverseNodeTree(rootArray, function (node, path) {
+      node.id = path.join('.');
+    });
   };
 
 

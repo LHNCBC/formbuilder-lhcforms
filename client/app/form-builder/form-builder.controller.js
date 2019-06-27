@@ -76,7 +76,7 @@ angular.module('formBuilder')
        */
       $scope.formBuilderData = formBuilderService.createFormBuilder();
 
-      $scope.selectedNode = null;
+      $scope.selectedNode = $scope.formBuilderData.treeData[0];
 
       $scope.termsOfUseAccepted = 'unknown';
 
@@ -95,10 +95,6 @@ angular.module('formBuilder')
       $scope.uploader.onAfterAddingFile = function(item) {
         var reader = new FileReader(); // Read from local file system.
         reader.onload = function(event) {
-          gtag('event', 'file-import', {
-            event_category: 'engagement',
-            event_label: 'local-file'
-          });
           var importedData = null;
           try {
             importedData = JSON.parse(event.target.result);
@@ -152,10 +148,6 @@ angular.module('formBuilder')
        * @param answer - Response from user action
        */
       $scope.touAnswer = function (answer) {
-        gtag('event', 'accept-terms-of-use', {
-          event_category: 'engagement',
-          event_label: answer
-        });
         $scope.termsOfUseAccepted = answer;
         $mdDialog.hide(answer);
       };
@@ -241,15 +233,11 @@ angular.module('formBuilder')
 
         $scope.showFileExportDialog(ev, {formatList: $scope.formatList, selectedFormat: $scope.selectedFormat}).then(function (answer) {
           if(answer) {
-            gtag('event', 'file-export', {
-              event_category: 'engagement',
-              event_label: 'local-file'
-            });
             $scope.previewWidget();
             var content = $scope.previewSource[answer.format];
             var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
-            var formName = $scope.formBuilderData.treeData[0].lfData.basic.itemHash['/title/1'].value;
-            var exportFileName = formName ?  formName : 'NewLForm';
+            var formName = $scope.formBuilderData.treeData[0].lfData.basic.itemHash['/name/1'].value;
+            var exportFileName = formName ?  formName.replace(/\s/g, '-') : 'new-form';
 
             // Use hidden anchor to do file download.
             var downloadLink = angular.element(document.getElementById('exportAnchor'));
@@ -276,11 +264,6 @@ angular.module('formBuilder')
       };
 
       $scope.searchFhir = function(ev, searchStr) {
-        gtag('event', 'fhir-search', {
-          event_category: 'engagement',
-          event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER],
-          value: searchStr
-        });
         fhirService.setFhirServer($scope.getFhirServer());
         fhirService.search(searchStr, true)
           .then(function(response) {
@@ -298,11 +281,6 @@ angular.module('formBuilder')
        * @param resourceId - id of the FHIR resource to import
        */
       $scope.importFromFhir = function(ev, resourceId) {
-        gtag('event', 'fhir-read', {
-          event_category: 'engagement',
-          event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER],
-          value: resourceId
-        });
         fhirService.read(resourceId).then(function (response) {
           try {
             var fServer = $scope.getFhirServer();
@@ -327,10 +305,6 @@ angular.module('formBuilder')
         $scope.showFhirServerDialog(ev).then(function (server) {
           if(server) {
             $scope.previewWidget();
-            gtag('event', 'fhir-create', {
-              event_category: 'engagement',
-              event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER]
-            });
             fhirService.create($scope.previewSource[$scope.getFhirServer().version], $scope.userProfile)
               .then(function (response) {
                 $scope.formBuilderData.id = response.data.id;
@@ -350,11 +324,6 @@ angular.module('formBuilder')
        */
       $scope.updateOnFhir = function(ev) {
         $scope.previewWidget();
-        gtag('event', 'fhir-update', {
-          event_category: 'engagement',
-          event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER]
-        });
-
         fhirService.update($scope.previewSource[$scope.getFhirServer().version], $scope.userProfile)
           .then(function () {
             showFhirResponse(ev, {fhirResponse: 'Successfully updated the resource.'});
@@ -658,7 +627,6 @@ angular.module('formBuilder')
        *  Sign out handler
        */
       $scope.signOut = function () {
-        gtag('event', 'logout', {event_category: 'engagement'});
         firebaseService.signOut();
       };
 
