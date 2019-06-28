@@ -1,0 +1,343 @@
+{
+  "name": "PedTB",
+  "items": [
+    {
+      "question": "Ped TB",
+      "questionCodeSystem": "Custom",
+      "questionCode": "PedTB_P",
+      "questionCardinality": {
+        "min": "1",
+        "max": "1"
+      },
+      "header": true,
+      "editable": "1",
+      "answerCardinality": {
+        "min": "0",
+        "max": "1"
+      },
+      "items": [
+        {
+          "question": "Header",
+          "questionCodeSystem": "Custom",
+          "questionCode": "H1_P",
+          "codingInstructions": "Fill in common fields one time only",
+          "questionCardinality": {
+            "min": "1",
+            "max": "1"
+          },
+          "header": true,
+          "editable": "1",
+          "answerCardinality": {
+            "min": "0",
+            "max": "1"
+          },
+          "items": [
+            {
+              "question": "Patient Number",
+              "questionCodeSystem": "Custom",
+              "questionCode": "SUBJID",
+              "questionCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "header": false,
+              "editable": "1",
+              "answerCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "dataType": "ST",
+              "restrictions": {
+                "pattern": "/^\\d+$/",
+                "length": "7"
+              }
+            },
+            {
+              "question": "Protocol",
+              "questionCodeSystem": "Custom",
+              "questionCode": "STUDYID",
+              "questionCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "header": false,
+              "editable": "0",
+              "answerCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "dataType": "ST",
+              "defaultAnswer": "PED TB Lung Seg & Class in HIV +/-"
+            },
+            {
+              "question": "Sex",
+              "questionCodeSystem": "Custom",
+              "questionCode": "SEX",
+              "questionCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "header": false,
+              "editable": "1",
+              "answerCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "dataType": "CNE",
+              "answers": [
+                {
+                  "text": "Female",
+                  "code": "1",
+                  "label": null,
+                  "score": null
+                },
+                {
+                  "text": "Male",
+                  "code": "2",
+                  "label": null,
+                  "score": null
+                }
+              ],
+              "displayControl": {
+                "answerLayout": {
+                  "type": "RADIO_CHECKBOX"
+                }
+              }
+            },
+            {
+              "question": "Institution number",
+              "questionCodeSystem": "Custom",
+              "questionCode": "INST",
+              "questionCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "header": false,
+              "editable": "1",
+              "answerCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "dataType": "ST",
+              "restrictions": {
+                "length": "2",
+                "pattern": "/^\\d+$/"
+              }
+            },
+            {
+              "question": "UPLOAD DATE",
+              "questionCodeSystem": "Custom",
+              "questionCode": "UPL_DATE",
+              "codingInstructions": "Use \"DDMMMYYYY\" format",
+              "questionCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "header": false,
+              "editable": "1",
+              "answerCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "dataType": "ST",
+              "restrictions": {
+                "pattern": "/^(0[1-9]|[1-2][0-9]|3[0-1])[\\x2f]?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\\x2f]?20[0-2]\\d$/i"
+              }
+            },
+            {
+              "question": "Data Manager Code",
+              "questionCodeSystem": "Custom",
+              "questionCode": "DMC",
+              "questionCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "header": false,
+              "editable": "1",
+              "answerCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "dataType": "ST",
+              "restrictions": {
+                "length": "2",
+                "pattern": "/^\\d+$/"
+              }
+            },
+            {
+              "question": "Page 3",
+              "questionCodeSystem": "Custom",
+              "questionCode": "P3_P",
+              "questionCardinality": {
+                "min": "1",
+                "max": "1"
+              },
+              "header": true,
+              "editable": "1",
+              "answerCardinality": {
+                "min": "0",
+                "max": "1"
+              },
+              "items": [
+                {
+                  "question": "Checklist Review Guide of Symptoms",
+                  "questionCodeSystem": "Custom",
+                  "questionCode": "ChecklistSymptoms",
+                  "questionCardinality": {
+                    "min": "1",
+                    "max": "1"
+                  },
+                  "header": false,
+                  "editable": "1",
+                  "answerCardinality": {
+                    "min": "0",
+                    "max": "*"
+                  },
+                  "dataType": "CWE",
+                  "answers": [
+                    {
+                      "text": "cough",
+                      "code": "1",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "fever",
+                      "code": "2",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "night sweats",
+                      "code": "3",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "shortness of breath / tachypnea",
+                      "code": "4",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "weakness",
+                      "code": "5",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "fatigue",
+                      "code": "6",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "lethargy/reduced playfullness",
+                      "code": "7",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "malaise",
+                      "code": "8",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "hemoptysis",
+                      "code": "9",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "headache",
+                      "code": "10",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "weight loss",
+                      "code": "11",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "loss of appetite",
+                      "code": "12",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "inability to gain weight/failure to thrive",
+                      "code": "13",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "wasting",
+                      "code": "14",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "chest pain",
+                      "code": "15",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "orthopnea",
+                      "code": "16",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "Wheezing/rales",
+                      "code": "17",
+                      "label": null,
+                      "score": null
+                    },
+                    {
+                      "text": "lymphadenopathy",
+                      "code": "18",
+                      "label": null,
+                      "score": null
+                    }
+                  ]
+                },
+                {
+                  "question": "list site (lymphadenopathy)",
+                  "questionCodeSystem": "Custom",
+                  "questionCode": "LymphSite",
+                  "questionCardinality": {
+                    "min": "1",
+                    "max": "1"
+                  },
+                  "header": false,
+                  "editable": "1",
+                  "answerCardinality": {
+                    "min": "1",
+                    "max": "1"
+                  },
+                  "dataType": "ST",
+                  "skipLogic": {
+                    "action": "show",
+                    "logic": "ANY",
+                    "conditions": [
+                      {
+                        "source": "ChecklistSymptoms",
+                        "trigger": {
+                          "code": "18"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

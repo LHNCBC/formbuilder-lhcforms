@@ -2,6 +2,7 @@
 
 const fb = require('./formbuilder.po').formbuilder;
 const fs = require('fs');
+const path = require('path');
 
 
 /**
@@ -682,11 +683,11 @@ describe('GET /', function () {
       // This change is expected to show up in preview json src window
       // without affecting the functionality of formbuilder or lforms preview widget.
       var unrecognized = {a: 1, b: [2, 3, 4], c: {str: "some text"}};
-      newJson.items[0]['unrecognized'] = unrecognized;
+      newJson.items[0].unrecognized = unrecognized;
       fs.writeFileSync(filename, JSON.stringify(newJson, null, 2));
       // Add the attribute to lformsOriginalJson so that
       // json preview source after loading from the file matches with it.
-      lformsOriginalJson.items[0]['unrecognized'] = unrecognized;
+      lformsOriginalJson.items[0].unrecognized = unrecognized;
     });
 
     it('Should save FHIR Questionnaire formats to a file', function () {
@@ -736,6 +737,28 @@ describe('GET /', function () {
         var newJson = JSON.parse(previewSrc);
         assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
         done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+  });
+
+  describe('Loading skip logic items', function () {
+    it('should load with CNE/CWE type triggers in skip logic', function (done) {
+      fb.cleanupSideBar();
+      loadLFormFromDisk(path.join(__dirname, './fixtures/skiplogic-load.lforms.json'), 'lforms').then(function (text) {
+        assertNodeSelection('list site ');
+        fb.advancedEditTab.click();
+        expect(fb.skipLogicConditionsSource.getAttribute('value')).toEqual('1.1.7.1. Checklist Review Guide of Symptoms');
+        expect(fb.skipLogicConditionsTrigger.getAttribute('value')).toEqual('lymphadenopathy');
+        getJSONSource('lforms').then(function (source) {
+          let sourceJson = JSON.parse(source);
+          let loadedJson = JSON.parse(text);
+          expect(sourceJson).toEqual(loadedJson);
+          done();
+        }, function (err) {
+          done.fail(JSON.stringify(err));
+        });
       }, function (err) {
         done.fail(JSON.stringify(err));
       });

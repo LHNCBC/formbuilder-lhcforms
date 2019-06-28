@@ -13,7 +13,7 @@ let all = {
   gtag: '',
   
   host: '::',
-  port: 9020,
+  port: 9030,
   
   https: false, // To enable https, set this to true and specify the ssl files below.
   // keySslFile: path.join(__dirname, '../ssl/server.key'),

@@ -51,7 +51,7 @@ const optionDefinitions = [
   {name: 'env', alias: 'e', type: String, description: 'Set node environment. Default is {bold development}.'},
   
   {name: 'host', type: String, description: 'Host name or IP address to which the server binds the network interface. Default is "::", i.e binds to all local network interfaces.'},
-  {name: 'port', alias: 'p', type: Number, defaultValue: 9020, description: 'Port number on which the server listens to.\n'},
+  {name: 'port', alias: 'p', type: Number, defaultValue: 9030, description: 'Port number on which the server listens to.\n'},
   {name: 'https', alias: 's', type: Boolean, defaultValue: false, description: 'Use https protocol. Default is false. If true, must specify ssl settings\n'},
 
   // SSL options

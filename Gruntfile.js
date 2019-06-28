@@ -11,7 +11,7 @@ module.exports = function (grunt) {
     useminPrepare: 'grunt-usemin',
     ngtemplates: 'grunt-angular-templates',
     protractor: 'grunt-protractor-runner',
-    injector: 'grunt-asset-injector',
+    injector: 'grunt-injector',
   });
 
   var serverFiles = [
@@ -44,17 +44,20 @@ module.exports = function (grunt) {
       },
       test: {
         options: {
+          node_env: 'development',
           script: 'test/e2e/test-app.js'
         }
       },
       dev: {
         options: {
+          node_env: 'development',
           script: 'app.js',
           args: ['-c', 'formbuilder.conf.js']
         }
       },
       prod: {
         options: {
+          node_env: 'production',
           script: 'dist/app.js',
           args: ['-c', 'formbuilder.conf.js']
         }
@@ -101,7 +104,7 @@ module.exports = function (grunt) {
           '<%= yeoman.client %>/assets/images/{,*//*}*.{png,jpg,jpeg,gif,webp,svg}'
         ],
         options: {
-          livereload: 1337
+          livereload: 1338
         }
       },
       express: {
@@ -434,15 +437,6 @@ module.exports = function (grunt) {
       all: {}
     },
 
-    env: {
-      test: {
-        NODE_ENV: 'development'
-      },
-      prod: {
-        NODE_ENV: 'production'
-      }
-    },
-
     injector: {
       options: {
 
@@ -558,7 +552,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('serve', function (target) {
     if (target === 'dist') {
-      return grunt.task.run(['build', 'env:prod', 'express:prod',
+      return grunt.task.run(['build', 'express:prod',
         'wait', 'open', 'express-keepalive']);
     }
 
@@ -577,7 +571,6 @@ module.exports = function (grunt) {
     if (target === 'test') {
       return grunt.task.run([
         'clean:server',
-        'env:test',
         'template',
         'concurrent:server',
         'injector',
@@ -644,7 +637,6 @@ module.exports = function (grunt) {
     else if (target === 'e2e') {
       return grunt.task.run([
         'clean:server',
-        'env:test',
         'template',
         'concurrent:test',
         'injector',

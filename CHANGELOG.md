@@ -2,6 +2,27 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.1.0]  2019-06-28
+### Added.
+- Added form level fields defined in FHIR Questionnaire.
+
+## [3.0.9]  2019-06-06
+### Changed.
+- Update node dependencies to fix npm audit vulnerabilities.
+
+## [3.0.8]  2019-06-04
+### Changed.
+- Update lforms package.
+
+## [3.0.7]  2019-05-20
+### Changed.
+- Remove CSP middleware, let the package users handle the csp headers.
+- Fix critical npm audit alerts.
+
+## [3.0.6]  2019-05-14
+### Fixed.
+- Fixed a bug in importing items with CNE/CWE type triggers in skip logic.
+
 ## [3.0.5]  2019-04-16
 ### Fixed.
 - Fixed a bug in ui-tree display for multiple items on the root.
