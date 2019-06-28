@@ -1722,36 +1722,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     return deferred.promise;
   }
 
-
-  /**
-   *
-   * @param obj
-   * @param keyExp
-   * @returns {Array}
-   * @private
-   */
-  this._findByRegex = function(obj, keyExp) {
-    if(!obj || !keyExp) {
-      return null;
-    }
-
-    var keys = Object.keys(obj);
-    var regEx = keyExp;
-    if(regEx instanceof String) {
-      regEx = RegExp(regEx);
-    }
-    var matchedKeys = keys.filter(function (k) {
-      return regEx.test(k);
-    });
-    var ret = [];
-    for (var i = 0; i < matchedKeys.length; i++) {
-      ret.push(obj[matchedKeys[i]]);
-    }
-
-    return ret;
-  };
-
-
   // Expose for unit testing
   this._updateUnitsURL = updateUnitsURL;
 

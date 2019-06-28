@@ -563,30 +563,6 @@ angular.module('formBuilder')
 
 
       /**
-       * Get an lfItem using a field name
-       * @param lfData - LForms data object
-       * @param fieldName - Field name
-       * @returns {*}
-       */
-      $scope.getNodeTitle = function (lfData) {
-        var ret = '';
-
-        var item = $scope.getItem(lfData,'question');
-        if(item) {
-          ret = item.value;
-        }
-        if(!ret) {
-
-          item = $scope.getItem(lfData,'title');
-          if(item) {
-            ret = item.value;
-          }
-        }
-        return ret;
-      };
-
-
-      /**
        * Sign in dialog handler
        *
        * @param event

@@ -470,7 +470,6 @@
        * @returns {Object} Root scope of the tree
        */
       $scope.getRootNodesScope = function () {
-        // Form node is first node at root. For our practical purpose, root is the form node.
         return angular.element("#question-root").scope().$nodesScope;
       };
 
@@ -499,54 +498,9 @@
        */
       $scope.$on('REPLACE_FORM', function (ev, lfData) {
         $scope.replaceForm(lfData);
-        if($scope.formLoaded()) {
-          $scope.alertFormReplacement(ev, function(reply) {
-            if(reply) {
-              $scope.replaceForm(lfData);
-            }
-          });
-        }
-        else {
-          $scope.replaceForm(lfData);
-        }
       });
 
 
-      $scope.formLoaded = function() {
-        var ret = false;
-        // TODO --
-        // See if node tree is loaded?
-        // Do dirty check on form level fields.
-        return ret;
-      };
-
-
-      /**
-       *
-       * @param ev
-       * @param cb
-       */
-      $scope.alertFormReplacement = function (ev, cb) {
-        var dlgOpts = {
-          controller: function () {
-            this.dialogTitle = 'Replace this form?';
-            this.message = 'This will overwrite contents in form builder. Do you want to continue?';
-            this.closeDlg = function(answer){
-              $mdDialog.hide(answer);
-            };
-          },
-          templateUrl: 'app/form-builder/replace-dialog.html',
-          escapeToClose: true,
-          bindToController: true,
-          controllerAs: 'fhirCtrl'
-        };
-
-        $mdDialog.show(dlgOpts).then(function(answer) {
-          cb(answer);
-        }, function() {
-          $mdDialog.hide(false);
-        });
-      };
       /**
        * Update form builder with imported panel data, typically from lforms-service.
        * @param scope - If clicked from tree node, it is node scope.
