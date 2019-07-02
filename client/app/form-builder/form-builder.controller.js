@@ -524,10 +524,10 @@ angular.module('formBuilder')
 
 
       /**
-       * Get an lfItem using a field name
-       * @param lfData - LForms data object
-       * @param fieldName - Field name
-       * @returns {*}
+       * See if this lforms object represents form node
+       *
+       * @param lfData - LForms data object of the node.
+       * @returns {boolean}
        */
       $scope.isForm = function (lfData) {
         return formBuilderService.isNodeFbLfForm(lfData);
@@ -535,10 +535,10 @@ angular.module('formBuilder')
 
 
       /**
-       * Get an lfItem using a field name
-       * @param lfData - LForms data object
-       * @param fieldName - Field name
-       * @returns {*}
+       * See if this lforms object represents an item node
+       *
+       * @param lfData - LForms data object of the node.
+       * @returns {boolean}
        */
       $scope.isItem = function (lfData) {
         return formBuilderService.isNodeFbLfItem(lfData);
@@ -546,9 +546,9 @@ angular.module('formBuilder')
 
 
       /**
-       * Get an lfItem using a field name
-       * @param lfData - LForms data object
-       * @param fieldName - Field name
+       * See if this lforms object represents a header item node
+       *
+       * @param lfData - LForms data object of the node.
        * @returns {*}
        */
       $scope.isHeaderItem = function (lfData) {

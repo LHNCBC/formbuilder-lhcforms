@@ -62,7 +62,6 @@ angular.module('formBuilder')
       signOut: function() {
         fireApp.auth().signOut().then(function(result) {
           console.log("signed out");
-          console.log(result);
         }, function(error) {
           console.log("signed out error");
           console.log(error);
@@ -85,7 +84,6 @@ angular.module('formBuilder')
           var user = result.user;
           // access token:
           var credential = result.credential;
-          console.log(result);
         }, function(error) {
           console.log(error);
 

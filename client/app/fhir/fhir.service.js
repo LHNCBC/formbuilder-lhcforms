@@ -186,16 +186,16 @@ fb.service('fhirService', [
   }
 
   /**
-   * Create publisher string out of user profile.
+   * If publisher is specified, assign one by creating one from user profile, if exists.
    *
+   * @param resource - FHIR resource object.
    * @param userProfile {object} - User's login profile
    * @returns {string}
    */
   function assignPublisher(resource, userProfile) {
     if(resource && !resource.publisher && userProfile) {
       if(userProfile.displayName) {
-        var pubName = '';
-        pubName = userProfile.displayName;
+        var pubName = userProfile.displayName;
         if(userProfile.email) {
           pubName += '; ' + userProfile.email;
         }

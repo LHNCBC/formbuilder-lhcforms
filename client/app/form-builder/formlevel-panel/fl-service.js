@@ -2,12 +2,24 @@ angular.module('formBuilder')
   .service('flService', ['lodash', function(lodash){
     var flService = this;
 
+    /**
+     * Convert form level properties from form builder to lforms.
+     *
+     * @param fbFormLevelData - Form builder object representing form level properties.
+     */
     flService.exportFormLevelDataToLForms = function(fbFormLevelData) {
       var lfFormLevelData = flService._convertFBFormLevelItems(fbFormLevelData.basic.items);
       return lodash.assign(lfFormLevelData, flService._convertFBFormLevelItems(fbFormLevelData.advanced.items));
     };
 
 
+    /**
+     * Convert form level properties from lforms to form builder.
+     *
+     * @param fbHeaderData - Form builder object representing form level properties. This object will be updated
+     *   with values from importedHeadersObj.
+     * @param importedHeadersObj - The lforms object with form level properties.
+     */
     flService.importFormLevelFields = function (fbHeaderData, importedHeadersObj) {
 
       flService._updateFBFormLevelFields(fbHeaderData.basic.items, importedHeadersObj);
@@ -18,8 +30,9 @@ angular.module('formBuilder')
 
     /***** Private ****/
     /**
+     * Convert form builder items to lforms (same as FHIR Questionnaire) form level fields.
      *
-     * @param fbFormLevelItems
+     * @param fbFormLevelItems - An array of form builder items representing form level properties.
      * @private
      */
     flService._convertFBFormLevelItems = function (fbFormLevelItems) {
@@ -44,6 +57,13 @@ angular.module('formBuilder')
     };
 
 
+    /**
+     * Convert form builder item to lforms (same as FHIR field) form level field.
+     *
+     * @param fbItem - Form builder item representing form level property.
+     * @returns {*}
+     * @private
+     */
     flService._convertFBItem = function(fbItem) {
       var ret = null;
       if(fbItem.header || (fbItem.value !== null && fbItem.value !== undefined)) {
@@ -97,6 +117,7 @@ angular.module('formBuilder')
           case 'Range':
           case 'SimpleQuantity':
           case 'UsageContext':
+            // These are complex types embedded with multiple types defined above. It will go trough an indirect recursion.
              var obj = flService._convertFBFormLevelItems(fbItem.items);
              if(obj && !angular.equals(obj, {})) {
                ret = flService._convertFBFormLevelItems(fbItem.items);
@@ -112,6 +133,13 @@ angular.module('formBuilder')
     };
 
 
+    /**
+     * Update form builder items representing form level properties with values from imported lforms form level properties.
+     *
+     * @param fbHeaders - An array of form builder items representing form level properties.
+     * @param importedHeadersObj - lforms object consisting of form level properties.
+     * @private
+     */
     flService._updateFBFormLevelFields = function (fbHeaders, importedHeadersObj) {
       for(var i = 0; i < fbHeaders.length; i++) {
         var val = importedHeadersObj[fbHeaders[i].questionCode];
@@ -138,6 +166,13 @@ angular.module('formBuilder')
     };
 
 
+    /**
+     * Update form builder item with a value
+     *
+     * @param fbItem - Form builder item object
+     * @param value - A value to update with.
+     * @private
+     */
     flService._updateFBItem = function(fbItem, value) {
       if(fbItem.header) {
         flService._updateFBFormLevelFields(fbItem.items, value);
@@ -166,6 +201,13 @@ angular.module('formBuilder')
     };
 
 
+    /**
+     * Read lforms cardinality to assess if it is an array.
+     *
+     * @param cardinality - lforms cardinality object.
+     * @returns {boolean}
+     * @private
+     */
     flService._isAnArray = function (cardinality) {
       var ret = false;
       if(cardinality) {

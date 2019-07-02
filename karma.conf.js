@@ -41,6 +41,7 @@ module.exports = function(config) {
       'client/bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
       'client/bower_components/ngSmoothScroll/lib/angular-smooth-scroll.js',
       'client/bower_components/element-resize-detector/dist/element-resize-detector.js',
+      'client/bower_components/bootstrap-ui-datetime-picker/dist/datetime-picker.js',
       'client/bower_components/autocomplete-lhc/source/polyfill.js',
       'client/bower_components/autocomplete-lhc/source/prototype_api.js',
       'client/bower_components/autocomplete-lhc/source/jqueryLite.js',

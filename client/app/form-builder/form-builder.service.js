@@ -1035,7 +1035,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
-   * Is this node representing  lforms item object? It is true if the object has representation for questionCode property, otherwise false.
+   * Is this node representing  lforms form level field?
+   *
    * Intended to distinguish form level item from lforms item in form builder's data model.
    *
    * @param nodeFbLfData - Form builder's node data object containing basic and advanced objects of lforms data in the form builder.
