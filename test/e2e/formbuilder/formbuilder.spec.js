@@ -53,6 +53,38 @@ function getJSONSource(format) {
   return fb.previewJsonSource.getText();
 }
 
+
+/**
+ * Dismiss md-dialog by clicking cancel or continue button.
+ * @param toContinue {boolean} - True for continue, false for cancel.
+ */
+function dismissWarning(toContinue) {
+  fb.continueButton.isPresent().then(function (present) {
+    if(present) {
+      if(toContinue) {
+        fb.dialog.element(by.buttonText('Continue')).click();
+      }
+      else {
+        fb.dialog.element(by.buttonText('Cancel')).click();
+      }
+    }
+  });
+}
+
+
+/**
+ * Equivalent of invoking file dialog and entering filename.
+ *
+ * @param fileName - file name to import from.
+ */
+function importFromFile(fileName) {
+  // Make the file input element visible, otherwise browser doesn't accept the sendKeys().
+  browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
+  fb.fileInput.sendKeys(fileName);
+  browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
+}
+
+
 /**
  * Load lforms json from the file system.
  *
@@ -60,11 +92,8 @@ function getJSONSource(format) {
  * @return Promise - If resolved, it gives lforms preview source string
  */
 function loadLFormFromDisk(fileName, format) {
-  // Make the file input element visible, otherwise browser doesn't accept the sendKeys().
-  browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
-  fb.fileInput.sendKeys(fileName);
-  browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
-
+  importFromFile(fileName);
+  dismissWarning(true);
   return getJSONSource(format);
 }
 
@@ -376,9 +405,7 @@ describe('GET /', function () {
   describe('Build restrictions', function () {
 
     beforeAll(function () {
-      // Re-open page to start fresh after preceeding tests
-      browser.get('/');
-      fb.termsOfUseAcceptButton.click();
+      fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
       assertNodeSelection('Resp rate');
       fb.advancedEditTab.click();
@@ -611,7 +638,7 @@ describe('GET /', function () {
   describe('Export import', function () {
     // The download path is set to /tmp in firefoxProfile. See
     // protractor.conf.js for profile preferences.
-    // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
+    // 'NewLForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
     var filename = '/tmp/NewLForm.lforms.json';
     var fhirFilenameSTU3 = '/tmp/NewLForm.STU3.json';
     var fhirFilenameR4 = '/tmp/NewLForm.R4.json';
@@ -705,6 +732,23 @@ describe('GET /', function () {
       }, function (err) {
         done.fail(JSON.stringify(err));
       });
+    });
+
+    it('Should import a form without showing replacement warning', function() {
+      fb.cleanupSideBar(); // Clear any existing form items
+      importFromFile(filename);
+      assertNodeSelection('Heart rate');
+    });
+
+    it('Should import a form showing replacement warning', function() {
+      fb.formTitle.clear();
+      fb.formTitle.sendKeys('Edited form');
+      importFromFile(filename);
+      dismissWarning(false); // Cancel replacement, should not load the form.
+      expect(fb.formTitle.getAttribute('value')).toBe('Edited form'); // Same form
+      importFromFile(filename);
+      dismissWarning(true); // Accept replacement, should load the form.
+      expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
     });
 
     it('Should load an LForms form into an empty form builder', function (done) {
@@ -1009,6 +1053,31 @@ describe('GET /', function () {
 
 
       fb.closeDialog(); // fhir results
+    });
+  });
+
+  describe('Unload form warnings', function () {
+
+    beforeAll(function () {
+      fb.cleanupSideBar();
+      fb.formTitle.clear();
+    });
+
+    it('should NOT warn refreshing the page with unedited form', function () {
+      browser.driver.navigate().refresh();
+      fb.termsOfUseAcceptButton.click();
+    });
+
+    it('should warn refreshing the page with edited form', function () {
+      fb.formTitle.clear();
+      fb.formTitle.sendKeys('Edited form');
+      browser.driver.navigate().refresh();
+      browser.driver.switchTo().alert().dismiss(); // Cancel reload
+      expect(fb.formTitle.getAttribute('value')).toBe('Edited form');
+      browser.driver.navigate().refresh();
+      browser.driver.switchTo().alert().accept(); // Accept reload
+      fb.termsOfUseAcceptButton.click();
+      expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
     });
   });
 
