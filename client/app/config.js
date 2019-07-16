@@ -12,9 +12,6 @@ angular.module('formBuilderConfig', ['ngMaterial'])
       }
     };
 
-    $window.onunload = function () {
-      $rootScope.$broadcast('UNLOAD');
-    };
     return {};
   })
   .constant('dataConstants', {

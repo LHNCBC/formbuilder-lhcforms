@@ -570,12 +570,11 @@
 
       /**
        * Show form replacement warning dialog.
-       * @param ev - event
-       * @param cb {function} - callback with resolution of the dialog response.
        * @param dialogTitle - Title of the dialog
        * @param dialogMessage - Content of the dialog
+       * @param cb {function} - callback with resolution of the dialog response.
        */
-      $scope.alertFormReplacement = function (ev, cb, dialogTitle, dialogMessage) {
+      $scope.alertFormReplacement = function (dialogTitle, dialogMessage, cb) {
         var dlgOpts = {
           controller: function () {
             this.dialogTitle = dialogTitle;
