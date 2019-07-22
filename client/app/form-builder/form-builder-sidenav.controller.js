@@ -516,11 +516,14 @@
        */
       $scope.$on('REPLACE_FORM', function (ev, lfData) {
         if($scope.isFormDirty()) {
-          $scope.alertFormReplacement(ev, function(reply) {
-            if(reply) {
-              $scope.replaceForm(lfData);
-            }
-          }, 'Replace this form?', 'This will overwrite contents in form builder. Do you want to continue?');
+          $scope.alertFormReplacement(
+            'Replace this form?',
+            'This will overwrite contents in form builder. Do you want to continue?',
+            function(reply) {
+              if(reply) {
+                $scope.replaceForm(lfData);
+              }
+            });
         }
         else {
           $scope.replaceForm(lfData);
