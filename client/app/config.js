@@ -3,6 +3,17 @@
  * */
 
 angular.module('formBuilderConfig', ['ngMaterial'])
+  .factory('beforeUnload', function ($rootScope, $window) {
+
+    $window.onbeforeunload = function () {
+      var event = $rootScope.$broadcast('BEFORE_UNLOAD');
+      if (event.defaultPrevented) {
+        return '';
+      }
+    };
+
+    return {};
+  })
   .constant('dataConstants', {
     TARGET_FHIR_HEADER: 'x-target-fhir-endpoint',
     TARGET_FHIR_AUTH_HEADER: 'x-target-fhir-server-authorization',
@@ -76,9 +87,15 @@ angular.module('formBuilderConfig', ['ngMaterial'])
         endpoint:'http://snapp.clinfhir.com:8081/baseDstu3',
         version: 'STU3'
       }
-    ]
+    ] /*,
+    // TODO - Uncomment this after merges with form level properties changes.
+    // To compare changes to form level properties.
+    defaultFormProps: {
+      name: 'New Form',
+      status: 'draft'
+    }*/
 
-}).run(function($rootScope, dataConstants) {
+}).run(function($rootScope, dataConstants, beforeUnload) {
     // Cache indices of initial form builder items.
     formBuilderDef.items.forEach(function (item, index) {
       dataConstants.INITIAL_FIELD_INDICES[item.questionCode] = {category: 'basic', index: index};

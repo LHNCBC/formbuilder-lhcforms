@@ -515,8 +515,89 @@
        *
        */
       $scope.$on('REPLACE_FORM', function (ev, lfData) {
-        $scope.replaceForm(lfData);
+        if($scope.isFormDirty()) {
+          $scope.alertFormReplacement(
+            'Replace this form?',
+            'This will overwrite contents in form builder. Do you want to continue?',
+            function(reply) {
+              if(reply) {
+                $scope.replaceForm(lfData);
+              }
+            });
+        }
+        else {
+          $scope.replaceForm(lfData);
+        }
       });
+
+
+      /**
+       * Listen to window.beforeunload event. This is triggered whenever the browser tab/window is closed. ev.preventDefault()
+       * invokes the browser alert popup message. Content of popup is controlled by the browser.
+       */
+      $scope.$on('BEFORE_UNLOAD', function (ev) {
+        if($scope.isFormDirty()) {
+          ev.preventDefault();
+        }
+      });
+
+
+      /**
+       * Find if the side bar is loaded or form level properties have changed.
+       *
+       * @returns {boolean}
+       */
+      $scope.isFormDirty = function() {
+
+        var treeNodes = $scope.formBuilderData.treeData;
+        // See if node tree is loaded?
+        var ret = !!(treeNodes && treeNodes.length > 0);
+        // Do dirty check on form level fields.
+        if(!ret) {
+          ret = !!($scope.formBuilderData.headers && $scope.formBuilderData.headers[2].value && $scope.formBuilderData.headers[2].value !== 'NewLForm');
+        }
+
+        // TODO - Dirty checking changes with form level properties. Comment out the following until those changes are merged.
+        /*
+        var treeNodes = $scope.formBuilderData.treeData[0].nodes;
+        // See if node tree is loaded?
+        var ret = !!(treeNodes && treeNodes.length > 0);
+        // Do dirty check on form level fields.
+        if(!ret) {
+          ret = angular.equals($scope.formBuilderData.treeData[0].previewItemData, dataConstants.defaultFormProps);
+        }
+        */
+        return ret;
+      };
+
+
+      /**
+       * Show form replacement warning dialog.
+       * @param dialogTitle - Title of the dialog
+       * @param dialogMessage - Content of the dialog
+       * @param cb {function} - callback with resolution of the dialog response.
+       */
+      $scope.alertFormReplacement = function (dialogTitle, dialogMessage, cb) {
+        var dlgOpts = {
+          controller: function () {
+            this.dialogTitle = dialogTitle;
+            this.message = dialogMessage;
+            this.closeDlg = function(answer){
+              $mdDialog.hide(answer);
+            };
+          },
+          templateUrl: 'app/form-builder/replace-dialog.html',
+          escapeToClose: true,
+          bindToController: true,
+          controllerAs: 'fhirCtrl'
+        };
+
+        $mdDialog.show(dlgOpts).then(function(answer) {
+          cb(answer);
+        }, function() {
+          $mdDialog.hide(false);
+        });
+      };
 
 
       /**

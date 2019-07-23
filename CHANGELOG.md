@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.0.10]  2019-07-19
+### Added.
+- Added a warning message about loosing the changes when the browser tab is closed or new form is imported.
+
 ## [3.0.9]  2019-06-06
 ### Changed.
 - Update node dependencies to fix npm audit vulnerabilities.
