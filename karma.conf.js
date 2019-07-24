@@ -59,6 +59,7 @@ module.exports = function(config) {
       'client/bower_components/autocomplete-lhc/source/autoCompEvents.js',
       'client/bower_components/autocomplete-lhc/source/autocomplete-lhc.js',
       'client/bower_components/ucum-lhc/browser-dist/ucum-lhc.js',
+      'client/bower_components/moment/moment.js',
       'client/bower_components/lforms/bower-dist/lforms.js',
       'client/bower_components/traverse/traverse.js',
       'client/bower_components/spin.js/spin.js',

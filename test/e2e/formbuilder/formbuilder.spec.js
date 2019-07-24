@@ -312,7 +312,7 @@ describe('GET /', function () {
     it('Should display the panel nodes in side bar tree', function () {
       expect(fb.firstNode.isDisplayed()).toBeTruthy();
       expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
-      expect(fb.panelTitle.getText()).toBe('1 Vital signs, weight & height panel [34565-2]');
+      expect(fb.panelTitle.getText()).toBe('1 Vital signs, weight and height panel [34565-2]');
       expect(fb.nodeList.count()).toEqual(26);
     });
 
