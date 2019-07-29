@@ -1054,6 +1054,60 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
+   * Prune out insignificant properties from the object.
+   * Insignificant properties include undefined, null, empty strings, and empty objects.
+   * All numbers, booleans and dates including invalid dates are significant.
+   *
+   * @param obj
+   * @returns {*}
+   * @private
+   */
+  this._pruneObject = function(obj) {
+    return lodash.transform(obj, function(ac, v, k){
+      var t = typeof v;
+
+      switch(t) {
+        case 'string':
+          v = v.trim();
+          if(v) {
+            ac[k] = v;
+          }
+          break;
+
+        case 'boolean':
+        case 'number':
+          ac[k] = v;
+          break;
+
+        case 'object':
+          if(v instanceof Date) {
+            ac[k] = v;
+          }
+          else if(!lodash.isEmpty(v)) {
+            ac[k] = thisService._pruneObject(v);
+          }
+          break;
+      }
+
+      return ac;
+    }, {});
+  };
+
+
+  /**
+   * Compare two objects for any significant differences. Any properties with empty values are ignored for comparison.
+   *
+   * @param obj1
+   * @param obj2
+   * @returns {boolean}
+   * @private
+   */
+  this._isEquivalent = function(obj1, obj2) {
+    return lodash.isEqual(thisService._pruneObject(obj1), thisService._pruneObject(obj2));
+  };
+
+
+  /**
    * Node traversal function with a callback to process each node.
    *
    * @param nodes {Array} - Array of top level node objects. Expects each node to

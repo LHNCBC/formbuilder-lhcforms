@@ -69,7 +69,7 @@ fb.service('fhirService', [
    * @returns {*} Http promise
    */
   thisService.search = function(searchStr, selfOnly) {
-    var query = {$sort: ['-_lastUpdated']};
+    var query = {$sort: ['-_lastUpdated'], _total: 'accurate'};
     if(searchStr) {
       query['name'] = searchStr;
     }

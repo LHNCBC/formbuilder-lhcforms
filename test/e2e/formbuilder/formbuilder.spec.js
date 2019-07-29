@@ -53,19 +53,47 @@ function getJSONSource(format) {
   return fb.previewJsonSource.getText();
 }
 
+
 /**
- * Load lforms json from the file system.
- *
- * @param fileName {string} - The lforms json file on the disk
- * @param format {string} - One of output formats: lforms, STU3, R4
- * @return Promise - If resolved, it gives lforms preview source string
+ * Dismiss md-dialog by clicking cancel or continue button.
+ * @param toContinue {boolean} - True for continue, false for cancel.
  */
-function loadLFormFromDisk(fileName, format) {
+function dismissWarning(toContinue) {
+  fb.continueButton.isPresent().then(function (present) {
+    if(present) {
+      if(toContinue) {
+        fb.dialog.element(by.buttonText('Continue')).click();
+      }
+      else {
+        fb.dialog.element(by.buttonText('Cancel')).click();
+      }
+    }
+  });
+}
+
+
+/**
+ * Equivalent of invoking file dialog and entering filename.
+ *
+ * @param fileName - file name to import from.
+ */
+function importFromFile(fileName) {
   // Make the file input element visible, otherwise browser doesn't accept the sendKeys().
   browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
   fb.fileInput.sendKeys(fileName);
   browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
+}
 
+
+/**
+ * Load lforms json from the file system.
+ *
+ * @param fileName {string} - The lforms json file on the disk
+ * @return Promise - If resolved, it gives lforms preview source string
+ */
+function loadLFormFromDisk(fileName, format) {
+  importFromFile(fileName);
+  dismissWarning(true);
   return getJSONSource(format);
 }
 
@@ -114,6 +142,7 @@ function assertImportFromFhir(partialResourceTitle) {
   fb.showFhirResources.click();
   expect(fb.dialog.isDisplayed()).toBeTruthy();
   fb.fhirResultItem(partialResourceTitle).click();
+  dismissWarning(true); // Accept replacement, should load the form.
   expect(fb.firstNode.isDisplayed()).toBeTruthy();
   fb.formTitle.getAttribute('value').then(function (text) {
     expect(text).toBe(partialResourceTitle);
@@ -379,9 +408,7 @@ describe('GET /', function () {
   describe('Build restrictions', function () {
 
     beforeAll(function () {
-      // Re-open page to start fresh after preceeding tests
-      browser.get('/');
-      fb.termsOfUseAcceptButton.click();
+      fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
       assertNodeSelection('Resp rate');
       fb.advancedEditTab.click();
@@ -710,6 +737,25 @@ describe('GET /', function () {
       });
     });
 
+    it('Should import a form without showing replacement warning', function() {
+      fb.cleanupSideBar(); // Clear any existing form items
+      importFromFile(filename);
+      assertNodeSelection('Heart rate');
+    });
+
+    it('Should import a form showing replacement warning', function() {
+      fb.cleanupSideBar(); // Clear any existing form items
+      fb.basicEditTab.click();
+      fb.formTitle.clear();
+      fb.formTitle.sendKeys('Edited form');
+      importFromFile(filename);
+      dismissWarning(false); // Cancel replacement, should not load the form.
+      expect(fb.formTitle.getAttribute('value')).toBe('Edited form'); // Same form
+      importFromFile(filename);
+      dismissWarning(true); // Accept replacement, should load the form.
+      expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
+    });
+
     it('Should load an LForms form into an empty form builder', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
       loadLFormFromDisk(filename, 'lforms').then(function (previewSrc) {
@@ -1013,6 +1059,36 @@ describe('GET /', function () {
 
 
       fb.closeDialog(); // fhir results
+    });
+  });
+
+  describe('Unload form warnings', function () {
+
+    beforeAll(function () {
+      browser.driver.navigate().refresh();
+      browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
+        alert.accept();
+        fb.termsOfUseAcceptButton.click();
+      }, function (err) {
+        console.log();
+      });
+    });
+
+    it('should NOT warn refreshing the page with unedited form', function () {
+      browser.driver.navigate().refresh();
+      fb.termsOfUseAcceptButton.click();
+    });
+
+    it('should warn refreshing the page with edited form', function () {
+      fb.formTitle.clear();
+      fb.formTitle.sendKeys('Edited form');
+      browser.driver.navigate().refresh();
+      browser.driver.switchTo().alert().dismiss(); // Cancel reload
+      expect(fb.formTitle.getAttribute('value')).toBe('Edited form');
+      browser.driver.navigate().refresh();
+      browser.driver.switchTo().alert().accept(); // Accept reload
+      fb.termsOfUseAcceptButton.click();
+      expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
     });
   });
 
