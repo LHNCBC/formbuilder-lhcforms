@@ -1,6 +1,6 @@
 'use strict';
 
-var fb = require('./formbuilder.po').formbuilder;
+const fb = require('./formbuilder.po').formbuilder;
 const fs = require('fs');
 const path = require('path');
 
@@ -28,7 +28,7 @@ function watchFilePromise(filename) {
  * @param nodeTitle
  */
 function assertNodeSelection(nodeTitle) {
-  var node = fb.questionTree.element(by.cssContainingText('div.angular-ui-tree-handle .flex-item-stretch span', nodeTitle));
+  let node = fb.questionTree.element(by.cssContainingText('div.angular-ui-tree-handle .flex-item-stretch span', nodeTitle));
   node.click();
   expect(fb.questionText.getAttribute('value')).toMatch(nodeTitle);
 }
@@ -132,15 +132,17 @@ function assertAnswerListCount(count) {
 /**
  * Select a resource from FHIR results dialog and load it into form builder.
  *
- * @param resourceTitle - A string to identify an item from the list of results.
+ * @param partialResourceTitle - A string to identify an item from the list of results.
  */
 function assertImportFromFhir(partialResourceTitle) {
   fb.cleanupSideBar();
+  fb.formNode.click();
   fb.formTitle.clear();
   fb.importMenu.click();
   fb.showFhirResources.click();
   expect(fb.dialog.isDisplayed()).toBeTruthy();
   fb.fhirResultItem(partialResourceTitle).click();
+  dismissWarning(true); // Accept replacement, should load the form.
   expect(fb.firstNode.isDisplayed()).toBeTruthy();
   fb.formTitle.getAttribute('value').then(function (text) {
     expect(text).toBe(partialResourceTitle);
@@ -157,6 +159,7 @@ function assertImportFromFhir(partialResourceTitle) {
  * from the server list. If more than one match, first match is picked.
  */
 function assertCreateFhirResource(resourceTitle, partialFhirServerName) {
+  fb.formNode.click();
   fb.formTitle.clear();
   fb.formTitle.sendKeys(resourceTitle);
 
@@ -338,7 +341,7 @@ describe('GET /', function () {
     it('Should display the panel nodes in side bar tree', function () {
       expect(fb.firstNode.isDisplayed()).toBeTruthy();
       expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
-      expect(fb.panelTitle.getText()).toBe('1 Vital signs, weight & height panel [34565-2]');
+      expect(fb.panelTitle.getText()).toBe('1 Vital signs, weight and height panel [34565-2]');
       expect(fb.nodeList.count()).toEqual(26);
     });
 
@@ -638,10 +641,10 @@ describe('GET /', function () {
   describe('Export import', function () {
     // The download path is set to /tmp in firefoxProfile. See
     // protractor.conf.js for profile preferences.
-    // 'NewLForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
-    var filename = '/tmp/NewLForm.lforms.json';
-    var fhirFilenameSTU3 = '/tmp/NewLForm.STU3.json';
-    var fhirFilenameR4 = '/tmp/NewLForm.R4.json';
+    // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
+    var filename = '/tmp/New-Form.lforms.json';
+    var fhirFilenameSTU3 = '/tmp/New-Form.STU3.json';
+    var fhirFilenameR4 = '/tmp/New-Form.R4.json';
     var lformsOriginalJson = null;
     var fhirOriginalJsonSTU3 = null;
     var fhirOriginalJsonR4 = null;
@@ -741,6 +744,8 @@ describe('GET /', function () {
     });
 
     it('Should import a form showing replacement warning', function() {
+      fb.cleanupSideBar(); // Clear any existing form items
+      fb.basicEditTab.click();
       fb.formTitle.clear();
       fb.formTitle.sendKeys('Edited form');
       importFromFile(filename);
@@ -962,6 +967,7 @@ describe('GET /', function () {
 
     // Assume there is a loaded panel
     it('should update', function () {
+      fb.formNode.click();
       fb.formTitle.clear();
       fb.formTitle.sendKeys(updatedTitle);
       fb.exportMenu.click();
@@ -1059,8 +1065,13 @@ describe('GET /', function () {
   describe('Unload form warnings', function () {
 
     beforeAll(function () {
-      fb.cleanupSideBar();
-      fb.formTitle.clear();
+      browser.driver.navigate().refresh();
+      browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
+        alert.accept();
+        fb.termsOfUseAcceptButton.click();
+      }, function (err) {
+        console.log();
+      });
     });
 
     it('should NOT warn refreshing the page with unedited form', function () {

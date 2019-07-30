@@ -370,5 +370,24 @@ var answerLists = {
       "code": "10*4/uL",
       "text": "10 thousand per microliter"
     }
+  ],
+  "statusCodes": [
+    {
+      "code": "draft",
+      "text": "Draft"
+    },
+    {
+      "code": "active",
+      "text": "Active"
+    },
+    {
+      "code": "retired",
+      "text": "Retired"
+    },
+    {
+      "code": "unknown",
+      "text": "Unknown"
+    },
+
   ]
 };

@@ -87,13 +87,13 @@ angular.module('formBuilderConfig', ['ngMaterial'])
         endpoint:'http://snapp.clinfhir.com:8081/baseDstu3',
         version: 'STU3'
       }
-    ] /*,
+    ],
     // TODO - Uncomment this after merges with form level properties changes.
     // To compare changes to form level properties.
     defaultFormProps: {
       name: 'New Form',
       status: 'draft'
-    }*/
+    }
 
 }).run(function($rootScope, dataConstants, beforeUnload) {
     // Cache indices of initial form builder items.

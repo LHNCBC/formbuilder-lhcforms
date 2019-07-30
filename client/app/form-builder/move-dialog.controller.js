@@ -36,7 +36,7 @@ angular.module('formBuilder')
        */
       function init(aScope) {
         var excludeSelf = aScope.moveType === dataConstants.INSERT_AS_CHILD;
-        var list = formBuilderService.getMovableTargetNodes(aScope.formBuilderData.treeData, aScope.selectedNode, excludeSelf, []);
+        var list = formBuilderService.getMovableTargetNodes(aScope.formBuilderData.treeData[0].nodes, aScope.selectedNode, excludeSelf, []);
         var listItems = [];
         list.forEach(function (node) {
           listItems.push({

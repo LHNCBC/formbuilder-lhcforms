@@ -13,7 +13,7 @@ var jsonpath = require('jsonpath');
  */
 var FormBuilder = function () {
   this.autoCompListItems = element.all(by.css('#searchResults li'));
-  this.questionTree = element(by.css('.angular-ui-tree'));
+  this.questionTree = element(by.css('.angular-ui-tree > ol > li'));
   this.addButton = element(by.id('sidebar-container')).element(by.css('button'));
   this.dialog = element.all(by.css('md-dialog')).last();
   this.importLOINCRadio = this.dialog.element(by.cssContainingText('md-radio-button', 'Import from LOINC'));
@@ -27,9 +27,10 @@ var FormBuilder = function () {
   this.newItemAddButton = this.dialog.element(by.buttonText('Add'));
   this.importDialogCancel = this.dialog.element(by.cssContainingText('button', 'Cancel'));
 
-  this.rootNodeList = this.questionTree.all(by.xpath('ol/li/div[@ui-tree-handle]'));
-  this.nodeList = this.questionTree.all(by.css('div.angular-ui-tree-handle'));
+  this.rootNodeList = element.all(by.css('.angular-ui-tree > ol > li > div > div[ui-tree-handle]'));
+  this.nodeList = this.questionTree.all(by.css('.angular-ui-tree > ol > li div[ui-tree-handle]'));
   this.firstNode = this.nodeList.get(0);
+  this.formNode = element(by.css('.form-node'));
 
   this.itemBuilderPanel = element(by.id('item-builder-panel'));
   this.basicPanelEl = element(by.id('basic-item-builder-panel'));
@@ -84,7 +85,7 @@ var FormBuilder = function () {
   this.selectedNode = this.questionTree.element(by.css('div.angular-ui-tree-handle.active'));
   this.answersDelButton3 = this.basicPanelEl.element(by.id('del-/answers/3'));
 
-  this.refreshButtons = element.all(by.css('md-tabs span.glyphicon-refresh'));
+  this.refreshButtons = element.all(by.css('md-tabs md-pagination-wrapper span.glyphicon-refresh'));
   this.previewRefreshButton = this.refreshButtons.first();
   this.previewWidgetBPDeviceCuffAnswerListEl = element(by.css('input[name^="BP device Cuff size"]'));
   this.previewWidgetBPDeviceInvent = element(by.css('input[name^="BP device Inventory #"]'));
@@ -97,7 +98,7 @@ var FormBuilder = function () {
   this.previewJsonSource = this.previewPanel.element(by.css('md-tab-content.md-active pre'));
   this.previewFHIRQuestionnaireR4Radio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'FHIR Questionnaire (R4)'));
   this.previewFHIRQuestionnaireSTU3Radio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'FHIR Questionnaire (STU3)'));
-  this.previewFHIRQuestionnaireLFormsRadio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'LHC Forms'));
+  this.previewFHIRQuestionnaireLFormsRadio = this.previewPanel.element(by.cssContainingText('md-tab-content md-radio-button', 'LHC-Forms'));
 
   this.previewVitalSignsPanelModified = this.previewPanelEl.element(by.cssContainingText('label', 'Vital Signs Panel'));
   this.previewRespRate = element(by.css('input[name="Resp rate"]'));
@@ -108,7 +109,7 @@ var FormBuilder = function () {
   this.exportToFile = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Export to file...'));
   this.exportFileFHIRFormatSTU3 = this.dialog.element(by.cssContainingText('md-radio-button', 'FHIR Questionnaire (STU3)'));
   this.exportFileFHIRFormatR4 = this.dialog.element(by.cssContainingText('md-radio-button', 'FHIR Questionnaire (R4)'));
-  this.exportFileLFormsFormat = this.dialog.element(by.cssContainingText('md-radio-button', 'LHC Forms'));
+  this.exportFileLFormsFormat = this.dialog.element(by.cssContainingText('md-radio-button', 'LHC-Forms'));
   this.createFhir = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Create a new FHIR resource on a server'));
   this.updateFhir = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Update a FHIR resource on a server'));
   this.showFhirResources = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Load from FHIR server...'));
@@ -119,7 +120,7 @@ var FormBuilder = function () {
   this.signIn = element(by.id('header')).element(by.partialButtonText('Sign in'));
   this.signOut = element(by.id('header')).element(by.partialButtonText('sign out'));
   this.signInAnonymously = this.dialog.element(by.partialButtonText('Sign In Anonymously'));
-  this.formTitle = element(by.id('formTitleInput'));
+  this.formTitle = element(by.id('/title/1'));
   this.fhirErrorData = this.dialog.all(by.css('md-dialog-content pre')).get(0);
   this.fhirResponse = this.dialog.all(by.css('md-dialog-content pre')).get(1);
   this.fhirServerList = this.dialog.all(by.repeater('server in fhirCtrl.fhirServerList'));
@@ -201,7 +202,7 @@ var FormBuilder = function () {
    * @param nodeText {string} - Part of the node text to identify the node
    */
   this.clickMoreOptions = function (nodeText) {
-    var node = thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node]/div[@ui-tree-handle and contains(div[contains(@class, "flex-item-stretch")]/span/text(), "'+nodeText+'")]'));
+    var node = thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node]/div/div[@ui-tree-handle and contains(div[contains(@class, "flex-item-stretch")]/span/text(), "'+nodeText+'")]'));
     node.element(by.css('.more-options')).click();
   };
 
@@ -334,7 +335,7 @@ var FormBuilder = function () {
    * @returns {Object} - Element locator.
    */
   this.getNode = function(nodeText) {
-    return thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node and div[@ui-tree-handle]/div[contains(@class, "flex-item-stretch")]/span[contains(text(), "'+nodeText+'")]]'));
+    return thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node and div/div[@ui-tree-handle]/div[contains(@class, "flex-item-stretch")]/span[contains(text(), "'+nodeText+'")]]'));
   };
 
 
@@ -357,7 +358,7 @@ var FormBuilder = function () {
    * @returns {Object} - Element locator.
    */
   this.parentNode = function(childNodeText) {
-    return thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node and div[@ui-tree-handle]/div[contains(@class, "flex-item-stretch")]/span[contains(text(), "'+childNodeText+'")]]/../../../li'));
+    return thisPO.questionTree.element(by.xpath('.//li[@ui-tree-node and div/div/div[@ui-tree-handle]/div[contains(@class, "flex-item-stretch")]/span[contains(text(), "'+childNodeText+'")]]/../../../li'));
   };
 
 

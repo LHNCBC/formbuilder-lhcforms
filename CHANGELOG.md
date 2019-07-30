@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.1.0]  2019-07-24
+### Added.
+- Added form level fields defined in FHIR Questionnaire.
+
 ## [3.0.10]  2019-07-19
 ### Added.
 - Added a warning message about loosing the changes when the browser tab is closed or new form is imported.

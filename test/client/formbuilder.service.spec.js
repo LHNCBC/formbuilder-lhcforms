@@ -44,6 +44,21 @@ describe('formbuilder.service ', function () {
     expect(fbQ.basic.itemHash['/multipleAnswers/1'].value.code).toBeTruthy();
   });
 
+  it('should test _pruneObject()', function () {
+    expect(fbService._pruneObject({})).toEqual({});
+    expect(fbService._pruneObject({a: null})).toEqual({});
+
+    var obj1 = {a: 1, b: null, c: undefined, d: "", e: " ", f: {g: false, h: 0, i: 1, j: ' xxx ', k: ' yy zz   ', m: {}}};
+    var pruned = {a: 1, f: {g: false, h: 0, i: 1, j: 'xxx', k: 'yy zz'}};
+    expect(fbService._pruneObject(obj1)).toEqual(pruned);
+  });
+
+  it('should test _isEquivalent()', function () {
+    var obj1 = {a: 1, b: null, c: undefined, d: "", e: " ", f: {g: false, h: 0, i: 1, j: ' xxx ', k: ' yy zz   '}};
+    var equivalent1 = {a: 1, f: {g: false, h: 0, i: 1, j: 'xxx', k: 'yy zz', l: null, m: {}}};
+    expect(fbService._isEquivalent(obj1, equivalent1)).toEqual(true);
+  });
+
   describe('_updateUnitsURL()', function () {
     var loincPropertyResp, lfData, codeItem, datatypeItem, unitsItem;
 

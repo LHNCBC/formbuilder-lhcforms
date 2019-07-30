@@ -36,15 +36,4 @@ angular.module('formBuilder')
       $scope.closeDialog = function() {
         $mdDialog.hide();
       };
-
-
-      /**
-       * Refresh button handler
-       */
-      $scope.refreshPreview = function() {
-        if($scope.selectedNode) {
-          $scope.selectedNode.previewItemData = formBuilderService.convertLfData($scope.selectedNode.lfData);
-        }
-        $scope.previewWidget();
-      };
     }]);

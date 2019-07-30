@@ -78,8 +78,10 @@
           }
           else {
             // Re-arrange the ids and update the widget on the content pane.
-            $scope.updateIdsAndAncestralCustomCodes(event.source.nodeScope.$modelValue);
-            $scope.selectNode(event.source.nodeScope.$modelValue);
+            formBuilderService.updateTreeIds($scope.formBuilderData.treeData[0].nodes);
+            var thisNode = event.source.nodeScope.$modelValue;
+            $scope.changeThisAndAncestralCustomCodes(thisNode);
+            $scope.selectNode(thisNode);
             return true;
           }
         },
@@ -102,12 +104,17 @@
        *
        * @param {Object} scope - Scope of the node clicked
        */
-      $scope.click = function (scope) {
-        var node = scope.$modelValue;
+      $scope.click = function (scopeOrNode) {
+        var node = scopeOrNode.$modelValue;
         if(node) {
           // Select only if clicked on non selected node.
           if(!$scope.selectedNode || node.id !== $scope.selectedNode.id) {
             $scope.selectNode(node);
+          }
+        }
+        else {
+          if(!$scope.selectedNode || scopeOrNode.id !== $scope.selectedNode.id) {
+            $scope.selectNode(scopeOrNode);
           }
         }
       };
@@ -124,12 +131,13 @@
         // Save any edits or cleanups on currently selected node.
         if($scope.selectedNode) {
           // Remove watches before switching the node.
+          formBuilderService.updateTreeIds($scope.formBuilderData.treeData[0].nodes);
           deregisterDirtyCheckWatches($scope);
           if($scope.selectedNode.isDirty) {
-            $scope.updateIdsAndAncestralCustomCodes($scope.selectedNode);
+            $scope.changeThisAndAncestralCustomCodes($scope.selectedNode);
             $scope.selectedNode.isDirty = false;
           }
-          formBuilderService.processNodeTree($scope.formBuilderData.treeData);
+          formBuilderService.processNodeTree($scope.formBuilderData.treeData[0].nodes);
         }
 
         // Select new node
@@ -139,18 +147,6 @@
           $scope.previewWidget();
           setDirtyCheckWatches($scope);
         });
-      };
-
-
-      /**
-       * See if edits to this node impacts its ancestors
-       *
-       * @param node - Node to check for changes.
-       */
-      $scope.updateIdsAndAncestralCustomCodes = function(node) {
-        formBuilderService.updateTreeIds($scope.formBuilderData.treeData);
-        var ancestors = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, node);
-        formBuilderService.changeItemCodeToCustomCode(ancestors);
       };
 
 
@@ -166,9 +162,7 @@
         scope.remove();
         if(nextSelect === null) {
           // No other nodes. This is the only one
-          $scope.setSelectedNode(null);
-          $scope.previewWidget();
-          return;
+          nextSelect = $scope.formBuilderData.treeData[0];
         }
 
         $scope.selectNode(nextSelect);
@@ -315,7 +309,7 @@
        */
       function calculateIds() {
         var qRoot = $scope.getRootNodesScope().$modelValue;
-        assignId(qRoot, []);
+        assignId(qRoot[0].nodes, []);
       }
 
 
@@ -348,10 +342,6 @@
        */
       $scope.addNewFromDialog = function (scope) {
         if($scope.addOrImport.mode === 'add') {
-          gtag('event', 'add-custom-item', {
-            event_category: 'engagement',
-            event_label: scope.importLoincItem.mode
-          });
           $scope.insertNewItem(scope, null, scope.insertType);
           $scope.previewWidget();
           $scope.closeDialog();
@@ -379,15 +369,10 @@
        * @param scope - Scope from the template
        */
       $scope.importFromDialog = function (scope) {
-        if (!$scope.dialogCancelled && scope.autocompSearch.model &&
+        if (!scope.dialogCancelled && scope.autocompSearch.model &&
             scope.autocompSearch.model.code) {
-          gtag('event', 'import-loinc-item', {
-            event_category: 'engagement',
-            event_label: scope.importLoincItem.mode,
-            value: scope.autocompSearch.model.code
-          });
-          var response = $scope.autocompSearch.model;
-          if($scope.importLoincItem.mode === dataConstants.QUESTION) {
+          var response = scope.autocompSearch.model;
+          if(scope.importLoincItem.mode === dataConstants.QUESTION) {
             var questionData = {
               questionCode: response.code,
               questionCodeSystem: dataConstants.LOINC,
@@ -403,9 +388,9 @@
             $scope.previewWidget();
             $scope.stopSpin();
           }
-          else if($scope.importLoincItem.mode === dataConstants.PANEL) {
+          else if(scope.importLoincItem.mode === dataConstants.PANEL) {
             $scope.startSpin();
-            var panelData =  $scope.autocompSearch.model;
+            var panelData =  scope.autocompSearch.model;
             formBuilderService.getLoincPanelData(panelData.code, function(response, error) {
               if(error) {
                 $scope._error = new Error(error);
@@ -457,8 +442,8 @@
       /**
        * Cancel button handler
        */
-      $scope.cancelDialog = function() {
-        $scope.dialogCancelled = true;
+      $scope.cancelDialog = function(scope) {
+        scope.dialogCancelled = true;
         $scope.closeDialog();
       };
 
@@ -485,11 +470,8 @@
        * @returns {Object} Root scope of the tree
        */
       $scope.getRootNodesScope = function () {
-        return angular.element(document.getElementById("question-root")).scope();
+        return angular.element("#question-root").scope().$nodesScope;
       };
-
-      $scope.setFormBuilderData();
-      $scope.updateLFData($scope.formBuilderData);
 
       /**
        * Intended to replace existing form with new form, typically from uploaded file.
@@ -548,25 +530,15 @@
        * @returns {boolean}
        */
       $scope.isFormDirty = function() {
-
-        var treeNodes = $scope.formBuilderData.treeData;
-        // See if node tree is loaded?
-        var ret = !!(treeNodes && treeNodes.length > 0);
-        // Do dirty check on form level fields.
-        if(!ret) {
-          ret = !!($scope.formBuilderData.headers && $scope.formBuilderData.headers[2].value && $scope.formBuilderData.headers[2].value !== 'NewLForm');
-        }
-
-        // TODO - Dirty checking changes with form level properties. Comment out the following until those changes are merged.
-        /*
+        $scope.refreshPreview();
         var treeNodes = $scope.formBuilderData.treeData[0].nodes;
         // See if node tree is loaded?
         var ret = !!(treeNodes && treeNodes.length > 0);
         // Do dirty check on form level fields.
         if(!ret) {
-          ret = angular.equals($scope.formBuilderData.treeData[0].previewItemData, dataConstants.defaultFormProps);
+          ret = !formBuilderService._isEquivalent($scope.formBuilderData.treeData[0].previewItemData, dataConstants.defaultFormProps);
         }
-        */
+
         return ret;
       };
 
@@ -648,7 +620,7 @@
           currentNode = nodes[0];
         }
         if(!$scope.selectedNode) {
-          $scope.selectNode($scope.formBuilderData.treeData[0]);
+          $scope.selectNode($scope.formBuilderData.treeData[0].nodes[0]);
         }
         else {
           $scope.selectNode(currentNode);
@@ -715,6 +687,10 @@
        */
       function setDirtyCheckWatches(scope) {
         // Set watches on newly selected node.
+
+        if(scope.selectedNode && formBuilderService.isNodeFbLfForm(scope.selectedNode.lfData)) {
+          return; // TODO - No watches on form level fields for time being
+        }
 
         Object.keys(scope.watchExpressions).forEach(function (expressionId) {
           var exp = scope.watchExpressions[expressionId];
@@ -856,5 +832,6 @@
         });
       }
 
+      $scope.selectNode($scope.formBuilderData.treeData[0]);
     }]);
 })();

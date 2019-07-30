@@ -6,40 +6,9 @@
  */
 
 var fb = angular.module('formBuilder');
-fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConstants', function($window, lodash, $q, $http, dataConstants) {
+fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConstants', 'flService', function($window, lodash, $q, $http, dataConstants, flService) {
 
   var thisService = this; // Self reference for promises etc., where 'this' means something else
-
-  /**
-   * Define header data.
-   *
-   * @type {*[]}
-   */
-  var headers = [{
-    "id": "0.1",
-    "title": "Coding System",
-    "noButtons": true,
-    "type": "CNE",
-    answers: {
-      listItems: [
-        {text: dataConstants.LOINC, code: dataConstants.LOINC},
-        {text: dataConstants.CUSTOM, code: dataConstants.CUSTOM}
-      ],
-      defaultValue: {code: dataConstants.LOINC}
-    },
-    value: {text: dataConstants.LOINC, code: dataConstants.LOINC}
-  }, {
-    "id": "0.2",
-    "title": "Form Code",
-    "noButtons": true,
-    "type": "ST"
-  }, {
-    "id": "0.3",
-    "title": "Form Name",
-    "noButtons": true,
-    "type": "ST",
-    "value": 'NewLForm'
-  }];
 
   /**
    * Cached model of tree data structure.
@@ -63,10 +32,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   };
 
   this.getHeaders = function() {
-    return headers;
+    return {
+      basic: new LForms.LFormsData(angular.copy(lfDataCached.formLevelFBData.basic)),
+      advanced: new LForms.LFormsData(angular.copy(lfDataCached.formLevelFBData.advanced)),
+    };
   };
   // Cache the question builder data model.
   var lfDataCached = {
+    formLevelFBData: {},
     basic: null,
     advanced: null
   };
@@ -91,8 +64,12 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * The formBuilderDef widget is defined in form-builder-def.js.
    */
   this.cacheLFData = function() {
+    thisService.processAnswerLists(basicFormLevelFieldsDef);
+    thisService.processAnswerLists(advFormLevelFieldsDef);
     thisService.processAnswerLists(formBuilderDef);
     thisService.processAnswerLists(advFormBuilderDef);
+    lfDataCached.formLevelFBData.basic = angular.copy(basicFormLevelFieldsDef);
+    lfDataCached.formLevelFBData.advanced = angular.copy(advFormLevelFieldsDef);
     lfDataCached.basic = angular.copy(formBuilderDef);
     lfDataCached.advanced = angular.copy(advFormBuilderDef);
   };
@@ -146,11 +123,17 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   this.createFormBuilder = function(importedData) {
     var formBuilder = {};
-    formBuilder.headers = thisService.getHeaders();
-    formBuilder.treeData = [];
-    updateHeaders(formBuilder, importedData);
-    thisService.updateTree(formBuilder.treeData, importedData.items);
-    thisService.processNodeTree(formBuilder.treeData);
+    var flData = angular.copy(lfDataCached.formLevelFBData);
+    if(importedData) {
+      flService.importFormLevelFields(flData, importedData);
+    }
+    var flNode = thisService.createTreeNode();
+    flNode.lfData = {basic: new LForms.LFormsData(flData.basic), advanced: new LForms.LFormsData(flData.advanced)};
+    formBuilder.treeData = [flNode];
+    if(importedData && importedData.items && importedData.items.length > 0) {
+      thisService.updateTree(flNode.nodes, importedData.items);
+    }
+    thisService.processNodeTree(formBuilder.treeData[0].nodes);
     return formBuilder;
   };
 
@@ -194,9 +177,16 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @returns {Object} - lforms object.
    */
   this.convertLfData = function(lfData) {
+    var ret = null;
     var basicData = lfData.basic.getFormData();
     var advData = lfData.advanced.getFormData();
-    return thisService.transformToFormDef(basicData.items.concat(advData.items));
+    if(thisService.isNodeFbLfItem(lfData)) {
+      ret = thisService.transformToFormDef(basicData.items.concat(advData.items));
+    }
+    else if(thisService.isNodeFbLfForm(lfData)) {
+      ret = flService.exportFormLevelDataToLForms(lfData);
+    }
+    return ret;
   };
 
 
@@ -248,18 +238,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   this.transformFormBuilderToFormDef = function(formData) {
     var ret = {};
     if(formData) {
-      var type = formData.headers[0].value.code;
-      var code = formData.headers[1].value;
-      var name = formData.headers[2].value || '';
-      if(type && code) {
-        ret.type = type;
-        ret.code = code;
-      }
-      ret.name = name;
-      if(formData.id) {
-        ret.id = formData.id;
-      }
-      ret.items = transformTreeToFormDef(formData.treeData);
+      ret = flService.exportFormLevelDataToLForms(formData.treeData[0].lfData);
+      ret.items = transformTreeToFormDef(formData.treeData[0].nodes);
     }
 
     return ret;
@@ -342,13 +322,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   /**
    * Return list of ancestors.
    *
-   * @param rootArray - Root level node list
+   * @param formbuilderTree - Root level node list
    * @param targetNode - Context node whose ancestor list needs to be collected.
    * @returns {Array} List of desired nodes.
    */
-  this.getAncestralNodes = function(rootArray, targetNode) {
-    var ret = [];
-    var parentArray = rootArray;
+  this.getAncestralNodes = function(formbuilderTree, targetNode) {
+    // The root is form node. Don't consider its id, but include it in the return list.
+    var ret = [formbuilderTree[0]];
+    var parentArray = formbuilderTree[0].nodes;
     // Exclude targetNode from the ancestors list.
     var parentId = targetNode.id.substring(0, targetNode.id.lastIndexOf('.'));
     if(parentId) {
@@ -936,14 +917,26 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   this.changeItemCodeToCustomCode = function(ancestorList) {
     ancestorList.forEach(function(ancestor) {
-      var lfd = ancestor.lfData.basic;
-      var type = lfd.itemHash[dataConstants.CODING_SYSTEM_ID];
-      if(type.value.code !== dataConstants.CUSTOM) {
-        var code = lfd.itemHash[dataConstants.CODE_ID];
-        var customType = lodash.find(type.answers, {code: dataConstants.CUSTOM});
-        type.value = customType;
-        code.value = 'Modified_'+code.value;
-        code.editable = "1";
+      if(thisService.isNodeFbLfForm(ancestor.lfData)) {
+        var codeList = thisService.getFormBuilderFields(ancestor.lfData.advanced.items, 'code');
+        codeList.forEach(function(codeObj) {
+          var code = lodash.find(codeObj.items, {questionCode: 'code'});
+          var system = lodash.find(codeObj.items, {questionCode: 'system'});
+          if(system.value === 'LOINC' || system.value === 'http://loinc.org') {
+            system.value = '';
+            code.value = 'Modified_' + code.value;
+          }
+        });
+      }
+      else {
+        var lfd = ancestor.lfData.basic;
+        var type = lfd.itemHash[dataConstants.CODING_SYSTEM_ID];
+        if(type.value.code !== dataConstants.CUSTOM) {
+          var code = lfd.itemHash[dataConstants.CODE_ID];
+          type.value = lodash.find(type.answers, {code: dataConstants.CUSTOM});
+          code.value = 'Modified_'+code.value;
+          code.editable = "1";
+        }
       }
       ancestor.previewItemData = thisService.convertLfData(ancestor.lfData);
     });
@@ -988,7 +981,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   this.processNodeTree = function(rootArray) {
     traverseNodeTree(rootArray, function (node, path) {
       node.id = path.join('.');
-      if(node.lfData) {
+      if(thisService.isNodeFbLfItem(node.lfData)) {
         var sources = thisService.getSkipLogicDataControlSources(rootArray, node);
         var skipLogicConditions = lodash.drop(node.lfData.advanced.itemHash[dataConstants.SKIPLOGIC_ID].items, 2);
         skipLogicConditions.forEach(function(x) {
@@ -1020,6 +1013,97 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     traverseNodeTree(rootArray, function (node, path) {
       node.id = path.join('.');
     });
+  };
+
+
+  /**
+   * Is this node representing  lforms item object? It is true if the object has representation for questionCode property, otherwise false.
+   * Intended to distinguish form level item from lforms item in form builder's data model.
+   *
+   * @param nodeFbLfData - Form builder's node data object containing basic and advanced objects of lforms data in the form builder.
+   * @private
+   */
+
+  this.isNodeFbLfItem = function (nodeFbLfData) {
+    var ret = false;
+    if(nodeFbLfData && nodeFbLfData.basic && nodeFbLfData.basic.itemHash && nodeFbLfData.basic.itemHash[dataConstants.CODE_ID]) {
+      ret = true;
+    }
+
+    return ret;
+  };
+
+
+  /**
+   * Is this node representing  lforms form level field?
+   *
+   * Intended to distinguish form level item from lforms item in form builder's data model.
+   *
+   * @param nodeFbLfData - Form builder's node data object containing basic and advanced objects of lforms data in the form builder.
+   * @private
+   */
+
+  this.isNodeFbLfForm = function (nodeFbLfData) {
+    var ret = false;
+    if(nodeFbLfData && nodeFbLfData.basic && nodeFbLfData.basic.itemHash && nodeFbLfData.basic.itemHash['/status/1']) {
+      ret = true;
+    }
+
+    return ret;
+  };
+
+
+  /**
+   * Prune out insignificant properties from the object.
+   * Insignificant properties include undefined, null, empty strings, and empty objects.
+   * All numbers, booleans and dates including invalid dates are significant.
+   *
+   * @param obj
+   * @returns {*}
+   * @private
+   */
+  this._pruneObject = function(obj) {
+    return lodash.transform(obj, function(ac, v, k){
+      var t = typeof v;
+
+      switch(t) {
+        case 'string':
+          v = v.trim();
+          if(v) {
+            ac[k] = v;
+          }
+          break;
+
+        case 'boolean':
+        case 'number':
+          ac[k] = v;
+          break;
+
+        case 'object':
+          if(v instanceof Date) {
+            ac[k] = v;
+          }
+          else if(!lodash.isEmpty(v)) {
+            ac[k] = thisService._pruneObject(v);
+          }
+          break;
+      }
+
+      return ac;
+    }, {});
+  };
+
+
+  /**
+   * Compare two objects for any significant differences. Any properties with empty values are ignored for comparison.
+   *
+   * @param obj1
+   * @param obj2
+   * @returns {boolean}
+   * @private
+   */
+  this._isEquivalent = function(obj1, obj2) {
+    return lodash.isEqual(thisService._pruneObject(obj1), thisService._pruneObject(obj2));
   };
 
 
@@ -1640,27 +1724,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
-   * Update form headers
-   *
-   * @param {Object} lfData - Form builder data model
-   * @param {Object} importedData - Imported data object
-   */
-  function updateHeaders(lfData, importedData) {
-    if(importedData.id) {
-      lfData.id = importedData.id;
-    }
-    lfData.headers[0].value = {
-      text: importedData.type,
-      code: importedData.type
-    };
-    lfData.headers[1].value = importedData.code;
-    if(importedData.name) {
-      lfData.headers[2].value = importedData.name;
-    }
-  }
-
-
-  /**
    * @param {Object} obj - Object whose keys are renamed.
    * @param {String} oldkey
    * @param {String} newkey
@@ -1686,8 +1749,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   function updateUnitsURL(lfData) {
     var deferred = $q.defer();
     var httpCall = false;
-    var dataType = thisService.getFormBuilderField(lfData.items, 'dataType').value.code;
-    if(dataType === 'INT' || dataType === 'REAL') {
+    var dataType = thisService.getFormBuilderField(lfData.items, 'dataType');
+    if(dataType && dataType.value && (dataType.value.code === 'INT' || dataType.value.code === 'REAL')) {
       var unitsItem = thisService.getFormBuilderField(lfData.items, 'units');
       var code = thisService.getFormBuilderField(lfData.items, 'questionCode').value;
       var matched = /^(Modified_)?(\d+\-\d)$/.exec(code);
@@ -1716,5 +1779,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
   // Expose for unit testing
   this._updateUnitsURL = updateUnitsURL;
+
+  this.cacheLFData();
 
 }]);

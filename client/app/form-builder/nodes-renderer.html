@@ -1,37 +1,7 @@
 <!-- For sidebar tree -->
-  <div ui-tree-handle class="tree-node tree-node-content flex-container"
-       ng-class="{active: node.id === selectedNode.id, panelnode: getItem(node.lfData, 'header').value.code === true}">
-    <button
-      ng-show="getItem(node.lfData, 'header').value.code === true || node.nodes && node.nodes.length > 0"
-      class="btn btn-success btn-xs" data-nodrag
-      role="button"
-      ng-attr-aria-label="{{collapsed ? 'Show' : 'Hide'}} children of item {{node.id}} {{getItem(node.lfData, 'question').value}}"
-      ng-click="toggle(this)">
-              <span class="glyphicon glyphicon-chevron-down"
-                    ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span>
-      <md-tooltip>{{collapsed ? 'Expand' : 'Collapse'}}</md-tooltip>
-    </button>
-    <div class="flex-item-stretch"
-         ng-click="click(this)">
-      <span>{{node.id}} {{
-        (getItem(node.lfData, 'question').value && getItem(node.lfData, 'question').value.trim().length > 0)
-        ? getItem(node.lfData, 'question').value : node.title
-        | truncateFilter:{'length': 20}
-        }}</span>
-      <md-tooltip md-delay="100"
-                  ng-if="getItem(node.lfData, 'question').value &&
-                         getItem(node.lfData, 'question').value.trim().length > 0">
-        {{node.id}} {{getItem(node.lfData, 'question').value}}
-        <span
-          ng-if="getItem(node.lfData, 'questionCode').value &&
-                 getItem(node.lfData, 'questionCode').value.trim().length > 0">[{{getItem(node.lfData, 'questionCode').value}}]</span>
-      </md-tooltip>
-    </div>
-    <button data-nodrag md-menu-origin="" aria-label="Open more options menu for this item" class="glyphicon btn btn-xs more-options glyphicon-option-horizontal"
-            ng-click="menuCtrl.showPopupMenu(this, $event)">
-      <md-tooltip>More options</md-tooltip>
-    </button>
-  </div>
+
+
+  <div ng-model="node" ng-include="'app/form-builder/item-node.html'"></div>
   <ol ui-tree-nodes="" ng-model="node.nodes"
       ng-class="{hidden: collapsed}">
     <li ng-repeat="node in node.nodes" ui-tree-node

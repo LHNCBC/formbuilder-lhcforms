@@ -38,7 +38,7 @@ angular.module('formBuilder')
       $scope.formatList = [
         {displayName: 'FHIR Questionnaire (R4)', format: 'R4'},
         {displayName: 'FHIR Questionnaire (STU3)', format: 'STU3'},
-        {displayName: 'LHC Forms', format: 'lforms'}
+        {displayName: 'LHC-Forms', format: 'lforms'}
       ];
       $scope.selectedFormat = $scope.formatList[0];
 
@@ -74,15 +74,10 @@ angular.module('formBuilder')
        * Place holder for tree data
        * @type {Array}
        */
-      $scope.formBuilderData = {
-        headers: formBuilderService.getHeaders(),
-        treeData: []
-      };
+      $scope.formBuilderData = formBuilderService.createFormBuilder();
 
-      $scope.selectedNode = null;
+      $scope.selectedNode = $scope.formBuilderData.treeData[0];
 
-      $scope.sourceJson = null;
-      
       $scope.termsOfUseAccepted = 'unknown';
 
       $scope.isUserSignedIn = !firebaseService.isEnabled(); // If disabled, no control on fhir server access.
@@ -100,10 +95,6 @@ angular.module('formBuilder')
       $scope.uploader.onAfterAddingFile = function(item) {
         var reader = new FileReader(); // Read from local file system.
         reader.onload = function(event) {
-          gtag('event', 'file-import', {
-            event_category: 'engagement',
-            event_label: 'local-file'
-          });
           var importedData = null;
           try {
             importedData = JSON.parse(event.target.result);
@@ -157,10 +148,6 @@ angular.module('formBuilder')
        * @param answer - Response from user action
        */
       $scope.touAnswer = function (answer) {
-        gtag('event', 'accept-terms-of-use', {
-          event_category: 'engagement',
-          event_label: answer
-        });
         $scope.termsOfUseAccepted = answer;
         $mdDialog.hide(answer);
       };
@@ -198,29 +185,21 @@ angular.module('formBuilder')
 
 
       /**
-       * Initialize form builder setup.
-       */
-      $scope.setFormBuilderData = function() {
-        formBuilderService.cacheLFData();
-      };
-
-
-      /**
        * Initialize lform data for widget preview.
        * @param jsonInput
        */
       function setPreviewData(jsonInput) {
         $scope.previewSource['lforms'] = toJsonFilter(jsonInput, ['_', '$']);
-        if(jsonInput.items.length > 0) {
-          var previewSrcObj = JSON.parse($scope.previewSource['lforms']);
+        var previewSrcObj = JSON.parse($scope.previewSource['lforms']);
+        $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
+          var fhirData = LForms.FHIR[ele.format].SDC.convertLFormsToQuestionnaire(previewSrcObj);
+          $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
+        });
+        if(previewSrcObj.items.length > 0) {
           $scope.previewLfData = new LForms.LFormsData(previewSrcObj);
           if(previewSrcObj.id) {
             $scope.previewLfData.id = previewSrcObj.id;
           }
-          $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
-            var fhirData = LForms.Util.getFormFHIRData('Questionnaire', ele.format, $scope.previewLfData);
-            $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
-          });
 
           //Customize preview in formbuilder.
           $scope.previewLfData.templateOptions = $scope.previewLfData.templateOptions || {};
@@ -230,9 +209,6 @@ angular.module('formBuilder')
         }
         else {
           $scope.previewLfData = null;
-          $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
-            $scope.previewSource[ele.format] = null;
-          });
         }
       }
 
@@ -249,6 +225,23 @@ angular.module('formBuilder')
         }
       };
 
+
+
+      /**
+       * Refresh button handler
+       */
+      $scope.refreshPreview = function() {
+        if($scope.selectedNode) {
+          if($scope.selectedNode.isDirty) {
+            $scope.changeThisAndAncestralCustomCodes($scope.selectedNode);
+            $scope.selectedNode.isDirty = false;
+          }
+          $scope.selectedNode.previewItemData = formBuilderService.convertLfData($scope.selectedNode.lfData);
+        }
+        $scope.previewWidget();
+      };
+
+
       /**
        * Handle file export button
        *
@@ -257,15 +250,11 @@ angular.module('formBuilder')
 
         $scope.showFileExportDialog(ev, {formatList: $scope.formatList, selectedFormat: $scope.selectedFormat}).then(function (answer) {
           if(answer) {
-            gtag('event', 'file-export', {
-              event_category: 'engagement',
-              event_label: 'local-file'
-            });
             $scope.previewWidget();
             var content = $scope.previewSource[answer.format];
             var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
-            var exportFileName = $scope.formBuilderData.headers[2].value ? $scope.formBuilderData.headers[2].value :
-              'NewLForm';
+            var formName = $scope.formBuilderData.treeData[0].lfData.basic.itemHash['/name/1'].value;
+            var exportFileName = formName ?  formName.replace(/\s/g, '-') : 'new-form';
 
             // Use hidden anchor to do file download.
             var downloadLink = angular.element(document.getElementById('exportAnchor'));
@@ -292,11 +281,6 @@ angular.module('formBuilder')
       };
 
       $scope.searchFhir = function(ev, searchStr) {
-        gtag('event', 'fhir-search', {
-          event_category: 'engagement',
-          event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER],
-          value: searchStr
-        });
         fhirService.setFhirServer($scope.getFhirServer());
         fhirService.search(searchStr, true)
           .then(function(response) {
@@ -314,11 +298,6 @@ angular.module('formBuilder')
        * @param resourceId - id of the FHIR resource to import
        */
       $scope.importFromFhir = function(ev, resourceId) {
-        gtag('event', 'fhir-read', {
-          event_category: 'engagement',
-          event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER],
-          value: resourceId
-        });
         fhirService.read(resourceId).then(function (response) {
           try {
             var fServer = $scope.getFhirServer();
@@ -343,13 +322,10 @@ angular.module('formBuilder')
         $scope.showFhirServerDialog(ev).then(function (server) {
           if(server) {
             $scope.previewWidget();
-            gtag('event', 'fhir-create', {
-              event_category: 'engagement',
-              event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER]
-            });
             fhirService.create($scope.previewSource[$scope.getFhirServer().version], $scope.userProfile)
               .then(function (response) {
                 $scope.formBuilderData.id = response.data.id;
+                formBuilderService.getFormBuilderField($scope.formBuilderData.treeData[0].lfData.basic.items, 'id').value = response.data.id;
                 showFhirResponse(ev, {fhirResponse: response.data});
               }, function (err) {
                 showFhirResponse(ev, {fhirError: err});
@@ -365,11 +341,6 @@ angular.module('formBuilder')
        */
       $scope.updateOnFhir = function(ev) {
         $scope.previewWidget();
-        gtag('event', 'fhir-update', {
-          event_category: 'engagement',
-          event_label: $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER]
-        });
-
         fhirService.update($scope.previewSource[$scope.getFhirServer().version], $scope.userProfile)
           .then(function () {
             showFhirResponse(ev, {fhirResponse: 'Successfully updated the resource.'});
@@ -528,7 +499,6 @@ angular.module('formBuilder')
        * @param lfFormData
        */
       $scope.updateLFData = function (lfFormData) {
-        $scope.formBuilderData.headers = lfFormData.headers;
         var size = $scope.formBuilderData.treeData.length;
         // The reference of $scope.formBuilderData.treeData is used in ui-tree (side bar). Update content of the array,
         // do not change the reference.
@@ -537,7 +507,19 @@ angular.module('formBuilder')
 
 
       /**
-       * Get an lfItem using a field name
+       * See if edits to this node impacts its ancestors
+       *
+       * @param node - Node to check for changes.
+       */
+      $scope.changeThisAndAncestralCustomCodes = function(node) {
+        var malignedNodes = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, node);
+        formBuilderService.changeItemCodeToCustomCode(malignedNodes);
+      };
+
+
+      /**
+       * Get an lfItem using a field name. Looks at only top level fields, i.e nested items are not returned.
+       *
        * @param lfData - LForms data object
        * @param fieldName - Field name
        * @returns {*}
@@ -548,6 +530,50 @@ angular.module('formBuilder')
 
         if(indexInfo) {
           ret = lfData[indexInfo.category].items[indexInfo.index];
+        }
+        else {
+          var key = '/'+fieldName+'/1';
+          ret = lfData.basic.itemHash[key];
+          ret = ret ? ret : lfData.advanced.itemHash[key];
+        }
+        return ret;
+      };
+
+
+      /**
+       * See if this lforms object represents form node
+       *
+       * @param lfData - LForms data object of the node.
+       * @returns {boolean}
+       */
+      $scope.isForm = function (lfData) {
+        return formBuilderService.isNodeFbLfForm(lfData);
+      };
+
+
+      /**
+       * See if this lforms object represents an item node
+       *
+       * @param lfData - LForms data object of the node.
+       * @returns {boolean}
+       */
+      $scope.isItem = function (lfData) {
+        return formBuilderService.isNodeFbLfItem(lfData);
+      };
+
+
+      /**
+       * See if this lforms object represents a header item node
+       *
+       * @param lfData - LForms data object of the node.
+       * @returns {*}
+       */
+      $scope.isHeaderItem = function (lfData) {
+        var ret = false;
+        if(formBuilderService.isNodeFbLfItem(lfData)) {
+          ret = lfData[dataConstants.INITIAL_FIELD_INDICES['header'].category]
+            .items[dataConstants.INITIAL_FIELD_INDICES['header'].index]
+            .value.code;
         }
         return ret;
       };
@@ -594,7 +620,6 @@ angular.module('formBuilder')
        *  Sign out handler
        */
       $scope.signOut = function () {
-        gtag('event', 'logout', {event_category: 'engagement'});
         firebaseService.signOut();
       };
 
@@ -672,4 +697,6 @@ angular.module('formBuilder')
       $rootScope.$on('LF_FIREBASE_AUTH_RESOURCE_CREATED', function () {
         $scope.$apply();
       });
+
+      $scope.updateLFData($scope.formBuilderData);
     }]);

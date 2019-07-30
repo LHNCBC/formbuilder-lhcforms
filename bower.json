@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "3.0.10",
+  "version": "3.1.0",
   "main": [
     "client/app/app.js",
     "client/app/config.js",
@@ -44,7 +44,7 @@
     "es5-shim": "~4.1.14",
     "bootstrap": "3.3.5",
     "json3": "3.3.2",
-    "lforms": "~15.6.2",
+    "lforms": "~17.3.1",
     "ngSmoothScroll": "~2.0.0",
     "traverse": "0.6.7",
     "angular-spinner": "~0.8.0",
