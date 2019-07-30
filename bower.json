@@ -44,7 +44,7 @@
     "es5-shim": "~4.1.14",
     "bootstrap": "3.3.5",
     "json3": "3.3.2",
-    "lforms": "~17.2.4",
+    "lforms": "~17.3.1",
     "ngSmoothScroll": "~2.0.0",
     "traverse": "0.6.7",
     "angular-spinner": "~0.8.0",
