@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.1.1]  2019-07-30
+### Fixed.
+- Fix missing file in bower.json for wiredep output.
+
 ## [3.1.0]  2019-07-24
 ### Added.
 - Added form level fields defined in FHIR Questionnaire.
