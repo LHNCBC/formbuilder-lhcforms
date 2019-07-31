@@ -76,13 +76,13 @@ module.exports = function (grunt) {
           '!<%= yeoman.client %>/{app,components}/**/*.spec.js',
           '!<%= yeoman.client %>/{app,components}/**/*.mock.js',
           '!<%= yeoman.client %>/app/app.js'],
-        tasks: ['injector:scripts']
+        tasks: ['injector:scripts', "injector:bower"]
       },
       injectCss: {
         files: [
           '<%= yeoman.client %>/{app,components}/**/*.css'
         ],
-        tasks: ['injector:css']
+        tasks: ['injector:css, "injector:bower']
       },
       jsTest: {
         files: [
@@ -478,7 +478,30 @@ module.exports = function (grunt) {
             '<%= yeoman.client %>/{app,components}/**/*.css'
           ]
         }
-      }
+      },
+
+      // Inject script and css files into bower.json main
+      bower: {
+        options: {
+          transform: function(filePath, index, length) {
+
+            filePath = filePath.replace(/^\//, '');
+            filePath = '  "' + filePath + '"';
+            if(index < (length-1)) {
+              filePath += ',';
+            }
+            return filePath;
+          },
+          starttag: '"main": [',
+          endtag: '],'
+        },
+        files: {
+          'bower.json': [
+            ['<%= yeoman.client %>/app/**/*.js', '<%= yeoman.client %>/app/**/*.css']
+          ]
+        }
+      },
+
     },
     // Create files from templates
     template: {

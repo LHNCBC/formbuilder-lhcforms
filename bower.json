@@ -4,7 +4,6 @@
   "main": [
     "client/app/app.js",
     "client/app/config.js",
-    "client/app/cached-templates.js",
     "client/app/fhir/fhir.service.js",
     "client/app/firebase/firebase.service.js",
     "client/app/form-builder/adv-form-builder-def.js",
@@ -15,8 +14,8 @@
     "client/app/form-builder/form-builder-sidenav.controller.js",
     "client/app/form-builder/form-builder.controller.js",
     "client/app/form-builder/form-builder.service.js",
-    "client/app/form-builder/formlevel-panel/basic-form-level-fields-def.js",
     "client/app/form-builder/formlevel-panel/adv-form-level-fields-def.js",
+    "client/app/form-builder/formlevel-panel/basic-form-level-fields-def.js",
     "client/app/form-builder/formlevel-panel/fl-service.js",
     "client/app/form-builder/move-dialog.controller.js",
     "client/app/form-builder/popup-menu.controller.js",
