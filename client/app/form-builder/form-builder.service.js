@@ -488,6 +488,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "codingInstructions":
         case "externallyDefined":
         case "copyrightNotice":
+        case "prefix":
           if(item.value) {
             var val = item.value.trim();
             if(val.length > 0) {

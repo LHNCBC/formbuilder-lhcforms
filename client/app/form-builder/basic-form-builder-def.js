@@ -57,6 +57,15 @@ var formBuilderDef = {
       "codingInstructions": "This is required: Enter the unique question code for the question or section header given in the Text field. <p>If a question or section header is not available, enter any unique identifier in square brackets, e.g., [Q1], [Q2], [H1].</p>"
     },
     {
+      // *********** question ************************,
+      "questionCode": "prefix",
+      "question": "Prefix",
+      "dataType": "ST",
+      "header": false,
+      //"codingInstructions": "Enter wording for question."
+      "codingInstructions": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire."
+    },
+    {
       // *********** localQuestionCode ************************,
       "questionCode": "localQuestionCode",
       "question": "Local code",

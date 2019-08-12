@@ -323,6 +323,8 @@ describe('GET /', function () {
       expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
       // Verify widget title
       expect(fb.panelTitle.getText()).toBe('1 '+str);
+      // Verify answer list creation
+
     });
   });
 
@@ -918,6 +920,17 @@ describe('GET /', function () {
     beforeAll(function () {
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
+    });
+
+    it('should convert prefix to FHIR questionnaire json', function () {
+      fb.firstNode.click();
+      fb.prefix.click();
+      fb.prefix.sendKeys('1)');
+      expect(fb.prefix.getAttribute('value')).toEqual('1)');
+      getJSONSource('R4').then(function(text) {
+        var fhirObj = JSON.parse(text);
+        expect(fhirObj.item[0].prefix).toBe('1)');
+      });
     });
 
     it('should output FHIR questionnaire json', function () {

@@ -7,6 +7,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Fixed overwriting of linkid in enableWhen.question, when converted to FHIR Questionnaire.
 ### Changed
 - Removed restriction on insisting code for answer lists. 
+### Added 
+- Added support for Questionnaire.item.prefix field
 
 ## [3.1.1]  2019-07-30
 ### Fixed.

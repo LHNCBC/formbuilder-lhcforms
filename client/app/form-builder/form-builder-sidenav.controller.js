@@ -39,6 +39,7 @@
         question:           'selectedNode.lfData.basic.itemHash["/question/1"].value',
         questionCode:       'selectedNode.lfData.basic.itemHash["/questionCode/1"].value',
         questionCodeSystem: 'selectedNode.lfData.basic.itemHash["/questionCodeSystem/1"].value',
+        prefix:           'selectedNode.lfData.basic.itemHash["/prefix/1"].value',
         header:             'selectedNode.lfData.basic.itemHash["/header/1"].value',
         dataType:           'selectedNode.lfData.basic.itemHash["/dataType/1"].value',
         externallyDefined:  'selectedNode.lfData.basic.itemHash["/externallyDefined/1"].value',
