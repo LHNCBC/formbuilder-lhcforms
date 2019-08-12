@@ -896,7 +896,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       traverse(formData).forEach(function(answerList) {
         if(this.key === 'answers') {
           lodash.remove(answerList, function(answer) {
-            return (!answer.code || !answer.text);
+            return (!answer.text);
           });
           if(answerList && answerList.length === 0) {
             answerList = null;

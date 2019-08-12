@@ -221,6 +221,10 @@ var formBuilderDef = {
           "questionCode": "text",
           "question": "Answer text",
           "dataType": "ST",
+          "answerCardinality": {
+            "min": "1",
+            "max": "1"
+          },
           "codingInstructions": "Enter the text of the answer here.",
           "header": false
         },
@@ -228,10 +232,6 @@ var formBuilderDef = {
           "questionCode": "code",
           "question": "Answer code",
           "dataType": "ST",
-          "answerCardinality": {
-            "min": "1",
-            "max": "1"
-          },
           "codingInstructions": "If desired, enter a default answer code using LOINC or your own coding system.",
           "header": false
         },
