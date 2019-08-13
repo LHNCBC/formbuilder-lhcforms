@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.1.2]  2019-08-13
+### Fixed.
+- Fix file export problem.
+
 ## [3.1.1]  2019-07-30
 ### Fixed.
 - Fix missing file in bower.json for wiredep output.

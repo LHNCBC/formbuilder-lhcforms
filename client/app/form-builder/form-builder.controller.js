@@ -257,16 +257,16 @@ angular.module('formBuilder')
             var exportFileName = formName ?  formName.replace(/\s/g, '-') : 'new-form';
 
             // Use hidden anchor to do file download.
-            var downloadLink = angular.element(document.getElementById('exportAnchor'));
+            var downloadLink = document.getElementById('exportAnchor');
             var urlFactory = (window.URL || window.webkitURL);
             if(objectUrl != null) {
               // First release any resources on existing object url
               urlFactory.revokeObjectURL(objectUrl);
             }
             objectUrl = urlFactory.createObjectURL(blob);
-            downloadLink.attr('href', objectUrl);
-            downloadLink.attr('download', exportFileName + '.' + answer.format + '.json');
-            downloadLink[0].click();
+            downloadLink.setAttribute('href', objectUrl);
+            downloadLink.setAttribute('download', exportFileName + '.' + answer.format + '.json');
+            downloadLink.click();
           }
         });
 
