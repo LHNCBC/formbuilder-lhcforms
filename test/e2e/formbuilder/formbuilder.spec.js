@@ -323,8 +323,6 @@ describe('GET /', function () {
       expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
       // Verify widget title
       expect(fb.panelTitle.getText()).toBe('1 '+str);
-      // Verify answer list creation
-
     });
   });
 
@@ -1075,7 +1073,7 @@ describe('GET /', function () {
     });
   });
 
-  describe('Unload form warnings', function () {
+  describe('Onload form warnings', function () {
 
     beforeAll(function () {
       browser.driver.navigate().refresh();
