@@ -28,6 +28,7 @@ var advFormLevelFieldsDef = {
           "localQuestionCode": "id",
           "question": "Version Identifier",
           "dataType": "ST",
+          "editable": "0",
           "restrictions": {
             "pattern": "/^[A-Za-z0-9\\-\\.]{1,64}$/"
           },

@@ -57,6 +57,14 @@ var formBuilderDef = {
       "codingInstructions": "This is required: Enter the unique question code for the question or section header given in the Text field. <p>If a question or section header is not available, enter any unique identifier in square brackets, e.g., [Q1], [Q2], [H1].</p>"
     },
     {
+      // *********** prefix ************************,
+      "questionCode": "prefix",
+      "question": "Prefix",
+      "dataType": "ST",
+      "header": false,
+      "codingInstructions": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire."
+    },
+    {
       // *********** localQuestionCode ************************,
       "questionCode": "localQuestionCode",
       "question": "Local code",
@@ -221,6 +229,10 @@ var formBuilderDef = {
           "questionCode": "text",
           "question": "Answer text",
           "dataType": "ST",
+          "answerCardinality": {
+            "min": "1",
+            "max": "1"
+          },
           "codingInstructions": "Enter the text of the answer here.",
           "header": false
         },
@@ -228,10 +240,6 @@ var formBuilderDef = {
           "questionCode": "code",
           "question": "Answer code",
           "dataType": "ST",
-          "answerCardinality": {
-            "min": "1",
-            "max": "1"
-          },
           "codingInstructions": "If desired, enter a default answer code using LOINC or your own coding system.",
           "header": false
         },

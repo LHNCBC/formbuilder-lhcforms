@@ -488,6 +488,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "codingInstructions":
         case "externallyDefined":
         case "copyrightNotice":
+        case "prefix":
           if(item.value) {
             var val = item.value.trim();
             if(val.length > 0) {
@@ -896,7 +897,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       traverse(formData).forEach(function(answerList) {
         if(this.key === 'answers') {
           lodash.remove(answerList, function(answer) {
-            return (!answer.code || !answer.text);
+            return (!answer.text);
           });
           if(answerList && answerList.length === 0) {
             answerList = null;
