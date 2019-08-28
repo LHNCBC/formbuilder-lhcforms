@@ -777,6 +777,7 @@ describe('GET /', function () {
         done.fail(JSON.stringify(err));
       });
     });
+
     it('Should load a FHIR Questionnaire STU3 form from disk', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
       loadLFormFromDisk(fhirFilenameSTU3, 'STU3').then(function (previewSrc) {
@@ -920,7 +921,7 @@ describe('GET /', function () {
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
-    it('should convert prefix to FHIR questionnaire json', function () {
+    it('should convert prefix in FHIR questionnaire json', function () {
       fb.firstNode.click();
       fb.prefix.click();
       fb.prefix.sendKeys('1)');
@@ -946,6 +947,20 @@ describe('GET /', function () {
         expect(fhirObj.item[0].item[0].item[3].item.length).toBe(6);
       });
     });
+
+    it('Should convert form level code in FHIR questionnaire json', function (done) {
+      fb.cleanupSideBar(); // Clear any existing form items
+      let phq9File = path.join(__dirname, './fixtures/phq9.json');
+      let phq9 = JSON.parse(fs.readFileSync(phq9File), {encoding: 'utf8'});
+      loadLFormFromDisk(phq9File, 'R4').then(function (previewSrc) {
+        var newJson = JSON.parse(previewSrc);
+        expect(newJson.code).toEqual(phq9.code);
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+
   });
 
   describe('FHIR resource operations on the server', function () {

@@ -215,7 +215,7 @@ var advFormLevelFieldsDef = {
       "codingInstructionsFormat": "html",
     },
     {
-      "questionCode": "code",
+      "questionCode": "codeList", // This is a representation of Questionnaire.code, which is Coding structure. LForms.code is a string.
       "localQuestionCode": "Coding",
       "question": "Code",
       "header": true,
