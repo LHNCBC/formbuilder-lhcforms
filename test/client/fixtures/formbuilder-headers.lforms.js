@@ -50,7 +50,7 @@ var lformsFormBuilderHeaders = {
     "start": "2019-04-04T04:00:00.000Z",
     "end": "2019-04-30T04:00:00.000Z"
   },
-  "code": [
+  "codeList": [
     {
       "system": "http://loinc.org",
       "version": "c1.0",
