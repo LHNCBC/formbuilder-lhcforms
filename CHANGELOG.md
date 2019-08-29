@@ -5,6 +5,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [3.1.4]  2019-08-28
 ### Fixed.
 - Fix a bug in conversion of Questionnaire.code in form level fields.
+- Fix a bug in importing FHIR Questionnaire without meta field.
 
 ## [3.1.3]  2019-08-15
 ### Fixed.
