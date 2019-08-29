@@ -384,10 +384,14 @@
             };
 
             $scope.startSpin();
-            $scope.insertNewItem(scope, formBuilderService.createFormBuilderQuestion(questionData), scope.insertType);
-            setItemName($scope.selectedNode, questionData.question);
-            $scope.previewWidget();
-            $scope.stopSpin();
+            try {
+              $scope.insertNewItem(scope, formBuilderService.createFormBuilderQuestion(questionData), scope.insertType);
+              setItemName($scope.selectedNode, questionData.question);
+              $scope.previewWidget();
+            }
+            finally {
+              $scope.stopSpin();
+            }
           }
           else if(scope.importLoincItem.mode === dataConstants.PANEL) {
             $scope.startSpin();
@@ -398,9 +402,13 @@
                 $scope.stopSpin();
                 return;
               }
-              formBuilderService.adjustFieldsToImportedLoinc(response);
-              updateFormBuilder(scope, response);
-              $scope.stopSpin();
+              try {
+                formBuilderService.adjustFieldsToImportedLoinc(response);
+                updateFormBuilder(scope, response);
+              }
+              finally {
+                $scope.stopSpin();
+              }
             });
           }
           $scope.closeDialog();
@@ -482,10 +490,14 @@
       $scope.replaceForm = function(importedData) {
         if(importedData) {
           $scope.startSpin();
-          deregisterDirtyCheckWatches($scope);
-          $scope.updateLFData(formBuilderService.createFormBuilder(importedData));
-          $scope.selectNode($scope.formBuilderData.treeData[0]);
-          $scope.stopSpin();
+          try {
+            deregisterDirtyCheckWatches($scope);
+            $scope.updateLFData(formBuilderService.createFormBuilder(importedData));
+            $scope.selectNode($scope.formBuilderData.treeData[0]);
+          }
+          finally {
+            $scope.stopSpin();
+          }
         }
       };
 

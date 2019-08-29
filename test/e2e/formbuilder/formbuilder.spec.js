@@ -1094,18 +1094,25 @@ describe('GET /', function () {
       browser.driver.navigate().refresh();
       browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
         alert.accept();
-        fb.termsOfUseAcceptButton.click();
+        browser.waitForAngular().then(function () {
+          fb.termsOfUseAcceptButton.click();
+        });
       }, function (err) {
-        console.log();
+        console.log(err);
       });
     });
 
-    it('should NOT warn refreshing the page with unedited form', function () {
+    it('should NOT warn refreshing the page with unedited form', function (done) {
       browser.driver.navigate().refresh();
-      fb.termsOfUseAcceptButton.click();
+      browser.waitForAngular().then(function () {
+        fb.termsOfUseAcceptButton.click();
+        done();
+      }, function (err) {
+        done(err);
+      });
     });
 
-    it('should warn refreshing the page with edited form', function () {
+    it('should warn refreshing the page with edited form', function (done) {
       fb.formTitle.clear();
       fb.formTitle.sendKeys('Edited form');
       browser.driver.navigate().refresh();
@@ -1113,8 +1120,13 @@ describe('GET /', function () {
       expect(fb.formTitle.getAttribute('value')).toBe('Edited form');
       browser.driver.navigate().refresh();
       browser.driver.switchTo().alert().accept(); // Accept reload
-      fb.termsOfUseAcceptButton.click();
-      expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
+      browser.waitForAngular().then(function () {
+        fb.termsOfUseAcceptButton.click();
+        expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
+        done();
+      }, function (err) {
+        done(err);
+      });
     });
   });
 
