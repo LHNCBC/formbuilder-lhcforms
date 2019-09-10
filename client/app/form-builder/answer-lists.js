@@ -331,6 +331,10 @@ var answerLists = {
       "code": "ST"
     },
     {
+      "text": "Multiline text",
+      "code": "TX"
+    },
+    {
       "text": "URL",
       "code": "URL"
     },

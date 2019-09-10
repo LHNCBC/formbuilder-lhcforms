@@ -2,6 +2,14 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.1.5]  2019-00-10
+### Added.
+- Added support for TX data type.
+### Changed.
+- Remove default form name.
+### Fixed.
+- Fix a bug converting restrictions to corresponding FHIR extensions. 
+
 ## [3.1.4]  2019-08-28
 ### Fixed.
 - Fix a bug in conversion of Questionnaire.code in form level fields.
