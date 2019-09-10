@@ -642,9 +642,9 @@ describe('GET /', function () {
     // The download path is set to /tmp in firefoxProfile. See
     // protractor.conf.js for profile preferences.
     // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
-    var filename = '/tmp/New-Form.lforms.json';
-    var fhirFilenameSTU3 = '/tmp/New-Form.STU3.json';
-    var fhirFilenameR4 = '/tmp/New-Form.R4.json';
+    var filename = '/tmp/form.lforms.json';
+    var fhirFilenameSTU3 = '/tmp/form.STU3.json';
+    var fhirFilenameR4 = '/tmp/form.R4.json';
     var lformsOriginalJson = null;
     var fhirOriginalJsonSTU3 = null;
     var fhirOriginalJsonR4 = null;

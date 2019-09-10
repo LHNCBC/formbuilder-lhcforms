@@ -22,7 +22,7 @@ describe('fl.service', function () {
   });
 
   it('convertFormLevelDataToLForms() - empty conversion', function () {
-    expect(flService.exportFormLevelDataToLForms(fbData.treeData[0].lfData)).toEqual({status: 'draft', name: 'New Form'}); // default
+    expect(flService.exportFormLevelDataToLForms(fbData.treeData[0].lfData)).toEqual({status: 'draft'}); // default
   });
 
   it('FHIR string types', function () {

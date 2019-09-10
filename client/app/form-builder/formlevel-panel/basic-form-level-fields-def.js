@@ -22,8 +22,7 @@ var basicFormLevelFieldsDef = {
       "dataType": "ST",
       "codingInstructions": "Name for this questionnaire (computer friendly). <br/><b>FHIR Type: string</b>",
       "codingInstructionsFormat": "html",
-      "header": false,
-      "defaultAnswer": "New Form"
+      "header": false
     },
     {
       "questionCode": "title",
