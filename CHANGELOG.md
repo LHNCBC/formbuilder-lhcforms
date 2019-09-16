@@ -2,7 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [3.1.5]  2019-00-10
+## [3.1.6]  2019-09-16
+### Fixed.
+- Fixed a bug importing a file with an item having answer list and answerRequired fields. 
+
+## [3.1.5]  2019-09-10
 ### Added.
 - Added support for TX data type.
 ### Changed.

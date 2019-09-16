@@ -790,6 +790,28 @@ describe('GET /', function () {
     });
   });
 
+  describe('Custom file imports', function() {
+    it('should load a file with an item having answer list and answerRequired fields', function (done) {
+      let testfile = path.join(__dirname, './fixtures/lihc_consent.json');
+      fb.cleanupSideBar();
+      loadLFormFromDisk(testfile, 'lforms').then(function (previewSrc) {
+        var newJson = JSON.parse(previewSrc);
+        let originalJson = JSON.parse(fs.readFileSync(testfile, 'utf8'));
+        expect(newJson.items.length).toEqual(originalJson.items.length);
+        expect(newJson.items[0].items.length).toEqual(originalJson.items[0].items.length);
+        expect(newJson.items[1].items.length).toEqual(originalJson.items[1].items.length);
+        expect(newJson.items[1].items[0].answers[0].code).toEqual(originalJson.items[1].items[0].answers[0].code);
+        expect(newJson.items[1].items[0].answers[0].text).toEqual(originalJson.items[1].items[0].answers[0].text);
+        expect(newJson.items[1].items[0].answers[1].code).toEqual(originalJson.items[1].items[0].answers[1].code);
+        expect(newJson.items[1].items[0].answers[1].text).toEqual(originalJson.items[1].items[0].answers[1].text);
+        expect(newJson.items[1].items[0].answerCardinality).toEqual(originalJson.items[1].items[0].answerCardinality);
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+  });
+
   describe('Loading skip logic items', function () {
     it('should load with CNE/CWE type triggers in skip logic', function (done) {
       fb.cleanupSideBar();
