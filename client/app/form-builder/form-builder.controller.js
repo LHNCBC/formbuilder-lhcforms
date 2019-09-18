@@ -175,7 +175,7 @@ angular.module('formBuilder')
        * @param node
        */
       $scope.setSelectedNode = function(node) {
-        if($scope.selectedNode !== node && node && node.lfData && node.lfData.code === 'form') {
+        if($scope.selectedNode !== node && node && node.lfData && node.lfData.code === 'basicItemLevelFields') {
           Def.Autocompleter.screenReaderLog('A new item '+
             $scope.getItem(node.lfData, 'question').value +
             ' is loaded into item builder panel');
