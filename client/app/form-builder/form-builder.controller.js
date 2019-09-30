@@ -169,6 +169,8 @@ angular.module('formBuilder')
           $scope.termsOfUseAccepted = 'no';
         });
       };
+
+
       /**
        * Setter - Safe way to assign from child scopes.
        *
