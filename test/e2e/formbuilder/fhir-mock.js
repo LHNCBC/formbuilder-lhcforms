@@ -97,7 +97,7 @@ function searchReply(uri, requestBody) {
       resourceType: "Bundle",
       id: "589a6863-02d0-4353-b944-7787f40b5d28",
       meta: {
-        lastUpdated: dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo")
+        lastUpdated: dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo")
       },
       type: "searchset",
       total: entry.length,
@@ -114,7 +114,7 @@ function searchReply(uri, requestBody) {
     // Search all questionnaires
     let ver = versionExp.exec(uri)[1];
     ret = defSearchBundle[ver][0]; // First page
-    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo");
     let createdRes = readResource("1");
     if(createdRes) {
       ret.entry[0] = { // Replace with first one. This will be used in the read call
@@ -153,7 +153,7 @@ function getPageReply(uri, requestBody) {
 
     const ver = versionExp.exec(uri)[1];
     ret = defSearchBundle[ver][pageOffsetToPage[pageOffset]];
-    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo");
   }
   return ret;
 }
@@ -201,7 +201,7 @@ function createReply (uri, requestBody) {
   // Mock server changes and store it for later read.
   requestBody.id = "1";
   requestBody.meta.versionId = "1";
-  requestBody.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+  requestBody.meta.lastUpdated = dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo");
   
   if(fs.existsSync(resourceFilepath+requestBody.id)) {
     fs.unlinkSync(resourceFilepath+requestBody.id);
@@ -244,7 +244,7 @@ function updateReply (uri, requestBody) {
   if (id === res.id) {
   
     requestBody.meta.versionId = "2";
-    requestBody.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+    requestBody.meta.lastUpdated = dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo");
     saveResource(requestBody);
     return [200, updateResp];
   }
