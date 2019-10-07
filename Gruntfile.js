@@ -601,7 +601,6 @@ module.exports = function (grunt) {
         'autoprefixer',
         'express:test',
         'wait',
-        'open',
         'watch'
       ]);
     }

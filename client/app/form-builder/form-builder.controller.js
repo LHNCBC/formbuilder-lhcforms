@@ -169,13 +169,15 @@ angular.module('formBuilder')
           $scope.termsOfUseAccepted = 'no';
         });
       };
+
+
       /**
        * Setter - Safe way to assign from child scopes.
        *
        * @param node
        */
       $scope.setSelectedNode = function(node) {
-        if($scope.selectedNode !== node && node) {
+        if($scope.selectedNode !== node && node && node.lfData && node.lfData.basic.code === 'basicItemLevelFields') {
           Def.Autocompleter.screenReaderLog('A new item '+
             $scope.getItem(node.lfData, 'question').value +
             ' is loaded into item builder panel');
@@ -529,7 +531,7 @@ angular.module('formBuilder')
         var indexInfo = dataConstants.INITIAL_FIELD_INDICES[fieldName];
 
         if(indexInfo) {
-          ret = lfData[indexInfo.category].items[indexInfo.index];
+          ret = formBuilderService.getFormBuilderField(lfData[indexInfo.category].items, fieldName);
         }
         else {
           var key = '/'+fieldName+'/1';
@@ -571,9 +573,8 @@ angular.module('formBuilder')
       $scope.isHeaderItem = function (lfData) {
         var ret = false;
         if(formBuilderService.isNodeFbLfItem(lfData)) {
-          ret = lfData[dataConstants.INITIAL_FIELD_INDICES['header'].category]
-            .items[dataConstants.INITIAL_FIELD_INDICES['header'].index]
-            .value.code;
+          var indexInfo = dataConstants.INITIAL_FIELD_INDICES['header'];
+          ret = formBuilderService.getFormBuilderField(lfData[indexInfo.category].items, 'header').value.code;
         }
         return ret;
       };
