@@ -16,7 +16,7 @@
               <md-button ng-disabled="!isUserSignedIn" ng-click="exportToFhir($event)">Create a new FHIR resource on a server...</md-button>
             </md-menu-item>
             <md-menu-item>
-              <md-button ng-disabled="!isUserSignedIn || !formBuilderData.id" ng-click="updateOnFhir($event)">Update a FHIR resource on a server ({{getFhirServer().displayName}})</md-button>
+              <md-button ng-disabled="!isUserSignedIn || !formBuilderData.id" ng-click="updateOnFhir($event)">Update a FHIR resource on a server ({{getFhirServer().endpoint}})</md-button>
             </md-menu-item>
           </md-menu-content>
         </md-menu>
@@ -27,7 +27,7 @@
               <md-button ng-click="import()">Import from file...</md-button>
             </md-menu-item>
             <md-menu-item>
-              <md-button ng-disabled="!isUserSignedIn" ng-click="searchFhir($event, '')">Load from FHIR server...</md-button>
+              <md-button ng-disabled="!isUserSignedIn" ng-click="importFromFhir($event, '')">Load from FHIR server...</md-button>
             </md-menu-item>
           </md-menu-content>
         </md-menu>

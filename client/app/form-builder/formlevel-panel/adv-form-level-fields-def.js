@@ -215,7 +215,7 @@ var advFormLevelFieldsDef = {
       "codingInstructionsFormat": "html",
     },
     {
-      "questionCode": "code",
+      "questionCode": "codeList",
       "localQuestionCode": "Coding",
       "question": "Code",
       "header": true,

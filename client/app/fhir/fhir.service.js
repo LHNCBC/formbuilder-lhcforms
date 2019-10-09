@@ -181,8 +181,9 @@ fb.service('fhirService', [
     // Make sure to have a slash before appending path.
     baseUrl += baseUrl.match(/\/$/) ? '' : '/';
     baseUrl += 'fhir-api';
-    var endpoint_url = $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER];
-    return url.replace(new RegExp(endpoint_url), baseUrl);
+    var endpointUrl = $rootScope.fhirHeaders[dataConstants.TARGET_FHIR_HEADER];
+    endpointUrl = endpointUrl.replace(/\/*$/, '');
+    return url.replace(new RegExp(endpointUrl), baseUrl);
   }
 
   /**

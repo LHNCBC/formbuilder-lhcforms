@@ -61,30 +61,24 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     */
     fhirServerList: [
       {
-        id: 1,
+        id: 3,
         displayName: 'UHN HAPI Server - R4',
         endpoint: 'http://hapi.fhir.org/baseR4',
-        desc: "Public FHIR server at fhir.org",
+        desc: 'UHN Test Server (R4 Resources)',
         version: 'R4'
       },
       {
         id: 2,
         displayName: 'UHN HAPI Server - STU3',
         endpoint: 'http://hapi.fhir.org/baseDstu3',
-        desc: "Public FHIR server at fhir.org",
+        desc: 'UHN Test Server (STU3 Resources)',
         version: 'STU3'
       },
-      // {
-      //   id: 3,
-      //   displayName: 'HealthConnex STU3 server',
-      //   endpoint:'http://sqlonfhir-stu3.azurewebsites.net/fhir',
-      //   version:'STU3',
-      //   everythingOperation:true
-      // },
       {
-        id: 4,
+        id: 1,
         displayName: 'clinFHIR R3',
         endpoint:'http://snapp.clinfhir.com:8081/baseDstu3',
+        desc: 'Example Server',
         version: 'STU3'
       }
     ],

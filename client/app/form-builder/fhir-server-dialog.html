@@ -1,5 +1,5 @@
 <md-dialog aria-labelledby="titleId" style="width: 60%">
-  <form ng-cloak>
+  <form ng-cloak name="selectFhirServer">
     <md-toolbar>
       <div class="md-toolbar-tools">
         <h2 id="titleId">Choose a destination FHIR server</h2>
@@ -11,19 +11,28 @@
     </md-toolbar>
     <md-dialog-content>
       <div class="md-dialog-content">
-      <h2>FHIR servers List</h2>
-      <md-divider></md-divider>
-      <md-radio-group ng-model="fhirCtrl.fhirServer" ng-model-options="{trackBy: '$value.id'}">
-        <md-radio-button ng-repeat='server in fhirCtrl.fhirServerList' flex ng-value="server" class="md-primary" >
-          <h5>{{server.displayName}}</h5>
-          <h6>{{server.endpoint}}</h6>
-          <p>{{server.desc}}</p>
-        </md-radio-button>
-      </md-radio-group>
+        <h4>Select a FHIR server</h4>
+        <md-radio-group ng-model="fhirCtrl.fhirServer" ng-model-options="{trackBy: '$value.id'}">
+          <table class="formbuilder-table">
+            <tr flex class="md-primary">
+              <th></th>
+              <th>Base URL</th>
+              <th>FHIR Version</th>
+              <th>Description</th>
+            </tr>
+            <tr ng-repeat='server in fhirCtrl.fhirServerList' flex class="md-primary">
+              <td><md-radio-button ng-value="server" aria-label="{{server.displayName || server.endpoint}}"></md-radio-button></td>
+              <td>{{server.endpoint}}</td>
+              <td>{{server.version}}</td>
+              <td>{{server.desc}}</td>
+            </tr>
+          </table>
+        </md-radio-group>
       </div>
     </md-dialog-content>
     <md-dialog-actions layout="row">
-      <md-button aria-label="Continue" class="md-raised md-primary" ng-click="fhirCtrl.setFhirServer(fhirCtrl.fhirServer); fhirCtrl.closeDlg(true)">Continue</md-button>
+      <md-button aria-label="Add your FHIR server to the list" class="md-raised md-primary" ng-click="fhirCtrl.addFhirServer($event);">Add your FHIR server...</md-button>
+      <md-button aria-label="Continue" class="md-raised md-primary" ng-disabled="!fhirCtrl.fhirServer.endpoint" ng-click="fhirCtrl.closeDlg(true); fhirCtrl.setFhirServer(fhirCtrl.fhirServer);">Continue</md-button>
       <md-button aria-label="Cancel" class="md-raised md-primary" ng-click="fhirCtrl.closeDlg(false)">Cancel</md-button>
     </md-dialog-actions>
   </form>

@@ -1,6 +1,8 @@
 angular.module('formBuilder')
-.controller('fhirDlgController', ['$mdDialog', 'fhirService', 'dataConstants',
-function ($mdDialog, fhirService, dataConstants) {
+.controller('fhirDlgController', ['$mdDialog', 'fhirService', 'dataConstants', '$http', '$q',
+function ($mdDialog, fhirService, dataConstants, $http, $q) {
+  'use strict';
+
   var self = this;
   self.fhirResultsCount = 0;
   self.onlyUserResources = true;
@@ -8,6 +10,8 @@ function ($mdDialog, fhirService, dataConstants) {
   self.fhirServerList = dataConstants.fhirServerList;
   self.savedFhirServer = self.getFhirServer();
   self.fhirServer = self.savedFhirServer;
+  self.errorMessage = null;
+  self.urlinput = {endpoint: null};
 
 
   /**
@@ -60,7 +64,7 @@ function ($mdDialog, fhirService, dataConstants) {
    */
   self.loadResource = function(ev, resId) {
     $mdDialog.hide();
-    self.importFromFhir(ev, resId);
+    self.importFhirResource(ev, resId);
   };
 
 
@@ -179,4 +183,104 @@ function ($mdDialog, fhirService, dataConstants) {
 
     self.showFhirResponse(ev, {fhirError: err}, {multiple: true});
   };
+
+
+  self.addFhirServer = function (event, actionEl) {
+    var dlgOpts = {
+      controller: function () {
+        var thisCtrl = this;
+        thisCtrl.urlinput = {endpoint: null};
+        thisCtrl.closeDlg = function(answer){
+          $mdDialog.hide(answer);
+        };
+
+        thisCtrl.validateFhirServer = function () {
+          thisCtrl.message = null;
+          thisCtrl.errorMessage = null;
+          self.isValidFhirServer(thisCtrl.urlinput.endpoint)
+            .then(function (newServerObj) {
+              thisCtrl.urlinput = newServerObj;
+              thisCtrl.message = newServerObj.endpoint+' is recognized FHIR server.';
+            }, function (resp) {
+              thisCtrl.errorMessage = resp instanceof Error ? resp.message : resp.data ? resp.data : 'Failed to validate your FHIR server';
+            });
+        };
+
+        thisCtrl.addServer = function () {
+          if(thisCtrl.urlinput.endpoint && thisCtrl.urlinput.version) {
+            self.fhirServerList.unshift(thisCtrl.urlinput);
+            self.fhirServer = thisCtrl.urlinput;
+            if(actionEl) {
+              angular.element(actionEl).trigger('change');
+            }
+            thisCtrl.closeDlg(true);
+          }
+        };
+      },
+
+
+    templateUrl: 'app/form-builder/add-fhir-server.html',
+      escapeToClose: true,
+      bindToController: true,
+      targetEvent: event,
+      parent: document.body,
+      controllerAs: 'addCtrl',
+      multiple: true
+    };
+
+    $mdDialog.show(dlgOpts);
+    /*
+    $mdDialog.show(dlgOpts).then(function(answer) {
+      $mdDialog.hide(answer);
+    }, function() {
+      $mdDialog.hide(false);
+    });
+    */
+  };
+
+
+  self.isValidFhirServer = function (baseUrl) {
+    return $q(function (resolve, reject) {
+      if(baseUrl && baseUrl.match(/^https?:\/\/[^\/]/)) {
+        //
+        var metaReq = {
+          method: 'GET',
+          url: baseUrl+'/metadata',
+          params: {
+            _elements: 'fhirVersion,implementation', // Gives a small response. Is this reliable?
+            _format: 'json'
+          }
+        };
+
+        self.startSpin();
+        $http(metaReq).then(function (resp) {
+          self.stopSpin();
+          if(resp.status === 200) {
+            var ver = resp.data.fhirVersion;
+            ver = (ver.startsWith('4.') || ver.startsWith('3.3') || ver.startsWith('3.5')) ? 'R4' : 'STU3';
+            var newServerObj = {
+              id: self.fhirServerList.length+1,
+              endpoint: (resp.data.implementation && resp.data.implementation.url)? resp.data.implementation.url : baseUrl,
+              desc: resp.data.implementation ? resp.data.implementation.description : '',
+              version: ver
+            };
+            // Remove any trailing slashes.
+            newServerObj.endpoint = newServerObj.endpoint.replace(/\/+$/, '');
+            resolve(newServerObj);
+          }
+          else {
+            self.stopSpin();
+            reject(resp);
+          }
+        }, function (err) {
+          self.stopSpin();
+          reject(err);
+        });
+      }
+      else {
+        reject(new Error('Not a valid url: '+encodeURIComponent(baseUrl)));
+      }
+    });
+  };
+
 }]);

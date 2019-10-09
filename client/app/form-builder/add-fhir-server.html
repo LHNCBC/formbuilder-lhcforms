@@ -1,0 +1,33 @@
+<md-dialog aria-labelledby="titleId" class="overlayed-dialog" >
+    <form name="addFhirServer" ng-cloak>
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <h2 id="title-Id">Add your FHIR server</h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="addCtrl.closeDlg()">
+                    <md-icon md-svg-src="/assets/images/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-dialog-content flex class="md-primary">
+            <div class="md-dialog-content">
+                <p class="validate-message" ng-show="addCtrl.message">{{ addCtrl.message }}</p>
+                <p class="error-message" ng-show="addCtrl.errorMessage">{{ addCtrl.errorMessage }}</p>
+                <md-input-container class="urlinput">
+                    <label>If you want to choose your FHIR server, specify its base URL</label>
+                    <input  name="urlinput" required type="url" ng-model="addCtrl.urlinput.endpoint">
+                    <div ng-messages="addFhirServer.urlinput.$error">
+                        <div ng-message="required">This is required!</div>
+                        <div ng-message="url">This field must be a valid url!</div>
+                    </div>
+                </md-input-container>
+            </div>
+        </md-dialog-content>
+
+        <md-dialog-actions layout="row">
+            <md-button aria-label="Verify Base URL" class="md-raised md-primary" ng-disabled="!addCtrl.urlinput.endpoint" ng-click="addCtrl.validateFhirServer()">Verify Base URL</md-button>
+            <md-button aria-label="Add to list" class="md-raised md-primary" ng-disabled="!addCtrl.urlinput.version" ng-click="addCtrl.addServer()">Add to list</md-button>
+            <md-button aria-label="Cancel" class="md-raised md-primary" ng-click="addCtrl.closeDlg(false)">Cancel</md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>
