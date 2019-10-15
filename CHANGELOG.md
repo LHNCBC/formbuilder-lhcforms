@@ -2,9 +2,26 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [3.1.4]  2019-08-19
+## [3.2.0]  2019-10-09
 ### Added.
 - Added support to specify third party fhir servers by the user.
+
+## [3.1.6]  2019-09-16
+### Fixed.
+- Fixed a bug importing a file with an item having answer list and answerRequired fields. 
+
+## [3.1.5]  2019-09-10
+### Added.
+- Added support for TX data type.
+### Changed.
+- Remove default form name.
+### Fixed.
+- Fix a bug converting restrictions to corresponding FHIR extensions. 
+
+## [3.1.4]  2019-08-28
+### Fixed.
+- Fix a bug in conversion of Questionnaire.code in form level fields.
+- Fix a bug in importing FHIR Questionnaire without meta field.
 
 ## [3.1.3]  2019-08-15
 ### Fixed.

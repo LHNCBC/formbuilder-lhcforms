@@ -85,7 +85,6 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     // TODO - Uncomment this after merges with form level properties changes.
     // To compare changes to form level properties.
     defaultFormProps: {
-      name: 'New Form',
       status: 'draft'
     }
 

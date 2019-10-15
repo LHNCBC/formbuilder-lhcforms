@@ -1,6 +1,6 @@
 var formBuilderDef = {
   "type": "LOINC",
-  "code": "form",
+  "code": "basicItemLevelFields",
   "name": "Define Question ",
   "templateOptions": {
     "allowHTMLInInstructions": true,

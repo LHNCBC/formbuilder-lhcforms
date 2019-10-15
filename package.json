@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "3.1.4",
+  "version": "3.2.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "main": "server/index.js",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
@@ -44,7 +44,7 @@
     "file-loader": "^1.1.5",
     "firefox-profile": "^0.4.8",
     "grunt": "^1.0.0",
-    "grunt-angular-templates": "^1.0.3",
+    "grunt-angular-templates": "^1.2.0",
     "grunt-autoprefixer": "^2.0.0",
     "grunt-cli": "^1.3.2",
     "grunt-concurrent": "^1.0.0",
@@ -95,6 +95,8 @@
   },
   "scripts": {
     "start": "node ./app.js -c ./formbuilder.conf.js",
+    "clean-build": "rm -rf ./client/bower_components && source ./bashrc.formbuilder && npm ci && source ./bashrc.formbuilder && bower install",
+    "clean-build-test": "npm run clean-build && npm test",
     "test": "node ./node_modules/.bin/webdriver-manager update --versions.chrome=2.41; grunt test"
   }
 }

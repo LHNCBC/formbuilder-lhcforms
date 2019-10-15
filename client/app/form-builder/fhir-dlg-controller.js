@@ -202,7 +202,7 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
               thisCtrl.urlinput = newServerObj;
               thisCtrl.message = newServerObj.endpoint+' is recognized FHIR server.';
             }, function (resp) {
-              thisCtrl.errorMessage = resp instanceof Error ? resp.message : resp.data ? resp.data : 'Failed to validate your FHIR server';
+              thisCtrl.errorMessage = resp instanceof Error ? resp.message : resp.data ? resp.data : 'Failed to recognize your FHIR server';
             });
         };
 

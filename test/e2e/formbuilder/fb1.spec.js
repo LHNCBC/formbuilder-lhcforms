@@ -1,3 +1,8 @@
+/*
+Loading home page starts in this file. Make sure that this file is the first one in the order of execution.
+One way to keep the order is to have the name of this file at the top alphabetically among
+the *.spec.js files.
+ */
 'use strict';
 
 const fb = require('./formbuilder.po').formbuilder;
@@ -9,7 +14,7 @@ describe('GET /', function () {
 
 
   beforeAll(function () {
-    util.loadHomePage();
+    util.loadHomePageIfNotLoaded();
   });
 
   afterAll(function() {
@@ -448,9 +453,9 @@ describe('GET /', function () {
     // The download path is set to /tmp in firefoxProfile. See
     // protractor.conf.js for profile preferences.
     // 'NewForm' is default form name, while .lforms.json and .fhir.json are appended in export functionality.
-    var filename = '/tmp/New-Form.lforms.json';
-    var fhirFilenameSTU3 = '/tmp/New-Form.STU3.json';
-    var fhirFilenameR4 = '/tmp/New-Form.R4.json';
+    var filename = '/tmp/form.lforms.json';
+    var fhirFilenameSTU3 = '/tmp/form.STU3.json';
+    var fhirFilenameR4 = '/tmp/form.R4.json';
     var lformsOriginalJson = null;
     var fhirOriginalJsonSTU3 = null;
     var fhirOriginalJsonR4 = null;
@@ -583,11 +588,34 @@ describe('GET /', function () {
         done.fail(JSON.stringify(err));
       });
     });
+
     it('Should load a FHIR Questionnaire STU3 form from disk', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
       util.loadLFormFromDisk(fhirFilenameSTU3, 'STU3').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
         util.assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+  });
+
+  describe('Custom file imports', function() {
+    it('should load a file with an item having answer list and answerRequired fields', function (done) {
+      let testfile = path.join(__dirname, './fixtures/lihc_consent.json');
+      fb.cleanupSideBar();
+      util.loadLFormFromDisk(testfile, 'lforms').then(function (previewSrc) {
+        var newJson = JSON.parse(previewSrc);
+        let originalJson = JSON.parse(fs.readFileSync(testfile, 'utf8'));
+        expect(newJson.items.length).toEqual(originalJson.items.length);
+        expect(newJson.items[0].items.length).toEqual(originalJson.items[0].items.length);
+        expect(newJson.items[1].items.length).toEqual(originalJson.items[1].items.length);
+        expect(newJson.items[1].items[0].answers[0].code).toEqual(originalJson.items[1].items[0].answers[0].code);
+        expect(newJson.items[1].items[0].answers[0].text).toEqual(originalJson.items[1].items[0].answers[0].text);
+        expect(newJson.items[1].items[0].answers[1].code).toEqual(originalJson.items[1].items[0].answers[1].code);
+        expect(newJson.items[1].items[0].answers[1].text).toEqual(originalJson.items[1].items[0].answers[1].text);
+        expect(newJson.items[1].items[0].answerCardinality).toEqual(originalJson.items[1].items[0].answerCardinality);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));
@@ -726,7 +754,7 @@ describe('GET /', function () {
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
-    it('should convert prefix to FHIR questionnaire json', function () {
+    it('should convert prefix in FHIR questionnaire json', function () {
       fb.firstNode.click();
       fb.prefix.click();
       fb.prefix.sendKeys('1)');
@@ -752,6 +780,20 @@ describe('GET /', function () {
         expect(fhirObj.item[0].item[0].item[3].item.length).toBe(6);
       });
     });
+
+    it('Should convert form level code in FHIR questionnaire json', function (done) {
+      fb.cleanupSideBar(); // Clear any existing form items
+      let phq9File = path.join(__dirname, './fixtures/phq9.json');
+      let phq9 = JSON.parse(fs.readFileSync(phq9File), {encoding: 'utf8'});
+      util.loadLFormFromDisk(phq9File, 'R4').then(function (previewSrc) {
+        var newJson = JSON.parse(previewSrc);
+        expect(newJson.code).toEqual(phq9.code);
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+
   });
 
   describe('Onload form warnings', function () {
@@ -761,18 +803,25 @@ describe('GET /', function () {
       browser.driver.navigate().refresh();
       browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
         alert.accept();
-        fb.termsOfUseAcceptButton.click();
+        browser.waitForAngular().then(function () {
+          fb.termsOfUseAcceptButton.click();
+        });
       }, function (err) {
-        console.log();
+        console.log(err);
       });
     });
 
-    it('should NOT warn refreshing the page with unedited form', function () {
+    it('should NOT warn refreshing the page with unedited form', function (done) {
       browser.driver.navigate().refresh();
-      fb.termsOfUseAcceptButton.click();
+      browser.waitForAngular().then(function () {
+        fb.termsOfUseAcceptButton.click();
+        done();
+      }, function (err) {
+        done(err);
+      });
     });
 
-    it('should warn refreshing the page with edited form', function () {
+    it('should warn refreshing the page with edited form', function (done) {
       fb.formTitle.clear();
       fb.formTitle.sendKeys('Edited form');
       browser.driver.navigate().refresh();
@@ -780,8 +829,13 @@ describe('GET /', function () {
       expect(fb.formTitle.getAttribute('value')).toBe('Edited form');
       browser.driver.navigate().refresh();
       browser.driver.switchTo().alert().accept(); // Accept reload
-      fb.termsOfUseAcceptButton.click();
-      expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
+      browser.waitForAngular().then(function () {
+        fb.termsOfUseAcceptButton.click();
+        expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
+        done();
+      }, function (err) {
+        done(err);
+      });
     });
   });
 

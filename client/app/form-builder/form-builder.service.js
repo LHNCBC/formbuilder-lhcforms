@@ -1186,7 +1186,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     else {
       indexInfo = dataConstants.INITIAL_FIELD_INDICES[name];
       if(indexInfo) {
-        subItem = lfItem[indexInfo.category].items[indexInfo.index];
+        subItem = thisService.getFormBuilderField(lfItem[indexInfo.category].items, name);
         definedItem = true;
       }
     }
@@ -1389,13 +1389,13 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    */
   function updateAnswerRequiredMultipleAnswers(lfQuestion, answerCardinality) {
     var indexInfo = dataConstants.INITIAL_FIELD_INDICES['answerRequired'];
-    var subItem = lfQuestion[indexInfo.category].items[indexInfo.index];
+    var subItem = thisService.getFormBuilderField(lfQuestion[indexInfo.category].items, 'answerRequired');
     if(parseInt(answerCardinality.min) > 0) {
       subItem.value = subItem.answers[0];
     }
 
     indexInfo = dataConstants.INITIAL_FIELD_INDICES['multipleAnswers'];
-    subItem = lfQuestion[indexInfo.category].items[indexInfo.index];
+    subItem = thisService.getFormBuilderField(lfQuestion[indexInfo.category].items, 'multipleAnswers');
     if(answerCardinality.max === '*' || parseInt(answerCardinality.max) > 1) {
       subItem.value = subItem.answers[0];
     }

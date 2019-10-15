@@ -5,18 +5,64 @@ const fs = require('fs');
 
 
 module.exports = {
-  loadHomePage: function() {
-    setAngularSite(true);
-    browser.get('/');
-    fb.termsOfUseAcceptButton.click();
-    /*
-    browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
-      alert.accept();
-      fb.termsOfUseAcceptButton.click();
-    }, function (err) {
-      console.log();
+
+  /**
+   * Loads the page if not already loaded.
+   * Call this in beforeAll() in top level beforeAll() of each *.spec.js. Save the resolved flag and pass it to close() in
+   * top level afterAll() of each *.spec.js
+   * @returns - A promise that resolves to true if loaded in this call or resolves to false if it already loaded.
+   */
+  loadHomePageIfNotLoaded: function() {
+    let deferred = protractor.promise.defer();
+    // Load the page only if not already loaded.
+    browser.getCurrentUrl().then(function () {
+      deferred.fulfill(false); // Already loaded.
+    }, function () {
+      // Page is not loaded yet.
+      setAngularSite(true);
+      browser.get('/').then(function () {
+        fb.termsOfUseAcceptButton.click();
+        deferred.fulfill(true);
+      }, function (err) {
+        deferred.reject(new Error('Failed to get /: '+err.message));
+      });
     });
-*/
+
+    return deferred.promise;
+  },
+
+
+  /**
+   * Closing of form builder page presents browser alert popup dialog. To handle the dialog and support running isolated specs,
+   * Use this method in conjunction with loadHomePageIfNotLoaded().  Call this in afterAll() in top level of describe() in each *.spec.js
+   *
+   * Intended to close the browser if the page is already loaded, other wise it will ignore the call.
+   *
+   * @param loaded {boolean} - This is the resolved flag from promise returned from loadHomePageIfNotLoaded().
+   *   . If true it will try to close the page. If successful, the returned promise will resolve
+   *     to true. If the attempt fails the error is passed to the rejection of the returned promise.
+   *   . If false, the return promise will resolve to false.
+   *
+   * @returns {*} - A promise that resolves to true if it succeeds in closing or resolves to false if it ignores the call. The promise is rejected
+   * if there is an error in trying to close the page.
+   */
+  close: function(loaded) {
+    let deferred = protractor.promise.defer();
+
+    if(loaded) {
+      let _self = this;
+      browser.close().then(function () {
+        _self.dismissAlert();
+        deferred.fulfill(true);
+      }).catch(function (err) {
+        deferred.reject(err);
+      });
+    }
+    else {
+      deferred.fulfill(false);
+    }
+
+    return deferred.promise;
   },
 
 
@@ -75,9 +121,7 @@ module.exports = {
    * @param toContinue {boolean} - True for continue, false for cancel.
    */
   dismissWarning: function (toContinue) {
-    console.log('dismissWarning() entered');
     fb.continueButton.isPresent().then(function (present) {
-      console.log('toContinue: '+ toContinue + ' :: '+'present: '+present);
       if (present) {
         if (toContinue) {
           fb.dialog.element(by.buttonText('Continue')).click();
@@ -88,12 +132,21 @@ module.exports = {
     });
   },
 
-  dismissAlert: function() {
+
+  /**
+   * Dismiss browser alert popup
+   * @param toContinue - Boolean flag, true to accept false to dismiss.
+   */
+  dismissAlert: function(toContinue) {
     browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
-      alert.accept();
-      fb.termsOfUseAcceptButton.click();
+      if(toContinue) {
+        alert.accept();
+      }
+      else {
+        alert.dismiss();
+      }
     }, function (err) {
-      console.log();
+      //console.log(err.toString());
     });
 
   },
@@ -171,9 +224,6 @@ module.exports = {
     fb.continueButton.click();
     expect(fb.dialog.isDisplayed()).toBeTruthy();
     fb.fhirResultItem(partialResourceTitle).click();
-    if(partialResourceTitle.startsWith('Update')) {
-      browser.sleep(20000);
-    }
     this.dismissWarning(true); // Accept replacement, should load the form.
     expect(fb.firstNode.isDisplayed()).toBeTruthy();
     fb.formTitle.getAttribute('value').then(function (text) {

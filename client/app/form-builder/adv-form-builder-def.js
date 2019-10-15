@@ -3,7 +3,7 @@
  */
 var advFormBuilderDef = {
   "type": "LOINC",
-  "code": "form",
+  "code": "basicItemLevelFields",
   "name": "Advanced",
   "templateOptions": {
     "allowHTMLInInstructions": true,

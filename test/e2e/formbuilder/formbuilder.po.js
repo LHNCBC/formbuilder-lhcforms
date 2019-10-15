@@ -130,6 +130,10 @@ var FormBuilder = function () {
   this.prevButton = this.dialog.element(by.buttonText('Previous'));
   this.units = element(by.id('/units/1'));
   this.unitDeleteButton = element.all(by.xpath('//ul[../input[@id="/units/1"]]/li/button')).get(0);
+  this.addFhirServer = this.dialog.element(by.buttonText('Add your FHIR server...'));
+  this.verifyBaseURL = this.dialog.element(by.buttonText('Verify URL'));
+  this.addToList = this.dialog.element(by.buttonText('Add'));
+  this.fhirServerUrlInput = this.dialog.element(by.css('input[name="urlinput"'));
 
   var thisPO = this;
 

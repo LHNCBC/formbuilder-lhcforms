@@ -19,6 +19,7 @@ defSearchBundle['R4'].push(require('./fixtures/r4-search-bundle-1.json'));
 defSearchBundle['R4'].push(require('./fixtures/r4-search-bundle-2.json'));
 defSearchBundle['R4'].push(require('./fixtures/r4-search-bundle-3.json'));
 
+let metaExp = /^\/base(Dstu3|R4)\/metadata\?_elements=fhirVersion,implementation&_format=json$/;
 let pathIdExp = /^\/base(Dstu3|R4)\/Questionnaire\/([0-9]+)$/;
 let searchByIdExp = /^\/base(Dstu3|R4)\/Questionnaire\?.*\b_id=([\w]+)\b.*$/;
 let questionnaireExp = /^\/base(Dstu3|R4)\/Questionnaire.*$/;
@@ -97,7 +98,7 @@ function searchReply(uri, requestBody) {
       resourceType: "Bundle",
       id: "589a6863-02d0-4353-b944-7787f40b5d28",
       meta: {
-        lastUpdated: dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo")
+        lastUpdated: dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo")
       },
       type: "searchset",
       total: entry.length,
@@ -114,7 +115,7 @@ function searchReply(uri, requestBody) {
     // Search all questionnaires
     let ver = versionExp.exec(uri)[1];
     ret = defSearchBundle[ver][0]; // First page
-    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo");
     let createdRes = readResource("1");
     if(createdRes) {
       ret.entry[0] = { // Replace with first one. This will be used in the read call
@@ -153,7 +154,7 @@ function getPageReply(uri, requestBody) {
 
     const ver = versionExp.exec(uri)[1];
     ret = defSearchBundle[ver][pageOffsetToPage[pageOffset]];
-    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+    ret.meta.lastUpdated = dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo");
   }
   return ret;
 }
@@ -201,7 +202,7 @@ function createReply (uri, requestBody) {
   // Mock server changes and store it for later read.
   requestBody.id = "1";
   requestBody.meta.versionId = "1";
-  requestBody.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+  requestBody.meta.lastUpdated = dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo");
   
   if(fs.existsSync(resourceFilepath+requestBody.id)) {
     fs.unlinkSync(resourceFilepath+requestBody.id);
@@ -244,7 +245,7 @@ function updateReply (uri, requestBody) {
   if (id === res.id) {
   
     requestBody.meta.versionId = "2";
-    requestBody.meta.lastUpdated = dateformat("UTC:yyyy-mm-d'T'HH:MM:ss'.'lo");
+    requestBody.meta.lastUpdated = dateformat("UTC:yyyy-mm-dd'T'HH:MM:ss'.'lo");
     saveResource(requestBody);
     return [200, updateResp];
   }
@@ -261,7 +262,7 @@ function updateReply (uri, requestBody) {
  * @returns {*[]} - Reply to user.
  */
 function deleteReply (uri, requestBody) {
-  
+
   let id = parseId(uri);
   let res = readResource(id);
   if (id === res.id) {
@@ -274,6 +275,41 @@ function deleteReply (uri, requestBody) {
   }
   else {
     return [400, 'Resource mismatch'];
+  }
+}
+
+
+/**
+ * Handle metadata request
+ * @returns {*[]} - Reply to user.
+ */
+function metadataReply (uri) {
+  // Default is R4 reply
+  let reply = {
+    resourceType: 'CapabilityStatement',
+    implementation: {
+      description: 'UHN Test Server (R4 Resources)',
+      url: 'http://hapi.fhir.org/baseR4'
+    },
+    fhirVersion: '4.0.0'
+  };
+
+  let R3reply = {
+    resourceType: 'CapabilityStatement',
+    implementation: {
+      description: 'UHN Test Server (STU3 Resources)',
+      url: 'http://hapi.fhir.org/baseDstu3'
+    },
+    fhirVersion: '3.0.1'
+  };
+
+  let match = metaExp.exec(uri);
+  if(match) {
+    reply = match[1] === 'Dstu3' ? R3reply : reply;
+    return [200, reply];
+  }
+  else {
+    return [400, 'Invalid request'];
   }
 }
 
@@ -292,7 +328,8 @@ function fhirNock(url) {
       return body.length;
     }
   });
-  
+
+  ret.get(metaExp).reply(metadataReply);
   ret.get(pathIdExp).reply(readReply);
   ret.get(searchByIdExp).reply(searchReply);
   ret.get(questionnaireExp).reply(searchReply);

@@ -6,11 +6,37 @@ const util = require('./test-util');
 
 
 
-fdescribe('FHIR server interactions - ', function () {
+describe('FHIR server interactions - ', function () {
+
   beforeAll(function () {
-    util.loadHomePage();
+    util.loadHomePageIfNotLoaded();
   });
 
+  describe('Add user specified FHIR server', function () {
+
+    it('should recognize user entered FHIR server', function () {
+      fb.exportMenu.click();
+      fb.createFhir.click();
+      fb.addFhirServer.click();
+      expect(fb.verifyBaseURL.isEnabled()).toBeFalsy();
+      expect(fb.addToList.isEnabled()).toBeFalsy();
+      fb.fhirServerUrlInput.sendKeys('http://localhost');
+      expect(fb.verifyBaseURL.isEnabled()).toBeTruthy();
+      expect(fb.addToList.isEnabled()).toBeFalsy();
+
+      fb.verifyBaseURL.click();
+      expect(fb.dialog.element(by.css('p.error-message')).getText()).toBe('Failed to recognize your FHIR server');
+      fb.fhirServerUrlInput.clear();
+      fb.fhirServerUrlInput.sendKeys('http://hapi.fhir.org/baseR4');
+      fb.verifyBaseURL.click();
+      expect(fb.dialog.element(by.css('p.error-message')).getText()).toBe('');
+      expect(fb.dialog.element(by.css('p.validate-message')).getText()).toBe('http://hapi.fhir.org/baseR4 is recognized FHIR server.');
+      expect(fb.verifyBaseURL.isEnabled()).toBeTruthy();
+      expect(fb.addToList.isEnabled()).toBeTruthy();
+      fb.closeDialog();
+      fb.closeDialog();
+    });
+  });
 
   describe('FHIR resource operations on the server', function () {
     // Note - The tests in this block are in an order. Any changes to
@@ -21,6 +47,11 @@ fdescribe('FHIR server interactions - ', function () {
     const uhnServerName = 'http://hapi.fhir.org/baseR4';
 
     beforeAll(function () {
+      fb.basicEditTab.isEnabled().then(function (ebabled){
+        if(ebabled) {
+          fb.basicEditTab.click();
+        }
+      });
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
@@ -57,7 +88,7 @@ fdescribe('FHIR server interactions - ', function () {
     });
 
     // Assume there is a resource on the server
-    xit('should delete', function () {
+    it('should delete', function () {
 
       fb.exportMenu.click();
       expect(fb.updateFhir.isEnabled()).toBeTruthy();
@@ -78,10 +109,11 @@ fdescribe('FHIR server interactions - ', function () {
       fb.dismissMenu();
     });
 
-    xit('should do next/previous page', function () {
+    it('should do next/previous page', function () {
 
       fb.importMenu.click();
       fb.showFhirResources.click();
+      fb.continueButton.click();
       expect(fb.dialog.isDisplayed()).toBeTruthy();
       fb.fhirServerPulldownSelect(uhnServerName).click();
 
@@ -136,9 +168,5 @@ fdescribe('FHIR server interactions - ', function () {
     });
   });
 
-  xdescribe('Add user specified FHIR server', function () {
-
-
-  });
 });
 

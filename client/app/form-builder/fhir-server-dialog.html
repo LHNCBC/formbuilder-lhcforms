@@ -2,7 +2,7 @@
   <form ng-cloak name="selectFhirServer">
     <md-toolbar>
       <div class="md-toolbar-tools">
-        <h2 id="titleId">Choose a destination FHIR server</h2>
+        <h2 id="titleId">Choose a FHIR server</h2>
         <span flex></span>
         <md-button class="md-icon-button" ng-click="fhirCtrl.closeDlg(false)">
           <md-icon md-svg-src="/assets/images/ic_close_24px.svg" aria-label="Close dialog"></md-icon>
@@ -11,7 +11,6 @@
     </md-toolbar>
     <md-dialog-content>
       <div class="md-dialog-content">
-        <h4>Select a FHIR server</h4>
         <md-radio-group ng-model="fhirCtrl.fhirServer" ng-model-options="{trackBy: '$value.id'}">
           <table class="formbuilder-table">
             <tr flex class="md-primary">
