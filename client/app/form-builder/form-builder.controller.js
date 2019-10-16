@@ -255,7 +255,8 @@ angular.module('formBuilder')
             var content = $scope.previewSource[answer.format];
             var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
             var formName = $scope.formBuilderData.treeData[0].lfData.basic.itemHash['/name/1'].value;
-            var exportFileName = formName ?  formName.replace(/\s/g, '-') : 'form';
+            var formShortName = $scope.formBuilderData.treeData[0].lfData.basic.itemHash['/shortName/1'].value;
+            var exportFileName = formShortName ?  formShortName.replace(/\s/g, '-') : (formName ? formName.replace(/\s/g, '-') : 'form');
 
             // Use hidden anchor to do file download.
             var downloadLink = document.getElementById('exportAnchor');

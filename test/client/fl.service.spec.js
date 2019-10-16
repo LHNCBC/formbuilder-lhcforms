@@ -26,8 +26,8 @@ describe('fl.service', function () {
   });
 
   it('FHIR string types', function () {
-    assertImportExport('title', 'test title', 'basic');
-    assertImportExport('name', 'test name', 'basic');
+    assertImportExport('name', 'test title', 'basic');
+    assertImportExport('shortName', 'test name', 'basic');
   });
 
   it('FHIR code types', function () {
