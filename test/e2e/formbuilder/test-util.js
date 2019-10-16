@@ -8,15 +8,23 @@ module.exports = {
 
   /**
    * Loads the page if not already loaded.
-   * Call this in beforeAll() in top level beforeAll() of each *.spec.js. Save the resolved flag and pass it to close() in
-   * top level afterAll() of each *.spec.js
+   *
+   * Call this in top level beforeAll() of each *.spec.js. It helps loading the page only once when running suites
+   * either from a single spec file or from multiple spec files.
+   *
    * @returns - A promise that resolves to true if loaded in this call or resolves to false if it already loaded.
    */
   loadHomePageIfNotLoaded: function() {
     let deferred = protractor.promise.defer();
     // Load the page only if not already loaded.
+    let _self = this;
     browser.getCurrentUrl().then(function () {
-      deferred.fulfill(false); // Already loaded.
+      // Already loaded, refresh it.
+      _self.pageRefresh().then(function () {
+        deferred.fulfill(false);
+      }, function (err) {
+        deferred.reject(err);
+      });
     }, function () {
       // Page is not loaded yet.
       setAngularSite(true);
@@ -33,34 +41,27 @@ module.exports = {
 
 
   /**
-   * Closing of form builder page presents browser alert popup dialog. To handle the dialog and support running isolated specs,
-   * Use this method in conjunction with loadHomePageIfNotLoaded().  Call this in afterAll() in top level of describe() in each *.spec.js
+   *  Do browser refresh, accept alert window if presented, and accept terms of use
    *
-   * Intended to close the browser if the page is already loaded, other wise it will ignore the call.
-   *
-   * @param loaded {boolean} - This is the resolved flag from promise returned from loadHomePageIfNotLoaded().
-   *   . If true it will try to close the page. If successful, the returned promise will resolve
-   *     to true. If the attempt fails the error is passed to the rejection of the returned promise.
-   *   . If false, the return promise will resolve to false.
-   *
-   * @returns {*} - A promise that resolves to true if it succeeds in closing or resolves to false if it ignores the call. The promise is rejected
-   * if there is an error in trying to close the page.
+   * @returns {Promise} - Fulfills after accepting terms of use.
    */
-  close: function(loaded) {
+  pageRefresh: function() {
     let deferred = protractor.promise.defer();
-
-    if(loaded) {
-      let _self = this;
-      browser.close().then(function () {
-        _self.dismissAlert();
-        deferred.fulfill(true);
-      }).catch(function (err) {
-        deferred.reject(err);
+    setAngularSite(true);
+    browser.driver.navigate().refresh();
+    browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
+      alert.accept();
+      browser.waitForAngular().then(function () {
+        fb.termsOfUseAcceptButton.click().then(function () {
+          deferred.fulfill();
+        }, function (err) {
+          console.log('Error refreshing the page: '+err.message);
+          deferred.reject(err);
+        });
       });
-    }
-    else {
-      deferred.fulfill(false);
-    }
+    }, function () {
+      deferred.fulfill();
+    });
 
     return deferred.promise;
   },
@@ -151,6 +152,7 @@ module.exports = {
 
   },
 
+
   /**
    * Equivalent of invoking file dialog and entering filename.
    *
@@ -168,6 +170,7 @@ module.exports = {
    * Load lforms json from the file system.
    *
    * @param fileName {string} - The lforms json file on the disk
+   * @param format {string} - One of the strings: R4 | STU3 | lforms
    * @return Promise - If resolved, it gives lforms preview source string
    */
   loadLFormFromDisk: function (fileName, format) {
@@ -266,13 +269,6 @@ module.exports = {
     fb.exportMenu.click();
     fb.createFhir.click();
     let fhirServerElement = fb.getFhirServerElement(partialFhirServerName);
-    /*
-    let fhirServerElement = fb.fhirServerList.filter(function (elem) {
-      return elem.getText().then(function (text) {
-        return text.includes(partialFhirServerName);
-      });
-    }).first();
-    */
     expect(fhirServerElement.isDisplayed()).toBeTruthy();
     fhirServerElement.click();
     fb.continueButton.click();

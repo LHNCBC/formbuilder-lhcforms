@@ -105,8 +105,7 @@ angular.module('formBuilder')
             return;
           }
 
-          var version = LForms.Util.detectFHIRVersion(importedData) || LForms.Util.guessFHIRVersion(importedData);
-          version = !version ? 'lforms' : version;
+          var version = formBuilderService.detectVersion(importedData);
           switch(version) {
             case 'STU3':
             case 'R4':

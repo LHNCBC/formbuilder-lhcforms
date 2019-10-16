@@ -47,13 +47,13 @@ describe('FHIR server interactions - ', function () {
     const uhnServerName = 'http://hapi.fhir.org/baseR4';
 
     beforeAll(function () {
-      fb.basicEditTab.isEnabled().then(function (ebabled){
-        if(ebabled) {
-          fb.basicEditTab.click();
-        }
-      });
+      fb.basicEditTab.click();
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
+    });
+
+    afterEach(function () {
+      fb.basicEditTab.click();
     });
 
     it('should create', function () {

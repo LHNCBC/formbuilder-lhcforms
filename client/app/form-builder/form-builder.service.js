@@ -1055,6 +1055,29 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
+   * Returns one of the strings: 'lforms' | 'R4' | 'STU3'
+   *
+   * Makes educated guess by looking at some fields in the object
+   *
+   * @param fhirOrLFormsObj {object} - JSON object representing either LForms or FHIR questionnaire.
+   * @private
+   */
+
+  this.detectVersion = function (fhirOrLFormsObj) {
+
+    var version = 'lforms';
+    if(fhirOrLFormsObj) {
+      // Presence of item in Questionnaire is optional, but presence of items implies lforms.
+      if(fhirOrLFormsObj.item || !fhirOrLFormsObj.items) { //
+        version = LForms.Util.detectFHIRVersion(fhirOrLFormsObj) || LForms.Util.guessFHIRVersion(fhirOrLFormsObj);
+      }
+    }
+
+    return version;
+  };
+
+
+  /**
    * Prune out insignificant properties from the object.
    * Insignificant properties include undefined, null, empty strings, and empty objects.
    * All numbers, booleans and dates including invalid dates are significant.

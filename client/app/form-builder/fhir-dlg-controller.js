@@ -185,7 +185,12 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
   };
 
 
-  self.addFhirServer = function (event, actionEl) {
+  /**
+   * Handle button event for addition of fhir server
+   *
+   * @param event - Event object representing user action.
+   */
+  self.addFhirServer = function (event) {
     var dlgOpts = {
       controller: function () {
         var thisCtrl = this;
@@ -194,6 +199,10 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
           $mdDialog.hide(answer);
         };
 
+
+        /**
+         * Handle verify url button to check the user input.
+         */
         thisCtrl.validateFhirServer = function () {
           thisCtrl.message = null;
           thisCtrl.errorMessage = null;
@@ -206,13 +215,15 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
             });
         };
 
+
+        /**
+         * Add the new FHIR server to the list. The new server object if valid is stored in thisCtrl.urlinput
+         */
         thisCtrl.addServer = function () {
           if(thisCtrl.urlinput.endpoint && thisCtrl.urlinput.version) {
+            // Prepend the new item to the list to show up at the top.
             self.fhirServerList.unshift(thisCtrl.urlinput);
             self.fhirServer = thisCtrl.urlinput;
-            if(actionEl) {
-              angular.element(actionEl).trigger('change');
-            }
             thisCtrl.closeDlg(true);
           }
         };
@@ -229,16 +240,16 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
     };
 
     $mdDialog.show(dlgOpts);
-    /*
-    $mdDialog.show(dlgOpts).then(function(answer) {
-      $mdDialog.hide(answer);
-    }, function() {
-      $mdDialog.hide(false);
-    });
-    */
   };
 
 
+  /**
+   * Given a base url, see if it is a valid FHIR server.
+   *
+   * @param baseUrl - Base URL of the FHIR server.
+   * @returns {*} - Http promise which resolves to server object having incremented id, and
+   * recognized fhir version (R4|STU3).
+   */
   self.isValidFhirServer = function (baseUrl) {
     return $q(function (resolve, reject) {
       if(baseUrl && baseUrl.match(/^https?:\/\/[^\/]/)) {

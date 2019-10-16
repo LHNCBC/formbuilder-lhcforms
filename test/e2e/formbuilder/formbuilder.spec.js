@@ -799,16 +799,7 @@ describe('GET /', function () {
   describe('Onload form warnings', function () {
 
     beforeAll(function () {
-      setAngularSite(true);
-      browser.driver.navigate().refresh();
-      browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
-        alert.accept();
-        browser.waitForAngular().then(function () {
-          fb.termsOfUseAcceptButton.click();
-        });
-      }, function (err) {
-        console.log(err);
-      });
+      util.pageRefresh();
     });
 
     it('should NOT warn refreshing the page with unedited form', function (done) {
