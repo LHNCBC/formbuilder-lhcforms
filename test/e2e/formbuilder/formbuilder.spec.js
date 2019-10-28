@@ -221,7 +221,6 @@ describe('GET /', function () {
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
       util.assertNodeSelection('Resp rate');
-      browser.sleep(5000);
       fb.advancedEditTab.click();
       fb.useRestrictionsYes.click();
     });

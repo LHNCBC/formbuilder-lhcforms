@@ -13,6 +13,20 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
   self.errorMessage = null;
   self.urlinput = {endpoint: null};
 
+  self.fhirVersions = {
+    '4.0.0': 'R4',
+    '3.5a.0': 'R4',
+    '3.5.0': 'R4',
+    '3.3.0': 'R4',
+    '3.2.0': 'R4',
+    '3.0.1': 'STU3',
+    '1.8.0': 'STU3',
+    '1.6.0': 'STU3',
+    '1.4.0': 'STU3',
+    '1.2.0': 'STU3',
+    '1.1.0': 'STU3',
+  };
+
 
   /**
    * Set fhir server headers
@@ -186,7 +200,7 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
 
 
   /**
-   * Handle button event for addition of fhir server
+   * Handle button events for addition of fhir server
    *
    * @param event - Event object representing user action.
    */
@@ -253,7 +267,6 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
   self.isValidFhirServer = function (baseUrl) {
     return $q(function (resolve, reject) {
       if(baseUrl && baseUrl.match(/^https?:\/\/[^\/]/)) {
-        //
         var metaReq = {
           method: 'GET',
           url: baseUrl+'/metadata',
@@ -267,21 +280,27 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
         $http(metaReq).then(function (resp) {
           self.stopSpin();
           if(resp.status === 200) {
-            var ver = resp.data.fhirVersion;
-            ver = (ver.startsWith('4.') || ver.startsWith('3.3') || ver.startsWith('3.5')) ? 'R4' : 'STU3';
-            var newServerObj = {
-              id: self.fhirServerList.length+1,
-              endpoint: (resp.data.implementation && resp.data.implementation.url)? resp.data.implementation.url : baseUrl,
-              desc: resp.data.implementation ? resp.data.implementation.description : '',
-              version: ver
-            };
-            // Remove any trailing slashes.
-            newServerObj.endpoint = newServerObj.endpoint.replace(/\/+$/, '');
-            resolve(newServerObj);
+            var ver = self.fhirVersions[resp.data.fhirVersion];
+            if(!ver && resp.data.fhirVersion.startsWith(('4.'))) {
+              ver = 'R4'; // Cover future R4 versions, assuming they all start with 4.???
+            }
+            if(ver) {
+              var newServerObj = {
+                id: self.fhirServerList.length+1,
+                endpoint: (resp.data.implementation && resp.data.implementation.url)? resp.data.implementation.url : baseUrl,
+                desc: resp.data.implementation ? resp.data.implementation.description : '',
+                version: ver
+              };
+              // Remove any trailing slashes.
+              newServerObj.endpoint = newServerObj.endpoint.replace(/\/+$/, '');
+              resolve(newServerObj);
+            }
+            else {
+              reject(new Error(baseUrl + ' returned an unsupported FHIR version: ' + resp.data.fhirVersion));
+            }
           }
           else {
-            self.stopSpin();
-            reject(resp);
+            reject(new Error(baseUrl + ' returned an http status code ' + resp.status + '. It does not look like a FHIR server.'));
           }
         }, function (err) {
           self.stopSpin();
