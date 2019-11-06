@@ -16,7 +16,7 @@ var basicFormLevelFieldsDef = {
   },
   items: [
     {
-      "questionCode": "name",
+      "questionCode": "shortName",
       "localQuestionCode": "string",
       "question": "Name",
       "dataType": "ST",
@@ -25,7 +25,7 @@ var basicFormLevelFieldsDef = {
       "header": false
     },
     {
-      "questionCode": "title",
+      "questionCode": "name",
       "localQuestionCode": "string",
       "question": "Title",
       "dataType": "ST",

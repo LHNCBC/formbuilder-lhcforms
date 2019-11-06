@@ -639,7 +639,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                   case 'CNE':
                     var trigger = thisService.getFormBuilderField(condition.items, 'trigger').value;
                     if(trigger) {
-                      cond.trigger = {code: trigger.code};
+                      cond.trigger = {value: {code: trigger.code}};
                     }
                     break;
 
