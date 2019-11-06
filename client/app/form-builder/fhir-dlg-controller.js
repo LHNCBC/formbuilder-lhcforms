@@ -267,7 +267,7 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
           self.stopSpin();
           if(resp.status === 200) {
             // TODO - Replace LForms.Util._fhirVersionToRelease() with its api equivalent when it is available.
-            var ver = null; // Reject unsupported version.
+            var ver = null;
             if(resp.data.fhirVersion) {
               ver = LForms.Util._fhirVersionToRelease(resp.data.fhirVersion);
               if(ver ===  resp.data.fhirVersion) {
