@@ -13,20 +13,6 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
   self.errorMessage = null;
   self.urlinput = {endpoint: null};
 
-  self.fhirVersions = {
-    '4.0.0': 'R4',
-    '3.5a.0': 'R4',
-    '3.5.0': 'R4',
-    '3.3.0': 'R4',
-    '3.2.0': 'R4',
-    '3.0.1': 'STU3',
-    '1.8.0': 'STU3',
-    '1.6.0': 'STU3',
-    '1.4.0': 'STU3',
-    '1.2.0': 'STU3',
-    '1.1.0': 'STU3',
-  };
-
 
   /**
    * Set fhir server headers
@@ -280,9 +266,13 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
         $http(metaReq).then(function (resp) {
           self.stopSpin();
           if(resp.status === 200) {
-            var ver = self.fhirVersions[resp.data.fhirVersion];
-            if(!ver && resp.data.fhirVersion.startsWith(('4.0.'))) {
-              ver = 'R4'; // Cover future R4 versions, assuming they all start with 4.???
+            // TODO - Replace LForms.Util._fhirVersionToRelease() with its api equivalent when it is available.
+            var ver = null; // Reject unsupported version.
+            if(resp.data.fhirVersion) {
+              ver = LForms.Util._fhirVersionToRelease(resp.data.fhirVersion);
+              if(ver ===  resp.data.fhirVersion) {
+                ver = null; // Reject unsupported version.
+              }
             }
             if(ver) {
               var newServerObj = {
