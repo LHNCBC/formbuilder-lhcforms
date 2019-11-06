@@ -281,7 +281,7 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
           self.stopSpin();
           if(resp.status === 200) {
             var ver = self.fhirVersions[resp.data.fhirVersion];
-            if(!ver && resp.data.fhirVersion.startsWith(('4.'))) {
+            if(!ver && resp.data.fhirVersion.startsWith(('4.0.'))) {
               ver = 'R4'; // Cover future R4 versions, assuming they all start with 4.???
             }
             if(ver) {
