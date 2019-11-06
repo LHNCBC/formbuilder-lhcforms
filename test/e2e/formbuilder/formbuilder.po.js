@@ -41,8 +41,8 @@ var FormBuilder = function () {
   this.questionAnswerText = element(by.id('/answers/text/1/1'));
   this.prefix = element(by.id('/prefix/1'));
 
-  this.basicEditTab = element(by.cssContainingText('md-tab-item span', 'Build basic properties'));
-  this.advancedEditTab = element(by.cssContainingText('md-tab-item span', 'Build advanced properties'));
+  this.basicEditTab = element(by.cssContainingText('md-tab-item', 'Build basic properties'));
+  this.advancedEditTab = element(by.cssContainingText('md-tab-item', 'Build advanced properties'));
 
   this.useRestrictionsYes = element(by.id('/useRestrictions/1true'));
   this.restrictionName1 = element(by.id('/useRestrictions/restrictions/name/1/1/1'));
@@ -121,7 +121,7 @@ var FormBuilder = function () {
   this.signIn = element(by.id('header')).element(by.partialButtonText('Sign in'));
   this.signOut = element(by.id('header')).element(by.partialButtonText('sign out'));
   this.signInAnonymously = this.dialog.element(by.partialButtonText('Sign In Anonymously'));
-  this.formTitle = element(by.id('/title/1'));
+  this.formTitle = element(by.id('/name/1'));
   this.fhirErrorData = this.dialog.all(by.css('md-dialog-content pre')).get(0);
   this.fhirResponse = this.dialog.all(by.css('md-dialog-content pre')).get(1);
   this.fhirServerList = this.dialog.all(by.repeater('server in fhirCtrl.fhirServerList'));
@@ -130,9 +130,12 @@ var FormBuilder = function () {
   this.prevButton = this.dialog.element(by.buttonText('Previous'));
   this.units = element(by.id('/units/1'));
   this.unitDeleteButton = element.all(by.xpath('//ul[../input[@id="/units/1"]]/li/button')).get(0);
+  this.addFhirServer = this.dialog.element(by.buttonText('Add your FHIR server...'));
+  this.verifyBaseURL = this.dialog.element(by.buttonText('Verify URL'));
+  this.addToList = this.dialog.element(by.buttonText('Add'));
+  this.fhirServerUrlInput = this.dialog.element(by.css('input[name="urlinput"'));
 
   var thisPO = this;
-  var searchResults = this.answerListResults;
 
   /**
    * Get a fhir result item identified by a substring of the text in the item.
@@ -486,6 +489,23 @@ var FormBuilder = function () {
     });
   };
 
+
+
+  /**
+   * Get matching fhir server radio button from the fhir server table. If matches more than one,
+   * returns the first element.
+   *
+   * @param paritialText - Text of the server url.
+   */
+  this.getFhirServerElement = function (paritialText) {
+    return thisPO.fhirServerList.filter(function (elem) {
+      return elem.getText().then(function (text) {
+        return text.includes(paritialText);
+      });
+    }).filter(function (elem) {
+      return elem.element(by.css('md-radio-button')).isPresent();
+    }).first();
+  };
 };
 
 

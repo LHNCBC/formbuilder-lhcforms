@@ -25,7 +25,7 @@
             ng-change="fhirCtrl.search()"
             aria-label="Select FHIR server"
           >
-            <md-option ng-value="server" ng-repeat="server in fhirCtrl.fhirServerList">{{ server.displayName }}</md-option>
+            <md-option ng-value="server" ng-repeat="server in fhirCtrl.fhirServerList">{{ server.endpoint }}</md-option>
           </md-select>
         </md-input-container>
       </div>

@@ -1,6 +1,8 @@
 angular.module('formBuilder')
-.controller('fhirDlgController', ['$mdDialog', 'fhirService', 'dataConstants',
-function ($mdDialog, fhirService, dataConstants) {
+.controller('fhirDlgController', ['$mdDialog', 'fhirService', 'dataConstants', '$http', '$q',
+function ($mdDialog, fhirService, dataConstants, $http, $q) {
+  'use strict';
+
   var self = this;
   self.fhirResultsCount = 0;
   self.onlyUserResources = true;
@@ -8,6 +10,8 @@ function ($mdDialog, fhirService, dataConstants) {
   self.fhirServerList = dataConstants.fhirServerList;
   self.savedFhirServer = self.getFhirServer();
   self.fhirServer = self.savedFhirServer;
+  self.errorMessage = null;
+  self.urlinput = {endpoint: null};
 
 
   /**
@@ -60,7 +64,7 @@ function ($mdDialog, fhirService, dataConstants) {
    */
   self.loadResource = function(ev, resId) {
     $mdDialog.hide();
-    self.importFromFhir(ev, resId);
+    self.importFhirResource(ev, resId);
   };
 
 
@@ -179,4 +183,124 @@ function ($mdDialog, fhirService, dataConstants) {
 
     self.showFhirResponse(ev, {fhirError: err}, {multiple: true});
   };
+
+
+  /**
+   * Handle button events for addition of fhir server
+   *
+   * @param event - Event object representing user action.
+   */
+  self.addFhirServer = function (event) {
+    var dlgOpts = {
+      controller: function () {
+        var thisCtrl = this;
+        thisCtrl.urlinput = {endpoint: null};
+        thisCtrl.closeDlg = function(answer){
+          $mdDialog.hide(answer);
+        };
+
+
+        /**
+         * Handle verify url button to check the user input.
+         */
+        thisCtrl.validateFhirServer = function () {
+          thisCtrl.message = null;
+          thisCtrl.errorMessage = null;
+          self.isValidFhirServer(thisCtrl.urlinput.endpoint)
+            .then(function (newServerObj) {
+              thisCtrl.urlinput = newServerObj;
+              thisCtrl.message = newServerObj.endpoint+' is recognized FHIR server.';
+            }, function (resp) {
+              thisCtrl.errorMessage = resp instanceof Error ? resp.message : resp.data ? resp.data : 'Failed to recognize your FHIR server';
+            });
+        };
+
+
+        /**
+         * Add the new FHIR server to the list. The new server object if valid is stored in thisCtrl.urlinput
+         */
+        thisCtrl.addServer = function () {
+          if(thisCtrl.urlinput.endpoint && thisCtrl.urlinput.version) {
+            // Prepend the new item to the list to show up at the top.
+            self.fhirServerList.unshift(thisCtrl.urlinput);
+            self.fhirServer = thisCtrl.urlinput;
+            thisCtrl.closeDlg(true);
+          }
+        };
+      },
+
+
+    templateUrl: 'app/form-builder/add-fhir-server.html',
+      escapeToClose: true,
+      bindToController: true,
+      targetEvent: event,
+      parent: document.body,
+      controllerAs: 'addCtrl',
+      multiple: true
+    };
+
+    $mdDialog.show(dlgOpts);
+  };
+
+
+  /**
+   * Given a base url, see if it is a valid FHIR server.
+   *
+   * @param baseUrl - Base URL of the FHIR server.
+   * @returns {*} - Http promise which resolves to server object having incremented id, and
+   * recognized fhir version (R4|STU3).
+   */
+  self.isValidFhirServer = function (baseUrl) {
+    return $q(function (resolve, reject) {
+      if(baseUrl && baseUrl.match(/^https?:\/\/[^\/]/)) {
+        var metaReq = {
+          method: 'GET',
+          url: baseUrl+'/metadata',
+          params: {
+            _elements: 'fhirVersion,implementation', // Gives a small response. Is this reliable?
+            _format: 'json'
+          }
+        };
+
+        self.startSpin();
+        $http(metaReq).then(function (resp) {
+          self.stopSpin();
+          if(resp.status === 200) {
+            // TODO - Replace LForms.Util._fhirVersionToRelease() with its api equivalent when it is available.
+            var ver = null;
+            if(resp.data.fhirVersion) {
+              ver = LForms.Util._fhirVersionToRelease(resp.data.fhirVersion);
+              if(ver ===  resp.data.fhirVersion) {
+                ver = null; // Reject unsupported version.
+              }
+            }
+            if(ver) {
+              var newServerObj = {
+                id: self.fhirServerList.length+1,
+                endpoint: (resp.data.implementation && resp.data.implementation.url)? resp.data.implementation.url : baseUrl,
+                desc: resp.data.implementation ? resp.data.implementation.description : '',
+                version: ver
+              };
+              // Remove any trailing slashes.
+              newServerObj.endpoint = newServerObj.endpoint.replace(/\/+$/, '');
+              resolve(newServerObj);
+            }
+            else {
+              reject(new Error(baseUrl + ' returned an unsupported FHIR version: ' + resp.data.fhirVersion));
+            }
+          }
+          else {
+            reject(new Error(baseUrl + ' returned an http status code ' + resp.status + '. It does not look like a FHIR server.'));
+          }
+        }, function (err) {
+          self.stopSpin();
+          reject(err);
+        });
+      }
+      else {
+        reject(new Error('Not a valid url: '+encodeURIComponent(baseUrl)));
+      }
+    });
+  };
+
 }]);
