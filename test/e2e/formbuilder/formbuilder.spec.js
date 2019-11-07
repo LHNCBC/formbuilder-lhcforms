@@ -306,7 +306,7 @@ describe('GET /', function () {
         expect(selectedItem.skipLogic.logic).toBe('ANY');
         expect(selectedItem.skipLogic.conditions.length).toBe(1);
         expect(selectedItem.skipLogic.conditions[0].source).toBe('8358-4');
-        expect(selectedItem.skipLogic.conditions[0].trigger.code).toBe('LA11162-7');
+        expect(selectedItem.skipLogic.conditions[0].trigger.value.code).toBe('LA11162-7');
       });
     });
 

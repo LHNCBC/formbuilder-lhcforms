@@ -100,9 +100,7 @@ var advFormBuilderDef = {
           "conditions": [
             {
               "source": "useRestrictions",
-              "trigger": {
-                "code": true
-              }
+              "trigger": {"value": {"code": true}}
             }
           ]
         },
@@ -159,9 +157,7 @@ var advFormBuilderDef = {
           "conditions": [
             {
               "source": "useSkipLogic",
-              "trigger": {
-                "code": true
-              }
+              "trigger": {"value": {"code": true}}
             }
           ]
         },
@@ -457,9 +453,7 @@ var advFormBuilderDef = {
           "conditions": [
             {
               "source": "useDataControl",
-              "trigger": {
-                "code": true
-              }
+              "trigger": {"value": {"code": true}}
             }
           ]
         },
@@ -573,9 +567,7 @@ var advFormBuilderDef = {
             "conditions": [
               {
                 "source": "displayControl",
-                "trigger": {
-                  "code": true
-                }
+                "trigger": {"value": {"code": true}}
               },
               {
                 "source": "_isHeader",
@@ -596,9 +588,7 @@ var advFormBuilderDef = {
           "conditions": [
             {
               "source": "displayControl",
-              "trigger": {
-                "code": true
-              }
+              "trigger": {"value": {"code": true}}
             },
             {
               "source": "_dataType",
@@ -642,9 +632,7 @@ var advFormBuilderDef = {
               "conditions": [
                 {
                   "source": "type",
-                  "trigger": {
-                    "code": "RADIO_CHECKBOX"
-                  }
+                  "trigger": {"value": {"code": "RADIO_CHECKBOX"}}
                 }
               ]
             },
@@ -677,9 +665,7 @@ var advFormBuilderDef = {
             "conditions": [
               {
                 "source": "displayControl",
-                "trigger": {
-                  "code": true
-                }
+                "trigger": {"value": {"code": true}}
               },
               {
                 "source": "_externallyDefined",

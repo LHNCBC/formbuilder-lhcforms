@@ -127,9 +127,7 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "header",
-            "trigger": {
-              "code": false
-            }
+            "trigger": {"value": {"code": false}}
           }
         ],
         "action": "show"
@@ -160,9 +158,7 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "header",
-            "trigger": {
-              "code": false
-            }
+            "trigger": {"value": {"code": false}}
           }
         ],
         "action": "show"
@@ -189,9 +185,7 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "header",
-            "trigger": {
-              "code": false
-            }
+            "trigger": {"value": {"code": false}}
           }
         ],
         "action": "show"
@@ -212,13 +206,17 @@ var formBuilderDef = {
           {
             "source": "dataType",
             "trigger": {
-              "code": "CNE"
+              "value": {
+                "code": "CNE"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "CWE"
+              "value": {
+                "code": "CWE"
+              }
             }
           }
         ],
@@ -280,9 +278,7 @@ var formBuilderDef = {
             "conditions": [
               {
                 "source": "other",
-                "trigger": {
-                  "code": true
-                }
+                "trigger": {"value": {"code": true}}
               }
             ],
             "action": "show"
@@ -307,13 +303,17 @@ var formBuilderDef = {
           {
             "source": "dataType",
             "trigger": {
-              "code": "CNE"
+              "value": {
+                "code": "CNE"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "CWE"
+              "value": {
+                "code": "CWE"
+              }
             }
           }
         ],
@@ -331,9 +331,7 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "header",
-            "trigger": {
-              "code": false
-            }
+            "trigger": {"value": {"code": false}}
           }
         ],
         "action": "show"
@@ -356,13 +354,17 @@ var formBuilderDef = {
           {
             "source": "dataType",
             "trigger": {
-              "code": "CWE"
+              "value": {
+                "code": "CWE"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "CNE"
+              "value": {
+                "code": "CNE"
+              }
             }
           }
         ],
@@ -390,19 +392,25 @@ var formBuilderDef = {
           {
             "source": "dataType",
             "trigger": {
-              "code": "INT"
+              "value": {
+                "code": "INT"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "REAL"
+              "value": {
+                "code": "REAL"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "RTO"
+              "value": {
+                "code": "RTO"
+              }
             }
           }
         ],
@@ -429,9 +437,7 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "header",
-            "trigger": {
-              "code": false
-            }
+            "trigger": {"value": {"code": false}}
           }
         ],
         "action": "show"
