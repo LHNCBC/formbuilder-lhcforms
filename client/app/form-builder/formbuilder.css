@@ -378,4 +378,35 @@ md-menu-bar {
   padding-top: 10px;
   margin-top: 10px;
 }
+
+.formbuilder-table td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+.formbuilder-table td md-radio-button {
+  margin-bottom: 0px;
+}
+
+.urlinput {
+  width: 100%;
+}
+
+.overlayed-dialog {
+  width: 25%;
+}
+
+.float-right {
+  float: right
+}
+
+.validate-message {
+  color: green;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
+}
 /* End of styles for the footer */

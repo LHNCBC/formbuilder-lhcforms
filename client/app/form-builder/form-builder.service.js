@@ -261,6 +261,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var lfData = {};
     lfData.basic = node.lfData.basic.getFormData();
     lfData.basic.name = node.lfData.basic.name;
+    lfData.basic.shortName = node.lfData.basic.shortName;
     lfData.basic.code = node.lfData.basic.code;
     lfData.basic.type = node.lfData.basic.type;
     lfData.basic.template = node.lfData.basic.template;
@@ -270,6 +271,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       lfData.basic = new LForms.LFormsData(basicLfData);
       lfData.advanced = node.lfData.advanced.getFormData();
       lfData.advanced.name = node.lfData.advanced.name;
+      lfData.advanced.shortName = node.lfData.advanced.shortName;
       lfData.advanced.code = node.lfData.advanced.code;
       lfData.advanced.type = node.lfData.advanced.type;
       lfData.advanced.template = node.lfData.advanced.template;
@@ -1051,6 +1053,29 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     }
 
     return ret;
+  };
+
+
+  /**
+   * Returns one of the strings: 'lforms' | 'R4' | 'STU3'
+   *
+   * Makes educated guess by looking at some fields in the object
+   *
+   * @param fhirOrLFormsObj {object} - JSON object representing either LForms or FHIR questionnaire.
+   * @private
+   */
+
+  this.detectVersion = function (fhirOrLFormsObj) {
+
+    var version = 'lforms';
+    if(fhirOrLFormsObj) {
+      // Presence of item in Questionnaire is optional, but presence of items implies lforms.
+      if(fhirOrLFormsObj.item || !fhirOrLFormsObj.items) { //
+        version = LForms.Util.detectFHIRVersion(fhirOrLFormsObj) || LForms.Util.guessFHIRVersion(fhirOrLFormsObj);
+      }
+    }
+
+    return version;
   };
 
 

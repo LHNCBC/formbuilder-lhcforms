@@ -105,8 +105,7 @@ angular.module('formBuilder')
             return;
           }
 
-          var version = LForms.Util.detectFHIRVersion(importedData) || LForms.Util.guessFHIRVersion(importedData);
-          version = !version ? 'lforms' : version;
+          var version = formBuilderService.detectVersion(importedData);
           switch(version) {
             case 'STU3':
             case 'R4':
@@ -256,7 +255,8 @@ angular.module('formBuilder')
             var content = $scope.previewSource[answer.format];
             var blob = new Blob([content], {type: 'application/json;charset=utf-8'});
             var formName = $scope.formBuilderData.treeData[0].lfData.basic.itemHash['/name/1'].value;
-            var exportFileName = formName ?  formName.replace(/\s/g, '-') : 'form';
+            var formShortName = $scope.formBuilderData.treeData[0].lfData.basic.itemHash['/shortName/1'].value;
+            var exportFileName = formShortName ?  formShortName.replace(/\s/g, '-') : (formName ? formName.replace(/\s/g, '-') : 'form');
 
             // Use hidden anchor to do file download.
             var downloadLink = document.getElementById('exportAnchor');
@@ -284,22 +284,40 @@ angular.module('formBuilder')
 
       $scope.searchFhir = function(ev, searchStr) {
         fhirService.setFhirServer($scope.getFhirServer());
+        $scope.startSpin();
         fhirService.search(searchStr, true)
           .then(function(response) {
+            $scope.stopSpin();
             $scope.showFhirResults(ev, {fhirResults: response.data});
           }, function (err) {
+            $scope.stopSpin();
             showFhirResponse(ev, {fhirError: err});
           });
       };
 
 
       /**
-       * Handle import from FHIR server, a FHIR read operation
+       * Handle import from FHIR server
+       *
+       * @param ev - event object
+       * @param searchStr - Optional search string
+       */
+      $scope.importFromFhir = function(ev, searchStr) {
+        $scope.showFhirServerDialog(ev).then(function (server) {
+          if(server) {
+            $scope.searchFhir(ev, searchStr);
+          }
+        });
+      };
+
+
+      /**
+       * Handle FHIR read operation
        *
        * @param ev - event object
        * @param resourceId - id of the FHIR resource to import
        */
-      $scope.importFromFhir = function(ev, resourceId) {
+      $scope.importFhirResource = function(ev, resourceId) {
         fhirService.read(resourceId).then(function (response) {
           try {
             var fServer = $scope.getFhirServer();
@@ -368,9 +386,11 @@ angular.module('formBuilder')
         // Pass some needed args to controller.
         localScope.formBuilderData = $scope.formBuilderData;
         localScope.getFhirServer = $scope.getFhirServer;
-        localScope.importFromFhir = $scope.importFromFhir;
+        localScope.importFhirResource = $scope.importFhirResource;
         localScope.userProfile = $scope.userProfile;
         localScope.showFhirResponse = showFhirResponse;
+        localScope.startSpin = $scope.startSpin;
+        localScope.stopSpin = $scope.stopSpin;
 
         return $mdDialog.show({
           controller: 'fhirDlgController',
@@ -399,6 +419,8 @@ angular.module('formBuilder')
         // Pass some needed args to controller.
         localScope.getFhirServer = $scope.getFhirServer;
         localScope.userProfile = $scope.userProfile;
+        localScope.startSpin = $scope.startSpin;
+        localScope.stopSpin = $scope.stopSpin;
 
         return $mdDialog.show({
           controller: 'fhirDlgController',

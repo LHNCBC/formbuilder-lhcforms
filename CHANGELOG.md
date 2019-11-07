@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.2.0]  2019-10-09
+### Added.
+- Added support to specify third party fhir servers by the user.
+
 ## [3.1.6]  2019-09-16
 ### Fixed.
 - Fixed a bug importing a file with an item having answer list and answerRequired fields. 
@@ -22,6 +26,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [3.1.3]  2019-08-15
 ### Fixed.
 - Fixed overwriting of linkid in enableWhen.question, when converted to FHIR Questionnaire.
+
 ### Changed
 - Removed restriction on insisting code for answer lists. 
 ### Added 
