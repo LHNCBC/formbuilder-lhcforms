@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.3.0]  2019-10-09
+### Added.
+- Updated lforms to support change in skip logic trigger definition.
+
 ## [3.2.0]  2019-10-09
 ### Added.
 - Added support to specify third party fhir servers by the user.
