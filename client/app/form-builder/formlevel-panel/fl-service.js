@@ -9,7 +9,9 @@ angular.module('formBuilder')
      */
     flService.exportFormLevelDataToLForms = function(fbFormLevelData) {
       var lfFormLevelData = flService._convertFBFormLevelItems(fbFormLevelData.basic.items);
-      return lodash.assign(lfFormLevelData, flService._convertFBFormLevelItems(fbFormLevelData.advanced.items));
+      lodash.assign(lfFormLevelData, flService._convertFBFormLevelItems(fbFormLevelData.advanced.items));
+      flService.convertExtensions(lfFormLevelData);
+      return lfFormLevelData;
     };
 
 
@@ -117,10 +119,12 @@ angular.module('formBuilder')
           case 'Range':
           case 'SimpleQuantity':
           case 'UsageContext':
+          case 'Expression':
             // These are complex types embedded with multiple types defined above. It will go trough an indirect recursion.
              var obj = flService._convertFBFormLevelItems(fbItem.items);
              if(obj && !angular.equals(obj, {})) {
-               ret = flService._convertFBFormLevelItems(fbItem.items);
+               //ret = flService._convertFBFormLevelItems(fbItem.items);
+               ret = obj;
              }
             break;
 
@@ -143,6 +147,9 @@ angular.module('formBuilder')
     flService._updateFBFormLevelFields = function (fbHeaders, importedHeadersObj) {
       for(var i = 0; i < fbHeaders.length; i++) {
         var val = importedHeadersObj[fbHeaders[i].questionCode];
+        if(val === null || val === undefined) {
+          val = flService._updateFromExtensions(fbHeaders[i].questionCode, importedHeadersObj);
+        }
         if(val !== null && val !== undefined) {
           if(flService._isAnArray(fbHeaders[i].questionCardinality)) {
             var newItems = [];
@@ -221,5 +228,41 @@ angular.module('formBuilder')
 
       return ret;
     };
+
+
+    flService._updateFromExtensions = function (fbQuestionCode, ImportedFormLevelFieldsObj) {
+      var ret = null;
+      switch (fbQuestionCode) {
+        case '_extVariable':
+          ret = lodash.reduce(ImportedFormLevelFieldsObj.extension, function(acc, ext) {
+            if(ext.url === LForms.FHIR.R4.SDC.fhirExtVariable) {
+              acc.push(ext.valueExpression);
+            }
+            return acc;
+          }, []);
+          ret = ret.length > 0 ? ret : null;
+          break;
+      }
+      return ret;
+    };
+
+
+    flService.convertExtensions = function (lfFormData) {
+      if(lfFormData) {
+      // FHIRPath variables
+        var vars = lfFormData._extVariable;
+        delete lfFormData._extVariable;
+        for(var i = 0; vars && i < vars.length; i++) {
+          vars[i].language = 'text/fhirpath';
+          if(!lfFormData.extension) {
+            lfFormData.extension = [];
+          }
+          lfFormData.extension.push({
+            url: 'http://hl7.org/fhir/StructureDefinition/variable',
+            valueExpression: vars[i]
+          });
+        }
+      }
+    }
 
   }]);

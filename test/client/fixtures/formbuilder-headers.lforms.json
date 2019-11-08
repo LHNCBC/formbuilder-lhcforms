@@ -1,4 +1,4 @@
-var lformsFormBuilderHeaders = {
+{
   "id": "11",
   "meta": {
     "versionId": "m1.0",
@@ -59,4 +59,4 @@ var lformsFormBuilderHeaders = {
       "userSelected": false
     }
   ]
-};
+}

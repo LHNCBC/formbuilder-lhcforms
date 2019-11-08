@@ -39,6 +39,7 @@ describe('fl.service', function () {
   });
 
   it('import/export formbuilder-headers.lforms.json', function () {
+    var lformsFormBuilderHeaders = readJSON('test/client/fixtures/formbuilder-headers.lforms.json');
     var sample = fbService.createFormBuilder(lformsFormBuilderHeaders);
     expect(flService.exportFormLevelDataToLForms(sample.treeData[0].lfData)).toEqual(lformsFormBuilderHeaders); // default
   });

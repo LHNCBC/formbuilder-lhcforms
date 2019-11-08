@@ -16,6 +16,50 @@ var advFormLevelFieldsDef = {
   },
   items: [
     {
+      "questionCode": "_extVariable",
+      "localQuestionCode": "Expression",
+      "question": "FHIRPath Variable",
+      "header": true,
+      "codingInstructions": "FHIRPath expression.<br/><b>FHIR type: Expression</b>",
+      "codingInstructionsFormat": "html",
+      "questionCardinality": {
+        "min": "0",
+        "max": "*"
+      },
+      "items": [
+        {
+          "questionCode": "name",
+          "localQuestionCode": "id",
+          "question": "Name",
+          "dataType": "ST",
+          "header": false,
+          "codingInstructions": "Name of the questionnaire-variable.<br/><b>FHIR type: id</b>",
+          "codingInstructionsFormat": "html",
+          "restrictions": {
+            "pattern": "/^[A-Za-z0-9\\-\\.]{1,64}$/"
+          },
+        },
+        {
+          "questionCode": "expression",
+          "localQuestionCode": "string",
+          "question": "Expression string",
+          "dataType": "TX",
+          "header": false,
+          "codingInstructions": "No syntax or semantic checks are performed. It is assumed the expression is correct. Please verify it in the preview if it is working as expected.<br/><b>FHIR type: string</b>",
+          "codingInstructionsFormat": "html",
+        },
+        {
+          "questionCode": "description",
+          "localQuestionCode": "string",
+          "question": "Description",
+          "dataType": "TX",
+          "header": false,
+          "codingInstructions": "A brief, natural language description of the condition that effectively communicates the intended semantics.<br/><b>FHIR type: string</b>",
+          "codingInstructionsFormat": "html",
+        },
+      ]
+    },
+    {
       "questionCode": "meta",
       "localQuestionCode": "Meta",
       "question": "Metadata",

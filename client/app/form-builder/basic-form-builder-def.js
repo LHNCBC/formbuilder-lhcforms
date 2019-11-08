@@ -17,6 +17,78 @@ var formBuilderDef = {
   },
   "items": [
     {
+      /*
+      ******** item type: 'group' determines item.header=true, 'display' determines item.dataType=TITLE, and
+      * 'question' will show dataType pull down to get other item.dataType values
+      */
+      "questionCode": "__itemType",
+      "question": "Item type*",
+      "dataType": "CNE",
+      "header": false,
+      "answers": "itemType",
+      "codingInstructions": "Choose the type item you want to create",
+      "answerCardinality": {
+        "min": "1",
+        "max": "1"
+      },
+      "value": {
+        "code": "question",
+        "text": "Question"
+      }
+    },
+    {
+      // *********** Data type ************************,
+      "questionCode": "dataType",
+      "question": "Data type*",
+      "dataType": "CNE",
+      "header": false,
+      "answers": "dataType",
+      "codingInstructions": "Enter the data type of the answer. Valid data types are:",
+      "displayControl": {
+        "answerLayout": {
+          "type": "COMBO_BOX"
+        }
+      },
+      "answerCardinality": {
+        "min": "1",
+        "max": "1"
+      },
+      "value": {
+        "text": "String",
+        "code": "ST"
+      },
+      "skipLogic": {
+        "conditions": [
+          {
+            "source": "__itemType",
+            "trigger": {
+              "code": "question"
+            }
+          }
+        ],
+        "action": "show"
+      }
+    },
+    {
+      // *********** Calculated expression ************************,
+      "questionCode": "calculatedExpression",
+      "question": "FHIRPath calculated expression [1]",
+      "dataType": "TX",
+      "header": false,
+      "codingInstructions": "Calculated value for a question answer as determined by an FHIRPath evaluated expression. For now, the expression is not validated. It is author's responsibility to enter correct expression.",
+      "skipLogic": {
+        "conditions": [
+          {
+            "source": "__itemType",
+            "trigger": {
+              "code": "calculatedExpression"
+            }
+          }
+        ],
+        "action": "show"
+      }
+    },
+    {
       // *********** question ************************,
       "questionCode": "question",
       "question": "Text*",
@@ -95,24 +167,6 @@ var formBuilderDef = {
       }
     },
     {
-      /*
-      ******** header (hidden from the user with a dummy source skip logic) **
-      * There is no mechanism to hide an item in lforms.
-      * Picking a dummy non existent source is not an option after  lforms#5.0 version.
-      * Instead use a source whose value never satisfies skip logic of this item.
-      */
-      "questionCode": "header",
-      "question": "Section",
-      "dataType": "CNE",
-      "header": false,
-      "answers": "boolean",
-      "codingInstructions": "If you choose 'Yes', this question is used as section header",
-      "value": {
-        "text": "No",
-        "code": false
-      }
-    },
-    {
       "questionCode": "editable",
       "question": "Editable",
       "dataType": "CNE",
@@ -126,9 +180,9 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "header",
+            "source": "__itemType",
             "trigger": {
-              "code": false
+              "code": "question"
             }
           }
         ],
@@ -159,38 +213,9 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "header",
+            "source": "__itemType",
             "trigger": {
-              "code": false
-            }
-          }
-        ],
-        "action": "show"
-      }
-    },
-    {
-      // *********** Data type ************************,
-      "questionCode": "dataType",
-      "question": "Type",
-      "dataType": "CNE",
-      "header": false,
-      "answers": "dataType",
-      "codingInstructions": "Enter the data type of the answer. Valid data types are:",
-      "displayControl": {
-        "answerLayout": {
-          "type": "COMBO_BOX"
-        }
-      },
-      "value": {
-        "text": "String",
-        "code": "ST"
-      },
-      "skipLogic": {
-        "conditions": [
-          {
-            "source": "header",
-            "trigger": {
-              "code": false
+              "code": "question"
             }
           }
         ],
@@ -330,9 +355,9 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "header",
+            "source": "__itemType",
             "trigger": {
-              "code": false
+              "code": "question"
             }
           }
         ],
@@ -415,7 +440,7 @@ var formBuilderDef = {
         },
         "listColHeaders": ["Unit", "Name", "Guidance"]
       }
-    },
+    }/*,
     {
       // *********** formula/calculationMethod ************************,
       "questionCode": "calculationMethod",
@@ -428,9 +453,9 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "header",
+            "source": "__itemType",
             "trigger": {
-              "code": false
+              "code": "question"
             }
           }
         ],
@@ -446,5 +471,6 @@ var formBuilderDef = {
       },
 
     }
+    */
   ]
 };

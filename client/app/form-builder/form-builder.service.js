@@ -299,8 +299,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         // Avoid self and any header items
         return (
           (o === parentArray[i-1]) ||
-          ( o.lfData.basic.itemHash[dataConstants.HEADER_ID].value &&
-            o.lfData.basic.itemHash[dataConstants.HEADER_ID].value.code )
+          ( o.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID].value &&
+            o.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID].value.code === 'group')
         );
       }));
       parentArray = parentArray[i-1].nodes;
@@ -466,17 +466,21 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
     var ret = {};
     var answerCardinality = {min: "0",max: "1"};
-    var dataType = null;
-    var tmp = null;
-    if(randomFormBuilderItems) {
-      dataType = lodash.find(formBuilderItems, {questionCode: 'dataType'}).value.code;
-      tmp = lodash.find(formBuilderItems, {questionCode: 'header'});
-    }
-    else {
-      dataType = thisService.getFormBuilderField(formBuilderItems, 'dataType').value.code;
-      tmp = thisService.getFormBuilderField(formBuilderItems, 'header');
-    }
-    var isHeader = tmp ? tmp.value ? tmp.value.code : false : false;
+    var typeMap = {};
+    ['dataType', '__itemType'].forEach(function(field) {
+      var fbField = null;
+      if(randomFormBuilderItems) {
+        fbField = lodash.find(formBuilderItems, {questionCode: field});
+      }
+      else {
+        fbField = thisService.getFormBuilderField(formBuilderItems, field);
+      }
+      if(fbField && fbField.value) {
+        typeMap[field] = fbField.value.code;
+      }
+    });
+    var dataType = typeMap.dataType;
+    var isHeader = typeMap.__itemType ? typeMap.__itemType === 'group' : false;
 
     lodash.forEach(formBuilderItems, function(item) {
       var attr = item.questionCode;
@@ -517,10 +521,37 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
         case "questionCodeSystem":
         case "type":
-        case "header":
         case "editable":
           if(item.value && typeof item.value.code !== 'undefined') {
             ret[attr] = item.value.code;
+          }
+          break;
+
+        case "__itemType":
+          switch(item.value.code) {
+            case "TOTALSCORE":
+              ret.header = false;
+              ret.dataType = 'REAL';
+              ret.calculationMethod = 'TOTALSCORE';
+              break;
+
+            case "group":
+              ret.header = true;
+              break;
+
+            case "display":
+              ret.header = false;
+              ret.dataType = 'TITLE';
+              break;
+            default:
+              ret.header = false;
+              break;
+          }
+          break;
+
+        case "calculatedExpression":
+          if(item.value) {
+            thisService.updateExtension(ret, thisService.createCalculatedExpression(item.value));
           }
           break;
 
@@ -582,12 +613,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
             if(val.length > 0) {
               ret[attr] = val;
             }
-          }
-          break;
-
-        case "calculationMethod":
-          if(item.value && item.value.code !== 'none') {
-            ret[attr] = {name: item.value.code};
           }
           break;
 
@@ -763,7 +788,12 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         default:
           // Unrecognized fields.
           if(item.value) {
-            ret[attr] = item.value;
+            if(attr === 'extension' && ret[attr]) {
+              ret[attr].concat(item.value);
+            }
+            else {
+              ret[attr] = item.value;
+            }
           }
           break;
       }
@@ -850,12 +880,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   };
 
 
-  this.adjustFieldsToImportedLoinc = function (LOINCPanel) {
-    renameKey(LOINCPanel, 'code', 'questionCode');
-    renameKey(LOINCPanel, 'name', 'question');
-    renameKey(LOINCPanel, 'type', 'questionCodeSystem');
+  this.adjustFieldsToImportedLoinc = function (LOINCForm) {
+    renameKey(LOINCForm, 'code', 'questionCode');
+    renameKey(LOINCForm, 'name', 'question');
+    renameKey(LOINCForm, 'type', 'questionCodeSystem');
 
-    walkRecursiveTree(LOINCPanel, 'items', function (item) {
+    LOINCForm.header = true;
+    // Remove unwanted fields at form level
+    delete LOINCForm.dataType;
+    delete LOINCForm.units;
+    delete LOINCForm.codingInstructions;
+
+    walkRecursiveTree(LOINCForm, 'items', function (item) {
       if(!item.questionCodeSystem) {
         item.questionCodeSystem = dataConstants.LOINC;
       }
@@ -1109,6 +1145,44 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
+   *
+   * @param name
+   * @param expStr
+   * @returns {*}
+   */
+  this.createCalculatedExpression = function (expStr) {
+    var ret = null;
+    if(expStr) {
+      ret = {
+        url: dataConstants.calculatedExpressionUrl,
+        valueExpression: {
+          language: 'text/fhirpath',
+          expression: expStr
+        }
+      };
+    }
+
+    return ret;
+  };
+
+
+
+  this.updateExtension = function(item, extensionObj) {
+    if(extensionObj && item) {
+      if(!item.extension) {
+        item.extension = [];
+      }
+      var ind = lodash.findIndex(item.extension, {url: extensionObj.url});
+      if( ind >= 0) {
+        item.extension[ind] = extensionObj;
+      }
+      else {
+        item.extension.push(extensionObj);
+      }
+    }
+  };
+
+  /**
    * Node traversal function with a callback to process each node.
    *
    * @param nodes {Array} - Array of top level node objects. Expects each node to
@@ -1179,8 +1253,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       definedItem = true;
     }
     // These items do not directly map to one on one
-    // answerCardinality maps to answerRequired and multipleAnswers
-    else if(name === 'answerCardinality') {
+    // Theses are not directly defined in form-builder-def, but they translate to other fields.
+    else if(name === 'answerCardinality' || name === 'header' || name === 'calculationMethod' || name === 'extension') {
       definedItem = true;
     }
     else {
@@ -1193,21 +1267,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
     // Save or update the value of unimplemented items at the end.
     if(!definedItem) {
-      lfItem.advanced.items.push({
-        questionCode: name,
-        // Hide it using impossible condition. _isHeader can be only "Yes" or "No"
-        skipLogic: {
-          conditions: [
-            {
-              "source": "_isHeader",
-              "trigger": {
-                "value": "notThisString"
-              }
-            }
-          ]
-        },
-        value: val
-      });
+      addAsHidden(lfItem, name, val);
       return;
     }
 
@@ -1217,6 +1277,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       return;
     }
 
+    var itemTypeField = thisService.getFormBuilderField(lfItem.basic.items, '__itemType');
     // Handle field specific cases.
     switch(name) {
       case "answerCardinality":
@@ -1252,17 +1313,53 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
       case "questionCodeSystem":
       case "editable":
+        thisService.updateCNECWE(subItem, val);
+        break;
+
       case "calculationMethod":
-        updateCNECWE(subItem, val);
+        if(val) {
+          thisService.updateCNECWE(itemTypeField, name);
+        }
+        break;
+
+      case "extension":
+        if(val) {
+          var hiddenList = val.filter(function (ext) {
+            var hidden = false;
+            switch (ext.url) {
+              case dataConstants.calculatedExpressionUrl:
+                var calFieldName = 'calculatedExpression';
+                thisService.updateCNECWE(itemTypeField, calFieldName);
+                var calExprField = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES[calFieldName].category].items, calFieldName);
+                calExprField.value = ext.valueExpression.expression;
+                break;
+
+              default:
+                hidden = true; // Save unhandled extension as it is.
+                break;
+            }
+            return hidden;
+          });
+          addAsHidden(lfItem, name, hiddenList);
+        }
         break;
 
       case "header":
         var isHeader = thisService.getFormBuilderField(lfItem.advanced.items, '_isHeader');
         isHeader.value = val ? 'Yes' : 'No';
-        updateCNECWE(subItem, val);
+        if(val) {
+          thisService.updateCNECWE(itemTypeField, 'group');
+        }
         break;
 
       case "dataType":
+        // Update item type
+        var itemType = (importedItem.header || val === 'SECTION') ? 'group' :
+          (val === 'TITLE' ? 'display' :
+            (importedItem.calculationMethod ? importedItem.calculationMethod.name :
+              importedItem.calculatedExpression ? 'calculatedExpression' :
+                'question'));
+        thisService.updateCNECWE(itemTypeField, itemType);
         updateDataType(subItem, importedItem, val);
         // Update hidden item
         var dt = thisService.getFormBuilderField(lfItem.advanced.items, '_dataType');
@@ -1476,7 +1573,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     if(!importedVal) {
       importedVal = guessDataType(importedItem);
     }
-    updateCNECWE(lfItem, importedVal);
+    thisService.updateCNECWE(lfItem, importedVal);
   }
 
 
@@ -1658,12 +1755,12 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @param {Object} lfItem - Field item from form builder data model.
    * @param {String} importedVal - Value for the field item
    */
-  function updateCNECWE(lfItem, importedVal) {
+  this.updateCNECWE = function (lfItem, importedVal) {
     var val = createCNECWE(lfItem, importedVal);
     if(val) {
       lfItem.value = val;
     }
-  }
+  };
 
 
   /**
@@ -1684,7 +1781,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       search = {code: importedVal};
     }
     else if(importedVal && typeof importedVal === 'object') {
-      search = {code: importedVal.name};
+      search = {code: importedVal.code || importedVal.name};
     }
 
     var answer = lodash.find(lfItem.answers, search);
@@ -1737,6 +1834,33 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         delete obj[oldkey];
       }
     }
+  }
+
+
+  /**
+   * Adjust auto-complete search url for units during run time. The modified
+   * search floats the units with matching loinc property of the question
+   * to the top.
+   *
+   * @param lfData - Form builder model of the question.
+   */
+  function addAsHidden(lfItem, name, val) {
+
+    lfItem.advanced.items.push({
+      questionCode: name,
+      // Hide it using impossible condition. _isHeader can be only "Yes" or "No"
+      skipLogic: {
+        conditions: [
+          {
+            "source": "_isHeader",
+            "trigger": {
+              "value": "notThisString"
+            }
+          }
+        ]
+      },
+      value: val
+    });
   }
 
 

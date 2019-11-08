@@ -985,7 +985,7 @@ describe('GET /', function () {
 
   });
 
-  describe('FHIR resource operations on the server', function () {
+  fdescribe('FHIR resource operations on the server', function () {
     // Note - The tests in this block are in an order. Any changes to
     // a test suite could impact the following assertions.
 
@@ -998,7 +998,7 @@ describe('GET /', function () {
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
-    it('should create', function () {
+    fit('should create', function () {
       fb.exportMenu.click();
       expect(fb.updateFhir.isEnabled()).toBeFalsy();
       fb.dismissMenu();
@@ -1009,7 +1009,7 @@ describe('GET /', function () {
 
     });
 
-    it('should read', function () {
+    fit('should read', function () {
       assertImportFromFhir(newTitle);
     });
 

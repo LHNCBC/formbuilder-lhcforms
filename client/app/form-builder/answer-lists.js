@@ -275,10 +275,6 @@ var answerLists = {
     {
       "text": "TOTAL SCORE",
       "code": "TOTALSCORE"
-    },
-    {
-      "text": "BMI",
-      "code": "BMI"
     }
   ],
   "dataType": [
@@ -392,6 +388,35 @@ var answerLists = {
       "code": "unknown",
       "text": "Unknown"
     },
+  ],
 
+  "itemType": [
+    {
+      "code": "question",
+      "text": "Question"
+    },
+    {
+      "code": "group",
+      "text": "Group"
+    },
+    {
+      "code": "display",
+      "text": "Display"
+    },
+    {
+      "code": "TOTALSCORE",
+      "text": "TOTAL SCORE"
+    },
+    {
+      "code": "calculatedExpression",
+      "text": "FHIRPath calculated expression"
+    }
+  ],
+
+  "expressionLanguage": [
+    {
+      "code": "text/fhirpath",
+      "text": "FHIRPath"
+    }
   ]
 };

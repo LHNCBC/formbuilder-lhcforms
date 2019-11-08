@@ -63,7 +63,8 @@
   },
   "devDependencies": {
     "angular-mocks": "1.5.x",
-    "angular-scenario": "1.5.x"
+    "angular-scenario": "1.5.x",
+    "karma-read-json": "^1.1.0"
   },
   "appPath": "client",
   "resolutions": {

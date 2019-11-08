@@ -70,10 +70,12 @@ module.exports = function(config) {
       'client/bower_components/lforms/app/scripts/fhir/STU3/lformsFHIR.js',
       'client/bower_components/lforms/app/scripts/fhir/R4/lformsFHIR.js',
       'client/bower_components/angular-mocks/angular-mocks.js',
+      'client/bower_components/karma-read-json/karma-read-json.js',
 
       'client/app/**/*.js',
       'client/app/**/*.html',
-      'test/client/**/*.js'
+      'test/client/**/*.js',
+      {pattern: 'test/client/fixtures/*.json', watched: true, served: true, included: false}
     ],
 
     preprocessors: {
