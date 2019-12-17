@@ -493,11 +493,14 @@ describe('GET /', function () {
       fb.continueButton.click();
 
       fb.exportMenu.click();
+      var EC = protractor.ExpectedConditions;
+      browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
       fb.exportToFile.click();
       fb.exportFileFHIRFormatR4.click();
       fb.continueButton.click();
 
       fb.exportMenu.click();
+      browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
       fb.exportToFile.click();
       fb.exportFileFHIRFormatSTU3.click();
       fb.continueButton.click();
