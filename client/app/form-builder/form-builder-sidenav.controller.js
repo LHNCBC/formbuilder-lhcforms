@@ -138,7 +138,7 @@
             $scope.changeThisAndAncestralCustomCodes($scope.selectedNode);
             $scope.selectedNode.isDirty = false;
           }
-          formBuilderService.processNodeTree($scope.formBuilderData.treeData[0].nodes);
+          formBuilderService.processNodeTree($scope.formBuilderData.treeData[0].nodes, $scope.selectedNode);
         }
 
         // Select new node
