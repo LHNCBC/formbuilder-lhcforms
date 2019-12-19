@@ -1006,18 +1006,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @returns {[]} - Two element array with node list as first one and path as second
    * @private
    */
-  function _getFollowingNodeListAndItsPath(rootArray, targetNode) {
+  function _getSiblingNodesAndItsParentPath(rootArray, targetNode) {
     var ret = rootArray;
     var initialPath = [];
     if(targetNode && targetNode.id) {
       var parentNode = _getParentNode(rootArray, targetNode);
-      var targetIndex = parseInt(targetNode.id.match('\\.?([0-9]+)$')) - 1;
       if(parentNode) {
         initialPath = parentNode.id.split('.');
-        ret = parentNode.nodes.slice(targetIndex);
-      }
-      else {
-        ret = rootArray.slice(targetIndex);
+        ret = parentNode.nodes;
       }
     }
 
@@ -1032,7 +1028,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    *
    */
   this.processNodeTree = function(rootArray, targetNode) {
-    var nodeListAndPath = _getFollowingNodeListAndItsPath(rootArray, targetNode);
+    var nodeListAndPath = _getSiblingNodesAndItsParentPath(rootArray, targetNode);
     var nodeList = nodeListAndPath[0];
     var initialPath = nodeListAndPath[1];
 
