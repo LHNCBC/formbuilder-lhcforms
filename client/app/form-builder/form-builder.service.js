@@ -24,6 +24,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     },
     "previewItemData": null,
     "isDirty": false,
+    "skipLogicDirty": false,
     nodes: []
   };
 
@@ -852,12 +853,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   };
 
 
-  this.adjustFieldsToImportedLoinc = function (LOINCPanel) {
-    renameKey(LOINCPanel, 'code', 'questionCode');
-    renameKey(LOINCPanel, 'name', 'question');
-    renameKey(LOINCPanel, 'type', 'questionCodeSystem');
+  /**
+   * Change lforms form to lforms item (header).
+   *
+   * @param lForm - lforms form
+   */
+  this.adjustFieldsInImportedLoinc = function (lForm) {
+    renameKey(lForm, 'code', 'questionCode');
+    renameKey(lForm, 'name', 'question');
+    renameKey(lForm, 'type', 'questionCodeSystem');
+    lForm.header = true;
 
-    walkRecursiveTree(LOINCPanel, 'items', function (item) {
+    walkRecursiveTree(lForm, 'items', function (item) {
       if(!item.questionCodeSystem) {
         item.questionCodeSystem = dataConstants.LOINC;
       }
@@ -976,13 +983,62 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
+   * Get parent node of a given node
+   *
+   * @param rootArray - Top level array of the tree.
+   * @param targetNode - Whose parent is sought.
+   * @returns {object} - Parent node of targetNode.
+   * @private
+   */
+  function _getParentNode(rootArray, targetNode) {
+    var paths = targetNode.id.split('.');
+    paths.pop(); // Discard self index.
+    var pathIndexes = paths.map(function(el){return (parseInt(el) - 1);});
+    var arr = rootArray;
+    var parent = null;
+    for(var i = 0; i < pathIndexes.length; i++) {
+      parent = arr[pathIndexes[i]];
+      arr = parent.nodes;
+    }
+    return parent;
+  }
+
+
+  /**
+   * Get siblings of target and their (common) path.
+   *
+   * @param rootArray - Top level array of the tree.
+   * @param targetNode - Target node
+   * @returns {[]} - Two element array with node list as first one and path as second
+   * @private
+   */
+  function _getSiblingNodesAndItsParentPath(rootArray, targetNode) {
+    var ret = rootArray;
+    var initialPath = [];
+    if(targetNode && targetNode.id) {
+      var parentNode = _getParentNode(rootArray, targetNode);
+      if(parentNode) {
+        initialPath = parentNode.id.split('.');
+        ret = parentNode.nodes;
+      }
+    }
+
+    return [ret, initialPath];
+  }
+
+
+  /**
    * Process the tree to refresh sources of skip logic and data control etc.
    *
    * @param rootArray {Array} - Array of top level nodes in the tree.
    *
    */
-  this.processNodeTree = function(rootArray) {
-    traverseNodeTree(rootArray, function (node, path) {
+  this.processNodeTree = function(rootArray, targetNode) {
+    var nodeListAndPath = _getSiblingNodesAndItsParentPath(rootArray, targetNode);
+    var nodeList = nodeListAndPath[0];
+    var initialPath = nodeListAndPath[1];
+
+    traverseNodeTree(nodeList, function (node, path) {
       node.id = path.join('.');
       if(thisService.isNodeFbLfItem(node.lfData)) {
         var sources = thisService.getSkipLogicDataControlSources(rootArray, node);
@@ -1001,7 +1057,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         node.lfData.advanced._checkFormControls();
       }
       node.previewItemData = thisService.convertLfData(node.lfData);
-    });
+    }, initialPath);
   };
 
 
