@@ -237,6 +237,10 @@ angular.module('formBuilder')
             $scope.changeThisAndAncestralCustomCodes($scope.selectedNode);
             $scope.selectedNode.isDirty = false;
           }
+          if($scope.selectedNode.skipLogicDirty) {
+            formBuilderService.processNodeTree($scope.formBuilderData.treeData[0].nodes, $scope.selectedNode);
+            $scope.selectedNode.skipLogicDirty = false;
+          }
           $scope.selectedNode.previewItemData = formBuilderService.convertLfData($scope.selectedNode.lfData);
         }
         $scope.previewWidget();

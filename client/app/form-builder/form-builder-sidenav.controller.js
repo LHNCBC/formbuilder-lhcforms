@@ -138,7 +138,10 @@
             $scope.changeThisAndAncestralCustomCodes($scope.selectedNode);
             $scope.selectedNode.isDirty = false;
           }
-          formBuilderService.processNodeTree($scope.formBuilderData.treeData[0].nodes, $scope.selectedNode);
+          if($scope.selectedNode.skipLogicDirty) {
+            formBuilderService.processNodeTree($scope.formBuilderData.treeData[0].nodes, $scope.selectedNode);
+            $scope.selectedNode.skipLogicDirty = false;
+          }
         }
 
         // Select new node
@@ -403,7 +406,7 @@
                 return;
               }
               try {
-                formBuilderService.adjustFieldsToImportedLoinc(response);
+                formBuilderService.adjustFieldsInImportedLoinc(response);
                 updateFormBuilder(scope, response);
               }
               finally {
@@ -724,6 +727,7 @@
                   scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
                   if(newValue !== oldValue) {
                     scope.selectedNode.isDirty = true;
+                    scope.selectedNode.skipLogicDirty = true;
                   }
                 }
               }, true);
@@ -739,6 +743,10 @@
                   scope.selectedNode.lfData.basic.name = scope.selectedNode.id + ' ' +
                     scope.selectedNode.lfData.basic.itemHash['/question/1'].value + code;
                   scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
+                  if(newValue !== oldValue) {
+                    scope.selectedNode.isDirty = true;
+                    scope.selectedNode.skipLogicDirty = true;
+                  }
                 }
               }, true);
               break;
@@ -751,6 +759,7 @@
                     if(newValue.code === dataConstants.CUSTOM) {
                       scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].editable = '1';
                       scope.selectedNode.isDirty = true;
+                      scope.selectedNode.skipLogicDirty = true;
                     }
                     else if(newValue.code === dataConstants.LOINC) {
                       scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].editable = '0';
@@ -777,6 +786,7 @@
                       dataType.value = {code: 'ST'};
                     }
                     scope.selectedNode.isDirty = true;
+                    scope.selectedNode.skipLogicDirty = true;
                   }
                 }
               }, true);
@@ -798,6 +808,7 @@
 
                   if(isDirty(oldValue, newValue)) {
                     scope.selectedNode.isDirty = true;
+                    scope.selectedNode.skipLogicDirty = true;
                   }
                 }
               }, true);

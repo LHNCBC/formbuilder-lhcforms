@@ -24,6 +24,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     },
     "previewItemData": null,
     "isDirty": false,
+    "skipLogicDirty": false,
     nodes: []
   };
 
@@ -852,13 +853,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   };
 
 
-  this.adjustFieldsToImportedLoinc = function (LOINCPanel) {
-    renameKey(LOINCPanel, 'code', 'questionCode');
-    renameKey(LOINCPanel, 'name', 'question');
-    renameKey(LOINCPanel, 'type', 'questionCodeSystem');
-    LOINCPanel.header = true;
+  /**
+   * Change lforms form to lforms item (header).
+   *
+   * @param lForm - lforms form
+   */
+  this.adjustFieldsInImportedLoinc = function (lForm) {
+    renameKey(lForm, 'code', 'questionCode');
+    renameKey(lForm, 'name', 'question');
+    renameKey(lForm, 'type', 'questionCodeSystem');
+    lForm.header = true;
 
-    walkRecursiveTree(LOINCPanel, 'items', function (item) {
+    walkRecursiveTree(lForm, 'items', function (item) {
       if(!item.questionCodeSystem) {
         item.questionCodeSystem = dataConstants.LOINC;
       }
@@ -990,16 +996,16 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var pathIndexes = paths.map(function(el){return (parseInt(el) - 1);});
     var arr = rootArray;
     var parent = null;
-    pathIndexes.forEach(function(index) {
-      parent = arr[index];
+    for(var i = 0; i < pathIndexes.length; i++) {
+      parent = arr[pathIndexes[i]];
       arr = parent.nodes;
-    });
+    }
     return parent;
   }
 
 
   /**
-   * Get following siblings of target and their (common) path.
+   * Get siblings of target and their (common) path.
    *
    * @param rootArray - Top level array of the tree.
    * @param targetNode - Target node
