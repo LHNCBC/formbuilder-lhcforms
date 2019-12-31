@@ -29,8 +29,8 @@
   "language": "English",
   "url": "http://lforms-fhir.nlm.nih.gov/testQuestionnaire.html",
   "version": "q1.0",
-  "name": "Test Form",
-  "title": "Test Title",
+  "shortName": "Test Form",
+  "name": "Test Title",
   "deriveFrom": [
     "http://lforms-fhir.nlm.nih.gov/draftQuestionnaire.html"
   ],

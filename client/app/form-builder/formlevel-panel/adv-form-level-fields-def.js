@@ -1,6 +1,6 @@
 var advFormLevelFieldsDef = {
   "code": "advFormLevelFields",
-  "name": "Advanced Form Level Properties",
+  "name": "Form Attributes - Advanced",
   "templateOptions": {
     "allowHTMLInInstructions": true,
     "hideFormControls": true,
@@ -42,7 +42,7 @@ var advFormLevelFieldsDef = {
         {
           "questionCode": "expression",
           "localQuestionCode": "string",
-          "question": "Expression string",
+          "question": "FHIRPath Expression",
           "dataType": "TX",
           "header": false,
           "codingInstructions": "No syntax or semantic checks are performed. It is assumed the expression is correct. Please verify it in the preview if it is working as expected.<br/><b>FHIR type: string</b>",

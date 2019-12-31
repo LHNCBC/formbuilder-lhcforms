@@ -1,211 +1,20 @@
+/*
+Loading home page starts in this file. Make sure that this file is the first one in the order of execution.
+One way to keep the order is to have the name of this file at the top alphabetically among
+the *.spec.js files.
+ */
 'use strict';
 
 const fb = require('./formbuilder.po').formbuilder;
 const fs = require('fs');
 const path = require('path');
-
-
-/**
- * Watch a file for its content change.
- *
- * @param filename - File to watch.
- * @returns {Q.Promise<any>}
- */
-function watchFilePromise(filename) {
-  return new Promise(function(resolve, reject){
-    fs.watchFile(filename, {interval: 10}, function(curr, prev) {
-      if(curr.size > 0) {
-        fs.unwatchFile(filename);
-        resolve();
-      }
-    });
-  });
-}
-
-/**
- * Select node from sidebar tree using node title.
- *
- * @param nodeTitle
- */
-function assertNodeSelection(nodeTitle) {
-  let node = fb.questionTree.element(by.cssContainingText('div.angular-ui-tree-handle .flex-item-stretch span', nodeTitle));
-  node.click();
-  expect(fb.questionText.getAttribute('value')).toMatch(nodeTitle);
-}
-
-
-/**
- * Get json output for a given format.
- *
- * @param format - Valid strings are 'lforms', 'STU3', and 'R4'
- * @returns {Promise} - A promise which resolves to json string.
- */
-function getJSONSource(format) {
-  let formatButtonMap = {
-    lforms: fb.previewFHIRQuestionnaireLFormsRadio,
-    STU3: fb.previewFHIRQuestionnaireSTU3Radio,
-    R4: fb.previewFHIRQuestionnaireR4Radio
-  };
-
-  fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
-  formatButtonMap[format].click();
-  expect(fb.previewJsonSource.isDisplayed()).toBeTruthy();
-  return fb.previewJsonSource.getText();
-}
-
-
-/**
- * Dismiss md-dialog by clicking cancel or continue button.
- * @param toContinue {boolean} - True for continue, false for cancel.
- */
-function dismissWarning(toContinue) {
-  fb.continueButton.isPresent().then(function (present) {
-    if(present) {
-      if(toContinue) {
-        fb.dialog.element(by.buttonText('Continue')).click();
-      }
-      else {
-        fb.dialog.element(by.buttonText('Cancel')).click();
-      }
-    }
-  });
-}
-
-
-/**
- * Equivalent of invoking file dialog and entering filename.
- *
- * @param fileName - file name to import from.
- */
-function importFromFile(fileName) {
-  // Make the file input element visible, otherwise browser doesn't accept the sendKeys().
-  browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
-  fb.fileInput.sendKeys(fileName);
-  browser.executeScript('arguments[0].classList.toggle("hide")', fb.fileInput.getWebElement());
-}
-
-
-/**
- * Load lforms json from the file system.
- *
- * @param fileName {string} - The lforms json file on the disk
- * @return Promise - If resolved, it gives lforms preview source string
- */
-function loadLFormFromDisk(fileName, format) {
-  importFromFile(fileName);
-  dismissWarning(true);
-  return getJSONSource(format);
-}
-
-
-/**
- * Assert FHIR Questionnaire equality, ignoring certain fields.
- *
- * @param actual - Actual FHIR Questionnaire instance
- * @param expected -  Expected FHIR Questionnaire instance
- */
-function assertFHIRQuestionnaire(actual, expected) {
-  // Date is not supported in lforms, and it is created every time there is a conversion. Remove them for now.
-  const ignoreFields = ['date'];
-  [actual, expected].forEach(function(q) {
-    ignoreFields.forEach(function (field) {
-      if(q[field]) {
-        delete q[field];
-      }
-    })
-  });
-
-  expect(actual).toEqual(expected);
-}
-/**
- * Assert expected count of items from autocomplete list
- * @param count
- */
-function assertAnswerListCount(count) {
-  expect(fb.answerListResults.isDisplayed()).toBeTruthy();
-  fb.answerListResults.then(function(list) {
-    expect(list.length).toBe(count);
-  });
-}
-
-
-/**
- * Select a resource from FHIR results dialog and load it into form builder.
- *
- * @param partialResourceTitle - A string to identify an item from the list of results.
- */
-function assertImportFromFhir(partialResourceTitle) {
-  fb.cleanupSideBar();
-  fb.formNode.click();
-  fb.formTitle.clear();
-  fb.importMenu.click();
-  fb.showFhirResources.click();
-  expect(fb.dialog.isDisplayed()).toBeTruthy();
-  fb.fhirResultItem(partialResourceTitle).click();
-  dismissWarning(true); // Accept replacement, should load the form.
-  expect(fb.firstNode.isDisplayed()).toBeTruthy();
-  fb.formTitle.getAttribute('value').then(function (text) {
-    expect(text).toBe(partialResourceTitle);
-  });
-}
-
-
-/**
- * Create fhir resource with a given resource title on a given FHIR server
- * specified by partial name of the server.
- *
- * @param resourceTitle - Resource title aka form name.
- * @param partialFhirServerName - Partial name of the server to pick the server
- * from the server list. If more than one match, first match is picked.
- */
-function assertCreateFhirResource(resourceTitle, partialFhirServerName) {
-  fb.formNode.click();
-  fb.formTitle.clear();
-  fb.formTitle.sendKeys(resourceTitle);
-
-  fb.exportMenu.click();
-  fb.createFhir.click();
-  let fhirServerElement = fb.fhirServerList.filter(function(elem, index) {
-    return elem.getText().then(function (text) {
-      return text.includes(partialFhirServerName);
-    });
-  }).first();
-  expect(fhirServerElement.isDisplayed()).toBeTruthy();
-  fhirServerElement.click();
-  fb.continueButton.click();
-  expect(fb.fhirResponse.isDisplayed()).toBeTruthy();
-  fb.fhirResponse.getText().then(function(text){
-    let createdResource = JSON.parse(text);
-    expect(createdResource.resourceType).toBe('Questionnaire');
-    expect(createdResource.id).toMatch(/^\d+$/);
-  });
-  fb.closeDialog();
-}
-
-
-/**
- * Get the delete button of the resource item specified by its title.
- *
- * @param resourceTitle - Resource title
- * @param partialFhirServerName - Partial string of the server's name.
- * @returns {*} Protractor's ElementFinder
- */
-function getFhirResourceDeleteElement(resourceTitle, partialFhirServerName) {
-  fb.importMenu.click();
-  fb.showFhirResources.click();
-  expect(fb.dialog.isDisplayed()).toBeTruthy();
-  fb.fhirServerPulldownSelect(partialFhirServerName).click();
-  let resultItem = fb.fhirResultItem(resourceTitle);
-  return resultItem.element(by.css('button.md-secondary[aria-label="Delete this resource"]'));
-}
+const util = require('./test-util');
 
 describe('GET /', function () {
 
 
   beforeAll(function () {
-    setAngularSite(true);
-    browser.get('/');
-    fb.termsOfUseAcceptButton.click();
+    util.loadHomePageIfNotLoaded();
   });
 
   afterAll(function() {
@@ -225,8 +34,9 @@ describe('GET /', function () {
       afterEach(function () {
         // Click the cancel button if the dialog is still open
         fb.importDialogCancel.isPresent().then(function (present) {
-          if (present)
+          if (present) {
             fb.importDialogCancel.click();
+          }
         });
       });
 
@@ -293,7 +103,7 @@ describe('GET /', function () {
         fb.sendKeys(fb.searchBox, '21858-6');
         fb.searchBox.sendKeys(protractor.Key.DOWN);
         clickImportButton();
-        getJSONSource('lforms').then(function (text) {
+        util.getJSONSource('lforms').then(function (text) {
           var lforms = JSON.parse(text);
           expect(lforms.items[0].answers.length).toBe(10);
         });
@@ -306,7 +116,7 @@ describe('GET /', function () {
         fb.sendKeys(fb.searchBox, '3141-9');
         fb.searchBox.sendKeys(protractor.Key.DOWN);
         clickImportButton();
-        getJSONSource('lforms').then(function (text) {
+        util.getJSONSource('lforms').then(function (text) {
           var lforms = JSON.parse(text);
           expect(lforms.items[0].units.length).toBe(2);
           expect(lforms.items[0].units[0].name).toBe('[lb_av]');
@@ -346,7 +156,7 @@ describe('GET /', function () {
     });
 
     it('should reflect changes to question text in formbuilder title and preview widget', function() {
-      assertNodeSelection('Vital Signs Pnl');
+      util.assertNodeSelection('Vital Signs Pnl');
       expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
       // Verify widget title
       expect(fb.panelTitle.getText()).toBe('1.1 Vital Signs Pnl [34566-0]');
@@ -364,21 +174,21 @@ describe('GET /', function () {
     });
 
     it('Should reflect changes in preview widget', function () {
-      assertNodeSelection('BP device Cuff size');
+      util.assertNodeSelection('BP device Cuff size');
       expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
       expect(fb.panelTitle.getText()).toBe('1.1.3.5 BP device Cuff size [8358-4]');
       fb.previewRefreshButton.click();
       fb.previewWidgetBPDeviceCuffAnswerListEl.click();
-      assertAnswerListCount(3);
+      util.assertAnswerListCount(3);
 
       fb.scrollIntoViewAndClick(fb.answersDelButton3);
       fb.scrollIntoViewAndClick(fb.previewRefreshButton);
       fb.previewWidgetBPDeviceCuffAnswerListEl.click();
-      assertAnswerListCount(2);
+      util.assertAnswerListCount(2);
     });
 
     it('Should display/hide answer list items controlled by skip logic', function () {
-      assertNodeSelection('Heart rate');
+      util.assertNodeSelection('Heart rate');
       fb.questionType.clear();
       expect(fb.questionType.isDisplayed()).toBeTruthy();
 
@@ -390,7 +200,7 @@ describe('GET /', function () {
     });
 
     it('should search and select units', function () {
-      assertNodeSelection('BP sys');
+      util.assertNodeSelection('BP sys');
       var bpSysUnitsPath = '$.items[0].items[0].items[2].items[0].units';
 
       fb.scrollIntoViewAndClick(fb.previewJsonRefreshButton);
@@ -410,7 +220,7 @@ describe('GET /', function () {
     beforeAll(function () {
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
-      assertNodeSelection('Resp rate');
+      util.assertNodeSelection('Resp rate');
       fb.advancedEditTab.click();
       fb.useRestrictionsYes.click();
     });
@@ -438,7 +248,7 @@ describe('GET /', function () {
     });
 
     it('Should check json output for restrictions', function () {
-      getJSONSource('lforms').then(function (text) {
+      util.getJSONSource('lforms').then(function (text) {
         var previewLFData = JSON.parse(text);
         var selectedItem = previewLFData.items[0].items[0].items[1];
         expect(selectedItem.question).toBe('Resp rate');
@@ -453,7 +263,7 @@ describe('GET /', function () {
     beforeAll(function () {
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
-      assertNodeSelection('BP device Invento');
+      util.assertNodeSelection('BP device Invento');
       fb.advancedEditTab.click();
       fb.useSkipLogicYes.click();
       // Pick source with CNE type. 12th is 'BP device Cuff size'
@@ -487,7 +297,7 @@ describe('GET /', function () {
       expect(fb.previewWidgetBPDeviceModel.isDisplayed()).toBeTruthy();
       expect(fb.previewWidgetBPDeviceInvent.isPresent()).toBeFalsy();
       // Examine json output.
-      getJSONSource('lforms').then(function (text) {
+      util.getJSONSource('lforms').then(function (text) {
         var previewLFData = JSON.parse(text);
         var selectedItem = previewLFData.items[0].items[0].items[2].items[6];
         expect(selectedItem.question).toBe('BP device Inventory #');
@@ -496,7 +306,7 @@ describe('GET /', function () {
         expect(selectedItem.skipLogic.logic).toBe('ANY');
         expect(selectedItem.skipLogic.conditions.length).toBe(1);
         expect(selectedItem.skipLogic.conditions[0].source).toBe('8358-4');
-        expect(selectedItem.skipLogic.conditions[0].trigger.code).toBe('LA11162-7');
+        expect(selectedItem.skipLogic.conditions[0].trigger.value.code).toBe('LA11162-7');
       });
     });
 
@@ -536,7 +346,7 @@ describe('GET /', function () {
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
       fb.scrollIntoViewAndClick(fb.previewRefreshButton);
-      assertNodeSelection('Heart rate');
+      util.assertNodeSelection('Heart rate');
       fb.advancedEditTab.click();
       fb.useDataControlYes.click();
       // Pick source with CNE type. 1st is 'Resp rate'
@@ -581,7 +391,7 @@ describe('GET /', function () {
       expect(fb.displayControlAddColHeaders1.isPresent()).toBe(false);
 
       fb.displayControlQuestionLayoutHorizontal.click();
-      getJSONSource('lforms').then(function (text) {
+      util.getJSONSource('lforms').then(function (text) {
         var lforms = JSON.parse(text);
         expect(lforms.items[0].displayControl.questionLayout).toBe('horizontal');
       });
@@ -589,7 +399,7 @@ describe('GET /', function () {
 
     it('should test with answer layout type radio checkboxes', function () {
       // Pick non header node to work with answerLayout
-      assertNodeSelection('Inhaled O2 flow');
+      util.assertNodeSelection('Inhaled O2 flow');
       fb.advancedEditTab.click();
       fb.displayControlYes.click();
       // Question layout should be absent
@@ -600,7 +410,7 @@ describe('GET /', function () {
       expect(fb.displayControlAnswerLayoutColumns.isDisplayed()).toBeTruthy();
       fb.displayControlAnswerLayoutColumns.sendKeys('2');
 
-      getJSONSource('lforms').then(function (text) {
+      util.getJSONSource('lforms').then(function (text) {
         var lforms = JSON.parse(text);
         var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
         expect(inhaledO2ItemDisplayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
@@ -609,7 +419,7 @@ describe('GET /', function () {
     });
 
     it('Should test column list headers', function () {
-      assertNodeSelection('Inhaled O2 flow');
+      util.assertNodeSelection('Inhaled O2 flow');
       fb.advancedEditTab.click();
       fb.displayControlYes.click();
       // Should see answer layout, but not column header list
@@ -628,7 +438,7 @@ describe('GET /', function () {
       fb.displayControlAddColHeadersButton.click();
       fb.displayControlAddColHeaders2.sendKeys('test2');
 
-      getJSONSource('lforms').then(function (text) {
+      util.getJSONSource('lforms').then(function (text) {
         var lforms = JSON.parse(text);
         var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
         expect(inhaledO2ItemDisplayControl.listColHeaders.length).toBe(2);
@@ -665,15 +475,15 @@ describe('GET /', function () {
         // Make sure the browser doesn't have to rename the download.
         fs.unlinkSync(fhirFilenameSTU3);
       }
-      getJSONSource('lforms').then(function (text) {
+      util.getJSONSource('lforms').then(function (text) {
         lformsOriginalJson = JSON.parse(text);
       });
 
-      getJSONSource('R4').then(function (text) {
+      util.getJSONSource('R4').then(function (text) {
         fhirOriginalJsonR4 = JSON.parse(text);
       });
 
-      getJSONSource('STU3').then(function (text) {
+      util.getJSONSource('STU3').then(function (text) {
         fhirOriginalJsonSTU3 = JSON.parse(text);
       });
 
@@ -692,7 +502,7 @@ describe('GET /', function () {
       fb.exportFileFHIRFormatSTU3.click();
       fb.continueButton.click();
 
-      Promise.all([watchFilePromise(filename), watchFilePromise(fhirFilenameR4), watchFilePromise(fhirFilenameSTU3)]).then(function() {
+      Promise.all([util.watchFilePromise(filename), util.watchFilePromise(fhirFilenameR4), util.watchFilePromise(fhirFilenameSTU3)]).then(function() {
         done();
       }).catch(function(err) {
         done(err);
@@ -719,13 +529,13 @@ describe('GET /', function () {
 
     it('Should save FHIR Questionnaire formats to a file', function () {
       var newJson = JSON.parse(fs.readFileSync(fhirFilenameR4, {encoding: 'utf8'}));
-      assertFHIRQuestionnaire(newJson, fhirOriginalJsonR4);
+      util.assertFHIRQuestionnaire(newJson, fhirOriginalJsonR4);
       newJson = JSON.parse(fs.readFileSync(fhirFilenameSTU3, {encoding: 'utf8'}));
-      assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
+      util.assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
     });
 
     it('Should load an LForms form from disk', function (done) {
-      loadLFormFromDisk(filename, 'lforms').then(function (text) {
+      util.loadLFormFromDisk(filename, 'lforms').then(function (text) {
         var newJson = JSON.parse(text);
         // Keep the commented out code for future debugging
         // fs.writeFileSync('uploaded.json', JSON.stringify(newJson, null, 2));
@@ -739,26 +549,26 @@ describe('GET /', function () {
 
     it('Should import a form without showing replacement warning', function() {
       fb.cleanupSideBar(); // Clear any existing form items
-      importFromFile(filename);
-      assertNodeSelection('Heart rate');
+      util.importFromFile(filename);
+      util.assertNodeSelection('Heart rate');
     });
 
     it('Should import a form showing replacement warning', function() {
       fb.cleanupSideBar(); // Clear any existing form items
-      fb.basicEditTab.click();
+      fb.basicFormEditTab.click();
       fb.formTitle.clear();
       fb.formTitle.sendKeys('Edited form');
-      importFromFile(filename);
-      dismissWarning(false); // Cancel replacement, should not load the form.
+      util.importFromFile(filename);
+      util.dismissWarning(false); // Cancel replacement, should not load the form.
       expect(fb.formTitle.getAttribute('value')).toBe('Edited form'); // Same form
-      importFromFile(filename);
-      dismissWarning(true); // Accept replacement, should load the form.
+      util.importFromFile(filename);
+      util.dismissWarning(true); // Accept replacement, should load the form.
       expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
     });
 
     it('Should load an LForms form into an empty form builder', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
-      loadLFormFromDisk(filename, 'lforms').then(function (previewSrc) {
+      util.loadLFormFromDisk(filename, 'lforms').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
         expect(newJson).toEqual(lformsOriginalJson);
         done();
@@ -769,9 +579,9 @@ describe('GET /', function () {
 
     it('Should load a FHIR Questionnaire R4 form from disk', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
-      loadLFormFromDisk(fhirFilenameR4, 'R4').then(function (previewSrc) {
+      util.loadLFormFromDisk(fhirFilenameR4, 'R4').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
-        assertFHIRQuestionnaire(newJson, fhirOriginalJsonR4);
+        util.assertFHIRQuestionnaire(newJson, fhirOriginalJsonR4);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));
@@ -780,9 +590,9 @@ describe('GET /', function () {
 
     it('Should load a FHIR Questionnaire STU3 form from disk', function (done) {
       fb.cleanupSideBar(); // Clear any existing form items
-      loadLFormFromDisk(fhirFilenameSTU3, 'STU3').then(function (previewSrc) {
+      util.loadLFormFromDisk(fhirFilenameSTU3, 'STU3').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
-        assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
+        util.assertFHIRQuestionnaire(newJson, fhirOriginalJsonSTU3);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));
@@ -794,7 +604,7 @@ describe('GET /', function () {
     it('should load a file with an item having answer list and answerRequired fields', function (done) {
       let testfile = path.join(__dirname, './fixtures/lihc_consent.json');
       fb.cleanupSideBar();
-      loadLFormFromDisk(testfile, 'lforms').then(function (previewSrc) {
+      util.loadLFormFromDisk(testfile, 'lforms').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
         let originalJson = JSON.parse(fs.readFileSync(testfile, 'utf8'));
         expect(newJson.items.length).toEqual(originalJson.items.length);
@@ -815,12 +625,12 @@ describe('GET /', function () {
   describe('Loading skip logic items', function () {
     it('should load with CNE/CWE type triggers in skip logic', function (done) {
       fb.cleanupSideBar();
-      loadLFormFromDisk(path.join(__dirname, './fixtures/skiplogic-load.lforms.json'), 'lforms').then(function (text) {
-        assertNodeSelection('list site ');
+      util.loadLFormFromDisk(path.join(__dirname, './fixtures/skiplogic-load.lforms.json'), 'lforms').then(function (text) {
+        util.assertNodeSelection('list site ');
         fb.advancedEditTab.click();
         expect(fb.skipLogicConditionsSource.getAttribute('value')).toEqual('1.1.7.1. Checklist Review Guide of Symptoms');
         expect(fb.skipLogicConditionsTrigger.getAttribute('value')).toEqual('lymphadenopathy');
-        getJSONSource('lforms').then(function (source) {
+        util.getJSONSource('lforms').then(function (source) {
           let sourceJson = JSON.parse(source);
           let loadedJson = JSON.parse(text);
           expect(sourceJson).toEqual(loadedJson);
@@ -839,7 +649,8 @@ describe('GET /', function () {
     var selected = 'BP method';
 
     beforeAll(function () {
-      fb.basicEditTab.click();
+      fb.formNode.click();
+      fb.basicFormEditTab.click();
     });
 
     beforeEach(function () {
@@ -948,14 +759,14 @@ describe('GET /', function () {
       fb.prefix.click();
       fb.prefix.sendKeys('1)');
       expect(fb.prefix.getAttribute('value')).toEqual('1)');
-      getJSONSource('R4').then(function(text) {
+      util.getJSONSource('R4').then(function(text) {
         var fhirObj = JSON.parse(text);
         expect(fhirObj.item[0].prefix).toBe('1)');
       });
     });
 
     it('should output FHIR questionnaire json', function () {
-      getJSONSource('R4').then(function(text) {
+      util.getJSONSource('R4').then(function(text) {
         var fhirObj = JSON.parse(text);
         // One root level node: 1
         expect(fhirObj.item.length).toBe(1);
@@ -974,7 +785,7 @@ describe('GET /', function () {
       fb.cleanupSideBar(); // Clear any existing form items
       let phq9File = path.join(__dirname, './fixtures/phq9.json');
       let phq9 = JSON.parse(fs.readFileSync(phq9File), {encoding: 'utf8'});
-      loadLFormFromDisk(phq9File, 'R4').then(function (previewSrc) {
+      util.loadLFormFromDisk(phq9File, 'R4').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
         expect(newJson.code).toEqual(phq9.code);
         done();
@@ -985,143 +796,10 @@ describe('GET /', function () {
 
   });
 
-  fdescribe('FHIR resource operations on the server', function () {
-    // Note - The tests in this block are in an order. Any changes to
-    // a test suite could impact the following assertions.
-
-    const newTitle = 'Newly created form';
-    const updatedTitle = 'Updated form';
-    const uhnServerName = 'UHN HAPI Server - R4';
-
-    beforeAll(function () {
-      fb.cleanupSideBar();
-      fb.searchAndAddLoincPanel('vital signs pnl', 1);
-    });
-
-    fit('should create', function () {
-      fb.exportMenu.click();
-      expect(fb.updateFhir.isEnabled()).toBeFalsy();
-      fb.dismissMenu();
-      assertCreateFhirResource(newTitle, uhnServerName);
-      fb.exportMenu.click();
-      expect(fb.updateFhir.isEnabled()).toBeTruthy();
-      fb.dismissMenu();
-
-    });
-
-    fit('should read', function () {
-      assertImportFromFhir(newTitle);
-    });
-
-    // Assume there is a loaded panel
-    it('should update', function () {
-      fb.formNode.click();
-      fb.formTitle.clear();
-      fb.formTitle.sendKeys(updatedTitle);
-      fb.exportMenu.click();
-      fb.updateFhir.click();
-      expect(fb.fhirResponse.isDisplayed()).toBeTruthy();
-      fb.fhirResponse.getText().then(function(text){
-        expect(text).toBe('\"Successfully updated the resource.\"');
-      });
-
-      fb.closeDialog();
-
-      assertImportFromFhir(updatedTitle);
-    });
-
-    // Assume there is a resource on the server
-    it('should delete', function () {
-
-      fb.exportMenu.click();
-      expect(fb.updateFhir.isEnabled()).toBeTruthy();
-      fb.dismissMenu();
-
-      getFhirResourceDeleteElement(updatedTitle, uhnServerName).click();
-
-      expect(fb.fhirResponse.isDisplayed()).toBeTruthy();
-      fb.fhirResponse.getText().then(function(text){
-        var resp = JSON.parse(text);
-        expect(resp.issue[0].diagnostics).toContain('Successfully deleted 1 resource(s) in');
-      });
-      fb.closeDialog(); // fhir response
-      fb.closeDialog(); // fhir results
-
-      fb.exportMenu.click();
-      expect(fb.updateFhir.isEnabled()).toBeFalsy();
-      fb.dismissMenu();
-    });
-
-    it('should do next/previous page', function () {
-
-      fb.importMenu.click();
-      fb.showFhirResources.click();
-      expect(fb.dialog.isDisplayed()).toBeTruthy();
-      fb.fhirServerPulldownSelect(uhnServerName).click();
-
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeFalsy();
-      fb.nextButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-      fb.nextButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-      fb.nextButton.click();
-      expect(fb.nextButton.isEnabled()).toBeFalsy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-
-      fb.prevButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-      fb.prevButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-      fb.prevButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeFalsy();
-
-      fb.fhirServerPulldownSelect('UHN HAPI Server - STU3').click();
-
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeFalsy();
-      fb.nextButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-      fb.nextButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-      fb.nextButton.click();
-      expect(fb.nextButton.isEnabled()).toBeFalsy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-
-      fb.prevButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-      fb.prevButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeTruthy();
-      fb.prevButton.click();
-      expect(fb.nextButton.isEnabled()).toBeTruthy();
-      expect(fb.prevButton.isEnabled()).toBeFalsy();
-
-
-      fb.closeDialog(); // fhir results
-    });
-  });
-
   describe('Onload form warnings', function () {
 
     beforeAll(function () {
-      browser.driver.navigate().refresh();
-      browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
-        alert.accept();
-        browser.waitForAngular().then(function () {
-          fb.termsOfUseAcceptButton.click();
-        });
-      }, function (err) {
-        console.log(err);
-      });
+      util.pageRefresh();
     });
 
     it('should NOT warn refreshing the page with unedited form', function (done) {

@@ -61,14 +61,13 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "__itemType",
-            "trigger": {
-              "code": "question"
-            }
+            "trigger": {"value": {"code": "question"}}
           }
         ],
         "action": "show"
       }
     },
+    /*
     {
       // *********** Calculated expression ************************,
       "questionCode": "calculatedExpression",
@@ -80,18 +79,17 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "__itemType",
-            "trigger": {
-              "code": "calculatedExpression"
-            }
+            "trigger": {"value": {"code": "calculatedExpression"}}
           }
         ],
         "action": "show"
       }
     },
+    */
     {
       // *********** question ************************,
       "questionCode": "question",
-      "question": "Text*",
+      "question": "Item name*",
       "dataType": "ST",
       "header": false,
       //"codingInstructions": "Enter wording for question."
@@ -99,7 +97,7 @@ var formBuilderDef = {
     },
     {
       "questionCode": "questionCodeSystem",
-      "question": "Coding system",
+      "question": "Item coding system",
       "dataType": "CNE",
       "answers": "questionCodeSystem",
       "header": false,
@@ -117,7 +115,7 @@ var formBuilderDef = {
     {
       // *********** questionCode ************************,
       "questionCode": "questionCode",
-      "question": "Code*",
+      "question": "Item code*",
       "dataType": "ST",
       "header": false,
       "answerCardinality": {
@@ -147,7 +145,7 @@ var formBuilderDef = {
     {
       // *********** codingInstructions ************************,
       "questionCode": "codingInstructions",
-      "question": "Question instructions [1]",
+      "question": "Help text for the item [1]",
       "dataType": "ST",
       "header": false,
       //"codingInstructions": "Enter any explanatory text needed to help the user answer the question, such as \"Select all that apply\". Instructions will appear before the question."
@@ -167,39 +165,6 @@ var formBuilderDef = {
       }
     },
     {
-      "questionCode": "editable",
-      "question": "Editable",
-      "dataType": "CNE",
-      "header": false,
-      "answerCardinality": {
-        "min": "0",
-        "max": "1"
-      },
-      "answers": "editable",
-      "codingInstructions": "Select one of the options to determine whether user data that is entered for this question can be edited.",
-      "skipLogic": {
-        "conditions": [
-          {
-            "source": "__itemType",
-            "trigger": {
-              "code": "question"
-            }
-          }
-        ],
-        "action": "show"
-      },
-      "displayControl": {
-        "answerLayout": {
-          "type": "RADIO_CHECKBOX",
-          "columns": "1"
-        }
-      },
-      "value": {
-        "text": "Editable",
-        "code": "1"
-      }
-    },
-    {
       "questionCode": "answerRequired",
       "question": "Answer required?",
       "codingInstructions": "Choose 'Yes' to allow selection of multiple answers from the the answer list.",
@@ -214,12 +179,41 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "__itemType",
-            "trigger": {
-              "code": "question"
-            }
+            "trigger": {"value": {"code": "question"}}
           }
         ],
         "action": "show"
+      }
+    },
+    {
+      "questionCode": "editable",
+      "question": "Editable",
+      "dataType": "CNE",
+      "header": false,
+      "answerCardinality": {
+        "min": "0",
+        "max": "1"
+      },
+      "answers": "editable",
+      "codingInstructions": "Select one of the options to determine whether user data that is entered for this question can be edited.",
+      "skipLogic": {
+        "conditions": [
+          {
+            "source": "__itemType",
+            "trigger": {"value": {"code": "question"}}
+          }
+        ],
+        "action": "show"
+      },
+      "displayControl": {
+        "answerLayout": {
+          "type": "RADIO_CHECKBOX",
+          "columns": "1"
+        }
+      },
+      "value": {
+        "text": "Editable",
+        "code": "1"
       }
     },
     {
@@ -237,13 +231,17 @@ var formBuilderDef = {
           {
             "source": "dataType",
             "trigger": {
-              "code": "CNE"
+              "value": {
+                "code": "CNE"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "CWE"
+              "value": {
+                "code": "CWE"
+              }
             }
           }
         ],
@@ -305,9 +303,7 @@ var formBuilderDef = {
             "conditions": [
               {
                 "source": "other",
-                "trigger": {
-                  "code": true
-                }
+                "trigger": {"value": {"code": true}}
               }
             ],
             "action": "show"
@@ -332,13 +328,17 @@ var formBuilderDef = {
           {
             "source": "dataType",
             "trigger": {
-              "code": "CNE"
+              "value": {
+                "code": "CNE"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "CWE"
+              "value": {
+                "code": "CWE"
+              }
             }
           }
         ],
@@ -356,9 +356,7 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "__itemType",
-            "trigger": {
-              "code": "question"
-            }
+            "trigger": {"value": {"code": "question"}}
           }
         ],
         "action": "show"
@@ -381,13 +379,17 @@ var formBuilderDef = {
           {
             "source": "dataType",
             "trigger": {
-              "code": "CWE"
+              "value": {
+                "code": "CWE"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "CNE"
+              "value": {
+                "code": "CNE"
+              }
             }
           }
         ],
@@ -415,19 +417,25 @@ var formBuilderDef = {
           {
             "source": "dataType",
             "trigger": {
-              "code": "INT"
+              "value": {
+                "code": "INT"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "REAL"
+              "value": {
+                "code": "REAL"
+              }
             }
           },
           {
             "source": "dataType",
             "trigger": {
-              "code": "RTO"
+              "value": {
+                "code": "RTO"
+              }
             }
           }
         ],
@@ -440,11 +448,11 @@ var formBuilderDef = {
         },
         "listColHeaders": ["Unit", "Name", "Guidance"]
       }
-    }/*,
+    },
     {
       // *********** formula/calculationMethod ************************,
       "questionCode": "calculationMethod",
-      "question": "Score calculation method [2]",
+      "question": "Calculation [2]",
       "dataType": "CNE",
       "header": false,
       "answers": "calculationMethod",
@@ -454,9 +462,7 @@ var formBuilderDef = {
         "conditions": [
           {
             "source": "__itemType",
-            "trigger": {
-              "code": "question"
-            }
+            "trigger": {"value": {"code": "question"}}
           }
         ],
         "action": "show"
@@ -469,8 +475,22 @@ var formBuilderDef = {
         "text": "None",
         "code": "none"
       },
-
+    },
+    {
+      "questionCode": "calculatedExpression",
+      "question": "FHIRPath calculated expression [2]",
+      "dataType": "TX",
+      "header": false,
+      "codingInstructions": "Calculated value for a question answer as determined by an FHIRPath evaluated expression. The expression is not validated for syntax or semantics. It is author's responsibility to enter correct expression.",
+      "skipLogic": {
+        "conditions": [
+          {
+            "source": "calculationMethod",
+            "trigger": {"value": {"code": "calculatedExpression"}}
+          }
+        ],
+        "action": "show"
+      }
     }
-    */
   ]
 };

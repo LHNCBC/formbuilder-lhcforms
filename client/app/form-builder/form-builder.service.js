@@ -261,6 +261,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var lfData = {};
     lfData.basic = node.lfData.basic.getFormData();
     lfData.basic.name = node.lfData.basic.name;
+    lfData.basic.shortName = node.lfData.basic.shortName;
     lfData.basic.code = node.lfData.basic.code;
     lfData.basic.type = node.lfData.basic.type;
     lfData.basic.template = node.lfData.basic.template;
@@ -270,6 +271,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       lfData.basic = new LForms.LFormsData(basicLfData);
       lfData.advanced = node.lfData.advanced.getFormData();
       lfData.advanced.name = node.lfData.advanced.name;
+      lfData.advanced.shortName = node.lfData.advanced.shortName;
       lfData.advanced.code = node.lfData.advanced.code;
       lfData.advanced.type = node.lfData.advanced.type;
       lfData.advanced.template = node.lfData.advanced.template;
@@ -555,6 +557,12 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           }
           break;
 
+        case "calculationMethod":
+          if(item.value && item.value.code === 'TOTALSCORE') {
+            ret.calculationMethod = item.value.code;
+          }
+          break;
+
         case "dataType":
           // Don't output data type for headers.
           if(!isHeader && item.value && typeof item.value.code !== 'undefined') {
@@ -605,7 +613,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           break;
 
         case "units":
-          if(dataType === 'REAL' || dataType === 'INT') {
+          if(dataType === 'REAL' || dataType === 'INT' || dataType === 'QTY') {
             var val = [];
             lodash.forEach(item.value, function(x) {
               val.push({name: x.code});
@@ -664,7 +672,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                   case 'CNE':
                     var trigger = thisService.getFormBuilderField(condition.items, 'trigger').value;
                     if(trigger) {
-                      cond.trigger = {code: trigger.code};
+                      cond.trigger = {value: {code: trigger.code}};
                     }
                     break;
 
@@ -1091,6 +1099,29 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
+   * Returns one of the strings: 'lforms' | 'R4' | 'STU3'
+   *
+   * Makes educated guess by looking at some fields in the object
+   *
+   * @param fhirOrLFormsObj {object} - JSON object representing either LForms or FHIR questionnaire.
+   * @private
+   */
+
+  this.detectVersion = function (fhirOrLFormsObj) {
+
+    var version = 'lforms';
+    if(fhirOrLFormsObj) {
+      // Presence of item in Questionnaire is optional, but presence of items implies lforms.
+      if(fhirOrLFormsObj.item || !fhirOrLFormsObj.items) { //
+        version = LForms.Util.detectFHIRVersion(fhirOrLFormsObj) || LForms.Util.guessFHIRVersion(fhirOrLFormsObj);
+      }
+    }
+
+    return version;
+  };
+
+
+  /**
    * Prune out insignificant properties from the object.
    * Insignificant properties include undefined, null, empty strings, and empty objects.
    * All numbers, booleans and dates including invalid dates are significant.
@@ -1313,22 +1344,26 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
       case "questionCodeSystem":
       case "editable":
+      case "calculationMethod":
         thisService.updateCNECWE(subItem, val);
         break;
-
+/*
       case "calculationMethod":
         if(val) {
           thisService.updateCNECWE(itemTypeField, name);
         }
         break;
-
+*/
       case "extension":
         if(val) {
           var hiddenList = val.filter(function (ext) {
             var hidden = false;
             switch (ext.url) {
               case dataConstants.calculatedExpressionUrl:
-                var calFieldName = 'calculatedExpression';
+                var calFieldName = 'calculationMethod';
+                var calMethod = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES[calFieldName].category].items, calFieldName);
+                thisService.updateCNECWE(calMethod, calFieldName);
+                calFieldName = 'calculatedExpression';
                 thisService.updateCNECWE(itemTypeField, calFieldName);
                 var calExprField = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES[calFieldName].category].items, calFieldName);
                 calExprField.value = ext.valueExpression.expression;

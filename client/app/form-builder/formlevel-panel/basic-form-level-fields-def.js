@@ -1,6 +1,6 @@
 var basicFormLevelFieldsDef = {
   "code": "basicFormLevelFields",
-  "name": "Basic Form Level Properties",
+  "name": "Form Attributes - Basic",
   "templateOptions": {
     "allowHTMLInInstructions": true,
     "hideFormControls": true,
@@ -16,7 +16,7 @@ var basicFormLevelFieldsDef = {
   },
   items: [
     {
-      "questionCode": "name",
+      "questionCode": "shortName",
       "localQuestionCode": "string",
       "question": "Name",
       "dataType": "ST",
@@ -25,7 +25,7 @@ var basicFormLevelFieldsDef = {
       "header": false
     },
     {
-      "questionCode": "title",
+      "questionCode": "name",
       "localQuestionCode": "string",
       "question": "Title",
       "dataType": "ST",

@@ -273,8 +273,12 @@ var answerLists = {
       "code": "none"
     },
     {
-      "text": "TOTAL SCORE",
+      "text": "Score calculation",
       "code": "TOTALSCORE"
+    },
+    {
+      "text": "FHIRPath calculated expression",
+      "code": "calculatedExpression"
     }
   ],
   "dataType": [
@@ -317,6 +321,10 @@ var answerLists = {
     {
       "text": "Phone",
       "code": "PHONE"
+    },
+    {
+      "text": "Quantity",
+      "code": "QTY"
     },
     {
       "text": "Ratio",
@@ -402,7 +410,7 @@ var answerLists = {
     {
       "code": "display",
       "text": "Display"
-    },
+    }/*,
     {
       "code": "TOTALSCORE",
       "text": "TOTAL SCORE"
@@ -411,12 +419,6 @@ var answerLists = {
       "code": "calculatedExpression",
       "text": "FHIRPath calculated expression"
     }
+    */
   ],
-
-  "expressionLanguage": [
-    {
-      "code": "text/fhirpath",
-      "text": "FHIRPath"
-    }
-  ]
 };
