@@ -493,11 +493,14 @@ describe('GET /', function () {
       fb.continueButton.click();
 
       fb.exportMenu.click();
+      var EC = protractor.ExpectedConditions;
+      browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
       fb.exportToFile.click();
       fb.exportFileFHIRFormatR4.click();
       fb.continueButton.click();
 
       fb.exportMenu.click();
+      browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
       fb.exportToFile.click();
       fb.exportFileFHIRFormatSTU3.click();
       fb.continueButton.click();
@@ -796,10 +799,66 @@ describe('GET /', function () {
 
   });
 
+  describe('Calculated expression', function() {
+    beforeEach(function(){
+      let phq9File = path.join(__dirname, './fixtures/phq9.json');
+      util.loadLFormFromDisk(phq9File, 'R4');
+    });
+
+    it('Should reflect changes of fhir variable in calculated expression', function(done) {
+      fb.previewRefreshButton.click();
+      fb.autoCompSelect(element(by.id('/44250-9/1')), 2);
+      fb.autoCompSelect(element(by.id('/44255-8/1')), 2);
+      var calExpField = element(by.id('/44261-6/1'));
+      expect(calExpField.getAttribute('value')).toBe('2');
+      util.assertNodeSelection('Patient health ');
+      //util.assertNodeSelection('Little interest ');
+      fb.advancedEditTab.click();
+      var variable2 = element(by.id('/_fhirVariables/expression/3/1'));
+      variable2.getAttribute('value').then(function(val) {
+        expect(val).toBeDefined();
+        variable2.clear();
+        fb.sendString(variable2, val+'*100');
+        fb.previewRefreshButton.click();
+        fb.autoCompSelect(element(by.id('/44250-9/1')), 2);
+        fb.autoCompSelect(element(by.id('/44255-8/1')), 2);
+        // Again, check calculated expression result
+        expect(calExpField.getAttribute('value')).toBe('101');
+        done();
+      }, done);
+    });
+
+    it('Should reflect change of answer item score in calculated expression', function () {
+      fb.previewRefreshButton.click();
+      // In preview, select second option of first two items.
+      fb.autoCompSelect(element(by.id('/44250-9/1')), 2);
+      fb.autoCompSelect(element(by.id('/44255-8/1')), 2);
+      // Check calculated expression result
+      var calExpField = element(by.id('/44261-6/1'));
+      expect(calExpField.getAttribute('value')).toBe('2');
+      // Edit the score of the second option of the first item.
+      util.assertNodeSelection('Little interest ');
+      fb.basicEditTab.click();
+      var score2 = element(by.id('/answers/score/2/1'));
+      expect(score2.getAttribute('value')).toBe('1');
+      score2.clear();
+      fb.sendKeys(score2, '10');
+      fb.previewRefreshButton.click();
+      fb.autoCompSelect(element(by.id('/44250-9/1')), 2);
+      fb.autoCompSelect(element(by.id('/44255-8/1')), 2);
+      // Again, check calculated expression result
+      expect(calExpField.getAttribute('value')).toBe('11');
+    });
+  });
+
   describe('Onload form warnings', function () {
 
-    beforeAll(function () {
-      util.pageRefresh();
+    beforeAll(function (done) {
+      util.pageRefresh().then(function() {
+        done();
+      }, function (err) {
+        done(err);
+      });
     });
 
     it('should NOT warn refreshing the page with unedited form', function (done) {

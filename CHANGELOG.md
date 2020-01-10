@@ -2,6 +2,18 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.4.0]  2019-12-31
+### Changed.
+- Support FHIR calculatedExpression extension. The extension will take FHIRPath expression.
+  Validation of expression is not supported yet. The user is expected to enter a valid fhir path 
+  expression. 
+- Support FHIR display (LForms TITLE) type.
+
+## [3.3.1]  2019-12-19
+### Changed.
+- Improved performance on collection of skip logic sources.
+- Fixed a problem in conversion of lforms panel after importing from lforms-service.
+
 ## [3.3.0]  2019-10-09
 ### Added.
 - Updated lforms to support change in skip logic trigger definition.

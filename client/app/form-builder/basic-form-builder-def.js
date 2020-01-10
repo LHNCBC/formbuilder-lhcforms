@@ -67,32 +67,12 @@ var formBuilderDef = {
         "action": "show"
       }
     },
-    /*
-    {
-      // *********** Calculated expression ************************,
-      "questionCode": "calculatedExpression",
-      "question": "FHIRPath calculated expression [1]",
-      "dataType": "TX",
-      "header": false,
-      "codingInstructions": "Calculated value for a question answer as determined by an FHIRPath evaluated expression. For now, the expression is not validated. It is author's responsibility to enter correct expression.",
-      "skipLogic": {
-        "conditions": [
-          {
-            "source": "__itemType",
-            "trigger": {"value": {"code": "calculatedExpression"}}
-          }
-        ],
-        "action": "show"
-      }
-    },
-    */
     {
       // *********** question ************************,
       "questionCode": "question",
       "question": "Item name*",
       "dataType": "ST",
       "header": false,
-      //"codingInstructions": "Enter wording for question."
       "codingInstructions": "This is required: Enter the section header or question text exactly as it is displayed on your form."
     },
     {
@@ -123,7 +103,6 @@ var formBuilderDef = {
         "max": "1"
       },
       "editable": "1",
-      // "codingInstructions": "Enter a code that matches the coding system you selected; or, create your own unique code."
       "codingInstructions": "This is required: Enter the unique question code for the question or section header given in the Text field. <p>If a question or section header is not available, enter any unique identifier in square brackets, e.g., [Q1], [Q2], [H1].</p>"
     },
     {
@@ -148,7 +127,6 @@ var formBuilderDef = {
       "question": "Help text for the item [1]",
       "dataType": "ST",
       "header": false,
-      //"codingInstructions": "Enter any explanatory text needed to help the user answer the question, such as \"Select all that apply\". Instructions will appear before the question."
       "codingInstructions": "Instructions for the person completing the form on how to answer a specific item. This could include additional explanatory text that supplements the question or the number of expected responses."
     },
     // ************* repeatQuestion ***************************,
@@ -409,7 +387,6 @@ var formBuilderDef = {
         "min": "0",
         "max": "*"
       },
-      //"codingInstructions": "If using an externally defined list of answers to the question, enter the url here.",
       "codingInstructions": "Example units (e.g., #/day) are provided in a dropdown list in each field. You can use one of these if appropriate or enter other units. Units of measure are not necessary for terms with fixed answer lists or free text answers.",
       "skipLogic": {
         "logic": "ANY",
@@ -451,21 +428,33 @@ var formBuilderDef = {
     },
     {
       // *********** formula/calculationMethod ************************,
-      "questionCode": "calculationMethod",
+      "questionCode": "_calculationMethod",
       "question": "Calculation [2]",
       "dataType": "CNE",
       "header": false,
-      "answers": "calculationMethod",
-      //"codingInstructions": "Select one of the formulas from the list.",
+      "answers": "_calculationMethod",
       "codingInstructions": "Applies if siblings have answer list with scores. Contains the calculation method (formula) in human readable form, for calculating the value of any measure that is based on an algebraic or other formula.",
       "skipLogic": {
         "conditions": [
           {
             "source": "__itemType",
             "trigger": {"value": {"code": "question"}}
+          },
+          {
+            "source": "dataType",
+            "trigger": {"value": {"code": "QTY"}}
+          },
+          {
+            "source": "dataType",
+            "trigger": {"value": {"code": "REAL"}}
+          },
+          {
+            "source": "dataType",
+            "trigger": {"value": {"code": "INT"}}
           }
         ],
-        "action": "show"
+        "action": "show",
+        "logic": "ANY"
       },
       "answerCardinality": {
         "min": "0",
@@ -485,11 +474,16 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "calculationMethod",
+            "source": "__itemType",
+            "trigger": {"value": {"code": "question"}}
+          },
+          {
+            "source": "_calculationMethod",
             "trigger": {"value": {"code": "calculatedExpression"}}
           }
         ],
-        "action": "show"
+        "action": "show",
+        "logic": "ALL"
       }
     }
   ]

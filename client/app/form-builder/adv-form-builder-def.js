@@ -66,6 +66,32 @@ var advFormBuilderDef = {
       }
     },
     {
+      "questionCode": "_fhirVariables",
+      "question": "FHIR Variable",
+      "header": true,
+      "questionCardinality": {
+        "min": "1",
+        "max": "*"
+      },
+      "items": [
+        {
+          "questionCode": "name",
+          "question": "Name*",
+          "dataType": "ST"
+        },
+        {
+          "questionCode": "expression",
+          "question": "FHIR Path expression",
+          "dataType": "TX"
+        },
+        {
+          "questionCode": "description",
+          "question": "Description",
+          "dataType": "TX"
+        }
+      ]
+    },
+    {
       // ********** Use Restrictions flag **************************,
       "questionCode": "useRestrictions",
       "question": "Add restrictions",

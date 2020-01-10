@@ -47,20 +47,27 @@ module.exports = {
    */
   pageRefresh: function() {
     let deferred = protractor.promise.defer();
-    setAngularSite(true);
-    browser.driver.navigate().refresh();
+    setAngularSite(false);
+    //browser.driver.navigate().refresh();
+    browser.refresh();
     browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
+      console.log('Accepting alert popup... ');
       alert.accept();
+      setAngularSite(true);
       browser.waitForAngular().then(function () {
         fb.termsOfUseAcceptButton.click().then(function () {
           deferred.fulfill();
         }, function (err) {
-          console.log('Error refreshing the page: '+err.message);
+          console.log('Error refreshing the page (clicking terms of use button): '+err.message);
           deferred.reject(err);
         });
+      }, function (err) {
+        console.log('Error refreshing the page (waiting for angular): '+err.message);
+        deferred.reject(err);
       });
-    }, function () {
-      deferred.fulfill();
+    }, function (err) {
+      console.log('No alert found: '+err.message);
+      deferred.fulfill(); // No alert, move on
     });
 
     return deferred.promise;

@@ -230,10 +230,18 @@ angular.module('formBuilder')
     };
 
 
+    /**
+     * Update form level node with values from imported form level extension array.
+     *
+     * @param fbQuestionCode - Field code in form builder model representing an extension type.
+     * @param ImportedFormLevelFieldsObj - Object with imported form level fields
+     * @returns {*}
+     * @private
+     */
     flService._updateFromExtensions = function (fbQuestionCode, ImportedFormLevelFieldsObj) {
       var ret = null;
       switch (fbQuestionCode) {
-        case '_extVariable':
+        case '_fhirVariables':
           ret = lodash.reduce(ImportedFormLevelFieldsObj.extension, function(acc, ext) {
             if(ext.url === LForms.FHIR.R4.SDC.fhirExtVariable) {
               acc.push(ext.valueExpression);
@@ -247,11 +255,16 @@ angular.module('formBuilder')
     };
 
 
+    /**
+     * Convert internal _fhirVariables to FHIR extension format.
+     *
+     * @param lfFormData - Form level data object.
+     */
     flService.convertExtensions = function (lfFormData) {
       if(lfFormData) {
       // FHIRPath variables
-        var vars = lfFormData._extVariable;
-        delete lfFormData._extVariable;
+        var vars = lfFormData._fhirVariables;
+        delete lfFormData._fhirVariables;
         for(var i = 0; vars && i < vars.length; i++) {
           vars[i].language = 'text/fhirpath';
           if(!lfFormData.extension) {

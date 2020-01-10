@@ -13,7 +13,8 @@ var jsonpath = require('jsonpath');
  */
 var FormBuilder = function () {
   this.autoCompListItems = element.all(by.css('#searchResults li'));
-  this.questionTree = element(by.css('.angular-ui-tree > ol > li'));
+  //this.questionTree = element(by.css('.angular-ui-tree > ol > li'));
+  this.questionTree = element(by.id('tree-container-id'));
   this.addButton = element(by.id('sidebar-container')).element(by.css('button'));
   this.dialog = element.all(by.css('md-dialog')).last();
   this.importLOINCRadio = this.dialog.element(by.cssContainingText('md-radio-button', 'Import from LOINC'));
@@ -263,6 +264,21 @@ var FormBuilder = function () {
     for (var i = 0; i < repetitions; i++) {
       elem.sendKeys(stringOfKeys);
     }
+  };
+
+
+  /**
+   * Assign string to value property of elem. Typically used for input elements, where elem.sendKeys() messes up complex
+   * strings.
+   *
+   * @param {Object} elem - Such as textarea, or text input element
+   * @param {String} str - Input string
+   */
+  this.sendString = function(elem, str) {
+    this.scrollIntoView(elem);
+//    browser.executeScript('arguments[0].value = "'+str+'"', elem.getWebElement());
+    browser.executeScript('arguments[0].value = "'+str.slice(0,-1)+'"', elem.getWebElement());
+    elem.sendKeys(str.slice(-1));
   };
 
 

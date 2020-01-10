@@ -2,7 +2,7 @@
  * Answer lists to be used in form builder. The form-builder-data.js has references here
  * to include them in form builder data model.
  *
- * @type {{minCardinality: *[], maxCardinality: *[], boolean: *[], template: *[], questionCodeSystem: *[], calculationMethod: *[], dataType: *[], editable: *[], testUnits: *[], ucumUnits: *[]}}
+ * @type {{minCardinality: *[], maxCardinality: *[], boolean: *[], template: *[], questionCodeSystem: *[], _calculationMethod: *[], dataType: *[], editable: *[], testUnits: *[], ucumUnits: *[]}}
  *
  *
  */
@@ -267,7 +267,7 @@ var answerLists = {
       "code": "Custom"
     }
   ],
-  "calculationMethod": [
+  "_calculationMethod": [
     {
       "text": "None",
       "code": "none"

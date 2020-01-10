@@ -46,6 +46,7 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     CUSTOM: 'Custom',
 
     calculatedExpressionUrl: 'http://hl7.org/fhir/StructureDefinition/questionnaire-calculatedExpression',
+    fhirVariableUrl: 'http://hl7.org/fhir/StructureDefinition/variable',
 
 
     /*

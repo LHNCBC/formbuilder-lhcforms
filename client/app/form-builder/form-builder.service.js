@@ -24,6 +24,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     },
     "previewItemData": null,
     "isDirty": false,
+    "skipLogicDirty": false,
     nodes: []
   };
 
@@ -552,14 +553,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           break;
 
         case "calculatedExpression":
-          if(item.value) {
-            thisService.updateExtension(ret, thisService.createCalculatedExpression(item.value));
-          }
+          // Pass, it is handled with _calculationMethod
           break;
 
-        case "calculationMethod":
+        case "_calculationMethod":
           if(item.value && item.value.code === 'TOTALSCORE') {
             ret.calculationMethod = item.value.code;
+          }
+          else if(item.value && item.value.code === 'calculatedExpression') {
+            var calExpr = thisService.getFormBuilderField(formBuilderItems, 'calculatedExpression');
+            if(calExpr.value) {
+              thisService.addOrReplaceExtension(ret, thisService.createCalculatedExpression(calExpr.value));
+            }
           }
           break;
 
@@ -621,6 +626,28 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
             if(val.length > 0) {
               ret[attr] = val;
             }
+          }
+          break;
+
+        case "_fhirVariables":
+          ans = {
+            url: dataConstants.fhirVariableUrl,
+            valueExpression: {
+              language: 'text/fhirpath'
+            }
+          };
+          item.items.forEach(function(part) {
+            if(!!part.value) {
+              ans.valueExpression[part.questionCode] = part.value;
+            }
+          });
+
+          // I don't see variable name is as mandatory in the spec, but I think it should be.
+          if(ans.valueExpression.name) {
+            if(!ret["extension"]) {
+              ret["extension"] = [];
+            }
+            ret["extension"].push(ans);
           }
           break;
 
@@ -888,18 +915,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   };
 
 
-  this.adjustFieldsToImportedLoinc = function (LOINCForm) {
-    renameKey(LOINCForm, 'code', 'questionCode');
-    renameKey(LOINCForm, 'name', 'question');
-    renameKey(LOINCForm, 'type', 'questionCodeSystem');
+  /**
+   * Change lforms form to lforms item (header).
+   *
+   * @param lForm - lforms form
+   */
+  this.adjustFieldsInImportedLoinc = function (lForm) {
+    renameKey(lForm, 'code', 'questionCode');
+    renameKey(lForm, 'name', 'question');
+    renameKey(lForm, 'type', 'questionCodeSystem');
+    lForm.header = true;
 
-    LOINCForm.header = true;
-    // Remove unwanted fields at form level
-    delete LOINCForm.dataType;
-    delete LOINCForm.units;
-    delete LOINCForm.codingInstructions;
-
-    walkRecursiveTree(LOINCForm, 'items', function (item) {
+    walkRecursiveTree(lForm, 'items', function (item) {
       if(!item.questionCodeSystem) {
         item.questionCodeSystem = dataConstants.LOINC;
       }
@@ -1018,13 +1045,62 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
+   * Get parent node of a given node
+   *
+   * @param rootArray - Top level array of the tree.
+   * @param targetNode - Whose parent is sought.
+   * @returns {object} - Parent node of targetNode.
+   * @private
+   */
+  function _getParentNode(rootArray, targetNode) {
+    var paths = targetNode.id.split('.');
+    paths.pop(); // Discard self index.
+    var pathIndexes = paths.map(function(el){return (parseInt(el) - 1);});
+    var arr = rootArray;
+    var parent = null;
+    for(var i = 0; i < pathIndexes.length; i++) {
+      parent = arr[pathIndexes[i]];
+      arr = parent.nodes;
+    }
+    return parent;
+  }
+
+
+  /**
+   * Get siblings of target and their (common) path.
+   *
+   * @param rootArray - Top level array of the tree.
+   * @param targetNode - Target node
+   * @returns {[]} - Two element array with node list as first one and path as second
+   * @private
+   */
+  function _getSiblingNodesAndItsParentPath(rootArray, targetNode) {
+    var ret = rootArray;
+    var initialPath = [];
+    if(targetNode && targetNode.id) {
+      var parentNode = _getParentNode(rootArray, targetNode);
+      if(parentNode) {
+        initialPath = parentNode.id.split('.');
+        ret = parentNode.nodes;
+      }
+    }
+
+    return [ret, initialPath];
+  }
+
+
+  /**
    * Process the tree to refresh sources of skip logic and data control etc.
    *
    * @param rootArray {Array} - Array of top level nodes in the tree.
    *
    */
-  this.processNodeTree = function(rootArray) {
-    traverseNodeTree(rootArray, function (node, path) {
+  this.processNodeTree = function(rootArray, targetNode) {
+    var nodeListAndPath = _getSiblingNodesAndItsParentPath(rootArray, targetNode);
+    var nodeList = nodeListAndPath[0];
+    var initialPath = nodeListAndPath[1];
+
+    traverseNodeTree(nodeList, function (node, path) {
       node.id = path.join('.');
       if(thisService.isNodeFbLfItem(node.lfData)) {
         var sources = thisService.getSkipLogicDataControlSources(rootArray, node);
@@ -1043,7 +1119,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         node.lfData.advanced._checkFormControls();
       }
       node.previewItemData = thisService.convertLfData(node.lfData);
-    });
+    }, initialPath);
   };
 
 
@@ -1176,10 +1252,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
-   *
-   * @param name
-   * @param expStr
-   * @returns {*}
+   * Create calculated expression extension.
+   * @param expStr -  FHIR Path expression value
+   * @returns {*} - Extension object.
    */
   this.createCalculatedExpression = function (expStr) {
     var ret = null;
@@ -1197,8 +1272,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   };
 
 
+  /**
+   * Update the item.extension array with new extension. If the extension identified by url is already present, it will
+   * replace the element, otherwise add it to the array.
+   * @param item - item containing item.extension array.
+   * @param extensionObj - New extension object to insert.
+   */
 
-  this.updateExtension = function(item, extensionObj) {
+  this.addOrReplaceExtension = function(item, extensionObj) {
     if(extensionObj && item) {
       if(!item.extension) {
         item.extension = [];
@@ -1347,26 +1428,30 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       case "calculationMethod":
         thisService.updateCNECWE(subItem, val);
         break;
-/*
-      case "calculationMethod":
-        if(val) {
-          thisService.updateCNECWE(itemTypeField, name);
-        }
-        break;
-*/
       case "extension":
         if(val) {
+          var varExtensions = [];
           var hiddenList = val.filter(function (ext) {
             var hidden = false;
+            var calFieldName = null;
             switch (ext.url) {
               case dataConstants.calculatedExpressionUrl:
-                var calFieldName = 'calculationMethod';
+                calFieldName = '_calculationMethod';
                 var calMethod = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES[calFieldName].category].items, calFieldName);
-                thisService.updateCNECWE(calMethod, calFieldName);
                 calFieldName = 'calculatedExpression';
-                thisService.updateCNECWE(itemTypeField, calFieldName);
+                thisService.updateCNECWE(calMethod, calFieldName);
                 var calExprField = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES[calFieldName].category].items, calFieldName);
                 calExprField.value = ext.valueExpression.expression;
+                break;
+
+              case dataConstants.fhirVariableUrl:
+                if(ext.valueExpression && ext.valueExpression.language.toLowerCase() === 'text/fhirpath') {
+                  varExtensions.push(ext);
+                }
+                else {
+                  hidden = true;
+                }
+
                 break;
 
               default:
@@ -1375,6 +1460,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
             }
             return hidden;
           });
+
+          updateVariables(lfItem, varExtensions);
+
           addAsHidden(lfItem, name, hiddenList);
         }
         break;
@@ -1390,10 +1478,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       case "dataType":
         // Update item type
         var itemType = (importedItem.header || val === 'SECTION') ? 'group' :
-          (val === 'TITLE' ? 'display' :
-            (importedItem.calculationMethod ? importedItem.calculationMethod.name :
-              importedItem.calculatedExpression ? 'calculatedExpression' :
-                'question'));
+          (val === 'TITLE' ? 'display' : 'question');
         thisService.updateCNECWE(itemTypeField, itemType);
         updateDataType(subItem, importedItem, val);
         // Update hidden item
@@ -1572,6 +1657,36 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     }
 
     return ret;
+  }
+
+
+  /**
+   * Update form builder model with imported item.extension array.
+   *
+   * @param lfItem - Form builder model representing a particular node (item).
+   * @param importedExtensionsArray - extension array of the item.
+   */
+  function updateVariables(lfItem, importedExtensionsArray) {
+    var field = '_fhirVariables';
+    var indexInfo = dataConstants.INITIAL_FIELD_INDICES[field];
+    var index = thisService.getFormBuilderFieldIndex(lfItem[indexInfo.category].items, field);
+    var aListItems = null;
+    if(importedExtensionsArray && lodash.isArray(importedExtensionsArray)) {
+      aListItems = [];
+      lodash.forEach(importedExtensionsArray, function(x) {
+        if(x.valueExpression.language.toLowerCase() === 'text/fhirpath') {
+          var item = angular.copy(lfItem[indexInfo.category].items[index]);
+          item.items[0].value = x.valueExpression.name;
+          item.items[1].value = x.valueExpression.expression;
+          item.items[2].value = x.valueExpression.description;
+          aListItems.push(item);
+        }
+      });
+    }
+
+    if(aListItems && aListItems.length > 0) {
+      lfItem[indexInfo.category].items.splice.apply(lfItem[indexInfo.category].items, [index, 1].concat(aListItems));
+    }
   }
 
 
@@ -1873,11 +1988,12 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
-   * Adjust auto-complete search url for units during run time. The modified
-   * search floats the units with matching loinc property of the question
-   * to the top.
+   * Create a skip logic with impossible condition, to hide an item. This is to help preserve the unrecognized
+   * items as hidden items in the form builder.
    *
-   * @param lfData - Form builder model of the question.
+   * @param lfItem - Form builder model of the question.
+   * @param name - Un recognized field name.
+   * @param val - The field's value
    */
   function addAsHidden(lfItem, name, val) {
 

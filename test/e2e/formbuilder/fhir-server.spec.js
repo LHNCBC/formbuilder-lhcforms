@@ -14,7 +14,7 @@ describe('FHIR server interactions - ', function () {
 
   describe('Add user specified FHIR server', function () {
 
-    var testFhirUrl = 'http://hapi.fhir.org/baseR4';
+    var testFhirUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4';
     beforeEach(function () {
       hapiMock.run(browser, testFhirUrl);
     });

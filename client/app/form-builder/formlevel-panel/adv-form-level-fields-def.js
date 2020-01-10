@@ -16,7 +16,7 @@ var advFormLevelFieldsDef = {
   },
   items: [
     {
-      "questionCode": "_extVariable",
+      "questionCode": "_fhirVariables",
       "localQuestionCode": "Expression",
       "question": "FHIRPath Variable",
       "header": true,
@@ -30,7 +30,7 @@ var advFormLevelFieldsDef = {
         {
           "questionCode": "name",
           "localQuestionCode": "id",
-          "question": "Name",
+          "question": "Name*",
           "dataType": "ST",
           "header": false,
           "codingInstructions": "Name of the questionnaire-variable.<br/><b>FHIR type: id</b>",
