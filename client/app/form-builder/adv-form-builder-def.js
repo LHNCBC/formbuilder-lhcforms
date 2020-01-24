@@ -3,7 +3,7 @@
  */
 var advFormBuilderDef = {
   "type": "LOINC",
-  "code": "basicItemLevelFields",
+  "code": "advancedItemLevelFields",
   "name": "Advanced",
   "templateOptions": {
     "allowHTMLInInstructions": true,
@@ -67,7 +67,7 @@ var advFormBuilderDef = {
     },
     {
       // ********** Hidden item to indicate externallyDefined from basic widget ********,
-      "questionCode": "__itemType_",
+      "questionCode": "__itemType__",
       "question": "You should never see this!",
       "dataType": "ST",
       "header": false,
@@ -78,6 +78,62 @@ var advFormBuilderDef = {
             "value": "none"
           }
         ]
+      }
+    },
+    {
+      // *********** formula/calculationMethod ************************,
+      "questionCode": "_calculationMethod",
+      "question": "Calculation [2]",
+      "dataType": "CNE",
+      "header": false,
+      "answers": "_calculationMethod",
+      "codingInstructions": "Applies if siblings have answer list with scores. Contains the calculation method (formula) in human readable form, for calculating the value of any measure that is based on an algebraic or other formula.",
+      "skipLogic": {
+        "conditions": [
+          {
+            "source": "_dataType",
+            "trigger": {"value": "QTY"}
+          },
+          {
+            "source": "_dataType",
+            "trigger": {"value": "REAL"}
+          },
+          {
+            "source": "_dataType",
+            "trigger": {"value": "INT"}
+          }
+        ],
+        "action": "show",
+        "logic": "ANY"
+      },
+      "answerCardinality": {
+        "min": "0",
+        "max": "1"
+      },
+      "value": {
+        "text": "None",
+        "code": "none"
+      },
+    },
+    {
+      "questionCode": "calculatedExpression",
+      "question": "FHIRPath calculated expression [2]",
+      "dataType": "TX",
+      "header": false,
+      "codingInstructions": "Calculated value for a question answer as determined by an FHIRPath evaluated expression. The expression is not validated for syntax or semantics. It is author's responsibility to enter correct expression.",
+      "skipLogic": {
+        "conditions": [
+          {
+            "source": "__itemType__",
+            "trigger": {"value": "question"}
+          },
+          {
+            "source": "_calculationMethod",
+            "trigger": {"value": {"code": "calculatedExpression"}}
+          }
+        ],
+        "action": "show",
+        "logic": "ALL"
       }
     },
     {

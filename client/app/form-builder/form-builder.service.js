@@ -1390,7 +1390,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       return;
     }
 
-    var itemTypeField = thisService.getFormBuilderField(lfItem.basic.items, '__itemType');
     // Handle field specific cases.
     switch(name) {
       case "answerCardinality":
@@ -1472,7 +1471,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         var isHeader = thisService.getFormBuilderField(lfItem.advanced.items, '_isHeader');
         isHeader.value = val ? 'Yes' : 'No';
         if(val) {
-          thisService.updateCNECWE(itemTypeField, 'group');
+          setItemType(lfItem, 'group');
         }
         break;
 
@@ -1480,7 +1479,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         // Update item type
         var itemType = (importedItem.header || val === 'SECTION') ? 'group' :
           (val === 'TITLE' ? 'display' : 'question');
-        thisService.updateCNECWE(itemTypeField, itemType);
+        setItemType(lfItem, itemType);
         updateDataType(subItem, importedItem, val);
         // Update hidden item
         var dt = thisService.getFormBuilderField(lfItem.advanced.items, '_dataType');
@@ -1518,6 +1517,21 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   }
 
 
+  /**
+   * Set itemType value in basic and its hidden counterpart in advanced
+   *
+   * @param {object} lfItem - Form builder node item.
+   * @param {string} value - coded value (question|group|display)
+   *
+   */
+  function setItemType(lfItem, value) {
+    // item type field in basic
+    var itemTypeField = thisService.getFormBuilderField(lfItem.basic.items, '__itemType');
+    // Hidden item type used for skip logic in advanced tab.
+    var hiddenItemTypeField = thisService.getFormBuilderField(lfItem.advanced.items, '__itemType__');
+    thisService.updateCNECWE(itemTypeField, value);
+    hiddenItemTypeField.value = value;
+  }
   /**
    * Update formbuilder model with imported display control
    *

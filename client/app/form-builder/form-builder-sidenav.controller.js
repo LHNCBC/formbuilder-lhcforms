@@ -49,9 +49,9 @@
         multipleAnswers:    'selectedNode.lfData.basic.itemHash["/multipleAnswers/1"].value',
         defaultAnswer:      'selectedNode.lfData.basic.itemHash["/defaultAnswer/1"].value',
         units:              'selectedNode.lfData.basic.itemHash["/units/1"].value',
-        _calculationMethod: 'selectedNode.lfData.basic.itemHash["/_calculationMethod/1"].value',
 
         // Advanced tab
+        _calculationMethod: 'selectedNode.lfData.advanced.itemHash["/_calculationMethod/1"].value',
         useRestrictions:    'selectedNode.lfData.advanced.itemHash["/useRestrictions/1"].value',
         useSkipLogic:       'selectedNode.lfData.advanced.itemHash["/useSkipLogic/1"].value'
       };
@@ -776,8 +776,11 @@
                   scope.selectedNode.lfData.advanced.itemHash['/_isHeader/1'].value =
                     (newValue && newValue.code === 'group') ? 'Yes' : 'No';
 
+                  scope.selectedNode.lfData.advanced.itemHash['/__itemType__/1'].value =
+                    newValue ? newValue.code : null;
+
+
                   if (isDirty(oldValue, newValue)) {
-                    var dataType = scope.selectedNode.lfData.basic.itemHash['/dataType/1'];
                     scope.selectedNode.isDirty = true;
                     scope.selectedNode.skipLogicDirty = true;
                   }
