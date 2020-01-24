@@ -66,30 +66,19 @@ var advFormBuilderDef = {
       }
     },
     {
-      "questionCode": "_fhirVariables",
-      "question": "FHIR Variable",
-      "header": true,
-      "questionCardinality": {
-        "min": "1",
-        "max": "*"
-      },
-      "items": [
-        {
-          "questionCode": "name",
-          "question": "Name*",
-          "dataType": "ST"
-        },
-        {
-          "questionCode": "expression",
-          "question": "FHIR Path expression",
-          "dataType": "TX"
-        },
-        {
-          "questionCode": "description",
-          "question": "Description",
-          "dataType": "TX"
-        }
-      ]
+      // ********** Hidden item to indicate externallyDefined from basic widget ********,
+      "questionCode": "__itemType_",
+      "question": "You should never see this!",
+      "dataType": "ST",
+      "header": false,
+      "displayControl": {
+        "css": [
+          {
+            "name": "display",
+            "value": "none"
+          }
+        ]
+      }
     },
     {
       // ********** Use Restrictions flag **************************,
@@ -711,7 +700,32 @@ var advFormBuilderDef = {
       "dataType": "ST",
       "header": false,
       "codingInstructions": "Add any copy right notice text you wish to include for this item."
-    }
-
+    },
+    {
+      "questionCode": "_fhirVariables",
+      "question": "FHIR Variable",
+      "header": true,
+      "questionCardinality": {
+        "min": "1",
+        "max": "*"
+      },
+      "items": [
+        {
+          "questionCode": "name",
+          "question": "Name*",
+          "dataType": "ST"
+        },
+        {
+          "questionCode": "expression",
+          "question": "FHIR Path expression",
+          "dataType": "TX"
+        },
+        {
+          "questionCode": "description",
+          "question": "Description",
+          "dataType": "TX"
+        }
+      ]
+    },
   ]
 };

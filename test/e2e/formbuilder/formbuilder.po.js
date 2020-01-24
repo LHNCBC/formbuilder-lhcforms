@@ -276,7 +276,6 @@ var FormBuilder = function () {
    */
   this.sendString = function(elem, str) {
     this.scrollIntoView(elem);
-//    browser.executeScript('arguments[0].value = "'+str+'"', elem.getWebElement());
     browser.executeScript('arguments[0].value = "'+str.slice(0,-1)+'"', elem.getWebElement());
     elem.sendKeys(str.slice(-1));
   };

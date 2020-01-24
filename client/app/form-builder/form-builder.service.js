@@ -820,15 +820,16 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           }
           break;
 
+        case "extension":
+          if(item.value && ret[attr]) {
+            ret[attr] = ret[attr].concat(item.value);
+          }
+          break;
+
         default:
           // Unrecognized fields.
           if(item.value) {
-            if(attr === 'extension' && ret[attr]) {
-              ret[attr].concat(item.value);
-            }
-            else {
-              ret[attr] = item.value;
-            }
+            ret[attr] = item.value;
           }
           break;
       }
@@ -1278,7 +1279,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @param item - item containing item.extension array.
    * @param extensionObj - New extension object to insert.
    */
-
   this.addOrReplaceExtension = function(item, extensionObj) {
     if(extensionObj && item) {
       if(!item.extension) {
@@ -1293,6 +1293,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       }
     }
   };
+
 
   /**
    * Node traversal function with a callback to process each node.

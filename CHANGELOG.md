@@ -5,7 +5,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [3.4.0]  2019-12-31
 ### Changed.
 - Support FHIR calculatedExpression extension. The extension will take FHIRPath expression.
-  Validation of expression is not supported yet. The user is expected to enter a valid fhir path 
+  Validation of expression is not supported yet. The user is expected to enter a valid FHIRPath 
   expression. 
 - Support FHIR display (LForms TITLE) type.
 
