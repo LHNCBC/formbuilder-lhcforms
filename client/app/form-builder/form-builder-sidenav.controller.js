@@ -776,7 +776,7 @@
                   scope.selectedNode.lfData.advanced.itemHash['/_isHeader/1'].value =
                     (newValue && newValue.code === 'group') ? 'Yes' : 'No';
 
-                  scope.selectedNode.lfData.advanced.itemHash['/__itemType__/1'].value =
+                  scope.selectedNode.lfData.advanced.itemHash['/__itemTypeRef/1'].value =
                     newValue ? newValue.code : null;
 
 

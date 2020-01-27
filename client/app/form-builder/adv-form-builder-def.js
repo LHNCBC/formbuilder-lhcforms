@@ -67,7 +67,7 @@ var advFormBuilderDef = {
     },
     {
       // ********** Hidden item to indicate externallyDefined from basic widget ********,
-      "questionCode": "__itemType__",
+      "questionCode": "__itemTypeRef",
       "question": "You should never see this!",
       "dataType": "ST",
       "header": false,
@@ -124,7 +124,7 @@ var advFormBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "__itemType__",
+            "source": "__itemTypeRef",
             "trigger": {"value": "question"}
           },
           {

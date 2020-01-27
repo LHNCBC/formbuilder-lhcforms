@@ -1528,7 +1528,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     // item type field in basic
     var itemTypeField = thisService.getFormBuilderField(lfItem.basic.items, '__itemType');
     // Hidden item type used for skip logic in advanced tab.
-    var hiddenItemTypeField = thisService.getFormBuilderField(lfItem.advanced.items, '__itemType__');
+    var hiddenItemTypeField = thisService.getFormBuilderField(lfItem.advanced.items, '__itemTypeRef');
     thisService.updateCNECWE(itemTypeField, value);
     hiddenItemTypeField.value = value;
   }
