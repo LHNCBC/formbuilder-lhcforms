@@ -94,10 +94,10 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "start": "source bashrc.formbuilder && node ./app.js -c ./formbuilder.conf.js",
+    "start": "source ./bashrc.formbuilder && node ./app.js -c ./formbuilder.conf.js",
     "clean-install": "rm -rf ./client/bower_components && source ./bashrc.formbuilder && npm ci && source ./bashrc.formbuilder && bower install",
     "clean-test": "npm run clean-install && npm test",
-    "build": "source bashrc.formbuilder && grunt build",
+    "build": "source ./bashrc.formbuilder && grunt build",
     "clean-build": "npm run clean-install && npm run build",
     "test": "node ./node_modules/.bin/webdriver-manager update --versions.chrome  $(google-chrome --version |awk '{print $NF}') && grunt test"
   }
