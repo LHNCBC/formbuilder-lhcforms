@@ -755,7 +755,7 @@ var advFormBuilderDef = {
       "question": "Copyright Notice",
       "dataType": "ST",
       "header": false,
-      "codingInstructions": "Add any copy right notice text you wish to include for this item."
+      "codingInstructions": "Add any copyright notice text you wish to include for this item."
     },
     {
       "questionCode": "_fhirVariables",

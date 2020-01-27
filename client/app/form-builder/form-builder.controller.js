@@ -272,6 +272,7 @@ angular.module('formBuilder')
             objectUrl = urlFactory.createObjectURL(blob);
             downloadLink.setAttribute('href', objectUrl);
             downloadLink.setAttribute('download', exportFileName + '.' + answer.format + '.json');
+            // Avoid using downloadLink.click(), which will display down content in the browser.
             downloadLink.dispatchEvent(new MouseEvent('click'));
           }
         });

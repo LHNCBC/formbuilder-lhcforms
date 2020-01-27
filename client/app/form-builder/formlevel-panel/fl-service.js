@@ -231,7 +231,7 @@ angular.module('formBuilder')
 
 
     /**
-     * Update form level node with values from imported form level extension array.
+     * Get required extensions from imported form level extension array.
      *
      * @param fbQuestionCode - Field code in form builder model representing an extension type.
      * @param importedFormLevelFieldsObj - Object with imported form level fields
