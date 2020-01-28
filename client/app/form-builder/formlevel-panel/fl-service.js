@@ -258,7 +258,8 @@ angular.module('formBuilder')
 
 
     /**
-     * Convert internal _fhirVariables to FHIR extension format.
+     * Convert data collected in the form builder input fields for FHIR variables into FHIR extension objects,
+     * to be placed into the LForms form definition.
      *
      * @param lfFormData - Form level data object.
      */
