@@ -70,10 +70,12 @@ module.exports = function(config) {
       'client/bower_components/lforms/app/scripts/fhir/STU3/lformsFHIR.js',
       'client/bower_components/lforms/app/scripts/fhir/R4/lformsFHIR.js',
       'client/bower_components/angular-mocks/angular-mocks.js',
+      'client/bower_components/karma-read-json/karma-read-json.js',
 
       'client/app/**/*.js',
       'client/app/**/*.html',
-      'test/client/**/*.js'
+      'test/client/**/*.js',
+      {pattern: 'test/client/fixtures/*.json', watched: true, served: true, included: false}
     ],
 
     preprocessors: {
@@ -113,14 +115,14 @@ module.exports = function(config) {
     // - Safari (only Mac)
     // - PhantomJS
     // - IE (only Windows)
-    browsers: ['PhantomJS'],
+    browsers: ['ChromeHeadless'],
 
     reporters: ['spec'],
 
     plugins: [
       'karma-spec-reporter',
       'karma-jasmine',
-      'karma-phantomjs-launcher'
+      'karma-chrome-launcher'
     ],
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit

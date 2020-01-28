@@ -36,11 +36,11 @@
        */
       $scope.watchExpressions = {
         // Basic tab
+        __itemType:         'selectedNode.lfData.basic.itemHash["/__itemType/1"].value',
         question:           'selectedNode.lfData.basic.itemHash["/question/1"].value',
         questionCode:       'selectedNode.lfData.basic.itemHash["/questionCode/1"].value',
         questionCodeSystem: 'selectedNode.lfData.basic.itemHash["/questionCodeSystem/1"].value',
-        prefix:           'selectedNode.lfData.basic.itemHash["/prefix/1"].value',
-        header:             'selectedNode.lfData.basic.itemHash["/header/1"].value',
+        prefix:             'selectedNode.lfData.basic.itemHash["/prefix/1"].value',
         dataType:           'selectedNode.lfData.basic.itemHash["/dataType/1"].value',
         externallyDefined:  'selectedNode.lfData.basic.itemHash["/externallyDefined/1"].value',
         editable:           'selectedNode.lfData.basic.itemHash["/editable/1"].value',
@@ -49,9 +49,9 @@
         multipleAnswers:    'selectedNode.lfData.basic.itemHash["/multipleAnswers/1"].value',
         defaultAnswer:      'selectedNode.lfData.basic.itemHash["/defaultAnswer/1"].value',
         units:              'selectedNode.lfData.basic.itemHash["/units/1"].value',
-        calculationMethod:  'selectedNode.lfData.basic.itemHash["/calculationMethod/1"].value',
 
         // Advanced tab
+        _calculationMethod: 'selectedNode.lfData.advanced.itemHash["/_calculationMethod/1"].value',
         useRestrictions:    'selectedNode.lfData.advanced.itemHash["/useRestrictions/1"].value',
         useSkipLogic:       'selectedNode.lfData.advanced.itemHash["/useSkipLogic/1"].value'
       };
@@ -264,8 +264,8 @@
           newNode.lfData = formBuilderService.createLFData();
           if(scope.importLoincItem.mode === dataConstants.PANEL) {
             // Set header
-            newNode.lfData.basic.itemHash[dataConstants.HEADER_ID].value = {text: 'Yes', code: true};
-            newNode.lfData.basic.itemHash[dataConstants.DATATYPE_ID].value = {code: 'SECTION'};
+            formBuilderService.updateCNECWE(newNode.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID], 'group');
+            formBuilderService.updateCNECWE(newNode.lfData.basic.itemHash[dataConstants.DATATYPE_ID], 'SECTION');
           }
           setItemName(newNode, scope.name);
         }
@@ -329,7 +329,7 @@
           pathArray.push(index + 1);
           node.id = pathArray.join('.');
           if (node.nodes && node.nodes.length > 0) {
-            node.lfData.basic.itemHash[dataConstants.HEADER_ID].value = {text: 'Yes', code: true};
+            formBuilderService.updateCNECWE(node.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID], 'group');
             assignId(node.nodes, pathArray);
           }
           else {
@@ -769,22 +769,18 @@
               }, true);
               break;
 
-            // Watch header to toggle some advanced items.
-            case 'header':
+            // Watch item type to toggle some other fields.
+            case '__itemType':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
                 if(scope.selectedNode) {
                   scope.selectedNode.lfData.advanced.itemHash['/_isHeader/1'].value =
-                    (newValue && newValue.text) ? newValue.text : 'No';
+                    (newValue && newValue.code === 'group') ? 'Yes' : 'No';
+
+                  scope.selectedNode.lfData.advanced.itemHash['/__itemTypeRef/1'].value =
+                    newValue ? newValue.code : null;
+
 
                   if (isDirty(oldValue, newValue)) {
-                    var dataType = scope.selectedNode.lfData.basic.itemHash['/dataType/1'];
-                    if (newValue.code) {
-                      // User changed header to true, set the data type to section.
-                      dataType.value = {code: 'SECTION'};
-                    } else if(dataType.value && dataType.value.code === 'SECTION') {
-                      // Header is set to false, if data is a section, change it to default.
-                      dataType.value = {code: 'ST'};
-                    }
                     scope.selectedNode.isDirty = true;
                     scope.selectedNode.skipLogicDirty = true;
                   }

@@ -47,8 +47,8 @@ module.exports = {
    */
   pageRefresh: function() {
     let deferred = protractor.promise.defer();
-    setAngularSite(true);
-    browser.driver.navigate().refresh();
+    setAngularSite(false);
+    browser.refresh();
     browser.driver.switchTo().alert().then(function (alert) { // Accept reload if alerted.
       console.log('Accepting alert popup... ');
       alert.accept();

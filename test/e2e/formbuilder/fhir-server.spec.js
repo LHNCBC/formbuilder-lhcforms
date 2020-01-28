@@ -4,7 +4,7 @@ const fb = require('./formbuilder.po').formbuilder;
 
 const util = require('./test-util');
 
-
+const hapiMock = require('./backend-mock');
 
 describe('FHIR server interactions - ', function () {
 
@@ -13,6 +13,11 @@ describe('FHIR server interactions - ', function () {
   });
 
   describe('Add user specified FHIR server', function () {
+
+    var testFhirUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4';
+    beforeEach(function () {
+      hapiMock.run(browser, testFhirUrl);
+    });
 
     it('should recognize user entered FHIR server', function () {
       fb.exportMenu.click();
@@ -27,10 +32,10 @@ describe('FHIR server interactions - ', function () {
       fb.verifyBaseURL.click();
       expect(fb.dialog.element(by.css('p.error-message')).getText()).toBe('Failed to recognize your FHIR server');
       fb.fhirServerUrlInput.clear();
-      fb.fhirServerUrlInput.sendKeys('http://hapi.fhir.org/baseR4');
+      fb.fhirServerUrlInput.sendKeys(testFhirUrl);
       fb.verifyBaseURL.click();
       expect(fb.dialog.element(by.css('p.error-message')).getText()).toBe('');
-      expect(fb.dialog.element(by.css('p.validate-message')).getText()).toBe('http://hapi.fhir.org/baseR4 is recognized FHIR server.');
+      expect(fb.dialog.element(by.css('p.validate-message')).getText()).toBe(testFhirUrl + ' is recognized FHIR server.');
       expect(fb.verifyBaseURL.isEnabled()).toBeTruthy();
       expect(fb.addToList.isEnabled()).toBeTruthy();
       fb.closeDialog();
@@ -47,13 +52,15 @@ describe('FHIR server interactions - ', function () {
     const uhnServerName = 'http://hapi.fhir.org/baseR4';
 
     beforeAll(function () {
-      fb.basicEditTab.click();
+      fb.formNode.click();
+      fb.basicFormEditTab.click();
       fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
     afterEach(function () {
-      fb.basicEditTab.click();
+      fb.formNode.click();
+      fb.basicFormEditTab.click();
     });
 
     it('should create', function () {

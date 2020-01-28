@@ -26,7 +26,7 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     QUESTION_ID: '/question/1',
     CODING_SYSTEM_ID: '/questionCodeSystem/1',
     CODE_ID: '/questionCode/1',
-    HEADER_ID: '/header/1',
+    ITEMTYPE_ID: '/__itemType/1',
     DATATYPE_ID: '/dataType/1',
     SKIPLOGIC_ID: '/useSkipLogic/skipLogic/1/1',
     USE_SKIPLOGIC_ID: '/useSkipLogic/1',
@@ -44,6 +44,10 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     APPEND_TO_ROOT: 'APPEND_TO_ROOT',
     LOINC: 'LOINC',
     CUSTOM: 'Custom',
+
+    calculatedExpressionUrl: 'http://hl7.org/fhir/StructureDefinition/questionnaire-calculatedExpression',
+    fhirVariableUrl: 'http://hl7.org/fhir/StructureDefinition/variable',
+
 
     /*
 

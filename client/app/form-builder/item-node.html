@@ -1,5 +1,5 @@
 <div ui-tree-handle class="tree-node tree-node-content flex-container"  ng-init="_qItem = getItem(node.lfData, 'question');_codeItem = getItem(node.lfData, 'questionCode')"
-     ng-class="{active: node.id === selectedNode.id, 'panel-node': getItem(node.lfData, 'header').value.code === true}">
+     ng-class="{active: node.id === selectedNode.id, 'panel-node': getItem(node.lfData, '__itemType').value.code === 'group'}">
     <button
             ng-show="isHeaderItem(node.lfData) || node.nodes && node.nodes.length > 0"
             class="btn btn-success btn-xs" data-nodrag

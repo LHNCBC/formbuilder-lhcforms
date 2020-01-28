@@ -9,7 +9,9 @@ angular.module('formBuilder')
      */
     flService.exportFormLevelDataToLForms = function(fbFormLevelData) {
       var lfFormLevelData = flService._convertFBFormLevelItems(fbFormLevelData.basic.items);
-      return lodash.assign(lfFormLevelData, flService._convertFBFormLevelItems(fbFormLevelData.advanced.items));
+      lodash.assign(lfFormLevelData, flService._convertFBFormLevelItems(fbFormLevelData.advanced.items));
+      flService._convertVariableExtensions(lfFormLevelData);
+      return lfFormLevelData;
     };
 
 
@@ -117,10 +119,12 @@ angular.module('formBuilder')
           case 'Range':
           case 'SimpleQuantity':
           case 'UsageContext':
-            // These are complex types embedded with multiple types defined above. It will go trough an indirect recursion.
+          case 'Expression':
+            // These are complex types embedded with multiple types defined above. It will go trough
+            // an indirect recursion, i.e _convertFBFormLevelItems() calls this function again.
              var obj = flService._convertFBFormLevelItems(fbItem.items);
              if(obj && !angular.equals(obj, {})) {
-               ret = flService._convertFBFormLevelItems(fbItem.items);
+               ret = obj;
              }
             break;
 
@@ -143,6 +147,9 @@ angular.module('formBuilder')
     flService._updateFBFormLevelFields = function (fbHeaders, importedHeadersObj) {
       for(var i = 0; i < fbHeaders.length; i++) {
         var val = importedHeadersObj[fbHeaders[i].questionCode];
+        if(val === null || val === undefined) {
+          val = flService._getExtensions(fbHeaders[i].questionCode, importedHeadersObj);
+        }
         if(val !== null && val !== undefined) {
           if(flService._isAnArray(fbHeaders[i].questionCardinality)) {
             var newItems = [];
@@ -221,5 +228,57 @@ angular.module('formBuilder')
 
       return ret;
     };
+
+
+    /**
+     * Get required extensions from extension array.
+     *
+     * @param fbQuestionCode - Field code in form builder model representing an extension type.
+     * @param importedFormLevelFieldsObj - Object with imported form level fields
+     * @returns {*}
+     * @private
+     */
+    flService._getExtensions = function (fbQuestionCode, importedFormLevelFieldsObj) {
+      var ret = null;
+      switch (fbQuestionCode) {
+        case '_fhirVariables':
+          if(importedFormLevelFieldsObj.extension) {
+            ret = importedFormLevelFieldsObj.extension.reduce(importedFormLevelFieldsObj.extension, function(acc, ext) {
+              if(ext.url === LForms.FHIR.R4.SDC.fhirExtVariable) {
+                acc.push(ext.valueExpression);
+              }
+              return acc;
+            }, []);
+            ret = ret.length > 0 ? ret : null;
+          }
+          break;
+      }
+      return ret;
+    };
+
+
+    /**
+     * Convert data collected in the form builder input fields for FHIR variables into FHIR extension objects,
+     * to be placed into the LForms form definition.
+     *
+     * @param lfFormData - Form level data object.
+     */
+    flService._convertVariableExtensions = function (lfFormData) {
+      if(lfFormData) {
+        // FHIRPath variables
+        var vars = lfFormData._fhirVariables;
+        delete lfFormData._fhirVariables;
+        for(var i = 0; vars && i < vars.length; i++) {
+          vars[i].language = 'text/fhirpath';
+          if(!lfFormData.extension) {
+            lfFormData.extension = [];
+          }
+          lfFormData.extension.push({
+            url: 'http://hl7.org/fhir/StructureDefinition/variable',
+            valueExpression: vars[i]
+          });
+        }
+      }
+    }
 
   }]);

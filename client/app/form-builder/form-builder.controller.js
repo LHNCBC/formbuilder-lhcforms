@@ -272,7 +272,8 @@ angular.module('formBuilder')
             objectUrl = urlFactory.createObjectURL(blob);
             downloadLink.setAttribute('href', objectUrl);
             downloadLink.setAttribute('download', exportFileName + '.' + answer.format + '.json');
-            downloadLink.click();
+            // Avoid using downloadLink.click(), which will display down content in the browser.
+            downloadLink.dispatchEvent(new MouseEvent('click'));
           }
         });
 
@@ -599,8 +600,8 @@ angular.module('formBuilder')
       $scope.isHeaderItem = function (lfData) {
         var ret = false;
         if(formBuilderService.isNodeFbLfItem(lfData)) {
-          var indexInfo = dataConstants.INITIAL_FIELD_INDICES['header'];
-          ret = formBuilderService.getFormBuilderField(lfData[indexInfo.category].items, 'header').value.code;
+          var indexInfo = dataConstants.INITIAL_FIELD_INDICES['__itemType'];
+          ret = formBuilderService.getFormBuilderField(lfData[indexInfo.category].items, '__itemType').value.code === 'group';
         }
         return ret;
       };

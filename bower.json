@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "main": [
     "client/app/app.js",
     "client/app/config.js",
@@ -33,7 +33,7 @@
     "angular-messages": "1.7.x",
     "angular-cookies": "1.7.x",
     "angular-file-upload": "~2.3.4",
-    "angular-material": "~1.1.4",
+    "angular-material": "=1.1.4",
     "angular-material-icons": "~0.5.0",
     "angular-resource": "1.7.x",
     "angular-route": "1.7.x",
@@ -46,7 +46,7 @@
     "es5-shim": "~4.1.14",
     "bootstrap": "3.3.5",
     "json3": "3.3.2",
-    "lforms": "~20.0.0",
+    "lforms": "~20.1.2",
     "ngSmoothScroll": "~2.0.0",
     "traverse": "0.6.7",
     "angular-spinner": "~0.8.0",
@@ -63,7 +63,8 @@
   },
   "devDependencies": {
     "angular-mocks": "1.5.x",
-    "angular-scenario": "1.5.x"
+    "angular-scenario": "1.5.x",
+    "karma-read-json": "^1.1.0"
   },
   "appPath": "client",
   "resolutions": {

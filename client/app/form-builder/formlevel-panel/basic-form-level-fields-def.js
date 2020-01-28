@@ -1,6 +1,6 @@
 var basicFormLevelFieldsDef = {
   "code": "basicFormLevelFields",
-  "name": "Basic Form Level Properties",
+  "name": "Form Attributes - Basic",
   "templateOptions": {
     "allowHTMLInInstructions": true,
     "hideFormControls": true,
