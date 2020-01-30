@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [3.4.1]  2019-01-30
+### Fixed.
+- Fix import of lforms having calculationMethod field.
+
 ## [3.4.0]  2019-12-31
 ### Added.
 - Support FHIR calculatedExpression extension. The extension will take FHIRPath expression.

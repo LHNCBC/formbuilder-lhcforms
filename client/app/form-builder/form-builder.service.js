@@ -558,7 +558,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
         case "_calculationMethod":
           if(item.value && item.value.code === 'TOTALSCORE') {
-            ret.calculationMethod = item.value.code;
+            ret.calculationMethod = {name: item.value.code};
           }
           else if(item.value && item.value.code === 'calculatedExpression') {
             var calExpr = thisService.getFormBuilderField(formBuilderItems, 'calculatedExpression');
@@ -1425,9 +1425,15 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
       case "questionCodeSystem":
       case "editable":
-      case "calculationMethod":
         thisService.updateCNECWE(subItem, val);
         break;
+
+      case "calculationMethod":
+        var calFieldName = '_calculationMethod';
+        var calMethod = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES[calFieldName].category].items, calFieldName);
+        thisService.updateCNECWE(calMethod, val);
+        break;
+
       case "extension":
         if(val) {
           var varExtensions = [];
