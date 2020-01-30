@@ -757,6 +757,10 @@ describe('GET /', function () {
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
+    afterAll(function () {
+      fb.cleanupSideBar();
+    });
+
     it('should convert prefix in FHIR questionnaire json', function () {
       fb.firstNode.click();
       fb.prefix.click();
@@ -784,19 +788,52 @@ describe('GET /', function () {
       });
     });
 
-    it('Should convert form level code in FHIR questionnaire json', function (done) {
-      fb.cleanupSideBar(); // Clear any existing form items
+    it('Should convert form level code in FHIR questionnaire json', function () {
       let phq9File = path.join(__dirname, './fixtures/phq9.json');
       let phq9 = JSON.parse(fs.readFileSync(phq9File), {encoding: 'utf8'});
       util.loadLFormFromDisk(phq9File, 'R4').then(function (previewSrc) {
         var newJson = JSON.parse(previewSrc);
         expect(newJson.code).toEqual(phq9.code);
-        done();
-      }, function (err) {
-        done.fail(JSON.stringify(err));
       });
     });
 
+  });
+
+  describe('CalculationMethod', function() {
+    beforeAll(function () {
+      fb.cleanupSideBar();
+      fb.searchAndAddLoincPanel('phq9', 1);
+      util.assertNodeSelection('Patient health ');
+      fb.advancedEditTab.click();
+    });
+
+    afterAll(function () {
+      fb.cleanupSideBar();
+    });
+
+    it('Should see initial value set to TOTALSCORE', function () {
+      expect(element(by.id("/_calculationMethod/1TOTALSCORE")).isSelected()).toBe(true);
+      util.getJSONSource('lforms').then(function(text) {
+        var output = JSON.parse(text);
+        expect(output.items[0].items[9].calculationMethod).toEqual({name: 'TOTALSCORE'});
+      });
+    });
+
+    it('Should set to none', function () {
+      element(by.id("/_calculationMethod/1none")).click();
+      util.getJSONSource('lforms').then(function(text) {
+        var output = JSON.parse(text);
+        expect(output.items[0].items[9].calculationMethod).toBe(undefined);
+      });
+    });
+
+    it('Should set to TOTALSCORE again', function () {
+      element(by.id("/_calculationMethod/1TOTALSCORE")).click();
+      util.getJSONSource('lforms').then(function(text) {
+        var output = JSON.parse(text);
+        expect(output.items[0].items[9].calculationMethod).toEqual({name: 'TOTALSCORE'});
+      });
+    });
   });
 
   describe('Calculated expression', function() {
