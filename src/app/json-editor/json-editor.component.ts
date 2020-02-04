@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { JSONEditor } from '@json-editor/json-editor';
 import {HttpClient} from '@angular/common/http';
+
+const qSchema = '/assets/fhir-questionnaire.schema.json';
+const iSchema = '/assets/item.schema.json';
 
 @Component({
   selector: 'app-json-editor',
@@ -11,20 +14,25 @@ export class JsonEditorComponent implements OnInit {
   editor: JSONEditor;
   schema: any;
   editorElement: any;
+  selectedSource: string = iSchema;
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
     this.http
-      .get('/assets/fhir-questionnaire.schema.json', { responseType: 'json' })
+      .get(this.selectedSource, { responseType: 'json' })
       .subscribe(schema => {
         this.schema = schema;
         this.editorElement = document.getElementById('json-editor');
         this.editor = new JSONEditor(this.editorElement, {
           schema: this.schema,
-          ajax: true,
-          theme: 'jqueryui'
+          theme: 'jqueryui',
+          iconlib: 'bootstrap3'
         });
       });
+  }
+
+  getEditor() {
+    return this.editor;
   }
 
 }

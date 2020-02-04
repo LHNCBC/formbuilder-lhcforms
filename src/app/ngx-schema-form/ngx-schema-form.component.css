@@ -1,0 +1,20 @@
+pre{
+  padding: 02em;
+  border: solid 1px black;
+  background: #eee;
+}
+
+/** labels */
+:host /deep/ .formHelp {
+  display: block;
+  font-size: 0.7em;
+}
+
+:host /deep/ sf-form-element>div {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+:host /deep/ fieldset {
+  border:0px;
+}

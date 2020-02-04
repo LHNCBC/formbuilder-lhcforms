@@ -2,12 +2,14 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import {JsonEditorComponent} from './json-editor/json-editor.component';
 import {NgxSchemaFormComponent} from './ngx-schema-form/ngx-schema-form.component';
+import {MainContentComponent} from './main-content/main-content.component';
 
 
 const routes: Routes = [
     {path: 'json-editor', component: JsonEditorComponent},
+//  {path: 'json-editor/item', component: JsonEditorComponent},
     {path: 'ngx', component: NgxSchemaFormComponent},
-    {path: '**', component: NgxSchemaFormComponent}
+    {path: '**', component: JsonEditorComponent},
   ];
 
 @NgModule({

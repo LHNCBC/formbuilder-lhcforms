@@ -1,0 +1,7 @@
+.form-control > label {
+  font-weight: bold;
+  padding-right: 3px;
+}
+.card-container {
+  padding: 10px;
+}

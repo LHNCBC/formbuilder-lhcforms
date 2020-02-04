@@ -1,0 +1,25 @@
+@import '~angular-tree-component/dist/angular-tree-component.css';
+
+.sidenav-container {
+  height: 100%;
+}
+
+.sidenav {
+  width: 200px;
+  padding: 10px;
+}
+
+mat-sidenav-cotent {
+  padding: 10px;
+}
+
+.sidenav .mat-toolbar {
+  background: inherit;
+}
+
+.mat-toolbar.mat-primary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
