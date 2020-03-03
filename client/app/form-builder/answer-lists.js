@@ -116,7 +116,11 @@ var answerLists = {
     },
     {
       "text": "=",
-      "code": "equal"
+      "code": "value"
+    },
+    {
+      "text": "!=",
+      "code": "notEqual"
     }
   ],
   

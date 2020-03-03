@@ -712,7 +712,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                       if(temp) {
                         var op = temp.code;
                         temp = thisService.getFormBuilderField(rangeValue.items, 'rangeValue').value;
-                        if(temp) {
+                        if(typeof temp !== 'undefined' && temp !== null) {
                           rangeObj[op] = temp;
                         }
                       }
@@ -1866,11 +1866,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var fbTrigger = lodash.find(fbSkipLogicCondition.items, {questionCode: 'trigger'});
     var rangeIndex = lodash.findIndex(fbSkipLogicCondition.items, {questionCode: 'triggerRange'});
 
-    if(lfTrigger.value) {
-      // Straight value
-      fbTrigger.value = lfTrigger.value;
-    }
-    else if(lfTrigger.code) {
+    if(lfTrigger.code) {
       // For answer list
       fbTrigger.value = {code: lfTrigger.code};
     }
