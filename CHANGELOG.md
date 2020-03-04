@@ -6,7 +6,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Fixed.
 - Fixed skip logic trigger equal and not equal operators.
 ### Changed.
-- Updated lforms package. Since lforms package has a major version update, 
+- Updated lforms package to 21.0.1. Since lforms package has a major version update, 
   bumped up the major version in this package as well. 
 
 ## [3.4.1]  2019-01-30

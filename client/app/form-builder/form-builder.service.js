@@ -712,7 +712,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                       if(temp) {
                         var op = temp.code;
                         temp = thisService.getFormBuilderField(rangeValue.items, 'rangeValue').value;
-                        if(typeof temp !== 'undefined' && temp !== null) {
+                        if(temp !== undefined && temp !== null) {
                           rangeObj[op] = temp;
                         }
                       }
@@ -1871,7 +1871,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       fbTrigger.value = {code: lfTrigger.code};
     }
     else {
-      // Create range object with min/max inclusive/exclusive list.
+      // Create object with  operators as keys with corresponding values.
+      // Multiple operators are supported only for numerical sources.
       var rangeOptions = Object.keys(lfTrigger);
       var fbTriggerRanges = [];
       rangeOptions.forEach(function (opt) {
