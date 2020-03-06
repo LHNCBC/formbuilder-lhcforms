@@ -228,7 +228,7 @@ var formBuilderDef = {
       "items": [
         {
           "questionCode": "text",
-          "question": "Answer text",
+          "question": "Answer text*",
           "dataType": "ST",
           "answerCardinality": {
             "min": "1",
@@ -241,7 +241,14 @@ var formBuilderDef = {
           "questionCode": "code",
           "question": "Answer code",
           "dataType": "ST",
-          "codingInstructions": "If desired, enter a default answer code using LOINC or your own coding system.",
+          "codingInstructions": "If desired, enter an answer code.",
+          "header": false
+        },
+        {
+          "questionCode": "system",
+          "question": "Answer code system",
+          "dataType": "ST",
+          "codingInstructions": "If desired, enter a your coding system.",
           "header": false
         },
         {

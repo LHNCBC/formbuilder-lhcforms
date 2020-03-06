@@ -327,7 +327,7 @@
                       {
                         "source": "ChecklistSymptoms",
                         "trigger": {
-                          "code": "18"
+                          "value": {"code": "18"}
                         }
                       }
                     ]

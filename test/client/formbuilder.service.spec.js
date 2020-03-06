@@ -26,6 +26,32 @@ describe('formbuilder.service ', function () {
     };
   });
 
+  describe('translate skip logic', function () {
+    let previewJson;
+
+    function _changeTriggerAndLoad(trigger) {
+      let formWithSKL = readJSON('test/client/fixtures/skip-logic-trigger-cne.lforms.json');
+      formWithSKL.items[1].skipLogic.conditions[0].trigger = trigger;
+      let form = fbService.createFormBuilder(formWithSKL);
+      previewJson = fbService.transformFormBuilderToFormDef(form);
+    }
+
+    it('CNE/CWE type using code/system/text', function() {
+      const triggers = [{
+        value: {code: 'LA11849-9'}
+      }, {
+        value: {code: 'LA11850-7', system: 'http://loinc.org'}
+      }, {
+        value: {text: '2 liters/min'}
+      }];
+
+      triggers.forEach((trigger) => {
+        _changeTriggerAndLoad(trigger);
+        expect(previewJson.items[1].skipLogic.conditions[0].trigger).toEqual(trigger);
+      });
+    });
+  });
+
   it('imports questionCardinality field', function () {
     var cardinality = {min: "1", max: "*"};
     importedLFormsData.questionCardinality = cardinality;
