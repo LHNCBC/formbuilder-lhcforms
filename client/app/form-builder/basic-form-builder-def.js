@@ -248,7 +248,7 @@ var formBuilderDef = {
           "questionCode": "system",
           "question": "Answer code system",
           "dataType": "ST",
-          "codingInstructions": "If desired, enter a your coding system.",
+          "codingInstructions": "If desired, enter a codeSystem.",
           "header": false
         },
         {
