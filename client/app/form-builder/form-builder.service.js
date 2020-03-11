@@ -1912,13 +1912,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * @private
    */
   function _isObject(obj) {
-    return (
-      obj instanceof Object &&
-      !(obj instanceof Date ||
-        obj instanceof RegExp ||
-        obj instanceof Array ||
-        obj instanceof String)
-    );
+    return Object.prototype.toString.call(obj) === '[object Object]';
   }
 
   /**
