@@ -1867,7 +1867,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
-   * Update skip logic condition trigger
+   * This updates the input fields of skip logic condition trigger in formbuilder (middle panel).
    *
    * @param fbSkipLogicCondition {Object} - Form builder model of skip logic condition
    * @param lfTrigger {Object} - Lforms skip logic condition trigger object.
