@@ -699,7 +699,20 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                   case 'CNE':
                     var trigger = thisService.getFormBuilderField(condition.items, 'trigger').value;
                     if(trigger) {
-                      cond.trigger = {value: {code: trigger.code}};
+                      var val = {};
+                      if(trigger.code !== null && trigger.code !== undefined) {
+                        val.code = trigger.code;
+                        if (trigger.system) {
+                          val.system = trigger.system;
+                        }
+                      } else {
+                        // Text, only if code is absent
+                        val.text = trigger.text;
+                      }
+
+                      if(Object.keys(val).length) {
+                        cond.trigger = {value: val};
+                      }
                     }
                     break;
 
@@ -712,7 +725,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                       if(temp) {
                         var op = temp.code;
                         temp = thisService.getFormBuilderField(rangeValue.items, 'rangeValue').value;
-                        if(temp) {
+                        if(temp !== undefined && temp !== null) {
                           rangeObj[op] = temp;
                         }
                       }
@@ -1669,10 +1682,11 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
         item.items[0].value = x.text;
         item.items[1].value = x.code;
-        item.items[2].value = x.label;
-        item.items[3].value = x.score;
-        item.items[4].value = {code: !!x.other};
-        item.items[5].value = x.other;
+        item.items[2].value = x.system;
+        item.items[3].value = x.label;
+        item.items[4].value = x.score;
+        item.items[5].value = {code: !!x.other};
+        item.items[6].value = x.other;
         ret.push(item);
       });
     }
@@ -1853,7 +1867,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
 
   /**
-   * Update skip logic condition trigger
+   * This updates the input fields of skip logic condition trigger in formbuilder (middle panel).
    *
    * @param fbSkipLogicCondition {Object} - Form builder model of skip logic condition
    * @param lfTrigger {Object} - Lforms skip logic condition trigger object.
@@ -1866,16 +1880,13 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var fbTrigger = lodash.find(fbSkipLogicCondition.items, {questionCode: 'trigger'});
     var rangeIndex = lodash.findIndex(fbSkipLogicCondition.items, {questionCode: 'triggerRange'});
 
-    if(lfTrigger.value) {
-      // Straight value
+    if(_isObject(lfTrigger.value)) {
+      // It is code object for answer list
       fbTrigger.value = lfTrigger.value;
     }
-    else if(lfTrigger.code) {
-      // For answer list
-      fbTrigger.value = {code: lfTrigger.code};
-    }
     else {
-      // Create range object with min/max inclusive/exclusive list.
+      // Create object with  operators as keys with corresponding values.
+      // Multiple operators are supported only for numerical sources.
       var rangeOptions = Object.keys(lfTrigger);
       var fbTriggerRanges = [];
       rangeOptions.forEach(function (opt) {
@@ -1892,6 +1903,17 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     }
   }
 
+
+  /**
+   * Test for {} instance, i.e other than inbuilt objects like null, Date, RegExp, Array, String etc.
+   *
+   * @param obj - Object to test
+   * @returns {boolean}
+   * @private
+   */
+  function _isObject(obj) {
+    return Object.prototype.toString.call(obj) === '[object Object]';
+  }
 
   /**
    * Update restrictions.

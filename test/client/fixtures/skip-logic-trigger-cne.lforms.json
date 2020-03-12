@@ -1,0 +1,51 @@
+{
+  "name": "Test skip logic CNE/CWE type",
+  "items": [
+    {
+      "questionCode": "3151-8",
+      "dataType": "CNE",
+      "header": false,
+      "question": "Inhaled O2 flow rate",
+      "answers": [
+        {
+          "code": "LA11849-9",
+          "text": "Room air"
+        },
+        {
+          "system": "http://loinc.org",
+          "code": "LA11850-7",
+          "text": "1 liter/min"
+        },
+        {
+          "code": "LA11851-5",
+          "text": "2 liters/min"
+        },
+        {
+          "text": "3 liters/min"
+        }
+      ]
+    },
+    {
+      "questionCode": "8310-5",
+      "dataType": "REAL",
+      "header": false,
+      "question": "Body temperature",
+      "linkId": "/8310-5",
+      "skipLogic": {
+        "action": "show",
+        "logic": "ANY",
+        "conditions": [
+          {
+            "source": "3151-8",
+            "trigger": {
+              "value": {
+                "code": "LA11850-7",
+                "system": "http://loinc.org"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

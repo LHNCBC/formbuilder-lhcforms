@@ -645,6 +645,49 @@ describe('GET /', function () {
         done.fail(JSON.stringify(err));
       });
     });
+
+    it('should load with INT/REAL type (value/equal) triggers in skip logic', function (done) {
+      fb.cleanupSideBar();
+      util.loadLFormFromDisk(path.join(__dirname, './fixtures/argonaut-skip-logic-trigger-equal.json'), 'lforms').then(function (text) {
+        util.assertNodeSelection('How much time');
+        fb.advancedEditTab.click();
+        expect(fb.skipLogicConditionsSource.getAttribute('value')).toEqual('1. During the last 7 days, on how many days did you do vigorous physical activities like heavy lifting, digging, aerobics, or fast bicycling?');
+        expect(fb.skipLogicConditionsTriggerRangeRangeBoundary1equal.isSelected()).toBeTruthy();
+        expect(fb.skipLogicConditionsTriggerRangeRangeValue1.getAttribute('value')).toEqual('0');
+        util.getJSONSource('lforms').then(function (source) {
+          let sourceJson = JSON.parse(source);
+          let loadedJson = JSON.parse(text);
+          expect(sourceJson).toEqual(loadedJson);
+          done();
+        }, function (err) {
+          done.fail(JSON.stringify(err));
+        });
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+
+    it('should load with INT/REAL type (notEqual) triggers in skip logic', function (done) {
+      fb.cleanupSideBar();
+      util.loadLFormFromDisk(path.join(__dirname, './fixtures/skip-logic-trigger-not-equal.json'), 'lforms').then(function (text) {
+        util.assertNodeSelection('How much time');
+        fb.advancedEditTab.click();
+        expect(fb.skipLogicConditionsSource.getAttribute('value')).toEqual('1. During the last 7 days, on how many days did you do vigorous physical activities like heavy lifting, digging, aerobics, or fast bicycling?');
+        expect(fb.skipLogicConditionsTriggerRangeRangeBoundary1notEqual.isSelected()).toBeTruthy();
+        expect(fb.skipLogicConditionsTriggerRangeRangeValue1.getAttribute('value')).toEqual('0');
+        util.getJSONSource('lforms').then(function (source) {
+          let sourceJson = JSON.parse(source);
+          let loadedJson = JSON.parse(text);
+          expect(sourceJson).toEqual(loadedJson);
+          done();
+        }, function (err) {
+          done.fail(JSON.stringify(err));
+        });
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+
   });
 
   describe('Popup menu of an item', function () {
