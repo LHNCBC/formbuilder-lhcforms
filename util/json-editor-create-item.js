@@ -13,6 +13,8 @@ let fragment = jp(schema, '/definitions/Questionnaire_Item');
 let newDefs = {};
 let refs = new Set();
 
+let searchPaths = new Set();
+
 const removeFields = new Set([
   "contained",
   "ResourceList",
@@ -48,6 +50,8 @@ refs.forEach(function(ptr) {
 delete schema.$schema;
 delete schema.id;
 schema.type = "object"; // Add type, another z-schema quirk?
+schema.title = "Questionnaire Item";
+// schema.format = "grid";
 Object.assign(schema, fragment); // Assign the desired fragment to the root.
 // Deleting and adding moves the definitions to end of properties.
 // Seems to follow insertion order. Is that javascript spec?
@@ -76,6 +80,10 @@ addOptions(jp(schema, "/definitions/Coding/properties/id"), {hidden: true});
 addOptions(jp(schema, "/definitions/Coding/properties/version"), {hidden: true});
 addOptions(jp(schema, "/properties/definition"), {hidden: true});
 addOptions(jp(schema, "/properties/id"), {hidden: true});
+addOptions(jp(schema, "/properties/required"), {grid_columns: 3});
+addOptions(jp(schema, "/properties/readOnly"), {grid_columns: 3});
+addOptions(jp(schema, "/properties/repeats"), {grid_columns: 3});
+addOptions(jp(schema, "/properties/maxLength"), {grid_columns: 3});
 jp(schema, "/properties/required/format", "checkbox");
 jp(schema, "/properties/readOnly/format", "checkbox");
 jp(schema, "/properties/repeats/format", "checkbox");
@@ -87,10 +95,11 @@ specifyTableFormat(jp(schema, "/properties/answerOption"), 2);
 jp.remove(schema, "/properties/item");
 jp.remove(schema, "/definitions/Questionnaire_Item");
 jp.remove(schema, "/definitions/Reference/properties/identifier");
-adjustOrderOfDisplay(schema);
+// adjustOrderOfDisplay(schema);
+// addGridOptions(schema);
+arrangeLayout(schema);
 addInfoText(schema, schema);
 setSkipLogic(schema);
-schema.title = "Questionnaire Item";
 console.log(JSON.stringify(schema, null, 2)); // tslint:disable-line no-console
 
 function setSkipLogic(schema) {
@@ -127,6 +136,12 @@ function setSkipLogic(schema) {
     },
     {
       target: '/properties/answerOption',
+      conditions: [
+        {source: 'type', value: ['choice', 'open-choice']}
+      ],
+    },
+    {
+      target: '/properties/answerValueSet',
       conditions: [
         {source: 'type', value: ['choice', 'open-choice']}
       ],
@@ -273,24 +288,58 @@ function addInfoText(schema, obj) {
   }
   else if(obj['$ref']) {
     const ref = obj['$ref'].slice(1);
- //   console.log('DOing '+ref);
+ //   console.log('Doing '+ref);
     const refObj = jp(schema, ref);
-    addInfoText(schema, refObj);
+    if(!searchPaths.has(ref)) {
+      searchPaths.add(ref);
+      addInfoText(schema, refObj);
+    }
  //   console.log('Parsing '+JSON.stringify(refObj, null, 2));
+  }
+  else if(obj.type === "array" && obj.items["$ref"]) {
+    const ref = obj.items['$ref'].slice(1);
+ //   console.log('Doing '+ref);
+    const refObj = jp(schema, ref);
+    if(!searchPaths.has(ref)) {
+      searchPaths.add(ref);
+      addInfoText(schema, refObj);
+    }
   }
 }
 
-function adjustOrderOfDisplay( schemaObj ) {
+function arrangeLayout( schemaObj ) {
+  schemaObj.format = "grid";
   jp.set(schemaObj, "/properties/type/propertyOrder", 9);
-  jp.set(schemaObj, "/properties/text/propertyOrder", 10);
-  jp.set(schemaObj, "/properties/linkId/propertyOrder", 20);
-  jp.set(schemaObj, "/properties/code/propertyOrder", 30);
+  jp.set(schemaObj, "/properties/linkId/propertyOrder", 10);
+  jp.set(schemaObj, "/properties/prefix/propertyOrder", 15);
+  jp.set(schemaObj, "/properties/text/propertyOrder", 20);
+  jp.set(schemaObj, "/properties/maxLength/propertyOrder", 30);
   jp.set(schemaObj, "/properties/required/propertyOrder", 40);
   jp.set(schemaObj, "/properties/readOnly/propertyOrder", 50);
   jp.set(schemaObj, "/properties/repeats/propertyOrder", 60);
-  jp.set(schemaObj, "/properties/maxLength/propertyOrder", 70);
+  jp.set(schemaObj, "/properties/code/propertyOrder", 70);
   jp.set(schemaObj, "/properties/answerOption/propertyOrder", 80);
+  jp.set(schemaObj, "/properties/answerValueSet/propertyOrder", 85);
+  jp.set(schemaObj, "/properties/initial/propertyOrder", 90);
+  jp.set(schemaObj, "/properties/enableWhen/propertyOrder", 95);
+  jp.set(schemaObj, "/properties/enableBehavior/propertyOrder", 100);
   jp.set(schemaObj, "/definitions/Coding/properties/code/propertyOrder", 10);
   jp.set(schemaObj, "/definitions/Coding/properties/system/propertyOrder", 20);
   jp.set(schemaObj, "/definitions/Coding/properties/display/propertyOrder", 30);
+
+  addOptions(schema, {disable_collapse: true});
+  addOptions(jp(schema, "/properties/type"), {grid_columns: 4});
+  addOptions(jp(schema, "/properties/linkId"), {grid_columns: 4});
+  addOptions(jp(schema, "/properties/prefix"), {grid_columns: 4});
+  addOptions(jp(schema, "/properties/text"), {grid_columns: 12});
+  addOptions(jp(schema, "/properties/maxLength"), {grid_columns: 2});
+  addOptions(jp(schema, "/properties/required"), {grid_columns: 2});
+  addOptions(jp(schema, "/properties/readOnly"), {grid_columns: 2});
+  addOptions(jp(schema, "/properties/repeats"), {grid_columns: 2});
+  addOptions(jp(schema, "/properties/code"), {grid_columns: 12});
+  addOptions(jp(schema, "/properties/answerOption"), {grid_columns: 12});
+  addOptions(jp(schema, "/properties/answerValueSet"), {grid_columns: 12});
+  addOptions(jp(schema, "/properties/initial"), {grid_columns: 12});
+  addOptions(jp(schema, "/properties/enableWhen"), {grid_columns: 12});
+  addOptions(jp(schema, "/properties/enableBehavior"), {grid_columns: 12});
 }
