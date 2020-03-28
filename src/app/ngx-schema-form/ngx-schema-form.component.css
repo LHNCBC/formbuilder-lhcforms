@@ -1,10 +1,10 @@
+
 pre{
   padding: 02em;
   border: solid 1px black;
   background: #eee;
 }
-
-/** labels */
+ /* label */
 :host /deep/ .formHelp {
   display: block;
   font-size: 0.7em;

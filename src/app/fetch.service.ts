@@ -13,7 +13,7 @@ enum JsonFormatType {
 @Injectable({
   providedIn: 'root'
 })
-export class DataService {
+export class FetchService {
   treeOptions: ITreeOptions = {
     displayField: 'text',
    // isExpandedField: 'expanded',
@@ -53,6 +53,10 @@ export class DataService {
 
   getFormData(id: string): Observable<TreeNode> {
     return this.http.get(this.fhirUrl + '/' + id, {responseType: 'json'});
+  }
+
+  getItemEditorSchema() {
+    return this.http.get(this.assetsUrl + '/item-editor.schema.json', {responseType: 'json'});
   }
 
   getOptions() {

@@ -1,78 +1,51 @@
 {
+  "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
   "type": "object",
   "properties": {
     "id": {
-      "$ref": "#/definitions/string",
-      "title": "Id",
-      "options": {
-        "infoText": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces."
-      }
+      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+      "$ref": "#/definitions/string"
     },
     "extension": {
+      "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
       "items": {
         "$ref": "#/definitions/Extension"
       },
-      "type": "array",
-      "title": "Extension",
-      "options": {
-        "hidden": true,
-        "infoText": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension."
-      }
+      "type": "array"
     },
     "modifierExtension": {
+      "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
       "items": {
         "$ref": "#/definitions/Extension"
       },
-      "type": "array",
-      "title": "Modifier extension",
-      "options": {
-        "hidden": true,
-        "infoText": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself)."
-      }
+      "type": "array"
     },
     "linkId": {
-      "$ref": "#/definitions/string",
-      "title": "Link id",
-      "propertyOrder": 20,
-      "options": {
-        "infoText": "An identifier that is unique within the Questionnaire allowing linkage to the equivalent item in a QuestionnaireResponse resource."
-      }
+      "description": "An identifier that is unique within the Questionnaire allowing linkage to the equivalent item in a QuestionnaireResponse resource.",
+      "$ref": "#/definitions/string"
     },
     "definition": {
-      "$ref": "#/definitions/uri",
-      "title": "Definition",
-      "options": {
-        "infoText": "This element is a URI that refers to an [[[ElementDefinition]]] that provides information about this item, including information that might otherwise be included in the instance of the Questionnaire resource. A detailed description of the construction of the URI is shown in Comments, below. If this element is present then the following element values MAY be derived from the Element Definition if the corresponding elements of this Questionnaire resource instance have no value:\n\n* code (ElementDefinition.code) \n* type (ElementDefinition.type) \n* required (ElementDefinition.min) \n* repeats (ElementDefinition.max) \n* maxLength (ElementDefinition.maxLength) \n* answerValueSet (ElementDefinition.binding)\n* options (ElementDefinition.binding)."
-      }
+      "description": "This element is a URI that refers to an [[[ElementDefinition]]] that provides information about this item, including information that might otherwise be included in the instance of the Questionnaire resource. A detailed description of the construction of the URI is shown in Comments, below. If this element is present then the following element values MAY be derived from the Element Definition if the corresponding elements of this Questionnaire resource instance have no value:\n\n* code (ElementDefinition.code) \n* type (ElementDefinition.type) \n* required (ElementDefinition.min) \n* repeats (ElementDefinition.max) \n* maxLength (ElementDefinition.maxLength) \n* answerValueSet (ElementDefinition.binding)\n* options (ElementDefinition.binding).",
+      "$ref": "#/definitions/uri"
     },
     "code": {
+      "description": "A terminology code that corresponds to this group or question (e.g. a code from LOINC, which defines many questions and answers).",
       "items": {
         "$ref": "#/definitions/Coding"
       },
-      "type": "array",
-      "title": "Code",
-      "format": "table",
-      "propertyOrder": 30,
-      "options": {
-        "infoText": "A terminology code that corresponds to this group or question (e.g. a code from LOINC, which defines many questions and answers)."
-      }
+      "type": "array"
     },
     "prefix": {
-      "$ref": "#/definitions/string",
-      "title": "Prefix",
-      "options": {
-        "infoText": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire."
-      }
+      "description": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire.",
+      "$ref": "#/definitions/string"
     },
     "text": {
-      "$ref": "#/definitions/string",
-      "title": "Text",
-      "propertyOrder": 10,
-      "options": {
-        "infoText": "The name of a section, the text of a question or text content for a display item."
-      }
+      "description": "The name of a section, the text of a question or text content for a display item.",
+      "$ref": "#/definitions/string"
     },
     "type": {
+      "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.).",
+      "type": "string",
       "enum": [
         "group",
         "display",
@@ -90,99 +63,56 @@
         "attachment",
         "reference",
         "quantity"
-      ],
-      "type": "string",
-      "title": "Type",
-      "propertyOrder": 9,
-      "options": {
-        "infoText": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.)."
-      }
+      ]
     },
     "enableWhen": {
+      "description": "A constraint indicating that this item should only be enabled (displayed/allow answers to be captured) when the specified condition is true.",
       "items": {
         "$ref": "#/definitions/Questionnaire_EnableWhen"
       },
-      "type": "array",
-      "title": "Enable when",
-      "options": {
-        "infoText": "A constraint indicating that this item should only be enabled (displayed/allow answers to be captured) when the specified condition is true."
-      }
+      "type": "array"
     },
     "enableBehavior": {
+      "description": "Controls how multiple enableWhen values are interpreted -  whether all or any must be true.",
+      "type": "string",
       "enum": [
         "all",
         "any"
-      ],
-      "type": "string",
-      "title": "Enable behavior",
-      "options": {
-        "infoText": "Controls how multiple enableWhen values are interpreted -  whether all or any must be true."
-      }
+      ]
     },
     "required": {
-      "$ref": "#/definitions/boolean",
-      "title": "Required",
-      "propertyOrder": 40,
-      "options": {
-        "infoText": "An indication, if true, that the item must be present in a \"completed\" QuestionnaireResponse.  If false, the item may be skipped when answering the questionnaire."
-      }
+      "description": "An indication, if true, that the item must be present in a \"completed\" QuestionnaireResponse.  If false, the item may be skipped when answering the questionnaire.",
+      "$ref": "#/definitions/boolean"
     },
     "repeats": {
-      "$ref": "#/definitions/boolean",
-      "title": "Repeats",
-      "propertyOrder": 60,
-      "options": {
-        "infoText": "An indication, if true, that the item may occur multiple times in the response, collecting multiple answers for questions or multiple sets of answers for groups."
-      }
+      "description": "An indication, if true, that the item may occur multiple times in the response, collecting multiple answers for questions or multiple sets of answers for groups.",
+      "$ref": "#/definitions/boolean"
     },
     "readOnly": {
-      "$ref": "#/definitions/boolean",
-      "title": "Read only",
-      "propertyOrder": 50,
-      "options": {
-        "infoText": "An indication, when true, that the value cannot be changed by a human respondent to the Questionnaire."
-      }
+      "description": "An indication, when true, that the value cannot be changed by a human respondent to the Questionnaire.",
+      "$ref": "#/definitions/boolean"
     },
     "maxLength": {
-      "$ref": "#/definitions/integer",
-      "title": "Max length",
-      "propertyOrder": 70,
-      "options": {
-        "infoText": "The maximum number of characters that are permitted in the answer to be considered a \"valid\" QuestionnaireResponse.",
-        "dependencies": {
-          "type": [
-            "text",
-            "string"
-          ]
-        }
-      }
+      "description": "The maximum number of characters that are permitted in the answer to be considered a \"valid\" QuestionnaireResponse.",
+      "$ref": "#/definitions/integer"
     },
     "answerValueSet": {
-      "$ref": "#/definitions/canonical",
-      "title": "Answer value set",
-      "options": {
-        "infoText": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question."
-      }
+      "description": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question.",
+      "$ref": "#/definitions/canonical"
     },
     "answerOption": {
+      "description": "One of the permitted answers for a \"choice\" or \"open-choice\" question.",
       "items": {
         "$ref": "#/definitions/Questionnaire_AnswerOption"
       },
-      "type": "array",
-      "title": "Answer option",
-      "options": {
-        "infoText": "One of the permitted answers for a \"choice\" or \"open-choice\" question."
-      }
+      "type": "array"
     },
     "initial": {
+      "description": "One or more values that should be pre-populated in the answer when initially rendering the questionnaire for user input.",
       "items": {
         "$ref": "#/definitions/Questionnaire_Initial"
       },
-      "type": "array",
-      "title": "Initial",
-      "options": {
-        "infoText": "One or more values that should be pre-populated in the answer when initially rendering the questionnaire for user input."
-      }
+      "type": "array"
     }
   },
   "additionalProperties": false,
@@ -199,16 +129,6 @@
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
           "$ref": "#/definitions/string"
         },
-        "extension": {
-          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
-          "items": {
-            "$ref": "#/definitions/Extension"
-          },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
-        },
         "url": {
           "description": "Source of the definition for the extension code - a logical name or a URL.",
           "$ref": "#/definitions/uri"
@@ -217,6 +137,9 @@
           "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
           "pattern": "^[ \\r\\n\\t\\S]+$",
           "type": "string"
+        },
+        "valueCoding": {
+          "$ref": "#/definitions/Coding"
         }
       },
       "additionalProperties": false,
@@ -239,30 +162,27 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "use": {
           "description": "The purpose of this address.",
+          "type": "string",
           "enum": [
             "home",
             "work",
             "temp",
             "old",
             "billing"
-          ],
-          "type": "string"
+          ]
         },
         "type": {
           "description": "Distinguishes between physical addresses (those you can visit) and mailing addresses (e.g. PO Boxes and care-of addresses). Most addresses are both.",
+          "type": "string",
           "enum": [
             "postal",
             "physical",
             "both"
-          ],
-          "type": "string"
+          ]
         },
         "text": {
           "description": "Specifies the entire address as it should be displayed e.g. on a postal label. This may be provided instead of or as well as the specific parts.",
@@ -315,10 +235,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "start": {
           "description": "The start of the period. The boundary is inclusive.",
@@ -349,10 +266,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "value": {
           "description": "The value of the measured amount. The value includes an implicit precision in the presentation of the value.",
@@ -360,13 +274,13 @@
         },
         "comparator": {
           "description": "How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is \"<\" , then the real value is < stated value.",
+          "type": "string",
           "enum": [
             "<",
             "<=",
             ">=",
             ">"
-          ],
-          "type": "string"
+          ]
         },
         "unit": {
           "description": "A human-readable form of the unit.",
@@ -406,10 +320,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "authorReference": {
           "description": "The individual responsible for making the annotation.",
@@ -444,10 +355,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "reference": {
           "description": "A reference to a location at which the other resource is found. The reference may be a relative reference, in which case it is relative to the service base URL, or an absolute URL that resolves to the location where the resource is found. The reference may be version specific or not. If the reference is not to a FHIR RESTful server, then it should be assumed to be version specific. Internal fragment references (start with '#') refer to contained resources.",
@@ -477,21 +385,18 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "use": {
           "description": "The purpose of this identifier.",
+          "type": "string",
           "enum": [
             "usual",
             "official",
             "temp",
             "secondary",
             "old"
-          ],
-          "type": "string"
+          ]
         },
         "type": {
           "description": "A coded type for the identifier that can be used to determine which identifier to use for a specific purpose.",
@@ -529,10 +434,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "coding": {
           "description": "A reference to a code defined by a terminology system.",
@@ -554,42 +456,30 @@
       "properties": {
         "id": {
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-          "$ref": "#/definitions/string",
-          "options": {
-            "hidden": true
-          }
+          "$ref": "#/definitions/string"
         },
         "extension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "system": {
           "description": "The identification of the code system that defines the meaning of the symbol in the code.",
-          "$ref": "#/definitions/uri",
-          "propertyOrder": 20
+          "$ref": "#/definitions/uri"
         },
         "version": {
           "description": "The version of the code system which was used when choosing this code. Note that a well-maintained code system does not need the version reported, because the meaning of codes is consistent across versions. However this cannot consistently be assured, and when the meaning is not guaranteed to be consistent, the version SHOULD be exchanged.",
-          "$ref": "#/definitions/string",
-          "options": {
-            "hidden": true
-          }
+          "$ref": "#/definitions/string"
         },
         "code": {
           "description": "A symbol in syntax defined by the system. The symbol may be a predefined code or an expression in a syntax defined by the coding system (e.g. post-coordination).",
-          "$ref": "#/definitions/code",
-          "propertyOrder": 10
+          "$ref": "#/definitions/code"
         },
         "display": {
           "description": "A representation of the meaning of the code in the system, following the rules of the system.",
-          "$ref": "#/definitions/string",
-          "propertyOrder": 30
+          "$ref": "#/definitions/string"
         },
         "userSelected": {
           "description": "Indicates that this coding was chosen by a user directly - e.g. off a pick list of available items (codes or displays).",
@@ -621,10 +511,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "contentType": {
           "description": "Identifies the type of the data in the attachment and allows a method to be chosen to interpret or render the data. Includes mime type parameters such as charset where appropriate.",
@@ -688,13 +575,11 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "system": {
           "description": "Telecommunications form for contact point - what communications system is required to make use of the contact.",
+          "type": "string",
           "enum": [
             "phone",
             "fax",
@@ -703,8 +588,7 @@
             "url",
             "sms",
             "other"
-          ],
-          "type": "string"
+          ]
         },
         "value": {
           "description": "The actual contact point details, in a form that is meaningful to the designated communication system (i.e. phone number or email address).",
@@ -712,14 +596,14 @@
         },
         "use": {
           "description": "Identifies the purpose for the contact point.",
+          "type": "string",
           "enum": [
             "home",
             "work",
             "temp",
             "old",
             "mobile"
-          ],
-          "type": "string"
+          ]
         },
         "rank": {
           "description": "Specifies a preferred order in which to use a set of contacts. ContactPoints with lower rank values are more preferred than those with higher rank values.",
@@ -750,10 +634,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "value": {
           "description": "The value of the measured amount. The value includes an implicit precision in the presentation of the value.",
@@ -761,13 +642,13 @@
         },
         "comparator": {
           "description": "How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is \"<\" , then the real value is < stated value.",
+          "type": "string",
           "enum": [
             "<",
             "<=",
             ">=",
             ">"
-          ],
-          "type": "string"
+          ]
         },
         "unit": {
           "description": "A human-readable form of the unit.",
@@ -797,10 +678,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "value": {
           "description": "The value of the measured amount. The value includes an implicit precision in the presentation of the value.",
@@ -808,13 +686,13 @@
         },
         "comparator": {
           "description": "How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is \"<\" , then the real value is < stated value.",
+          "type": "string",
           "enum": [
             "<",
             "<=",
             ">=",
             ">"
-          ],
-          "type": "string"
+          ]
         },
         "unit": {
           "description": "A human-readable form of the unit.",
@@ -844,10 +722,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "value": {
           "description": "The value of the measured amount. The value includes an implicit precision in the presentation of the value.",
@@ -855,13 +730,13 @@
         },
         "comparator": {
           "description": "How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is \"<\" , then the real value is < stated value.",
+          "type": "string",
           "enum": [
             "<",
             "<=",
             ">=",
             ">"
-          ],
-          "type": "string"
+          ]
         },
         "unit": {
           "description": "A human-readable form of the unit.",
@@ -891,13 +766,11 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "use": {
           "description": "Identifies the purpose for this name.",
+          "type": "string",
           "enum": [
             "usual",
             "official",
@@ -906,8 +779,7 @@
             "anonymous",
             "old",
             "maiden"
-          ],
-          "type": "string"
+          ]
         },
         "text": {
           "description": "Specifies the entire name as it should be displayed e.g. on an application UI. This may be provided instead of or as well as the specific parts.",
@@ -958,10 +830,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "value": {
           "description": "Numerical value (with implicit precision).",
@@ -987,10 +856,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "value": {
           "description": "The value of the measured amount. The value includes an implicit precision in the presentation of the value.",
@@ -998,13 +864,13 @@
         },
         "comparator": {
           "description": "How the value should be understood and represented - whether the actual value is greater or less than the stated value due to measurement issues; e.g. if the comparator is \"<\" , then the real value is < stated value.",
+          "type": "string",
           "enum": [
             "<",
             "<=",
             ">=",
             ">"
-          ],
-          "type": "string"
+          ]
         },
         "unit": {
           "description": "A human-readable form of the unit.",
@@ -1034,10 +900,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "low": {
           "description": "The low limit. The boundary is inclusive.",
@@ -1063,10 +926,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "numerator": {
           "description": "The value of the numerator.",
@@ -1092,10 +952,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "origin": {
           "description": "The base quantity that a measured value of zero represents. In addition, this provides the units of the entire measurement series.",
@@ -1144,10 +1001,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "type": {
           "description": "An indication of the reason that the entity signed this document. This may be explicitly included as part of the signature information and can be used when determining accountability for various actions concerning the document.",
@@ -1205,20 +1059,14 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "event": {
           "description": "Identifies specific times when the event occurs.",
@@ -1251,20 +1099,14 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "boundsDuration": {
           "description": "Either a duration for the length of the timing schedule, a range of possible length, or outer bounds for start and/or end limits of the timing schedule.",
@@ -1296,6 +1138,7 @@
         },
         "durationUnit": {
           "description": "The units of time for the duration, in UCUM units.",
+          "type": "string",
           "enum": [
             "s",
             "min",
@@ -1304,8 +1147,7 @@
             "wk",
             "mo",
             "a"
-          ],
-          "type": "string"
+          ]
         },
         "frequency": {
           "description": "The number of times to repeat the action within the specified period. If frequencyMax is present, this element indicates the lower bound of the allowed range of the frequency.",
@@ -1325,6 +1167,7 @@
         },
         "periodUnit": {
           "description": "The units of time for the period in UCUM units.",
+          "type": "string",
           "enum": [
             "s",
             "min",
@@ -1333,8 +1176,7 @@
             "wk",
             "mo",
             "a"
-          ],
-          "type": "string"
+          ]
         },
         "dayOfWeek": {
           "description": "If one or more days of week is provided, then the action happens only on the specified day(s).",
@@ -1353,6 +1195,7 @@
         "when": {
           "description": "An approximate time period during the day, potentially linked to an event of daily living that indicates when the action should occur.",
           "items": {
+            "type": "string",
             "enum": [
               "MORN",
               "MORN.early",
@@ -1380,8 +1223,7 @@
               "PCM",
               "PCD",
               "PCV"
-            ],
-            "type": "string"
+            ]
           },
           "type": "array"
         },
@@ -1410,10 +1252,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "name": {
           "description": "The name of an individual to contact.",
@@ -1442,20 +1281,17 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "type": {
           "description": "The type of contributor.",
+          "type": "string",
           "enum": [
             "author",
             "editor",
             "reviewer",
             "endorser"
-          ],
-          "type": "string"
+          ]
         },
         "name": {
           "description": "The name of the individual or organization responsible for the contribution.",
@@ -1484,10 +1320,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "type": {
           "description": "The type of the required data, specified as the type name of a resource. For profiles, this value is set to the type of the base resource of the profile.",
@@ -1561,20 +1394,14 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "path": {
           "description": "The code-valued attribute of the filter. The specified path SHALL be a FHIRPath resolveable on the specified type of the DataRequirement, and SHALL consist only of identifiers, constant indexers, and .resolve(). The path is allowed to contain qualifiers (.) to traverse sub-elements, as well as indexers ([x]) to traverse multiple-cardinality sub-elements (see the [Simple FHIRPath Profile](fhirpath.html#simple) for full details). Note that the index must be an integer constant. The path must resolve to an element of type code, Coding, or CodeableConcept.",
@@ -1611,20 +1438,14 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "path": {
           "description": "The date-valued attribute of the filter. The specified path SHALL be a FHIRPath resolveable on the specified type of the DataRequirement, and SHALL consist only of identifiers, constant indexers, and .resolve(). The path is allowed to contain qualifiers (.) to traverse sub-elements, as well as indexers ([x]) to traverse multiple-cardinality sub-elements (see the [Simple FHIRPath Profile](fhirpath.html#simple) for full details). Note that the index must be an integer constant. The path must resolve to an element of type date, dateTime, Period, Schedule, or Timing.",
@@ -1663,20 +1484,14 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "path": {
           "description": "The attribute of the sort. The specified path must be resolvable from the type of the required data. The path is allowed to contain qualifiers (.) to traverse sub-elements, as well as indexers ([x]) to traverse multiple-cardinality sub-elements. Note that the index must be an integer constant.",
@@ -1684,11 +1499,11 @@
         },
         "direction": {
           "description": "The direction of the sort, ascending or descending.",
+          "type": "string",
           "enum": [
             "ascending",
             "descending"
-          ],
-          "type": "string"
+          ]
         }
       },
       "additionalProperties": false,
@@ -1706,10 +1521,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "description": {
           "description": "A brief, natural language description of the condition that effectively communicates the intended semantics.",
@@ -1721,12 +1533,12 @@
         },
         "language": {
           "description": "The media type of the language for the expression.",
+          "type": "string",
           "enum": [
             "text/cql",
             "text/fhirpath",
             "application/x-fhir-query"
-          ],
-          "type": "string"
+          ]
         },
         "expression": {
           "description": "An expression in the specified language that returns a value.",
@@ -1757,10 +1569,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "name": {
           "description": "The name of the parameter used to allow access to the value of the parameter in evaluation contexts.",
@@ -1811,13 +1620,11 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "type": {
           "description": "The type of relationship to the related artifact.",
+          "type": "string",
           "enum": [
             "documentation",
             "justification",
@@ -1827,8 +1634,7 @@
             "derived-from",
             "depends-on",
             "composed-of"
-          ],
-          "type": "string"
+          ]
         },
         "label": {
           "description": "A short label that can be used to reference the citation from elsewhere in the containing artifact, such as a footnote index.",
@@ -1870,13 +1676,11 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "type": {
           "description": "The type of triggering event.",
+          "type": "string",
           "enum": [
             "named-event",
             "periodic",
@@ -1886,8 +1690,7 @@
             "data-removed",
             "data-accessed",
             "data-access-ended"
-          ],
-          "type": "string"
+          ]
         },
         "name": {
           "description": "A formal name for the event. This may be an absolute URI that identifies the event formally (e.g. from a trigger registry), or a simple relative URI that identifies the event in a local context.",
@@ -1938,10 +1741,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "code": {
           "description": "A code that identifies the type of context being specified by this usage context.",
@@ -1982,20 +1782,14 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "sequence": {
           "description": "Indicates the order in which the dosage instructions should be applied or interpreted.",
@@ -2076,20 +1870,14 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "type": {
           "description": "The kind of dose or rate specified, for example, ordered or calculated.",
@@ -2131,10 +1919,7 @@
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "versionId": {
           "description": "The version specific identifier, as it appears in the version portion of the URL. This value changes when the resource is created, updated, or deleted.",
@@ -2178,38 +1963,29 @@
       "properties": {
         "id": {
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-          "$ref": "#/definitions/string",
-          "title": "Id"
+          "$ref": "#/definitions/string"
         },
         "extension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "title": "Extension",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "title": "Modifier extension",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "question": {
           "description": "The linkId for the question whose answer (or lack of answer) governs whether this item is enabled.",
-          "$ref": "#/definitions/string",
-          "title": "Question"
+          "$ref": "#/definitions/string"
         },
         "operator": {
           "description": "Specifies the criteria by which the question is enabled.",
+          "type": "string",
           "enum": [
             "exists",
             "=",
@@ -2218,66 +1994,54 @@
             "<",
             ">=",
             "<="
-          ],
-          "type": "string",
-          "title": "Operator"
+          ]
         },
         "answerBoolean": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
           "pattern": "^true|false$",
-          "type": "boolean",
-          "title": "Answer boolean"
+          "type": "boolean"
         },
         "answerDecimal": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
           "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$",
-          "type": "number",
-          "title": "Answer decimal"
+          "type": "number"
         },
         "answerInteger": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
           "pattern": "^-?([0]|([1-9][0-9]*))$",
-          "type": "number",
-          "title": "Answer integer"
+          "type": "number"
         },
         "answerDate": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
           "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
-          "type": "string",
-          "title": "Answer date"
+          "type": "string"
         },
         "answerDateTime": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
           "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$",
-          "type": "string",
-          "title": "Answer date time"
+          "type": "string"
         },
         "answerTime": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
           "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$",
-          "type": "string",
-          "title": "Answer time"
+          "type": "string"
         },
         "answerString": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
           "pattern": "^[ \\r\\n\\t\\S]+$",
-          "type": "string",
-          "title": "Answer string"
+          "type": "string"
         },
         "answerCoding": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
-          "$ref": "#/definitions/Coding",
-          "title": "Answer coding"
+          "$ref": "#/definitions/Coding"
         },
         "answerQuantity": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
-          "$ref": "#/definitions/Quantity",
-          "title": "Answer quantity"
+          "$ref": "#/definitions/Quantity"
         },
         "answerReference": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
-          "$ref": "#/definitions/Reference",
-          "title": "Answer reference"
+          "$ref": "#/definitions/Reference"
         }
       },
       "additionalProperties": false,
@@ -2288,69 +2052,53 @@
       "properties": {
         "id": {
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-          "$ref": "#/definitions/string",
-          "title": "Id"
+          "$ref": "#/definitions/string"
         },
         "extension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "title": "Extension",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "title": "Modifier extension",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "valueInteger": {
           "description": "A potential answer that's allowed as the answer to this question.",
           "pattern": "^-?([0]|([1-9][0-9]*))$",
-          "type": "number",
-          "title": "Value integer"
+          "type": "number"
         },
         "valueDate": {
           "description": "A potential answer that's allowed as the answer to this question.",
           "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
-          "type": "string",
-          "title": "Value date"
+          "type": "string"
         },
         "valueTime": {
           "description": "A potential answer that's allowed as the answer to this question.",
           "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$",
-          "type": "string",
-          "title": "Value time"
+          "type": "string"
         },
         "valueString": {
           "description": "A potential answer that's allowed as the answer to this question.",
           "pattern": "^[ \\r\\n\\t\\S]+$",
-          "type": "string",
-          "title": "Value string"
+          "type": "string"
         },
         "valueCoding": {
           "description": "A potential answer that's allowed as the answer to this question.",
-          "$ref": "#/definitions/Coding",
-          "title": "Value coding"
+          "$ref": "#/definitions/Coding"
         },
         "valueReference": {
           "description": "A potential answer that's allowed as the answer to this question.",
-          "$ref": "#/definitions/Reference",
-          "title": "Value reference"
+          "$ref": "#/definitions/Reference"
         },
         "initialSelected": {
           "description": "Indicates whether the answer value is selected when the list of possible answers is initially shown.",
-          "$ref": "#/definitions/boolean",
-          "title": "Initial selected"
+          "$ref": "#/definitions/boolean"
         }
       },
       "additionalProperties": false,
@@ -2361,98 +2109,77 @@
       "properties": {
         "id": {
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-          "$ref": "#/definitions/string",
-          "title": "Id"
+          "$ref": "#/definitions/string"
         },
         "extension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "title": "Extension",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "modifierExtension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
           "items": {
             "$ref": "#/definitions/Extension"
           },
-          "type": "array",
-          "title": "Modifier extension",
-          "options": {
-            "hidden": true
-          }
+          "type": "array"
         },
         "valueBoolean": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^true|false$",
-          "type": "boolean",
-          "title": "Value boolean"
+          "type": "boolean"
         },
         "valueDecimal": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$",
-          "type": "number",
-          "title": "Value decimal"
+          "type": "number"
         },
         "valueInteger": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^-?([0]|([1-9][0-9]*))$",
-          "type": "number",
-          "title": "Value integer"
+          "type": "number"
         },
         "valueDate": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
-          "type": "string",
-          "title": "Value date"
+          "type": "string"
         },
         "valueDateTime": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$",
-          "type": "string",
-          "title": "Value date time"
+          "type": "string"
         },
         "valueTime": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$",
-          "type": "string",
-          "title": "Value time"
+          "type": "string"
         },
         "valueString": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^[ \\r\\n\\t\\S]+$",
-          "type": "string",
-          "title": "Value string"
+          "type": "string"
         },
         "valueUri": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^\\S*$",
-          "type": "string",
-          "title": "Value uri"
+          "type": "string"
         },
         "valueAttachment": {
           "description": "The actual value to for an initial answer.",
-          "$ref": "#/definitions/Attachment",
-          "title": "Value attachment"
+          "$ref": "#/definitions/Attachment"
         },
         "valueCoding": {
           "description": "The actual value to for an initial answer.",
-          "$ref": "#/definitions/Coding",
-          "title": "Value coding"
+          "$ref": "#/definitions/Coding"
         },
         "valueQuantity": {
           "description": "The actual value to for an initial answer.",
-          "$ref": "#/definitions/Quantity",
-          "title": "Value quantity"
+          "$ref": "#/definitions/Quantity"
         },
         "valueReference": {
           "description": "The actual value to for an initial answer.",
-          "$ref": "#/definitions/Reference",
-          "title": "Value reference"
+          "$ref": "#/definitions/Reference"
         }
       },
       "additionalProperties": false,
@@ -2461,8 +2188,5 @@
     "xhtml": {
       "$ref": "#/definitions/string"
     }
-  },
-  "options": {
-    "infoText": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection."
   }
 }

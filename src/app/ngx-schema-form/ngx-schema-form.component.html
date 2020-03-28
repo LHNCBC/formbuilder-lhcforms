@@ -1,5 +1,5 @@
 <a href="/json-editor">json-editor</a>
 <div class="card-container">
   <h2>Build FHIR Questionnaire (ngx)</h2>
-  <sf-form [schema]="mySchema"></sf-form>
+  <sf-form [schema]="mySchema" [model]="model" (modelChange)="updateModel($event)"></sf-form>
 </div>

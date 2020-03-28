@@ -2,6 +2,7 @@
   "type": "object",
   "properties": {
     "resourceType": {
+      "title": "R Type",
       "$ref": "#/definitions/resourceType"
     },
     "id": {
@@ -11,12 +12,24 @@
       "$ref": "#/definitions/status"
     }
   },
+  "fieldsets": [
+    {
+      "id": "fieldset-default",
+      "title": "Field sets example",
+      "fields": [
+        "id",
+        "status"
+  
+      ]
+    }
+
+  ],
   "additionalProperties": false,
   "definitions": {
     "resourceType": {
       "type": "string",
       "enum": ["Questionnaire"],
-      "description": "Resource type"
+      "title": "Res Type"
     },
     "id": {
       "type": "string",

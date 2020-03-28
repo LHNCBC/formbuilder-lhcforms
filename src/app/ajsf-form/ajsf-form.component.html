@@ -1,0 +1,11 @@
+<div class="ajsf-form">
+  <json-schema-form
+    [schema]="schema"
+    [layout]="layout"
+    [(data)]="model"
+    [options]="options"
+    [framework]="framework"
+    (isValid)="onValid($event)"
+    (validationErrors)="validationErrors($event)"
+  ></json-schema-form>
+</div>

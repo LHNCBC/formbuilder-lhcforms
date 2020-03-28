@@ -1,19 +1,19 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #drawer class="sidenav" [opened]="true" fixedInViewport
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-      [mode]="(isHandset$ | async) ? 'over' : 'side'"
-      [opened]="(isHandset$ | async) === false">
+      [mode]="(isHandset$ | async) ? 'over' : 'side'">
     <mat-form-field>
       <input matInput type="search" #formSearch (keyup.enter)="getForm(formSearch.value)" placeholder="Enter form id">
     </mat-form-field>
+    <button type="button" (click)="toggleTreeExpansion();">Toggle Expansion</button>
     <tree-root
       #tree
-      [nodes]="treeData"
+      [nodes]="form.item"
       [options]="options"
       (focus)="onFocus($event)"
     ></tree-root>
   </mat-sidenav>
-  <mat-sidenav-content>
+  <mat-sidenav-content class="sidenav-content">
     <mat-toolbar color="primary">
       <button
         type="button"
@@ -24,8 +24,35 @@
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
     </mat-toolbar>
-    <!-- Add Content Here -->
-    <app-json-editor #editor></app-json-editor>
-    <!-- <router-outlet></router-outlet> -->
+    <button type="button" (click)="editor = 'json'">json</button>
+    <button type="button" (click)="editor = 'ngx'">ngx</button>
+    <button type="button" (click)="editor = 'ajsf'; ajsfFramwork = 'material-design'">ajsf (md)</button>
+    <button type="button" (click)="editor = 'ajsf'; ajsfFramwork = 'bootstrap-3'">ajsf (bootstrap-3)</button>
+    <button type="button" (click)="editor = 'ajsf'; ajsfFramwork = 'bootstrap-4'">ajsf (bootstrap-4)</button>
+    <mat-tab-group (selectedTabChange)="showJson($event)">
+      <mat-tab label="Editor">
+        <!-- Add Content Here -->
+        <app-json-editor *ngIf="editor === 'json'" #editor></app-json-editor>
+        <app-ngx-schema-form *ngIf="editor === 'ngx'" #ngxEditor></app-ngx-schema-form>
+        <app-ajsf-form *ngIf="editor === 'ajsf'" [framework]="ajsfFramwork"></app-ajsf-form>
+        <!-- <router-outlet></router-outlet> -->
+      </mat-tab>
+      <mat-tab label="JSON Output">
+        <mat-radio-group
+          class="json-radio-group"
+          [(ngModel)]="showType">
+          <mat-radio-button class="json-radio-button" [value]="'item'">
+            Focussed item
+          </mat-radio-button>
+          <mat-radio-button class="json-radio-button" [value]="'questionnaire'">
+            Questionnaire
+          </mat-radio-button>
+        </mat-radio-group>
+        <div *ngIf="showType === 'item'">
+         <app-item-json-editor></app-item-json-editor>
+        </div>
+        <pre *ngIf="showType === 'questionnaire'">{{ exportForm | json }}</pre>
+      </mat-tab>
+    </mat-tab-group>
   </mat-sidenav-content>
 </mat-sidenav-container>

@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
+import {ShareObjectService} from '../share-object.service';
 
 @Component({
   selector: 'app-ngx-schema-form',
@@ -7,15 +8,17 @@ import {HttpClient} from '@angular/common/http';
   styleUrls: ['./ngx-schema-form.component.css']
 })
 export class NgxSchemaFormComponent implements OnInit {
-  mySchema: any;
+  mySchema: any = {properties: {}};
   myTestSchema: any;
-  myModel: any = {};
-  constructor(private http: HttpClient) {
+  @Input()
+  node: any;
+  model: any;
+  constructor(private http: HttpClient, private modelService: ShareObjectService) {
   }
 
   ngOnInit() {
     this.http
-      .get('/assets/fhir-questionnaire.schema.json', { responseType: 'json' })
+      .get('/assets/ngx-item.schema.json', { responseType: 'json' })
       .subscribe(schema => {
         this.mySchema = schema;
       });
@@ -24,6 +27,16 @@ export class NgxSchemaFormComponent implements OnInit {
       .subscribe(schema => {
 
         this.myTestSchema = schema;
+        // this.mySchema = schema;
       });
+
+    this.modelService.object.subscribe((model) => {
+      this.model = model;
+    });
+  }
+
+  updateModel(model) {
+//    this.model = model;
+    this.modelService.setObject(model);
   }
 }

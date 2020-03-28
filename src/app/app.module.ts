@@ -2,44 +2,60 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { SchemaFormModule, WidgetRegistry, DefaultWidgetRegistry } from 'ngx-schema-form';
 
-import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { JsonEditorComponent } from './json-editor/json-editor.component';
-import { HttpClientModule } from '@angular/common/http';
-import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
+import { AppRoutingModule } from './app-routing.module';
+import { Bootstrap3FrameworkModule} from '@ajsf/bootstrap3';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MainContentComponent } from './main-content/main-content.component';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { JsonEditorComponent } from './json-editor/json-editor.component';
 import { LayoutModule } from '@angular/cdk/layout';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { MainContentComponent } from './main-content/main-content.component';
 import { MatButtonModule } from '@angular/material/button';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MaterialDesignFrameworkModule } from '@ajsf/material';
+import { MatExpansionModule } from '@angular/material';
+import { MatFormFieldModule } from '@angular/material';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material';
 import { MatListModule } from '@angular/material/list';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatTabsModule} from '@angular/material/tabs';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
 import { TreeModule } from 'angular-tree-component';
-import {MatFormFieldModule} from '@angular/material';
-import {MatInputModule} from '@angular/material';
+import { ItemJsonEditorComponent } from './item-json-editor/item-json-editor.component';
+import { AjsfFormComponent } from './ajsf-form/ajsf-form.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     JsonEditorComponent,
     NgxSchemaFormComponent,
-    MainContentComponent
+    MainContentComponent,
+    ItemJsonEditorComponent,
+    AjsfFormComponent
   ],
   imports: [
-    SchemaFormModule.forRoot(),
-    BrowserModule,
     AppRoutingModule,
-    HttpClientModule,
+    Bootstrap3FrameworkModule,
+    BrowserModule,
     BrowserAnimationsModule,
+    FormsModule,
+    HttpClientModule,
     LayoutModule,
-    MatToolbarModule,
     MatButtonModule,
-    MatSidenavModule,
-    MatIconModule,
-    MatListModule,
+    MaterialDesignFrameworkModule,
+    MatExpansionModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
+    MatListModule,
+    MatRadioModule,
+    MatSidenavModule,
+    MatTabsModule,
+    MatToolbarModule,
+    SchemaFormModule.forRoot(),
     TreeModule
   ],
   providers: [{provide: WidgetRegistry, useClass: DefaultWidgetRegistry}],
