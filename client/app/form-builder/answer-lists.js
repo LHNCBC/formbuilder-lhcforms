@@ -261,16 +261,6 @@ var answerLists = {
       "code": "panelTableH"
     }
   ],
-  "questionCodeSystem": [
-    {
-      "text": "LOINC",
-      "code": "LOINC"
-    },
-    {
-      "text": "Custom",
-      "code": "Custom"
-    }
-  ],
   "_calculationMethod": [
     {
       "text": "None",

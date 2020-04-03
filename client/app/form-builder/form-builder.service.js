@@ -489,6 +489,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       var attr = item.questionCode;
 
       switch (attr) {
+        case "questionCodeSystem":
         case "questionCode":
         case "question":
         case "localQuestionCode":
@@ -522,7 +523,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           }
           break;
 
-        case "questionCodeSystem":
         case "type":
         case "editable":
           if(item.value && typeof item.value.code !== 'undefined') {
@@ -942,7 +942,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
     walkRecursiveTree(lForm, 'items', function (item) {
       if(!item.questionCodeSystem) {
-        item.questionCodeSystem = dataConstants.LOINC;
+        item.questionCodeSystem = 'http://loinc.org';
       }
     });
   };
@@ -1006,22 +1006,19 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       if(thisService.isNodeFbLfForm(ancestor.lfData)) {
         var codeList = thisService.getFormBuilderFields(ancestor.lfData.advanced.items, 'code');
         codeList.forEach(function(codeObj) {
-          var code = lodash.find(codeObj.items, {questionCode: 'code'});
           var system = lodash.find(codeObj.items, {questionCode: 'system'});
-          if(system.value === 'LOINC' || system.value === 'http://loinc.org') {
-            system.value = '';
-            code.value = 'Modified_' + code.value;
+          if(system.value === dataConstants.LOINC || system.value === 'http://loinc.org') {
+            system.value = 'http://loinc.org/modified';
           }
         });
       }
       else {
         var lfd = ancestor.lfData.basic;
-        var type = lfd.itemHash[dataConstants.CODING_SYSTEM_ID];
-        if(type.value.code !== dataConstants.CUSTOM) {
-          var code = lfd.itemHash[dataConstants.CODE_ID];
-          type.value = lodash.find(type.answers, {code: dataConstants.CUSTOM});
-          code.value = 'Modified_'+code.value;
-          code.editable = "1";
+        var type = lfd.itemHash['/_questionCodeSystem/1'];
+        if(type.value === dataConstants.LOINC) {
+          var cs = lfd.itemHash[dataConstants.CODING_SYSTEM_ID];
+          cs.value = 'http://loinc.org/modified'; // Loinc is modified
+          type.value = dataConstants.OTHER;
         }
       }
       ancestor.previewItemData = thisService.convertLfData(ancestor.lfData);
@@ -1437,6 +1434,23 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         break;
 
       case "questionCodeSystem":
+        var _fbSystem = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES['_questionCodeSystem'].category].items, '_questionCodeSystem');
+        var fbCode = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES['questionCode'].category].items, 'questionCode');
+        if(val === 'LOINC' || val === 'http://loinc.org') {
+          subItem.value = 'http://loinc.org';
+          _fbSystem.value = dataConstants.LOINC;
+          subItem.editable = '0';
+          fbCode.editable = '0';
+        }
+        else {
+          // Enable editing of code and system fields for 'other' systems.
+          subItem.value = val;
+          _fbSystem.value = dataConstants.OTHER;
+          subItem.editable = '1';
+          fbCode.editable = '1';
+        }
+        break;
+
       case "editable":
         thisService.updateCNECWE(subItem, val);
         break;
@@ -2072,7 +2086,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     if(dataType && dataType.value && (dataType.value.code === 'INT' || dataType.value.code === 'REAL')) {
       var unitsItem = thisService.getFormBuilderField(lfData.items, 'units');
       var code = thisService.getFormBuilderField(lfData.items, 'questionCode').value;
-      var matched = /^(Modified_)?(\d+\-\d)$/.exec(code);
+      var matched = /^(\d+\-\d)$/.exec(code);
       if(matched) {
         var loinc = matched[2];
         httpCall = true;

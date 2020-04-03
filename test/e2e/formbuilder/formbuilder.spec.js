@@ -604,24 +604,45 @@ describe('GET /', function () {
   });
 
   describe('Custom file imports', function() {
-    it('should load a file with an item having answer list and answerRequired fields', function (done) {
-      let testfile = path.join(__dirname, './fixtures/lihc_consent.json');
-      fb.cleanupSideBar();
-      util.loadLFormFromDisk(testfile, 'lforms').then(function (previewSrc) {
-        var newJson = JSON.parse(previewSrc);
-        let originalJson = JSON.parse(fs.readFileSync(testfile, 'utf8'));
-        expect(newJson.items.length).toEqual(originalJson.items.length);
-        expect(newJson.items[0].items.length).toEqual(originalJson.items[0].items.length);
-        expect(newJson.items[1].items.length).toEqual(originalJson.items[1].items.length);
-        expect(newJson.items[1].items[0].answers[0].code).toEqual(originalJson.items[1].items[0].answers[0].code);
-        expect(newJson.items[1].items[0].answers[0].text).toEqual(originalJson.items[1].items[0].answers[0].text);
-        expect(newJson.items[1].items[0].answers[1].code).toEqual(originalJson.items[1].items[0].answers[1].code);
-        expect(newJson.items[1].items[0].answers[1].text).toEqual(originalJson.items[1].items[0].answers[1].text);
-        expect(newJson.items[1].items[0].answerCardinality).toEqual(originalJson.items[1].items[0].answerCardinality);
+    let testfile = path.join(__dirname, './fixtures/lihc_consent.json');
+    let originalJson = JSON.parse(fs.readFileSync(testfile, 'utf8'));
+    let newJson = null;
+    beforeEach((done) => {
+      util.loadLFormFromDisk(testfile, 'lforms').then(function (src) {
+        newJson = JSON.parse(src);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));
       });
+    });
+
+    it('should load a file with an item having answer list and answerRequired fields', function (done) {
+      expect(newJson.items.length).toEqual(originalJson.items.length);
+      expect(newJson.items[0].items.length).toEqual(originalJson.items[0].items.length);
+      expect(newJson.items[1].items.length).toEqual(originalJson.items[1].items.length);
+      // question code and code system
+      expect(newJson.items[0].questionCodeSystem).toEqual(originalJson.items[0].questionCodeSystem);
+      expect(newJson.items[0].questionCode).toEqual(originalJson.items[0].questionCode);
+      expect(newJson.items[1].questionCodeSystem).toEqual(originalJson.items[1].questionCodeSystem);
+      expect(newJson.items[1].questionCode).toEqual(originalJson.items[1].questionCode);
+      // Answer fields
+      expect(newJson.items[1].items[0].answers[0].code).toEqual(originalJson.items[1].items[0].answers[0].code);
+      expect(newJson.items[1].items[0].answers[0].text).toEqual(originalJson.items[1].items[0].answers[0].text);
+      expect(newJson.items[1].items[0].answers[1].code).toEqual(originalJson.items[1].items[0].answers[1].code);
+      expect(newJson.items[1].items[0].answers[1].text).toEqual(originalJson.items[1].items[0].answers[1].text);
+      expect(newJson.items[1].items[0].answerCardinality).toEqual(originalJson.items[1].items[0].answerCardinality);
+      done();
+    });
+
+    it('should test LOINC items to be ready only', () => {
+      util.assertNodeSelection('Date Consent Signed');
+      expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org');
+      expect(fb.questionCodeSystem.getAttribute('disabled')).toBeTruthy();
+      expect(fb.questionCode.getAttribute('disabled')).toBeTruthy();
+      fb.sendKeys(fb.questionText, ' xxxx');
+      expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org/modified');
+      expect(fb.questionCodeSystem.getAttribute('disabled')).toBeTruthy();
+      expect(fb.questionCode.getAttribute('disabled')).toBeTruthy();
     });
   });
 
@@ -944,6 +965,7 @@ describe('GET /', function () {
     it('should NOT warn refreshing the page with unedited form', function (done) {
       browser.driver.navigate().refresh();
       browser.waitForAngular().then(function () {
+        browser.sleep(1000);
         fb.termsOfUseAcceptButton.click();
         done();
       }, function (err) {
@@ -952,6 +974,7 @@ describe('GET /', function () {
     });
 
     it('should warn refreshing the page with edited form', function (done) {
+      browser.sleep(1000);
       fb.formTitle.clear();
       fb.formTitle.sendKeys('Edited form');
       browser.driver.navigate().refresh();
@@ -960,6 +983,7 @@ describe('GET /', function () {
       browser.driver.navigate().refresh();
       browser.driver.switchTo().alert().accept(); // Accept reload
       browser.waitForAngular().then(function () {
+        browser.sleep(1000);
         fb.termsOfUseAcceptButton.click();
         expect(fb.formTitle.getAttribute('value')).not.toBe('Edited form');
         done();

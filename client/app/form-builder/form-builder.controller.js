@@ -541,8 +541,11 @@ angular.module('formBuilder')
        * @param node - Node to check for changes.
        */
       $scope.changeThisAndAncestralCustomCodes = function(node) {
-        var malignedNodes = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, node);
-        formBuilderService.changeItemCodeToCustomCode(malignedNodes);
+        if (node && node.isDirty) {
+          var malignedNodes = formBuilderService.getAncestralNodes($scope.formBuilderData.treeData, node);
+          malignedNodes.push(node);
+          formBuilderService.changeItemCodeToCustomCode(malignedNodes);
+        }
       };
 
 

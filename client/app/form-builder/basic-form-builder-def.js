@@ -76,21 +76,37 @@ var formBuilderDef = {
       "codingInstructions": "This is required: Enter the section header or question text exactly as it is displayed on your form."
     },
     {
+      "questionCode": "_questionCodeSystem",
+      "question": "LOINC or Other",
+      "dataType": "ST",
+      "answers": "questionCodeSystem",
+      "header": false,
+      "displayControl": {
+        "css": [
+          {
+            "name": "display",
+            "value": "none"
+          }
+        ]
+      },
+      "answerCardinality": {
+        "min": "1",
+        "max": "1"
+      },
+      "codingInstructions": "Select \"LOINC\" to use LOINC codes, or enter your own coding system by selecting \"Other.\"",
+      "defaultAnswer": "Other"
+    },
+    {
       "questionCode": "questionCodeSystem",
       "question": "Item coding system",
-      "dataType": "CNE",
+      "dataType": "URL",
       "answers": "questionCodeSystem",
       "header": false,
       "answerCardinality": {
         "min": "1",
         "max": "1"
       },
-      "editable": "0",
-      "codingInstructions": "Select \"LOINC\" to use LOINC codes, or create your own coding system by selecting \"Custom.\"",
-      "value": {
-        "text": "Custom",
-        "code": "Custom"
-      }
+      "codingInstructions": "Enter url for other than LOINC code system."
     },
     {
       // *********** questionCode ************************,
@@ -102,7 +118,6 @@ var formBuilderDef = {
         "min": "1",
         "max": "1"
       },
-      "editable": "1",
       "codingInstructions": "This is required: Enter the unique question code for the question or section header given in the Text field. <p>If a question or section header is not available, enter any unique identifier in square brackets, e.g., [Q1], [Q2], [H1].</p>"
     },
     {

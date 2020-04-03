@@ -1,5 +1,5 @@
 
-"use strict";
+'use strict';
 
 describe('fl.service', function () {
 

@@ -7,7 +7,7 @@
     {
       "question": "Consent Mandatory Questions ",
       "questionCode": "Consent_Mandatory_Questions_",
-      "questionCodeSystem": null,
+      "questionCodeSystem": "http://example1.com",
       "header": true,
       "displayControl": { "questionLayout": "vertical" },
       "dataType": "SECTION",
@@ -17,8 +17,8 @@
         {
           "question": "Date Consent Signed",
           "hideLabel": false,
-          "questionCode": "myYxLmmyke",
-          "questionCodeSystem": null,
+          "questionCode": "12345-6",
+          "questionCodeSystem": "LOINC",
           "header": false,
           "dataType": "DT",
           "answerCardinality": { "min": "1", "max": "*" },
@@ -31,7 +31,7 @@
     {
       "question": "Consent Optional Questions",
       "questionCode": "Consent_Optional_Questions",
-      "questionCodeSystem": null,
+      "questionCodeSystem": "http://example2.com",
       "header": true,
       "displayControl": { "questionLayout": "vertical" },
       "dataType": "SECTION",

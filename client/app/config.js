@@ -43,7 +43,7 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     INSERT_AS_CHILD: 'INSERT_AS_CHILD',
     APPEND_TO_ROOT: 'APPEND_TO_ROOT',
     LOINC: 'LOINC',
-    CUSTOM: 'Custom',
+    OTHER: 'Other',
 
     calculatedExpressionUrl: 'http://hl7.org/fhir/StructureDefinition/questionnaire-calculatedExpression',
     fhirVariableUrl: 'http://hl7.org/fhir/StructureDefinition/variable',
