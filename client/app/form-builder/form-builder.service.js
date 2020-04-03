@@ -1439,15 +1439,11 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         if(val === 'LOINC' || val === 'http://loinc.org') {
           subItem.value = 'http://loinc.org';
           _fbSystem.value = dataConstants.LOINC;
-          subItem.editable = '0';
-          fbCode.editable = '0';
         }
         else {
           // Enable editing of code and system fields for 'other' systems.
           subItem.value = val;
           _fbSystem.value = dataConstants.OTHER;
-          subItem.editable = '1';
-          fbCode.editable = '1';
         }
         break;
 
@@ -2088,7 +2084,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       var code = thisService.getFormBuilderField(lfData.items, 'questionCode').value;
       var matched = /^(\d+\-\d)$/.exec(code);
       if(matched) {
-        var loinc = matched[2];
+        var loinc = matched[1];
         httpCall = true;
         $http.get(dataConstants.searchLoincPropertyURL+'&terms='+loinc).then(function (resp) {
           var displayFields = resp.data[3][0];

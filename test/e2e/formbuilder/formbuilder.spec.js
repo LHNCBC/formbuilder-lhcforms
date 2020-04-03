@@ -637,12 +637,8 @@ describe('GET /', function () {
     it('should test LOINC items to be ready only', () => {
       util.assertNodeSelection('Date Consent Signed');
       expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org');
-      expect(fb.questionCodeSystem.getAttribute('disabled')).toBeTruthy();
-      expect(fb.questionCode.getAttribute('disabled')).toBeTruthy();
       fb.sendKeys(fb.questionText, ' xxxx');
       expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org/modified');
-      expect(fb.questionCodeSystem.getAttribute('disabled')).toBeTruthy();
-      expect(fb.questionCode.getAttribute('disabled')).toBeTruthy();
     });
   });
 
