@@ -4,16 +4,10 @@ This document assumes the reader is familiar with how to use Docker and
 its basic commands. To learn more about Docker, go to
 https://docs.docker.com.
 
-#### Download the Docker image.
+First build your image. 
 
-The Docker image of the Form Builder is hosted on the Docker repository at
-`lhc-docker.nlm.nih.gov`. It requires login credentials to download the
-image. Please contact NLMLHCCSBLFORMS@nlm.nih.gov to get the credentials.
-
-For example, use the following commands to pull the latest image.
-
-`docker login lhc-docker.nlm.nih.gov`
-`docker pull lhc-docker.nlm.nih.gov/lhc/formbuilder:latest`
+For example, you may use the following command from your formbuilder project directory:
+`docker build -t lhc/formbuilder:latest .`
 
 #### Run with HTTPS protocol.
 

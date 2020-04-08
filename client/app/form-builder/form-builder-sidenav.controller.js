@@ -39,7 +39,6 @@
         __itemType:         'selectedNode.lfData.basic.itemHash["/__itemType/1"].value',
         question:           'selectedNode.lfData.basic.itemHash["/question/1"].value',
         questionCode:       'selectedNode.lfData.basic.itemHash["/questionCode/1"].value',
-        questionCodeSystem: 'selectedNode.lfData.basic.itemHash["/questionCodeSystem/1"].value',
         prefix:             'selectedNode.lfData.basic.itemHash["/prefix/1"].value',
         dataType:           'selectedNode.lfData.basic.itemHash["/dataType/1"].value',
         externallyDefined:  'selectedNode.lfData.basic.itemHash["/externallyDefined/1"].value',
@@ -729,6 +728,7 @@
                     scope.selectedNode.isDirty = true;
                     scope.selectedNode.skipLogicDirty = true;
                   }
+                  scope.changeThisAndAncestralCustomCodes(scope.selectedNode);
                 }
               }, true);
               break;
@@ -750,25 +750,6 @@
                 }
               }, true);
               break;
-
-            // Watch questionCodeSystem to toggle read only attribute of questionCode. If LOINC set it to read only.
-            case 'questionCodeSystem':
-              scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
-                if(scope.selectedNode) {
-                  if(isDirty(oldValue, newValue) ) {
-                    if(newValue.code === dataConstants.CUSTOM) {
-                      scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].editable = '1';
-                      scope.selectedNode.isDirty = true;
-                      scope.selectedNode.skipLogicDirty = true;
-                    }
-                    else if(newValue.code === dataConstants.LOINC) {
-                      scope.selectedNode.lfData.basic.itemHash['/questionCode/1'].editable = '0';
-                    }
-                  }
-                }
-              }, true);
-              break;
-
             // Watch item type to toggle some other fields.
             case '__itemType':
               scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
@@ -784,6 +765,7 @@
                     scope.selectedNode.isDirty = true;
                     scope.selectedNode.skipLogicDirty = true;
                   }
+                  scope.changeThisAndAncestralCustomCodes(scope.selectedNode);
                 }
               }, true);
               break;
@@ -806,6 +788,7 @@
                     scope.selectedNode.isDirty = true;
                     scope.selectedNode.skipLogicDirty = true;
                   }
+                  scope.changeThisAndAncestralCustomCodes(scope.selectedNode);
                 }
               }, true);
               break;

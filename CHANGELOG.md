@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [4.1.0]  2020-04-02
+### Changed 
+- Changed questionCodeSystem to accept any input, still defaults to 'Custom'.
+
 ## [4.0.0]  2020-03-03
 ### Fixed.
 - Fixed skip logic trigger equal and not equal operators.

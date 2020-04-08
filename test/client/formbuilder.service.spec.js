@@ -70,6 +70,12 @@ describe('formbuilder.service ', function () {
     expect(fbQ.basic.itemHash['/multipleAnswers/1'].value.code).toBeTruthy();
   });
 
+  it('imports questionCodeSystem field', function () {
+    importedLFormsData.items[0].questionCodeSystem = 'http://example.com';
+    let fbQ = fbService.createFormBuilder(importedLFormsData);
+    expect(fbQ.treeData[0].nodes[0].lfData.basic.itemHash['/questionCodeSystem/1'].value).toBe('http://example.com');
+  });
+
   it('should test _pruneObject()', function () {
     expect(fbService._pruneObject({})).toEqual({});
     expect(fbService._pruneObject({a: null})).toEqual({});

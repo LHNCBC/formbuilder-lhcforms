@@ -89,7 +89,7 @@ module.exports = function (grunt) {
           '<%= yeoman.client %>/{app,components}/**/*.spec.js',
           '<%= yeoman.client %>/{app,components}/**/*.mock.js'
         ],
-        tasks: ['newer:jshint:all', 'karma']
+        tasks: ['newer:jshint:all']
       },
       gruntfile: {
         files: ['Gruntfile.js']
@@ -182,40 +182,6 @@ module.exports = function (grunt) {
           src: '{,*/}*.css',
           dest: '.tmp/'
         }]
-      }
-    },
-
-    // Debugging with node inspector
-    'node-inspector': {
-      custom: {
-        options: {
-          'web-host': 'localhost'
-        }
-      }
-    },
-
-    // Use nodemon to run server in debug mode with an initial breakpoint
-    nodemon: {
-      debug: {
-        script: 'app.js',
-        options: {
-          nodeArgs: ['--debug-brk'],
-          env: {
-            PORT: process.env.PORT || 9000
-          },
-          callback: function (nodemon) {
-            nodemon.on('log', function (event) {
-              console.log(event.colour);
-            });
-
-            // opens browser on initial server start
-            nodemon.on('config:update', function () {
-              setTimeout(function () {
-                require('opn')('https://localhost:8080/debug?port=5858');
-              }, 500);
-            });
-          }
-        }
       }
     },
 
@@ -409,25 +375,10 @@ module.exports = function (grunt) {
       test: [
       ],
       debug: {
-        tasks: [
-          'nodemon',
-          'node-inspector'
-        ],
-        options: {
-          logConcurrentOutput: true
-        }
       },
       dist: [
         'svgmin'
       ]
-    },
-
-    // Test settings
-    karma: {
-      unit: {
-        configFile: 'karma.conf.js',
-        singleRun: true
-      }
     },
 
     protractor: {
@@ -644,19 +595,7 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('test', function(target) {
-    if (target === 'client') {
-      return grunt.task.run([
-        'clean:server',
-        'template',
-        'concurrent:test',
-        'injector',
-        'wiredep',
-        'autoprefixer',
-        'karma'
-      ]);
-    }
-
-    else if (target === 'e2e') {
+    if (target === 'e2e') {
       return grunt.task.run([
         'clean:server',
         'template',
@@ -671,7 +610,6 @@ module.exports = function (grunt) {
     }
 
     else grunt.task.run([
-      'test:client',
       'test:e2e'
     ]);
   });

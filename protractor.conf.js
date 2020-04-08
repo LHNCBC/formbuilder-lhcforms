@@ -3,53 +3,29 @@
 
 'use strict';
 
-var FirefoxProfile = require('firefox-profile');
-var q = require('q');
-
-var envConfig;
+let envConfig;
 try {
   envConfig = require('./formbuilder.conf');
 } catch(e) {
   envConfig = {};
 }
 
-var prot = envConfig.https ? 'https' : 'http';
-var baseUrl = prot + '://localhost:' + envConfig.port;
+const prot = envConfig.https ? 'https' : 'http';
+const baseUrl = prot + '://localhost:' + envConfig.port;
 
-function getMultiCapabilities() {
-  "use strict";
-  var deferred = q.defer();
-  var firefoxProfile = new FirefoxProfile();
-  firefoxProfile.setPreference("browser.download.folderList", 2);
-  firefoxProfile.setPreference("browser.download.manager.showWhenStarting", false);
-  firefoxProfile.setPreference("browser.download.dir", '/tmp');
-  firefoxProfile.setPreference("browser.download.useDownloadDir", true);
-  firefoxProfile.setPreference("browser.helperApps.neverAsk.saveToDisk", "application/json");
-
-  firefoxProfile.setPreference("network.http.phishy-userpass-length", 255);
-  firefoxProfile.setPreference("network.automatic-ntlm-auth.trusted-uris", "localhost");
-
-  firefoxProfile.encoded(function(encodedProfile) {
-    var multiCapabilities = [/*{
-      browserName: 'firefox',
-      firefox_profile : encodedProfile
-    },*/{
-      browserName: 'chrome',
-      chromeOptions: {
-        prefs: {
-          download: {
-            'prompt_for_download': false,
-            'directory_upgrade': true,
-            'default_directory': '/tmp'
-          }
-        },
-        args: ['disable-infobars', 'allow-insecure-localhost', 'window-size=1600,1400']
+const multiCapabilities = [{
+  browserName: 'chrome',
+  chromeOptions: {
+    prefs: {
+      download: {
+        'prompt_for_download': false,
+        'directory_upgrade': true,
+        'default_directory': '/tmp'
       }
-    }];
-    deferred.resolve(multiCapabilities);
-  });
-  return deferred.promise;
-}
+    },
+    args: ['disable-infobars', 'allow-insecure-localhost', 'window-size=1600,1400']
+  }
+}];
 
 exports.config = {
   // The timeout for each script run on the browser. This should be longer
@@ -81,7 +57,7 @@ exports.config = {
   //capabilities: {'browserName': 'chrome'},
   // Fix the port number so we can restrict access to it via iptables
   seleniumPort: 4444,
-  getMultiCapabilities: getMultiCapabilities,
+  multiCapabilities: multiCapabilities,
   // ----- The test framework -----
   //
   // Jasmine and Cucumber are fully supported as a test and assertion framework.
@@ -110,14 +86,14 @@ exports.config = {
     };
 
     // Replace default dot reporter with something better.
-    var SpecReporter = require('jasmine-spec-reporter').SpecReporter;
+    const SpecReporter = require('jasmine-spec-reporter').SpecReporter;
     // add jasmine spec reporter
     jasmine.getEnv().addReporter(new SpecReporter({spec: {displayStacktrace: true}}));
 
     // Copied from lforms project to disable animation for testing. -Ajay 04/20/2017
     // disable animation
     // http://stackoverflow.com/questions/26584451/how-to-disable-animations-in-protractor-for-angular-js-appliction
-    var disableNgAnimate = function() {
+    const disableNgAnimate = function() {
       angular
         .module('disableNgAnimate', [])
         .run(['$animate', function($animate) {
@@ -125,7 +101,7 @@ exports.config = {
         }]);
     };
 
-    var disableCssAnimate = function() {
+    const disableCssAnimate = function() {
       angular
         .module('disableCssAnimate', [])
         .run(function() {
