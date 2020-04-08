@@ -1009,6 +1009,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           var system = lodash.find(codeObj.items, {questionCode: 'system'});
           if(system.value === dataConstants.LOINC || system.value === 'http://loinc.org') {
             system.value = 'http://loinc.org/modified';
+            var code = lodash.find(codeObj.items, {questionCode: 'code'});
+            code.value = 'Modified_' + code.value;
           }
         });
       }
@@ -1019,6 +1021,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           var cs = lfd.itemHash[dataConstants.CODING_SYSTEM_ID];
           cs.value = 'http://loinc.org/modified'; // Loinc is modified
           type.value = dataConstants.OTHER;
+          var code = lfd.itemHash[dataConstants.CODE_ID];
+          code.value = 'Modified_' + code.value;
         }
       }
       ancestor.previewItemData = thisService.convertLfData(ancestor.lfData);
@@ -2082,9 +2086,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     if(dataType && dataType.value && (dataType.value.code === 'INT' || dataType.value.code === 'REAL')) {
       var unitsItem = thisService.getFormBuilderField(lfData.items, 'units');
       var code = thisService.getFormBuilderField(lfData.items, 'questionCode').value;
-      var matched = /^(\d+\-\d)$/.exec(code);
+      var matched = /^(Modified_)?(\d+\-\d)$/.exec(code);
       if(matched) {
-        var loinc = matched[1];
+        var loinc = matched[2];
         httpCall = true;
         $http.get(dataConstants.searchLoincPropertyURL+'&terms='+loinc).then(function (resp) {
           var displayFields = resp.data[3][0];

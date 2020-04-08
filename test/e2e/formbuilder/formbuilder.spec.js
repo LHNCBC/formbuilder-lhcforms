@@ -166,7 +166,7 @@ describe('GET /', function () {
       fb.sendKeys(fb.questionText, ' Panel');
 
       // Verify changes in the title
-      expect(fb.panelTitle.getText()).toBe('1.1 Vital Signs Panel [34566-0]');
+      expect(fb.panelTitle.getText()).toBe('1.1 Vital Signs Panel [Modified_34566-0]');
 
       // Verify changes in the preview widget
       fb.previewRefreshButton.click();
@@ -639,6 +639,7 @@ describe('GET /', function () {
       expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org');
       fb.sendKeys(fb.questionText, ' xxxx');
       expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org/modified');
+      expect(fb.questionCode.getAttribute('value')).toBe('Modified_12345-6');
     });
   });
 
