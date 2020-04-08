@@ -5,12 +5,14 @@
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
   <head>
     <!-- Address click jacking protection -->
-    <style> html {display : none; } </style>
-    <script>
-      if ( self === top ) {
-        document.documentElement.style.display = 'block';
-      }
-      else {
+    <style id="antiClickjack">
+      body{display:none !important;}
+    </style>
+    <script type="text/javascript">
+      if (self === top) {
+        var antiClickjack = document.getElementById("antiClickjack");
+        antiClickjack.parentNode.removeChild(antiClickjack);
+      } else {
         top.location = self.location;
       }
     </script>
