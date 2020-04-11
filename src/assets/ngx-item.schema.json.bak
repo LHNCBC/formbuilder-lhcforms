@@ -2,15 +2,6 @@
   "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
   "type": "object",
   "properties": {
-    "id": {
-      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-      "title": "Id",
-      "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string",
-      "widget": {
-        "id": "hidden"
-      }
-    },
     "extension": {
       "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
       "items": {
@@ -35,11 +26,11 @@
         "additionalProperties": false,
         "type": "object"
       },
-      "type": "array",
-      "title": "Extension",
       "widget": {
         "id": "hidden"
-      }
+      },
+      "type": "array",
+      "title": "Extension"
     },
     "modifierExtension": {
       "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
@@ -154,48 +145,17 @@
           "userSelected": {
             "description": "Indicates that this coding was chosen by a user directly - e.g. off a pick list of available items (codes or displays).",
             "pattern": "^true|false$",
-            "type": "boolean"
+            "type": "boolean",
+            "widget": {
+              "id": "hidden"
+            }
           }
         },
         "additionalProperties": false,
-        "type": "object",
-        "widget": {
-          "id": "row-layout"
-        },
-        "fieldsets": [
-          {
-            "fields": [
-              "id",
-              "extension",
-              "code",
-              "system",
-              "display",
-              "version",
-              "userSelected"
-            ],
-            "showFields": [
-              { "field": "code", "col": 2 },
-              { "field": "code", "col": 2 },
-
-              {
-                "system": {
-                  "col": 6
-                }
-              },
-              {
-                "display": {
-                  "col": 4
-                }
-              }
-            ]
-          }
-        ]
+        "type": "object"
       },
       "type": "array",
-      "title": "Code",
-      "widget": {
-        "id": "array-grid"
-      }
+      "title": "Code"
     },
     "prefix": {
       "description": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire.",
@@ -439,40 +399,7 @@
               }
             },
             "additionalProperties": false,
-            "type": "object",
-            "widget": {
-              "id": "row-layout"
-            },
-            "fieldsets": [
-              {
-                "fields": [
-                  "id",
-                  "extension",
-                  "code",
-                  "system",
-                  "display",
-                  "version",
-                  "userSelected"
-                ],
-                "showFields": [
-                  {
-                    "code": {
-                      "col": 2
-                    }
-                  },
-                  {
-                    "system": {
-                      "col": 6
-                    }
-                  },
-                  {
-                    "display": {
-                      "col": 4
-                    }
-                  }
-                ]
-              }
-            ]
+            "type": "object"
           },
           "answerQuantity": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
@@ -617,10 +544,7 @@
         "any"
       ],
       "type": "string",
-      "title": "Enable behavior",
-      "widget": {
-        "id": "select"
-      }
+      "title": "Enable behavior"
     },
     "required": {
       "description": "An indication, if true, that the item must be present in a \"completed\" QuestionnaireResponse.  If false, the item may be skipped when answering the questionnaire.",
@@ -818,40 +742,7 @@
               }
             },
             "additionalProperties": false,
-            "type": "object",
-            "widget": {
-              "id": "row-layout"
-            },
-            "fieldsets": [
-              {
-                "fields": [
-                  "id",
-                  "extension",
-                  "code",
-                  "system",
-                  "display",
-                  "version",
-                  "userSelected"
-                ],
-                "showFields": [
-                  {
-                    "code": {
-                      "col": 2
-                    }
-                  },
-                  {
-                    "system": {
-                      "col": 6
-                    }
-                  },
-                  {
-                    "display": {
-                      "col": 4
-                    }
-                  }
-                ]
-              }
-            ]
+            "type": "object"
           },
           "valueReference": {
             "description": "A potential answer that's allowed as the answer to this question.",
@@ -1195,40 +1086,7 @@
               }
             },
             "additionalProperties": false,
-            "type": "object",
-            "widget": {
-              "id": "row-layout"
-            },
-            "fieldsets": [
-              {
-                "fields": [
-                  "id",
-                  "extension",
-                  "code",
-                  "system",
-                  "display",
-                  "version",
-                  "userSelected"
-                ],
-                "showFields": [
-                  {
-                    "code": {
-                      "col": 2
-                    }
-                  },
-                  {
-                    "system": {
-                      "col": 6
-                    }
-                  },
-                  {
-                    "display": {
-                      "col": 4
-                    }
-                  }
-                ]
-              }
-            ]
+            "type": "object"
           },
           "valueQuantity": {
             "description": "The actual value to for an initial answer.",
@@ -1809,40 +1667,7 @@
         }
       },
       "additionalProperties": false,
-      "type": "object",
-      "widget": {
-        "id": "row-layout"
-      },
-      "fieldsets": [
-        {
-          "fields": [
-            "id",
-            "extension",
-            "code",
-            "system",
-            "display",
-            "version",
-            "userSelected"
-          ],
-          "showFields": [
-            {
-              "code": {
-                "col": 2
-              }
-            },
-            {
-              "system": {
-                "col": 6
-              }
-            },
-            {
-              "display": {
-                "col": 4
-              }
-            }
-          ]
-        }
-      ]
+      "type": "object"
     },
     "boolean": {
       "pattern": "^true|false$",
@@ -3665,40 +3490,7 @@
             }
           },
           "additionalProperties": false,
-          "type": "object",
-          "widget": {
-            "id": "row-layout"
-          },
-          "fieldsets": [
-            {
-              "fields": [
-                "id",
-                "extension",
-                "code",
-                "system",
-                "display",
-                "version",
-                "userSelected"
-              ],
-              "showFields": [
-                {
-                  "code": {
-                    "col": 2
-                  }
-                },
-                {
-                  "system": {
-                    "col": 6
-                  }
-                },
-                {
-                  "display": {
-                    "col": 4
-                  }
-                }
-              ]
-            }
-          ]
+          "type": "object"
         },
         "answerQuantity": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
@@ -3997,40 +3789,7 @@
             }
           },
           "additionalProperties": false,
-          "type": "object",
-          "widget": {
-            "id": "row-layout"
-          },
-          "fieldsets": [
-            {
-              "fields": [
-                "id",
-                "extension",
-                "code",
-                "system",
-                "display",
-                "version",
-                "userSelected"
-              ],
-              "showFields": [
-                {
-                  "code": {
-                    "col": 2
-                  }
-                },
-                {
-                  "system": {
-                    "col": 6
-                  }
-                },
-                {
-                  "display": {
-                    "col": 4
-                  }
-                }
-              ]
-            }
-          ]
+          "type": "object"
         },
         "valueReference": {
           "description": "A potential answer that's allowed as the answer to this question.",
@@ -4369,40 +4128,7 @@
             }
           },
           "additionalProperties": false,
-          "type": "object",
-          "widget": {
-            "id": "row-layout"
-          },
-          "fieldsets": [
-            {
-              "fields": [
-                "id",
-                "extension",
-                "code",
-                "system",
-                "display",
-                "version",
-                "userSelected"
-              ],
-              "showFields": [
-                {
-                  "code": {
-                    "col": 2
-                  }
-                },
-                {
-                  "system": {
-                    "col": 6
-                  }
-                },
-                {
-                  "display": {
-                    "col": 4
-                  }
-                }
-              ]
-            }
-          ]
+          "type": "object"
         },
         "valueQuantity": {
           "description": "The actual value to for an initial answer.",
@@ -4541,90 +4267,23 @@
       "$ref": "#/definitions/string"
     }
   },
-  "fieldsets": [
-    {
-      "title": "First Two items",
-      "widget": {
-        "id": "row-layout"
-      },
-      "fields": [
-        "type",
-        "linkId"
-      ],
-      "showFields": [
-        {
-          "field": "type"
-        },
-        {
-          "field": "linkId"
-        }
-      ]
-    },
-    {
-      "title": "Next Two items",
-      "widget": {
-        "id": "row-layout"
-      },
-      "fields": [
-        "prefix",
-        "text"
-      ],
-      "showFields": [
-        {
-          "field": "prefix",
-          "col": "1"
-        },
-        {
-          "field": "text",
-          "col": "11"
-        }
-      ]
-    },
-    {
-      "title": "The small four items",
-      "widget": {
-        "id": "row-layout"
-      },
-      "fields": [
-        "required",
-        "repeats",
-        "readOnly",
-        "maxLength"
-      ],
-      "showFields": [
-        {
-          "field": "required"
-        },
-        {
-          "field": "repeats"
-        },
-        {
-          "field": "readOnly"
-        },
-        {
-          "field": "maxLength"
-        }
-      ]
-    },
-    {
-      "title": "The other items",
-      "fields": [
-        "code",
-        "answerValueSet",
-        "answerOption",
-        "initial",
-        "enableWhen",
-        "enableBehavior",
-        "definition"
-      ]
-    },
-    {
-      "title": "The hidden items",
-      "fields": [
-        "id",
-        "extension",
-        "modifierExtension"
-      ]
-    }
+  "order": [
+    "type",
+    "linkId",
+    "prefix",
+    "text",
+    "code",
+    "required",
+    "readOnly",
+    "repeats",
+    "maxLength",
+    "answerOption",
+    "answerValueSet",
+    "extension",
+    "initial",
+    "enableWhen",
+    "enableBehavior",
+    "modifierExtension",
+    "definition"
   ]
 }

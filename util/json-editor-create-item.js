@@ -78,6 +78,12 @@ replaceValue(jp(schema, "/definitions/Extension/properties"));
 // jp.remove(schema, "/properties/modifierExtension");
 addOptions(jp(schema, "/definitions/Coding/properties/id"), {hidden: true});
 addOptions(jp(schema, "/definitions/Coding/properties/version"), {hidden: true});
+addOptions(jp(schema, "/definitions/Coding/properties/userSelected"), {hidden: true});
+addOptions(jp(schema, "/definitions/Questionnaire_EnableWhen/properties/id"), {hidden: true});
+addOptions(jp(schema, "/definitions/Questionnaire_AnswerOption/properties/id"), {hidden: true});
+addOptions(jp(schema, "/definitions/Questionnaire_AnswerOption/properties/initialSelected"), {hidden: true});
+addOptions(jp(schema, "/definitions/Questionnaire_AnswerOption/properties/valueReference"), {hidden: true});
+addOptions(jp(schema, "/definitions/Questionnaire_Initial/properties/id"), {hidden: true});
 addOptions(jp(schema, "/properties/definition"), {hidden: true});
 addOptions(jp(schema, "/properties/id"), {hidden: true});
 addOptions(jp(schema, "/properties/required"), {grid_columns: 3});
@@ -100,7 +106,37 @@ jp.remove(schema, "/definitions/Reference/properties/identifier");
 arrangeLayout(schema);
 addInfoText(schema, schema);
 setSkipLogic(schema);
+// removeCircularRef(schema);
+// deref(schema, schema);
 console.log(JSON.stringify(schema, null, 2)); // tslint:disable-line no-console
+
+function deref(schemaObj, subSchemaObj) {
+  if (subSchemaObj.$ref) {
+//    console.log("$ref = " + subSchemaObj.$ref);
+    let refSchema = jp(schemaObj, subSchemaObj.$ref.slice(1));
+    delete subSchemaObj.$ref;
+    let derefSchema = deref(schemaObj, refSchema);
+    if (subSchemaObj.title) {
+      delete derefSchema.title;
+    }
+    if (subSchemaObj.description) {
+      delete derefSchema.description;
+    }
+    Object.assign(subSchemaObj, derefSchema);
+  } else if (subSchemaObj.type === "object") {
+    for (let prop in subSchemaObj.properties) {
+      if (subSchemaObj.properties.hasOwnProperty(prop)) {
+//        console.log("object prop = " + prop);
+        subSchemaObj.properties[prop] = deref(schemaObj, subSchemaObj.properties[prop]);
+      }
+    }
+  } else if (subSchemaObj.type === "array") {
+//    console.log("array title = " + subSchemaObj.title);
+    subSchemaObj.items = deref(schemaObj, subSchemaObj.items);
+  }
+
+  return subSchemaObj;
+}
 
 function setSkipLogic(schema) {
   [
@@ -113,39 +149,117 @@ function setSkipLogic(schema) {
     {
       target: '/properties/readOnly',
       conditions: [
-        {source: 'type', value: ['text', 'string', 'boolean', 'integer', 'decimal', 'date', 
-        'dateTime', 'time', 'url', 'choice', 'open-choice', 'referene', 
+        {source: 'type', value: ['text', 'string', 'boolean', 'integer', 'decimal', 'date',
+        'dateTime', 'time', 'url', 'choice', 'open-choice', 'referene',
         'quantity', 'attachment']}
       ],
     },
     {
       target: '/properties/required',
       conditions: [
-        {source: 'type', value: ['text', 'string', 'boolean', 'integer', 'decimal', 'date', 
-        'dateTime', 'time', 'url', 'choice', 'open-choice', 'referene', 
+        {source: 'type', value: ['text', 'string', 'boolean', 'integer', 'decimal', 'date',
+        'dateTime', 'time', 'url', 'choice', 'open-choice', 'referene',
         'quantity', 'attachment']}
       ],
     },
     {
       target: '/properties/repeats',
       conditions: [
-        {source: 'type', value: ['text', 'string', 'boolean', 'integer', 'decimal', 'date', 
-        'dateTime', 'time', 'url', 'choice', 'open-choice', 'referene', 
+        {source: 'type', value: ['text', 'string', 'boolean', 'integer', 'decimal', 'date',
+        'dateTime', 'time', 'url', 'choice', 'open-choice', 'referene',
         'quantity', 'attachment']}
       ],
     },
     {
       target: '/properties/answerOption',
-      conditions: [
-        {source: 'type', value: ['choice', 'open-choice']}
-      ],
+      conditions: [{source: 'type', value: ['choice', 'open-choice', 'date', 'time', 'integer', 'string', 'text', 'reference']}]
+    },
+    {
+      target: '/properties/initial',
+      conditions: [{source: 'type', value: ['choice', 'open-choice', 'boolean', 'decimal', 'integer',
+        'date', 'dateTime', 'time', 'integer', 'string', 'url', 'text', 'attachment', 'reference']}]
     },
     {
       target: '/properties/answerValueSet',
-      conditions: [
-        {source: 'type', value: ['choice', 'open-choice']}
-      ],
+      conditions: [{source: 'type', value: ['choice', 'open-choice']}]
+    },
+    {
+      target: '/definitions/Questionnaire_AnswerOption/properties/valueInteger',
+      conditions: [{source: 'type', value: ['integer']}]
+    },
+    {
+      target: '/definitions/Questionnaire_AnswerOption/properties/valueDate',
+      conditions: [{source: 'type', value: ['date']}]
+    },
+    {
+      target: '/definitions/Questionnaire_AnswerOption/properties/valueTime',
+      conditions: [{source: 'type', value: ['time']}]
+    },
+    {
+      target: '/definitions/Questionnaire_AnswerOption/properties/valueString',
+      conditions: [{source: 'type', value: ['string', 'text']}]
+    },
+    {
+      target: '/definitions/Questionnaire_AnswerOption/properties/valueCoding',
+      conditions: [{source: 'type', value: ['choice', 'open-choice']}]
+    },
+    /*
+    {
+      target: '/definitions/Questionnaire_AnswerOption/properties/valueReference',
+      conditions: [{source: 'type', value: ['reference']}]
+    },
+    */
+
+
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueBoolean',
+      conditions: [{source: 'type', value: ['boolean']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueDecimal',
+      conditions: [{source: 'type', value: ['decimal']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueInteger',
+      conditions: [{source: 'type', value: ['integer']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueDate',
+      conditions: [{source: 'type', value: ['date']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueDateTime',
+      conditions: [{source: 'type', value: ['dateTime']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueTime',
+      conditions: [{source: 'type', value: ['time']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueString',
+      conditions: [{source: 'type', value: ['string', 'text']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueUri',
+      conditions: [{source: 'type', value: ['url']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueAttachment',
+      conditions: [{source: 'type', value: ['attachment']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueCoding',
+      conditions: [{source: 'type', value: ['choice', 'opem-choice']}]
+    },
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueQuantity',
+      conditions: [{source: 'type', value: ['quantity']}]
+    } /*,
+    {
+      target: '/definitions/Questionnaire_Initial/properties/valueReference',
+      conditions: [{source: 'type', value: ['reference']}]
     }
+    */
   ].forEach((skObj) => {
     let target = jp(schema, skObj.target);
     if(!target.options) {
@@ -159,7 +273,7 @@ function setSkipLogic(schema) {
       tOptions.dependencies[condition.source] = condition.value;
     });
   });
-  
+
 }
 
 function collectDefinitions(def) {
@@ -343,3 +457,15 @@ function arrangeLayout( schemaObj ) {
   addOptions(jp(schema, "/properties/enableWhen"), {grid_columns: 12});
   addOptions(jp(schema, "/properties/enableBehavior"), {grid_columns: 12});
 }
+
+function removeCircularRef(obj) {
+
+  traverse(obj).forEach(function(n) {
+//    console.log(this.path);
+    if (this.circular) {
+      // console.log("************" + this.path + "********************");
+      this.remove();
+    }
+  });
+}
+

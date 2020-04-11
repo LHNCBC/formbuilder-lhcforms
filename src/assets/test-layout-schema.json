@@ -199,7 +199,8 @@
             }
           },
           "additionalProperties": false,
-          "type": "object"
+          "type": "object",
+          "widget": {"id": "row-layout"}
         },
         "type": "array",
         "title": "Code"

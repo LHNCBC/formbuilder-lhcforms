@@ -26,6 +26,8 @@ import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.compon
 import { TreeModule } from 'angular-tree-component';
 import { ItemJsonEditorComponent } from './item-json-editor/item-json-editor.component';
 import { AjsfFormComponent } from './ajsf-form/ajsf-form.component';
+import { RowLayoutComponent } from './lib/row-layout/row-layout.component';
+import { ArrayGridComponent } from './lib/array-grid/array-grid.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +36,9 @@ import { AjsfFormComponent } from './ajsf-form/ajsf-form.component';
     NgxSchemaFormComponent,
     MainContentComponent,
     ItemJsonEditorComponent,
-    AjsfFormComponent
+    AjsfFormComponent,
+    RowLayoutComponent,
+    ArrayGridComponent
   ],
   imports: [
     AppRoutingModule,
@@ -58,6 +62,7 @@ import { AjsfFormComponent } from './ajsf-form/ajsf-form.component';
     SchemaFormModule.forRoot(),
     TreeModule
   ],
+  entryComponents: [RowLayoutComponent, ArrayGridComponent],
   providers: [{provide: WidgetRegistry, useClass: DefaultWidgetRegistry}],
   bootstrap: [AppComponent]
 })

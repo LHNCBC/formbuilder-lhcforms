@@ -46,7 +46,8 @@ refs.forEach(function(ptr) {
 // 4) Doesn't recognize $ref at root level.
 
 // Remove $schema and id to calm down z-schema!
-schema.$schema = "../../node_modules/ngx-schema-form/ngx-schema-form-schema.json";
+//schema.$schema = "../../node_modules/ngx-schema-form/ngx-schema-form-schema.json";
+delete schema.$schema;
 delete schema.id;
 schema.type = "object"; // Add type, another z-schema quirk?
 Object.assign(schema, fragment); // Assign the desired fragment to the root.
@@ -78,12 +79,30 @@ hideExtensions(schema);
 jp.remove(schema, "/properties/item");
 jp.remove(schema, "/definitions/Questionnaire_Item");
 jp.remove(schema, "/definitions/Reference/properties/identifier");
-adjustOrderOfDisplay(schema);
+codingLayout(schema);
 // addInfoText(schema);
 //detectCircularRef(schema);
 schema = deref(schema, schema);
 //detectCircularRef(schema);
+adjustLayout(schema);
+
 console.log(JSON.stringify(schema, null, 2)); // tslint:disable-line no-console
+
+function adjustLayout(schema) {
+  const fieldsets = require('../src/assets/ngx-fieldsets.json');
+  // adjustOrderOfDisplay(schema);
+  jp.set(schema, "/properties/type/widget", {id: 'select'});
+  jp.set(schema, "/properties/enableBehavior/widget", {id: 'select'});
+  jp.set(schema, "/fieldsets", fieldsets);
+  jp.set(schema, "/properties/code/widget", {"id": "array-grid"});
+  jp.set(schema, "/properties/definition/widget/id", "hidden");
+  jp.set(schema, "/properties/id/widget/id", "hidden");
+}
+
+function codingLayout(schema) {
+  jp.set(schema, "/definitions/Coding/widget", {id: "row-layout"});
+  jp.set(schema, "/definitions/Coding/fieldsets", [{fields: ['id', 'extension', 'code', 'system', 'display', 'version', 'userSelected'], showFields: [{code: {col: 2}}, {system: {col: 6}}, {display: {col: 4}}]}]);
+}
 
 function collectDefinitions(def) {
   traverse(def).reduce(function(acc, n) {

@@ -27,7 +27,7 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   isTreeExpanded = false;
   showType = 'item';
   itemEditorSchema: any;
-  editor = 'json';
+  editor = 'ngx';
   ajsfFramwork  = 'material-design';
 
 

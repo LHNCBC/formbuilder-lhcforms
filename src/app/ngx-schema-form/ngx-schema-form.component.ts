@@ -25,18 +25,17 @@ export class NgxSchemaFormComponent implements OnInit {
     this.http
       .get('/assets/test.schema.json', { responseType: 'json' })
       .subscribe(schema => {
-
         this.myTestSchema = schema;
-        // this.mySchema = schema;
       });
 
     this.modelService.object.subscribe((model) => {
-      this.model = model;
+      if (this.model !== model) {
+        this.model = model;
+      }
     });
   }
 
   updateModel(model) {
-//    this.model = model;
     this.modelService.setObject(model);
   }
 }
