@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "main": "server/index.js",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
@@ -80,6 +80,7 @@
     "karma-jasmine": "^1.1.2",
     "karma-spec-reporter": "0.0.32",
     "load-grunt-tasks": "^3.1.0",
+    "lforms-updater": "~24.0.0",
     "nock": "^10.0.6",
     "opn": "^4.0.1",
     "time-grunt": "^1.3.0"
@@ -89,7 +90,8 @@
   },
   "scripts": {
     "start": "source ./bashrc.formbuilder && node ./app.js -c ./formbuilder.conf.js",
-    "clean-install": "rm -rf ./client/bower_components && source ./bashrc.formbuilder && npm ci && source ./bashrc.formbuilder && bower install",
+    "copy-npm-scripts": "cp node_modules/lforms-updater/browser/updater.js client/app/lforms-updater.js",
+    "clean-install": "rm -rf ./client/bower_components && source ./bashrc.formbuilder && npm ci && source ./bashrc.formbuilder && bower install && npm run copy-npm-scripts",
     "clean-test": "npm run clean-install && npm test",
     "build": "source ./bashrc.formbuilder && grunt build",
     "clean-build": "npm run clean-install && npm run build",

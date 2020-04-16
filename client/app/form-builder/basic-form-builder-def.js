@@ -17,10 +17,6 @@ var formBuilderDef = {
   },
   "items": [
     {
-      /*
-      ******** item type: 'group' determines item.header=true, 'display' determines item.dataType=TITLE, and
-      * 'question' will show dataType pull down to get other item.dataType values
-      */
       "questionCode": "__itemType",
       "question": "Item type*",
       "dataType": "CNE",
@@ -34,10 +30,10 @@ var formBuilderDef = {
       "value": {
         "code": "question",
         "text": "Question"
-      }
+      },
+      "linkId": "/__itemType"
     },
     {
-      // *********** Data type ************************,
       "questionCode": "dataType",
       "question": "Data type*",
       "dataType": "CNE",
@@ -60,20 +56,37 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "__itemType",
-            "trigger": {"value": {"code": "question"}}
+            "source": "/__itemType",
+            "trigger": {
+              "value": {
+                "code": "question"
+              }
+            }
           }
         ],
         "action": "show"
-      }
+      },
+      "linkId": "/dataType"
     },
     {
-      // *********** question ************************,
       "questionCode": "question",
       "question": "Item name*",
       "dataType": "ST",
       "header": false,
-      "codingInstructions": "This is required: Enter the section header or question text exactly as it is displayed on your form."
+      "codingInstructions": "This is required: Enter the section header or question text exactly as it is displayed on your form.",
+      "linkId": "/question"
+    },
+    {
+      "questionCode": "linkId",
+      "question": "Link Id*",
+      "dataType": "ST",
+      "header": false,
+      "answerCardinality": {
+        "min": "1",
+        "max": "1"
+      },
+      "codingInstructions": "This is required: Enter the unique id for the question or section header given in the Text field. This should be unique in the entire form.",
+      "linkId": "/linkId"
     },
     {
       "questionCode": "_questionCodeSystem",
@@ -94,7 +107,8 @@ var formBuilderDef = {
         "max": "1"
       },
       "codingInstructions": "Select \"LOINC\" to use LOINC codes, or enter your own coding system by selecting \"Other.\"",
-      "defaultAnswer": "Other"
+      "defaultAnswer": "Other",
+      "linkId": "/_questionCodeSystem"
     },
     {
       "questionCode": "questionCodeSystem",
@@ -106,10 +120,10 @@ var formBuilderDef = {
         "min": "1",
         "max": "1"
       },
-      "codingInstructions": "Enter url for other than LOINC code system."
+      "codingInstructions": "Enter url for other than LOINC code system.",
+      "linkId": "/questionCodeSystem"
     },
     {
-      // *********** questionCode ************************,
       "questionCode": "questionCode",
       "question": "Item code*",
       "dataType": "ST",
@@ -118,33 +132,33 @@ var formBuilderDef = {
         "min": "1",
         "max": "1"
       },
-      "codingInstructions": "This is required: Enter the unique question code for the question or section header given in the Text field. <p>If a question or section header is not available, enter any unique identifier in square brackets, e.g., [Q1], [Q2], [H1].</p>"
+      "codingInstructions": "This is required: Enter the unique question code for the question or section header given in the Text field. <p>If a question or section header is not available, enter any unique identifier in square brackets, e.g., [Q1], [Q2], [H1].</p>",
+      "linkId": "/questionCode"
     },
     {
-      // *********** prefix ************************,
       "questionCode": "prefix",
       "question": "Prefix",
       "dataType": "ST",
       "header": false,
-      "codingInstructions": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire."
+      "codingInstructions": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire.",
+      "linkId": "/prefix"
     },
     {
-      // *********** localQuestionCode ************************,
       "questionCode": "localQuestionCode",
       "question": "Local code",
       "dataType": "ST",
       "header": false,
-      "codingInstructions": "Enter a unique code for the question you are creating. Exmples are 1 or A1."
+      "codingInstructions": "Enter a unique code for the question you are creating. Exmples are 1 or A1.",
+      "linkId": "/localQuestionCode"
     },
     {
-      // *********** codingInstructions ************************,
       "questionCode": "codingInstructions",
       "question": "Help text for the item [1]",
       "dataType": "ST",
       "header": false,
-      "codingInstructions": "Instructions for the person completing the form on how to answer a specific item. This could include additional explanatory text that supplements the question or the number of expected responses."
+      "codingInstructions": "Instructions for the person completing the form on how to answer a specific item. This could include additional explanatory text that supplements the question or the number of expected responses.",
+      "linkId": "/codingInstructions"
     },
-    // ************* repeatQuestion ***************************,
     {
       "questionCode": "questionCardinality",
       "question": "Repeat this item? [1]",
@@ -155,7 +169,8 @@ var formBuilderDef = {
       "value": {
         "text": "No",
         "code": false
-      }
+      },
+      "linkId": "/questionCardinality"
     },
     {
       "questionCode": "answerRequired",
@@ -171,12 +186,17 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "__itemType",
-            "trigger": {"value": {"code": "question"}}
+            "source": "/__itemType",
+            "trigger": {
+              "value": {
+                "code": "question"
+              }
+            }
           }
         ],
         "action": "show"
-      }
+      },
+      "linkId": "/answerRequired"
     },
     {
       "questionCode": "editable",
@@ -192,8 +212,12 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "__itemType",
-            "trigger": {"value": {"code": "question"}}
+            "source": "/__itemType",
+            "trigger": {
+              "value": {
+                "code": "question"
+              }
+            }
           }
         ],
         "action": "show"
@@ -207,7 +231,8 @@ var formBuilderDef = {
       "value": {
         "text": "Editable",
         "code": "1"
-      }
+      },
+      "linkId": "/editable"
     },
     {
       "questionCode": "answers",
@@ -222,7 +247,7 @@ var formBuilderDef = {
         "logic": "ANY",
         "conditions": [
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "CNE"
@@ -230,7 +255,7 @@ var formBuilderDef = {
             }
           },
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "CWE"
@@ -250,35 +275,40 @@ var formBuilderDef = {
             "max": "1"
           },
           "codingInstructions": "Enter the text of the answer here.",
-          "header": false
+          "header": false,
+          "linkId": "/answers/text"
         },
         {
           "questionCode": "code",
           "question": "Answer code",
           "dataType": "ST",
           "codingInstructions": "If desired, enter an answer code.",
-          "header": false
+          "header": false,
+          "linkId": "/answers/code"
         },
         {
           "questionCode": "system",
           "question": "Answer code system",
           "dataType": "ST",
           "codingInstructions": "If desired, enter a codeSystem.",
-          "header": false
+          "header": false,
+          "linkId": "/answers/system"
         },
         {
           "questionCode": "label",
           "question": "Answer label",
           "dataType": "ST",
           "codingInstructions": "Enter a label such as \"A\" or \"1\" or \"T\" if you wish to assign a label to each answer.",
-          "header": false
+          "header": false,
+          "linkId": "/answers/label"
         },
         {
           "questionCode": "score",
           "question": "Score",
           "dataType": "INT",
           "codingInstructions": "If desired, enter a number to assign a numerical value to this answer for scoring purposes.",
-          "header": false
+          "header": false,
+          "linkId": "/answers/score"
         },
         {
           "questionCode": "other",
@@ -290,7 +320,8 @@ var formBuilderDef = {
           "value": {
             "text": "No",
             "code": false
-          }
+          },
+          "linkId": "/answers/other"
         },
         {
           "questionCode": "otherValue",
@@ -302,14 +333,20 @@ var formBuilderDef = {
             "logic": "ANY",
             "conditions": [
               {
-                "source": "other",
-                "trigger": {"value": {"code": true}}
+                "source": "/answers/other",
+                "trigger": {
+                  "value": {
+                    "code": true
+                  }
+                }
               }
             ],
             "action": "show"
-          }
+          },
+          "linkId": "/answers/otherValue"
         }
-      ]
+      ],
+      "linkId": "/answers"
     },
     {
       "questionCode": "multipleAnswers",
@@ -326,7 +363,7 @@ var formBuilderDef = {
         "logic": "ANY",
         "conditions": [
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "CNE"
@@ -334,7 +371,7 @@ var formBuilderDef = {
             }
           },
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "CWE"
@@ -343,10 +380,10 @@ var formBuilderDef = {
           }
         ],
         "action": "show"
-      }
+      },
+      "linkId": "/multipleAnswers"
     },
     {
-      // *********** Default answer ************************,
       "questionCode": "defaultAnswer",
       "question": "Default answer",
       "dataType": "ST",
@@ -355,8 +392,12 @@ var formBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "__itemType",
-            "trigger": {"value": {"code": "question"}}
+            "source": "/__itemType",
+            "trigger": {
+              "value": {
+                "code": "question"
+              }
+            }
           }
         ],
         "action": "show"
@@ -364,10 +405,10 @@ var formBuilderDef = {
       "answerCardinality": {
         "min": "0",
         "max": "1"
-      }
+      },
+      "linkId": "/defaultAnswer"
     },
     {
-      // *********** Externally defined Answer list ************************,
       "questionCode": "externallyDefined",
       "question": "URL for externally defined answer list",
       "dataType": "URL",
@@ -377,7 +418,7 @@ var formBuilderDef = {
         "logic": "ANY",
         "conditions": [
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "CWE"
@@ -385,7 +426,7 @@ var formBuilderDef = {
             }
           },
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "CNE"
@@ -398,7 +439,8 @@ var formBuilderDef = {
       "answerCardinality": {
         "min": "0",
         "max": "1"
-      }
+      },
+      "linkId": "/externallyDefined"
     },
     {
       "questionCode": "units",
@@ -414,7 +456,7 @@ var formBuilderDef = {
         "logic": "ANY",
         "conditions": [
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "INT"
@@ -422,7 +464,7 @@ var formBuilderDef = {
             }
           },
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "REAL"
@@ -430,7 +472,7 @@ var formBuilderDef = {
             }
           },
           {
-            "source": "dataType",
+            "source": "/dataType",
             "trigger": {
               "value": {
                 "code": "RTO"
@@ -445,8 +487,14 @@ var formBuilderDef = {
         "answerLayout": {
           "type": "COMBO_BOX"
         },
-        "listColHeaders": ["Unit", "Name", "Guidance"]
-      }
-    },
-  ]
+        "listColHeaders": [
+          "Unit",
+          "Name",
+          "Guidance"
+        ]
+      },
+      "linkId": "/units"
+    }
+  ],
+  "lformsVersion": "24.0.0"
 };

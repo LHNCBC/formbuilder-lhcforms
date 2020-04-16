@@ -55,6 +55,7 @@
       <!-- endbower -->
     <script src="bower_components/lforms/app/scripts/fhir/STU3/lformsFHIR.js"></script>
     <script src="bower_components/lforms/app/scripts/fhir/R4/lformsFHIR.js"></script>
+    <script src="app/lforms-updater.js"></script>
     <!-- endbuild -->
 
         <!-- build:js({.tmp,client}) app/app.js -->

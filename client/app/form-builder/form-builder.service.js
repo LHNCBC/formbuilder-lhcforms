@@ -309,13 +309,13 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       parentArray = parentArray[i-1].nodes;
     });
 
-    var ret = getFieldData(targetList, [dataConstants.CODE, dataConstants.QUESTION,
+    var ret = getFieldData(targetList, ['linkId', dataConstants.QUESTION,
       dataConstants.DATATYPE, dataConstants.ANSWERS]);
 
     ret.forEach(function(x) {
-      x.code = x.questionCode;
+      x.code = x.linkId;
       x.text = x.question;
-      delete x.questionCode;
+      delete x.linkId;
       delete x.question;
     });
     return ret;
@@ -489,6 +489,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       var attr = item.questionCode;
 
       switch (attr) {
+        case "linkId":
         case "questionCodeSystem":
         case "questionCode":
         case "question":
@@ -688,7 +689,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
               val = thisService.getFormBuilderField(condition.items, 'source').value;
               var source = null;
               if(val) {
-                source = val.code;
+                source = val.code; // TODO - Check to make sure val.code is linkId
               }
               if(source) {
                 var cond = {};
@@ -760,7 +761,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
               }
               if(dataControl.items[1].value) {
                 var source = {
-                  sourceItemCode: dataControl.items[1].value.code,
+                  sourceLinkId: dataControl.items[1].value.code,
                   sourceType: 'INTERNAL'
                 };
 
@@ -945,6 +946,8 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         item.questionCodeSystem = 'http://loinc.org';
       }
     });
+
+    thisService.lformsUpdate(lForm);
   };
 
 
@@ -1439,7 +1442,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
       case "questionCodeSystem":
         var _fbSystem = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES['_questionCodeSystem'].category].items, '_questionCodeSystem');
-        var fbCode = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES['questionCode'].category].items, 'questionCode');
         if(val === 'LOINC' || val === 'http://loinc.org') {
           subItem.value = 'http://loinc.org';
           _fbSystem.value = dataConstants.LOINC;
@@ -1626,7 +1628,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           field.value = {code: dataControl[k]};
         });
         var source = lodash.find(fbDataControl.items, {questionCode: 'source'});
-        source.value = {code: dataControl.source.sourceItemCode};
+        source.value = {code: dataControl.source.sourceLinkId};
         var df = lodash.find(fbDataControl.items, {questionCode: 'dataFormat'});
         // If the imported value is valid object, stringify it.
         var dfText = Object(dataControl.dataFormat) === dataControl.dataFormat ?
@@ -2056,11 +2058,12 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
     lfItem.advanced.items.push({
       questionCode: name,
+      linkId: '/'+name,
       // Hide it using impossible condition. _isHeader can be only "Yes" or "No"
       skipLogic: {
         conditions: [
           {
-            "source": "_isHeader",
+            "source": "/_isHeader",
             "trigger": {
               "value": "notThisString"
             }
@@ -2115,4 +2118,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
   this.cacheLFData();
 
+  /**
+   *
+   * Update any previous versions of imported lforms. LOINC items from CTSS could
+   * be out of sync with new lforms format.
+   *
+   * @param lformsData - Form, question or panel in lforms format.
+   */
+  this.lformsUpdate = function(lformsData) {
+    var form = lformsData;
+    if(lformsData.questionCode || lformsData.linkId) {
+      form = {items: [lformsData]};
+    }
+    lformsUpdater.update(form);
+  }
 }]);
