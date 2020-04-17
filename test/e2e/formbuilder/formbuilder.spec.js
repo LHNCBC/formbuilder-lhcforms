@@ -134,6 +134,23 @@ describe('GET /', function () {
       // Verify widget title
       expect(fb.panelTitle.getText()).toBe('1 '+str);
     });
+
+    it('should see changes in linkId', function (done) {
+      fb.cleanupSideBar();
+      var str = 'Test item created';
+      fb.addButton.click();
+      fb.addNewItem(str);
+      fb.linkId.clear();
+      fb.linkId.sendKeys('1');
+      fb.previewRefreshButton.click();
+      util.getJSONSource('lforms').then(function (text) {
+        var previewLFData = JSON.parse(text);
+        expect(previewLFData.items[0].linkId).toBe('1');
+        done();
+      }, function (err) {
+        done(err);
+      });
+    });
   });
 
   describe('Test with imported vital signs panel from lforms-service', function() {
@@ -305,7 +322,7 @@ describe('GET /', function () {
         expect(selectedItem.skipLogic.action).toBe('show');
         expect(selectedItem.skipLogic.logic).toBe('ANY');
         expect(selectedItem.skipLogic.conditions.length).toBe(1);
-        expect(selectedItem.skipLogic.conditions[0].source).toBe('8358-4');
+        expect(selectedItem.skipLogic.conditions[0].source).toBe('/34565-2/34566-0/35094-2/8358-4');
         expect(selectedItem.skipLogic.conditions[0].trigger.value.code).toBe('LA11162-7');
       });
     });

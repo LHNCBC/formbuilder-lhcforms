@@ -40,6 +40,7 @@ var FormBuilder = function () {
   this.questionText = element(by.id('/question/1'));
   this.questionCodeSystem = element(by.id('/questionCodeSystem/1'));
   this.questionCode = element(by.id('/questionCode/1'));
+  this.linkId = element(by.id('/linkId/1'));
   this.questionType = element(by.id('/dataType/1'));
   this.questionAnswerText = element(by.id('/answers/text/1/1'));
   this.prefix = element(by.id('/prefix/1'));

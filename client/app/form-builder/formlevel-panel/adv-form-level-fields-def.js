@@ -14,7 +14,7 @@ var advFormLevelFieldsDef = {
       }
     }
   },
-  items: [
+  "items": [
     {
       "questionCode": "meta",
       "localQuestionCode": "Meta",
@@ -35,6 +35,7 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "Version specific identifier.<br/><b>FHIR type: id</b>",
           "codingInstructionsFormat": "html",
+          "linkId": "/meta/versionId"
         },
         {
           "questionCode": "lastUpdated",
@@ -45,6 +46,7 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "When the resource version last changed.<br/><b>FHIR type: instant</b>",
           "codingInstructionsFormat": "html",
+          "linkId": "/meta/lastUpdated"
         },
         {
           "questionCode": "source",
@@ -54,6 +56,7 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "Identifies where the resource comes from.<br/><b>FHIR type: uri</b>",
           "codingInstructionsFormat": "html",
+          "linkId": "/meta/source"
         },
         {
           "questionCode": "profile",
@@ -66,7 +69,8 @@ var advFormLevelFieldsDef = {
           "questionCardinality": {
             "min": "0",
             "max": "*"
-          }
+          },
+          "linkId": "/meta/profile"
         },
         {
           "questionCode": "security",
@@ -88,6 +92,7 @@ var advFormLevelFieldsDef = {
               "header": false,
               "codingInstructions": "Identity of the terminology system.<br/><b>FHIR type: uri</b>",
               "codingInstructionsFormat": "html",
+              "linkId": "/meta/security/system"
             },
             {
               "questionCode": "version",
@@ -97,6 +102,7 @@ var advFormLevelFieldsDef = {
               "header": false,
               "codingInstructions": "Version of the system - if relevant.<br/><b>FHIR type: string</b>",
               "codingInstructionsFormat": "html",
+              "linkId": "/meta/security/version"
             },
             {
               "questionCode": "code",
@@ -109,6 +115,7 @@ var advFormLevelFieldsDef = {
               "restrictions": {
                 "pattern": "/^[A-Za-z0-9\\-\\.]{1,64}$/"
               },
+              "linkId": "/meta/security/code"
             },
             {
               "questionCode": "display",
@@ -118,6 +125,7 @@ var advFormLevelFieldsDef = {
               "header": false,
               "codingInstructions": "Representation defined by the system.<br/><b>FHIR type: string</b>",
               "codingInstructionsFormat": "html",
+              "linkId": "/meta/security/display"
             },
             {
               "questionCode": "userSelected",
@@ -128,8 +136,10 @@ var advFormLevelFieldsDef = {
               "header": false,
               "codingInstructions": "If this coding was chosen directly by the user.<br/><b>FHIR type: boolean</b>",
               "codingInstructionsFormat": "html",
-            },
-          ]
+              "linkId": "/meta/security/userSelected"
+            }
+          ],
+          "linkId": "/meta/security"
         },
         {
           "questionCode": "tag",
@@ -151,6 +161,7 @@ var advFormLevelFieldsDef = {
               "header": false,
               "codingInstructions": "Identity of the terminology system.<br/><b>FHIR type: uri</b>",
               "codingInstructionsFormat": "html",
+              "linkId": "/meta/tag/system"
             },
             {
               "questionCode": "version",
@@ -160,6 +171,7 @@ var advFormLevelFieldsDef = {
               "header": false,
               "codingInstructions": "Version of the system - if relevant.<br/><b>FHIR type: string</b>",
               "codingInstructionsFormat": "html",
+              "linkId": "/meta/tag/version"
             },
             {
               "questionCode": "code",
@@ -172,6 +184,7 @@ var advFormLevelFieldsDef = {
               "restrictions": {
                 "pattern": "/^[A-Za-z0-9\\-\\.]{1,64}$/"
               },
+              "linkId": "/meta/tag/code"
             },
             {
               "questionCode": "display",
@@ -181,6 +194,7 @@ var advFormLevelFieldsDef = {
               "header": false,
               "codingInstructions": "Representation defined by the system.<br/><b>FHIR type: string</b>",
               "codingInstructionsFormat": "html",
+              "linkId": "/meta/tag/display"
             },
             {
               "questionCode": "userSelected",
@@ -191,10 +205,13 @@ var advFormLevelFieldsDef = {
               "header": false,
               "codingInstructions": "If this coding was chosen directly by the user.<br/><b>FHIR type: boolean</b>",
               "codingInstructionsFormat": "html",
-            },
-          ]
-        },
-      ]
+              "linkId": "/meta/tag/userSelected"
+            }
+          ],
+          "linkId": "/meta/tag"
+        }
+      ],
+      "linkId": "/meta"
     },
     {
       "questionCode": "implicitRules",
@@ -204,6 +221,7 @@ var advFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "A set of rules under which this content was created.<br/><b>FHIR type: uri</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/implicitRules"
     },
     {
       "questionCode": "language",
@@ -213,9 +231,10 @@ var advFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "Language of the resource content.<br/><b>FHIR type: code</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/language"
     },
     {
-      "questionCode": "codeList", // This is a representation of Questionnaire.code, which is Coding structure. LForms.code is a string.
+      "questionCode": "codeList",
       "localQuestionCode": "Coding",
       "question": "Code",
       "header": true,
@@ -234,6 +253,7 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "Identity of the terminology system.<br/><b>FHIR type: uri</b>",
           "codingInstructionsFormat": "html",
+          "linkId": "/codeList/system"
         },
         {
           "questionCode": "version",
@@ -243,6 +263,7 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "Version of the system - if relevant.<br/><b>FHIR type: string</b>",
           "codingInstructionsFormat": "html",
+          "linkId": "/codeList/version"
         },
         {
           "questionCode": "code",
@@ -255,6 +276,7 @@ var advFormLevelFieldsDef = {
           "restrictions": {
             "pattern": "/^[A-Za-z0-9\\-\\.]{1,64}$/"
           },
+          "linkId": "/codeList/code"
         },
         {
           "questionCode": "display",
@@ -264,6 +286,7 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "Representation defined by the system.<br/><b>FHIR type: string</b>",
           "codingInstructionsFormat": "html",
+          "linkId": "/codeList/display"
         },
         {
           "questionCode": "userSelected",
@@ -274,8 +297,10 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "If this coding was chosen directly by the user.<br/><b>FHIR type: boolean</b>",
           "codingInstructionsFormat": "html",
-        },
-      ]
+          "linkId": "/codeList/userSelected"
+        }
+      ],
+      "linkId": "/codeList"
     },
     {
       "questionCode": "_fhirVariables",
@@ -300,6 +325,7 @@ var advFormLevelFieldsDef = {
           "restrictions": {
             "pattern": "/^[A-Za-z0-9\\-\\.]{1,64}$/"
           },
+          "linkId": "/_fhirVariables/name"
         },
         {
           "questionCode": "expression",
@@ -309,6 +335,7 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "No syntax or semantic checks are performed. It is assumed the expression is correct. Please verify in the preview whether it is working as expected.<br/><b>FHIR type: string</b>",
           "codingInstructionsFormat": "html",
+          "linkId": "/_fhirVariables/expression"
         },
         {
           "questionCode": "description",
@@ -318,8 +345,11 @@ var advFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "A brief, natural language description of the condition that effectively communicates the intended semantics.<br/><b>FHIR type: string</b>",
           "codingInstructionsFormat": "html",
-        },
-      ]
-    },
-  ]
+          "linkId": "/_fhirVariables/description"
+        }
+      ],
+      "linkId": "/_fhirVariables"
+    }
+  ],
+  "lformsVersion": "24.0.0"
 };

@@ -378,6 +378,7 @@
           if(scope.importLoincItem.mode === dataConstants.QUESTION) {
             var questionData = {
               questionCode: response.code,
+              linkId: '/' + response.code,
               questionCodeSystem: dataConstants.LOINC,
               dataType: response.data.datatype === 'NM' ? 'REAL' : response.data.datatype,
               question: response.data.text,
@@ -493,6 +494,7 @@
         if(importedData) {
           $scope.startSpin();
           try {
+            formBuilderService.lformsUpdate(importedData);
             deregisterDirtyCheckWatches($scope);
             $scope.updateLFData(formBuilderService.createFormBuilder(importedData));
             $scope.selectNode($scope.formBuilderData.treeData[0]);

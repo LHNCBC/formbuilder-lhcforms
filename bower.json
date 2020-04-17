@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "main": [
     "client/app/app.js",
     "client/app/config.js",
@@ -20,6 +20,7 @@
     "client/app/form-builder/move-dialog.controller.js",
     "client/app/form-builder/popup-menu.controller.js",
     "client/app/lform-filters.js",
+    "client/app/lforms-updater.js",
     "client/app/routes.js",
     "client/app/app.css",
     "client/app/form-builder/formbuilder.css"
@@ -46,7 +47,7 @@
     "es5-shim": "~4.1.14",
     "bootstrap": "3.4.1",
     "json3": "3.3.2",
-    "lforms": "23.0.1",
+    "lforms": "24.0.0",
     "ngSmoothScroll": "~2.0.0",
     "traverse": "0.6.7",
     "angular-spinner": "~0.8.0",

@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [5.0.0]  2020-04-17
+### Changed
+- Changed unique key of an item, from questionCode to linkId as per lforms version 24.0.0.
+  Updated lforms package to 24.0.0.
+
 ## [4.1.0]  2020-04-02
 ### Changed 
 - Changed questionCodeSystem to accept any input, still defaults to 'Custom'.

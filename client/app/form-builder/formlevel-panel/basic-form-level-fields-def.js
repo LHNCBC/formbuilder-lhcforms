@@ -14,7 +14,7 @@ var basicFormLevelFieldsDef = {
       }
     }
   },
-  items: [
+  "items": [
     {
       "questionCode": "shortName",
       "localQuestionCode": "string",
@@ -22,7 +22,8 @@ var basicFormLevelFieldsDef = {
       "dataType": "ST",
       "codingInstructions": "Name for this questionnaire (computer friendly). <br/><b>FHIR Type: string</b>",
       "codingInstructionsFormat": "html",
-      "header": false
+      "header": false,
+      "linkId": "/shortName"
     },
     {
       "questionCode": "name",
@@ -31,7 +32,8 @@ var basicFormLevelFieldsDef = {
       "dataType": "ST",
       "codingInstructions": "Name for this questionnaire (human friendly). <br/><b>FHIR Type: string</b>",
       "codingInstructionsFormat": "html",
-      "header": false
+      "header": false,
+      "linkId": "/name"
     },
     {
       "questionCode": "id",
@@ -44,7 +46,8 @@ var basicFormLevelFieldsDef = {
       },
       "codingInstructions": "Logical id of this artifact.<br/><b>FHIR type: id</b>",
       "codingInstructionsFormat": "html",
-      "header": false
+      "header": false,
+      "linkId": "/id"
     },
     {
       "questionCode": "status",
@@ -58,7 +61,8 @@ var basicFormLevelFieldsDef = {
       "defaultAnswer": {
         "text": "Draft",
         "code": "draft"
-      }
+      },
+      "linkId": "/status"
     },
     {
       "questionCode": "url",
@@ -67,7 +71,8 @@ var basicFormLevelFieldsDef = {
       "dataType": "URL",
       "codingInstructions": "Canonical identifier for this questionnaire, represented as a URI (globally unique).<br/><b>FHIR type: uri</b>",
       "codingInstructionsFormat": "html",
-      "header": false
+      "header": false,
+      "linkId": "/url"
     },
     {
       "questionCode": "version",
@@ -76,7 +81,8 @@ var basicFormLevelFieldsDef = {
       "dataType": "ST",
       "codingInstructions": "Business version of the questionnaire.<br/><b>FHIR type: string</b>",
       "codingInstructionsFormat": "html",
-      "header": false
+      "header": false,
+      "linkId": "/version"
     },
     {
       "questionCode": "deriveFrom",
@@ -89,7 +95,8 @@ var basicFormLevelFieldsDef = {
       "questionCardinality": {
         "min": "0",
         "max": "*"
-      }
+      },
+      "linkId": "/deriveFrom"
     },
     {
       "questionCode": "experimental",
@@ -99,7 +106,8 @@ var basicFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "For testing purposes, not real usage.<br/><b>FHIR type: boolean</b>",
       "codingInstructionsFormat": "html",
-      "answers": "boolean"
+      "answers": "boolean",
+      "linkId": "/experimental"
     },
     {
       "questionCode": "subjectType",
@@ -112,7 +120,8 @@ var basicFormLevelFieldsDef = {
       "questionCardinality": {
         "min": "0",
         "max": "*"
-      }
+      },
+      "linkId": "/subjectType"
     },
     {
       "questionCode": "date",
@@ -123,6 +132,7 @@ var basicFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "Date last changed.<br/><b>FHIR type: dateTime</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/date"
     },
     {
       "questionCode": "publisher",
@@ -132,6 +142,7 @@ var basicFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "Name of the publisher (organization or individual).<br/><b>FHIR type: string</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/publisher"
     },
     {
       "questionCode": "description",
@@ -141,6 +152,7 @@ var basicFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "Natural language description of the questionnaire.<br/><b>FHIR type: markdown</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/description"
     },
     {
       "questionCode": "purpose",
@@ -150,6 +162,7 @@ var basicFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "Purpose of this questionnaire.<br/><b>FHIR type: markdown</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/purpose"
     },
     {
       "questionCode": "copyright",
@@ -159,6 +172,7 @@ var basicFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "Add any copy right notice text you wish to include for this item.<br/><b>FHIR type: markdown</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/copyright"
     },
     {
       "questionCode": "approvalDate",
@@ -168,6 +182,7 @@ var basicFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "When the questionnaire was approved by publisher.<br/><b>FHIR type: date</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/approvalDate"
     },
     {
       "questionCode": "lastReviewDate",
@@ -177,6 +192,7 @@ var basicFormLevelFieldsDef = {
       "header": false,
       "codingInstructions": "When the questionnaire was last reviewed.<br/><b>FHIR type: dateTime</b>",
       "codingInstructionsFormat": "html",
+      "linkId": "/lastReviewDate"
     },
     {
       "questionCode": "effectivePeriod",
@@ -194,7 +210,7 @@ var basicFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "Starting time with inclusive boundary.<br/><b>FHIR type: dateTime</b>",
           "codingInstructionsFormat": "html",
-
+          "linkId": "/effectivePeriod/start"
         },
         {
           "questionCode": "end",
@@ -204,9 +220,11 @@ var basicFormLevelFieldsDef = {
           "header": false,
           "codingInstructions": "End time with inclusive boundary, if not ongoing.<br/><b>FHIR type: dateTime</b>",
           "codingInstructionsFormat": "html",
-
+          "linkId": "/effectivePeriod/end"
         }
-      ]
-    },
-  ]
+      ],
+      "linkId": "/effectivePeriod"
+    }
+  ],
+  "lformsVersion": "24.0.0"
 };

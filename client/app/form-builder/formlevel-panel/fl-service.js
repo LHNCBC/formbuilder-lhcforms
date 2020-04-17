@@ -243,7 +243,7 @@ angular.module('formBuilder')
       switch (fbQuestionCode) {
         case '_fhirVariables':
           if(importedFormLevelFieldsObj.extension) {
-            ret = importedFormLevelFieldsObj.extension.reduce(importedFormLevelFieldsObj.extension, function(acc, ext) {
+            ret = importedFormLevelFieldsObj.extension.reduce(function(acc, ext) {
               if(ext.url === LForms.FHIR.R4.SDC.fhirExtVariable) {
                 acc.push(ext.valueExpression);
               }
@@ -279,6 +279,6 @@ angular.module('formBuilder')
           });
         }
       }
-    }
+    };
 
   }]);

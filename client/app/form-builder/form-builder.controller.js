@@ -115,11 +115,18 @@ angular.module('formBuilder')
               catch (err) {
                 err.message += ': Failed to convert the selected FHIR Questionnaire. File loading is aborted.';
                 showFhirResponse(event, {fhirError: err});
-                break;
               }
-              // Fall through
-            case 'lforms':
               $scope.$broadcast('REPLACE_FORM', importedData);
+              break;
+            case 'lforms':
+              try {
+                formBuilderService.lformsUpdate(importedData);
+                $scope.$broadcast('REPLACE_FORM', importedData);
+              }
+              catch (err) {
+                err.message += ': Failed to convert the selected LHC Form. File loading is aborted.';
+                showFhirResponse(event, {fhirError: err});
+              }
               break;
             default:
               showFhirResponse(event, {fhirError: {message: 'Unsupported data format. File loading is aborted.'}});
