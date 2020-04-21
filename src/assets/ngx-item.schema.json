@@ -158,43 +158,17 @@
           }
         },
         "additionalProperties": false,
-        "type": "object",
-        "widget": {
-          "id": "row-layout"
-        },
-        "fieldsets": [
-          {
-            "fields": [
-              "id",
-              "extension",
-              "code",
-              "system",
-              "display",
-              "version",
-              "userSelected"
-            ],
-            "showFields": [
-              { "field": "code", "col": 2 },
-              { "field": "code", "col": 2 },
-
-              {
-                "system": {
-                  "col": 6
-                }
-              },
-              {
-                "display": {
-                  "col": 4
-                }
-              }
-            ]
-          }
-        ]
+        "type": "object"
       },
       "type": "array",
       "title": "Code",
       "widget": {
-        "id": "array-grid"
+        "id": "table",
+        "showFields": [
+          {"field": "code", "col": 2, "nolabel": true},
+          {"field": "system", "col": 5, "nolabel": true},
+          {"field": "display", "col": 5, "nolabel": true}
+        ]
       }
     },
     "prefix": {
@@ -439,40 +413,7 @@
               }
             },
             "additionalProperties": false,
-            "type": "object",
-            "widget": {
-              "id": "row-layout"
-            },
-            "fieldsets": [
-              {
-                "fields": [
-                  "id",
-                  "extension",
-                  "code",
-                  "system",
-                  "display",
-                  "version",
-                  "userSelected"
-                ],
-                "showFields": [
-                  {
-                    "code": {
-                      "col": 2
-                    }
-                  },
-                  {
-                    "system": {
-                      "col": 6
-                    }
-                  },
-                  {
-                    "display": {
-                      "col": 4
-                    }
-                  }
-                ]
-              }
-            ]
+            "type": "object"
           },
           "answerQuantity": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
@@ -626,31 +567,46 @@
       "description": "An indication, if true, that the item must be present in a \"completed\" QuestionnaireResponse.  If false, the item may be skipped when answering the questionnaire.",
       "title": "Required",
       "pattern": "^true|false$",
-      "type": "boolean"
+      "type": "boolean",
+      "visibleIf": {
+        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+      }
     },
     "repeats": {
       "description": "An indication, if true, that the item may occur multiple times in the response, collecting multiple answers for questions or multiple sets of answers for groups.",
       "title": "Repeats",
       "pattern": "^true|false$",
-      "type": "boolean"
+      "type": "boolean",
+      "visibleIf": {
+        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+      }
     },
     "readOnly": {
       "description": "An indication, when true, that the value cannot be changed by a human respondent to the Questionnaire.",
       "title": "Read only",
       "pattern": "^true|false$",
-      "type": "boolean"
+      "type": "boolean",
+      "visibleIf": {
+        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+      }
     },
     "maxLength": {
       "description": "The maximum number of characters that are permitted in the answer to be considered a \"valid\" QuestionnaireResponse.",
       "title": "Max length",
       "pattern": "^-?([0]|([1-9][0-9]*))$",
-      "type": "number"
+      "type": "number",
+      "visibleIf": {
+        "/type": ["string", "text"]
+      }
     },
     "answerValueSet": {
       "description": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question.",
       "title": "Answer value set",
       "pattern": "^\\S*$",
-      "type": "string"
+      "type": "string",
+      "visibleIf": {
+        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+      }
     },
     "answerOption": {
       "description": "One of the permitted answers for a \"choice\" or \"open-choice\" question.",
@@ -661,7 +617,8 @@
             "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
             "title": "Id",
             "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string"
+            "type": "string",
+            "widget": {"id": "hidden"}
           },
           "extension": {
             "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
@@ -727,25 +684,37 @@
             "description": "A potential answer that's allowed as the answer to this question.",
             "pattern": "^-?([0]|([1-9][0-9]*))$",
             "type": "number",
-            "title": "Value integer"
+            "title": "Value integer",
+            "visibleIf": {
+              "/type": ["integer"]
+            }
           },
           "valueDate": {
             "description": "A potential answer that's allowed as the answer to this question.",
             "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
             "type": "string",
-            "title": "Value date"
+            "title": "Value date",
+            "visibleIf": {
+              "/type": ["date"]
+            }
           },
           "valueTime": {
             "description": "A potential answer that's allowed as the answer to this question.",
             "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$",
             "type": "string",
-            "title": "Value time"
+            "title": "Value time",
+            "visibleIf": {
+              "/type": ["time"]
+            }
           },
           "valueString": {
             "description": "A potential answer that's allowed as the answer to this question.",
             "pattern": "^[ \\r\\n\\t\\S]+$",
             "type": "string",
-            "title": "Value string"
+            "title": "Value string",
+            "visibleIf": {
+              "/type": ["string", "text"]
+            }
           },
           "valueCoding": {
             "description": "A potential answer that's allowed as the answer to this question.",
@@ -820,38 +789,16 @@
             "additionalProperties": false,
             "type": "object",
             "widget": {
-              "id": "row-layout"
+              "id": "row-layout",
+              "showFields": [
+                {"field": "code", "col": 2, "nolabel": true},
+                {"field": "system", "col": 5, "nolabel": true},
+                {"field": "display", "col": 5, "nolabel": true}
+              ]
             },
-            "fieldsets": [
-              {
-                "fields": [
-                  "id",
-                  "extension",
-                  "code",
-                  "system",
-                  "display",
-                  "version",
-                  "userSelected"
-                ],
-                "showFields": [
-                  {
-                    "code": {
-                      "col": 2
-                    }
-                  },
-                  {
-                    "system": {
-                      "col": 6
-                    }
-                  },
-                  {
-                    "display": {
-                      "col": 4
-                    }
-                  }
-                ]
-              }
-            ]
+            "visibleIf": {
+              "/type": ["choice", "open-choice"]
+            }
           },
           "valueReference": {
             "description": "A potential answer that's allowed as the answer to this question.",
@@ -908,7 +855,10 @@
               }
             },
             "additionalProperties": false,
-            "type": "object"
+            "type": "object",
+            "visibleIf": {
+              "/type": ["reference"]
+            }
           },
           "initialSelected": {
             "description": "Indicates whether the answer value is selected when the list of possible answers is initially shown.",
@@ -921,7 +871,24 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Answer option"
+      "title": "Answer option",
+      "visibleIf": {
+        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+      },
+      "widget": {
+        "id": "table",
+        "showFields": [
+          {"field": "valueInteger", "col": 8, "nolabel": true},
+          {"field": "valueDate", "col": 8, "nolabel": true},
+          {"field": "valueTime", "col": 8, "nolabel": true},
+          {"field": "valueString", "col": 8, "nolabel": true},
+          {"field": "valueCoding.code", "col": 3, "nolabel": true},
+          {"field": "valueCoding.system", "col": 3, "nolabel": true},
+          {"field": "valueCoding.display", "col": 3, "nolabel": true},
+          {"field": "valueReference", "col": 8, "nolabel": true},
+          {"field": "initialSelected", "col": 3, "nolabel": true}
+        ]
+      }
     },
     "initial": {
       "description": "One or more values that should be pre-populated in the answer when initially rendering the questionnaire for user input.",
@@ -998,49 +965,73 @@
             "description": "The actual value to for an initial answer.",
             "pattern": "^true|false$",
             "type": "boolean",
-            "title": "Value boolean"
+            "title": "Value boolean",
+            "visibleIf": {
+              "/type": ["boolean"]
+            }
           },
           "valueDecimal": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$",
             "type": "number",
-            "title": "Value decimal"
+            "title": "Value decimal",
+            "visibleIf": {
+              "/type": ["decimal"]
+            }
           },
           "valueInteger": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^-?([0]|([1-9][0-9]*))$",
             "type": "number",
-            "title": "Value integer"
+            "title": "Value integer",
+            "visibleIf": {
+              "/type": ["integer"]
+            }
           },
           "valueDate": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
             "type": "string",
-            "title": "Value date"
+            "title": "Value date",
+            "visibleIf": {
+              "/type": ["date"]
+            }
           },
           "valueDateTime": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$",
             "type": "string",
-            "title": "Value date time"
+            "title": "Value date time",
+            "visibleIf": {
+              "/type": ["dateTime"]
+            }
           },
           "valueTime": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$",
             "type": "string",
-            "title": "Value time"
+            "title": "Value time",
+            "visibleIf": {
+              "/type": ["time"]
+            }
           },
           "valueString": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^[ \\r\\n\\t\\S]+$",
             "type": "string",
-            "title": "Value string"
+            "title": "Value string",
+            "visibleIf": {
+              "/type": ["string", "text"]
+            }
           },
           "valueUri": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^\\S*$",
             "type": "string",
-            "title": "Value uri"
+            "title": "Value uri",
+            "visibleIf": {
+              "/type": ["uri", "url"]
+            }
           },
           "valueAttachment": {
             "description": "The actual value to for an initial answer.",
@@ -1122,7 +1113,10 @@
               }
             },
             "additionalProperties": false,
-            "type": "object"
+            "type": "object",
+            "visibleIf": {
+              "/type": ["attachment"]
+            }
           },
           "valueCoding": {
             "description": "The actual value to for an initial answer.",
@@ -1196,39 +1190,9 @@
             },
             "additionalProperties": false,
             "type": "object",
-            "widget": {
-              "id": "row-layout"
-            },
-            "fieldsets": [
-              {
-                "fields": [
-                  "id",
-                  "extension",
-                  "code",
-                  "system",
-                  "display",
-                  "version",
-                  "userSelected"
-                ],
-                "showFields": [
-                  {
-                    "code": {
-                      "col": 2
-                    }
-                  },
-                  {
-                    "system": {
-                      "col": 6
-                    }
-                  },
-                  {
-                    "display": {
-                      "col": 4
-                    }
-                  }
-                ]
-              }
-            ]
+            "visibleIf": {
+              "/type": ["choice", "open-choice"]
+            }
           },
           "valueQuantity": {
             "description": "The actual value to for an initial answer.",
@@ -1300,7 +1264,11 @@
               }
             },
             "additionalProperties": false,
-            "type": "object"
+            "type": "object",
+            "visibleIf": {
+              "/type": ["quantity"]
+            }
+
           },
           "valueReference": {
             "description": "The actual value to for an initial answer.",
@@ -1357,16 +1325,24 @@
               }
             },
             "additionalProperties": false,
-            "type": "object"
+            "type": "object",
+            "visibleIf": {
+              "/type": ["reference"]
+            }
           }
         },
         "additionalProperties": false,
         "type": "object"
       },
       "type": "array",
-      "title": "Initial"
+      "title": "Initial",
+      "visibleIf": {
+        "/type": ["boolean", "integer", "decimal", "date", "dateTime", "time", "string", "text",
+          "url", "choice", "open-choice", "attachment", "quantity", "reference", "attachment"]
+      }
     }
   },
+  "required": ["text", "type", "linkId"],
   "additionalProperties": false,
   "definitions": {
     "string": {
@@ -1810,9 +1786,7 @@
       },
       "additionalProperties": false,
       "type": "object",
-      "widget": {
-        "id": "row-layout"
-      },
+      "widget": { "id": "grid" },
       "fieldsets": [
         {
           "fields": [
@@ -1825,21 +1799,9 @@
             "userSelected"
           ],
           "showFields": [
-            {
-              "code": {
-                "col": 2
-              }
-            },
-            {
-              "system": {
-                "col": 6
-              }
-            },
-            {
-              "display": {
-                "col": 4
-              }
-            }
+            { "field": "code", "col": 2 },
+            { "field": "system", "col": 5 },
+            { "field": "display", "col": 5 }
           ]
         }
       ]
@@ -4371,7 +4333,7 @@
           "additionalProperties": false,
           "type": "object",
           "widget": {
-            "id": "row-layout"
+            "id": "grid"
           },
           "fieldsets": [
             {
@@ -4385,21 +4347,9 @@
                 "userSelected"
               ],
               "showFields": [
-                {
-                  "code": {
-                    "col": 2
-                  }
-                },
-                {
-                  "system": {
-                    "col": 6
-                  }
-                },
-                {
-                  "display": {
-                    "col": 4
-                  }
-                }
+                { "field": "code", "col": 2 },
+                { "field": "sytem", "col": 5 },
+                { "field": "display", "col": 5 }
               ]
             }
           ]
@@ -4543,88 +4493,67 @@
   },
   "fieldsets": [
     {
-      "title": "First Two items",
-      "widget": {
-        "id": "row-layout"
-      },
-      "fields": [
-        "type",
-        "linkId"
-      ],
+      "fields": ["prefix", "text"],
       "showFields": [
-        {
-          "field": "type"
-        },
-        {
-          "field": "linkId"
-        }
+        { "field": "prefix", "col": 2},
+        { "field": "text", "col": 10 }
       ]
     },
     {
-      "title": "Next Two items",
-      "widget": {
-        "id": "row-layout"
-      },
-      "fields": [
-        "prefix",
-        "text"
-      ],
+      "fields": ["type", "linkId"],
       "showFields": [
-        {
-          "field": "prefix",
-          "col": "1"
-        },
-        {
-          "field": "text",
-          "col": "11"
-        }
+        { "field": "type", "col": 4 },
+        { "field": "linkId", "col": 4 },
+        { "field": "maxLength", "col": 4 }
       ]
     },
     {
-      "title": "The small four items",
-      "widget": {
-        "id": "row-layout"
-      },
-      "fields": [
-        "required",
-        "repeats",
-        "readOnly",
-        "maxLength"
-      ],
+      "fields": ["required", "readOnly", "repeats", "maxLength"],
       "showFields": [
-        {
-          "field": "required"
-        },
-        {
-          "field": "repeats"
-        },
-        {
-          "field": "readOnly"
-        },
-        {
-          "field": "maxLength"
-        }
+        { "field": "repeats", "col": 4 },
+        { "field": "readOnly", "col": 4 },
+        { "field": "required", "col": 4 }
       ]
     },
     {
-      "title": "The other items",
-      "fields": [
-        "code",
-        "answerValueSet",
-        "answerOption",
-        "initial",
-        "enableWhen",
-        "enableBehavior",
-        "definition"
+      "fields": ["code"],
+      "showFields": [
+        { "field": "code", "col": 12 }
       ]
     },
     {
-      "title": "The hidden items",
-      "fields": [
-        "id",
-        "extension",
-        "modifierExtension"
+      "fields": ["answerValueSet"],
+      "showFields": [
+        { "field": "answerValueSet", "col": 12 }
       ]
+    },
+    {
+      "fields": ["answerOption"],
+      "showFields": [
+        { "field": "answerOption", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["initial"],
+      "showFields": [
+        { "field": "initial", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["enableWhen"],
+      "showFields": [
+        { "field": "enableWhen", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["enableBehavior"],
+      "showFields": [{"field": "enableBehavior", "col": 2}]
+    },
+    {
+      "fields": ["id", "extension", "modifierExtension", "definition"]
     }
-  ]
+  ],
+  "widget": {
+    "id": "grid"
+  }
 }

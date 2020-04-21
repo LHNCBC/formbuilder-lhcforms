@@ -13,9 +13,10 @@ LFORMS_NODE=node-v10.18.0-linux-x64
 PATH=~/${LFORMS_NODE}/bin:/bin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/etc
 
 # Identify directory of this source and set node_modules/.bin to PATH
-
+cur_dir=`pwd -L`
 dir=`dirname ${BASH_SOURCE}`
-dir=`readlink -f ${dir}`
+dir=`cd $dir && pwd -P`
+cd $cur_dir
 
 if [[ -e "$dir/node_modules" ]]
 then

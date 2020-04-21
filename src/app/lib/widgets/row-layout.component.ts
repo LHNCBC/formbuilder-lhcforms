@@ -3,9 +3,21 @@ import {ObjectWidget} from 'ngx-schema-form';
 import { Util } from '../util';
 
 @Component({
-  selector: 'app-object-horizontal',
-  templateUrl: './row-layout.component.html',
-  styleUrls: ['./row-layout.component.css']
+  selector: 'app-row-layout',
+  template: `
+<fieldset *ngFor="let fieldset of formProperty.schema.fieldsets">
+  <legend *ngIf="fieldset.title">{{fieldset.title}}
+    <button type="button" *ngIf="fieldset.description" class="btn btn-default glyphicon glyphicon-info" aria-label="Info"
+            data-toggle="tooltip" [title]="fieldset.description"></button>
+  </legend>
+  <div class="row">
+
+    <div [class]="gridClass(fld)" *ngFor="let fld of (fieldset.showFields || fieldset.fields)">
+      <sf-form-element [formProperty]="getShowFieldProperty(fld)"></sf-form-element>
+    </div>
+  </div>
+</fieldset>
+`
 })
 export class RowLayoutComponent extends ObjectWidget {
 
