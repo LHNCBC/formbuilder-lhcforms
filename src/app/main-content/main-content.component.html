@@ -26,15 +26,11 @@
     </mat-toolbar>
     <button type="button" (click)="editor = 'json'">json</button>
     <button type="button" (click)="editor = 'ngx'">ngx</button>
-    <button type="button" (click)="editor = 'ajsf'; ajsfFramwork = 'material-design'" disabled >ajsf (md)</button>
-    <button type="button" (click)="editor = 'ajsf'; ajsfFramwork = 'bootstrap-3'" disabled >ajsf (bootstrap-3)</button>
-    <button type="button" (click)="editor = 'ajsf'; ajsfFramwork = 'bootstrap-4'" disabled >ajsf (bootstrap-4)</button>
     <mat-tab-group (selectedTabChange)="showJson($event)">
       <mat-tab label="Editor">
         <!-- Add Content Here -->
         <app-json-editor *ngIf="editor === 'json'" #editor></app-json-editor>
         <app-ngx-schema-form *ngIf="editor === 'ngx'" #ngxEditor></app-ngx-schema-form>
-        <app-ajsf-form *ngIf="editor === 'ajsf'" [framework]="ajsfFramwork"></app-ajsf-form>
         <!-- <router-outlet></router-outlet> -->
       </mat-tab>
       <mat-tab label="JSON Output">
