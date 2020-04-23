@@ -7,7 +7,49 @@ import {FetchService} from '../fetch.service';
 import {MatInput} from '@angular/material';
 import {JsonEditorComponent} from '../json-editor/json-editor.component';
 import {ShareObjectService} from '../share-object.service';
+import {ITreeNode} from 'angular-tree-component/dist/defs/api';
 
+export class LinkIdCollection {
+  linkIdHash = {};
+
+  addLinkId(linkId, itemPath): boolean {
+    let ret = false;
+    if (linkId && linkId.trim().length > 0) {
+      this.linkIdHash[linkId.trim()] = itemPath;
+      ret = true;
+    }
+
+    return ret;
+  }
+
+  getItemPath(linkId): string {
+    return this.linkIdHash[linkId];
+  }
+
+  hasLinkId(linkId): boolean {
+    return this.linkIdHash.hasOwnProperty(linkId);
+  }
+
+  deleteLinkId(linkId): boolean {
+    let ret = false;
+    if (this.getItemPath(linkId)) {
+      delete this.linkIdHash[linkId];
+      ret = true;
+    }
+    return ret;
+  }
+
+  changeLinkId(oldLinkId, newLinkId): boolean {
+    let ret = false;
+    const itemPath = this.getItemPath(oldLinkId);
+    if (itemPath) {
+      this.deleteLinkId(oldLinkId);
+      this.addLinkId(newLinkId, itemPath);
+      ret = true;
+    }
+    return ret;
+  }
+}
 
 @Component({
   selector: 'app-main-content',
@@ -20,7 +62,7 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   @ViewChild('formSearch', {static: false}) sInput: MatInput;
   @ViewChild('drawer', {static: false, read: ElementRef}) sidenavEl: ElementRef;
   // qItem: any;
-  focusNode: any = {};
+  focusNode: any = {path: []};
   options: ITreeOptions;
   form: any = {item: []};
   exportForm: any;
@@ -29,7 +71,16 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   itemEditorSchema: any;
   editor = 'ngx';
   ajsfFramwork  = 'material-design';
-
+  /*
+  acOptions = {
+    searchUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire',
+    httpOptions: {
+      observe: 'body' as const,
+      responseType: 'json' as const
+    }
+  };
+  */
+  linkIdCollection = new LinkIdCollection();
 
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
@@ -112,4 +163,7 @@ export class MainContentComponent implements OnInit, AfterViewInit {
     }
   }
 
+  registerLinkId(linkId) {
+    this.linkIdCollection.addLinkId(linkId, this.focusNode.path.join('/'));
+  }
 }

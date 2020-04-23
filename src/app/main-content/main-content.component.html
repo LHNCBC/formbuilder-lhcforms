@@ -2,6 +2,7 @@
   <mat-sidenav #drawer class="sidenav" [opened]="true" fixedInViewport
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
       [mode]="(isHandset$ | async) ? 'over' : 'side'">
+<!--    <app-auto-complete [options]="acOptions"></app-auto-complete> -->
     <mat-form-field>
       <input matInput type="search" #formSearch (keyup.enter)="getForm(formSearch.value)" placeholder="Enter form id">
     </mat-form-field>
@@ -24,13 +25,13 @@
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
     </mat-toolbar>
-    <button type="button" (click)="editor = 'json'">json</button>
+    <button type="button" (click)="editor = 'json'" disabled>json</button>
     <button type="button" (click)="editor = 'ngx'">ngx</button>
     <mat-tab-group (selectedTabChange)="showJson($event)">
       <mat-tab label="Editor">
         <!-- Add Content Here -->
         <app-json-editor *ngIf="editor === 'json'" #editor></app-json-editor>
-        <app-ngx-schema-form *ngIf="editor === 'ngx'" #ngxEditor></app-ngx-schema-form>
+        <app-ngx-schema-form *ngIf="editor === 'ngx'" #ngxEditor [linkIdCollection]="linkIdCollection" (setLinkId)="registerLinkId($event)" ></app-ngx-schema-form>
         <!-- <router-outlet></router-outlet> -->
       </mat-tab>
       <mat-tab label="JSON Output">

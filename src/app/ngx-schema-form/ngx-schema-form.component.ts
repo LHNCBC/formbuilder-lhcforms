@@ -1,6 +1,8 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
+import {FormProperty} from 'ngx-schema-form';
+import {LinkIdCollection} from '../main-content/main-content.component';
 
 @Component({
   selector: 'app-ngx-schema-form',
@@ -10,9 +12,39 @@ import {ShareObjectService} from '../share-object.service';
 export class NgxSchemaFormComponent implements OnInit {
   mySchema: any = {properties: {}};
   myTestSchema: any;
+  @Output()
+  setLinkId = new EventEmitter();
   @Input()
   node: any;
   model: any;
+  @Input()
+  linkIdCollection = new LinkIdCollection();
+
+  myValidators = {
+    '/linkId': (value, property, form) => {
+      if (!property.valid) {
+        return property.errors;
+      } else if (value.trim().length === 0 || this.linkIdCollection.hasLinkId(value)) {
+        return {
+          linkId: {expectedValue: 'Unique linkId in the form'}
+        };
+      }
+      return null;
+    }
+  };
+
+  myFieldBindings = {
+    '/linkId': [
+      {
+        change: (event, formProperty: FormProperty) => {
+          if (formProperty.valid) {
+            this.setLinkId.emit(formProperty.value);
+          }
+        }
+      }
+    ]
+  };
+
   constructor(private http: HttpClient, private modelService: ShareObjectService) {
   }
 
@@ -38,4 +70,6 @@ export class NgxSchemaFormComponent implements OnInit {
   updateModel(model) {
     this.modelService.setObject(model);
   }
+
+
 }

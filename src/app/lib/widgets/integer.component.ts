@@ -1,5 +1,6 @@
 import {
   Component,
+  Input
 } from '@angular/core';
 
 import {IntegerWidget} from 'ngx-schema-form';
@@ -8,12 +9,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 @Component({
   selector: 'app-integer-widget',
   template: `<div class="widget form-group">
-	<label [attr.for]="id" class="horizontal control-label">
-		{{ schema.title }}
-    <span *ngIf="schema.description"  placement="top" [ngbTooltip]="schema.description">
-      <fa-icon [icon]="faInfo"></fa-icon>
-    </span>
-	</label>
+    <app-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></app-label>
 	<input [attr.readonly]="schema.readOnly?true:null" [attr.name]="name"
 	[attr.id]="id"
 	class="text-widget integer-widget form-control" [formControl]="control"
@@ -25,4 +21,6 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 })
 export class IntegerComponent extends IntegerWidget {
   faInfo = faInfoCircle;
+  @Input()
+  nolabel = false;
 }

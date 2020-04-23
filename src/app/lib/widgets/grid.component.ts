@@ -14,7 +14,15 @@ import {Util} from '../util';
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .grid-border {
+      border: lightgray 1px solid;
+    }
+    .grid-padding {
+      padding: 0 5px 0 5px;
+    }
+  `]
 })
 export class GridComponent extends ObjectWidget implements OnInit {
 

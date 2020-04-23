@@ -16,5 +16,11 @@ pre{
 }
 
 :host /deep/ fieldset {
-  border:0px;
+  border:0;
+}
+
+.title {
+  margin-top: 10px;
+  font-size: 20px;
+  font-weight: bold;
 }

@@ -13,7 +13,7 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { MainContentComponent } from './main-content/main-content.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MaterialDesignFrameworkModule } from '@ajsf/material';
-import { MatExpansionModule } from '@angular/material';
+import {MatAutocompleteModule, MatExpansionModule} from '@angular/material';
 import { MatFormFieldModule } from '@angular/material';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material';
@@ -41,6 +41,7 @@ import { AppFormElementComponent } from './lib/widgets/form-element.component';
 import { LabelComponent } from './lib/widgets/label.component';
 import { TitleComponent } from './lib/widgets/title.component';
 import { ElementChooserComponent } from './lib/widgets/element-chooser.component';
+import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
 
 @NgModule({
   declarations: [
@@ -61,7 +62,8 @@ import { ElementChooserComponent } from './lib/widgets/element-chooser.component
     AppFormElementComponent,
     LabelComponent,
     TitleComponent,
-    ElementChooserComponent
+    ElementChooserComponent,
+    AutoCompleteComponent
   ],
   imports: [
     AppRoutingModule,
@@ -86,7 +88,8 @@ import { ElementChooserComponent } from './lib/widgets/element-chooser.component
     NgbModule,
     SchemaFormModule.forRoot(),
     TreeModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatAutocompleteModule
   ],
   entryComponents:
     [RowLayoutComponent, ArrayGridComponent, TableComponent,

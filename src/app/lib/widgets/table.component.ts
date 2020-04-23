@@ -2,14 +2,20 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {ArrayWidget} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faMinusCircle} from '@fortawesome/free-solid-svg-icons';
+import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
+import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
 import {Util} from '../util';
 
 @Component({
   selector: 'app-table',
   template: `
     <div class="widget form-group">
+      <button href="#" type="button" class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+              [attr.aria-expanded]="!isCollapsed" aria-controls="collapseTable">
+        <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
+      </button>
       <app-label [title]="schema.title"[helpMessage]="schema.description" [for]="id"></app-label>
-      <div class="container">
+      <div class="card" id="collapseTable" [ngbCollapse]="isCollapsed">
         <table class="table table-borderless table-sm" *ngIf="formProperty.properties.length > 0">
           <thead class="thead-light">
           <tr>
@@ -40,19 +46,30 @@ import {Util} from '../util';
           </tr>
           </tbody>
         </table>
-        <button (click)="addItem()" class="btn btn-default btn-link array-add-button"
+        <button (click)="addItem()" class="btn btn-light btn-link array-add-button"
                 [disabled]="isAddButtonDisabled()"
                 *ngIf="!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems)"
         >
           <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> Add
         </button>
       </div>
-    </div>`
+    </div>`,
+  styles: [`
+    .collapse-button {
+      padding-left: 5px;
+      padding-right: 5px;
+      margin-right: 5px;
+      margin-left: 2px;
+    }
+  `]
 })
 export class TableComponent extends ArrayWidget implements AfterViewInit {
 
   faAdd = faPlusCircle;
   faRemove = faMinusCircle;
+  faRight = faAngleRight;
+  faDown = faAngleDown;
+  isCollapsed = false;
 
   ngAfterViewInit() {
     super.ngAfterViewInit();

@@ -214,11 +214,29 @@
       "items": {
         "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
         "properties": {
+          "_answerType": {
+            "title": "Source question type",
+            "type": "string",
+            "enum": [
+              "boolean",
+              "decimal",
+              "integer",
+              "date",
+              "dateTime",
+              "time",
+              "string",
+              "coding",
+              "quantity",
+              "reference"
+            ],
+            "widget": {"id": "select"}
+          },
           "id": {
             "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
             "title": "Id",
             "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string"
+            "type": "string",
+            "widget": {"id": "hidden"}
           },
           "extension": {
             "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
@@ -298,49 +316,57 @@
               "<="
             ],
             "type": "string",
-            "title": "Operator"
+            "title": "Operator",
+            "widget": {"id": "select"}
           },
           "answerBoolean": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^true|false$",
             "type": "boolean",
-            "title": "Answer boolean"
+            "title": "Answer boolean",
+            "visibleIf": {"_answerType": ["boolean"]}
           },
           "answerDecimal": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$",
             "type": "number",
-            "title": "Answer decimal"
+            "title": "Answer decimal",
+            "visibleIf": {"_answerType": ["decimal"]}
           },
           "answerInteger": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^-?([0]|([1-9][0-9]*))$",
             "type": "number",
-            "title": "Answer integer"
+            "title": "Answer integer",
+            "visibleIf": {"_answerType": ["integer"]}
           },
           "answerDate": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
             "type": "string",
-            "title": "Answer date"
+            "title": "Answer date",
+            "visibleIf": {"_answerType": ["date"]}
           },
           "answerDateTime": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$",
             "type": "string",
-            "title": "Answer date time"
+            "title": "Answer date time",
+            "visibleIf": {"_answerType": ["dateTime"]}
           },
           "answerTime": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$",
             "type": "string",
-            "title": "Answer time"
+            "title": "Answer time",
+            "visibleIf": {"_answerType": ["time"]}
           },
           "answerString": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^[ \\r\\n\\t\\S]+$",
             "type": "string",
-            "title": "Answer string"
+            "title": "Answer string",
+            "visibleIf": {"_answerType": ["string"]}
           },
           "answerCoding": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
@@ -413,7 +439,8 @@
               }
             },
             "additionalProperties": false,
-            "type": "object"
+            "type": "object",
+            "visibleIf": {"_answerType": ["coding"]}
           },
           "answerQuantity": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
@@ -485,7 +512,8 @@
               }
             },
             "additionalProperties": false,
-            "type": "object"
+            "type": "object",
+            "visibleIf": {"_answerType": ["quantity"]}
           },
           "answerReference": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
@@ -542,14 +570,41 @@
               }
             },
             "additionalProperties": false,
-            "type": "object"
+            "type": "object",
+            "visibleIf": {"_answerType": ["reference"]}
           }
         },
         "additionalProperties": false,
         "type": "object"
       },
       "type": "array",
-      "title": "Enable when"
+      "title": "Enable when",
+      "widget": {
+        "id": "table",
+        "showFields": [
+          {"field": "_answerType", "nolabel": true},
+          {"field": "question", "nolabel": true},
+          {"field": "operator", "nolabel": true},
+          {"field": "answerBoolean", "nolabel": true},
+          {"field": "answerDecimal", "nolabel": true},
+          {"field": "answerInteger", "nolabel": true},
+          {"field": "answerDate", "nolabel": true},
+          {"field": "answerDateTime", "nolabel": true},
+          {"field": "answerTime", "nolabel": true},
+          {"field": "answerString", "nolabel": true},
+          {"field": "answerCoding.code", "nolabel": true},
+          {"field": "answerCoding.system", "nolabel": true},
+          {"field": "answerCoding.display", "nolabel": true},
+          {"field": "answerQuantity.comparator", "nolabel": true},
+          {"field": "answerQuantity.value", "nolabel": true},
+          {"field": "answerQuantity.unit", "nolabel": true},
+          {"field": "answerQuantity.code", "nolabel": true},
+          {"field": "answerQuantity.system", "nolabel": true},
+          {"field": "answerReference.reference", "nolabel": true},
+          {"field": "answerReference.type", "nolabel": true},
+          {"field": "answerReference.display", "nolabel": true}
+        ]
+      }
     },
     "enableBehavior": {
       "description": "Controls how multiple enableWhen values are interpreted -  whether all or any must be true.",
