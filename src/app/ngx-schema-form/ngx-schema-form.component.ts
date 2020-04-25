@@ -42,6 +42,32 @@ export class NgxSchemaFormComponent implements OnInit {
           }
         }
       }
+    ],
+    '/type': [
+      {
+        change: (event, formProperty: FormProperty) => {
+          const root = formProperty.findRoot();
+          if (formProperty.value === 'group' || formProperty.value === 'display') {
+            root.getProperty('_itemType').setValue(formProperty.value);
+          } else {
+            root.getProperty('_itemType').setValue('question');
+          }
+        }
+      }
+    ],
+    '/_itemType': [
+      {
+        change: (event, formProperty: FormProperty) => {
+          const type = formProperty.findRoot().getProperty('type');
+          if (formProperty.value === 'group' || formProperty.value === 'display') {
+            type.setValue(formProperty.value);
+          } else {
+            if (type.value === 'group' || type.value === 'display') {
+              type.reset();
+            }
+          }
+        }
+      }
     ]
   };
 

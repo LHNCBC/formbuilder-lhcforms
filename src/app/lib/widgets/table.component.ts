@@ -16,10 +16,10 @@ import {Util} from '../util';
       </button>
       <app-label [title]="schema.title"[helpMessage]="schema.description" [for]="id"></app-label>
       <div class="card" id="collapseTable" [ngbCollapse]="isCollapsed">
-        <table class="table table-borderless table-sm" *ngIf="formProperty.properties.length > 0">
+        <table class="table table-borderless table-sm app-table" *ngIf="formProperty.properties.length > 0">
           <thead class="thead-light">
           <tr>
-            <th *ngFor="let showField of getShowFields()" [colSpan]="showField.col">
+            <th class="" *ngFor="let showField of getShowFields()" [colSpan]="showField.col">
               <app-title
                 [title]="getTitle(formProperty.properties[0], showField.field)"
                 [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
@@ -60,6 +60,16 @@ import {Util} from '../util';
       padding-right: 5px;
       margin-right: 5px;
       margin-left: 2px;
+    }
+
+    .app-table {
+      margin-bottom: 0;
+    }
+    .app-table th, .app-table td {
+      padding-bottom: 0;
+    }
+    .table-header {
+      font-weight: normal;
     }
   `]
 })

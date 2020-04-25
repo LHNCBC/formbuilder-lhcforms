@@ -71,7 +71,7 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   itemEditorSchema: any;
   editor = 'ngx';
   ajsfFramwork  = 'material-design';
-  /*
+
   acOptions = {
     searchUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire',
     httpOptions: {
@@ -79,7 +79,7 @@ export class MainContentComponent implements OnInit, AfterViewInit {
       responseType: 'json' as const
     }
   };
-  */
+
   linkIdCollection = new LinkIdCollection();
 
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
@@ -100,7 +100,7 @@ export class MainContentComponent implements OnInit, AfterViewInit {
 
   getForm(term: string) {
     if (!term) {
-      this.form = null;
+      this.form = {};
     } else {
       this.dataSrv.getFormData(term).subscribe((data) => {
         this.form = data;

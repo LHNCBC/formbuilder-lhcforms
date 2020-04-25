@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import {Component, OnInit, Input, Output, EventEmitter} from '@angular/core';
 import {HttpClient, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {FormControl} from '@angular/forms';
@@ -21,24 +21,33 @@ export interface Result {
     <mat-form-field>
       <input type="text"
              matInput
-             placeholder="Search FHIR forms"
+             [placeholder]="placeholder"
              [formControl]="myControl"
-             required
              [matAutocomplete]="autoGroup">
-      <mat-autocomplete #autoGroup="matAutocomplete">
-          <mat-option *ngFor="let result of acResults" [value]="result.id">
-            {{ result.title}}
-          </mat-option>
+      <mat-autocomplete [disableRipple]="true" #autoGroup="matAutocomplete" [panelWidth]="'100%'"
+                        [displayWith]="displayFn" (optionSelected)="selectOption($event.option.value)">
+        <mat-option *ngFor="let result of acResults | async" [value]="result">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-1"><small>id: {{result.id}}</small></div><div class="col-11"><small>{{result.title}}</small></div>
+            </div>
+          </div>
+        </mat-option>
       </mat-autocomplete>
-    </mat-form-field>`,
+    </mat-form-field>
+  `,
   styles: []
 })
 export class AutoCompleteComponent implements OnInit {
 
   myControl = new FormControl();
   @Input()
+  placeholder;
+  @Input()
   options: Options;
-  acResults: Result [];
+  acResults: Observable<Result[]>;
+  @Output()
+  optionSelected = new EventEmitter<Result>();
 
   constructor(private http: HttpClient, private lformsService: FetchService) { }
 
@@ -49,18 +58,22 @@ export class AutoCompleteComponent implements OnInit {
     if (!this.options.httpOptions.response) {
       this.options.httpOptions.responseType = 'json' as const;
     }
-    this.myControl.valueChanges.pipe(
+    this.acResults = this.myControl.valueChanges.pipe(
       startWith(''),
       filter(value => value.length > 2),
-      debounceTime(10),
+      debounceTime(100),
       distinctUntilChanged(),
-      map(value => this._search(value))
-      // switchMap((value) => this._search(value))
-    ).subscribe((results) => {
-      results.subscribe((res) => {
-        this.acResults = res;
-      });
-    });
+      // map(value => this._search(value))
+      switchMap((value) => this._search(value))
+    );
+  }
+
+  selectOption(option) {
+    this.optionSelected.emit(option);
+  }
+
+  displayFn(result: Result) {
+    return result && result.title ? result.title : '';
   }
 
   _search(value): Observable<Result []> {

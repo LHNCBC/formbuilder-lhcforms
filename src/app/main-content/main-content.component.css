@@ -35,3 +35,9 @@
 .json-radio-button {
   margin: 5px;
 }
+
+.search-box {
+  font-size: small;
+  width: 100%;
+  align-items: end;
+}

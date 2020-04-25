@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import {Observable, of} from 'rxjs';
+import {catchError, map, tap} from 'rxjs/operators';
 import {TreeNode, ITreeOptions} from 'angular-tree-component/dist/defs/api';
 import {TREE_ACTIONS, KEYS, TreeModel} from 'angular-tree-component';
 
@@ -68,14 +68,15 @@ export class FetchService {
     options = options || {};
     options.observe = options.observe || 'body' as const;
     options.responseType = options.responseType || 'json' as const;
-    options.params = options.params || new HttpParams();
-    options.params.append('title', term);
-    options.params.append('_elements', 'id,title');
+    options.params = (options.params || new HttpParams()).set('title', term).set('_elements', 'id,title');
     return this.http.get<any []>(this.fhirUrl, options).pipe(
+      tap((resp) => { console.log(resp); }),
       map((resp: any) => {
         return (resp.entry as Array<any>).map((e) => {
           return {title: e.resource.title, id: e.resource.id};
         });
-      }));
+      }),
+      catchError((error) => {console.log('searching for ' + term, error); return of([]); })
+    );
   }
 }

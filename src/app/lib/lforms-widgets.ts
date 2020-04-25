@@ -7,6 +7,7 @@ import {StringComponent} from './widgets/string.component';
 import {SelectComponent} from './widgets/select.component';
 import {CheckboxComponent} from './widgets/checkbox.component';
 import {IntegerComponent} from './widgets/integer.component';
+import {RadioComponent} from './widgets/radio.component';
 
 export class LformsWidgets extends DefaultWidgetRegistry {
   constructor() {
@@ -21,5 +22,6 @@ export class LformsWidgets extends DefaultWidgetRegistry {
     this.register('boolean', CheckboxComponent);
     this.register('integer', IntegerComponent);
     this.register('number', IntegerComponent);
+    this.register('radio', RadioComponent);
   }
 }

@@ -2,6 +2,20 @@
   "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
   "type": "object",
   "properties": {
+    "_itemType": {
+      "description": "Select the type of item",
+      "title": "Item type",
+      "type": "string",
+      "enum": [
+        "group",
+        "display",
+        "question"
+      ],
+      "widget": {
+        "id": "radio",
+        "layout": "row"
+      }
+    },
     "id": {
       "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
       "title": "Id",
@@ -161,13 +175,13 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Code",
+      "title": "Code list",
       "widget": {
         "id": "table",
         "showFields": [
+          {"field": "display", "col": 5, "nolabel": true},
           {"field": "code", "col": 2, "nolabel": true},
-          {"field": "system", "col": 5, "nolabel": true},
-          {"field": "display", "col": 5, "nolabel": true}
+          {"field": "system", "col": 5, "nolabel": true}
         ]
       }
     },
@@ -179,15 +193,13 @@
     },
     "text": {
       "description": "The name of a section, the text of a question or text content for a display item.",
-      "title": "Text",
+      "title": "Name",
       "pattern": "^[ \\r\\n\\t\\S]+$",
       "type": "string"
     },
     "type": {
       "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.).",
       "enum": [
-        "group",
-        "display",
         "boolean",
         "decimal",
         "integer",
@@ -201,12 +213,17 @@
         "open-choice",
         "attachment",
         "reference",
-        "quantity"
+        "quantity",
+        "group",
+        "display"
       ],
       "type": "string",
-      "title": "Type",
+      "title": "Data type",
       "widget": {
         "id": "select"
+      },
+      "visibleIf": {
+        "/_itemType": ["question"]
       }
     },
     "enableWhen": {
@@ -592,9 +609,9 @@
           {"field": "answerDateTime", "nolabel": true},
           {"field": "answerTime", "nolabel": true},
           {"field": "answerString", "nolabel": true},
+          {"field": "answerCoding.display", "nolabel": true},
           {"field": "answerCoding.code", "nolabel": true},
           {"field": "answerCoding.system", "nolabel": true},
-          {"field": "answerCoding.display", "nolabel": true},
           {"field": "answerQuantity.comparator", "nolabel": true},
           {"field": "answerQuantity.value", "nolabel": true},
           {"field": "answerQuantity.unit", "nolabel": true},
@@ -615,7 +632,8 @@
       "type": "string",
       "title": "Enable behavior",
       "widget": {
-        "id": "select"
+        "id": "radio",
+        "layout": "row"
       }
     },
     "required": {
@@ -624,7 +642,13 @@
       "pattern": "^true|false$",
       "type": "boolean",
       "visibleIf": {
-        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+        "/type": [
+          "boolean", "decimal", "integer", "date", "dateTime", "time", "string",
+          "text", "url", "open-choice", "choice", "quantity", "reference", "attachment"
+        ],
+        "/_itemType": [
+          "question"
+        ]
       }
     },
     "repeats": {
@@ -633,7 +657,13 @@
       "pattern": "^true|false$",
       "type": "boolean",
       "visibleIf": {
-        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+        "/type": [
+          "boolean", "decimal", "integer", "date", "dateTime", "time", "string",
+          "text", "url", "open-choice", "choice", "quantity", "reference", "attachment"
+        ],
+        "/_itemType": [
+          "question"
+        ]
       }
     },
     "readOnly": {
@@ -642,7 +672,13 @@
       "pattern": "^true|false$",
       "type": "boolean",
       "visibleIf": {
-        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+        "/type": [
+          "boolean", "decimal", "integer", "date", "dateTime", "time", "string",
+          "text", "url", "open-choice", "choice", "quantity", "reference", "attachment"
+        ],
+        "/_itemType": [
+          "question"
+        ]
       }
     },
     "maxLength": {
@@ -927,7 +963,7 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Answer option",
+      "title": "Answer options",
       "visibleIf": {
         "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
       },
@@ -938,9 +974,9 @@
           {"field": "valueDate", "col": 8, "nolabel": true},
           {"field": "valueTime", "col": 8, "nolabel": true},
           {"field": "valueString", "col": 8, "nolabel": true},
+          {"field": "valueCoding.display", "col": 3, "nolabel": true},
           {"field": "valueCoding.code", "col": 3, "nolabel": true},
           {"field": "valueCoding.system", "col": 3, "nolabel": true},
-          {"field": "valueCoding.display", "col": 3, "nolabel": true},
           {"field": "valueReference", "col": 8, "nolabel": true},
           {"field": "initialSelected", "col": 3, "nolabel": true}
         ]
@@ -1392,7 +1428,7 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Initial",
+      "title": "Initial values",
       "visibleIf": {
         "/type": ["boolean", "integer", "decimal", "date", "dateTime", "time", "string", "text",
           "url", "choice", "open-choice", "attachment", "quantity", "reference", "attachment"]
@@ -1408,9 +1444,9 @@
           {"field": "valueTime", "col": 12, "nolabel": true},
           {"field": "valueString", "col": 12, "nolabel": true},
           {"field": "valueUri", "col": 12, "nolabel": true},
+          {"field": "valueCoding.display", "col": 4, "nolabel": true},
           {"field": "valueCoding.code", "col": 4, "nolabel": true},
           {"field": "valueCoding.system", "col": 4, "nolabel": true},
-          {"field": "valueCoding.display", "col": 4, "nolabel": true},
           {"field": "valueQuantity.comparator", "col": 2, "nolabel": true},
           {"field": "valueQuantity.value", "col": 2, "nolabel": true},
           {"field": "valueQuantity.unit", "col": 1, "nolabel": true},
@@ -4572,22 +4608,23 @@
   },
   "fieldsets": [
     {
+      "fields": ["_itemType", "type", "linkId", "maxLength"],
+      "showFields": [
+        { "field": "_itemType", "col": 4 },
+        { "field": "linkId", "col": 3 },
+        { "field": "type", "col": 3 },
+        { "field": "maxLength", "col": 2 }
+      ]
+    },
+    {
       "fields": ["prefix", "text"],
       "showFields": [
-        { "field": "prefix", "col": 2},
-        { "field": "text", "col": 10 }
+        { "field": "prefix", "col": 1},
+        { "field": "text", "col": 11 }
       ]
     },
     {
-      "fields": ["type", "linkId"],
-      "showFields": [
-        { "field": "type", "col": 4 },
-        { "field": "linkId", "col": 4 },
-        { "field": "maxLength", "col": 4 }
-      ]
-    },
-    {
-      "fields": ["required", "readOnly", "repeats", "maxLength"],
+      "fields": ["required", "readOnly", "repeats"],
       "showFields": [
         { "field": "repeats", "col": 4 },
         { "field": "readOnly", "col": 4 },
@@ -4626,7 +4663,7 @@
     },
     {
       "fields": ["enableBehavior"],
-      "showFields": [{"field": "enableBehavior", "col": 2}]
+      "showFields": [{"field": "enableBehavior", "col": 3}]
     },
     {
       "fields": ["id", "extension", "modifierExtension", "definition"]

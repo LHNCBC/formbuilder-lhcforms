@@ -13,7 +13,7 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { MainContentComponent } from './main-content/main-content.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MaterialDesignFrameworkModule } from '@ajsf/material';
-import {MatAutocompleteModule, MatExpansionModule} from '@angular/material';
+import {MatAutocompleteModule, MatCardModule, MatExpansionModule} from '@angular/material';
 import { MatFormFieldModule } from '@angular/material';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material';
@@ -42,6 +42,7 @@ import { LabelComponent } from './lib/widgets/label.component';
 import { TitleComponent } from './lib/widgets/title.component';
 import { ElementChooserComponent } from './lib/widgets/element-chooser.component';
 import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
+import { RadioComponent } from './lib/widgets/radio.component';
 
 @NgModule({
   declarations: [
@@ -63,7 +64,8 @@ import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
     LabelComponent,
     TitleComponent,
     ElementChooserComponent,
-    AutoCompleteComponent
+    AutoCompleteComponent,
+    RadioComponent
   ],
   imports: [
     AppRoutingModule,
@@ -75,6 +77,7 @@ import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
     HttpClientModule,
     LayoutModule,
     MatButtonModule,
+    MatCardModule,
     MaterialDesignFrameworkModule,
     MatExpansionModule,
     MatFormFieldModule,
@@ -93,7 +96,7 @@ import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
   ],
   entryComponents:
     [RowLayoutComponent, ArrayGridComponent, TableComponent,
-    GridComponent, StringComponent, SelectComponent, CheckboxComponent, IntegerComponent],
+    GridComponent, StringComponent, SelectComponent, CheckboxComponent, IntegerComponent, RadioComponent],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgets}],
   bootstrap: [AppComponent]
 })
