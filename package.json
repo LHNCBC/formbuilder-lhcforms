@@ -35,6 +35,8 @@
     "bootstrap": "^4.4.1",
     "jexl": "^2.2.2",
     "ngx-schema-form": "2.4.2",
+    "primeicons": "^3.0.0-rc.1",
+    "primeng": "^9.0.6",
     "rxjs": "^6.5.4",
     "tslib": "^1.10.0",
     "z-schema": "^4.2.2",

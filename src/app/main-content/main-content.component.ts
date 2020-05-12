@@ -70,7 +70,6 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   showType = 'item';
   itemEditorSchema: any;
   editor = 'ngx';
-  ajsfFramwork  = 'material-design';
 
   acOptions = {
     searchUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire',

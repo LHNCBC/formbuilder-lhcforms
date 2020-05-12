@@ -29,13 +29,13 @@
         <app-auto-complete placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
       </div>
     </mat-toolbar>
-    <button type="button" (click)="editor = 'json'" disabled>json</button>
-    <button type="button" (click)="editor = 'ngx'">ngx</button>
     <mat-tab-group (selectedTabChange)="showJson($event)">
       <mat-tab label="Editor">
         <!-- Add Content Here -->
-        <app-json-editor *ngIf="editor === 'json'" #editor></app-json-editor>
-        <app-ngx-schema-form *ngIf="editor === 'ngx'" #ngxEditor [linkIdCollection]="linkIdCollection" (setLinkId)="registerLinkId($event)" ></app-ngx-schema-form>
+        <app-ngx-schema-form *ngIf="editor === 'ngx'" #ngxEditor
+                             [linkIdCollection]="linkIdCollection"
+                             (setLinkId)="registerLinkId($event)"
+        ></app-ngx-schema-form>
         <!-- <router-outlet></router-outlet> -->
       </mat-tab>
       <mat-tab label="JSON Output">

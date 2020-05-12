@@ -213,17 +213,12 @@
         "open-choice",
         "attachment",
         "reference",
-        "quantity",
-        "group",
-        "display"
+        "quantity"
       ],
       "type": "string",
       "title": "Data type",
       "widget": {
         "id": "select"
-      },
-      "visibleIf": {
-        "/_itemType": ["question"]
       }
     },
     "enableWhen": {
@@ -4669,7 +4664,94 @@
       "fields": ["id", "extension", "modifierExtension", "definition"]
     }
   ],
+  "steps": [
+    {
+      "title": "Specify item type and link id",
+      "optional": false,
+      "rows": [
+        {
+          "showFields": [
+            { "field": "_itemType", "col": 4 },
+            { "field": "linkId", "col": 3 },
+            { "field": "type", "col": 3 }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Specify some basic properties",
+      "optional": false,
+      "rows": [
+        {
+          "showFields": [
+            { "field": "prefix", "col": 1},
+            { "field": "text", "col": 11 }
+          ]
+        },
+        {
+          "showFields": [
+            { "field": "repeats", "col": 2 },
+            { "field": "readOnly", "col": 2 },
+            { "field": "required", "col": 2 },
+            { "field": "maxLength", "col": 2 }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Item Codes",
+      "optional": false,
+      "rows": [
+        {
+          "showFields": [
+            { "field": "code", "col": 12 }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Answer list",
+      "optional": false,
+      "rows": [
+        {
+          "showFields": [
+            { "field": "answerValueSet", "col": 12 }
+          ]
+        },
+        {
+          "showFields": [
+            { "field": "answerOption", "col": 12 }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Defaults",
+      "optional": false,
+      "rows": [
+        {
+          "showFields": [
+            { "field": "initial", "col": 12 }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Conditional display",
+      "optional": false,
+      "rows": [
+        {
+          "showFields": [
+            { "field": "enableWhen", "col": 12 }
+          ]
+        },
+        {
+          "showFields": [{"field": "enableBehavior", "col": 3}]
+        }
+      ]
+    }
+  ],
   "widget": {
-    "id": "grid"
+    "id": "stepper-grid"
   }
 }

@@ -8,6 +8,7 @@ import {SelectComponent} from './widgets/select.component';
 import {CheckboxComponent} from './widgets/checkbox.component';
 import {IntegerComponent} from './widgets/integer.component';
 import {RadioComponent} from './widgets/radio.component';
+import {StepperGridComponent} from './widgets/stepper-grid.component';
 
 export class LformsWidgets extends DefaultWidgetRegistry {
   constructor() {
@@ -15,6 +16,7 @@ export class LformsWidgets extends DefaultWidgetRegistry {
     this.register('row-layout',  RowLayoutComponent);
     this.register('array-grid', ArrayGridComponent);
     this.register('grid', GridComponent);
+    this.register('stepper-grid', StepperGridComponent);
     this.register('table', TableComponent);
     this.register('string', StringComponent);
     this.register('select', SelectComponent);

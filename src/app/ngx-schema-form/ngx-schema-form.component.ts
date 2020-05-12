@@ -3,6 +3,7 @@ import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {FormProperty} from 'ngx-schema-form';
 import {LinkIdCollection} from '../main-content/main-content.component';
+import {Form} from '@angular/forms';
 
 @Component({
   selector: 'app-ngx-schema-form',
@@ -21,6 +22,20 @@ export class NgxSchemaFormComponent implements OnInit {
   linkIdCollection = new LinkIdCollection();
 
   myValidators = {
+    '/_itemType': (value, property, form) => {
+      if (!property.valid) {
+        return property.errors;
+      } else if (!value || value.trim().length === 0) {
+        return {_itemType: {expectedValue: 'group, display, or question'}};
+      }
+    },
+    '/type': (value, property, form) => {
+      if (!property.valid) {
+        return property.errors;
+      } else if (!value || value.trim().length === 0) {
+        return {expectedValue: {type: 'One of ' + property.schema.enum.join(' ')}};
+      }
+    },
     '/linkId': (value, property, form) => {
       if (!property.valid) {
         return property.errors;
@@ -61,7 +76,9 @@ export class NgxSchemaFormComponent implements OnInit {
           const type = formProperty.findRoot().getProperty('type');
           if (formProperty.value === 'group' || formProperty.value === 'display') {
             type.setValue(formProperty.value);
+            type.schema.readOnly = true;
           } else {
+            type.schema.readOnly = false;
             if (type.value === 'group' || type.value === 'display') {
               type.reset();
             }

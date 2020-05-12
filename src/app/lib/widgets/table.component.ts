@@ -100,14 +100,7 @@ export class TableComponent extends ArrayWidget implements AfterViewInit {
   }
 
   isVisible(propertyId) {
-    const path = propertyId.split('.');
-    let formProperty = this.formProperty.properties[0];
-    let visible = formProperty.visible;
-    for (let i = 0; i < path.length && visible; i++) {
-      formProperty = formProperty.getProperty(path[i]);
-      visible = formProperty.visible;
-    }
-    return visible;
+    return Util.isVisible(this.formProperty.properties[0], propertyId);
   }
 
   getProperty(parentProperty, propertyId) {

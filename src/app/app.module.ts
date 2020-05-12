@@ -20,10 +20,13 @@ import { MatInputModule } from '@angular/material';
 import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatStepperModule } from '@angular/material';
 import { MatTabsModule} from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
+// import { PanelModule } from 'primeng';
+// import { ToolbarModule } from 'primeng';
 import { TreeModule } from 'angular-tree-component';
 import { ItemJsonEditorComponent } from './item-json-editor/item-json-editor.component';
 import { AjsfFormComponent } from './ajsf-form/ajsf-form.component';
@@ -43,6 +46,7 @@ import { TitleComponent } from './lib/widgets/title.component';
 import { ElementChooserComponent } from './lib/widgets/element-chooser.component';
 import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
 import { RadioComponent } from './lib/widgets/radio.component';
+import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
 
 @NgModule({
   declarations: [
@@ -65,7 +69,8 @@ import { RadioComponent } from './lib/widgets/radio.component';
     TitleComponent,
     ElementChooserComponent,
     AutoCompleteComponent,
-    RadioComponent
+    RadioComponent,
+    StepperGridComponent
   ],
   imports: [
     AppRoutingModule,
@@ -86,16 +91,19 @@ import { RadioComponent } from './lib/widgets/radio.component';
     MatListModule,
     MatRadioModule,
     MatSidenavModule,
+    MatStepperModule,
     MatTabsModule,
     MatToolbarModule,
     NgbModule,
+//    PanelModule,
     SchemaFormModule.forRoot(),
+//    ToolbarModule,
     TreeModule,
     ReactiveFormsModule,
     MatAutocompleteModule
   ],
   entryComponents:
-    [RowLayoutComponent, ArrayGridComponent, TableComponent,
+    [RowLayoutComponent, ArrayGridComponent, TableComponent, StepperGridComponent,
     GridComponent, StringComponent, SelectComponent, CheckboxComponent, IntegerComponent, RadioComponent],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgets}],
   bootstrap: [AppComponent]
