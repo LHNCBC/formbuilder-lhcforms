@@ -34,7 +34,7 @@
     "angular-tree-component": "^7.2.1",
     "bootstrap": "^4.4.1",
     "jexl": "^2.2.2",
-    "ngx-schema-form": "2.5.2",
+    "ngx-schema-form": "2.4.4",
     "primeicons": "^3.0.0-rc.1",
     "primeng": "^9.0.6",
     "rxjs": "^6.5.4",
