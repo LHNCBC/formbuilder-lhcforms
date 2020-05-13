@@ -11,8 +11,6 @@
   },
   "private": true,
   "dependencies": {
-    "@ajsf/bootstrap3": "^0.1.3",
-    "@ajsf/material": "^0.1.3",
     "@angular/animations": "~9.1.6",
     "@angular/cdk": "~8.2.3",
     "@angular/common": "~9.1.6",
