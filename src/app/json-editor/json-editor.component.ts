@@ -12,7 +12,7 @@ const iSchema = '/assets/json-editor-item.schema.json';
   styleUrls: ['./json-editor.component.css']
 })
 export class JsonEditorComponent implements OnInit {
-  @ViewChild('jsonEditor', {static: false}) elementRef: ElementRef;
+  @ViewChild('jsonEditor') elementRef: ElementRef;
 
   editor: JSONEditor;
   schema: any;

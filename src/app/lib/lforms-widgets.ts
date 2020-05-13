@@ -9,7 +9,9 @@ import {CheckboxComponent} from './widgets/checkbox.component';
 import {IntegerComponent} from './widgets/integer.component';
 import {RadioComponent} from './widgets/radio.component';
 import {StepperGridComponent} from './widgets/stepper-grid.component';
+import { Injectable } from "@angular/core";
 
+@Injectable()
 export class LformsWidgets extends DefaultWidgetRegistry {
   constructor() {
     super();

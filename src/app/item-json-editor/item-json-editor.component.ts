@@ -10,7 +10,7 @@ import {forkJoin} from 'rxjs';
   styleUrls: ['./item-json-editor.component.css']
 })
 export class ItemJsonEditorComponent implements AfterViewInit {
-  @ViewChild('itemJsonEditor', {static: false}) editorElement: ElementRef;
+  @ViewChild('itemJsonEditor') editorElement: ElementRef;
   _val: any;
 
   constructor(private dataSrv: FetchService, private itemSrv: ShareObjectService) {}

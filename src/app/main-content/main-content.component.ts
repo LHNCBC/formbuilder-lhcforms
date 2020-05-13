@@ -57,10 +57,10 @@ export class LinkIdCollection {
   styleUrls: ['./main-content.component.css']
 })
 export class MainContentComponent implements OnInit, AfterViewInit {
-  @ViewChild('tree', {static: false}) treeComponent: TreeComponent;
-  @ViewChild('editor', {static: false}) jsonEditorComponent: JsonEditorComponent;
-  @ViewChild('formSearch', {static: false}) sInput: MatInput;
-  @ViewChild('drawer', {static: false, read: ElementRef}) sidenavEl: ElementRef;
+  @ViewChild('tree') treeComponent: TreeComponent;
+  @ViewChild('editor') jsonEditorComponent: JsonEditorComponent;
+  @ViewChild('formSearch') sInput: MatInput;
+  @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
   // qItem: any;
   focusNode: any = {path: []};
   options: ITreeOptions;
