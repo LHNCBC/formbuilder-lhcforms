@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { TreeComponent, TreeModel, TreeNode, ITreeOptions } from 'angular-tree-component';
 import {FetchService} from '../fetch.service';
-import {MatInput} from '@angular/material';
+import {MatInput} from '@angular/material/input';
 import {JsonEditorComponent} from '../json-editor/json-editor.component';
 import {ShareObjectService} from '../share-object.service';
 import {ITreeNode} from 'angular-tree-component/dist/defs/api';

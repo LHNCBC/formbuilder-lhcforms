@@ -4,7 +4,6 @@ import { SchemaFormModule, WidgetRegistry, DefaultWidgetRegistry } from 'ngx-sch
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { Bootstrap3FrameworkModule} from '@ajsf/bootstrap3';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -12,15 +11,16 @@ import { JsonEditorComponent } from './json-editor/json-editor.component';
 import { LayoutModule } from '@angular/cdk/layout';
 import { MainContentComponent } from './main-content/main-content.component';
 import { MatButtonModule } from '@angular/material/button';
-import { MaterialDesignFrameworkModule } from '@ajsf/material';
-import {MatAutocompleteModule, MatCardModule, MatExpansionModule} from '@angular/material';
-import { MatFormFieldModule } from '@angular/material';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatCardModule} from '@angular/material/card';
+import { MatExpansionModule} from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material';
+import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatStepperModule } from '@angular/material';
+import { MatStepperModule } from '@angular/material/stepper';
 import { MatTabsModule} from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -29,7 +29,6 @@ import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.compon
 // import { ToolbarModule } from 'primeng';
 import { TreeModule } from 'angular-tree-component';
 import { ItemJsonEditorComponent } from './item-json-editor/item-json-editor.component';
-import { AjsfFormComponent } from './ajsf-form/ajsf-form.component';
 import { RowLayoutComponent } from './lib/widgets/row-layout.component';
 import { ArrayGridComponent } from './lib/widgets/array-grid.component';
 import { GridComponent } from './lib/widgets/grid.component';
@@ -55,7 +54,6 @@ import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
     NgxSchemaFormComponent,
     MainContentComponent,
     ItemJsonEditorComponent,
-    AjsfFormComponent,
     RowLayoutComponent,
     ArrayGridComponent,
     GridComponent,
@@ -74,7 +72,6 @@ import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
   ],
   imports: [
     AppRoutingModule,
-    Bootstrap3FrameworkModule,
     BrowserModule,
     BrowserAnimationsModule,
     FormsModule,
@@ -83,7 +80,6 @@ import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
     LayoutModule,
     MatButtonModule,
     MatCardModule,
-    MaterialDesignFrameworkModule,
     MatExpansionModule,
     MatFormFieldModule,
     MatIconModule,
@@ -98,7 +94,7 @@ import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
 //    PanelModule,
     SchemaFormModule.forRoot(),
 //    ToolbarModule,
-    TreeModule,
+    TreeModule.forRoot(),
     ReactiveFormsModule,
     MatAutocompleteModule
   ],
