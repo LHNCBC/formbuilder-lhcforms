@@ -6,7 +6,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
   template: `
     <span *ngIf="title" class="horizontal control-label">
       {{title}}
-      <span *ngIf="helpMessage"  placement="top" [ngbTooltip]="helpMessage" data-container="body">
+      <span *ngIf="helpMessage"  matTooltipPosition="above" [matTooltip]="helpMessage">
         <fa-icon [icon]="helpIcon"></fa-icon>
       </span>
     </span>

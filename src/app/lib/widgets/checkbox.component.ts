@@ -12,7 +12,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
     <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">
     <label *ngIf="!nolabel && schema.title" [attr.for]="id" class="form-check-label control-label">
       {{ schema.title }}
-      <span *ngIf="schema.description"  placement="top" [ngbTooltip]="schema.description">
+      <span *ngIf="schema.description"  matTooltipPosition="above" [matTooltip]="schema.description">
         <fa-icon [icon]="faInfo"></fa-icon>
       </span>
     </label>

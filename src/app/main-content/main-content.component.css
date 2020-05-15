@@ -1,24 +1,43 @@
 @import '~angular-tree-component/dist/angular-tree-component.css';
 
-.sidenav-container {
-  height: 100%;
+#fixedTop {
+  position:absolute;
+  top:0;
+  left:0;
+  height:84px;
+  right:0;
+  overflow:hidden;
 }
 
-.sidenav {
-  width: 200px;
+#fixedBottom {
+  position:absolute;
+  bottom:0;
+  height:65px;
+  left:0;
+  right:0;
+  overflow:hidden;
+}
+
+#resizableMiddle {
+  position:absolute;
+  top:84px;
+  bottom:65px;
+  left:0;
+  right:0;
+  overflow:auto;
+}
+
+.mat-sidenav {
+  width: 25%;
   padding: 10px;
 }
 
-.sidenav-content {
+.mat-sidenav-content {
   padding: 10px;
 }
 
 .mat-tab-body {
   background-color: white;
-}
-
-.sidenav .mat-toolbar {
-  background: inherit;
 }
 
 .mat-toolbar.mat-primary {

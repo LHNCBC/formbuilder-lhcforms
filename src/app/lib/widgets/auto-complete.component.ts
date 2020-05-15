@@ -36,7 +36,7 @@ export interface Result {
       </mat-autocomplete>
     </mat-form-field>
   `,
-  styles: []
+  styles: ['.mat-form-field {width: inherit; }']
 })
 export class AutoCompleteComponent implements OnInit {
 

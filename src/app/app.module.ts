@@ -23,10 +23,11 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTabsModule} from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
-// import { PanelModule } from 'primeng';
-// import { ToolbarModule } from 'primeng';
+import { PanelModule } from 'primeng';
+import { ToolbarModule } from 'primeng';
 import { TreeModule } from 'angular-tree-component';
 import { ItemJsonEditorComponent } from './item-json-editor/item-json-editor.component';
 import { RowLayoutComponent } from './lib/widgets/row-layout.component';
@@ -46,6 +47,9 @@ import { ElementChooserComponent } from './lib/widgets/element-chooser.component
 import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
 import { RadioComponent } from './lib/widgets/radio.component';
 import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
+import { SidebarModule} from 'primeng';
+import { HeaderComponent } from './header/header.component';
+import { FooterComponent } from './footer/footer.component';
 
 @NgModule({
   declarations: [
@@ -68,7 +72,9 @@ import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
     ElementChooserComponent,
     AutoCompleteComponent,
     RadioComponent,
-    StepperGridComponent
+    StepperGridComponent,
+    HeaderComponent,
+    FooterComponent
   ],
   imports: [
     AppRoutingModule,
@@ -90,10 +96,12 @@ import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
     MatStepperModule,
     MatTabsModule,
     MatToolbarModule,
+    MatTooltipModule,
     NgbModule,
-//    PanelModule,
+    PanelModule,
     SchemaFormModule.forRoot(),
-//    ToolbarModule,
+    SidebarModule,
+    ToolbarModule,
     TreeModule.forRoot(),
     ReactiveFormsModule,
     MatAutocompleteModule

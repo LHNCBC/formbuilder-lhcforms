@@ -1,22 +1,43 @@
-<!--
-<p-panel>
-  <p-header>
-    <p-toolbar>
-      HEADER CONTENT
-    </p-toolbar>
-  </p-header>
-  <div class="ui-panel-content">
-    <mat-sidenav-container>
-      <mat-sidenav>
-        SIDEBAR CONTENT
+  <div>
+    <app-header id="fixedTop" [isFirebaseEnabled]="false"></app-header>
+    <mat-sidenav-container id="resizableMiddle">
+      <mat-sidenav #drawer mode="side" opened>
+        <mat-toolbar color="primary">
+            <app-auto-complete class="search-box" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
+        </mat-toolbar>
+        <button type="button" class="btn btn-link btn-sm" (click)="toggleTreeExpansion();">Toggle Expansion</button>
+        <tree-root
+          #tree
+          [nodes]="form.item"
+          [options]="options"
+          (focus)="onFocus($event)"
+        ></tree-root>
       </mat-sidenav>
       <mat-sidenav-content>
-        MAIN CONTENT
+        <mat-tab-group (selectedTabChange)="showJson($event)">
+          <mat-tab label="Editor">
+            <app-ngx-schema-form></app-ngx-schema-form>
+          </mat-tab>
+          <mat-tab label="JSON Output">
+            <mat-radio-group
+              class="json-radio-group"
+              [(ngModel)]="showType">
+              <mat-radio-button class="json-radio-button" [value]="'item'">
+                Focussed item
+              </mat-radio-button>
+              <mat-radio-button class="json-radio-button" [value]="'questionnaire'">
+                Questionnaire
+              </mat-radio-button>
+            </mat-radio-group>
+            <div *ngIf="showType === 'item'">
+              <app-item-json-editor></app-item-json-editor>
+            </div>
+            <pre *ngIf="showType === 'questionnaire'">{{ exportForm | json }}</pre>
+          </mat-tab>
+        </mat-tab-group>
       </mat-sidenav-content>
     </mat-sidenav-container>
+
+    <app-footer id="fixedBottom"></app-footer>
   </div>
-  <p-footer>
-    FOOTER CONTENT
-  </p-footer>
-</p-panel>
--->
+

@@ -1,5 +1,5 @@
 import {OnInit, AfterViewInit, Component, ViewChild, ElementRef} from '@angular/core';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+// import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { TreeComponent, TreeModel, TreeNode, ITreeOptions } from 'angular-tree-component';
@@ -8,6 +8,7 @@ import {MatInput} from '@angular/material/input';
 import {JsonEditorComponent} from '../json-editor/json-editor.component';
 import {ShareObjectService} from '../share-object.service';
 import {ITreeNode} from 'angular-tree-component/dist/defs/api';
+import { Panel, Toolbar, Header, Footer } from 'primeng';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -53,7 +54,7 @@ export class LinkIdCollection {
 
 @Component({
   selector: 'app-main-content',
-  templateUrl: './main-content.component.html',
+  templateUrl: './main-content-prime.component.html',
   styleUrls: ['./main-content.component.css']
 })
 export class MainContentComponent implements OnInit, AfterViewInit {
@@ -80,14 +81,17 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   };
 
   linkIdCollection = new LinkIdCollection();
-
+/*
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
       shareReplay()
     );
-
-  constructor(private breakpointObserver: BreakpointObserver, private dataSrv: FetchService, private selectedNodeSrv: ShareObjectService) {
+*/
+  constructor(
+              // private breakpointObserver: BreakpointObserver,
+              private dataSrv: FetchService,
+              private selectedNodeSrv: ShareObjectService) {
     this.options = this.dataSrv.getOptions();
     this.dataSrv.getItemEditorSchema().subscribe((data) => {
       this.itemEditorSchema = data;
