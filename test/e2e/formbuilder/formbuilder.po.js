@@ -44,6 +44,9 @@ var FormBuilder = function () {
   this.questionType = element(by.id('/dataType/1'));
   this.questionAnswerText = element(by.id('/answers/text/1/1'));
   this.prefix = element(by.id('/prefix/1'));
+  this.itemTypeQuestion = element(by.id('/__itemType/1question'));
+  this.itemTypeGroup = element(by.id('/__itemType/1group'));
+  this.itemTypeDisplay = element(by.id('/__itemType/1display'));
 
   this.basicEditTab = element(by.cssContainingText('md-tab-item', 'Item attributes - Basic'));
   this.advancedEditTab = element(by.cssContainingText('md-tab-item', 'Item attributes - Advanced'));
