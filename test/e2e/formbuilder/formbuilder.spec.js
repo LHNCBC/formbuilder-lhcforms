@@ -135,6 +135,35 @@ describe('GET /', function () {
       expect(fb.panelTitle.getText()).toBe('1 '+str);
     });
 
+    describe('Item type radio buttons', function() {
+      beforeAll(function() {
+        fb.cleanupSideBar();
+        var str = 'Test item created';
+        fb.addButton.click();
+        fb.addNewItem(str);
+      });
+
+      [
+        {name:'question', clickControl: fb.itemTypeQuestion, test: {dataType: 'ST'}},
+        {name:'group', clickControl: fb.itemTypeGroup, test: {header: true}},
+        {name:'display', clickControl: fb.itemTypeDisplay, test: {dataType: 'TITLE'}}
+      ].forEach(function (testCase) {
+        it('Should select item type: '+testCase.name, function(done) {
+          testCase.clickControl.click();
+          util.getJSONSource('lforms').then(function (text) {
+            var previewLFData = JSON.parse(text);
+            var fields = Object.keys(testCase.test);
+            fields.forEach(function(field) {
+              expect(previewLFData.items[0][field]).toBe(testCase.test[field]);
+            });
+            done();
+          }, function (err) {
+            done(err);
+          });
+        });
+      })
+    });
+
     it('should see changes in linkId', function (done) {
       fb.cleanupSideBar();
       var str = 'Test item created';

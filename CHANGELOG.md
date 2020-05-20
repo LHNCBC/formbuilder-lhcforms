@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [5.0.1]  2020-04-17
+### Fixed
+- Fixed a bug in selection of display item type.
+
 ## [5.0.0]  2020-04-17
 ### Changed
 - Changed unique key of an item, from questionCode to linkId as per lforms version 24.0.0.
