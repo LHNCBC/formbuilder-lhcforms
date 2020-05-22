@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [5.1.0]  2020-05-22
+### Added
+- Added input fields to support CSS styles on item name and prefix.
+
 ## [5.0.1]  2020-04-17
 ### Fixed
 - Fixed a bug in selection of display item type.

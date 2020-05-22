@@ -164,6 +164,67 @@ describe('GET /', function () {
       })
     });
 
+    describe('Css styling', function() {
+      beforeAll(function() {
+        fb.cleanupSideBar();
+        var str = 'Test item created';
+        fb.addButton.click();
+        fb.addNewItem(str);
+      });
+
+      it('should test css defaults for question text and prefix fields', function () {
+        expect(fb.addCssQuestionNo.isSelected()).toBeTruthy();
+        expect(fb.cssQuestion.isPresent()).toBeFalsy();
+        fb.addCssQuestionYes.click();
+        expect(fb.cssQuestion.isDisplayed()).toBeTruthy();
+
+        expect(fb.addCssPrefixNo.isSelected()).toBeTruthy();
+        expect(fb.cssPrefix.isPresent()).toBeFalsy();
+        fb.addCssPrefixYes.click();
+        expect(fb.cssPrefix.isDisplayed()).toBeTruthy();
+      });
+
+      it('Should convert question text css', function(done) {
+        fb.addCssQuestionYes.click();
+        fb.cssQuestion.click();
+        var cssInput = 'font-size: 2rem, color: blue, font-style: italic';
+        fb.cssQuestion.sendKeys(cssInput);
+        fb.previewRefreshButton.click();
+        util.getJSONSource('lforms').then(function (text) {
+          var previewLFData = JSON.parse(text);
+          expect(previewLFData.items[0].obj_text).toEqual({
+            extension: [{
+              url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
+              valueString: cssInput
+            }]
+          });
+          done();
+        }, function (err) {
+          done(err);
+        });
+      });
+
+      it('Should convert question prefix css', function(done) {
+        fb.addCssPrefixYes.click();
+        fb.cssPrefix.click();
+        var cssInput = 'font-size: 2rem, color: red, font-weight: bold';
+        fb.cssPrefix.sendKeys(cssInput);
+        fb.previewRefreshButton.click();
+        util.getJSONSource('lforms').then(function (text) {
+          var previewLFData = JSON.parse(text);
+          expect(previewLFData.items[0].obj_prefix).toEqual({
+            extension: [{
+              url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
+              valueString: cssInput
+            }]
+          });
+          done();
+        }, function (err) {
+          done(err);
+        });
+      });
+    });
+
     it('should see changes in linkId', function (done) {
       fb.cleanupSideBar();
       var str = 'Test item created';

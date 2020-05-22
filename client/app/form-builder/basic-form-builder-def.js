@@ -74,7 +74,43 @@ var formBuilderDef = {
       "dataType": "ST",
       "header": false,
       "codingInstructions": "This is required: Enter the section header or question text exactly as it is displayed on your form.",
-      "linkId": "/question"
+      "linkId": "/question",
+      "items": [
+        {
+          "questionCode": "_addCss",
+          "question": "Add CSS styles?",
+          "codingInstructions": "Select to enter CSS styles to item name (question text). To learn about <a target=\"_blank\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS\">CSS click here.</a>",
+          "codingInstructionsFormat": "html",
+          "header": false,
+          "dataType": "CNE",
+          "answers": "boolean",
+          "value": {
+            "text": "No",
+            "code": false
+          },
+          "linkId": "/question/_addCss"
+        },
+        {
+          "questionCode": "obj_text",
+          "question": "CSS",
+          "codingInstructions": "Enter inline CSS styles. For example, to make question text color blue and set its font size, enter: <pre>font-color: blue; font-size: 2rem</pre>. ",
+          "codingInstructionsFormat": "html",
+          "header": false,
+          "dataType": "TX",
+          "linkId": "/question/obj_text",
+          "skipLogic": {
+            "conditions": [
+              {
+                "source": "/question/_addCss",
+                "trigger": {
+                  "value": {"code": true}
+                }
+              }
+            ],
+            "action": "show"
+          }
+        }
+      ]
     },
     {
       "questionCode": "linkId",
@@ -141,7 +177,43 @@ var formBuilderDef = {
       "dataType": "ST",
       "header": false,
       "codingInstructions": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire.",
-      "linkId": "/prefix"
+      "linkId": "/prefix",
+      "items": [
+        {
+          "questionCode": "_addCss",
+          "question": "Add CSS styles?",
+          "codingInstructions": "Select to enter CSS styles to prefix. To learn about <a target=\"_blank\" href=\"https://developer.mozilla.org/en-US/docs/Web/CSS\">CSS click here.</a>",
+          "codingInstructionsFormat": "html",
+          "header": false,
+          "dataType": "CNE",
+          "answers": "boolean",
+          "value": {
+            "text": "No",
+            "code": false
+          },
+          "linkId": "/prefix/_addCss"
+        },
+        {
+          "questionCode": "obj_prefix",
+          "question": "CSS",
+          "codingInstructions": "Enter inline CSS styles. For example, to make prefix bold, enter: <pre>font-weight: bold</pre>.",
+          "codingInstructionsFormat": "html",
+          "header": false,
+          "dataType": "TX",
+          "linkId": "/prefix/obj_prefix",
+          "skipLogic": {
+            "conditions": [
+              {
+                "source": "/prefix/_addCss",
+                "trigger": {
+                  "value": {"code": true}
+                }
+              }
+            ],
+            "action": "show"
+          }
+        }
+      ]
     },
     {
       "questionCode": "localQuestionCode",
