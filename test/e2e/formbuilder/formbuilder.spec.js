@@ -172,7 +172,7 @@ describe('GET /', function () {
         fb.addNewItem(str);
       });
 
-      it('should test css defaults for question text and prefix fields', function () {
+      it('should follow css defaults for question text and prefix fields', function () {
         expect(fb.addCssQuestionNo.isSelected()).toBeTruthy();
         expect(fb.cssQuestion.isPresent()).toBeFalsy();
         fb.addCssQuestionYes.click();
@@ -594,13 +594,14 @@ describe('GET /', function () {
         fhirOriginalJsonSTU3 = JSON.parse(text);
       });
 
+      var EC = protractor.ExpectedConditions;
       fb.exportMenu.click();
+      browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
       fb.exportToFile.click();
       fb.exportFileLFormsFormat.click();
       fb.continueButton.click();
 
       fb.exportMenu.click();
-      var EC = protractor.ExpectedConditions;
       browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
       fb.exportToFile.click();
       fb.exportFileFHIRFormatR4.click();
@@ -747,6 +748,30 @@ describe('GET /', function () {
       fb.sendKeys(fb.questionText, ' xxxx');
       expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org/modified');
       expect(fb.questionCode.getAttribute('value')).toBe('Modified_12345-6');
+    });
+  });
+
+  describe('Loading form with css styles', function () {
+    it('Should load a form with css styles', function (done) {
+      fb.cleanupSideBar();
+      util.loadLFormFromDisk(path.join(__dirname, './fixtures/argonaut-phq9-ish.json'), 'lforms').then(function (text) {
+        var newJson = JSON.parse(text);
+        expect(newJson.items[0].items[2].obj_text).toEqual({
+          extension: [{
+            url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
+            valueString: 'font-style: italic'
+          }]
+        });
+        expect(newJson.items[0].items[2].obj_prefix).toEqual({
+          extension: [{
+            url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
+            valueString: 'font-weight: bold'
+          }]
+        });
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
     });
   });
 
