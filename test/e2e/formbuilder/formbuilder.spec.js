@@ -752,22 +752,20 @@ describe('GET /', function () {
   });
 
   describe('Loading form with css styles', function () {
+    let fixtureFile = path.join(__dirname, './fixtures/rendering-style.lforms.json');
+    let originalJson;
+    beforeAll(function() {
+      originalJson = JSON.parse(fs.readFileSync(fixtureFile));
+    });
+
     it('Should load a form with css styles', function (done) {
       fb.cleanupSideBar();
-      util.loadLFormFromDisk(path.join(__dirname, './fixtures/argonaut-phq9-ish.json'), 'lforms').then(function (text) {
+      util.loadLFormFromDisk(fixtureFile, 'lforms').then(function (text) {
         var newJson = JSON.parse(text);
-        expect(newJson.items[0].items[2].obj_text).toEqual({
-          extension: [{
-            url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
-            valueString: 'font-style: italic'
-          }]
-        });
-        expect(newJson.items[0].items[2].obj_prefix).toEqual({
-          extension: [{
-            url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
-            valueString: 'font-weight: bold'
-          }]
-        });
+        expect(newJson.items[0].items[0].obj_prefix).toEqual(originalJson.items[0].items[0].obj_prefix);
+        expect(newJson.items[0].items[1].obj_text).toEqual(originalJson.items[0].items[1].obj_text);
+        expect(newJson.items[0].items[2].obj_text).toEqual(originalJson.items[0].items[2].obj_text);
+        expect(newJson.items[0].items[2].obj_prefix).toEqual(originalJson.items[0].items[2].obj_prefix);
         done();
       }, function (err) {
         done.fail(JSON.stringify(err));
