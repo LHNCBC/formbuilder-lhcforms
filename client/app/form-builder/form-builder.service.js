@@ -492,16 +492,53 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "linkId":
         case "questionCodeSystem":
         case "questionCode":
-        case "question":
         case "localQuestionCode":
         case "codingInstructions":
         case "externallyDefined":
         case "copyrightNotice":
+          if(item.value) {
+            var val = item.value.trim();
+            if(val.length > 0) {
+              ret[attr] = val;
+            }
+          }
+          break;
+
+        case "question":
         case "prefix":
           if(item.value) {
             var val = item.value.trim();
             if(val.length > 0) {
               ret[attr] = val;
+            }
+          }
+          var addCss = lodash.find(item.items, {questionCode: '_addCss'}).value.code;
+          var fieldName = attr === 'question' ? 'obj_text' : 'obj_prefix';
+          var partialField = getHiddenFormBuilderField(formBuilderItems, '_partial_'+fieldName);
+          if(partialField) {
+            ret[fieldName] = partialField.value;
+          }
+          if(addCss) {
+            var css = lodash.find(item.items, {questionCode: fieldName}).value;
+            css = css ? css.trim() : null;
+            if(css) {
+              if (!ret[fieldName]) {
+                ret[fieldName] = {};
+              }
+              if(!ret[fieldName].extension) {
+                ret[fieldName].extension = [];
+              }
+              var sExt = lodash.find(ret[fieldName].extension,
+                  {url: 'http://hl7.org/fhir/StructureDefinition/rendering-style'});
+              if(sExt) {
+                sExt.valueString = css;
+              }
+              else {
+                ret[fieldName].extension.push({
+                  "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+                  "valueString": css
+                });
+              }
             }
           }
           break;
@@ -842,7 +879,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
         default:
           // Unrecognized fields.
-          if(item.value) {
+          if(item.value && !attr.startsWith('_partial_')) {
             ret[attr] = item.value;
           }
           break;
@@ -851,6 +888,22 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     return ret;
   };
 
+  /**
+   *
+   * Hidden (unsupported or partially supported) items are added at the end of advanced items.
+   * allFBItems are basic items, followed by advanced items.
+   * Search for hidden items starting from end of initial set of both categories.
+   * Note that user adding repeating items will extend
+   * array by insertion, therefore the hidden items are always found at the end.
+   *
+   * @param allFBItems - All form builder items including basic, advanced and hidden.
+   * @param fieldName - Hidden field name.
+   *
+   * @return - field item or null if not found.
+   */
+  function getHiddenFormBuilderField(allFBItems, fieldName) {
+    return lodash.find(allFBItems, {questionCode: fieldName}, Object.keys(dataConstants.INITIAL_FIELD_INDICES).length);
+  }
 
   /**
    * Get first index of form builder item corresponding to its field name.
@@ -1376,7 +1429,13 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       Indented items are lforms properties that show up as children of form builder main item list,
       for example skip logic is a child of useSkipLogic. Identify those form builder items.
      */
-    var indentedItemsMap = {'restrictions': 'useRestrictions', 'skipLogic': 'useSkipLogic', 'dataControl': 'useDataControl'};
+    var indentedItemsMap = {
+      'restrictions': 'useRestrictions',
+      'skipLogic': 'useSkipLogic',
+      'dataControl': 'useDataControl',
+      'obj_prefix': 'prefix',
+      'obj_text': 'question'
+    };
     if(indentedItemsMap[name]) {
       indexInfo = dataConstants.INITIAL_FIELD_INDICES[indentedItemsMap[name]];
       parentItem = thisService.getFormBuilderField(lfItem[indexInfo.category].items, indentedItemsMap[name]);
@@ -1543,12 +1602,45 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         updateDefaultAnswer(subItem, val);
         break;
 
+      case "obj_text":
+      case "obj_prefix":
+        if(val && val.extension && val.extension.length > 0) {
+          var cssValue = getRenderingStyle(val.extension);
+          if(cssValue) {
+            lodash.find(parentItem.items, {questionCode: '_addCss'}).value = {code: true};
+            lodash.find(parentItem.items, {questionCode: name}).value = cssValue;
+          }
+          if(val.extension.length > 0) {
+            addAsHidden(lfItem, '_partial_'+name, val);
+          }
+        }
+        break;
+
       default:
         if(val) {
           subItem.value = val;
         }
         break;
     }
+  }
+
+
+  /**
+   * Extract rendering stylestyle extension from extension array.
+   *
+   * @param extensionsIncludingRenderingStyles - Extensions to look for rendering style
+   */
+  function getRenderingStyle(extensionsIncludingRenderingStyles) {
+    var ret = null;
+    if(extensionsIncludingRenderingStyles && extensionsIncludingRenderingStyles.length > 0) {
+      var ext = LForms.Util.findObjectInArray(extensionsIncludingRenderingStyles,
+          'url',
+          'http://hl7.org/fhir/StructureDefinition/rendering-style');
+      if(ext) {
+        ret = ext.valueString;
+      }
+    }
+    return ret;
   }
 
 

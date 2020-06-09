@@ -47,6 +47,12 @@ var FormBuilder = function () {
   this.itemTypeQuestion = element(by.id('/__itemType/1question'));
   this.itemTypeGroup = element(by.id('/__itemType/1group'));
   this.itemTypeDisplay = element(by.id('/__itemType/1display'));
+  this.addCssQuestionYes = element(by.id('/question/_addCss/1/1true'));
+  this.addCssQuestionNo = element(by.id('/question/_addCss/1/1false'));
+  this.cssQuestion = element(by.id('/question/obj_text/1/1'));
+  this.addCssPrefixYes = element(by.id('/prefix/_addCss/1/1true'));
+  this.addCssPrefixNo = element(by.id('/prefix/_addCss/1/1false'));
+  this.cssPrefix = element(by.id('/prefix/obj_prefix/1/1'));
 
   this.basicEditTab = element(by.cssContainingText('md-tab-item', 'Item attributes - Basic'));
   this.advancedEditTab = element(by.cssContainingText('md-tab-item', 'Item attributes - Advanced'));

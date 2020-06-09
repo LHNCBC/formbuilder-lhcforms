@@ -1,0 +1,92 @@
+{
+  "name": "Test fixture for text/prefix rendering style",
+  "id": "text-prefix-styling-example",
+  "status": "draft",
+  "version": "0.0.0",
+  "items": [
+    {
+      "question": "Items with obj_text and obj_prefix extensions",
+      "header": true,
+      "linkId": "g1",
+      "questionCode": "g1",
+      "items": [
+        {
+          "header": false,
+          "dataType": "ST",
+          "question": "Item with obj_prefix without rendering style",
+          "linkId": "g1.q0",
+          "questionCode": "q0",
+          "obj_prefix": {
+            "extension": [{
+              "url": "http://hl7.org/fhir/StructureDefinition/dummy-extension1",
+              "valueString": "dummy prefix extension without styles 1"
+            },{
+              "url": "http://hl7.org/fhir/StructureDefinition/dummy-extension2",
+              "valueString": "dummy prefix extension without styles 2"
+            }]
+          }
+        },
+        {
+          "header": false,
+          "dataType": "ST",
+          "question": "Item with obj_text without rendering style",
+          "linkId": "q1.q1",
+          "questionCode": "q1",
+          "prefix": "1.",
+          "obj_text": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/dummy-extension1",
+                "valueString": "dummy text extension without styles 1"
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/dummy-extension2",
+                "valueString": "dummy text extension without styles 2"
+              }
+            ]
+          }
+        },
+        {
+          "header": false,
+          "dataType": "ST",
+          "question": "Item with rendering style and other extensions for both obj_text and obj_prefix",
+          "obj_text": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+                "valueString": "font-style: italic"
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/dummy-extension1",
+                "valueString": "dummy text extension 1"
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/dummy-extension2",
+                "valueString": "dummy text extension 2"
+              }
+            ]
+          },
+          "linkId": "g1.q2",
+          "questionCode": "q2",
+          "prefix": "2.",
+          "obj_prefix": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+                "valueString": "font-weight: bold"
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/dummy-extension1",
+                "valueString": "dummy prefix extension 1"
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/dummy-extension2",
+                "valueString": "dummy prefix extension 2"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
