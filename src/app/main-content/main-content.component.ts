@@ -114,7 +114,9 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
    // this.onFocus();
     this.selectedNodeSrv.object.subscribe((itemData) => {
-      this.focusNode.data = itemData;
+      if (this.focusNode.data !== itemData) {
+        this.focusNode.data = itemData;
+      }
     });
     this.options.scrollContainer = this.sidenavEl.nativeElement;
   }

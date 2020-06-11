@@ -50,7 +50,7 @@ export class GridComponent extends ObjectWidget implements OnInit {
 
   getShowFields(fieldset) {
     let ret = fieldset.showFields;
-    ret = !ret ? fieldset.fields.map((e) => { return {field: e}; }) : ret;
+    ret = !ret ? fieldset.fields.map((e) => ({field: e})) : ret;
     return ret;
   }
 }

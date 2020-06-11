@@ -18,6 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatStepperModule } from '@angular/material/stepper';
@@ -26,7 +27,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
-import { PanelModule } from 'primeng';
+import {DropdownModule, PanelModule, RadioButtonModule} from 'primeng';
 import { ToolbarModule } from 'primeng';
 import { TreeModule } from 'angular-tree-component';
 import { ItemJsonEditorComponent } from './item-json-editor/item-json-editor.component';
@@ -50,6 +51,8 @@ import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
 import { SidebarModule} from 'primeng';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
+import { ItemtypeComponent } from './lib/widgets/itemtype.component';
+import {MatSelectModule} from '@angular/material/select';
 
 @NgModule({
   declarations: [
@@ -74,7 +77,8 @@ import { FooterComponent } from './footer/footer.component';
     RadioComponent,
     StepperGridComponent,
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    ItemtypeComponent
   ],
   imports: [
     AppRoutingModule,
@@ -91,6 +95,7 @@ import { FooterComponent } from './footer/footer.component';
     MatIconModule,
     MatInputModule,
     MatListModule,
+    MatMenuModule,
     MatRadioModule,
     MatSidenavModule,
     MatStepperModule,
@@ -104,7 +109,10 @@ import { FooterComponent } from './footer/footer.component';
     ToolbarModule,
     TreeModule.forRoot(),
     ReactiveFormsModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatSelectModule,
+    DropdownModule,
+    RadioButtonModule
   ],
   entryComponents:
     [RowLayoutComponent, ArrayGridComponent, TableComponent, StepperGridComponent,

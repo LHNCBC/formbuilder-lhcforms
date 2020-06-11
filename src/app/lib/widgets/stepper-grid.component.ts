@@ -9,7 +9,7 @@ import {Util} from '../util';
     <mat-vertical-stepper linear="true">
       <mat-step *ngFor="let step of steps; let firstStep = first; let lastStep = last"
                 [optional]="step.optional" [label]="step.title" [stepControl]="firstStep ? getMandatoryControl() : null" >
-        <div class="row" *ngFor="let stepRow of step.rows">
+        <div class="form-row" *ngFor="let stepRow of step.rows">
           <div [class]="gridClass(field)" *ngFor="let field of getShowFields(stepRow)">
             <sf-form-element [formProperty]="getShowFieldProperty(field)"></sf-form-element>
           </div>

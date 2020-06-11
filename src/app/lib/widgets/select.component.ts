@@ -28,7 +28,8 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
       </select>
 
 	<input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">
-</div>`
+</div>
+  `
 })
 export class SelectComponent extends SelectWidget {
   faInfo = faInfoCircle;

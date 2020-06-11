@@ -2,20 +2,6 @@
   "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
   "type": "object",
   "properties": {
-    "_itemType": {
-      "description": "Select the type of item",
-      "title": "Item type",
-      "type": "string",
-      "enum": [
-        "group",
-        "display",
-        "question"
-      ],
-      "widget": {
-        "id": "radio",
-        "layout": "row"
-      }
-    },
     "id": {
       "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
       "title": "Id",
@@ -213,13 +199,16 @@
         "open-choice",
         "attachment",
         "reference",
-        "quantity"
+        "quantity",
+        "group",
+        "display"
       ],
       "type": "string",
       "title": "Data type",
       "widget": {
-        "id": "select"
-      }
+        "id": "item-type"
+      },
+      "default": "string"
     },
     "enableWhen": {
       "description": "A constraint indicating that this item should only be enabled (displayed/allow answers to be captured) when the specified condition is true.",
@@ -637,12 +626,8 @@
       "pattern": "^true|false$",
       "type": "boolean",
       "visibleIf": {
-        "/type": [
-          "boolean", "decimal", "integer", "date", "dateTime", "time", "string",
-          "text", "url", "open-choice", "choice", "quantity", "reference", "attachment"
-        ],
-        "/_itemType": [
-          "question"
+        "type": [
+          "$EXP$ target.value != 'display'"
         ]
       }
     },
@@ -652,12 +637,8 @@
       "pattern": "^true|false$",
       "type": "boolean",
       "visibleIf": {
-        "/type": [
-          "boolean", "decimal", "integer", "date", "dateTime", "time", "string",
-          "text", "url", "open-choice", "choice", "quantity", "reference", "attachment"
-        ],
-        "/_itemType": [
-          "question"
+        "type": [
+          "$EXP$ target.value != 'display'"
         ]
       }
     },
@@ -667,12 +648,8 @@
       "pattern": "^true|false$",
       "type": "boolean",
       "visibleIf": {
-        "/type": [
-          "boolean", "decimal", "integer", "date", "dateTime", "time", "string",
-          "text", "url", "open-choice", "choice", "quantity", "reference", "attachment"
-        ],
-        "/_itemType": [
-          "question"
+        "type": [
+          "$EXP$ target.value != 'display'"
         ]
       }
     },
@@ -682,7 +659,7 @@
       "pattern": "^-?([0]|([1-9][0-9]*))$",
       "type": "number",
       "visibleIf": {
-        "/type": ["string", "text"]
+        "type": ["$EXP$ target.value == 'boolean' || target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
       }
     },
     "answerValueSet": {
@@ -692,7 +669,7 @@
       "type": "string",
       "widget": {"id": "hidden"},
       "visibleIf": {
-        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
       }
     },
     "answerOption": {
@@ -800,7 +777,7 @@
             "type": "string",
             "title": "Value string",
             "visibleIf": {
-              "/type": ["string", "text"]
+              "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
             }
           },
           "valueCoding": {
@@ -880,11 +857,12 @@
               "showFields": [
                 {"field": "code", "col": 2, "nolabel": true},
                 {"field": "system", "col": 5, "nolabel": true},
-                {"field": "display", "col": 5, "nolabel": true}
+                {"field": "display", "col": 4, "nolabel": true},
+                {"field": "userSelected", "col": 1, "nolabel": true}
               ]
             },
             "visibleIf": {
-              "/type": ["choice", "open-choice"]
+              "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
             }
           },
           "valueReference": {
@@ -960,7 +938,7 @@
       "type": "array",
       "title": "Answer options",
       "visibleIf": {
-        "/type": ["integer", "date", "time", "string", "text", "open-choice", "choice", "reference"]
+        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
       },
       "widget": {
         "id": "table",
@@ -1109,7 +1087,7 @@
             "type": "string",
             "title": "Value string",
             "visibleIf": {
-              "/type": ["string", "text"]
+              "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
             }
           },
           "valueUri": {
@@ -1118,7 +1096,7 @@
             "type": "string",
             "title": "Value uri",
             "visibleIf": {
-              "/type": ["uri", "url"]
+              "/type": ["$EXP$ target.value == 'uri' || target.value == 'url'"]
             }
           },
           "valueAttachment": {
@@ -1279,7 +1257,7 @@
             "additionalProperties": false,
             "type": "object",
             "visibleIf": {
-              "/type": ["choice", "open-choice"]
+              "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
             }
           },
           "valueQuantity": {
@@ -1425,8 +1403,7 @@
       "type": "array",
       "title": "Initial values",
       "visibleIf": {
-        "/type": ["boolean", "integer", "decimal", "date", "dateTime", "time", "string", "text",
-          "url", "choice", "open-choice", "attachment", "quantity", "reference", "attachment"]
+        "type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
       },
       "widget": {
         "id": "table",
@@ -4603,9 +4580,8 @@
   },
   "fieldsets": [
     {
-      "fields": ["_itemType", "type", "linkId", "maxLength"],
+      "fields": ["type", "linkId", "maxLength"],
       "showFields": [
-        { "field": "_itemType", "col": 4 },
         { "field": "linkId", "col": 3 },
         { "field": "type", "col": 3 },
         { "field": "maxLength", "col": 2 }
@@ -4671,9 +4647,8 @@
       "rows": [
         {
           "showFields": [
-            { "field": "_itemType", "col": 4 },
-            { "field": "linkId", "col": 3 },
-            { "field": "type", "col": 3 }
+            { "field": "type", "col": 7 },
+            { "field": "linkId" }
           ]
         }
       ]

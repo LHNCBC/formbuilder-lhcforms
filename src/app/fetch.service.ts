@@ -18,7 +18,7 @@ export class FetchService {
   treeOptions: ITreeOptions = {
     displayField: 'text',
    // isExpandedField: 'expanded',
-    idField: 'linkId',
+    // idField: 'linkId',
     childrenField: 'item',
     actionMapping: {
       mouse: {

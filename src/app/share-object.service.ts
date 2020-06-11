@@ -8,7 +8,9 @@ import {map} from 'rxjs/operators';
 export class ShareObjectService {
   objSource: BehaviorSubject<any> = new BehaviorSubject<any>({});
   object = this.objSource.asObservable();
-  objectStr = this.object.pipe(map((item) => JSON.stringify(item, null, 2)));
+  objectStr = this.object.pipe(map((item) => {
+    return JSON.stringify(item, null, 2);
+  }));
   constructor() {}
 
   setObject(obj: any) {

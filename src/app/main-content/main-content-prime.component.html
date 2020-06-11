@@ -1,5 +1,5 @@
   <div>
-    <app-header id="fixedTop" [isFirebaseEnabled]="false"></app-header>
+    <app-header id="fixedTop" [isFirebaseEnabled]="true"></app-header>
     <mat-sidenav-container id="resizableMiddle">
       <mat-sidenav #drawer mode="side" opened>
         <mat-toolbar color="primary">
@@ -16,7 +16,7 @@
       <mat-sidenav-content>
         <mat-tab-group (selectedTabChange)="showJson($event)">
           <mat-tab label="Editor">
-            <app-ngx-schema-form></app-ngx-schema-form>
+            <app-ngx-schema-form [node]="focusNode"></app-ngx-schema-form>
           </mat-tab>
           <mat-tab label="JSON Output">
             <mat-radio-group

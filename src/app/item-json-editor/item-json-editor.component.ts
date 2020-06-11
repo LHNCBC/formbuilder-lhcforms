@@ -11,28 +11,30 @@ import {forkJoin} from 'rxjs';
 })
 export class ItemJsonEditorComponent implements AfterViewInit {
   @ViewChild('itemJsonEditor') editorElement: ElementRef;
-  _val: any;
+  val: any;
 
   constructor(private dataSrv: FetchService, private itemSrv: ShareObjectService) {}
+
   ngAfterViewInit(): void {
-    this.dataSrv.getItemEditorSchema().subscribe( (schema) => {
+    this.dataSrv.getItemEditorSchema().subscribe( (itemSchema) => {
       const editor = new JSONEditor(this.editorElement.nativeElement, {
-        schema: schema,
+        schema: itemSchema,
       });
+
       editor.on('change', () => {
-        const _val = editor.getValue();
-        if(_val !== this._val) {
-          this._val = _val;
-          this.itemSrv.setObject(this._val);
+        const val = editor.getValue();
+        if (val !== this.val) {
+          this.val = val;
+          this.itemSrv.setObject(this.val);
         }
       });
+
       this.itemSrv.objectStr.subscribe((item) => {
-        if(item !== this._val) {
-          this._val = item;
-          editor.setValue(this._val);
+        if (item !== this.val) {
+          this.val = item;
+          editor.setValue(this.val);
         }
       });
     });
-
   }
 }
