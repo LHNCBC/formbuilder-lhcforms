@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [5.2.0]  2020-06-22
+### Updated
+- Update lforms version to 25.0.0. It changed the FHIR extension url of calculated expression.
+
 ## [5.1.0]  2020-05-22
 ### Added
 - Added input fields to support CSS styles on item name and prefix.
