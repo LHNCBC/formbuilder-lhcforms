@@ -1,4 +1,4 @@
-import {OnInit, AfterViewInit, Component, ViewChild, ElementRef} from '@angular/core';
+import {OnInit, AfterViewInit, Component, ViewChild, ElementRef, AfterContentInit} from '@angular/core';
 // import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
@@ -9,6 +9,7 @@ import {JsonEditorComponent} from '../json-editor/json-editor.component';
 import {ShareObjectService} from '../share-object.service';
 import {ITreeNode} from 'angular-tree-component/dist/defs/api';
 import { Panel, Toolbar, Header, Footer } from 'primeng';
+import {FormService} from '../services/form.service';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -54,7 +55,7 @@ export class LinkIdCollection {
 
 @Component({
   selector: 'app-main-content',
-  templateUrl: './main-content-prime.component.html',
+  templateUrl: './main-content.component.html',
   styleUrls: ['./main-content.component.css']
 })
 export class MainContentComponent implements OnInit, AfterViewInit {
@@ -63,9 +64,9 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
   // qItem: any;
-  focusNode: any = {path: []};
+  focusNode: ITreeNode;
   options: ITreeOptions;
-  form: any = {item: []};
+  form: any = {item: [{text: 'Item 1'}]};
   exportForm: any;
   isTreeExpanded = false;
   showType = 'item';
@@ -81,15 +82,9 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   };
 
   linkIdCollection = new LinkIdCollection();
-/*
-  isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
-    .pipe(
-      map(result => result.matches),
-      shareReplay()
-    );
-*/
+
   constructor(
-              // private breakpointObserver: BreakpointObserver,
+              private formService: FormService,
               private dataSrv: FetchService,
               private selectedNodeSrv: ShareObjectService) {
     this.options = this.dataSrv.getOptions();
@@ -113,16 +108,31 @@ export class MainContentComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
    // this.onFocus();
-    this.selectedNodeSrv.object.subscribe((itemData) => {
-      if (this.focusNode.data !== itemData) {
+    this.selectedNodeSrv.object$.subscribe((itemData) => {
+      if (this.focusNode && this.focusNode.data !== itemData) {
         this.focusNode.data = itemData;
       }
     });
     this.options.scrollContainer = this.sidenavEl.nativeElement;
+    this.formService.setTreeModel(this.treeComponent.treeModel);
+  }
+
+  onTreeInitialized(event) {
+    const node = this.treeComponent.treeModel.getFirstRoot();
+    this.treeComponent.treeModel.setFocusedNode(node);
+    this.setNode(node);
   }
 
   onFocus(event) {
-    this.focusNode = event.node;
+    this.setNode(event.node);
+  }
+
+  setNode(node: ITreeNode): void {
+    this.focusNode = node;
+    this.selectedNodeSrv.setNode(this.focusNode);
+    if (this.focusNode.data && !this.focusNode.data.linkId) {
+      this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
+    }
     this.selectedNodeSrv.setObject(this.focusNode.data);
   }
 
@@ -148,6 +158,10 @@ export class MainContentComponent implements OnInit, AfterViewInit {
     }
   }
 
+  defaultLinkId(node: ITreeNode): string {
+    return '' + node.id;
+  }
+
   updatedForm() {
     const items: any = [];
     if (this.treeComponent) {
@@ -162,7 +176,6 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   }
 
   showJson(event) {
-    console.log('event.index: ' + event.index + ' :: event.tab: ' + event.tab);
     if (event.index > 0) {
       this.updatedForm();
     }

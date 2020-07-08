@@ -1,7 +1,7 @@
-import { LformsWidgets } from './lforms-widgets';
+import { LformsWidgetRegistry } from './lforms-widget-registry';
 
 describe('LformsWidgets', () => {
   it('should create an instance', () => {
-    expect(new LformsWidgets()).toBeTruthy();
+    expect(new LformsWidgetRegistry()).toBeTruthy();
   });
 });

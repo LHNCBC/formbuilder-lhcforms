@@ -5,6 +5,8 @@ import {Binding, FormProperty, Validator} from 'ngx-schema-form';
 import {LinkIdCollection} from '../main-content/main-content.component';
 import {Form} from '@angular/forms';
 import {timeout} from 'rxjs/operators';
+import {ITreeNode} from 'angular-tree-component/dist/defs/api';
+import {TreeModel} from 'angular-tree-component';
 
 @Component({
   selector: 'app-ngx-schema-form',
@@ -17,7 +19,9 @@ export class NgxSchemaFormComponent implements OnInit {
   @Output()
   setLinkId = new EventEmitter();
   @Input()
-  node: any;
+  node: ITreeNode;
+  @Input()
+  treeModel: TreeModel;
   model: any;
   @Input()
   linkIdCollection = new LinkIdCollection();
@@ -34,13 +38,18 @@ export class NgxSchemaFormComponent implements OnInit {
   };
 
   myFieldBindings: { [path: string]: Binding } = {
+    /*
     '/linkId': {
         change: (event, formProperty: FormProperty) => {
+          if (!formProperty.value && this.node) {
+            formProperty.setValue(this.node.id, true);
+          }
           if (formProperty.valid) {
             this.setLinkId.emit(formProperty.value);
           }
         }
       }
+      */
   };
 
   constructor(private http: HttpClient, private modelService: ShareObjectService) {
@@ -58,9 +67,19 @@ export class NgxSchemaFormComponent implements OnInit {
         this.myTestSchema = schema;
       });
 
-    this.modelService.object.subscribe((model) => {
+    this.modelService.object$.subscribe((model) => {
       if (this.model !== model) {
         this.model = model;
+      }
+    });
+
+    this.modelService.node$.subscribe((node) => {
+      if (this.node !== node) {
+        this.node = node;
+        this.model = node ? node.data : null;
+        if (this.model && !this.model.linkId) {
+          this.model.linkId = '' + node.id;
+        }
       }
     });
   }
@@ -68,6 +87,5 @@ export class NgxSchemaFormComponent implements OnInit {
   updateModel(model) {
     this.modelService.setObject(model);
   }
-
 
 }

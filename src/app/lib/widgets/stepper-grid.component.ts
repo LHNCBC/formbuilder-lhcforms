@@ -6,7 +6,7 @@ import {Util} from '../util';
 @Component({
   selector: 'app-stepper-grid',
   template: `
-    <mat-vertical-stepper linear="true">
+    <mat-vertical-stepper>
       <mat-step *ngFor="let step of steps; let firstStep = first; let lastStep = last"
                 [optional]="step.optional" [label]="step.title" [stepControl]="firstStep ? getMandatoryControl() : null" >
         <div class="form-row" *ngFor="let stepRow of step.rows">
@@ -14,14 +14,24 @@ import {Util} from '../util';
             <sf-form-element [formProperty]="getShowFieldProperty(field)"></sf-form-element>
           </div>
         </div>
+        <!--
         <div>
           <button *ngIf="!firstStep" mat-button mat-stroked-button color="primary" matStepperPrevious type="button">Back</button>
           <button *ngIf="!lastStep"  mat-button mat-stroked-button color="primary" matStepperNext     type="button">Next</button>
         </div>
+        -->
       </mat-step>
     </mat-vertical-stepper>
   `,
-  styles: []
+  styles: [`
+    :host ::ng-deep .mat-vertical-stepper-header {
+      padding: 12px;
+    }
+
+    :host ::ng-deep .mat-vertical-content {
+      padding: 0 12px 12px 12px;
+    }
+  `]
 })
 export class StepperGridComponent extends GridComponent implements OnInit {
 

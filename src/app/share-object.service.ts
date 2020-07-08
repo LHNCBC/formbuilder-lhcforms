@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
+import {ITreeNode} from 'angular-tree-component/dist/defs/api';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ShareObjectService {
-  objSource: BehaviorSubject<any> = new BehaviorSubject<any>({});
-  object = this.objSource.asObservable();
-  objectStr = this.object.pipe(map((item) => {
+  nodeSource$: BehaviorSubject<ITreeNode> = new BehaviorSubject<ITreeNode>(null);
+  node$ = this.nodeSource$.asObservable();
+  objSource$: BehaviorSubject<any> = new BehaviorSubject<any>({});
+  object$ = this.objSource$.asObservable();
+  objectStr$ = this.object$.pipe(map((item) => {
     return JSON.stringify(item, null, 2);
   }));
   constructor() {}
@@ -23,7 +26,11 @@ export class ShareObjectService {
       }
     }
     if (valid) {
-      this.objSource.next(obj);
+      this.objSource$.next(obj);
     }
+  }
+
+  setNode(node: ITreeNode): void {
+    this.nodeSource$.next(node);
   }
 }

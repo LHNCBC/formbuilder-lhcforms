@@ -60,3 +60,7 @@
   width: 100%;
   align-items: end;
 }
+
+::ng-deep .mat-tooltip {
+  font-size: 12px;
+}

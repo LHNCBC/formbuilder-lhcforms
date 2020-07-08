@@ -28,7 +28,7 @@ export interface Result {
                         [displayWith]="displayFn" (optionSelected)="selectOption($event.option.value)">
         <mat-option *ngFor="let result of acResults | async" [value]="result">
           <div class="container-fluid">
-            <div class="row">
+            <div class="form-row">
               <div class="col-1"><small>id: {{result.id}}</small></div><div class="col-11"><small>{{result.title}}</small></div>
             </div>
           </div>

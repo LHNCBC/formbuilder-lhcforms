@@ -30,12 +30,12 @@ import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.compon
 import {DropdownModule, PanelModule, RadioButtonModule} from 'primeng';
 import { ToolbarModule } from 'primeng';
 import { TreeModule } from 'angular-tree-component';
-import { ItemJsonEditorComponent } from './item-json-editor/item-json-editor.component';
+import { ItemJsonEditorComponent } from './lib/widgets/item-json-editor.component';
 import { RowLayoutComponent } from './lib/widgets/row-layout.component';
 import { ArrayGridComponent } from './lib/widgets/array-grid.component';
 import { GridComponent } from './lib/widgets/grid.component';
 import { TableComponent } from './lib/widgets/table.component';
-import { LformsWidgets} from './lib/lforms-widgets';
+import { LformsWidgetRegistry} from './lib/lforms-widget-registry';
 import { StringComponent } from './lib/widgets/string.component';
 import { SelectComponent } from './lib/widgets/select.component';
 import { CheckboxComponent } from './lib/widgets/checkbox.component';
@@ -53,6 +53,15 @@ import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { ItemtypeComponent } from './lib/widgets/itemtype.component';
 import {MatSelectModule} from '@angular/material/select';
+import { ChoiceComponent } from './lib/widgets/choice.component';
+import { RowGridComponent } from './lib/widgets/row-grid.component';
+import { CodingComponent } from './lib/widgets/coding.component';
+import { CodingOperatorComponent } from './lib/widgets/coding-operator.component';
+import { LeftLabelFormGroupComponent } from './lib/widgets/left-label-form-group.component';
+import { ExpandablePanelsComponent } from './lib/widgets/expandable-panels.component';
+import { AppControlWidgetComponent } from './lib/widgets/app-control-widget.component';
+import { AppArrayWidgetComponent } from './lib/widgets/app-array-widget.component';
+import { SideLabelCheckboxComponent } from './lib/widgets/side-label-checkbox.component';
 
 @NgModule({
   declarations: [
@@ -78,7 +87,16 @@ import {MatSelectModule} from '@angular/material/select';
     StepperGridComponent,
     HeaderComponent,
     FooterComponent,
-    ItemtypeComponent
+    ItemtypeComponent,
+    ChoiceComponent,
+    RowGridComponent,
+    CodingComponent,
+    CodingOperatorComponent,
+    LeftLabelFormGroupComponent,
+    ExpandablePanelsComponent,
+    AppControlWidgetComponent,
+    AppArrayWidgetComponent,
+    SideLabelCheckboxComponent
   ],
   imports: [
     AppRoutingModule,
@@ -117,7 +135,7 @@ import {MatSelectModule} from '@angular/material/select';
   entryComponents:
     [RowLayoutComponent, ArrayGridComponent, TableComponent, StepperGridComponent,
     GridComponent, StringComponent, SelectComponent, CheckboxComponent, IntegerComponent, RadioComponent],
-  providers: [{provide: WidgetRegistry, useClass: LformsWidgets}],
+  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

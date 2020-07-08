@@ -4,13 +4,18 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 @Component({
   selector: 'app-label',
   template: `
-    <label *ngIf="title" [attr.for]="for" class="horizontal control-label">
+    <label *ngIf="title" [attr.for]="for" class="col-form-label-sm">
       {{title}}
       <span *ngIf="helpMessage" [matTooltip]="helpMessage" matTooltipPosition="above">
         <fa-icon [icon]="helpIcon"></fa-icon>
       </span>
     </label>
-  `
+  `,
+  styles: [`
+    label {
+      margin-bottom: 0;
+    }
+  `]
 })
 export class LabelComponent implements OnInit {
 
@@ -22,6 +27,8 @@ export class LabelComponent implements OnInit {
   helpIcon = faInfoCircle;
   @Input()
   for: string;
+  @Input()
+  labelWidthClass: string;
   constructor() { }
 
   ngOnInit() {

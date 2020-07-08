@@ -1,13 +1,16 @@
 import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import { JSONEditor } from '@json-editor/json-editor';
-import {FetchService} from '../fetch.service';
-import {ShareObjectService} from '../share-object.service';
+import {FetchService} from '../../fetch.service';
+import {ShareObjectService} from '../../share-object.service';
 import {forkJoin} from 'rxjs';
 
 @Component({
   selector: 'app-item-json-editor',
-  templateUrl: './item-json-editor.component.html',
-  styleUrls: ['./item-json-editor.component.css']
+  template: `
+    <div class="card-container">
+      <div #itemJsonEditor style="height: 500px;" ></div>
+    </div>
+  `
 })
 export class ItemJsonEditorComponent implements AfterViewInit {
   @ViewChild('itemJsonEditor') editorElement: ElementRef;
@@ -29,7 +32,7 @@ export class ItemJsonEditorComponent implements AfterViewInit {
         }
       });
 
-      this.itemSrv.objectStr.subscribe((item) => {
+      this.itemSrv.objectStr$.subscribe((item) => {
         if (item !== this.val) {
           this.val = item;
           editor.setValue(this.val);

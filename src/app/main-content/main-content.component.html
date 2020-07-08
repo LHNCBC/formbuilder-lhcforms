@@ -1,59 +1,44 @@
-<mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #drawer class="sidenav" [opened]="true" fixedInViewport
-      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-      [mode]="(isHandset$ | async) ? 'over' : 'side'">
-    <!--
-    <mat-form-field>
-      <input matInput type="search" #formSearch (keyup.enter)="getForm(formSearch.value)" placeholder="Enter form id">
-    </mat-form-field>
-    -->
-    <button type="button" class="btn btn-link btn-sm" (click)="toggleTreeExpansion();">Toggle Expansion</button>
-    <tree-root
-      #tree
-      [nodes]="form.item"
-      [options]="options"
-      (focus)="onFocus($event)"
-    ></tree-root>
-  </mat-sidenav>
-  <mat-sidenav-content class="sidenav-content">
-    <mat-toolbar color="primary">
-      <button
-        type="button"
-        aria-label="Toggle sidenav"
-        mat-icon-button
-        (click)="drawer.toggle()"
-        *ngIf="isHandset$ | async">
-        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-      </button>
-      <div class="search-box">
-        <app-auto-complete placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
-      </div>
-    </mat-toolbar>
-    <mat-tab-group (selectedTabChange)="showJson($event)">
-      <mat-tab label="Editor">
-        <!-- Add Content Here -->
-        <app-ngx-schema-form *ngIf="editor === 'ngx'" #ngxEditor
-                             [linkIdCollection]="linkIdCollection"
-                             (setLinkId)="registerLinkId($event)"
-        ></app-ngx-schema-form>
-        <!-- <router-outlet></router-outlet> -->
-      </mat-tab>
-      <mat-tab label="JSON Output">
-        <mat-radio-group
-          class="json-radio-group"
-          [(ngModel)]="showType">
-          <mat-radio-button class="json-radio-button" [value]="'item'">
-            Focussed item
-          </mat-radio-button>
-          <mat-radio-button class="json-radio-button" [value]="'questionnaire'">
-            Questionnaire
-          </mat-radio-button>
-        </mat-radio-group>
-        <div *ngIf="showType === 'item'">
-         <app-item-json-editor></app-item-json-editor>
-        </div>
-        <pre *ngIf="showType === 'questionnaire'">{{ exportForm | json }}</pre>
-      </mat-tab>
-    </mat-tab-group>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  <div>
+    <app-header id="fixedTop" [isFirebaseEnabled]="true"></app-header>
+    <mat-sidenav-container id="resizableMiddle">
+      <mat-sidenav #drawer mode="side" opened>
+        <mat-toolbar color="primary">
+            <app-auto-complete class="search-box" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
+        </mat-toolbar>
+        <button type="button" class="btn btn-link btn-sm" (click)="toggleTreeExpansion();">Toggle Expansion</button>
+        <tree-root
+          #tree
+          [nodes]="form.item"
+          [options]="options"
+          (initialized)="onTreeInitialized($event)"
+          (focus)="onFocus($event)"
+        ></tree-root>
+      </mat-sidenav>
+      <mat-sidenav-content>
+        <mat-tab-group (selectedTabChange)="showJson($event)">
+          <mat-tab label="Editor">
+            <app-ngx-schema-form [node]="focusNode"></app-ngx-schema-form>
+          </mat-tab>
+          <mat-tab label="JSON Output">
+            <mat-radio-group
+              class="json-radio-group"
+              [(ngModel)]="showType">
+              <mat-radio-button class="json-radio-button" [value]="'item'">
+                Focussed item
+              </mat-radio-button>
+              <mat-radio-button class="json-radio-button" [value]="'questionnaire'">
+                Questionnaire
+              </mat-radio-button>
+            </mat-radio-group>
+            <div *ngIf="showType === 'item'">
+              <app-item-json-editor></app-item-json-editor>
+            </div>
+            <pre *ngIf="showType === 'questionnaire'">{{ exportForm | json }}</pre>
+          </mat-tab>
+        </mat-tab-group>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+
+    <app-footer id="fixedBottom"></app-footer>
+  </div>
+

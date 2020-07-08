@@ -1,6 +1,7 @@
 <div class="card-container">
-  <div class="title">Questionnaire Item</div>
+  <div class="title">{{model ? model.text : 'Questionnaire Item'}}</div>
   <sf-form [schema]="mySchema"
            [model]="model" (modelChange)="updateModel($event)"
+           [bindings]="myFieldBindings"
   ></sf-form>
 </div>

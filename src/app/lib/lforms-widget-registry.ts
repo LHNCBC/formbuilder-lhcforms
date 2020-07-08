@@ -9,11 +9,17 @@ import {CheckboxComponent} from './widgets/checkbox.component';
 import {IntegerComponent} from './widgets/integer.component';
 import {RadioComponent} from './widgets/radio.component';
 import {StepperGridComponent} from './widgets/stepper-grid.component';
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 import {ItemtypeComponent} from './widgets/itemtype.component';
+import {ChoiceComponent} from './widgets/choice.component';
+import {RowGridComponent} from './widgets/row-grid.component';
+import {CodingOperatorComponent} from './widgets/coding-operator.component';
+import {LeftLabelFormGroupComponent} from './widgets/left-label-form-group.component';
+import {ExpandablePanelsComponent} from './widgets/expandable-panels.component';
+import {SideLabelCheckboxComponent} from './widgets/side-label-checkbox.component';
 
 @Injectable()
-export class LformsWidgets extends DefaultWidgetRegistry {
+export class LformsWidgetRegistry extends DefaultWidgetRegistry {
   constructor() {
     super();
     this.register('row-layout',  RowLayoutComponent);
@@ -29,5 +35,11 @@ export class LformsWidgets extends DefaultWidgetRegistry {
     this.register('number', IntegerComponent);
     this.register('radio', RadioComponent);
     this.register('item-type', ItemtypeComponent);
+    this.register('choice', ChoiceComponent);
+    this.register('row-grid', RowGridComponent);
+    this.register('coding-operator', CodingOperatorComponent);
+    this.register('left-label-form-group', LeftLabelFormGroupComponent);
+    this.register('expandable-panels', ExpandablePanelsComponent);
+    this.register('left-label-checkbox', SideLabelCheckboxComponent);
   }
 }

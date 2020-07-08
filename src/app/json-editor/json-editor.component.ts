@@ -46,7 +46,7 @@ export class JsonEditorComponent implements OnInit {
             this.startValSrv.setObject(this.val);
           }
         });
-        this.startValSrv.object.subscribe((item) => {
+        this.startValSrv.object$.subscribe((item) => {
           if (item !== this.val) {
             this.val = item;
             this.editor.setValue(this.val);

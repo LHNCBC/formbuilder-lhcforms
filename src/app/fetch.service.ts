@@ -48,7 +48,7 @@ export class FetchService {
     scrollContainer: document.documentElement // HTML
   };
 
-  fhirUrl = 'http://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire';
+  fhirUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire';
   assetsUrl = '/assets';
   constructor(private http: HttpClient) { }
 

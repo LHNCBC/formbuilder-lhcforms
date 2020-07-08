@@ -75,7 +75,8 @@
       "description": "An identifier that is unique within the Questionnaire allowing linkage to the equivalent item in a QuestionnaireResponse resource.",
       "title": "Link id",
       "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string"
+      "type": "string",
+      "widget": {"id": "hidden"}
     },
     "definition": {
       "description": "This element is a URI that refers to an [[[ElementDefinition]]] that provides information about this item, including information that might otherwise be included in the instance of the Questionnaire resource. A detailed description of the construction of the URI is shown in Comments, below. If this element is present then the following element values MAY be derived from the Element Definition if the corresponding elements of this Questionnaire resource instance have no value:\n\n* code (ElementDefinition.code) \n* type (ElementDefinition.type) \n* required (ElementDefinition.min) \n* repeats (ElementDefinition.max) \n* maxLength (ElementDefinition.maxLength) \n* answerValueSet (ElementDefinition.binding)\n* options (ElementDefinition.binding).",
@@ -162,12 +163,19 @@
       },
       "type": "array",
       "title": "Code list",
+      "visibleIf": {
+        "type": ["$EXP$ target.value != 'display'"]
+      },
       "widget": {
         "id": "table",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10",
+        "noCollapseButton": true,
+        "addButtonLabel": "Add new code",
         "showFields": [
-          {"field": "display", "col": 5, "nolabel": true},
-          {"field": "code", "col": 2, "nolabel": true},
-          {"field": "system", "col": 5, "nolabel": true}
+          {"field": "code", "col": 4, "nolabel": true},
+          {"field": "system", "col": 7, "nolabel": true}
         ]
       }
     },
@@ -175,13 +183,25 @@
       "description": "A short label for a particular group, question or set of display text within the questionnaire used for reference by the individual completing the questionnaire.",
       "title": "Prefix",
       "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string"
+      "type": "string",
+      "widget": {
+        "id": "string",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-1"
+      }
     },
     "text": {
       "description": "The name of a section, the text of a question or text content for a display item.",
       "title": "Name",
       "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string"
+      "type": "string",
+      "widget": {
+        "id": "string",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
+      }
     },
     "type": {
       "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.).",
@@ -218,19 +238,7 @@
           "_answerType": {
             "title": "Source question type",
             "type": "string",
-            "enum": [
-              "boolean",
-              "decimal",
-              "integer",
-              "date",
-              "dateTime",
-              "time",
-              "string",
-              "coding",
-              "quantity",
-              "reference"
-            ],
-            "widget": {"id": "select"}
+            "widget": {"id": "hidden"}
           },
           "id": {
             "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -303,7 +311,10 @@
             "description": "The linkId for the question whose answer (or lack of answer) governs whether this item is enabled.",
             "title": "Question",
             "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string"
+            "type": "string",
+            "widget": {
+              "id": "choice"
+            }
           },
           "operator": {
             "description": "Specifies the criteria by which the question is enabled.",
@@ -318,60 +329,112 @@
             ],
             "type": "string",
             "title": "Operator",
-            "widget": {"id": "select"}
+            "widget": {"id": "coding-operator"}
           },
           "answerBoolean": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^true|false$",
             "type": "boolean",
-            "title": "Answer boolean",
-            "visibleIf": {"_answerType": ["boolean"]}
+            "visibleIf": {
+              "oneOf": [
+                {
+                  "_answerType": ["boolean"]
+                }
+              ]
+            }
           },
           "answerDecimal": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$",
             "type": "number",
-            "title": "Answer decimal",
-            "visibleIf": {"_answerType": ["decimal"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["decimal"]
+                },
+                {
+                  "operator": ["$EXP$ target.value != 'exists'"]
+                }
+              ]
+            }
           },
           "answerInteger": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^-?([0]|([1-9][0-9]*))$",
             "type": "number",
-            "title": "Answer integer",
-            "visibleIf": {"_answerType": ["integer"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["integer"]
+                },
+                {
+                  "operator": ["$EXP$ target.value != 'exists'"]
+                }
+              ]
+            }
           },
           "answerDate": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$",
             "type": "string",
-            "title": "Answer date",
-            "visibleIf": {"_answerType": ["date"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["date"]
+                },
+                {
+                  "operator": ["$EXP$ target.value != 'exists'"]
+                }
+              ]
+            }
           },
           "answerDateTime": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$",
             "type": "string",
-            "title": "Answer date time",
-            "visibleIf": {"_answerType": ["dateTime"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["dateTime"]
+                },
+                {
+                  "operator": ["$EXP$ target.value != 'exists'"]
+                }
+              ]
+            }
           },
           "answerTime": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$",
             "type": "string",
-            "title": "Answer time",
-            "visibleIf": {"_answerType": ["time"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["time"]
+                },
+                {
+                  "operator": ["$EXP$ target.value != 'exists'"]
+                }
+              ]
+            }
           },
           "answerString": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^[ \\r\\n\\t\\S]+$",
             "type": "string",
-            "title": "Answer string",
-            "visibleIf": {"_answerType": ["string"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["$EXP$ target.value == 'string' || target.value == 'text' || target.value == 'url'"]
+                },
+                {
+                  "operator": ["$EXP$ target.value != 'exists'"]
+                }
+              ]
+            }
           },
           "answerCoding": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
-            "title": "Answer coding",
             "properties": {
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -441,11 +504,27 @@
             },
             "additionalProperties": false,
             "type": "object",
-            "visibleIf": {"_answerType": ["coding"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+                },
+                {
+                  "operator": ["$EXP$ target.value == '=' || target.value == '!='"]
+                }
+              ]
+            },
+            "widget": {
+              "id": "left-label-form-group",
+              "labelWidth": 3,
+              "controlWidth": 9,
+              "showFields": [
+                { "field": "display"}
+              ]
+            }
           },
           "answerQuantity": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
-            "title": "Answer quantity",
             "properties": {
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -514,11 +593,28 @@
             },
             "additionalProperties": false,
             "type": "object",
-            "visibleIf": {"_answerType": ["quantity"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["quantity"]
+                },
+                {
+                  "operator": ["$EXP$ target.value != 'exists'"]
+                }
+              ]
+            },
+            "widget": {
+              "id": "left-label-form-group",
+              "labelWidth": 4,
+              "controlWidth": 8,
+              "label": true,
+              "showFields": [
+                { "field": "value", "col": 3 }
+              ]
+            }
           },
           "answerReference": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
-            "title": "Answer reference",
             "properties": {
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -572,38 +668,51 @@
             },
             "additionalProperties": false,
             "type": "object",
-            "visibleIf": {"_answerType": ["reference"]}
+            "visibleIf": {
+              "allOf": [
+                {
+                  "_answerType": ["reference"]
+                },
+                {
+                  "operator": ["$EXP$ target.value == 'exists' || target.value == '='"]
+                }
+              ]
+            },
+            "widget": {
+              "id": "left-label-form-group",
+              "labelWidth": 4,
+              "controlWidth": 8,
+              "label": true,
+              "showFields": [
+                { "field": "reference", "col": 4 },
+                { "field": "type", "col": 4 },
+                { "field": "display", "col": 4 }
+              ]
+            }
           }
         },
         "additionalProperties": false,
         "type": "object"
       },
       "type": "array",
-      "title": "Enable when",
+      "title": "Conditions",
       "widget": {
+        "noCollapseButton": true,
+        "noTableLabel": true,
+        "addButtonLabel": "Add new condition",
         "id": "table",
         "showFields": [
-          {"field": "_answerType", "nolabel": true},
-          {"field": "question", "nolabel": true},
-          {"field": "operator", "nolabel": true},
-          {"field": "answerBoolean", "nolabel": true},
-          {"field": "answerDecimal", "nolabel": true},
-          {"field": "answerInteger", "nolabel": true},
-          {"field": "answerDate", "nolabel": true},
-          {"field": "answerDateTime", "nolabel": true},
-          {"field": "answerTime", "nolabel": true},
-          {"field": "answerString", "nolabel": true},
-          {"field": "answerCoding.display", "nolabel": true},
-          {"field": "answerCoding.code", "nolabel": true},
-          {"field": "answerCoding.system", "nolabel": true},
-          {"field": "answerQuantity.comparator", "nolabel": true},
-          {"field": "answerQuantity.value", "nolabel": true},
-          {"field": "answerQuantity.unit", "nolabel": true},
-          {"field": "answerQuantity.code", "nolabel": true},
-          {"field": "answerQuantity.system", "nolabel": true},
-          {"field": "answerReference.reference", "nolabel": true},
-          {"field": "answerReference.type", "nolabel": true},
-          {"field": "answerReference.display", "nolabel": true}
+          {"field": "question",       "nolabel": true, "col": 5, "title": "Question"},
+          {"field": "operator",       "nolabel": true, "col": 2, "title": "Operator"},
+          {"field": "answerBoolean",  "nolabel": true, "col": 4, "title": "Boolean value"},
+          {"field": "answerDecimal",  "nolabel": true, "col": 4, "title": "Decimal value"},
+          {"field": "answerInteger",  "nolabel": true, "col": 4, "title": "Integer value"},
+          {"field": "answerDate",     "nolabel": true, "col": 4, "title": "Date value"},
+          {"field": "answerDateTime", "nolabel": true, "col": 4, "title": "Date time value"},
+          {"field": "answerTime",     "nolabel": true, "col": 4, "title": "Time value"},
+          {"field": "answerString",   "nolabel": true, "col": 4, "title": "String value"},
+          {"field": "answerCoding",   "nolabel": true, "col": 4, "title": "Coding value"},
+          {"field": "answerQuantity", "nolabel": true, "col": 4, "title": "Quantity value"}
         ]
       }
     },
@@ -614,7 +723,7 @@
         "any"
       ],
       "type": "string",
-      "title": "Enable behavior",
+      "title": "Show this item when",
       "widget": {
         "id": "radio",
         "layout": "row"
@@ -629,6 +738,10 @@
         "type": [
           "$EXP$ target.value != 'display'"
         ]
+      },
+      "widget": {
+        "id": "left-label-checkbox",
+        "labelWidthClass": "col-sm-2"
       }
     },
     "repeats": {
@@ -640,6 +753,10 @@
         "type": [
           "$EXP$ target.value != 'display'"
         ]
+      },
+      "widget": {
+        "id": "left-label-checkbox",
+        "labelWidthClass": "col-sm-2"
       }
     },
     "readOnly": {
@@ -651,6 +768,10 @@
         "type": [
           "$EXP$ target.value != 'display'"
         ]
+      },
+      "widget": {
+        "id": "left-label-checkbox",
+        "labelWidthClass": "col-sm-2"
       }
     },
     "maxLength": {
@@ -660,6 +781,12 @@
       "type": "number",
       "visibleIf": {
         "type": ["$EXP$ target.value == 'boolean' || target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
+      },
+      "widget": {
+        "id": "integer",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-1"
       }
     },
     "answerValueSet": {
@@ -853,7 +980,8 @@
             "additionalProperties": false,
             "type": "object",
             "widget": {
-              "id": "row-layout",
+              "id": "table",
+              "addButtonLabel": "Add new answer item",
               "showFields": [
                 {"field": "code", "col": 2, "nolabel": true},
                 {"field": "system", "col": 5, "nolabel": true},
@@ -942,16 +1070,19 @@
       },
       "widget": {
         "id": "table",
+        "noCollapseButton": true,
+        "noTableLabel": true,
+        "addButtonLabel": "Add new answer",
         "showFields": [
-          {"field": "valueInteger", "col": 8, "nolabel": true},
-          {"field": "valueDate", "col": 8, "nolabel": true},
-          {"field": "valueTime", "col": 8, "nolabel": true},
-          {"field": "valueString", "col": 8, "nolabel": true},
+          {"field": "valueInteger", "col": 9, "nolabel": true},
+          {"field": "valueDate", "col": 9, "nolabel": true},
+          {"field": "valueTime", "col": 9, "nolabel": true},
+          {"field": "valueString", "col": 9, "nolabel": true},
           {"field": "valueCoding.display", "col": 3, "nolabel": true},
           {"field": "valueCoding.code", "col": 3, "nolabel": true},
           {"field": "valueCoding.system", "col": 3, "nolabel": true},
-          {"field": "valueReference", "col": 8, "nolabel": true},
-          {"field": "initialSelected", "col": 3, "nolabel": true}
+          {"field": "valueReference", "col": 9, "nolabel": true},
+          {"field": "initialSelected", "col": 2, "nolabel": true}
         ]
       }
     },
@@ -1403,28 +1534,28 @@
       "type": "array",
       "title": "Initial values",
       "visibleIf": {
-        "type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
+        "type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'choice' && target.value != 'open-choice'"]
       },
       "widget": {
         "id": "table",
+        "noCollapseButton": true,
+        "noTableLabel": true,
+        "addButtonLabel": "Add new value",
         "showFields": [
-          {"field": "valueBoolean", "col": 12, "nolabel": true},
-          {"field": "valueDecimal", "col": 12, "nolabel": true},
-          {"field": "valueInteger", "col": 12, "nolabel": true},
-          {"field": "valueDate", "col": 12, "nolabel": true},
-          {"field": "valueDateTime", "col": 12, "nolabel": true},
-          {"field": "valueTime", "col": 12, "nolabel": true},
-          {"field": "valueString", "col": 12, "nolabel": true},
-          {"field": "valueUri", "col": 12, "nolabel": true},
+          {"field": "valueBoolean", "col": 11, "nolabel": true},
+          {"field": "valueDecimal", "col": 11, "nolabel": true},
+          {"field": "valueInteger", "col": 11, "nolabel": true},
+          {"field": "valueDate", "col": 11, "nolabel": true},
+          {"field": "valueDateTime", "col": 11, "nolabel": true},
+          {"field": "valueTime", "col": 11, "nolabel": true},
+          {"field": "valueString", "col": 11, "nolabel": true},
+          {"field": "valueUri", "col": 11, "nolabel": true},
           {"field": "valueCoding.display", "col": 4, "nolabel": true},
-          {"field": "valueCoding.code", "col": 4, "nolabel": true},
+          {"field": "valueCoding.code", "col": 3, "nolabel": true},
           {"field": "valueCoding.system", "col": 4, "nolabel": true},
-          {"field": "valueQuantity.comparator", "col": 2, "nolabel": true},
-          {"field": "valueQuantity.value", "col": 2, "nolabel": true},
-          {"field": "valueQuantity.unit", "col": 1, "nolabel": true},
-          {"field": "valueQuantity.code", "col": 1, "nolabel": true},
-          {"field": "valueQuantity.system", "col": 6, "nolabel": true},
-          {"field": "valueReference", "col": 12, "nolabel": true}
+          {"field": "valueQuantity.value", "col": 9, "nolabel": true},
+          {"field": "valueQuantity.unit", "col": 2, "nolabel": true},
+          {"field": "valueReference", "col": 11, "nolabel": true}
         ]
       }
     }
@@ -4642,44 +4773,28 @@
   ],
   "steps": [
     {
-      "title": "Specify item type and link id",
+      "title": "Specify basic properties",
       "optional": false,
       "rows": [
         {
           "showFields": [
-            { "field": "type", "col": 7 },
-            { "field": "linkId" }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Specify some basic properties",
-      "optional": false,
-      "rows": [
-        {
-          "showFields": [
-            { "field": "prefix", "col": 1},
-            { "field": "text", "col": 11 }
+            { "field": "type", "col": 12 },
+            { "field": "linkId", "col": 12 }
           ]
         },
         {
           "showFields": [
-            { "field": "repeats", "col": 2 },
-            { "field": "readOnly", "col": 2 },
-            { "field": "required", "col": 2 },
-            { "field": "maxLength", "col": 2 }
+            { "field": "text", "col": 12 },
+            { "field": "code", "col": 12 },
+            { "field": "prefix", "col": 12}
           ]
-        }
-      ]
-    },
-    {
-      "title": "Item Codes",
-      "optional": false,
-      "rows": [
+        },
         {
           "showFields": [
-            { "field": "code", "col": 12 }
+            { "field": "repeats", "col": 12 },
+            { "field": "required", "col": 12 },
+            { "field": "readOnly", "col": 12 },
+            { "field": "maxLength", "col": 12 }
           ]
         }
       ]
@@ -4701,7 +4816,7 @@
       ]
     },
     {
-      "title": "Defaults",
+      "title": "Default value",
       "optional": false,
       "rows": [
         {
@@ -4712,7 +4827,7 @@
       ]
     },
     {
-      "title": "Conditional display",
+      "title": "Conditions to display",
       "optional": false,
       "rows": [
         {
@@ -4727,6 +4842,6 @@
     }
   ],
   "widget": {
-    "id": "stepper-grid"
+    "id": "expandable-panels"
   }
 }

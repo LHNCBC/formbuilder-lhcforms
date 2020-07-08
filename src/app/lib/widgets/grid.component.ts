@@ -8,7 +8,7 @@ import {Util} from '../util';
     <div *ngFor="let fieldset of formProperty.schema.fieldsets">
       <legend *ngIf="fieldset.title">{{fieldset.title}}</legend>
       <span *ngIf="fieldset.description" data-toggle="tooltip" [title]="fieldset.description" class="glyphicon glyphicon-info" ></span>
-      <div class="row">
+      <div class="form-row">
         <div [class]="gridClass(field)" *ngFor="let field of getShowFields(fieldset)">
           <sf-form-element [formProperty]="getShowFieldProperty(field)"></sf-form-element>
         </div>

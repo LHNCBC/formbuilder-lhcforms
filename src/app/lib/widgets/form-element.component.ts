@@ -10,6 +10,9 @@ import { Widget } from 'ngx-schema-form';
          [class.has-success]="formProperty.valid">
       <app-element-chooser
         [nolabel]="nolabel"
+        [layout]="layout"
+        [labelWidthClass]="labelWidthClass"
+        [controlWidthClass]="controlWidthClass"
         (widgetInstanciated)="onWidgetInstanciated($event)"
         [widgetInfo]="formProperty.schema.widget">
       </app-element-chooser>
@@ -21,6 +24,12 @@ import { Widget } from 'ngx-schema-form';
 export class AppFormElementComponent extends FormElementComponent {
   @Input()
   nolabel = false;
+  @Input()
+  layout: string;
+  @Input()
+  labelWidthClass: string;
+  @Input()
+  controlWidthClass: string;
 
   /*
   --- Used for debugging ----
@@ -51,5 +60,11 @@ ngOnChanges(changes: SimpleChanges): void {
     super.onWidgetInstanciated(widget);
     // @ts-ignore
     this.widget.nolabel = this.nolabel;
+    // @ts-ignore
+    this.widget.layout = this.layout;
+    // @ts-ignore
+    this.widget.labelWidthClass = this.labelWidthClass;
+    // @ts-ignore
+    this.widget.controlWidthClass = this.controlWidthClass;
   }
 }

@@ -9,4 +9,10 @@ import {WidgetChooserComponent} from 'ngx-schema-form';
 export class ElementChooserComponent extends WidgetChooserComponent {
   @Input()
   nolabel = true;
+  @Input()
+  layout: string;
+  @Input()
+  labelWidthClass: string;
+  @Input()
+  controlWidthClass: string;
 }
