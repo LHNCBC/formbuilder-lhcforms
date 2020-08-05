@@ -95,7 +95,100 @@ var answerLists = {
     }
   ],
 
+  "_conditionCompareType": [
+    {
+      "text": "Any value (exists)",
+      "code": true
+    },
+    {
+      "text": "None (not exists)",
+      "code": false
+    },
+
+    {
+      "text": "Compared",
+      "code": "compare"
+    }
+  ],
+
+  "_conditionOperatorNumeric": [
+    {
+      "text": "=",
+      "code": "value"
+    },
+    {
+      "text": ">",
+      "code": "minExclusive"
+    },
+    {
+      "text": ">=",
+      "code": "minInclusive"
+    },
+    {
+      "text": "!=",
+      "code": "notEqual"
+    },
+    {
+      "text": "<",
+      "code": "maxExclusive"
+    },
+    {
+      "text": "<=",
+      "code": "maxInclusive"
+    },
+    {
+      "text": "Any value (exists)",
+      "code": true
+    },
+    {
+      "text": "None (not exists)",
+      "code": false
+    }
+  ],
+
+  "_conditionOperatorBool": [
+    {
+      "text": "true",
+      "code": "true"
+    },
+    {
+      "text": "false",
+      "code": "false"
+    },
+    {
+      "text": "true or false (exists)",
+      "code": true
+    },
+    {
+      "text": "None (not exists)",
+      "code": false
+    }
+  ],
+
+  "_conditionOperatorOther": [
+    {
+      "text": "=",
+      "code": "value"
+    },
+    {
+      "text": "!=",
+      "code": "notEqual"
+    },
+    {
+      "text": "Any value (exists)",
+      "code": true
+    },
+    {
+      "text": "None (not exists)",
+      "code": false
+    }
+  ],
+
   "numericalRange": [
+    {
+      "text": "=",
+      "code": "value"
+    },
     {
       "text": ">",
       "code": "minExclusive"
@@ -107,20 +200,16 @@ var answerLists = {
 
 
     {
+      "text": "!=",
+      "code": "notEqual"
+    },
+    {
       "text": "<",
       "code": "maxExclusive"
     },
     {
       "text": "<=",
       "code": "maxInclusive"
-    },
-    {
-      "text": "=",
-      "code": "value"
-    },
-    {
-      "text": "!=",
-      "code": "notEqual"
     }
   ],
   

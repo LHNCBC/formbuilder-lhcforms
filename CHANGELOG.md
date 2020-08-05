@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.0.0]  2020-08-05
+### Changed
+- Changed UI to build skip logic condition to support exists and not exists operators.
+- Fixed a bug in loading a FHIR questionnaire with enable when source of type boolean.
+- Added a setting export format to R4 as default in the file export dialog.
+
 ## [5.0.0]  2020-04-17
 ### Changed
 - Changed unique key of an item, from questionCode to linkId as per lforms version 24.0.0.

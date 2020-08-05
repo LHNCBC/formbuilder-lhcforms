@@ -1,0 +1,159 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "F1",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Group 1",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "1.1",
+          "text": "Boolean type question",
+          "type": "boolean"
+        },
+        {
+          "linkId": "1.2",
+          "text": "String type question",
+          "type": "string"
+        },
+        {
+          "linkId": "1.3",
+          "text": "Integer type question",
+          "type": "integer"
+        },
+        {
+          "linkId": "1.4",
+          "text": "Question with skip logic boolean source = true",
+          "type": "string",
+          "enableWhen": [
+            {
+              "question": "1.1",
+              "operator": "=",
+              "answerBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "1.5",
+          "text": "Question with skip logic boolean source = false",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.1",
+              "operator": "=",
+              "answerBoolean": false
+            }
+          ]
+        },
+        {
+          "linkId": "1.6",
+          "text": "Question with skip logic boolean source = false",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.1",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        },
+        {
+          "linkId": "1.7",
+          "text": "Question with skip logic boolean source = false",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.1",
+              "operator": "exists",
+              "answerBoolean": false
+            }
+          ]
+        },
+        {
+          "linkId": "1.8",
+          "text": "Question with skip logic source (1.2) = 'xxx'",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.2",
+              "operator": "=",
+              "answerString": "xxx"
+            }
+          ]
+        },
+        {
+          "linkId": "1.9",
+          "text": "Question with skip logic source (1.2) != 'xxx'",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.2",
+              "operator": "!=",
+              "answerString": "xxx"
+            }
+          ]
+        },
+        {
+          "linkId": "1.10",
+          "text": "Question with skip logic source (1.3) = 1",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.3",
+              "operator": "=",
+              "answerInteger": 1
+            }
+          ]
+        },
+        {
+          "linkId": "1.11",
+          "text": "Question with skip logic source (1.3) != 1",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.3",
+              "operator": "!=",
+              "answerInteger": 1
+            }
+          ]
+        },
+        {
+          "linkId": "1.12",
+          "text": "Question with skip logic source (1.3) >= 0 OR <= 100",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.3",
+              "operator": ">=",
+              "answerInteger": 0
+            },
+            {
+              "question": "1.3",
+              "operator": "<=",
+              "answerInteger": 100
+            }
+          ]
+        },
+        {
+          "linkId": "1.13",
+          "text": "Question with skip logic source (1.3) > 0 OR < 100",
+          "type": "date",
+          "enableWhen": [
+            {
+              "question": "1.3",
+              "operator": ">",
+              "answerInteger": 0
+            },
+            {
+              "question": "1.3",
+              "operator": "<",
+              "answerInteger": 100
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

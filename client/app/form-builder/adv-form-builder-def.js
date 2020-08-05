@@ -322,20 +322,10 @@ var advFormBuilderDef = {
                 },
                 {
                   "questionCode": "hiddenItemForSourceType",
-                  "question": "You shouldn't see this",
+                  "question": "You shouldn't see this (hiddenItemForSourceType)",
                   "header": false,
                   "dataType": "ST",
-                  "skipLogic": {
-                    "conditions": [
-                      {
-                        "source": "/_isHeader",
-                        "trigger": {
-                          "value": "notThisString"
-                        }
-                      }
-                    ],
-                    "action": "show"
-                  },
+                  "displayControl": {"css": [{"name": "display","value": "none"}]},
                   "dataControl": [
                     {
                       "source": {
@@ -350,7 +340,94 @@ var advFormBuilderDef = {
                   "linkId": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType"
                 },
                 {
-                  "questionCode": "trigger",
+                  "questionCode": "_conditionOperatorNumeric",
+                  "question": "Specify how to compare",
+                  "header": false,
+                  "dataType": "CNE",
+                  "answers": "_conditionOperatorNumeric",
+                  "defaultAnswer": {
+                    "value": {"code": "value"}
+                  },
+                  "skipLogic": {
+                    "logic": "ANY",
+                    "conditions": [
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "value": "REAL"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "value": "INT"
+                        }
+                      }
+                    ],
+                  },
+                  "linkId": "/useSkipLogic/skipLogic/conditions/_conditionOperatorNumeric"
+                },
+                {
+                  "questionCode": "_conditionOperatorBool",
+                  "question": "Specify boolean value",
+                  "header": false,
+                  "dataType": "CNE",
+                  "answers": "_conditionOperatorBool",
+                  "skipLogic": {
+                    "logic": "ALL",
+                    "conditions": [
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "value": "BL"
+                        }
+                      }
+                    ],
+                  },
+                  "linkId": "/useSkipLogic/skipLogic/conditions/_conditionOperatorBool"
+                },
+                {
+                  "questionCode": "_conditionOperatorOther",
+                  "question": "Specify how to compare",
+                  "header": false,
+                  "dataType": "CNE",
+                  "answers": "_conditionOperatorOther",
+                  "defaultAnswer": {
+                    "value": {"code": "value"}
+                  },
+                  "skipLogic": {
+                    "logic": "ALL",
+                    "conditions": [
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "exists": true
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "BL"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "REAL"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "INT"
+                        }
+                      }
+                    ],
+                  },
+                  "linkId": "/useSkipLogic/skipLogic/conditions/_conditionOperatorOther"
+                },
+                {
+                  "questionCode": "triggerCNECWE",
                   "question": "Select value to satisfy the condition",
                   "header": false,
                   "codingInstructions": "Specify a source field value to satisfy the condition.",
@@ -360,78 +437,102 @@ var advFormBuilderDef = {
                     }
                   },
                   "skipLogic": {
-                    "logic": "ANY",
+                    "logic": "ALL",
                     "conditions": [
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "BL"
+                          "notEqual": "BL"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "TM"
+                          "notEqual": "ST"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "DT"
+                          "notEqual": "TX"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "DTM"
+                          "notEqual": "URL"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "EMAIL"
+                          "notEqual": "EMAIL"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "CNE"
+                          "notEqual": "RTO"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "CWE"
+                          "notEqual": "PHONE"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "PHONE"
+                          "notEqual": "YEAR"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "RTO"
+                          "notEqual": "TM"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "ST"
+                          "notEqual": "DTM"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "URL"
+                          "notEqual": "DT"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "YEAR"
+                          "notEqual": "REAL"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "INT"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "QTY"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/source",
+                        "trigger": {
+                          "exists": true
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/_conditionOperatorOther",
+                        "trigger": {
+                          "value": {"code": "value"}
                         }
                       }
                     ],
@@ -457,55 +558,217 @@ var advFormBuilderDef = {
                       "onAttribute": "answers"
                     }
                   ],
-                  "linkId": "/useSkipLogic/skipLogic/conditions/trigger"
+                  "linkId": "/useSkipLogic/skipLogic/conditions/triggerCNECWE"
                 },
                 {
-                  "questionCode": "triggerRange",
-                  "question": "Numerical range",
-                  "header": true,
-                  "codingInstructions": "Specify numerical range to satisfy the condition.",
-                  "questionCardinality": {
-                    "min": "1",
-                    "max": "*"
-                  },
+                  "questionCode": "triggerOther",
+                  "question": "Select value to satisfy the condition",
+                  "header": false,
+                  "codingInstructions": "Specify a source field value to satisfy the condition.",
                   "skipLogic": {
-                    "logic": "ANY",
+                    "logic": "ALL",
                     "conditions": [
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "INT"
+                          "notEqual": "BL"
                         }
                       },
                       {
                         "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
                         "trigger": {
-                          "value": "REAL"
+                          "notEqual": "REAL"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "INT"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "QTY"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "CNE"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "CWE"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/source",
+                        "trigger": {
+                          "exists": true
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/_conditionOperatorOther",
+                        "trigger": {
+                          "exists": true
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/_conditionOperatorOther",
+                        "trigger": {
+                          "notEqual": {"code": true}
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/_conditionOperatorOther",
+                        "trigger": {
+                          "notEqual": {"code": false}
                         }
                       }
                     ],
                     "action": "show"
                   },
-                  "items": [
+                  "dataControl": [
                     {
-                      "questionCode": "rangeBoundary",
-                      "question": "Select conditional operator",
-                      "dataType": "CNE",
-                      "answers": "numericalRange",
-                      "header": false,
-                      "codingInstructions": "Choose a conditional operator for this range.",
-                      "linkId": "/useSkipLogic/skipLogic/conditions/triggerRange/rangeBoundary"
-                    },
-                    {
-                      "questionCode": "rangeValue",
-                      "question": "Value for the condition",
-                      "dataType": "REAL",
-                      "header": false,
-                      "codingInstructions": "Specify a value for above conditional operator.",
-                      "linkId": "/useSkipLogic/skipLogic/conditions/triggerRange/rangeValue"
+                      "source": {
+                        "sourceType": "INTERNAL",
+                        "sourceLinkId": "/useSkipLogic/skipLogic/conditions/source"
+                      },
+                      "construction": "SIMPLE",
+                      "dataFormat": "value.dataType",
+                      "onAttribute": "dataType"
                     }
                   ],
-                  "linkId": "/useSkipLogic/skipLogic/conditions/triggerRange"
+                  "linkId": "/useSkipLogic/skipLogic/conditions/triggerOther"
+                },
+                {
+                  "questionCode": "triggerNumeric",
+                  "question": "Select value to satisfy the condition",
+                  "header": false,
+                  "codingInstructions": "Specify a source field value to satisfy the condition.",
+                  "skipLogic": {
+                    "logic": "ALL",
+                    "conditions": [
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "CNE"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "CWE"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "BL"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "ST"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "TX"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "URL"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "EMAIL"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "RTO"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "PHONE"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "YEAR"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "TM"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "DTM"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/hiddenItemForSourceType",
+                        "trigger": {
+                          "notEqual": "DT"
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/source",
+                        "trigger": {
+                          "exists": true
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/_conditionOperatorNumeric",
+                        "trigger": {
+                          "exists": true
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/_conditionOperatorNumeric",
+                        "trigger": {
+                          "notEqual": {"code": true}
+                        }
+                      },
+                      {
+                        "source": "/useSkipLogic/skipLogic/conditions/_conditionOperatorNumeric",
+                        "trigger": {
+                          "notEqual": {"code": false}
+                        }
+                      }
+                    ],
+                    "action": "show"
+                  },
+                  "dataControl": [
+                    {
+                      "source": {
+                        "sourceType": "INTERNAL",
+                        "sourceLinkId": "/useSkipLogic/skipLogic/conditions/source"
+                      },
+                      "construction": "SIMPLE",
+                      "dataFormat": "value.dataType",
+                      "onAttribute": "dataType"
+                    }
+                  ],
+                  "linkId": "/useSkipLogic/skipLogic/conditions/triggerNumeric"
                 }
               ],
               "linkId": "/useSkipLogic/skipLogic/conditions"

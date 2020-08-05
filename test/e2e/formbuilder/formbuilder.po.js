@@ -59,17 +59,17 @@ var FormBuilder = function () {
   this.useSkipLogicYes = element(by.id('/useSkipLogic/1true'));
 
   this.skipLogicAction = element(by.id('/useSkipLogic/skipLogic/action/1/1/1'));
-  this.skipLogicLogic = element(by.id('/useSkipLogic/skipLogic/logic/1/1/1'));
+  this.skipLogicLogicAll = element(by.id('/useSkipLogic/skipLogic/logic/1/1/1ALL'));
   this.skipLogicConditionsSource = element(by.id('/useSkipLogic/skipLogic/conditions/source/1/1/1/1'));
-  this.skipLogicConditionsTriggerRangeRangeBoundary1equal = element(by.id('/useSkipLogic/skipLogic/conditions/triggerRange/rangeBoundary/1/1/1/1/1value'));
-  this.skipLogicConditionsTriggerRangeRangeBoundary1notEqual = element(by.id('/useSkipLogic/skipLogic/conditions/triggerRange/rangeBoundary/1/1/1/1/1notEqual'));
-  this.skipLogicConditionsTriggerRangeRangeBoundary1minExclusive = element(by.id('/useSkipLogic/skipLogic/conditions/triggerRange/rangeBoundary/1/1/1/1/1minExclusive'));
-  this.skipLogicConditionsTriggerRangeRangeBoundary2maxExclusive = element(by.id('/useSkipLogic/skipLogic/conditions/triggerRange/rangeBoundary/1/1/1/2/1maxExclusive'));
-  this.skipLogicConditionsTriggerRangeRangeValue1 = element(by.id('/useSkipLogic/skipLogic/conditions/triggerRange/rangeValue/1/1/1/1/1'));
-  this.skipLogicConditionsTriggerRangeRangeValue2 = element(by.id('/useSkipLogic/skipLogic/conditions/triggerRange/rangeValue/1/1/1/2/1'));
-  this.skipLogicConditionsTrigger = element(by.id('/useSkipLogic/skipLogic/conditions/trigger/1/1/1/1'));
+  this.skipLogicConditionsSource2 = element(by.id('/useSkipLogic/skipLogic/conditions/source/1/1/2/1'));
+  this.skipLogicConditionsTriggerRangeRangeBoundary1equal = element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorNumeric/1/1/1/1value'));
+  this.skipLogicConditionsTriggerRangeRangeBoundary1notEqual = element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorNumeric/1/1/1/1notEqual'));
+  this.skipLogicConditionsTriggerRangeRangeBoundary1minExclusive = element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorNumeric/1/1/1/1minExclusive'));
+  this.skipLogicConditionsTriggerRangeRangeBoundary2maxExclusive = element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorNumeric/1/1/2/1maxExclusive'));
+  this.skipLogicConditionsTriggerRangeRangeValue1 = element(by.id('/useSkipLogic/skipLogic/conditions/triggerNumeric/1/1/1/1'));
+  this.skipLogicConditionsTriggerRangeRangeValue2 = element(by.id('/useSkipLogic/skipLogic/conditions/triggerNumeric/1/1/2/1'));
+  this.skipLogicConditionsTriggerCNE = element(by.id('/useSkipLogic/skipLogic/conditions/triggerCNECWE/1/1/1/1'));
 
-  //this.addRestrictionButton = element(by.id('add-/useRestrictions/restrictions/1/1'));
   this.addRestrictionButton = this.advancedPanelEl.element(by.cssContainingText('button', 'Add another \"Restriction\"'));
   this.addSkipLogicConditionButton = this.advancedPanelEl.element(by.cssContainingText('button','Add another \"Condition\"'));
   this.addSkipLogicSkipLogicNumericalRange = this.advancedPanelEl.element(by.cssContainingText('button','Add another \"Numerical range\"'));

@@ -3,6 +3,7 @@
   "items": [
     {
       "questionCode": "3151-8",
+      "linkId": "/3151-8",
       "dataType": "CNE",
       "header": false,
       "question": "Inhaled O2 flow rate",
@@ -36,7 +37,7 @@
         "logic": "ANY",
         "conditions": [
           {
-            "source": "3151-8",
+            "source": "/3151-8",
             "trigger": {
               "value": {
                 "code": "LA11850-7",

@@ -42,7 +42,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -153,7 +153,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -264,7 +264,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -375,7 +375,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -486,7 +486,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -597,7 +597,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -708,7 +708,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -819,7 +819,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -926,7 +926,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -1125,7 +1125,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-calculatedExpression",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
           "valueExpression": {
             "description": "Total score calculation",
             "language": "text/fhirpath",
@@ -1133,7 +1133,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
@@ -1181,7 +1181,7 @@
           }
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-observationLinkPeriod",
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
           "valueDuration": {
             "value": 1,
             "unit": "year",
