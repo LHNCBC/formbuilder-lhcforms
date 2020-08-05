@@ -23,7 +23,7 @@ describe('GET /', function () {
     //fb.printBrowserConsole();
   });
 
-  fdescribe('Add New or import from LOINC', function () {
+  describe('Add New or import from LOINC', function () {
     describe('LOINC import panel/question', function () {
       beforeEach(function () {
         fb.cleanupSideBar();
@@ -133,6 +133,96 @@ describe('GET /', function () {
       expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
       // Verify widget title
       expect(fb.panelTitle.getText()).toBe('1 '+str);
+    });
+
+    describe('Item type radio buttons', function() {
+      beforeAll(function() {
+        fb.cleanupSideBar();
+        var str = 'Test item created';
+        fb.addButton.click();
+        fb.addNewItem(str);
+      });
+
+      [
+        {name:'question', clickControl: fb.itemTypeQuestion, test: {dataType: 'ST'}},
+        {name:'group', clickControl: fb.itemTypeGroup, test: {header: true}},
+        {name:'display', clickControl: fb.itemTypeDisplay, test: {dataType: 'TITLE'}}
+      ].forEach(function (testCase) {
+        it('Should select item type: '+testCase.name, function(done) {
+          testCase.clickControl.click();
+          util.getJSONSource('lforms').then(function (text) {
+            var previewLFData = JSON.parse(text);
+            var fields = Object.keys(testCase.test);
+            fields.forEach(function(field) {
+              expect(previewLFData.items[0][field]).toBe(testCase.test[field]);
+            });
+            done();
+          }, function (err) {
+            done(err);
+          });
+        });
+      })
+    });
+
+    describe('Css styling', function() {
+      beforeAll(function() {
+        fb.cleanupSideBar();
+        var str = 'Test item created';
+        fb.addButton.click();
+        fb.addNewItem(str);
+      });
+
+      it('should follow css defaults for question text and prefix fields', function () {
+        expect(fb.addCssQuestionNo.isSelected()).toBeTruthy();
+        expect(fb.cssQuestion.isPresent()).toBeFalsy();
+        fb.addCssQuestionYes.click();
+        expect(fb.cssQuestion.isDisplayed()).toBeTruthy();
+
+        expect(fb.addCssPrefixNo.isSelected()).toBeTruthy();
+        expect(fb.cssPrefix.isPresent()).toBeFalsy();
+        fb.addCssPrefixYes.click();
+        expect(fb.cssPrefix.isDisplayed()).toBeTruthy();
+      });
+
+      it('Should convert question text css', function(done) {
+        fb.addCssQuestionYes.click();
+        fb.cssQuestion.click();
+        var cssInput = 'font-size: 2rem, color: blue, font-style: italic';
+        fb.cssQuestion.sendKeys(cssInput);
+        fb.previewRefreshButton.click();
+        util.getJSONSource('lforms').then(function (text) {
+          var previewLFData = JSON.parse(text);
+          expect(previewLFData.items[0].obj_text).toEqual({
+            extension: [{
+              url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
+              valueString: cssInput
+            }]
+          });
+          done();
+        }, function (err) {
+          done(err);
+        });
+      });
+
+      it('Should convert question prefix css', function(done) {
+        fb.addCssPrefixYes.click();
+        fb.cssPrefix.click();
+        var cssInput = 'font-size: 2rem, color: red, font-weight: bold';
+        fb.cssPrefix.sendKeys(cssInput);
+        fb.previewRefreshButton.click();
+        util.getJSONSource('lforms').then(function (text) {
+          var previewLFData = JSON.parse(text);
+          expect(previewLFData.items[0].obj_prefix).toEqual({
+            extension: [{
+              url: 'http://hl7.org/fhir/StructureDefinition/rendering-style',
+              valueString: cssInput
+            }]
+          });
+          done();
+        }, function (err) {
+          done(err);
+        });
+      });
     });
 
     it('should see changes in linkId', function (done) {
@@ -513,13 +603,14 @@ describe('GET /', function () {
         fhirOriginalJsonSTU3 = JSON.parse(text);
       });
 
+      var EC = protractor.ExpectedConditions;
       fb.exportMenu.click();
+      browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
       fb.exportToFile.click();
       fb.exportFileLFormsFormat.click();
       fb.continueButton.click();
 
       fb.exportMenu.click();
-      var EC = protractor.ExpectedConditions;
       browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
       fb.exportToFile.click();
       fb.exportFileFHIRFormatR4.click();
@@ -666,6 +757,28 @@ describe('GET /', function () {
       fb.sendKeys(fb.questionText, ' xxxx');
       expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org/modified');
       expect(fb.questionCode.getAttribute('value')).toBe('Modified_12345-6');
+    });
+  });
+
+  describe('Loading form with css styles', function () {
+    let fixtureFile = path.join(__dirname, './fixtures/rendering-style.lforms.json');
+    let originalJson;
+    beforeAll(function() {
+      originalJson = JSON.parse(fs.readFileSync(fixtureFile));
+    });
+
+    it('Should load a form with css styles', function (done) {
+      fb.cleanupSideBar();
+      util.loadLFormFromDisk(fixtureFile, 'lforms').then(function (text) {
+        var newJson = JSON.parse(text);
+        expect(newJson.items[0].items[0].obj_prefix).toEqual(originalJson.items[0].items[0].obj_prefix);
+        expect(newJson.items[0].items[1].obj_text).toEqual(originalJson.items[0].items[1].obj_text);
+        expect(newJson.items[0].items[2].obj_text).toEqual(originalJson.items[0].items[2].obj_text);
+        expect(newJson.items[0].items[2].obj_prefix).toEqual(originalJson.items[0].items[2].obj_prefix);
+        done();
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
     });
   });
 

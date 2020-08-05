@@ -45,7 +45,7 @@ angular.module('formBuilderConfig', ['ngMaterial'])
     LOINC: 'LOINC',
     OTHER: 'Other',
 
-    calculatedExpressionUrl: 'http://hl7.org/fhir/StructureDefinition/questionnaire-calculatedExpression',
+    calculatedExpressionUrl: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression',
     fhirVariableUrl: 'http://hl7.org/fhir/StructureDefinition/variable',
 
 

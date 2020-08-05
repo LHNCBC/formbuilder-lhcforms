@@ -8,6 +8,18 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Fixed a bug in loading a FHIR questionnaire with enable when source of type boolean.
 - Added a setting export format to R4 as default in the file export dialog.
 
+## [5.2.0]  2020-06-22
+### Updated
+- Update lforms version to 25.0.0. It changed the FHIR extension url of calculated expression.
+
+## [5.1.0]  2020-05-22
+### Added
+- Added input fields to support CSS styles on item name and prefix.
+
+## [5.0.1]  2020-04-17
+### Fixed
+- Fixed a bug in selection of display item type.
+
 ## [5.0.0]  2020-04-17
 ### Changed
 - Changed unique key of an item, from questionCode to linkId as per lforms version 24.0.0.
