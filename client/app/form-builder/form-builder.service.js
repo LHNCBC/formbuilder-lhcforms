@@ -872,7 +872,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         var compare;
         var sourceType = thisService.getFormBuilderField(condition.items, 'hiddenItemForSourceType').value;
         if (sourceType === 'BL') {
-          // compare.value could be one of true, false, 'true', 'false'
+          // compare.code could be one of true, false, 'true', 'false'
           // The boolean value implies exist/notexists and string counter parts imply trigger.value
           // Refer to '_conditionOperatorBool' in answer-lists.js.
           compare = thisService.getFormBuilderField(condition.items, '_conditionOperatorBool').value;
