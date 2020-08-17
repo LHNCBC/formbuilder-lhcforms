@@ -94,6 +94,23 @@ describe('formbuilder.service ', function () {
   describe('_updateUnitsURL()', function () {
     var loincPropertyResp, lfData, codeItem, datatypeItem, unitsItem;
 
+    /**
+     * Mock http calls and assert units search url
+     *
+     * @param exptectedUrl - The exptected url after updateUnitsURL is called.
+     * @param done - Done method from jasmine framework to wait on asynchronous call.
+     */
+    function assertUpdateUnitsURL(exptectedUrl, done) {
+      $httpBackend.expectGET(/^https?:.+$/);
+      fbService._updateUnitsURL(lfData).then(function () {
+        expect(unitsItem.externallyDefined).toEqual(exptectedUrl);
+        done();
+      }, function (err) {
+        done(err);
+      });
+      $httpBackend.flush();
+    }
+
     beforeEach(function () {
       lfData = angular.copy(formBuilderDef); // Work with original form builder definition.
       // Setup needed fields
@@ -105,7 +122,7 @@ describe('formbuilder.service ', function () {
 
       // Setup mock response. It could be modified in the test suit
       loincPropertyResp = [1, [codeItem.value],null,[[]]];
-      $httpBackend.when('GET', /^https:.+$/).respond(function () { return [200, loincPropertyResp];});
+      $httpBackend.when('GET', /^https?:.+$/).respond(function () { return [200, loincPropertyResp];});
     });
 
     afterEach(function() {
@@ -131,25 +148,5 @@ describe('formbuilder.service ', function () {
       var expectedUrl = unitsItem.externallyDefined+'&bq=loinc_property:(%22aaa%3B%22%26%3C%3E\'bbb%22)^20';
       assertUpdateUnitsURL(expectedUrl, done);
     });
-
-
-    /**
-     * Mock http calls and assert units search url
-     *
-     * @param exptectedUrl - The exptected url after updateUnitsURL is called.
-     * @param done - Done method from jasmine framework to wait on asynchronous call.
-     */
-    function assertUpdateUnitsURL(exptectedUrl, done) {
-      $httpBackend.expectGET(/^https:.+$/);
-      fbService._updateUnitsURL(lfData).then(function(resp){
-        expect(unitsItem.externallyDefined).toEqual(exptectedUrl);
-        done();
-      }, function (err) {
-        done(err);
-      });
-      $httpBackend.flush();
-    }
   });
-
 });
-

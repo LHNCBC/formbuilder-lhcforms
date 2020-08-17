@@ -2,6 +2,32 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.0.0]  2020-08-05
+### Changed
+- The range definition of skip logic trigger for numeric types is changed to align with FHIR enableWhen definition.
+  This could be a breaking change if you have a form definition like the following.
+    skipLogic = {
+      condition = [{
+        source: '1',
+        trigger = {minExclusive: 10, maxExclusive: 100}
+      }]
+    }
+
+  The above definition can be changed to the following to specify the range.
+    skipLogic = {
+      logic: 'ALL',
+      condition = [{
+        source: '1',
+        trigger = {minExclusive: 10}
+      },{
+        source: '1',
+        trigger = {maxExclusive: 100}
+      }]
+    }
+- Changed UI to build skip logic condition to support exists and not exists operators.
+- Fixed a bug in loading a FHIR questionnaire with enable when source of type boolean.
+- Added a setting export format to R4 as default in the file export dialog.
+
 ## [5.2.0]  2020-06-22
 ### Updated
 - Update lforms version to 25.0.0. It changed the FHIR extension url of calculated expression.

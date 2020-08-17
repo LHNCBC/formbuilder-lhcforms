@@ -711,77 +711,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         case "useSkipLogic":
           if(item.value && item.value.code) {
             var skipLogic = thisService.getFormBuilderField(item.items, 'skipLogic');
-            var skl = {action: 'show'};
-            var val = thisService.getFormBuilderField(skipLogic.items, 'action').value;
-            if(val) {
-              skl.action = val.code;
-            }
-            val = thisService.getFormBuilderField(skipLogic.items, 'logic').value;
-            if(val) {
-              skl.logic = val.code;
-            }
-            var conditions = thisService.getFormBuilderFields(skipLogic.items, 'conditions');
-            skl.conditions = [];
-            conditions.forEach(function(condition) {
-              val = thisService.getFormBuilderField(condition.items, 'source').value;
-              var source = null;
-              if(val) {
-                source = val.code; // TODO - Check to make sure val.code is linkId
-              }
-              if(source) {
-                var cond = {};
-                cond.source = source;
-                var sourceType = thisService.getFormBuilderField(condition.items, 'hiddenItemForSourceType').value;
-                switch(sourceType) {
-                  case 'CWE':
-                  case 'CNE':
-                    var trigger = thisService.getFormBuilderField(condition.items, 'trigger').value;
-                    if(trigger) {
-                      var val = {};
-                      if(trigger.code !== null && trigger.code !== undefined) {
-                        val.code = trigger.code;
-                        if (trigger.system) {
-                          val.system = trigger.system;
-                        }
-                      } else {
-                        // Text, only if code is absent
-                        val.text = trigger.text;
-                      }
-
-                      if(Object.keys(val).length) {
-                        cond.trigger = {value: val};
-                      }
-                    }
-                    break;
-
-                  case 'REAL':
-                  case 'INT':
-                    var rangeValues  = thisService.getFormBuilderFields(condition.items, 'triggerRange');
-                    var rangeObj = {};
-                    rangeValues.forEach(function(rangeValue) {
-                      var temp = thisService.getFormBuilderField(rangeValue.items, 'rangeBoundary').value;
-                      if(temp) {
-                        var op = temp.code;
-                        temp = thisService.getFormBuilderField(rangeValue.items, 'rangeValue').value;
-                        if(temp !== undefined && temp !== null) {
-                          rangeObj[op] = temp;
-                        }
-                      }
-                    });
-                    cond.trigger = rangeObj;
-                    break;
-
-                  default:
-                    var trigger = thisService.getFormBuilderField(condition.items, 'trigger').value;
-                    cond.trigger = {value: trigger};
-                }
-                if(cond.trigger && cond.source) {
-                  skl.conditions.push(cond);
-                }
-              }
-            });
-            if(skl.conditions.length > 0) {
-              ret['skipLogic'] = skl;
+            var skl = thisService.transformFormBuilderSkipLogic(skipLogic);
+            if (skl && skl.conditions.length > 0) {
+              ret.skipLogic = skl;
             }
           }
           break;
@@ -904,6 +836,105 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
   function getHiddenFormBuilderField(allFBItems, fieldName) {
     return lodash.find(allFBItems, {questionCode: fieldName}, Object.keys(dataConstants.INITIAL_FIELD_INDICES).length);
   }
+
+  /**
+   * Convert form builder skip logic structure to skip logic output.
+   *
+   * @param formBuilderSkipLogic - Form builder representation of skip logic structure.
+   * @returns Object - Skip logic object
+   */
+  this.transformFormBuilderSkipLogic = function (formBuilderSkipLogic) {
+    var skl = {action: 'show'};
+    // action
+    var value = thisService.getFormBuilderField(formBuilderSkipLogic.items, 'action').value;
+    if (value) {
+      skl.action = value.code;
+    }
+    // logic
+    value = thisService.getFormBuilderField(formBuilderSkipLogic.items, 'logic').value;
+    if (value) {
+      skl.logic = value.code;
+    }
+    var conditions = thisService.getFormBuilderFields(formBuilderSkipLogic.items, 'conditions');
+    skl.conditions = [];
+    // conditions
+    conditions.forEach(function (condition) {
+      // source
+      var val = thisService.getFormBuilderField(condition.items, 'source').value;
+      var source = null;
+      if (val) {
+        source = val.code;
+      }
+
+      if (source) {
+        var cond = {};
+        cond.source = source;
+        var compare;
+        var sourceType = thisService.getFormBuilderField(condition.items, 'hiddenItemForSourceType').value;
+        if (sourceType === 'BL') {
+          // compare.code could be one of true, false, 'true', 'false'
+          // The boolean value implies exist/notexists and string counter parts imply trigger.value
+          // Refer to '_conditionOperatorBool' in answer-lists.js.
+          compare = thisService.getFormBuilderField(condition.items, '_conditionOperatorBool').value;
+        } else if (sourceType === 'REAL' || sourceType === 'INT' || sourceType === 'QTY') {
+          compare = thisService.getFormBuilderField(condition.items, '_conditionOperatorNumeric').value;
+        } else {
+          compare = thisService.getFormBuilderField(condition.items, '_conditionOperatorOther').value;
+        }
+        if (compare.code === true || compare.code === false) {
+          cond.trigger = {exists: compare.code};
+        } else if (compare.code) {
+          var triggerVal;
+          switch (sourceType) {
+            case 'BL':
+              cond.trigger = {value: compare.code === 'true'};
+              break;
+
+            case 'CWE':
+            case 'CNE':
+              var trigger = thisService.getFormBuilderField(condition.items, 'triggerCNECWE').value;
+              if (trigger) {
+                val = {};
+                if (trigger.code !== null && trigger.code !== undefined) {
+                  val.code = trigger.code;
+                  if (trigger.system) {
+                    val.system = trigger.system;
+                  }
+                } else {
+                  // Text, only if code is absent
+                  val.text = trigger.text;
+                }
+
+                if (Object.keys(val).length) {
+                  cond.trigger = {value: val};
+                }
+              }
+              break;
+
+            case 'REAL':
+            case 'INT':
+            case 'QTY':
+              triggerVal = thisService.getFormBuilderField(condition.items, 'triggerNumeric').value;
+              cond.trigger = {};
+              cond.trigger[compare.code] = triggerVal;
+              break;
+
+            default:
+              triggerVal = thisService.getFormBuilderField(condition.items, 'triggerOther').value;
+              cond.trigger = {};
+              cond.trigger[compare.code] = triggerVal;
+              break;
+          }
+        }
+        if (cond.trigger && cond.source) {
+          skl.conditions.push(cond);
+        }
+      }
+    });
+
+    return skl;
+  };
+
 
   /**
    * Get first index of form builder item corresponding to its field name.
@@ -1985,28 +2016,48 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       return;
     }
 
-    var fbTrigger = lodash.find(fbSkipLogicCondition.items, {questionCode: 'trigger'});
-    var rangeIndex = lodash.findIndex(fbSkipLogicCondition.items, {questionCode: 'triggerRange'});
+    var fbTriggerCNE = lodash.find(fbSkipLogicCondition.items, {questionCode: 'triggerCNECWE'});
+    var fbTriggerNumeric = lodash.find(fbSkipLogicCondition.items, {questionCode: 'triggerNumeric'});
+    var fbTriggerOther = lodash.find(fbSkipLogicCondition.items, {questionCode: 'triggerOther'});
+    var fbOpNumeric = lodash.find(fbSkipLogicCondition.items, {questionCode: '_conditionOperatorNumeric'});
+    var fbOpBool = lodash.find(fbSkipLogicCondition.items, {questionCode: '_conditionOperatorBool'});
+    var fbOpOther = lodash.find(fbSkipLogicCondition.items, {questionCode: '_conditionOperatorOther'});
 
-    if(_isObject(lfTrigger.value)) {
-      // It is code object for answer list
-      fbTrigger.value = lfTrigger.value;
-    }
-    else {
-      // Create object with  operators as keys with corresponding values.
-      // Multiple operators are supported only for numerical sources.
-      var rangeOptions = Object.keys(lfTrigger);
-      var fbTriggerRanges = [];
-      rangeOptions.forEach(function (opt) {
-        var fbTriggerRange = angular.copy(fbSkipLogicCondition.items[rangeIndex]);
-        fbTriggerRange.items[0].value = lodash.find(fbTriggerRange.items[0].answers, {code: opt});
-        fbTriggerRange.items[1].value = lfTrigger[opt];
-        fbTriggerRanges.push(fbTriggerRange);
-      });
+    var operators = Object.keys(lfTrigger);
 
-      if(fbTriggerRanges.length > 0) {
-        // Replace the default
-        fbSkipLogicCondition.items.splice.apply(fbSkipLogicCondition.items, [rangeIndex, 1].concat(fbTriggerRanges));
+    for(var i = 0; i < operators.length; i++) {
+      var val = lfTrigger[operators[i]];
+      if(operators[i] === 'value' || operators[i] === 'notEqual') {
+        var type = Object.prototype.toString.call(val);
+        switch(type) {
+          case '[object Boolean]':
+            // string representation of boolean implies boolean operators where as
+            // boolean value itself implies exists/notexists operators. Refer to _conditionOperatorBool in answer-lists.js.
+            fbOpBool.value = {code: val.toString()};
+            break;
+
+          case '[object Number]':
+            fbOpNumeric.value = {code: operators[i]};
+            fbTriggerNumeric.value = val;
+            break;
+
+          case '[object Object]':
+            fbOpOther.value = {code: operators[i]};
+            fbTriggerCNE.value = val;
+            break;
+
+          default:
+            fbOpOther.value = {code: operators[i]};
+            fbTriggerOther.value = val;
+            break;
+        }
+      } else if(operators[i] === 'exists') {
+        fbOpBool.value = {code: val};
+        fbOpNumeric.value = {code: val};
+        fbOpOther.value = {code: val};
+      } else {
+        fbOpNumeric.value = {code: operators[i]};
+        fbTriggerNumeric.value = val;
       }
     }
   }

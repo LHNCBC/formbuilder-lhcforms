@@ -87,7 +87,7 @@ describe('GET /', function () {
       });
 
       it('should import the correct panel if a second panel is selected after the first', function () {
-        fb.autoCompSelectByText(fb.searchBox, 'hep', 'Acute ');
+        fb.autoCompSelectByText(fb.searchBox, 'hepa', 'Acute ');
         fb.searchBox.clear();
         fb.searchBox.click(); // restore focus to field
         fb.sendKeys(fb.searchBox, 'Vital');
@@ -241,6 +241,14 @@ describe('GET /', function () {
         done(err);
       });
     });
+
+    it('should pre-select default export format', function() {
+      fb.exportMenu.click();
+      browser.wait(protractor.ExpectedConditions.elementToBeClickable(fb.exportToFile), 5000);
+      fb.exportToFile.click();
+      expect(fb.exportFileFHIRFormatR4.getAttribute('class')).toContain('md-checked');
+      fb.importDialogCancel.click();
+    });
   });
 
   describe('Test with imported vital signs panel from lforms-service', function() {
@@ -384,7 +392,7 @@ describe('GET /', function () {
     });
 
     it('Should test building condition with CNE/CWE source type', function () {
-      fb.scrollIntoViewAndClick(fb.skipLogicConditionsTrigger);
+      fb.scrollIntoViewAndClick(fb.skipLogicConditionsTriggerCNE);
       expect(fb.autoCompListItems.isDisplayed()).toBeTruthy();
       expect(fb.autoCompListItems.get(0).getText()).toMatch('Adult standard');
       expect(fb.autoCompListItems.get(1).getText()).toMatch('Adult large');
@@ -395,7 +403,7 @@ describe('GET /', function () {
       fb.scrollIntoView(fb.previewWidgetBPDeviceInvent);
       expect(fb.previewWidgetBPDeviceInvent.isDisplayed()).toBeTruthy();
       // Select first answer
-      fb.autoCompSelect(fb.skipLogicConditionsTrigger, 1);
+      fb.autoCompSelect(fb.skipLogicConditionsTriggerCNE, 1);
       fb.scrollIntoViewAndClick(fb.previewRefreshButton);
       // See the effect of skip logic on the target.
       // Testing the absence of an element. Make sure you can see its neighbor
@@ -412,7 +420,7 @@ describe('GET /', function () {
         expect(selectedItem.skipLogic.action).toBe('show');
         expect(selectedItem.skipLogic.logic).toBe('ANY');
         expect(selectedItem.skipLogic.conditions.length).toBe(1);
-        expect(selectedItem.skipLogic.conditions[0].source).toBe('/34565-2/34566-0/35094-2/8358-4');
+        expect(selectedItem.skipLogic.conditions[0].source).toBe('/34566-0/35094-2/8358-4');
         expect(selectedItem.skipLogic.conditions[0].trigger.value.code).toBe('LA11162-7');
       });
     });
@@ -424,13 +432,14 @@ describe('GET /', function () {
       fb.sendKeys(fb.skipLogicConditionsTriggerRangeRangeValue1, '50');
 
       // Add another numerical range
-      fb.scrollIntoViewAndClick(fb.addSkipLogicSkipLogicNumericalRange);
+      fb.scrollIntoViewAndClick(fb.addSkipLogicConditionButton);
+      fb.scrollIntoViewAndClick(fb.skipLogicLogicAll);
+
+      // Select the same source
+      fb.autoCompSelect(fb.skipLogicConditionsSource2, 2);
 
       fb.skipLogicConditionsTriggerRangeRangeBoundary2maxExclusive.click();
       fb.sendKeys(fb.skipLogicConditionsTriggerRangeRangeValue2, '100');
-    });
-
-    it('should display skip logic effect with number source type', function () {
       fb.previewRefreshButton.click();
       expect(fb.previewWidgetBPDeviceInvent.isPresent()).toBeFalsy();
       fb.sendKeys(fb.previewRespRate, '51');
@@ -780,7 +789,7 @@ describe('GET /', function () {
         util.assertNodeSelection('list site ');
         fb.advancedEditTab.click();
         expect(fb.skipLogicConditionsSource.getAttribute('value')).toEqual('1.1.7.1. Checklist Review Guide of Symptoms');
-        expect(fb.skipLogicConditionsTrigger.getAttribute('value')).toEqual('lymphadenopathy');
+        expect(fb.skipLogicConditionsTriggerCNE.getAttribute('value')).toEqual('lymphadenopathy');
         util.getJSONSource('lforms').then(function (source) {
           let sourceJson = JSON.parse(source);
           let loadedJson = JSON.parse(text);
@@ -831,6 +840,34 @@ describe('GET /', function () {
         }, function (err) {
           done.fail(JSON.stringify(err));
         });
+      }, function (err) {
+        done.fail(JSON.stringify(err));
+      });
+    });
+
+    it('Should load skip logic with source having different data types', function (done) {
+      fb.cleanupSideBar();
+      util.loadLFormFromDisk(path.join(__dirname, './fixtures/enablewhen-boolean-source.R4.json'), 'lforms').then(function (previewSrc) {
+        var newJson = JSON.parse(previewSrc);
+        // Boolean type
+        expect(newJson.items[0].items[3].skipLogic.conditions[0].trigger).toEqual({value: true});
+        expect(newJson.items[0].items[4].skipLogic.conditions[0].trigger).toEqual({value: false});
+        // Exists true/false
+        expect(newJson.items[0].items[5].skipLogic.conditions[0].trigger).toEqual({exists: true});
+        expect(newJson.items[0].items[6].skipLogic.conditions[0].trigger).toEqual({exists: false});
+        // String type
+        expect(newJson.items[0].items[7].skipLogic.conditions[0].trigger).toEqual({value: 'xxx'});
+        expect(newJson.items[0].items[8].skipLogic.conditions[0].trigger).toEqual({notEqual: 'xxx'});
+        // Integer type
+        expect(newJson.items[0].items[9].skipLogic.conditions[0].trigger).toEqual({value: 1});
+        expect(newJson.items[0].items[10].skipLogic.conditions[0].trigger).toEqual({notEqual: 1});
+        // With other operators.
+        expect(newJson.items[0].items[11].skipLogic.conditions[0].trigger).toEqual({minInclusive: 0});
+        expect(newJson.items[0].items[11].skipLogic.conditions[1].trigger).toEqual({maxInclusive: 100});
+        expect(newJson.items[0].items[12].skipLogic.conditions[0].trigger).toEqual({minExclusive: 0});
+        expect(newJson.items[0].items[12].skipLogic.conditions[1].trigger).toEqual({maxExclusive: 100});
+
+        done();
       }, function (err) {
         done.fail(JSON.stringify(err));
       });
@@ -1006,7 +1043,7 @@ describe('GET /', function () {
       expect(element(by.id("/_calculationMethod/1TOTALSCORE")).isSelected()).toBe(true);
       util.getJSONSource('lforms').then(function(text) {
         var output = JSON.parse(text);
-        expect(output.items[0].items[9].calculationMethod).toEqual({name: 'TOTALSCORE'});
+        expect(output.items[0].items[10].calculationMethod).toEqual({name: 'TOTALSCORE'});
       });
     });
 
@@ -1014,7 +1051,7 @@ describe('GET /', function () {
       element(by.id("/_calculationMethod/1none")).click();
       util.getJSONSource('lforms').then(function(text) {
         var output = JSON.parse(text);
-        expect(output.items[0].items[9].calculationMethod).toBe(undefined);
+        expect(output.items[0].items[10].calculationMethod).toBe(undefined);
       });
     });
 
@@ -1022,7 +1059,7 @@ describe('GET /', function () {
       element(by.id("/_calculationMethod/1TOTALSCORE")).click();
       util.getJSONSource('lforms').then(function(text) {
         var output = JSON.parse(text);
-        expect(output.items[0].items[9].calculationMethod).toEqual({name: 'TOTALSCORE'});
+        expect(output.items[0].items[10].calculationMethod).toEqual({name: 'TOTALSCORE'});
       });
     });
   });
