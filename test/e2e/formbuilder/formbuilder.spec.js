@@ -391,6 +391,13 @@ describe('GET /', function () {
       fb.scrollToTop(fb.previewPanel);
     });
 
+    it('Should have node id labels in the auto complete results for every source item', () => {
+      fb.skipLogicConditionsSource.click();
+      element.all(by.css('#searchResults li')).each((el) => {
+        expect(el.getText()).toMatch(/^([1-9][0-9\.]*)/);
+      });
+    });
+
     it('Should test building condition with CNE/CWE source type', function () {
       fb.scrollIntoViewAndClick(fb.skipLogicConditionsTriggerCNE);
       expect(fb.autoCompListItems.isDisplayed()).toBeTruthy();
