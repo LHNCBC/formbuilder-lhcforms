@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.0.1]  2020-08-05
+### Fixed
+- Fixed missing node id labels in the auto complete box for skip logic sources.
+- Fixed problem with updating skip logic source list when link id is updated.
+
 ## [6.0.0]  2020-08-05
 ### Changed
 - The range definition of skip logic trigger for numeric types is changed to align with FHIR enableWhen definition.

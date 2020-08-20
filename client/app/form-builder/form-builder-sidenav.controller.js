@@ -39,6 +39,7 @@
         __itemType:         'selectedNode.lfData.basic.itemHash["/__itemType/1"].value',
         question:           'selectedNode.lfData.basic.itemHash["/question/1"].value',
         questionCode:       'selectedNode.lfData.basic.itemHash["/questionCode/1"].value',
+        linkId:             'selectedNode.lfData.basic.itemHash["/linkId/1"].value',
         prefix:             'selectedNode.lfData.basic.itemHash["/prefix/1"].value',
         dataType:           'selectedNode.lfData.basic.itemHash["/dataType/1"].value',
         externallyDefined:  'selectedNode.lfData.basic.itemHash["/externallyDefined/1"].value',
@@ -745,6 +746,17 @@
                   scope.selectedNode.lfData.basic.name = scope.selectedNode.id + ' ' +
                     scope.selectedNode.lfData.basic.itemHash['/question/1'].value + code;
                   scope.selectedNode.lfData.advanced.name = scope.selectedNode.lfData.basic.name;
+                  if(newValue !== oldValue) {
+                    scope.selectedNode.isDirty = true;
+                    scope.selectedNode.skipLogicDirty = true;
+                  }
+                }
+              }, true);
+              break;
+
+            case 'linkId':
+              scope.watchDeregisters[exp] = scope.$watch(exp, function(newValue, oldValue) {
+                if(scope.selectedNode) {
                   if(newValue !== oldValue) {
                     scope.selectedNode.isDirty = true;
                     scope.selectedNode.skipLogicDirty = true;

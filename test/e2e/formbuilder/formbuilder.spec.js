@@ -454,6 +454,56 @@ describe('GET /', function () {
       fb.sendKeys(fb.previewRespRate, '100');
       expect(fb.previewWidgetBPDeviceInvent.isPresent()).toBeFalsy();
     });
+
+    it('Should have node id labels in the auto complete results for every source item', () => {
+      fb.skipLogicConditionsSource.click();
+      element.all(by.css('#searchResults li')).each((el) => {
+        expect(el.getText()).toMatch(/^([1-9][0-9\.]*)/);
+      });
+    });
+
+    it('Should update source item list when linkId is changed', () => {
+      fb.cleanupSideBar();
+      fb.addButton.click();
+      fb.addNewItem('q1');
+      fb.addButton.click();
+      fb.addNewItem('q2');
+
+      const searchResults = element(by.id('searchResults'));
+      util.assertNodeSelection('q2');
+      fb.advancedEditTab.click();
+      fb.useSkipLogicYes.click();
+      fb.skipLogicConditionsSource.click();
+      expect(searchResults.isDisplayed()).toBeFalsy();
+
+      util.assertNodeSelection('q1');
+      fb.basicEditTab.click();
+      fb.linkId.click();
+      fb.linkId.sendKeys('q1id');
+
+      util.assertNodeSelection('q2');
+      fb.basicEditTab.click();
+      fb.linkId.click();
+      fb.linkId.sendKeys('q2id');
+      fb.advancedEditTab.click();
+      fb.useSkipLogicYes.click();
+      fb.skipLogicConditionsSource.click();
+      expect(searchResults.isDisplayed()).toBeTruthy();
+      expect(searchResults.all(by.css('li')).get(0).getText()).toMatch('1. q1');
+      fb.autoCompSelect(fb.skipLogicConditionsSource, 1);
+      const sklStringInput = element(by.id('/useSkipLogic/skipLogic/conditions/triggerOther/1/1/1/1'));
+      sklStringInput.sendKeys('a');
+      fb.scrollIntoViewAndClick(fb.previewRefreshButton);
+
+      const previewSource = element(by.id('q1id/1'));
+      const previewTarget = element(by.id('q2id/1'));
+      expect(previewTarget.isPresent()).toBeFalsy();
+      previewSource.sendKeys('a');
+      expect(previewTarget.isDisplayed()).toBeTruthy();
+      previewSource.sendKeys('b');
+      expect(previewTarget.isPresent()).toBeFalsy();
+    });
+
   });
 
   describe('Data control', function () {
