@@ -1204,7 +1204,6 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var initialPath = nodeListAndPath[1];
 
     traverseNodeTree(nodeList, function (node, path) {
-      //node.id = path.join('.');
       if(thisService.isNodeFbLfItem(node.lfData)) {
         var sources = thisService.getSkipLogicDataControlSources(rootArray, node);
         var skipLogicConditions = lodash.drop(node.lfData.advanced.itemHash[dataConstants.SKIPLOGIC_ID].items, 2);
