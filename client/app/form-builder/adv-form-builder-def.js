@@ -160,13 +160,20 @@ var advFormBuilderDef = {
       "skipLogic": {
         "conditions": [
           {
-            "source": "/_isHeader",
+            "source": "/__itemTypeRef",
             "trigger": {
-              "value": "No"
+              "value": "question"
+            }
+          },
+          {
+            "source": "/_dataType",
+            "trigger": {
+              "notEqual": "__CNE_OR_CWE__"
             }
           }
         ],
-        "action": "show"
+        "action": "show",
+        "logic": "ALL"
       },
       "items": [
         {
@@ -1084,12 +1091,89 @@ var advFormBuilderDef = {
       "linkId": "/copyrightNotice"
     },
     {
+      "questionCode": "_observationLinkPeriod",
+      "question": "Add FHIR Observation link period",
+      "dataType": "CNE",
+      "answers": "boolean",
+      "value": {
+        "text": "No",
+        "code": false
+      },
+      "skipLogic": {
+        "conditions": [
+          {
+            "source": "/__itemTypeRef",
+            "trigger": {
+              "notEqual": "display"
+            }
+          }
+        ],
+        "action": "show"
+      },
+      "items": [
+        {
+          "questionCode": "duration",
+          "question": "Duration*",
+          "required": true,
+          "dataType": "INT",
+          "linkId": "/_observationLinkPeriod/duration",
+          "skipLogic": {
+            "conditions": [
+              {
+                "source": "/_observationLinkPeriod",
+                "trigger": {
+                  "value": {"code": true}
+                }
+              }
+            ],
+            "action": "show"
+          }
+        },
+        {
+          "questionCode": "unit",
+          "question": "Unit*",
+          "required": true,
+          "dataType": "CNE",
+          "answers": "observationLinkPeriodUnits",
+          "displayControl": {
+            "answerLayout": {
+              "type": "COMBO_BOX"
+            }
+          },
+          "linkId": "/_observationLinkPeriod/unit",
+          "skipLogic": {
+            "conditions": [
+              {
+                "source": "/_observationLinkPeriod",
+                "trigger": {
+                  "value": {"code": true}
+                }
+              }
+            ],
+            "action": "show"
+          }
+        }
+      ],
+      "linkId": "/_observationLinkPeriod"
+    },
+    {
       "questionCode": "_fhirVariables",
       "question": "FHIR Variable",
       "header": true,
       "questionCardinality": {
         "min": "1",
         "max": "*"
+      },
+      "skipLogic": {
+        "conditions": [
+          {
+            "source": "/__itemTypeRef",
+            "trigger": {
+              "notEqual": "display"
+            }
+          }
+        ],
+        "action": "show"
       },
       "items": [
         {

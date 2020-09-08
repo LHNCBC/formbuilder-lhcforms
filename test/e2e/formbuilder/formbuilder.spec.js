@@ -1166,6 +1166,44 @@ describe('GET /', function () {
     });
   });
 
+  describe('Observation link period', function () {
+    it('should output in json', function (done) {
+      fb.cleanupSideBar();
+      var str = 'Test item';
+      fb.addButton.click();
+      fb.addNewItem(str);
+      fb.basicEditTab.click();
+      fb.sendKeys(fb.linkId, 'lId1', 1);
+      fb.advancedEditTab.click();
+      element(by.id('/_observationLinkPeriod/1true')).click();
+      fb.sendKeys(fb.observationLinkPeriodDuration, '2', 1);
+      fb.autoCompSelect(fb.observationLinkPeriodUnit, 6);
+       util.getJSONSource('R4').then(function(text) {
+         const json = JSON.parse(text);
+         expect(json.item[0].extension).toEqual([{
+           url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod',
+           valueDuration: {
+             value: 2,
+             code: 'a',
+             unit: 'years',
+             system: 'http://unitsofmeasure.org'
+           }
+         }]);
+         done();
+       }, done.fail);
+    });
+
+    it('should load a form having an item with the extension', function() {
+      fb.cleanupSideBar();
+      let phq9File = path.join(__dirname, './fixtures/phq9.json');
+      util.loadLFormFromDisk(phq9File, 'R4');
+      util.assertNodeSelection('Little interest ');
+      fb.advancedEditTab.click();
+      expect(fb.observationLinkPeriodDuration.getAttribute('value')).toBe('1');
+      expect(fb.observationLinkPeriodUnit.getAttribute('value')).toBe('years');
+    });
+  });
+
   describe('Onload form warnings', function () {
 
     beforeAll(function (done) {

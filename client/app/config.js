@@ -47,6 +47,8 @@ angular.module('formBuilderConfig', ['ngMaterial'])
 
     calculatedExpressionUrl: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression',
     fhirVariableUrl: 'http://hl7.org/fhir/StructureDefinition/variable',
+    fhirObservationLinkPeriodUrl: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod',
+    ucumUrl: 'http://unitsofmeasure.org',
 
 
     /*

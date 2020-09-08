@@ -152,6 +152,8 @@ var FormBuilder = function () {
   this.verifyBaseURL = this.dialog.element(by.buttonText('Verify URL'));
   this.addToList = this.dialog.element(by.buttonText('Add'));
   this.fhirServerUrlInput = this.dialog.element(by.css('input[name="urlinput"'));
+  this.observationLinkPeriodDuration = element(by.id('/_observationLinkPeriod/duration/1/1'));
+  this.observationLinkPeriodUnit = element(by.id('/_observationLinkPeriod/unit/1/1'));
 
   var thisPO = this;
 

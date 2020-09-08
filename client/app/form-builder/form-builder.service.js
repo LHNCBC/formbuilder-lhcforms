@@ -667,6 +667,30 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           }
           break;
 
+        case "_observationLinkPeriod":
+          ans = {
+            url: dataConstants.fhirObservationLinkPeriodUrl,
+          };
+          // First of item.items is value, and second is unit.
+          if(!!item.items[0].value) {
+            ans.valueDuration = {
+              value: item.items[0].value
+            };
+            if(!!item.items[1].value) {
+              ans.valueDuration.code = item.items[1].value.code;
+              ans.valueDuration.unit = item.items[1].value.text;
+              ans.valueDuration.system = dataConstants.ucumUrl;
+            }
+          }
+
+          if(ans.valueDuration && ans.valueDuration.value) {
+            if(!ret["extension"]) {
+              ret["extension"] = [];
+            }
+            ret["extension"].push(ans);
+          }
+          break;
+
         case "_fhirVariables":
           ans = {
             url: dataConstants.fhirVariableUrl,
@@ -1577,6 +1601,24 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
                   hidden = true;
                 }
 
+                break;
+
+              case dataConstants.fhirObservationLinkPeriodUrl:
+                if(ext.valueDuration && ext.valueDuration.value !== undefined && ext.valueDuration.value !== null && ext.valueDuration.code) {
+                  var fieldName = '_observationLinkPeriod';
+                  var obsLinkPeriod = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES[fieldName].category].items, fieldName);
+                  // Only ucum units are valid. If system is absent, assume ucum
+                  if(ext.valueDuration.system === undefined || ext.valueDuration.system === dataConstants.ucumUrl) {
+                    var duration = thisService.getFormBuilderField(obsLinkPeriod.items, 'duration');
+                    var unit = thisService.getFormBuilderField(obsLinkPeriod.items, 'unit');
+                    var unitCode = lodash.find(unit.answers, {code: ext.valueDuration.code}); // Match with supported time units
+                    if(unitCode) {
+                      thisService.updateCNECWE(obsLinkPeriod, {code: true});
+                      duration.value = ext.valueDuration.value;
+                      thisService.updateCNECWE(unit, unitCode);
+                    }
+                  }
+                }
                 break;
 
               default:

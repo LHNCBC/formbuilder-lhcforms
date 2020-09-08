@@ -504,4 +504,39 @@ var answerLists = {
     }
     */
   ],
+
+  "observationLinkPeriodUnits": [
+    {
+      "code": "min",
+      "text": "minutes"
+    },
+    {
+      "code": "h",
+      "text": "hours"
+    },
+    {
+      "code": "d",
+      "text": "days"
+    },
+    {
+      "code": "wk",
+      "text": "weeks"
+    },
+    {
+      "code": "mo",
+      "text": "months"
+    },
+    {
+      "code": "a",
+      "text": "years"
+    },
+    {
+      "code": "s",
+      "text": "seconds"
+    },
+    {
+      "code": "ms",
+      "text": "milliseconds"
+    }
+  ]
 };
