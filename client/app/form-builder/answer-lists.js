@@ -507,6 +507,14 @@ var answerLists = {
 
   "observationLinkPeriodUnits": [
     {
+      "code": "ms",
+      "text": "milliseconds"
+    },
+    {
+      "code": "s",
+      "text": "seconds"
+    },
+    {
       "code": "min",
       "text": "minutes"
     },
@@ -529,14 +537,6 @@ var answerLists = {
     {
       "code": "a",
       "text": "years"
-    },
-    {
-      "code": "s",
-      "text": "seconds"
-    },
-    {
-      "code": "ms",
-      "text": "milliseconds"
     }
   ]
 };
