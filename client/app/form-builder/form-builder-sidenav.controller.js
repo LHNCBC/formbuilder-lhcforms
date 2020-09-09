@@ -760,6 +760,8 @@
                   if(newValue !== oldValue) {
                     scope.selectedNode.isDirty = true;
                     scope.selectedNode.skipLogicDirty = true;
+                    scope.selectedNode.lfData.advanced.itemHash['/_linkId/1'].value =
+                        newValue && newValue.length > 0 ? newValue : null;
                   }
                 }
               }, true);

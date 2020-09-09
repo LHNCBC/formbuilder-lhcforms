@@ -63,6 +63,21 @@ var advFormBuilderDef = {
       "linkId": "/_externallyDefined"
     },
     {
+      "questionCode": "_linkId",
+      "question": "You should never see this!",
+      "dataType": "ST",
+      "header": false,
+      "displayControl": {
+        "css": [
+          {
+            "name": "display",
+            "value": "none"
+          }
+        ]
+      },
+      "linkId": "/_linkId"
+    },
+    {
       "questionCode": "__itemTypeRef",
       "question": "You should never see this!",
       "dataType": "ST",
@@ -1092,7 +1107,7 @@ var advFormBuilderDef = {
     },
     {
       "questionCode": "_observationLinkPeriod",
-      "question": "Add FHIR Observation link period",
+      "question": "Add link to FHIR Observations?",
       "dataType": "CNE",
       "answers": "boolean",
       "value": {
@@ -1113,7 +1128,7 @@ var advFormBuilderDef = {
       "items": [
         {
           "questionCode": "duration",
-          "question": "Duration*",
+          "question": "Time window*",
           "required": true,
           "dataType": "INT",
           "linkId": "/_observationLinkPeriod/duration",
@@ -1124,9 +1139,16 @@ var advFormBuilderDef = {
                 "trigger": {
                   "value": {"code": true}
                 }
+              },
+              {
+                "source": "/_linkId",
+                "trigger": {
+                  "exists": true
+                }
               }
             ],
-            "action": "show"
+            "action": "show",
+            "logic": "ALL"
           }
         },
         {
@@ -1148,9 +1170,40 @@ var advFormBuilderDef = {
                 "trigger": {
                   "value": {"code": true}
                 }
+              },
+              {
+                "source": "/_linkId",
+                "trigger": {
+                  "exists": true
+                }
               }
             ],
-            "action": "show"
+            "action": "show",
+            "logic": "ALL"
+          }
+        },
+        {
+          "questionCode": "linkIdWarning",
+          "question": "Please enter a code for the question in the Basic Properties tab.",
+          "dataType": "TITLE",
+          "linkId": "/_observationLinkPeriod/linkIdWarning",
+          "skipLogic": {
+            "conditions": [
+              {
+                "source": "/_observationLinkPeriod",
+                "trigger": {
+                  "value": {"code": true}
+                }
+              },
+              {
+                "source": "/_linkId",
+                "trigger": {
+                  "exists": false
+                }
+              }
+            ],
+            "action": "show",
+            "logic": "ALL"
           }
         }
       ],

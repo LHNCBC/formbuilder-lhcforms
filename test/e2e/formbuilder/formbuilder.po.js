@@ -154,6 +154,7 @@ var FormBuilder = function () {
   this.fhirServerUrlInput = this.dialog.element(by.css('input[name="urlinput"'));
   this.observationLinkPeriodDuration = element(by.id('/_observationLinkPeriod/duration/1/1'));
   this.observationLinkPeriodUnit = element(by.id('/_observationLinkPeriod/unit/1/1'));
+  this.observationLinkPeriodWarning = element(by.id('label-/_observationLinkPeriod/linkIdWarning/1/1'));
 
   var thisPO = this;
 

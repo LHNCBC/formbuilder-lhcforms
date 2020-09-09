@@ -1167,8 +1167,42 @@ describe('GET /', function () {
   });
 
   describe('Observation link period', function () {
-    it('should output in json', function (done) {
+    beforeEach(function () {
       fb.cleanupSideBar();
+    });
+
+    it('should warn about absent link id', function () {
+      var str = 'Test item';
+      fb.addButton.click();
+      fb.addNewItem(str);
+      fb.advancedEditTab.click();
+      // Default is no, so no warning and no input fields.
+      expect(fb.observationLinkPeriodDuration.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodUnit.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodWarning.isPresent()).toBeFalsy();
+      element(by.id('/_observationLinkPeriod/1true')).click();
+      // For yes and link id is absent, show warning and no input fields.
+      expect(fb.observationLinkPeriodDuration.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodUnit.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodWarning.isDisplayed()).toBeTruthy();
+      fb.basicEditTab.click();
+      fb.sendKeys(fb.linkId, 'lId1', 1);
+      fb.advancedEditTab.click();
+      // Link id set, show input fields and no warning.
+      expect(fb.observationLinkPeriodDuration.isDisplayed()).toBeTruthy();
+      expect(fb.observationLinkPeriodUnit.isDisplayed()).toBeTruthy();
+      expect(fb.observationLinkPeriodWarning.isPresent()).toBeFalsy();
+
+      fb.basicEditTab.click();
+      fb.linkId.clear();
+      fb.advancedEditTab.click();
+      // Link id is cleared, back to warning mode.
+      expect(fb.observationLinkPeriodDuration.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodUnit.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodWarning.isDisplayed()).toBeTruthy();
+    });
+
+    it('should output in json', function (done) {
       var str = 'Test item';
       fb.addButton.click();
       fb.addNewItem(str);
@@ -1178,23 +1212,22 @@ describe('GET /', function () {
       element(by.id('/_observationLinkPeriod/1true')).click();
       fb.sendKeys(fb.observationLinkPeriodDuration, '2', 1);
       fb.autoCompSelect(fb.observationLinkPeriodUnit, 6);
-       util.getJSONSource('R4').then(function(text) {
-         const json = JSON.parse(text);
-         expect(json.item[0].extension).toEqual([{
-           url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod',
-           valueDuration: {
-             value: 2,
-             code: 'a',
-             unit: 'years',
-             system: 'http://unitsofmeasure.org'
-           }
-         }]);
-         done();
-       }, done.fail);
+      util.getJSONSource('R4').then(function(text) {
+        const json = JSON.parse(text);
+        expect(json.item[0].extension).toEqual([{
+          url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod',
+          valueDuration: {
+            value: 2,
+            code: 'a',
+            unit: 'years',
+            system: 'http://unitsofmeasure.org'
+          }
+        }]);
+        done();
+      }, done.fail);
     });
 
     it('should load a form having an item with the extension', function() {
-      fb.cleanupSideBar();
       let phq9File = path.join(__dirname, './fixtures/phq9.json');
       util.loadLFormFromDisk(phq9File, 'R4');
       util.assertNodeSelection('Little interest ');

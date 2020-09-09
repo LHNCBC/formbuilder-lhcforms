@@ -668,26 +668,28 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           break;
 
         case "_observationLinkPeriod":
-          ans = {
-            url: dataConstants.fhirObservationLinkPeriodUrl,
-          };
-          // First of item.items is value, and second is unit.
-          if(!!item.items[0].value) {
-            ans.valueDuration = {
-              value: item.items[0].value
+          if(item.value && item.value.code) {
+            ans = {
+              url: dataConstants.fhirObservationLinkPeriodUrl,
             };
-            if(!!item.items[1].value) {
-              ans.valueDuration.code = item.items[1].value.code;
-              ans.valueDuration.unit = item.items[1].value.text;
-              ans.valueDuration.system = dataConstants.ucumUrl;
+            // First of item.items is value, and second is unit.
+            if(!!item.items[0].value) {
+              ans.valueDuration = {
+                value: item.items[0].value
+              };
+              if(!!item.items[1].value) {
+                ans.valueDuration.code = item.items[1].value.code;
+                ans.valueDuration.unit = item.items[1].value.text;
+                ans.valueDuration.system = dataConstants.ucumUrl;
+              }
             }
-          }
 
-          if(ans.valueDuration && ans.valueDuration.value) {
-            if(!ret["extension"]) {
-              ret["extension"] = [];
+            if(ans.valueDuration && ans.valueDuration.value) {
+              if(!ret["extension"]) {
+                ret["extension"] = [];
+              }
+              ret["extension"].push(ans);
             }
-            ret["extension"].push(ans);
           }
           break;
 
@@ -1686,6 +1688,14 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           if(val.extension.length > 0) {
             addAsHidden(lfItem, '_partial_'+name, val);
           }
+        }
+        break;
+
+      case "linkId":
+        if(val) {
+          subItem.value = val;
+          var ed = thisService.getFormBuilderField(lfItem.advanced.items, '_linkId');
+          ed.value = subItem.value;
         }
         break;
 

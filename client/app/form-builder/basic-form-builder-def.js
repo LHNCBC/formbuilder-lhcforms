@@ -117,6 +117,7 @@ var formBuilderDef = {
       "question": "Link Id*",
       "dataType": "ST",
       "header": false,
+      "required": true,
       "answerCardinality": {
         "min": "1",
         "max": "1"
