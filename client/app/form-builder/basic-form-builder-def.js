@@ -162,7 +162,7 @@ var formBuilderDef = {
     },
     {
       "questionCode": "questionCode",
-      "question": "Item code*",
+      "question": "Item code",
       "dataType": "ST",
       "header": false,
       "answerCardinality": {
