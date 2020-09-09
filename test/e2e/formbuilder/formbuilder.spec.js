@@ -1171,10 +1171,12 @@ describe('GET /', function () {
       fb.cleanupSideBar();
     });
 
-    it('should warn about absent link id', function () {
+    it('should warn about absent question code', function () {
       var str = 'Test item';
       fb.addButton.click();
       fb.addNewItem(str);
+      fb.basicEditTab.click();
+      fb.sendKeys(fb.linkId, 'lId1', 1);
       fb.advancedEditTab.click();
       // Default is no, so no warning and no input fields.
       expect(fb.observationLinkPeriodDuration.isPresent()).toBeFalsy();
@@ -1186,7 +1188,7 @@ describe('GET /', function () {
       expect(fb.observationLinkPeriodUnit.isPresent()).toBeFalsy();
       expect(fb.observationLinkPeriodWarning.isDisplayed()).toBeTruthy();
       fb.basicEditTab.click();
-      fb.sendKeys(fb.linkId, 'lId1', 1);
+      fb.sendKeys(fb.questionCode, 'qc1', 1);
       fb.advancedEditTab.click();
       // Link id set, show input fields and no warning.
       expect(fb.observationLinkPeriodDuration.isDisplayed()).toBeTruthy();
@@ -1194,7 +1196,7 @@ describe('GET /', function () {
       expect(fb.observationLinkPeriodWarning.isPresent()).toBeFalsy();
 
       fb.basicEditTab.click();
-      fb.linkId.clear();
+      fb.questionCode.clear();
       fb.advancedEditTab.click();
       // Link id is cleared, back to warning mode.
       expect(fb.observationLinkPeriodDuration.isPresent()).toBeFalsy();
@@ -1208,6 +1210,7 @@ describe('GET /', function () {
       fb.addNewItem(str);
       fb.basicEditTab.click();
       fb.sendKeys(fb.linkId, 'lId1', 1);
+      fb.sendKeys(fb.questionCode, 'qc1', 1);
       fb.advancedEditTab.click();
       element(by.id('/_observationLinkPeriod/1true')).click();
       fb.sendKeys(fb.observationLinkPeriodDuration, '2', 1);

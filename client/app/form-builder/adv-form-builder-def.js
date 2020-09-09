@@ -78,6 +78,21 @@ var advFormBuilderDef = {
       "linkId": "/_linkId"
     },
     {
+      "questionCode": "_questionCode",
+      "question": "You should never see this!",
+      "dataType": "ST",
+      "header": false,
+      "displayControl": {
+        "css": [
+          {
+            "name": "display",
+            "value": "none"
+          }
+        ]
+      },
+      "linkId": "/_questionCode"
+    },
+    {
       "questionCode": "__itemTypeRef",
       "question": "You should never see this!",
       "dataType": "ST",
@@ -1141,7 +1156,7 @@ var advFormBuilderDef = {
                 }
               },
               {
-                "source": "/_linkId",
+                "source": "/_questionCode",
                 "trigger": {
                   "exists": true
                 }
@@ -1172,7 +1187,7 @@ var advFormBuilderDef = {
                 }
               },
               {
-                "source": "/_linkId",
+                "source": "/_questionCode",
                 "trigger": {
                   "exists": true
                 }
@@ -1196,7 +1211,7 @@ var advFormBuilderDef = {
                 }
               },
               {
-                "source": "/_linkId",
+                "source": "/_questionCode",
                 "trigger": {
                   "exists": false
                 }

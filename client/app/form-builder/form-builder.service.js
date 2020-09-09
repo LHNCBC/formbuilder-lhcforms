@@ -1692,9 +1692,11 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         break;
 
       case "linkId":
+      case "questionCode":
         if(val) {
           subItem.value = val;
-          var ed = thisService.getFormBuilderField(lfItem.advanced.items, '_linkId');
+          var f = name === 'linkId' ? '_linkId' : '_questionCode';
+          var ed = thisService.getFormBuilderField(lfItem.advanced.items, f);
           ed.value = subItem.value;
         }
         break;
