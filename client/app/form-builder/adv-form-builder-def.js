@@ -1199,7 +1199,7 @@ var advFormBuilderDef = {
         },
         {
           "questionCode": "linkIdWarning",
-          "question": "Please enter a link id for the question in the Basic Properties tab.",
+          "question": "Please enter a code for the question in the Basic Properties tab.",
           "dataType": "TITLE",
           "linkId": "/_observationLinkPeriod/linkIdWarning",
           "skipLogic": {
