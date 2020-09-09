@@ -1201,7 +1201,7 @@ describe('GET /', function () {
     });
   });
 
-  fdescribe('Observation link period', function () {
+  describe('Observation link period', function () {
     beforeEach(function () {
       fb.cleanupSideBar();
     });
