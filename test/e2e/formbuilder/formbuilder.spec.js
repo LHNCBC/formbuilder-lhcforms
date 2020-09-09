@@ -1249,7 +1249,7 @@ describe('GET /', function () {
       fb.advancedEditTab.click();
       element(by.id('/_observationLinkPeriod/1true')).click();
       fb.sendKeys(fb.observationLinkPeriodDuration, '2', 1);
-      fb.autoCompSelect(fb.observationLinkPeriodUnit, 8);
+      fb.autoCompSelect(fb.observationLinkPeriodUnit, 1);
       util.getJSONSource('R4').then(function(text) {
         const json = JSON.parse(text);
         expect(json.item[0].extension).toEqual([{
