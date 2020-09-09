@@ -301,9 +301,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       targetList = targetList.concat(lodash.reject(parentArray, function(o) {
         // Avoid self and any header items
         return (
-          (o === parentArray[i-1]) ||
+          (o === targetNode) ||
           ( o.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID].value &&
-            o.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID].value.code === 'group')
+            o.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID].value.code !== 'question')
         );
       }));
       parentArray = parentArray[i-1].nodes;
