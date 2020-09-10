@@ -504,6 +504,41 @@ describe('GET /', function () {
       expect(previewTarget.isPresent()).toBeFalsy();
     });
 
+    it('should build skip logic with source linking to parent question', function () {
+      fb.cleanupSideBar();
+      fb.addButton.click();
+      fb.addNewItem('Parent');
+      fb.basicEditTab.click();
+      // Make parent boolean type question.
+      fb.autoCompSelect(fb.questionType, 1);
+      fb.sendKeys(fb.linkId, '/p');
+      // Add a child
+      fb.clickMenuItem('Parent', 'Insert a child item');
+      expect(fb.dialog.isDisplayed).toBeTruthy();
+      fb.newItemRadio.click();
+      fb.typeQuestionRadio.click();
+      fb.newItemInputBox.sendKeys('Child');
+      fb.newItemAddButton.click();
+      fb.sendKeys(fb.linkId, '/c');
+      // Point to parent as skip logic source
+      fb.advancedEditTab.click();
+      fb.useSkipLogicYes.click();
+      fb.skipLogicConditionsSource.click();
+      fb.autoCompSelect(fb.skipLogicConditionsSource, 1);
+      element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorBool/1/1/1/1true')).click();
+
+      // See if it works in preview.
+      fb.previewRefreshButton.click();
+      const previewParentCheckbox = element(by.id('/p/1'));
+      const previewChildInput = element(by.id('/c/1/1'));
+      expect(previewParentCheckbox.isDisplayed()).toBeTruthy();
+      expect(previewChildInput.isPresent()).toBeFalsy();
+      previewParentCheckbox.click();
+      expect(previewChildInput.isPresent()).toBeTruthy();
+      previewParentCheckbox.click();
+      expect(previewChildInput.isPresent()).toBeFalsy();
+    });
+
   });
 
   describe('Data control', function () {
@@ -1214,7 +1249,7 @@ describe('GET /', function () {
       fb.advancedEditTab.click();
       element(by.id('/_observationLinkPeriod/1true')).click();
       fb.sendKeys(fb.observationLinkPeriodDuration, '2', 1);
-      fb.autoCompSelect(fb.observationLinkPeriodUnit, 6);
+      fb.autoCompSelect(fb.observationLinkPeriodUnit, 1);
       util.getJSONSource('R4').then(function(text) {
         const json = JSON.parse(text);
         expect(json.item[0].extension).toEqual([{

@@ -152,7 +152,7 @@ describe('formbuilder.service ', function () {
   });
 
   describe('Observation link period', function() {
-    let inputForm, previewJson, obsLinkPeriodRef;
+    let inputForm, obsLinkPeriodRef;
 
     beforeEach(function () {
       inputForm = angular.copy(importedLFormsData);

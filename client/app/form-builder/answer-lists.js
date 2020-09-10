@@ -507,28 +507,28 @@ var answerLists = {
 
   "observationLinkPeriodUnits": [
     {
-      "code": "min",
-      "text": "minutes"
-    },
-    {
-      "code": "h",
-      "text": "hours"
-    },
-    {
-      "code": "d",
-      "text": "days"
-    },
-    {
-      "code": "wk",
-      "text": "weeks"
+      "code": "a",
+      "text": "years"
     },
     {
       "code": "mo",
       "text": "months"
     },
     {
-      "code": "a",
-      "text": "years"
+      "code": "wk",
+      "text": "weeks"
+    },
+    {
+      "code": "d",
+      "text": "days"
+    },
+    {
+      "code": "h",
+      "text": "hours"
+    },
+    {
+      "code": "min",
+      "text": "minutes"
     },
     {
       "code": "s",

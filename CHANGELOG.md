@@ -5,6 +5,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [6.1.0]  2020-09-08
 ### Added
 - Added support for observation link period.
+### Fixed
+- Fixed a bug in skip logic, when skip logic source is pointing to its parent which is a question type.
 
 ## [6.0.1]  2020-08-05
 ### Fixed
