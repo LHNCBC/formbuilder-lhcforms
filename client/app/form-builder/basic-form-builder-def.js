@@ -117,6 +117,7 @@ var formBuilderDef = {
       "question": "Link Id*",
       "dataType": "ST",
       "header": false,
+      "required": true,
       "answerCardinality": {
         "min": "1",
         "max": "1"
@@ -161,7 +162,7 @@ var formBuilderDef = {
     },
     {
       "questionCode": "questionCode",
-      "question": "Item code*",
+      "question": "Item code",
       "dataType": "ST",
       "header": false,
       "answerCardinality": {

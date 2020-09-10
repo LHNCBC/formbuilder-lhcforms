@@ -21,6 +21,7 @@ describe('formbuilder.service ', function () {
       items: [{
         question: 'q',
         questionCode: '12345-6',
+        linkId: '/12345-6',
         questionCodeSystem: 'LOINC'
       }]
     };
@@ -147,6 +148,84 @@ describe('formbuilder.service ', function () {
       loincPropertyResp[3][0].push('aaa;"&<>\'bbb');
       var expectedUrl = unitsItem.externallyDefined+'&bq=loinc_property:(%22aaa%3B%22%26%3C%3E\'bbb%22)^20';
       assertUpdateUnitsURL(expectedUrl, done);
+    });
+  });
+
+  describe('Observation link period', function() {
+    let inputForm, obsLinkPeriodRef;
+
+    beforeEach(function () {
+      inputForm = angular.copy(importedLFormsData);
+      inputForm.items[0].extension = [{
+        url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod',
+        valueDuration: {}
+      }];
+      obsLinkPeriodRef = inputForm.items[0].extension[0];
+    });
+
+
+    it('should import with at least value and code', function() {
+      obsLinkPeriodRef.valueDuration.value = 2;
+      obsLinkPeriodRef.valueDuration.code = 'a';
+      let fbQ = fbService.createFormBuilder(inputForm);
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/duration/1/1'].value).toBe('2');
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value.text).toBe('years');
+    });
+
+    it('should import with correct system', function() {
+      obsLinkPeriodRef.valueDuration.code = 'a';
+      obsLinkPeriodRef.valueDuration.value = 2;
+      obsLinkPeriodRef.valueDuration.system = 'http://unitsofmeasure.org';
+      let fbQ = fbService.createFormBuilder(inputForm);
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/duration/1/1'].value).toBe('2');
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value.text).toBe('years');
+    });
+
+    it('should not import with incorrect extension url', function() {
+      obsLinkPeriodRef.valueDuration.code = 'a';
+      obsLinkPeriodRef.valueDuration.value = 2;
+      obsLinkPeriodRef.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod-wrong-url';
+      let fbQ = fbService.createFormBuilder(inputForm);
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/duration/1/1'].value).toBeUndefined();
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value).toBeUndefined();
+    });
+
+    it('should not import without value', function() {
+      obsLinkPeriodRef.valueDuration.code = 'a';
+      let fbQ = fbService.createFormBuilder(inputForm);
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/duration/1/1'].value).toBeUndefined();
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value).toBeUndefined();
+    });
+
+    it('should not import without code', function() {
+      obsLinkPeriodRef.valueDuration.value = 2;
+      let fbQ = fbService.createFormBuilder(inputForm);
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/duration/1/1'].value).toBeUndefined();
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value).toBeUndefined();
+      // Valid 'unit' is not enough
+      obsLinkPeriodRef.valueDuration.unit = 'years';
+      fbQ = fbService.createFormBuilder(inputForm);
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/duration/1/1'].value).toBeUndefined();
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value).toBeUndefined();
+    });
+
+    it('should not import with wrong system', function() {
+      obsLinkPeriodRef.valueDuration.code = 'a';
+      obsLinkPeriodRef.valueDuration.value = 2;
+      obsLinkPeriodRef.valueDuration.system = 'http://wrongurlforunits.org';
+      let fbQ = fbService.createFormBuilder(inputForm);
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/duration/1/1'].value).toBeUndefined();
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value).toBeUndefined();
+    });
+
+    it('should not import with wrong code', function() {
+      obsLinkPeriodRef.valueDuration.code = 'aa';
+      obsLinkPeriodRef.valueDuration.value = 2;
+      // Valid 'unit' is not enough
+      obsLinkPeriodRef.valueDuration.unit = 'years';
+      let fbQ = fbService.createFormBuilder(inputForm);
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/duration/1/1'].value).toBeUndefined();
+      expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value).toBeUndefined();
     });
   });
 });

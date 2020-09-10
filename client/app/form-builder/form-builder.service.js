@@ -301,9 +301,9 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
       targetList = targetList.concat(lodash.reject(parentArray, function(o) {
         // Avoid self and any header items
         return (
-          (o === parentArray[i-1]) ||
+          (o === targetNode) ||
           ( o.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID].value &&
-            o.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID].value.code === 'group')
+            o.lfData.basic.itemHash[dataConstants.ITEMTYPE_ID].value.code !== 'question')
         );
       }));
       parentArray = parentArray[i-1].nodes;
@@ -663,6 +663,32 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
             });
             if(val.length > 0) {
               ret[attr] = val;
+            }
+          }
+          break;
+
+        case "_observationLinkPeriod":
+          if(item.value && item.value.code) {
+            ans = {
+              url: dataConstants.fhirObservationLinkPeriodUrl,
+            };
+            // First of item.items is value, and second is unit.
+            if(!!item.items[0].value) {
+              ans.valueDuration = {
+                value: item.items[0].value
+              };
+              if(!!item.items[1].value) {
+                ans.valueDuration.code = item.items[1].value.code;
+                ans.valueDuration.unit = item.items[1].value.text;
+                ans.valueDuration.system = dataConstants.ucumUrl;
+              }
+            }
+
+            if(ans.valueDuration && ans.valueDuration.value) {
+              if(!ret["extension"]) {
+                ret["extension"] = [];
+              }
+              ret["extension"].push(ans);
             }
           }
           break;
@@ -1579,6 +1605,24 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
 
                 break;
 
+              case dataConstants.fhirObservationLinkPeriodUrl:
+                if(ext.valueDuration && ext.valueDuration.value !== undefined && ext.valueDuration.value !== null && ext.valueDuration.code) {
+                  var fieldName = '_observationLinkPeriod';
+                  var obsLinkPeriod = thisService.getFormBuilderField(lfItem[dataConstants.INITIAL_FIELD_INDICES[fieldName].category].items, fieldName);
+                  // Only ucum units are valid. If system is absent, assume ucum
+                  if(ext.valueDuration.system === undefined || ext.valueDuration.system === dataConstants.ucumUrl) {
+                    var duration = thisService.getFormBuilderField(obsLinkPeriod.items, 'duration');
+                    var unit = thisService.getFormBuilderField(obsLinkPeriod.items, 'unit');
+                    var unitCode = lodash.find(unit.answers, {code: ext.valueDuration.code}); // Match with supported time units
+                    if(unitCode) {
+                      thisService.updateCNECWE(obsLinkPeriod, {code: true});
+                      duration.value = ext.valueDuration.value;
+                      thisService.updateCNECWE(unit, unitCode);
+                    }
+                  }
+                }
+                break;
+
               default:
                 hidden = true; // Save unhandled extension as it is.
                 break;
@@ -1644,6 +1688,16 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           if(val.extension.length > 0) {
             addAsHidden(lfItem, '_partial_'+name, val);
           }
+        }
+        break;
+
+      case "linkId":
+      case "questionCode":
+        if(val) {
+          subItem.value = val;
+          var f = name === 'linkId' ? '_linkId' : '_questionCode';
+          var ed = thisService.getFormBuilderField(lfItem.advanced.items, f);
+          ed.value = subItem.value;
         }
         break;
 

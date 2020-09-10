@@ -504,6 +504,41 @@ describe('GET /', function () {
       expect(previewTarget.isPresent()).toBeFalsy();
     });
 
+    it('should build skip logic with source linking to parent question', function () {
+      fb.cleanupSideBar();
+      fb.addButton.click();
+      fb.addNewItem('Parent');
+      fb.basicEditTab.click();
+      // Make parent boolean type question.
+      fb.autoCompSelect(fb.questionType, 1);
+      fb.sendKeys(fb.linkId, '/p');
+      // Add a child
+      fb.clickMenuItem('Parent', 'Insert a child item');
+      expect(fb.dialog.isDisplayed).toBeTruthy();
+      fb.newItemRadio.click();
+      fb.typeQuestionRadio.click();
+      fb.newItemInputBox.sendKeys('Child');
+      fb.newItemAddButton.click();
+      fb.sendKeys(fb.linkId, '/c');
+      // Point to parent as skip logic source
+      fb.advancedEditTab.click();
+      fb.useSkipLogicYes.click();
+      fb.skipLogicConditionsSource.click();
+      fb.autoCompSelect(fb.skipLogicConditionsSource, 1);
+      element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorBool/1/1/1/1true')).click();
+
+      // See if it works in preview.
+      fb.previewRefreshButton.click();
+      const previewParentCheckbox = element(by.id('/p/1'));
+      const previewChildInput = element(by.id('/c/1/1'));
+      expect(previewParentCheckbox.isDisplayed()).toBeTruthy();
+      expect(previewChildInput.isPresent()).toBeFalsy();
+      previewParentCheckbox.click();
+      expect(previewChildInput.isPresent()).toBeTruthy();
+      previewParentCheckbox.click();
+      expect(previewChildInput.isPresent()).toBeFalsy();
+    });
+
   });
 
   describe('Data control', function () {
@@ -1163,6 +1198,80 @@ describe('GET /', function () {
       fb.autoCompSelect(element(by.id('/44255-8/1')), 2);
       // Again, check calculated expression result
       expect(calExpField.getAttribute('value')).toBe('11');
+    });
+  });
+
+  describe('Observation link period', function () {
+    beforeEach(function () {
+      fb.cleanupSideBar();
+    });
+
+    it('should warn about absent question code', function () {
+      var str = 'Test item';
+      fb.addButton.click();
+      fb.addNewItem(str);
+      fb.basicEditTab.click();
+      fb.sendKeys(fb.linkId, 'lId1', 1);
+      fb.advancedEditTab.click();
+      // Default is no, so no warning and no input fields.
+      expect(fb.observationLinkPeriodDuration.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodUnit.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodWarning.isPresent()).toBeFalsy();
+      element(by.id('/_observationLinkPeriod/1true')).click();
+      // For yes and link id is absent, show warning and no input fields.
+      expect(fb.observationLinkPeriodDuration.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodUnit.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodWarning.isDisplayed()).toBeTruthy();
+      fb.basicEditTab.click();
+      fb.sendKeys(fb.questionCode, 'qc1', 1);
+      fb.advancedEditTab.click();
+      // Link id set, show input fields and no warning.
+      expect(fb.observationLinkPeriodDuration.isDisplayed()).toBeTruthy();
+      expect(fb.observationLinkPeriodUnit.isDisplayed()).toBeTruthy();
+      expect(fb.observationLinkPeriodWarning.isPresent()).toBeFalsy();
+
+      fb.basicEditTab.click();
+      fb.questionCode.clear();
+      fb.advancedEditTab.click();
+      // Link id is cleared, back to warning mode.
+      expect(fb.observationLinkPeriodDuration.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodUnit.isPresent()).toBeFalsy();
+      expect(fb.observationLinkPeriodWarning.isDisplayed()).toBeTruthy();
+    });
+
+    it('should output in json', function (done) {
+      var str = 'Test item';
+      fb.addButton.click();
+      fb.addNewItem(str);
+      fb.basicEditTab.click();
+      fb.sendKeys(fb.linkId, 'lId1', 1);
+      fb.sendKeys(fb.questionCode, 'qc1', 1);
+      fb.advancedEditTab.click();
+      element(by.id('/_observationLinkPeriod/1true')).click();
+      fb.sendKeys(fb.observationLinkPeriodDuration, '2', 1);
+      fb.autoCompSelect(fb.observationLinkPeriodUnit, 1);
+      util.getJSONSource('R4').then(function(text) {
+        const json = JSON.parse(text);
+        expect(json.item[0].extension).toEqual([{
+          url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod',
+          valueDuration: {
+            value: 2,
+            code: 'a',
+            unit: 'years',
+            system: 'http://unitsofmeasure.org'
+          }
+        }]);
+        done();
+      }, done.fail);
+    });
+
+    it('should load a form having an item with the extension', function() {
+      let phq9File = path.join(__dirname, './fixtures/phq9.json');
+      util.loadLFormFromDisk(phq9File, 'R4');
+      util.assertNodeSelection('Little interest ');
+      fb.advancedEditTab.click();
+      expect(fb.observationLinkPeriodDuration.getAttribute('value')).toBe('1');
+      expect(fb.observationLinkPeriodUnit.getAttribute('value')).toBe('years');
     });
   });
 
