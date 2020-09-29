@@ -65,6 +65,87 @@ var basicFormLevelFieldsDef = {
       "linkId": "/status"
     },
     {
+      "questionCode": "identifier",
+      "localQuestionCode": "Coding",
+      "question": "Identifier",
+      "header": true,
+      "codingInstructions": "Typically, this is used for identifiers that can go in an HL7 V3 II (instance identifier) data type, and can then identify this questionnaire outside of FHIR, where it is not possible to use the logical URI.<br/><b>FHIR type: Identifier</b>",
+      "codingInstructionsFormat": "html",
+      "questionCardinality": {
+          "min": "0",
+          "max": "*"
+      },
+      "items": [
+          {
+              "questionCode": "system",
+              "localQuestionCode": "uri",
+              "question": "System",
+              "dataType": "URL",
+              "header": false,
+              "codingInstructions": "Identity of the terminology system.<br/><b>FHIR type: uri</b>",
+              "codingInstructionsFormat": "html",
+              "linkId": "/identifier/system"
+          },
+          {
+              "questionCode": "value",
+              "localQuestionCode": "string",
+              "question": "value",
+              "dataType": "ST",
+              "header": false,
+              "codingInstructions": "The value that is unique.<br/><b>FHIR type: string</b>",
+              "codingInstructionsFormat": "html",
+              "linkId": "/identifier/value"
+          },
+          {
+              "questionCode": "use",
+              "localQuestionCode": "code",
+              "question": "Use",
+              "dataType": "CNE",
+              "answers": "identifierUseCodes",
+              "header": false,
+              "codingInstructions": "Use: Usual | official | temp | secondary | old (If known)<br/><b>FHIR type: code</b>",
+              "codingInstructionsFormat": "html",
+              "linkId": "/identifier/use",
+              "defaultAnswer": {
+                  "text": "Usual",
+                  "code": "usual"
+              },
+          },
+          {
+              "questionCode": "period",
+              "localQuestionCode": "Period",
+              "question": "Identifier Period",
+              "header": true,
+              "codingInstructions": "Time period during which identifier is/was valid for use.<br/><b>FHIR type: Period</b>",
+              "codingInstructionsFormat": "html",
+              "items": [
+                  {
+                      "questionCode": "start",
+                      "localQuestionCode": "dateTime",
+                      "question": "Start",
+                      "dataType": "DTM",
+                      "header": false,
+                      "codingInstructions": "Starting time with inclusive boundary.<br/><b>FHIR type: dateTime</b>",
+                      "codingInstructionsFormat": "html",
+                      "linkId": "/identifier/period/start"
+                  },
+                  {
+                      "questionCode": "end",
+                      "localQuestionCode": "dateTime",
+                      "question": "End",
+                      "dataType": "DTM",
+                      "header": false,
+                      "codingInstructions": "End time with inclusive boundary, if not ongoing.<br/><b>FHIR type: dateTime</b>",
+                      "codingInstructionsFormat": "html",
+                      "linkId": "/identifier/period/end"
+                  }
+              ],
+              "linkId": "/identifier/period"
+          }
+      ],
+      "linkId": "/identifier"
+    },
+    {
       "questionCode": "url",
       "localQuestionCode": "uri",
       "question": "URL",
