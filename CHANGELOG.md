@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.2.0]  2020-10-01
+### Added
+- Added support for FHIR Identifier. Thanks to contribution from https://github.com/ps-astangl
+
 ## [6.1.0]  2020-09-08
 ### Added
 - Added support for observation link period.
