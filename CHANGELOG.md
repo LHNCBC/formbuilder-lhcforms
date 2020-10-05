@@ -6,6 +6,10 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Added
 - Added support for FHIR Identifier. Thanks to contribution from https://github.com/ps-astangl
 
+## [6.1.1]  2020-10-02
+### Fixed
+- Updated an npm package to address npm audit vulnerability.
+
 ## [6.1.0]  2020-09-08
 ### Added
 - Added support for observation link period.
