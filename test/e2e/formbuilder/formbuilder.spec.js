@@ -1275,6 +1275,57 @@ describe('GET /', function () {
     });
   });
 
+  describe('Questionnaire.identifier', function() {
+    beforeEach(function() {
+      fb.cleanupSideBar();
+    });
+
+    it('should load form with identifier', function(done) {
+      let phq9File = path.join(__dirname, './fixtures/phq9.json');
+      util.loadLFormFromDisk(phq9File, 'R4');
+      fb.formNode.click();
+      fb.advancedFormEditTab.click();
+      expect(fb.qIdentifierSystem.getAttribute('value')).toBe('http://loinc.org');
+      expect(fb.qIdentifierValue.getAttribute('value')).toBe('44249-1');
+
+      fb.autoCompSelect(fb.qIdentifierUse, '2');
+      fb.qIdentifierPeriodStart.clear();
+      fb.sendKeys(fb.qIdentifierPeriodStart,"2020-10-01 00:00");
+      fb.qIdentifierPeriodEnd.clear();
+      fb.sendKeys(fb.qIdentifierPeriodEnd,"2020-10-31 00:00");
+      fb.refreshPreview.click();
+
+      var filename = '/tmp/PHQ-9-quick-depression-assessment-panel.R4.json'; // File created with form name
+
+      if (fs.existsSync(filename)) {
+        // Make sure the browser doesn't have to rename the download.
+        fs.unlinkSync(filename);
+      }
+      fb.exportMenu.click();
+      var EC = protractor.ExpectedConditions;
+      browser.wait(EC.elementToBeClickable(fb.exportToFile), 5000);
+      fb.exportToFile.click();
+      fb.exportFileFHIRFormatR4.click();
+      fb.continueButton.click();
+      util.watchFilePromise(filename).then(function() {
+        done();
+        var newJson = JSON.parse(fs.readFileSync(filename, {encoding: 'utf8'}));
+        expect(newJson.identifier[0]).toEqual({
+          system: 'http://loinc.org',
+          value: '44249-1',
+          use: 'official',
+          period: {
+            start: '2020-10-01T04:00:00.000Z',
+            end: '2020-10-31T04:00:00.000Z'
+          }
+        });
+
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+  });
+
   describe('Onload form warnings', function () {
 
     beforeAll(function (done) {

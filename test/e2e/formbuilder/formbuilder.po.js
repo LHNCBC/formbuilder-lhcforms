@@ -58,7 +58,7 @@ var FormBuilder = function () {
   this.advancedEditTab = element(by.cssContainingText('md-tab-item', 'Item attributes - Advanced'));
 
   this.basicFormEditTab = element(by.cssContainingText('md-tab-item', 'Form attributes - Basic'));
-  this.advancedFormEditTab = element(by.cssContainingText('md-tab-item', 'Form Attributes - Advanced'));
+  this.advancedFormEditTab = element(by.cssContainingText('md-tab-item', 'Form attributes - Advanced'));
 
   this.useRestrictionsYes = element(by.id('/useRestrictions/1true'));
   this.restrictionName1 = element(by.id('/useRestrictions/restrictions/name/1/1/1'));
@@ -125,6 +125,7 @@ var FormBuilder = function () {
   this.termsOfUseAcceptButton = element(by.cssContainingText('md-dialog button', 'Accept'));
   this.exportMenu = element(by.cssContainingText('md-menu-bar > md-menu > button', 'Export'));
   this.importMenu = element(by.cssContainingText('md-menu-bar > md-menu > button', 'Import'));
+  this.refreshPreview = element(by.css('md-menu-bar > button'));
   this.exportToFile = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Export to file...'));
   this.exportFileFHIRFormatSTU3 = this.dialog.element(by.cssContainingText('md-radio-button', 'FHIR Questionnaire (STU3)'));
   this.exportFileFHIRFormatR4 = this.dialog.element(by.cssContainingText('md-radio-button', 'FHIR Questionnaire (R4)'));
@@ -155,6 +156,11 @@ var FormBuilder = function () {
   this.observationLinkPeriodDuration = element(by.id('/_observationLinkPeriod/duration/1/1'));
   this.observationLinkPeriodUnit = element(by.id('/_observationLinkPeriod/unit/1/1'));
   this.observationLinkPeriodWarning = element(by.id('label-/_observationLinkPeriod/linkIdWarning/1/1'));
+  this.qIdentifierSystem = element(by.id('/identifier/system/1/1'));
+  this.qIdentifierValue = element(by.id('/identifier/value/1/1'));
+  this.qIdentifierUse = element(by.id('/identifier/use/1/1'));
+  this.qIdentifierPeriodStart = element(by.id('/identifier/period/start/1/1/1'));
+  this.qIdentifierPeriodEnd = element(by.id('/identifier/period/end/1/1/1'));
 
   var thisPO = this;
 
