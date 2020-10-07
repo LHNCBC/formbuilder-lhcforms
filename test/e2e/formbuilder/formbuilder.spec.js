@@ -161,7 +161,7 @@ describe('GET /', function () {
             done(err);
           });
         });
-      })
+      });
     });
 
     describe('Css styling', function() {
