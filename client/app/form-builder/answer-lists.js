@@ -462,6 +462,28 @@ var answerLists = {
       "text": "10 thousand per microliter"
     }
   ],
+  "identifierUseCodes": [
+    {
+      "code": "usual",
+      "text": "Usual",
+    },
+    {
+      "code": "official",
+      "text": "Official",
+    },
+    {
+      "code": "temp",
+      "text": "Temp",
+    },
+    {
+      "code": "secondary",
+      "text": "Secondary",
+    },
+    {
+      "code": "old",
+      "text": "Old",
+    }
+  ],
   "statusCodes": [
     {
       "code": "draft",
