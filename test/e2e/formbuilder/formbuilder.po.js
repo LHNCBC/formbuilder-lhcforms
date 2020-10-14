@@ -161,6 +161,7 @@ var FormBuilder = function () {
   this.qIdentifierUse = element(by.id('/identifier/use/1/1'));
   this.qIdentifierPeriodStart = element(by.id('/identifier/period/start/1/1/1'));
   this.qIdentifierPeriodEnd = element(by.id('/identifier/period/end/1/1/1'));
+  this.importLoincMenuItem = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Import a LOINC form...'));
 
   var thisPO = this;
 

@@ -1,0 +1,28 @@
+<md-dialog aria-labelledby="importLoincTitleId">
+  <form>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2 id="importLoincTitleId">Import a LOINC form</h2>
+      </div>
+    </md-toolbar>
+    <md-dialog-content>
+      <div class="md-dialog-content">
+        <input placeholder="Search"
+               type="text"
+               id="searchQuestionId"
+               ng-required="false"
+               ng-model="ctrl.loincSearch.model"
+               autocomplete-lhc="ctrl.loincSearch.opts">
+        <button id="importButton"
+                aria-label="Import a LOINC form"
+                ng-class="{btn: true, 'btn-sm': true}"
+                ng-click="ctrl.importLoinc($event)">Import</button>
+        <md-button aria-label="Close dialog" ng-click="ctrl.closeDlg()" class="md-primary">
+          Cancel
+        </md-button>
+      </div>
+      <md-dialog-actions layout="row">
+      </md-dialog-actions>
+    </md-dialog-content>
+  </form>
+</md-dialog>

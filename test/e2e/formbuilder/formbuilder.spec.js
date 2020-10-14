@@ -1367,4 +1367,27 @@ describe('GET /', function () {
     });
   });
 
+  describe('Import LOINC forms', function() {
+    beforeEach(() => {
+      beforeAll(function (done) {
+        util.pageRefresh().then(function() {
+          done();
+        }, function (err) {
+          done(err);
+        });
+      });
+    });
+
+    it('should search and import LOINC form', () => {
+      fb.importMenu.click();
+      fb.importLoincMenuItem.click();
+      fb.searchBox.sendKeys('vital signs pnl');
+      fb.autoCompSelect(fb.searchBox, 1);
+
+      expect(fb.firstNode.isDisplayed()).toBeTruthy();
+      expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
+      expect(fb.nodeList.count()).toEqual(25);
+    });
+  });
+
 });

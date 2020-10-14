@@ -655,6 +655,70 @@ angular.module('formBuilder')
 
 
       /**
+       * Show LOINC import dialog
+       */
+      $scope.showImportLoincDialog = function(ev, localScope) {
+
+        if(!localScope) {
+          localScope = {};
+        }
+
+        localScope.loincSearch = {
+          opts: {
+            url: dataConstants.searchFormsURL,
+            matchListValue: true,
+            autocomp: true,
+            suggestionMode: 0,
+            // useResultCache: false
+          },
+          model: {text: '', code: '', value: ''}
+        };
+
+        /**
+         * Dialog controller to to handle button events
+         */
+        var controller = function () {
+          var self = this;
+          self.closeDlg = function(answer) {
+            $mdDialog.hide(answer);
+          };
+
+          self.importLoinc = function() {
+            var panelData =  self.loincSearch.model;
+            if(panelData && panelData.code) {
+              $scope.startSpin();
+              formBuilderService.getLoincPanelData(panelData.code, function(response, error) {
+                if(error) {
+                  $scope._error = new Error(error);
+                  $scope.stopSpin();
+                  return;
+                }
+                try {
+                  formBuilderService.lformsUpdate(response);
+                  $scope.$broadcast('REPLACE_FORM', response);
+                }
+                finally {
+                  $scope.stopSpin();
+                  self.closeDlg();
+                }
+              });
+            }
+          };
+        };
+
+        return $mdDialog.show({
+          controller: controller,
+          templateUrl: 'app/form-builder/import-loinc-dialog.html',
+          targetEvent: ev,
+          locals: localScope,
+          clickOutsideToClose: true,
+          bindToController: true,
+          controllerAs: 'ctrl'
+        });
+      };
+
+
+      /**
        *  Sign out handler
        */
       $scope.signOut = function () {
