@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.3.0]  2020-10-14
+### Added
+- Import LOINC forms.
+
 ## [6.2.0]  2020-10-01
 ### Added
 - Added support for FHIR Identifier. Thanks to contribution from https://github.com/ps-astangl
