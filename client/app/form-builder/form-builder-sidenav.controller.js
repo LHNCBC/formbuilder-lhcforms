@@ -518,7 +518,7 @@
         if($scope.isFormDirty()) {
           $scope.alertFormReplacement(
             'Replace this form?',
-            'This will overwrite contents in form builder. You may want save the current changes before continuing to load the new form. Do you want to continue?',
+            'This will overwrite the content currently in the form builder. If you wish to save the form currently in the form builder, select Cancel. Otherwise, select Continue to overwrite the current form.',
             function(reply) {
               if(reply) {
                 $scope.replaceForm(lfData);

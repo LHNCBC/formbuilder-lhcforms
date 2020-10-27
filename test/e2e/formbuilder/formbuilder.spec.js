@@ -525,7 +525,7 @@ describe('GET /', function () {
       fb.useSkipLogicYes.click();
       fb.skipLogicConditionsSource.click();
       fb.autoCompSelect(fb.skipLogicConditionsSource, 1);
-      element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorBool/1/1/1/1true')).click();
+      element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorBool/1/1/1/1TRUE')).click();
 
       // See if it works in preview.
       fb.previewRefreshButton.click();

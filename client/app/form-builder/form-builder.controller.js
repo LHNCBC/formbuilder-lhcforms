@@ -653,9 +653,43 @@ angular.module('formBuilder')
         });
       };
 
+      /**
+       * LOINC form import dialog controller. Make sure to bind the controller to dialog.
+       */
+      function loincImportDlgController () {
+        var self = this; // This could be undefined, if the controller is not bound to the dialog.
+        self.closeDlg = function(answer) {
+          $mdDialog.hide(answer);
+        };
+
+        self.importLoinc = function() {
+          var panelData =  self.loincSearch.model;
+          if(panelData && panelData.code) {
+            $scope.startSpin();
+            formBuilderService.getLoincPanelData(panelData.code, function(response, error) {
+              if(error) {
+                $scope._error = new Error(error);
+                $scope.stopSpin();
+                return;
+              }
+              try {
+                formBuilderService.lformsUpdate(response);
+                $scope.$broadcast('REPLACE_FORM', response);
+              }
+              finally {
+                $scope.stopSpin();
+                self.closeDlg();
+              }
+            });
+          }
+        };
+      }
+
 
       /**
-       * Show LOINC import dialog
+       * Show LOINC import dialog.
+       * @param ev - Angular event object.
+       * @param localScope - Scope object for the dialog template.
        */
       $scope.showImportLoincDialog = function(ev, localScope) {
 
@@ -674,40 +708,8 @@ angular.module('formBuilder')
           model: {text: '', code: '', value: ''}
         };
 
-        /**
-         * Dialog controller to to handle button events
-         */
-        var controller = function () {
-          var self = this;
-          self.closeDlg = function(answer) {
-            $mdDialog.hide(answer);
-          };
-
-          self.importLoinc = function() {
-            var panelData =  self.loincSearch.model;
-            if(panelData && panelData.code) {
-              $scope.startSpin();
-              formBuilderService.getLoincPanelData(panelData.code, function(response, error) {
-                if(error) {
-                  $scope._error = new Error(error);
-                  $scope.stopSpin();
-                  return;
-                }
-                try {
-                  formBuilderService.lformsUpdate(response);
-                  $scope.$broadcast('REPLACE_FORM', response);
-                }
-                finally {
-                  $scope.stopSpin();
-                  self.closeDlg();
-                }
-              });
-            }
-          };
-        };
-
         return $mdDialog.show({
-          controller: controller,
+          controller: loincImportDlgController,
           templateUrl: 'app/form-builder/import-loinc-dialog.html',
           targetEvent: ev,
           locals: localScope,

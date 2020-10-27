@@ -898,7 +898,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         var compare;
         var sourceType = thisService.getFormBuilderField(condition.items, 'hiddenItemForSourceType').value;
         if (sourceType === 'BL') {
-          // compare.code could be one of true, false, 'true', 'false'
+          // compare.code could be one of true, false, 'TRUE', 'FALSE'
           // The boolean value implies exist/notexists and string counter parts imply trigger.value
           // Refer to '_conditionOperatorBool' in answer-lists.js.
           compare = thisService.getFormBuilderField(condition.items, '_conditionOperatorBool').value;
@@ -907,13 +907,13 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         } else {
           compare = thisService.getFormBuilderField(condition.items, '_conditionOperatorOther').value;
         }
-        if (compare.code === true || compare.code === false) {
+        if (compare && (compare.code === true || compare.code === false)) {
           cond.trigger = {exists: compare.code};
-        } else if (compare.code) {
+        } else if (compare && compare.code) {
           var triggerVal;
           switch (sourceType) {
             case 'BL':
-              cond.trigger = {value: compare.code === 'true'};
+              cond.trigger = {value: compare.code === 'TRUE'};
               break;
 
             case 'CWE':
@@ -941,14 +941,18 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
             case 'INT':
             case 'QTY':
               triggerVal = thisService.getFormBuilderField(condition.items, 'triggerNumeric').value;
-              cond.trigger = {};
-              cond.trigger[compare.code] = triggerVal;
+              if(triggerVal !== null && triggerVal !== undefined) {
+                cond.trigger = {};
+                cond.trigger[compare.code] = triggerVal;
+              }
               break;
 
             default:
               triggerVal = thisService.getFormBuilderField(condition.items, 'triggerOther').value;
-              cond.trigger = {};
-              cond.trigger[compare.code] = triggerVal;
+              if(triggerVal !== null && triggerVal !== undefined) {
+                cond.trigger = {};
+                cond.trigger[compare.code] = triggerVal;
+              }
               break;
           }
         }
@@ -2087,7 +2091,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
           case '[object Boolean]':
             // string representation of boolean implies boolean operators where as
             // boolean value itself implies exists/notexists operators. Refer to _conditionOperatorBool in answer-lists.js.
-            fbOpBool.value = {code: val.toString()};
+            fbOpBool.value = {code: val.toString().toUpperCase()};
             break;
 
           case '[object Number]':

@@ -149,11 +149,11 @@ var answerLists = {
   "_conditionOperatorBool": [
     {
       "text": "true",
-      "code": "true"
+      "code": "TRUE"
     },
     {
       "text": "false",
-      "code": "false"
+      "code": "FALSE"
     },
     {
       "text": "true or false (exists)",
