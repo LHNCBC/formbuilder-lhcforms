@@ -20,11 +20,7 @@ module.exports = {
     let _self = this;
     browser.getCurrentUrl().then(function () {
       // Already loaded, refresh it.
-      _self.pageRefresh().then(function () {
-        deferred.fulfill(false);
-      }, function (err) {
-        deferred.reject(err);
-      });
+      deferred.fulfill(false);
     }, function () {
       // Page is not loaded yet.
       setAngularSite(true);
@@ -97,7 +93,8 @@ module.exports = {
    * @param nodeTitle
    */
   assertNodeSelection: function (nodeTitle) {
-    let node = fb.questionTree.element(by.cssContainingText('div.angular-ui-tree-handle .flex-item-stretch span', nodeTitle));
+    let node = fb.questionTree
+        .all(by.cssContainingText('div.angular-ui-tree-handle .flex-item-stretch span', nodeTitle)).first();
     node.click();
     expect(fb.questionText.getAttribute('value')).toMatch(nodeTitle);
   },
