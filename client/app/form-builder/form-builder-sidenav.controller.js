@@ -521,7 +521,11 @@
             'This will overwrite the content currently in the form builder. If you wish to save the form currently in the form builder, select Cancel. Otherwise, select Continue to overwrite the current form.',
             function(reply) {
               if(reply) {
-                $scope.replaceForm(lfData);
+                $scope.startSpin();
+                $timeout(function() {
+                  $scope.replaceForm(lfData);
+                  $scope.stopSpin();
+                });
               }
             });
         }
