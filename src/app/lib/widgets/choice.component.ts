@@ -65,8 +65,18 @@ export class ChoiceComponent extends ControlWidget implements OnInit {
   constructor(private formService: FormService) {
     super();
   }
+
   ngOnInit(): void {
     this.sources = this.formService.getSourcesExcludingFocussedTree();
+    const value = this.formProperty.value;
+    if (this.sources && this.sources.length > 0 && value) {
+      const source = this.sources.find((el) => el.data.linkId === value);
+      if (source) {
+        this.model = source;
+        this.formProperty.setValue(source.data.linkId, true);
+        this.formProperty.searchProperty('_answerType').setValue(source.data.type, true);
+      }
+    }
   }
 
   onSelect($event): void {

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {ITreeNode} from 'angular-tree-component/dist/defs/api';
+import {AppJsonPipe} from './lib/pipes/app-json.pipe';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,8 @@ export class ShareObjectService {
   objSource$: BehaviorSubject<any> = new BehaviorSubject<any>({});
   object$ = this.objSource$.asObservable();
   objectStr$ = this.object$.pipe(map((item) => {
-    return JSON.stringify(item, null, 2);
+    return new AppJsonPipe().transform(item);
+    //return JSON.stringify(item, null, 2);
   }));
   constructor() {}
 

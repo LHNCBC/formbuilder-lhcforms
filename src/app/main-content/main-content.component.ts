@@ -54,7 +54,7 @@ export class LinkIdCollection {
 }
 
 @Component({
-  selector: 'app-main-content',
+  selector: 'app-item-component',
   templateUrl: './main-content.component.html',
   styleUrls: ['./main-content.component.css']
 })

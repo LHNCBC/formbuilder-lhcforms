@@ -62,6 +62,8 @@ import { ExpandablePanelsComponent } from './lib/widgets/expandable-panels.compo
 import { AppControlWidgetComponent } from './lib/widgets/app-control-widget.component';
 import { AppArrayWidgetComponent } from './lib/widgets/app-array-widget.component';
 import { SideLabelCheckboxComponent } from './lib/widgets/side-label-checkbox.component';
+import { EnablewhenAnswerCodingComponent } from './lib/widgets/enablewhen-answer-coding.component';
+import { AppJsonPipe } from './lib/pipes/app-json.pipe';
 
 @NgModule({
   declarations: [
@@ -96,7 +98,9 @@ import { SideLabelCheckboxComponent } from './lib/widgets/side-label-checkbox.co
     ExpandablePanelsComponent,
     AppControlWidgetComponent,
     AppArrayWidgetComponent,
-    SideLabelCheckboxComponent
+    SideLabelCheckboxComponent,
+    EnablewhenAnswerCodingComponent,
+    AppJsonPipe
   ],
   imports: [
     AppRoutingModule,

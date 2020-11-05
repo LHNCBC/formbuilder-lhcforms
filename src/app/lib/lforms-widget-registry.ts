@@ -17,6 +17,7 @@ import {CodingOperatorComponent} from './widgets/coding-operator.component';
 import {LeftLabelFormGroupComponent} from './widgets/left-label-form-group.component';
 import {ExpandablePanelsComponent} from './widgets/expandable-panels.component';
 import {SideLabelCheckboxComponent} from './widgets/side-label-checkbox.component';
+import {EnablewhenAnswerCodingComponent} from './widgets/enablewhen-answer-coding.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -41,5 +42,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('left-label-form-group', LeftLabelFormGroupComponent);
     this.register('expandable-panels', ExpandablePanelsComponent);
     this.register('left-label-checkbox', SideLabelCheckboxComponent);
+    this.register('enable-when-answer-choice', EnablewhenAnswerCodingComponent);
   }
 }

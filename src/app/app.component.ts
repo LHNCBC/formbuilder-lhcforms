@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, Input} from '@angular/core';
 import { MainContentComponent } from './main-content/main-content.component';
 
 @Component({
@@ -8,4 +8,15 @@ import { MainContentComponent } from './main-content/main-content.component';
 })
 export class AppComponent {
   title = 'ng-json-editor';
+  @Input()
+  guidingStep = ''; // 'chooseStart', 'home',
+
+  constructor() {
+  }
+
+  setStep(step) {
+    this.guidingStep = step;
+  }
+
+
 }

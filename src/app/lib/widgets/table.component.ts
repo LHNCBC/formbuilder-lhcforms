@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {ArrayWidget} from 'ngx-schema-form';
+import {ArrayWidget, FormProperty} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
@@ -12,31 +12,33 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
   template: `
     <div class="widget form-group"  [ngClass]="{'row': labelPosition === 'left'}">
       <div [ngClass]="labelWidthClass">
-        <button *ngIf="!noCollapseButton" href="#" type="button" class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+        <button *ngIf="!noCollapseButton" href="#" type="button"
+                [ngClass]="{'float-sm-right': labelPosition === 'left'}"
+                class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
                 [attr.aria-expanded]="!isCollapsed" aria-controls="collapseTable">
           <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
         </button>
         <app-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></app-label>
       </div>
-      <div class="card p-0 {{controlWidthClass}}" id="collapseTable" [ngbCollapse]="isCollapsed">
+      <div [ngClass]="{card: !noHeader}" class="p-0 {{controlWidthClass}}" id="collapseTable">
         <table class="table table-borderless table-sm app-table" *ngIf="formProperty.properties.length > 0">
-          <thead class="thead-light">
+          <thead *ngIf="!noHeader" class="thead-light">
           <tr class="d-flex">
-            <th *ngFor="let showField of getShowFields()" class="col-sm-{{showField.col}}">
+            <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
               <app-title
-                [title]="getTitle(formProperty.properties[0], showField.field)"
+                [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
                 [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
               ></app-title>
             </th>
-            <th class="col-sm"></th>
+            <th *ngIf="!singleItem" class="col-sm-1"></th>
           </tr>
           </thead>
-          <tbody>
+          <tbody [ngbCollapse]="isCollapsed">
           <tr class="d-flex" *ngFor="let itemProperty of formProperty.properties">
-            <td *ngFor="let showField of getShowFields()" class="col-sm-{{showField.col}}">
+            <td *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
               <app-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></app-form-element>
             </td>
-            <td class="col-sm-1 align-middle action-column">
+            <td [ngClass]="{'d-none': formProperty.properties.length === 1}" class="col-sm-1 align-middle action-column">
               <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
                       [disabled]="isRemoveButtonDisabled()"
                       *ngIf="!(schema.hasOwnProperty('minItems') &&
@@ -49,9 +51,10 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
           </tr>
           </tbody>
         </table>
-        <button (click)="addItem()" class="btn btn-light btn-link array-add-button"
+        <button (click)="addItem()" class="btn-sm btn-light btn-link array-add-button"
                 [disabled]="isAddButtonDisabled()"
-                *ngIf="!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems)"
+                *ngIf="!singleItem &&
+                (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"
         >
           <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
         </button>
@@ -68,6 +71,11 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
       margin-left: 2px;
     }
 
+    .collapse-button.float-sm-right {
+      margin-right: 0;
+      margin-left: 2px;
+    }
+
     .app-table {
       margin-bottom: 0;
     }
@@ -75,7 +83,7 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
       text-align: center;
     }
     .app-table th, .app-table td {
-      padding-bottom: 0;
+      padding: 0;
   /*    vertical-align: bottom; */
     }
     .table-header {
@@ -93,6 +101,9 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
   addButtonLabel = 'Add';
   noCollapseButton = false;
   noTableLabel = false;
+  noHeader = false;
+  // Flag to control hiding of add/remove buttons.
+  singleItem = false;
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
@@ -102,16 +113,40 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     const widget = this.formProperty.schema.widget;
     this.addButtonLabel = widget && widget.addButtonLabel
       ? widget.addButtonLabel : 'Add';
-    if (widget.noTableLabel) {
-      this.noTableLabel = widget.noTableLabel;
+
+    this.noTableLabel = !!widget.noTableLabel;
+    this.noCollapseButton = !!widget.noCollapseButton;
+    this.singleItem = !!widget.singleItem;
+
+    const singleItemEnableSource = this.formProperty.schema.widget ? this.formProperty.schema.widget.singleItemEnableSource : null;
+    // Although intended to be source agnostic, it is mainly intended for 'repeats' field as source.
+    // The requirement is:
+    // . When source is false, hide add/remove buttons.
+    // . Source if present and is true means show the buttons.
+    // . Absence of source condition means the default behavior which is show the buttons.
+    const prop = singleItemEnableSource ? this.formProperty.searchProperty(singleItemEnableSource) : null;
+    if (prop) {
+      prop.valueChanges.subscribe((newValue) => {
+        if (newValue === false) {
+          // If already has multiple items in the array, remove all items except first one.
+          if (this.formProperty.properties.length > 1) {
+            this.formProperty.properties = (this.formProperty.properties as FormProperty[]).slice(0, 1);
+            this.formProperty.updateValueAndValidity(false, true);
+          }
+        }
+        this.singleItem = !newValue;
+        this.noCollapseButton = this.singleItem;
+      });
     }
-    if (widget.noCollapseButton) {
-      this.noCollapseButton = widget.noCollapseButton;
-    }
+
+    this.formProperty.searchProperty('type').valueChanges.subscribe((newValue) => {
+      const showFields = this.getShowFields();
+      this.noHeader = showFields.some((f) => f.noHeader);
+    });
   }
 
-  getShowFields(): string [] {
-    let ret: string [] = [];
+  getShowFields(): any [] {
+    let ret: any [] = [];
     if (this.formProperty.schema.widget && this.formProperty.schema.widget.showFields) {
       const showFields = this.formProperty.schema.widget.showFields;
       ret = showFields.filter((field) => {
@@ -122,7 +157,11 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
   }
 
   isVisible(propertyId) {
-    return Util.isVisible(this.formProperty.properties[0], propertyId);
+    let ret = true;
+    if (this.formProperty.properties.length > 0) {
+      ret = Util.isVisible(this.formProperty.properties[0], propertyId);
+    }
+    return ret;
   }
 
   getProperty(parentProperty, propertyId) {

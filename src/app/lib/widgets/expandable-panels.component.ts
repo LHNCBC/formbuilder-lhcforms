@@ -1,12 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {StepperGridComponent} from './stepper-grid.component';
+import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-expandable-panels',
   template: `
     <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0">
-      <ngb-panel *ngFor="let step of steps; let firstStep = first; let lastStep = last"
-                [title]="step.title">
+      <ngb-panel *ngFor="let step of steps; let firstStep = first; let lastStep = last">
+        <ng-template ngbPanelTitle>
+          <span>{{step.title}}</span>
+          <span class="info-icon" *ngIf="step.description"  matTooltipPosition="above" [matTooltip]="step.description">
+            <fa-icon [icon]="faInfo"></fa-icon>
+          </span>
+        </ng-template>
         <ng-template ngbPanelContent>
           <div class="form-group row" *ngFor="let stepRow of step.rows">
             <div [class]="gridClass(field)" *ngFor="let field of getShowFields(stepRow)">
@@ -18,6 +24,9 @@ import {StepperGridComponent} from './stepper-grid.component';
     </ngb-accordion>
   `,
   styles: [`
+    span.info-icon {
+      padding-left: .5rem;
+    }
     :host ::ng-deep .card-header {
       padding: 0;
     }
@@ -33,10 +42,8 @@ import {StepperGridComponent} from './stepper-grid.component';
     }
   `]
 })
-export class ExpandablePanelsComponent extends StepperGridComponent implements OnInit {
+export class ExpandablePanelsComponent extends StepperGridComponent {
 
-  ngOnInit(): void {
-    super.ngOnInit();
-  }
+  faInfo = faInfoCircle;
 
 }

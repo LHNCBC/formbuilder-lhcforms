@@ -162,7 +162,7 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Code list",
+      "title": "Code",
       "visibleIf": {
         "type": ["$EXP$ target.value != 'display'"]
       },
@@ -173,6 +173,7 @@
         "controlWidthClass": "col-sm-10",
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
+        "singleItem": true,
         "showFields": [
           {"field": "code", "col": 4, "nolabel": true},
           {"field": "system", "col": 7, "nolabel": true}
@@ -515,12 +516,7 @@
               ]
             },
             "widget": {
-              "id": "left-label-form-group",
-              "labelWidth": 3,
-              "controlWidth": 9,
-              "showFields": [
-                { "field": "display"}
-              ]
+              "id": "enable-when-answer-choice"
             }
           },
           "answerQuantity": {
@@ -983,9 +979,9 @@
               "id": "table",
               "addButtonLabel": "Add new answer item",
               "showFields": [
-                {"field": "code", "col": 2, "nolabel": true},
-                {"field": "system", "col": 5, "nolabel": true},
-                {"field": "display", "col": 4, "nolabel": true},
+                {"field": "display", "title": "Display", "col": 4, "nolabel": true},
+                {"field": "code", "title": "Code", "col": 2, "nolabel": true},
+                {"field": "system", "title": "System", "col": 5, "nolabel": true},
                 {"field": "userSelected", "col": 1, "nolabel": true}
               ]
             },
@@ -1064,25 +1060,25 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Answer options",
+      "title": "Answer choices",
       "visibleIf": {
         "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
       },
       "widget": {
         "id": "table",
-        "noCollapseButton": true,
-        "noTableLabel": true,
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10",
         "addButtonLabel": "Add new answer",
         "showFields": [
           {"field": "valueInteger", "col": 9, "nolabel": true},
           {"field": "valueDate", "col": 9, "nolabel": true},
           {"field": "valueTime", "col": 9, "nolabel": true},
           {"field": "valueString", "col": 9, "nolabel": true},
-          {"field": "valueCoding.display", "col": 3, "nolabel": true},
-          {"field": "valueCoding.code", "col": 3, "nolabel": true},
-          {"field": "valueCoding.system", "col": 3, "nolabel": true},
-          {"field": "valueReference", "col": 9, "nolabel": true},
-          {"field": "initialSelected", "col": 2, "nolabel": true}
+          {"field": "valueCoding.code", "title": "Code", "col": 3, "nolabel": true},
+          {"field": "valueCoding.system", "title": "System", "col": 5, "nolabel": true},
+          {"field": "valueCoding.display", "title": "Display", "col": 3, "nolabel": true},
+          {"field": "valueReference", "col": 9, "nolabel": true}
         ]
       }
     },
@@ -1534,28 +1530,30 @@
       "type": "array",
       "title": "Initial values",
       "visibleIf": {
-        "type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'choice' && target.value != 'open-choice'"]
+        "type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
       },
       "widget": {
         "id": "table",
-        "noCollapseButton": true,
-        "noTableLabel": true,
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10",
         "addButtonLabel": "Add new value",
+        "singleItemEnableSource": "repeats",
         "showFields": [
-          {"field": "valueBoolean", "col": 11, "nolabel": true},
-          {"field": "valueDecimal", "col": 11, "nolabel": true},
-          {"field": "valueInteger", "col": 11, "nolabel": true},
-          {"field": "valueDate", "col": 11, "nolabel": true},
-          {"field": "valueDateTime", "col": 11, "nolabel": true},
-          {"field": "valueTime", "col": 11, "nolabel": true},
-          {"field": "valueString", "col": 11, "nolabel": true},
-          {"field": "valueUri", "col": 11, "nolabel": true},
-          {"field": "valueCoding.display", "col": 4, "nolabel": true},
-          {"field": "valueCoding.code", "col": 3, "nolabel": true},
-          {"field": "valueCoding.system", "col": 4, "nolabel": true},
-          {"field": "valueQuantity.value", "col": 9, "nolabel": true},
-          {"field": "valueQuantity.unit", "col": 2, "nolabel": true},
-          {"field": "valueReference", "col": 11, "nolabel": true}
+          {"field": "valueBoolean", "noHeader": true, "title": "", "nolabel": true},
+          {"field": "valueDecimal", "noHeader": true, "title": "", "nolabel": true},
+          {"field": "valueInteger", "noHeader": true, "nolabel": true},
+          {"field": "valueDate", "noHeader": true, "nolabel": true},
+          {"field": "valueDateTime", "noHeader": true, "nolabel": true},
+          {"field": "valueTime", "noHeader": true, "nolabel": true},
+          {"field": "valueString", "noHeader": true, "title": "", "nolabel": true},
+          {"field": "valueUri", "noHeader": true, "nolabel": true},
+          {"field": "valueCoding.display", "title": "Display", "col": 4, "nolabel": true},
+          {"field": "valueCoding.code", "title": "Code", "col": 3, "nolabel": true},
+          {"field": "valueCoding.system", "title": "System", "col": 4, "nolabel": true},
+          {"field": "valueQuantity.value","title": "Value", "col": 9, "nolabel": true},
+          {"field": "valueQuantity.unit", "title": "Unit", "col": 2, "nolabel": true},
+          {"field": "valueReference", "noHeader": true, "nolabel": true}
         ]
       }
     }
@@ -4794,40 +4792,17 @@
             { "field": "repeats", "col": 12 },
             { "field": "required", "col": 12 },
             { "field": "readOnly", "col": 12 },
-            { "field": "maxLength", "col": 12 }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Answer list",
-      "optional": false,
-      "rows": [
-        {
-          "showFields": [
-            { "field": "answerValueSet", "col": 12 }
-          ]
-        },
-        {
-          "showFields": [
-            { "field": "answerOption", "col": 12 }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Default value",
-      "optional": false,
-      "rows": [
-        {
-          "showFields": [
-            { "field": "initial", "col": 12 }
+            { "field": "maxLength", "col": 12 },
+            { "field": "answerValueSet", "col": 12 },
+            { "field": "answerOption", "title": "Answer choices", "col": 12 },
+            { "field": "initial", "title": "Default value", "col": 12 }
           ]
         }
       ]
     },
     {
       "title": "Conditions to display",
+      "description": "A constraint indicating that this item should only be enabled (displayed/allow answers to be captured) when the specified condition is true.",
       "optional": false,
       "rows": [
         {

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {ITreeNode} from 'angular-tree-component/dist/defs/api';
+import {IDType, ITreeNode} from 'angular-tree-component/dist/defs/api';
 import {TreeModel} from 'angular-tree-component';
 
 @Injectable({
@@ -47,5 +47,31 @@ export class FormService {
 
   setTreeModel(treeModel: TreeModel) {
     this.treeModel = treeModel;
+  }
+
+  getTreeNodeById(id: IDType): ITreeNode {
+    return this.treeModel.getNodeById(id);
+  }
+
+  getTreeNodeByLinkId(linkId: string): ITreeNode {
+    return this.findNodeByLinkId(this.treeModel.roots, linkId);
+  }
+
+  findNodeByLinkId(targetNodes: ITreeNode [], linkId: string): ITreeNode {
+    let ret: ITreeNode;
+    if (!targetNodes || targetNodes.length === 0) {
+      return null;
+    }
+    for (const node of targetNodes) {
+        if (node.data.linkId === linkId) {
+          ret = node;
+        } else if (node.hasChildren) {
+          ret = this.findNodeByLinkId(node.children, linkId);
+        }
+        if (ret) {
+          break;
+        }
+    }
+    return ret;
   }
 }

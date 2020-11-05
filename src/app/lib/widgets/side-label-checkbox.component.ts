@@ -5,11 +5,11 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 @Component({
   selector: 'app-side-label-checkbox',
   template: `<div *ngIf="schema.type!='array'" class="widget form-group row">
-      <label *ngIf="!nolabel && schema.title" [attr.for]="id" class="form-check-label control-label {{labelWidthClass}}">
+      <label *ngIf="!nolabel && schema.title" [attr.for]="id" class="form-check-label col-form-label-sm {{labelWidthClass}}">
         {{ schema.title }}
         <span *ngIf="schema.description"  matTooltipPosition="above" [matTooltip]="schema.description">
-        <fa-icon [icon]="faInfo"></fa-icon>
-      </span>
+          <fa-icon [icon]="faInfo"></fa-icon>
+        </span>
       </label>
       <input [formControl]="control" [attr.name]="name"
              [attr.id]="id" [indeterminate]="control.value !== false && control.value !== true ? true :null"
@@ -18,7 +18,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
   </div>`,
   styles: [`
     input {
-      margin-top: 0.3rem;
+      margin-top: 0.5rem;
     }
   `]
 })
