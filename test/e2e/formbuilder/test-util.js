@@ -20,7 +20,9 @@ module.exports = {
     let _self = this;
     browser.getCurrentUrl().then(function () {
       // Already loaded, refresh it.
-      deferred.fulfill(false);
+      _self.resetForm().then(function() {
+        deferred.fulfill(false);
+      });
     }, function () {
       // Page is not loaded yet.
       setAngularSite(true);
@@ -35,6 +37,18 @@ module.exports = {
     return deferred.promise;
   },
 
+
+  /**
+   * Reset all fields in the form builder, including form level fields.
+   * There is no button to do this. We simply load an empty form from file
+   * to simulate this.
+   *
+   * @returns {Promise} -  A promise to resolve R4 json text.
+   */
+  resetForm: function () {
+    let filename = require('path').join(__dirname, './fixtures/reset-form.json');
+    return this.loadLFormFromDisk(filename, 'R4');
+  },
 
   /**
    *  Do browser refresh, accept alert window if presented, and accept terms of use
