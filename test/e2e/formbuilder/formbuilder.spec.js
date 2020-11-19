@@ -376,7 +376,7 @@ describe('GET /', function () {
   describe('Build skip logic', function () {
 
     beforeAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
       util.assertNodeSelection('BP device Invento');
       fb.advancedEditTab.click();
@@ -1277,7 +1277,7 @@ describe('GET /', function () {
 
   describe('Questionnaire.identifier', function() {
     beforeEach(function() {
-      fb.cleanupSideBar();
+      util.resetForm();
     });
 
     it('should load form with identifier', function(done) {
@@ -1368,13 +1368,13 @@ describe('GET /', function () {
   });
 
   describe('Import LOINC forms', function() {
-    beforeEach(() => {
-      beforeAll(function (done) {
-        util.pageRefresh().then(function() {
-          done();
-        }, function (err) {
-          done(err);
-        });
+    beforeAll((done) => {
+      util.resetForm().then(function() {
+        fb.basicFormEditTab.click();
+        fb.previewRefreshButton.click();
+        done();
+      }, function (err) {
+        done(err);
       });
     });
 
@@ -1384,6 +1384,8 @@ describe('GET /', function () {
       fb.searchBox.sendKeys('vital signs pnl');
       fb.autoCompSelect(fb.searchBox, 1);
 
+      var EC = protractor.ExpectedConditions;
+      browser.wait(EC.elementToBeClickable(fb.firstNode), 5000);
       expect(fb.firstNode.isDisplayed()).toBeTruthy();
       expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
       expect(fb.nodeList.count()).toEqual(25);
