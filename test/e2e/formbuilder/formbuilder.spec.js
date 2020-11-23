@@ -531,7 +531,8 @@ describe('GET /', function () {
       fb.previewRefreshButton.click();
       const previewParentCheckbox = element(by.id('/p/1'));
       const previewChildInput = element(by.id('/c/1/1'));
-      expect(previewParentCheckbox.isDisplayed()).toBeTruthy();
+      var EC = protractor.ExpectedConditions;
+      browser.wait(EC.visibilityOf(previewParentCheckbox), 5000);
       expect(previewChildInput.isPresent()).toBeFalsy();
       previewParentCheckbox.click();
       expect(previewChildInput.isPresent()).toBeTruthy();
@@ -1382,7 +1383,10 @@ describe('GET /', function () {
       fb.importMenu.click();
       fb.importLoincMenuItem.click();
       fb.searchBox.sendKeys('vital signs pnl');
-      fb.autoCompSelect(fb.searchBox, 1);
+      fb.waitForElementDisplayed(element(by.id('searchResults')));
+      fb.searchBox.sendKeys(protractor.Key.ARROW_DOWN);
+      fb.searchBox.sendKeys(protractor.Key.TAB);
+      fb.searchBox.sendKeys(protractor.Key.ENTER);
 
       var EC = protractor.ExpectedConditions;
       browser.wait(EC.elementToBeClickable(fb.firstNode), 5000);
