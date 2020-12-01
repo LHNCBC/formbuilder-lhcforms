@@ -27,6 +27,9 @@
               <md-button ng-click="import()">Import from file...</md-button>
             </md-menu-item>
             <md-menu-item>
+              <md-button ng-click="showImportLoincDialog($event)">Import a LOINC form...</md-button>
+            </md-menu-item>
+            <md-menu-item>
               <md-button ng-disabled="!isUserSignedIn" ng-click="importFromFhir($event, '')">Load from FHIR server...</md-button>
             </md-menu-item>
           </md-menu-content>

@@ -376,7 +376,7 @@ describe('GET /', function () {
   describe('Build skip logic', function () {
 
     beforeAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
       util.assertNodeSelection('BP device Invento');
       fb.advancedEditTab.click();
@@ -525,13 +525,14 @@ describe('GET /', function () {
       fb.useSkipLogicYes.click();
       fb.skipLogicConditionsSource.click();
       fb.autoCompSelect(fb.skipLogicConditionsSource, 1);
-      element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorBool/1/1/1/1true')).click();
+      element(by.id('/useSkipLogic/skipLogic/conditions/_conditionOperatorBool/1/1/1/1TRUE')).click();
 
       // See if it works in preview.
       fb.previewRefreshButton.click();
       const previewParentCheckbox = element(by.id('/p/1'));
       const previewChildInput = element(by.id('/c/1/1'));
-      expect(previewParentCheckbox.isDisplayed()).toBeTruthy();
+      var EC = protractor.ExpectedConditions;
+      browser.wait(EC.visibilityOf(previewParentCheckbox), 5000);
       expect(previewChildInput.isPresent()).toBeFalsy();
       previewParentCheckbox.click();
       expect(previewChildInput.isPresent()).toBeTruthy();
@@ -1277,7 +1278,7 @@ describe('GET /', function () {
 
   describe('Questionnaire.identifier', function() {
     beforeEach(function() {
-      fb.cleanupSideBar();
+      util.resetForm();
     });
 
     it('should load form with identifier', function(done) {
@@ -1364,6 +1365,34 @@ describe('GET /', function () {
       }, function (err) {
         done(err);
       });
+    });
+  });
+
+  describe('Import LOINC forms', function() {
+    beforeAll((done) => {
+      util.resetForm().then(function() {
+        fb.basicFormEditTab.click();
+        fb.previewRefreshButton.click();
+        done();
+      }, function (err) {
+        done(err);
+      });
+    });
+
+    it('should search and import LOINC form', () => {
+      fb.importMenu.click();
+      fb.importLoincMenuItem.click();
+      fb.searchBox.sendKeys('vital signs pnl');
+      fb.waitForElementDisplayed(element(by.id('searchResults')));
+      fb.searchBox.sendKeys(protractor.Key.ARROW_DOWN);
+      fb.searchBox.sendKeys(protractor.Key.TAB);
+      fb.searchBox.sendKeys(protractor.Key.ENTER);
+
+      var EC = protractor.ExpectedConditions;
+      browser.wait(EC.elementToBeClickable(fb.firstNode), 5000);
+      expect(fb.firstNode.isDisplayed()).toBeTruthy();
+      expect(fb.basicPanelEl.isDisplayed()).toBeTruthy();
+      expect(fb.nodeList.count()).toEqual(25);
     });
   });
 

@@ -15,7 +15,7 @@ var FormBuilder = function () {
   this.autoCompListItems = element.all(by.css('#searchResults li'));
   //this.questionTree = element(by.css('.angular-ui-tree > ol > li'));
   this.questionTree = element(by.id('tree-container-id'));
-  this.addButton = element(by.id('sidebar-container')).element(by.css('button'));
+  this.addButton = element(by.id('addNewButton'));
   this.dialog = element.all(by.css('md-dialog')).last();
   this.importLOINCRadio = this.dialog.element(by.cssContainingText('md-radio-button', 'Import from LOINC'));
   this.newItemRadio = this.dialog.element(by.cssContainingText('md-radio-button', 'New item'));
@@ -161,6 +161,7 @@ var FormBuilder = function () {
   this.qIdentifierUse = element(by.id('/identifier/use/1/1'));
   this.qIdentifierPeriodStart = element(by.id('/identifier/period/start/1/1/1'));
   this.qIdentifierPeriodEnd = element(by.id('/identifier/period/end/1/1/1'));
+  this.importLoincMenuItem = element(by.cssContainingText('md-menu-content > md-menu-item > button', 'Import a LOINC form...'));
 
   var thisPO = this;
 
