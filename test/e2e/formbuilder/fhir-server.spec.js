@@ -126,9 +126,17 @@ describe('FHIR server interactions - ', function () {
 
       expect(fb.nextButton.isEnabled()).toBeTruthy();
       expect(fb.prevButton.isEnabled()).toBeFalsy();
+      // First bundle is without total field, next three are with it.
+      const eleForAbsentTotalField = element(by.cssContainingText('md-dialog div h4',
+          'The following resources are found from FHIR server:'));
+      expect(eleForAbsentTotalField.isDisplayed()).toBeTruthy();
       fb.nextButton.click();
       expect(fb.nextButton.isEnabled()).toBeTruthy();
       expect(fb.prevButton.isEnabled()).toBeTruthy();
+      // This bundle is with total field.
+      const eleForTotalField = element(by.cssContainingText('md-dialog div h4',
+          '20 resources found from FHIR server:'));
+      expect(eleForTotalField.isDisplayed()).toBeTruthy();
       fb.nextButton.click();
       expect(fb.nextButton.isEnabled()).toBeTruthy();
       expect(fb.prevButton.isEnabled()).toBeTruthy();
