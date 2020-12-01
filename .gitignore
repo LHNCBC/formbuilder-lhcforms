@@ -2,6 +2,7 @@ node_modules
 public
 .tmp
 .idea
+.vscode
 client/bower_components
 dist
 logs
