@@ -52,9 +52,9 @@ describe('FHIR server interactions - ', function () {
     const uhnServerName = 'http://hapi.fhir.org/baseR4';
 
     beforeAll(function () {
+      util.resetForm();
       fb.formNode.click();
       fb.basicFormEditTab.click();
-      fb.cleanupSideBar();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
