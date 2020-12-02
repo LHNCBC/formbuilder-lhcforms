@@ -116,7 +116,7 @@ describe('FHIR server interactions - ', function () {
       fb.dismissMenu();
     });
 
-    fit('should do next/previous page', function () {
+    it('should do next/previous page', function () {
 
       fb.importMenu.click();
       fb.showFhirResources.click();
