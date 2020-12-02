@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.3.1]  2020-12-01
+### Fixed
+- Display FHIR search results, even if Bundle.total is absent.
+
 ## [6.3.0]  2020-10-14
 ### Added
 - Import LOINC forms.

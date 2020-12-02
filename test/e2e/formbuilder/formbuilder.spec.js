@@ -26,7 +26,7 @@ describe('GET /', function () {
   describe('Add New or import from LOINC', function () {
     describe('LOINC import panel/question', function () {
       beforeEach(function () {
-        fb.cleanupSideBar();
+        util.resetForm();
         fb.addButton.click();
         fb.importLOINCRadio.click();
       });
@@ -71,14 +71,14 @@ describe('GET /', function () {
         // For some reason entering two characters doesn't seem to bring the
         // correct auto complete list using protractor/chrome driver.
         //fb.autoCompSelectByText(fb.searchBox, 'ar', 'Gas panel');
-        fb.autoCompSelectByText(fb.searchBox, 'Gas', 'Gas panel');
+        fb.autoCompSelectByText(fb.searchBox, 'Gas ', 'Gas panel');
         clickImportButton();
         expect(fb.importButton.isPresent()).toBeFalsy();
         expect(fb.panelTitle.getAttribute('innerText')).toContain('Gas');
       });
 
       it('should not import if an invalid value is entered after a valid one', function () {
-        fb.autoCompSelectByText(fb.searchBox, 'arb', 'Arbovirus');
+        fb.autoCompSelectByText(fb.searchBox, 'arbo', 'Arbovirus');
         fb.searchBox.click(); // restore focus that was lost for some unknown reason
         fb.searchBox.sendKeys('z');
         clickImportButton();
@@ -87,10 +87,10 @@ describe('GET /', function () {
       });
 
       it('should import the correct panel if a second panel is selected after the first', function () {
-        fb.autoCompSelectByText(fb.searchBox, 'hepa', 'Acute ');
+        fb.autoCompSelectByText(fb.searchBox, 'hepat', 'Acute ');
         fb.searchBox.clear();
         fb.searchBox.click(); // restore focus to field
-        fb.sendKeys(fb.searchBox, 'Vital');
+        fb.sendKeys(fb.searchBox, 'Vital ');
         fb.searchBox.sendKeys(protractor.Key.DOWN);
         clickImportButton();
         expect(fb.panelTitle.getAttribute('innerText')).toContain('Vital');
@@ -137,7 +137,7 @@ describe('GET /', function () {
 
     describe('Item type radio buttons', function() {
       beforeAll(function() {
-        fb.cleanupSideBar();
+        util.resetForm();
         var str = 'Test item created';
         fb.addButton.click();
         fb.addNewItem(str);
@@ -166,7 +166,7 @@ describe('GET /', function () {
 
     describe('Css styling', function() {
       beforeAll(function() {
-        fb.cleanupSideBar();
+        util.resetForm();
         var str = 'Test item created';
         fb.addButton.click();
         fb.addNewItem(str);
@@ -254,7 +254,7 @@ describe('GET /', function () {
   describe('Test with imported vital signs panel from lforms-service', function() {
 
     beforeAll(function() {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
@@ -333,7 +333,7 @@ describe('GET /', function () {
   describe('Build restrictions', function () {
 
     beforeAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
       util.assertNodeSelection('Resp rate');
       fb.advancedEditTab.click();
@@ -545,7 +545,7 @@ describe('GET /', function () {
   describe('Data control', function () {
 
     beforeAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
       fb.scrollIntoViewAndClick(fb.previewRefreshButton);
       util.assertNodeSelection('Heart rate');
@@ -572,7 +572,7 @@ describe('GET /', function () {
   describe('Display control', function () {
 
     beforeAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('gas ', 1);
     });
 
@@ -662,7 +662,7 @@ describe('GET /', function () {
     var fhirOriginalJsonR4 = null;
 
     beforeAll(function (done) {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('heart rate', 1);
       fb.searchAndAddLoincPanel('weight change', 1);
       if (fs.existsSync(filename)) {
@@ -971,7 +971,7 @@ describe('GET /', function () {
     });
 
     beforeEach(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
@@ -1067,12 +1067,12 @@ describe('GET /', function () {
 
   describe('FHIR questionnaire', function () {
     beforeAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('vital signs pnl', 1);
     });
 
     afterAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
     });
 
     it('should convert prefix in FHIR questionnaire json', function () {
@@ -1115,14 +1115,14 @@ describe('GET /', function () {
 
   describe('CalculationMethod', function() {
     beforeAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
       fb.searchAndAddLoincPanel('phq9', 1);
       util.assertNodeSelection('Patient health ');
       fb.advancedEditTab.click();
     });
 
     afterAll(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
     });
 
     it('Should see initial value set to TOTALSCORE', function () {
@@ -1204,7 +1204,7 @@ describe('GET /', function () {
 
   describe('Observation link period', function () {
     beforeEach(function () {
-      fb.cleanupSideBar();
+      util.resetForm();
     });
 
     it('should warn about absent question code', function () {

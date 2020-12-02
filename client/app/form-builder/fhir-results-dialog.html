@@ -11,8 +11,9 @@
     </md-toolbar>
     <div style="padding: 0px 24px 0px 24px;">
       <div layout="row">
-        <h4 ng-show="fhirCtrl.fhirResults.total === 1">{{fhirCtrl.fhirResults.total}} resource found from FHIR server:</h4>
-        <h4 ng-show="fhirCtrl.fhirResults.total !== 1">{{fhirCtrl.fhirResults.total}} resources found from FHIR server:</h4>
+        <h4 ng-show="fhirCtrl.fhirResults.total === 1">{{fhirCtrl.fhirResults.total}} resource was found on the FHIR server:</h4>
+        <h4 ng-show="fhirCtrl.fhirResults.total > 1">{{fhirCtrl.fhirResults.total}} resources were found on the FHIR server:</h4>
+        <h4 ng-show="fhirCtrl.fhirResults.total === undefined">The following resources were found on the FHIR server:</h4>
         <md-input-container
           style="margin: 5px;"
           layout="row"
@@ -42,7 +43,7 @@
           <div ng-messages="fhirCtrl.fhirError">{{fhirCtrl.fhirError.message}}</div>
         </div>
         <div>
-          <md-list style="border: lightgrey solid 2px; padding: 0px;" class="md-dense" ng-show="fhirCtrl.fhirResults.total > 0">
+          <md-list style="border: lightgrey solid 2px; padding: 0px;" class="md-dense" ng-show="fhirCtrl.fhirResults.entry && fhirCtrl.fhirResults.entry.length > 0">
             <md-list-item ng-click="fhirCtrl.loadResource($event, item.resource.id)"  ng-class-odd="'stripe-odd'" class="md-3-line" ng-repeat="item in fhirCtrl.fhirResults.entry track by $index">
               <div style="display: grid; grid-template-columns: 40px 1fr 40px; align-items: start; justify-items: start; grid-gap: 3px 3px">
                 <div>{{ fhirCtrl.fhirResultsCount + $index + 1 }}</div>
