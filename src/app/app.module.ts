@@ -142,9 +142,6 @@ import { LabelRadioComponent } from './lib/widgets/label-radio.component';
     DropdownModule,
     RadioButtonModule
   ],
-  entryComponents:
-    [RowLayoutComponent, ArrayGridComponent, TableComponent, StepperGridComponent,
-    GridComponent, StringComponent, SelectComponent, CheckboxComponent, IntegerComponent, RadioComponent],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}],
   bootstrap: [AppComponent]
 })

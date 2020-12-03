@@ -6,7 +6,7 @@ fdescribe('UtilService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
   fit('should be created', () => {
-    const service: UtilService = TestBed.get(UtilService);
+    const service: UtilService = TestBed.inject(UtilService);
     expect(service).toBeTruthy();
     const layout: any[] = [
       '*',

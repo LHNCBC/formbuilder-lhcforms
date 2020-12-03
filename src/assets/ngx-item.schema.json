@@ -4827,9 +4827,6 @@
   ],
   "widget": {
     "keyField": "type",
-    "id": "expandable-panels",
-    "rows": [
-
-    ]
+    "id": "expandable-panels"
   }
 }
