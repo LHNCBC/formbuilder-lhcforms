@@ -9,9 +9,9 @@ export class UtilService {
 
   traverse(collection, cb) {
     if (Array.isArray(collection)) {
-      for (let i = 0; i < collection.length; i++) {
-        if (typeof collection[i] === 'object') {
-          this.traverse(collection[i], cb);
+      for (const item of collection) {
+        if (typeof item === 'object') {
+          this.traverse(item, cb);
         }
       }
     } else if (typeof collection === 'object') {
@@ -27,7 +27,7 @@ export class UtilService {
   }
 
   processLayout(layout) {
-    this.traverse(layout, function (parent, key, value) {
+    this.traverse(layout, (parent, key, value) => {
       if (key === 'condition' && typeof value === 'string') {
         let script = value;
         if (script.search(/\breturn\b/) < 0) {

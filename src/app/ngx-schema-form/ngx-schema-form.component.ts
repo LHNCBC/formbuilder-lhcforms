@@ -2,7 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {Binding, FormProperty, Validator} from 'ngx-schema-form';
-import {LinkIdCollection} from '../main-content/main-content.component';
+import {LinkIdCollection} from '../item/item.component';
 import {Form} from '@angular/forms';
 import {timeout} from 'rxjs/operators';
 import {ITreeNode} from 'angular-tree-component/dist/defs/api';

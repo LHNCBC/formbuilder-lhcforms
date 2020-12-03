@@ -1,4 +1,4 @@
-import {OnInit, AfterViewInit, Component, ViewChild, ElementRef, AfterContentInit} from '@angular/core';
+import {OnInit, AfterViewInit, Component, ViewChild, ElementRef, AfterContentInit, Input} from '@angular/core';
 // import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
@@ -55,10 +55,10 @@ export class LinkIdCollection {
 
 @Component({
   selector: 'app-item-component',
-  templateUrl: './main-content.component.html',
-  styleUrls: ['./main-content.component.css']
+  templateUrl: './item.component.html',
+  styleUrls: ['./item.component.css']
 })
-export class MainContentComponent implements OnInit, AfterViewInit {
+export class ItemComponent implements OnInit, AfterViewInit {
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('editor') jsonEditorComponent: JsonEditorComponent;
   @ViewChild('formSearch') sInput: MatInput;
@@ -66,6 +66,7 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   // qItem: any;
   focusNode: ITreeNode;
   options: ITreeOptions;
+  @Input()
   form: any = {item: [{text: 'Item 1'}]};
   exportForm: any;
   isTreeExpanded = false;
@@ -130,10 +131,12 @@ export class MainContentComponent implements OnInit, AfterViewInit {
   setNode(node: ITreeNode): void {
     this.focusNode = node;
     this.selectedNodeSrv.setNode(this.focusNode);
-    if (this.focusNode.data && !this.focusNode.data.linkId) {
-      this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
+    if (this.focusNode) {
+      if (this.focusNode.data && !this.focusNode.data.linkId) {
+        this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
+      }
+      this.selectedNodeSrv.setObject(this.focusNode.data);
     }
-    this.selectedNodeSrv.setObject(this.focusNode.data);
   }
 
   toggleTreeExpansion() {

@@ -37,16 +37,21 @@ export class StepperGridComponent extends GridComponent implements OnInit {
 
   steps: any [];
   completed: false;
+  keyField = 'type';
 
   ngOnInit() {
     super.ngOnInit();
-    this.formProperty.findRoot().getProperty('type').valueChanges.subscribe(() => {
+    const keyField = this.formProperty.findRoot().schema.widget.keyField;
+    if (keyField) {
+      this.keyField = keyField;
+    }
+    this.formProperty.findRoot().getProperty(this.keyField).valueChanges.subscribe(() => {
       this.steps = this.getSteps();
     });
   }
 
   getMandatoryControl() {
-    return this.formProperty.findRoot().getProperty('type').widget;
+    return this.formProperty.findRoot().getProperty(this.keyField).widget;
   }
 
   getSteps(): any [] {

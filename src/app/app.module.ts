@@ -9,7 +9,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { JsonEditorComponent } from './json-editor/json-editor.component';
 import { LayoutModule } from '@angular/cdk/layout';
-import { MainContentComponent } from './main-content/main-content.component';
+import { ItemComponent } from './item/item.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule} from '@angular/material/card';
@@ -64,13 +64,16 @@ import { AppArrayWidgetComponent } from './lib/widgets/app-array-widget.componen
 import { SideLabelCheckboxComponent } from './lib/widgets/side-label-checkbox.component';
 import { EnablewhenAnswerCodingComponent } from './lib/widgets/enablewhen-answer-coding.component';
 import { AppJsonPipe } from './lib/pipes/app-json.pipe';
+import { BasePageComponent } from './base-page/base-page.component';
+import { FormFieldsComponent } from './form-fields/form-fields.component';
+import { LabelRadioComponent } from './lib/widgets/label-radio.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     JsonEditorComponent,
     NgxSchemaFormComponent,
-    MainContentComponent,
+    ItemComponent,
     ItemJsonEditorComponent,
     RowLayoutComponent,
     ArrayGridComponent,
@@ -100,7 +103,10 @@ import { AppJsonPipe } from './lib/pipes/app-json.pipe';
     AppArrayWidgetComponent,
     SideLabelCheckboxComponent,
     EnablewhenAnswerCodingComponent,
-    AppJsonPipe
+    AppJsonPipe,
+    BasePageComponent,
+    FormFieldsComponent,
+    LabelRadioComponent
   ],
   imports: [
     AppRoutingModule,

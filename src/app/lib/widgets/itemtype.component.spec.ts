@@ -27,13 +27,13 @@ fdescribe('ItemtypeComponent', () => {
   });
 
   it('should update itemType with data type input', () => {
-    comp.dataType = 'display';
+    comp.itemType = 'display';
     testHostFixture.detectChanges();
     expect(comp.itemType).toEqual('display');
-    comp.dataType = 'group';
+    comp.itemType = 'group';
     testHostFixture.detectChanges();
     expect(comp.itemType).toEqual('group');
-    comp.dataType = 'string';
+    comp.itemType = 'string';
     testHostFixture.detectChanges();
     expect(comp.itemType).toEqual('question');
   });
@@ -52,7 +52,7 @@ fdescribe('ItemtypeComponent', () => {
     expect(dataType).toEqual('group');
     comp.itemType = 'question';
     testHostFixture.detectChanges();
-    expect(dataType).toEqual(comp.dataType);
+    expect(dataType).toEqual(comp.itemType);
   });
 
   @Component({

@@ -12,6 +12,7 @@ import { DomSanitizer } from '@angular/platform-browser';
       <div id="siteNameBox">
         <a mat-button id="siteName" href="/">Form Builder for FHIR Questionnaire</a>
       </div>
+      <!--
       <button mat-button color="primary" [matMenuTriggerFor]="menuExport">Export<mat-icon>arrow_drop_down</mat-icon></button>
       <mat-menu #menuExport="matMenu">
         <button mat-menu-item>Export to file...</button>
@@ -23,6 +24,7 @@ import { DomSanitizer } from '@angular/platform-browser';
         <button mat-menu-item>Import from file...</button>
         <button mat-menu-item>Load from FHIR server...</button>
       </mat-menu>
+      -->
       <div class="float-lg-right" *ngIf="isFirebaseEnabled">
         <div *ngIf="!isUserSignedIn">
           <button mat-button color="primary" (click)="showSignInDialog()">

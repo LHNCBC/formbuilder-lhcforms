@@ -104,6 +104,7 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
   noHeader = false;
   // Flag to control hiding of add/remove buttons.
   singleItem = false;
+  keyField = 'type';
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
@@ -138,8 +139,11 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
         this.noCollapseButton = this.singleItem;
       });
     }
-
-    this.formProperty.searchProperty('type').valueChanges.subscribe((newValue) => {
+    const keyField = this.formProperty.findRoot().schema.widget.keyField;
+    if (keyField) {
+      this.keyField = keyField;
+    }
+    this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
       const showFields = this.getShowFields();
       this.noHeader = showFields.some((f) => f.noHeader);
     });

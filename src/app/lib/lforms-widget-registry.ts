@@ -18,6 +18,7 @@ import {LeftLabelFormGroupComponent} from './widgets/left-label-form-group.compo
 import {ExpandablePanelsComponent} from './widgets/expandable-panels.component';
 import {SideLabelCheckboxComponent} from './widgets/side-label-checkbox.component';
 import {EnablewhenAnswerCodingComponent} from './widgets/enablewhen-answer-coding.component';
+import {LabelRadioComponent} from './widgets/label-radio.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -35,6 +36,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('integer', IntegerComponent);
     this.register('number', IntegerComponent);
     this.register('radio', RadioComponent);
+    this.register('lb-radio', LabelRadioComponent),
     this.register('item-type', ItemtypeComponent);
     this.register('choice', ChoiceComponent);
     this.register('row-grid', RowGridComponent);

@@ -227,7 +227,16 @@
       "type": "string",
       "title": "Data type",
       "widget": {
-        "id": "item-type"
+        "id": "select",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10",
+        "selectOptionsMap": {
+          "remove": ["display", "reference", "attachment"],
+          "map": {
+            "group": "header"
+          }
+        }
       },
       "default": "string"
     },
@@ -4817,6 +4826,10 @@
     }
   ],
   "widget": {
-    "id": "expandable-panels"
+    "keyField": "type",
+    "id": "expandable-panels",
+    "rows": [
+
+    ]
   }
 }

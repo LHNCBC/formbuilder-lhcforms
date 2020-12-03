@@ -50,7 +50,7 @@ export class LeftLabelFormGroupComponent  extends RowGridComponent implements On
   }
 
   getShowFields(): string[] {
-    let ret = super.getShowFields();
+    const ret = super.getShowFields();
     if (!ret || ret.length === 0) {
       // ret.push(this.formProperty.);
     }

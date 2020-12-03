@@ -1,32 +1,5 @@
 @import '~angular-tree-component/dist/angular-tree-component.css';
 
-#fixedTop {
-  position:absolute;
-  top:0;
-  left:0;
-  height:84px;
-  right:0;
-  overflow:hidden;
-}
-
-#fixedBottom {
-  position:absolute;
-  bottom:0;
-  height:65px;
-  left:0;
-  right:0;
-  overflow:hidden;
-}
-
-#resizableMiddle {
-  position:absolute;
-  top:84px;
-  bottom:65px;
-  left:0;
-  right:0;
-  overflow:auto;
-}
-
 .mat-sidenav {
   width: 25%;
   padding: 10px;

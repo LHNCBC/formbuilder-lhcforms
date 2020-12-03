@@ -14,7 +14,7 @@ export class ShareObjectService {
   object$ = this.objSource$.asObservable();
   objectStr$ = this.object$.pipe(map((item) => {
     return new AppJsonPipe().transform(item);
-    //return JSON.stringify(item, null, 2);
+    // return JSON.stringify(item, null, 2);
   }));
   constructor() {}
 

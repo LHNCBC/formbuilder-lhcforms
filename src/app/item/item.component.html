@@ -1,12 +1,11 @@
-  <div>
-    <app-header id="fixedTop" [isFirebaseEnabled]="true"></app-header>
-    <div id="resizableMiddle">
-      <mat-sidenav-container>
+<mat-sidenav-container>
         <mat-sidenav #drawer mode="side" opened>
+          <!--
           <mat-toolbar color="primary">
             <app-auto-complete class="search-box" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
           </mat-toolbar>
           <button type="button" class="btn btn-link btn-sm" (click)="toggleTreeExpansion();">Toggle Expansion</button>
+          -->
           <tree-root
             #tree
             [nodes]="form.item"
@@ -16,6 +15,17 @@
           ></tree-root>
         </mat-sidenav>
         <mat-sidenav-content>
+          <div>
+          <p>Edit item (question or header)</p>
+            <ul>
+              <li>
+                The questions are organized in hierarchical tree on the left side. Select the desired item to edit their properties here.
+              </li>
+            </ul>
+          </div>
+          <hr/>
+          <app-ngx-schema-form [node]="focusNode"></app-ngx-schema-form>
+          <!--
           <mat-tab-group (selectedTabChange)="showJson($event)">
             <mat-tab label="Editor">
               <app-ngx-schema-form [node]="focusNode"></app-ngx-schema-form>
@@ -37,10 +47,19 @@
               <pre *ngIf="showType === 'questionnaire'">{{ exportForm | appJson }}</pre>
             </mat-tab>
           </mat-tab-group>
+          -->
+          <hr/>
+          <div class="btn-toolbar float-right" role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-group ml-2" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="showJson($event)">View/Edit item's JSON</button>
+            </div>
+            <div class="btn-group ml-2" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="showJson($event)">Add an item</button>
+            </div>
+            <div class="btn-group ml-2" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="showJson($event)">Add an item from LOINC</button>
+            </div>
+          </div>
         </mat-sidenav-content>
-      </mat-sidenav-container>
-    </div>
-
-    <app-footer id="fixedBottom"></app-footer>
-  </div>
+</mat-sidenav-container>
 
