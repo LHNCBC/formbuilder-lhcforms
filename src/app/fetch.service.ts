@@ -52,7 +52,7 @@ export class FetchService {
   assetsUrl = '/assets';
   constructor(private http: HttpClient) { }
 
-  getFormData(id: string): Observable<TreeNode> {
+  getFormData(id: string): Observable<any> {
     return this.http.get(this.fhirUrl + '/' + id, {responseType: 'json'});
   }
 

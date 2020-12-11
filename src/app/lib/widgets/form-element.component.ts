@@ -12,7 +12,8 @@ import { Widget } from 'ngx-schema-form';
         [nolabel]="nolabel"
         [layout]="layout"
         [labelWidthClass]="labelWidthClass"
-        [controlWidthClass]="controlWidthClass"
+        [booleanControlled]="booleanControlled"
+        [booleanLabel]="booleanLabel"
         (widgetInstanciated)="onWidgetInstanciated($event)"
         [widgetInfo]="formProperty.schema.widget">
       </app-element-chooser>
@@ -30,6 +31,10 @@ export class AppFormElementComponent extends FormElementComponent {
   labelWidthClass: string;
   @Input()
   controlWidthClass: string;
+  @Input()
+  booleanControlled = false;
+  @Input()
+  booleanLabel: string;
 
   /*
   --- Used for debugging ----

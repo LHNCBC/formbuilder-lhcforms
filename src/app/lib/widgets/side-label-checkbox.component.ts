@@ -4,7 +4,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-side-label-checkbox',
-  template: `<div *ngIf="schema.type!='array'" class="widget form-group row">
+  template: `<div *ngIf="schema.type!='array'" class="widget row">
       <label *ngIf="!nolabel && schema.title" [attr.for]="id" class="form-check-label col-form-label-sm {{labelWidthClass}}">
         {{ schema.title }}
         <span *ngIf="schema.description"  matTooltipPosition="above" [matTooltip]="schema.description">

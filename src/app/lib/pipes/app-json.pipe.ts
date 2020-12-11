@@ -11,7 +11,8 @@ export class AppJsonPipe implements PipeTransform {
       return (
         k.startsWith('_') ||
         typeof v === 'function'
-      ) ? undefined : (k === 'question' ? v.data.linkId : v);
+      ) ? undefined : (k === 'question' ? v.data.linkId : v); // Special case: enableWhen.question is a TreeNode.
+                                                              // It should include linkId.
     };
     return JSON.stringify(value, replacer, 2);
   }

@@ -67,6 +67,8 @@ import { AppJsonPipe } from './lib/pipes/app-json.pipe';
 import { BasePageComponent } from './base-page/base-page.component';
 import { FormFieldsComponent } from './form-fields/form-fields.component';
 import { LabelRadioComponent } from './lib/widgets/label-radio.component';
+import { RowLayoutAComponent } from './lib/widgets/row-layout-a.component';
+import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.component';
 
 @NgModule({
   declarations: [
@@ -106,7 +108,9 @@ import { LabelRadioComponent } from './lib/widgets/label-radio.component';
     AppJsonPipe,
     BasePageComponent,
     FormFieldsComponent,
-    LabelRadioComponent
+    LabelRadioComponent,
+    RowLayoutAComponent,
+    BooleanControlledComponent
   ],
   imports: [
     AppRoutingModule,

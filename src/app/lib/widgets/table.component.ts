@@ -10,7 +10,18 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
 @Component({
   selector: 'app-table',
   template: `
-    <div class="widget form-group"  [ngClass]="{'row': labelPosition === 'left'}">
+    <ng-container *ngIf="booleanControlled">
+      <app-boolean-controlled
+        [(bool)]="booleanControlledInitial"
+        [controlWidthClass]="controlWidthClass"
+        [labelWidthClass]="labelWidthClass"
+        [label]="booleanLabel"
+        [labelPosition]="labelPosition"
+        [helpMessage]="schema.description"
+      ></app-boolean-controlled>
+    </ng-container>
+
+    <div *ngIf="!booleanControlled || booleanControlledInitial" class="widget form-group"  [ngClass]="{'row': labelPosition === 'left'}">
       <div [ngClass]="labelWidthClass">
         <button *ngIf="!noCollapseButton" href="#" type="button"
                 [ngClass]="{'float-sm-right': labelPosition === 'left'}"
@@ -59,7 +70,8 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
           <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
         </button>
       </div>
-    </div>`,
+    </div>
+  `,
   styles: [`
     .action-column {
       text-align: end;

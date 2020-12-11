@@ -184,6 +184,18 @@ export class ItemComponent implements OnInit, AfterViewInit {
     }
   }
 
+  getIndexPath(node: ITreeNode): number[] {
+    const ret: number [] = [];
+    if (node) {
+      ret.push(node.index + 1);
+      while (node.level > 1) {
+        node = node.parent;
+        ret.push(node.index + 1);
+      }
+    }
+    return ret.reverse();
+  }
+
   registerLinkId(linkId) {
     this.linkIdCollection.addLinkId(linkId, this.focusNode.path.join('/'));
   }

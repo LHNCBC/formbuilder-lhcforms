@@ -12,7 +12,13 @@
             [options]="options"
             (initialized)="onTreeInitialized($event)"
             (focus)="onFocus($event)"
-          ></tree-root>
+          >
+            <ng-template #treeNodeTemplate let-node let-index="index">
+              <div [ngClass]="node.nodeClass">
+                <span class="node-display-prefix">{{getIndexPath(node).join('.')}}</span> <span [ngClass]="node.nodeClass">{{node.displayField}}</span>
+              </div>
+            </ng-template>
+          </tree-root>
         </mat-sidenav>
         <mat-sidenav-content>
           <div>

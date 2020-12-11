@@ -1805,6 +1805,9 @@
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
+        "booleanControlled": true,
+        "booleanLabel": "Use code(s)?",
+        "booleanControlledInitial": false,
         "showFields": [
           {"field": "code", "col": 4, "nolabel": true},
           {"field": "system", "col": 7, "nolabel": true}
@@ -1878,6 +1881,6 @@
   ],
   "widget": {
     "keyField": "resourceType",
-    "id": "expandable-panels"
+    "id": "row-layout-a"
   }
 }

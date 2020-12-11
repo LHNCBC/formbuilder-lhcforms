@@ -4,7 +4,7 @@ import {ShareObjectService} from '../share-object.service';
 import {Binding, FormProperty, Validator} from 'ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {Form} from '@angular/forms';
-import {timeout} from 'rxjs/operators';
+import {map, switchMap, timeout} from 'rxjs/operators';
 import {ITreeNode} from 'angular-tree-component/dist/defs/api';
 import {TreeModel} from 'angular-tree-component';
 
@@ -56,6 +56,18 @@ export class NgxSchemaFormComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.http.get('/assets/ngx-item.schema.json', { responseType: 'json' }).pipe(
+      switchMap((schema: any) => this.http.get('/assets/items-layout.json', { responseType: 'json' }).pipe(
+        map((layout: any) => {
+          schema.layout = layout;
+          return schema;
+        })
+      ))
+    ).subscribe((schema) => {
+      this.mySchema = schema;
+      console.log(JSON.stringify(this.mySchema.layout, null, 2));
+    });
+    /*
     this.http
       .get('/assets/ngx-item.schema.json', { responseType: 'json' })
       .subscribe(schema => {
@@ -66,7 +78,7 @@ export class NgxSchemaFormComponent implements OnInit {
       .subscribe(schema => {
         this.myTestSchema = schema;
       });
-
+*/
     this.modelService.object$.subscribe((model) => {
       if (this.model !== model) {
         this.model = model;

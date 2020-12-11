@@ -87,6 +87,23 @@
         "id": "hidden"
       }
     },
+    "_codeYesNo": {
+      "description": "Controls how multiple enableWhen values are interpreted -  whether all or any must be true.",
+      "enum": [
+        "No",
+        "Yes"
+      ],
+      "default": "Yes",
+      "type": "string",
+      "title": "Use code(s)?",
+      "widget": {
+        "id": "hidden",
+        "layout": "row",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-3"
+      }
+    },
     "code": {
       "description": "A terminology code that corresponds to this group or question (e.g. a code from LOINC, which defines many questions and answers).",
       "items": {
@@ -162,9 +179,11 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Code",
+      "title": "Code(s)",
       "visibleIf": {
-        "type": ["$EXP$ target.value != 'display'"]
+        "allOf": [
+          {"type": ["$EXP$ target.value != 'display'"]}
+        ]
       },
       "widget": {
         "id": "table",
@@ -174,6 +193,9 @@
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
+        "booleanControlled": true,
+        "booleanLabel": "Use code(s)?",
+        "booleanControlledInitial": false,
         "showFields": [
           {"field": "code", "col": 4, "nolabel": true},
           {"field": "system", "col": 7, "nolabel": true}
@@ -194,7 +216,7 @@
     },
     "text": {
       "description": "The name of a section, the text of a question or text content for a display item.",
-      "title": "Name",
+      "title": "Question text",
       "pattern": "^[ \\r\\n\\t\\S]+$",
       "type": "string",
       "widget": {
@@ -225,7 +247,7 @@
         "display"
       ],
       "type": "string",
-      "title": "Data type",
+      "title": "Item type",
       "widget": {
         "id": "select",
         "labelPosition": "left",
@@ -700,10 +722,12 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Conditions",
+      "title": "Conditional display",
       "widget": {
         "noCollapseButton": true,
-        "noTableLabel": true,
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10",
         "addButtonLabel": "Add new condition",
         "id": "table",
         "showFields": [
@@ -736,7 +760,7 @@
     },
     "required": {
       "description": "An indication, if true, that the item must be present in a \"completed\" QuestionnaireResponse.  If false, the item may be skipped when answering the questionnaire.",
-      "title": "Required",
+      "title": "Answer required",
       "pattern": "^true|false$",
       "type": "boolean",
       "visibleIf": {
@@ -751,7 +775,7 @@
     },
     "repeats": {
       "description": "An indication, if true, that the item may occur multiple times in the response, collecting multiple answers for questions or multiple sets of answers for groups.",
-      "title": "Repeats",
+      "title": "Allow repeating question?",
       "pattern": "^true|false$",
       "type": "boolean",
       "visibleIf": {
@@ -781,7 +805,7 @@
     },
     "maxLength": {
       "description": "The maximum number of characters that are permitted in the answer to be considered a \"valid\" QuestionnaireResponse.",
-      "title": "Max length",
+      "title": "Maximum number of char.",
       "pattern": "^-?([0]|([1-9][0-9]*))$",
       "type": "number",
       "visibleIf": {
@@ -1537,7 +1561,7 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Initial values",
+      "title": "Initial value",
       "visibleIf": {
         "type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
       },
@@ -4741,8 +4765,9 @@
       ]
     },
     {
-      "fields": ["code"],
+      "fields": ["code", "_codeYesNo"],
       "showFields": [
+        { "field": "_codeYesNo", "col": 12 },
         { "field": "code", "col": 12 }
       ]
     },
@@ -4792,6 +4817,7 @@
         {
           "showFields": [
             { "field": "text", "col": 12 },
+            { "field": "_codeYesNo", "col": 12 },
             { "field": "code", "col": 12 },
             { "field": "prefix", "col": 12}
           ]
@@ -4827,6 +4853,6 @@
   ],
   "widget": {
     "keyField": "type",
-    "id": "expandable-panels"
+    "id": "row-layout-a"
   }
 }

@@ -19,6 +19,12 @@ export class AppControlWidgetComponent extends ControlWidget implements OnInit {
   labelWidthClass: string;
   @Input()
   controlWidthClass: string;
+  @Input()
+  booleanControlled = false;
+  @Input()
+  booleanLabel: string;
+  @Input()
+  booleanControlledInitial = true;
 
   ngOnInit() {
     const widget = this.formProperty.schema.widget;
@@ -46,5 +52,9 @@ export class AppControlWidgetComponent extends ControlWidget implements OnInit {
           ? widget.controlWidthClass
           : 'col-sm'))
         : '';
+    this.booleanControlled = this.booleanControlled ? this.booleanControlled : !!widget.booleanControlled;
+
+    this.booleanControlledInitial = widget.booleanControlledInitial !== undefined ?
+      widget.booleanControlledInitial : this.booleanControlledInitial; // If not defined, show the control.
   }
 }

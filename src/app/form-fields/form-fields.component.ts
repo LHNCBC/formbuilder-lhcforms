@@ -2,6 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {FetchService} from '../fetch.service';
+import {map, switchMap} from 'rxjs/operators';
 
 @Component({
   selector: 'app-form-fields',
@@ -14,7 +15,7 @@ export class FormFieldsComponent implements OnInit {
   questionnaire: any = {item: []};
   qlSchema: any = {properties: {}};
   qlTestSchema: any = {properties: {}};
-  model: any;
+  // model: any;
   guidingStep = 'fl-editor'; // 'choose-start', 'home', 'item-editor'
   notHidden = true;
 
@@ -30,6 +31,7 @@ export class FormFieldsComponent implements OnInit {
   }
 
   ngOnInit() {
+    /*
     this.http
       .get('/assets/ngx-fl.schema.json', { responseType: 'json' })
       .subscribe(schema => {
@@ -40,18 +42,31 @@ export class FormFieldsComponent implements OnInit {
       .subscribe(schema => {
         this.qlTestSchema = schema;
       });
+*/
+    this.http.get('/assets/ngx-fl.schema.json', { responseType: 'json' }).pipe(
+      switchMap((schema: any) => this.http.get('/assets/fl-fields-layout.json', { responseType: 'json' }).pipe(
+        map((layout: any) => {
+          schema.layout = layout;
+          return schema;
+        })
+      ))
+    ).subscribe((schema) => {
+      this.qlSchema = schema;
+    });
 
+    /*
     this.modelService.object$.subscribe((model) => {
       if (this.model !== model) {
         this.model = model;
       }
     });
+    */
   }
-
+/*
   updateModel(model) {
     this.modelService.setObject(model);
   }
-
+*/
   // Button handlers
   editItem() {
     this.guidingStep = 'item-editor';
@@ -67,6 +82,11 @@ export class FormFieldsComponent implements OnInit {
   }
 
   viewQuestionnaire() {
+    this.guidingStep = 'qJSON';
+  }
+
+  stringify(json): string {
+    return JSON.stringify(json, null, 2);
   }
 
   allFields() {
@@ -78,7 +98,7 @@ export class FormFieldsComponent implements OnInit {
     } else {
       this.dataSrv.getFormData(term).subscribe((data) => {
         this.questionnaire = data;
-        this.model = this.questionnaire;
+        // this.model = this.questionnaire;
       });
     }
   }

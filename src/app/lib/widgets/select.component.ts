@@ -7,7 +7,7 @@ import {AppControlWidgetComponent} from './app-control-widget.component';
   selector: 'app-select',
   template: `
     <ng-template #baseSelect>
-      <div [ngClass]="{'form-group': true, 'row': labelPosition === 'left'}">
+      <div [ngClass]="{'row': labelPosition === 'left'}">
         <app-label  *ngIf="!nolabel"
                     [for]="id"
                     [title]="schema.title"
@@ -75,7 +75,7 @@ export class SelectComponent extends AppControlWidgetComponent implements AfterV
 
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
-    this.selectOptionsMap = this.schema.widget.selectOptionsMap;
+    this.selectOptionsMap = this.schema.widget.selectOptionsMap || {};
     const allowedOptions = this.schema.enum.map((e) => {
       return this.mapOption(e);
     });
@@ -93,6 +93,6 @@ export class SelectComponent extends AppControlWidgetComponent implements AfterV
   }
 
   isIncluded(opt: string): boolean {
-    return !(this.selectOptionsMap.remove.indexOf(opt) >= 0);
+    return !(this.selectOptionsMap.remove && this.selectOptionsMap.remove.indexOf(opt) >= 0);
   }
 }

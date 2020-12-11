@@ -1,7 +1,11 @@
 @import '~angular-tree-component/dist/angular-tree-component.css';
 
+.node-display-prefix {
+  font-weight: bold;
+  margin-right: 1rem;
+}
 .mat-sidenav {
-  width: 25%;
+  width: 20%;
   padding: 10px;
 }
 

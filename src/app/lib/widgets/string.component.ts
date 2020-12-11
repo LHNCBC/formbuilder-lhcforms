@@ -9,7 +9,7 @@ import {AppControlWidgetComponent} from './app-control-widget.component';
     <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
            [attr.name]="name" type="hidden" [formControl]="control">
     <ng-template #notHiddenFieldBlock>
-      <div [ngClass]="{'form-group': true, 'row': labelPosition === 'left'}">
+      <div [ngClass]="{'row': labelPosition === 'left'}">
         <app-label *ngIf="!nolabel"
                    [for]="id"
                    [title]="schema.title"

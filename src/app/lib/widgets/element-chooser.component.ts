@@ -15,4 +15,8 @@ export class ElementChooserComponent extends WidgetChooserComponent {
   labelWidthClass: string;
   @Input()
   controlWidthClass: string;
+  @Input()
+  booleanControlled = false;
+  @Input()
+  booleanLabel: string;
 }

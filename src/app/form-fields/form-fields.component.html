@@ -6,7 +6,7 @@
     <button type="button" class="btn btn-secondary" (click)="editItem()" [disabled]="guidingStep === 'item-editor'">Create questions</button>
   </div>
   <div class="btn-group-sm mr-2" role="group" aria-label="View Questionnaire JSON">
-    <button type="button" class="btn btn-secondary" (click)="viewQuestionnaire()">View Questionnaire JSON</button>
+    <button type="button" class="btn btn-secondary" (click)="guidingStep = 'qJSON'" [disabled]="guidingStep === 'qJSON'">View Questionnaire JSON</button>
   </div>
   <div class="btn-group-sm mr-2" role="group" aria-label="Start new form">
     <button type="button" class="btn btn-secondary " (click)="startNew()">Start new form</button>
@@ -16,7 +16,7 @@
   </div>
 </div>
 
-<div class="card-body">
+<div class="card-body content">
   <app-item-component *ngIf="guidingStep === 'item-editor'" [form]="questionnaire"></app-item-component>
   <div  *ngIf="guidingStep === 'fl-editor'">
     <p>Enter basic information about the form.</p>
@@ -34,11 +34,13 @@
         </div>
       </div>
     </div>
+    <hr/>
     <div class="container-fluid">
       <sf-form [schema]="qlSchema"
-               [model]="model" (modelChange)="updateModel($event)"
+               [model]="questionnaire"
       ></sf-form>
     </div>
+    <hr/>
     <div class="btn-toolbar float-right" role="toolbar" aria-label="Toolbar with button groups">
       <div class="btn-group-sm" role="group" aria-label="Advanced fields button">
         <button type="button" class="btn btn-primary mt-4 mr-2" (click)="allFields()">Enter Advanced fields</button>
@@ -47,5 +49,8 @@
       <div class="btn-group-sm ml-sm-1" role="group" aria-label="Create questions button">
       </div>
     </div>
+  </div>
+  <div *ngIf="guidingStep === 'qJSON'">
+    <pre>{{ stringify(questionnaire) }}</pre>
   </div>
 </div>
