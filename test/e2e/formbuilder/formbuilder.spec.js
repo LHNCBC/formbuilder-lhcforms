@@ -511,7 +511,7 @@ describe('GET /', function () {
       fb.basicEditTab.click();
       // Make parent boolean type question.
       fb.autoCompSelect(fb.questionType, 1);
-      fb.sendKeys(fb.linkId, '/p');
+      fb.sendKeys(fb.linkId, 'p');
       // Add a child
       fb.clickMenuItem('Parent', 'Insert a child item');
       expect(fb.dialog.isDisplayed).toBeTruthy();
@@ -519,7 +519,7 @@ describe('GET /', function () {
       fb.typeQuestionRadio.click();
       fb.newItemInputBox.sendKeys('Child');
       fb.newItemAddButton.click();
-      fb.sendKeys(fb.linkId, '/c');
+      fb.sendKeys(fb.linkId, 'c');
       // Point to parent as skip logic source
       fb.advancedEditTab.click();
       fb.useSkipLogicYes.click();
@@ -529,8 +529,8 @@ describe('GET /', function () {
 
       // See if it works in preview.
       fb.previewRefreshButton.click();
-      const previewParentCheckbox = element(by.id('/p/1'));
-      const previewChildInput = element(by.id('/c/1/1'));
+      const previewParentCheckbox = element(by.id('p/1'));
+      const previewChildInput = element(by.id('c/1/1'));
       var EC = protractor.ExpectedConditions;
       browser.wait(EC.visibilityOf(previewParentCheckbox), 5000);
       expect(previewChildInput.isPresent()).toBeFalsy();
