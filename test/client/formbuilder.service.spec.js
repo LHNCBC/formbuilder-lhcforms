@@ -101,13 +101,10 @@ describe('formbuilder.service ', function () {
      * @param exptectedUrl - The exptected url after updateUnitsURL is called.
      * @param done - Done method from jasmine framework to wait on asynchronous call.
      */
-    function assertUpdateUnitsURL(exptectedUrl, done) {
+    function assertUpdateUnitsURL(exptectedUrl) {
       $httpBackend.expectGET(/^https?:.+$/);
       fbService._updateUnitsURL(lfData).then(function () {
         expect(unitsItem.externallyDefined).toEqual(exptectedUrl);
-        done();
-      }, function (err) {
-        done(err);
       });
       $httpBackend.flush();
     }
@@ -124,6 +121,12 @@ describe('formbuilder.service ', function () {
       // Setup mock response. It could be modified in the test suit
       loincPropertyResp = [1, [codeItem.value],null,[[]]];
       $httpBackend.when('GET', /^https?:.+$/).respond(function () { return [200, loincPropertyResp];});
+      // Suppress error: unexpected request app/form-builder/form-builder.html
+      // For some reason, the mock thinks we are making app/form-builder/form-builder.html and expects
+      // to define the response. The dummy response to suppress the error.
+      $httpBackend.whenGET(/app\/form-builder/).respond(function() {
+        return [200];
+      });
     });
 
     afterEach(function() {
@@ -132,22 +135,22 @@ describe('formbuilder.service ', function () {
     });
 
 
-    it('with no loinc property', function (done) {
+    it('with no loinc property', function () {
       var expectedUrl = unitsItem.externallyDefined;
-      assertUpdateUnitsURL(expectedUrl, done);
+      assertUpdateUnitsURL(expectedUrl);
     });
 
-    it('with loinc property', function (done) {
+    it('with loinc property', function () {
       loincPropertyResp[3][0].push('aaa bbb');
       loincPropertyResp[3][0].push('xxx yyy'); // Should ignore the second one.
       var expectedUrl = unitsItem.externallyDefined+'&bq=loinc_property:(%22aaa%20bbb%22)^20';
-      assertUpdateUnitsURL(expectedUrl, done);
+      assertUpdateUnitsURL(expectedUrl);
     });
 
-    it('loinc property with special characters', function (done) {
+    it('loinc property with special characters', function () {
       loincPropertyResp[3][0].push('aaa;"&<>\'bbb');
       var expectedUrl = unitsItem.externallyDefined+'&bq=loinc_property:(%22aaa%3B%22%26%3C%3E\'bbb%22)^20';
-      assertUpdateUnitsURL(expectedUrl, done);
+      assertUpdateUnitsURL(expectedUrl);
     });
   });
 

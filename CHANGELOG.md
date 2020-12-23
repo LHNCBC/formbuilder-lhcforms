@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.3.2]  2020-12-21
+### Fixed
+- Upgrade AngularJS to 1.8.x to address a security alert.
+
 ## [6.3.1]  2020-12-01
 ### Fixed
 - Display FHIR search results, even if Bundle.total is absent.
