@@ -27,11 +27,9 @@ import {Util} from '../util';
 export class GridComponent extends ObjectWidget implements OnInit {
 
   constructor() {
-    console.log('GridComponent constructor()');
     super();
   }
   ngOnInit() {
-    console.log('Entering on init');
   }
 
   getShowFieldProperty(showField) {

@@ -10,49 +10,49 @@ import {Component, Input, OnInit} from '@angular/core';
           <ng-container *ngTemplateOutlet="home"></ng-container>
         </ng-container>
         <ng-container *ngIf="guidingStep === 'choose-start'">
-          <app-form-fields></app-form-fields>
+          <ng-container *ngTemplateOutlet="formLevelFields"></ng-container>
         </ng-container>
-        <app-item-component *ngIf="guidingStep === 'item-editor'"></app-item-component>
+        <ng-container *ngIf="guidingStep === 'item-editor'">
+          <ng-container *ngTemplateOutlet="itemLevelFields"></ng-container>
+        </ng-container>
       </div>
       <app-footer id="fixedBottom"></app-footer>
     </div>
 
     <ng-template #home>
-      <div class="card-body d-">
+      <div class="card-body container">
         <div>
           <p class="lead">How do you want to create your form?</p>
-          <ul class="list-unstyled ml-5">
+          <ul class="list-unstyled ml-5" ngbRadioGroup [(ngModel)]="startOption" >
             <li>
-              <label class="radio control-label">
-                <input class="item-type-radio-button"
-                       [(ngModel)]="startOption" value="scratch" type="radio">
+              <label ngbButtonLabel>
+                <input ngbButton value="scratch" type="radio">
                 Start from scratch
               </label>
             </li>
             <li>
-              <label class="radio control-label">
-                <input class="item-type-radio-button"
-                       [(ngModel)]="startOption" value="existing" type="radio">
+              <label ngbButtonLabel>
+                <input ngbButton value="existing" type="radio">
                 Start with existing form
               </label>
-              <ul *ngIf="startOption === 'existing'" class="list-unstyled ml-5">
+              <ul *ngIf="startOption === 'existing'" class="list-unstyled ml-5"  ngbRadioGroup [(ngModel)]="importOption" >
                 <li>
-                  <label class="radio control-label">
-                    <input class="item-type-radio-button" [(ngModel)]="importOption" value="local" type="radio">
+                  <label ngbButtonLabel>
+                    <input ngbButton value="local" type="radio">
                     Import from local file
-                  </label><br/>
+                  </label>
                 </li>
                 <li>
-                  <label class="radio control-label">
-                    <input class="item-type-radio-button" [(ngModel)]="importOption" value="fhirServer" type="radio">
+                  <label ngbButtonLabel>
+                    <input ngbButton value="fhirServer" type="radio">
                     Import from FHIR server
-                  </label><br/>
+                  </label>
                 </li>
                 <li>
-                  <label class="radio control-label">
-                    <input class="item-type-radio-button" [(ngModel)]="importOption" value="loinc" type="radio">
+                  <label ngbButtonLabel>
+                    <input ngbButton value="loinc" type="radio">
                     Import from LOINC
-                  </label><br/>
+                  </label>
                 </li>
               </ul>
             </li>
@@ -65,6 +65,14 @@ import {Component, Input, OnInit} from '@angular/core';
           </div>
         </div>
       </div>
+    </ng-template>
+
+    <ng-template #formLevelFields>
+      <app-form-fields></app-form-fields>
+    </ng-template>
+
+    <ng-template #itemLevelFields>
+      <app-item-component></app-item-component>
     </ng-template>
   `,
   styles: [`
@@ -94,7 +102,16 @@ import {Component, Input, OnInit} from '@angular/core';
       right:0;
       overflow:auto;
     }
-    `]
+
+    .radio-group {
+      border: lightgray 1px solid;
+      vertical-align: center;
+      margin: 5px 0 5px 0;
+    }
+    .radio-button {
+      margin: 5px;
+    }
+  `]
 })
 export class BasePageComponent implements OnInit {
 
@@ -102,6 +119,7 @@ export class BasePageComponent implements OnInit {
   guidingStep = 'home'; // 'choose-start', 'home', 'item-editor'
   startOption = 'scratch';
   importOption = '';
+  editMode = 'fresh';
 
   constructor() {}
 
@@ -113,6 +131,10 @@ export class BasePageComponent implements OnInit {
   }
 
   onContinue() {
+    if (this.startOption === 'scratch') {
       this.guidingStep = 'choose-start';
+    } else if (this.startOption === 'existing' && this.importOption === 'loinc') {
+      this.guidingStep = 'choose-start';
+    }
   }
 }

@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import {Observable, of} from 'rxjs';
 import {catchError, map, tap} from 'rxjs/operators';
-import {TreeNode, ITreeOptions} from 'angular-tree-component/dist/defs/api';
-import {TREE_ACTIONS, KEYS, TreeModel} from 'angular-tree-component';
+import {TreeNode, ITreeOptions} from '@circlon/angular-tree-component/';
+import {TREE_ACTIONS, KEYS, TreeModel} from '@circlon/angular-tree-component';
 
 enum JsonFormatType {
   R4 = 'R4',

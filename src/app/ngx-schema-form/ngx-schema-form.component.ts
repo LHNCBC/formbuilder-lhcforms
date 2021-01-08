@@ -5,8 +5,8 @@ import {Binding, FormProperty, Validator} from 'ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {Form} from '@angular/forms';
 import {map, switchMap, timeout} from 'rxjs/operators';
-import {ITreeNode} from 'angular-tree-component/dist/defs/api';
-import {TreeModel} from 'angular-tree-component';
+import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
+import {TreeModel} from '@circlon/angular-tree-component';
 
 @Component({
   selector: 'app-ngx-schema-form',
@@ -65,7 +65,7 @@ export class NgxSchemaFormComponent implements OnInit {
       ))
     ).subscribe((schema) => {
       this.mySchema = schema;
-      console.log(JSON.stringify(this.mySchema.layout, null, 2));
+      // console.log(JSON.stringify(this.mySchema.layout, null, 2));
     });
     /*
     this.http

@@ -179,7 +179,7 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Code(s)",
+      "title": "Code",
       "visibleIf": {
         "allOf": [
           {"type": ["$EXP$ target.value != 'display'"]}
@@ -194,7 +194,7 @@
         "addButtonLabel": "Add new code",
         "singleItem": true,
         "booleanControlled": true,
-        "booleanLabel": "Use code(s)?",
+        "booleanLabel": "Use code?",
         "booleanControlledInitial": false,
         "showFields": [
           {"field": "code", "col": 4, "nolabel": true},

@@ -20,16 +20,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'ng-json-editor'`, () => {
+  it(`should have as title 'formbuilder-lhcforms'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual('ng-json-editor');
+    expect(app.title).toEqual('formbuilder-lhcforms');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain('ng-json-editor app is running!');
+    expect(compiled.querySelector('.content span').textContent).toContain('formbuilder-lhcforms app is running!');
   });
 });

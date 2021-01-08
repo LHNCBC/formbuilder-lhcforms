@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import {IDType, ITreeNode} from 'angular-tree-component/dist/defs/api';
-import {TreeModel} from 'angular-tree-component';
+import {IDType, ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
+import {TreeModel} from '@circlon/angular-tree-component';
 
 @Injectable({
   providedIn: 'root'

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {ITreeNode} from 'angular-tree-component/dist/defs/api';
+import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {AppJsonPipe} from './lib/pipes/app-json.pipe';
 
 @Injectable({

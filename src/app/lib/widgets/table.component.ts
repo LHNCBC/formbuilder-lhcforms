@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, DoCheck, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {ArrayWidget, FormProperty} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
@@ -103,7 +103,7 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
     }
   `]
 })
-export class TableComponent extends AppArrayWidgetComponent implements AfterViewInit {
+export class TableComponent extends AppArrayWidgetComponent implements AfterViewInit, DoCheck {
 
   faAdd = faPlusCircle;
   faRemove = faTrash;
@@ -118,11 +118,14 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
   singleItem = false;
   keyField = 'type';
 
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
+  ngDoCheck(): void {
     if (this.formProperty.properties.length === 0) {
       this.addItem();
     }
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
     const widget = this.formProperty.schema.widget;
     this.addButtonLabel = widget && widget.addButtonLabel
       ? widget.addButtonLabel : 'Add';
@@ -130,6 +133,7 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     this.noTableLabel = !!widget.noTableLabel;
     this.noCollapseButton = !!widget.noCollapseButton;
     this.singleItem = !!widget.singleItem;
+    this.booleanControlledInitial = !!this.formProperty.value;
 
     const singleItemEnableSource = this.formProperty.schema.widget ? this.formProperty.schema.widget.singleItemEnableSource : null;
     // Although intended to be source agnostic, it is mainly intended for 'repeats' field as source.

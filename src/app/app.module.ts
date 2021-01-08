@@ -29,10 +29,10 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
 import {DropdownModule, PanelModule, RadioButtonModule} from 'primeng';
 import { ToolbarModule } from 'primeng';
-import { TreeModule } from 'angular-tree-component';
+import { TreeModule } from '@circlon/angular-tree-component';
 import { ItemJsonEditorComponent } from './lib/widgets/item-json-editor.component';
 import { RowLayoutComponent } from './lib/widgets/row-layout.component';
-import { ArrayGridComponent } from './lib/widgets/array-grid.component';
+// import { ArrayGridComponent } from './lib/widgets/array-grid.component';
 import { GridComponent } from './lib/widgets/grid.component';
 import { TableComponent } from './lib/widgets/table.component';
 import { LformsWidgetRegistry} from './lib/lforms-widget-registry';
@@ -78,7 +78,7 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     ItemComponent,
     ItemJsonEditorComponent,
     RowLayoutComponent,
-    ArrayGridComponent,
+    // ArrayGridComponent,
     GridComponent,
     TableComponent,
     StringComponent,
@@ -139,7 +139,7 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     SchemaFormModule.forRoot(),
     SidebarModule,
     ToolbarModule,
-    TreeModule.forRoot(),
+    TreeModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatSelectModule,

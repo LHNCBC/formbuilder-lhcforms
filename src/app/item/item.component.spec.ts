@@ -8,15 +8,26 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
 import { ItemComponent } from './item.component';
+import {SchemaFormModule, SchemaValidatorFactory, WidgetRegistry, ZSchemaValidatorFactory} from 'ngx-schema-form';
+import {LformsWidgetRegistry} from '../lib/lforms-widget-registry';
+import {FetchService} from '../fetch.service';
+import {HttpClient, HttpClientModule} from '@angular/common/http';
+import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
+import {TreeComponent, TreeModule} from '@circlon/angular-tree-component';
+import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor.component';
+import {JsonEditorComponent} from '../json-editor/json-editor.component';
 
-describe('ItemComponent', () => {
+fdescribe('ItemComponent', () => {
   let component: ItemComponent;
   let fixture: ComponentFixture<ItemComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ItemComponent],
+      declarations: [ItemComponent, NgxSchemaFormComponent, JsonEditorComponent, ItemJsonEditorComponent, TreeComponent],
       imports: [
+        SchemaFormModule.forRoot(),
+        TreeModule,
+        HttpClientModule,
         NoopAnimationsModule,
         LayoutModule,
         MatButtonModule,
@@ -34,7 +45,14 @@ describe('ItemComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should compile', () => {
+  it('should compile ui item editor', () => {
     expect(component).toBeTruthy();
+    expect(component.uiItemEditor).toBeDefined();
+  });
+
+  it('should compile json item editor', () => {
+    component.toggleEditType({});
+    fixture.detectChanges();
+    expect(component.jsonItemEditor).toBeDefined();
   });
 });

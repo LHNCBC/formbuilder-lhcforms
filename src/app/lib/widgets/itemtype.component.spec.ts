@@ -2,57 +2,69 @@ import {Component, ViewChild} from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ItemtypeComponent } from './itemtype.component';
+import {FormsModule} from '@angular/forms';
+import {DefaultWidgetRegistry, SchemaFormModule, SchemaValidatorFactory, WidgetRegistry, ZSchemaValidatorFactory} from 'ngx-schema-form';
+import {LformsWidgetRegistry} from '../lforms-widget-registry';
+import {LabelComponent} from './label.component';
+import {MatIconModule} from '@angular/material/icon';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 
-fdescribe('ItemtypeComponent', () => {
-  let testHostComponent: TestHostComponent;
-  let testHostFixture: ComponentFixture<TestHostComponent>;
+xdescribe('ItemtypeComponent', () => {
+//  let testHostComponent: TestHostComponent;
+//  let testHostFixture: ComponentFixture<TestHostComponent>;
   let comp: ItemtypeComponent;
+  let fixture: ComponentFixture<ItemtypeComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ItemtypeComponent, ]
+      imports: [SchemaFormModule.forRoot(), FormsModule, FontAwesomeModule, MatTooltipModule],
+      declarations: [ ItemtypeComponent, LabelComponent],
+      providers: [
+        {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
+        {provide: SchemaValidatorFactory, useClass: ZSchemaValidatorFactory}
+      ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    testHostFixture = TestBed.createComponent(TestHostComponent);
-    testHostComponent = testHostFixture.componentInstance;
-    testHostFixture.detectChanges();
-    comp = testHostComponent.itemtypeComponent;
+    fixture = TestBed.createComponent(ItemtypeComponent);
+    comp = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('should create', () => {
-    expect(testHostComponent).toBeTruthy();
+    expect(comp).toBeTruthy();
   });
 
   it('should update itemType with data type input', () => {
     comp.itemType = 'display';
-    testHostFixture.detectChanges();
+    fixture.detectChanges();
     expect(comp.itemType).toEqual('display');
     comp.itemType = 'group';
-    testHostFixture.detectChanges();
+    fixture.detectChanges();
     expect(comp.itemType).toEqual('group');
     comp.itemType = 'string';
-    testHostFixture.detectChanges();
+    fixture.detectChanges();
     expect(comp.itemType).toEqual('question');
   });
 
   it('should emit dataType with item type input', () => {
     let dataType: string;
-    comp.dataTypeChanged.subscribe((type) => {
+    comp.formProperty.valueChanges.subscribe((type) => {
       dataType = type;
     });
 
     comp.itemType = 'display';
-    testHostFixture.detectChanges();
+    fixture.detectChanges();
     expect(dataType).toEqual('display');
     comp.itemType = 'group';
-    testHostFixture.detectChanges();
+    fixture.detectChanges();
     expect(dataType).toEqual('group');
     comp.itemType = 'question';
-    testHostFixture.detectChanges();
-    expect(dataType).toEqual(comp.itemType);
+    fixture.detectChanges();
+    expect(dataType).toEqual(comp.formProperty.value);
   });
 
   @Component({

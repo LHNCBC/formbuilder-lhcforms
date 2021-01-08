@@ -2,10 +2,10 @@ import { TestBed } from '@angular/core/testing';
 
 import { UtilService } from './util.service';
 
-fdescribe('UtilService', () => {
+describe('UtilService', () => {
   beforeEach(() => TestBed.configureTestingModule({}));
 
-  fit('should be created', () => {
+  it('should be created', () => {
     const service: UtilService = TestBed.inject(UtilService);
     expect(service).toBeTruthy();
     const layout: any[] = [

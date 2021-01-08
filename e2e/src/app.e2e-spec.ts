@@ -10,7 +10,7 @@ describe('workspace-project App', () => {
 
   it('should display welcome message', () => {
     page.navigateTo();
-    expect(page.getTitleText()).toEqual('ng-json-editor app is running!');
+    expect(page.getTitleText()).toEqual('formbuilder-lhcforms app is running!');
   });
 
   afterEach(async () => {

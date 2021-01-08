@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {ITreeModel} from 'angular-tree-component/dist/defs/api';
+import {ITreeModel} from '@circlon/angular-tree-component/lib/defs/api';
 
 @Injectable({
   providedIn: 'root'

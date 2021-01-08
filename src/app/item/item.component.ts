@@ -2,14 +2,16 @@ import {OnInit, AfterViewInit, Component, ViewChild, ElementRef, AfterContentIni
 // import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
-import { TreeComponent, TreeModel, TreeNode, ITreeOptions } from 'angular-tree-component';
+import { TreeComponent, TreeModel, TreeNode, ITreeOptions } from '@circlon/angular-tree-component';
 import {FetchService} from '../fetch.service';
 import {MatInput} from '@angular/material/input';
 import {JsonEditorComponent} from '../json-editor/json-editor.component';
 import {ShareObjectService} from '../share-object.service';
-import {ITreeNode} from 'angular-tree-component/dist/defs/api';
+import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import { Panel, Toolbar, Header, Footer } from 'primeng';
 import {FormService} from '../services/form.service';
+import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
+import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor.component';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -59,8 +61,11 @@ export class LinkIdCollection {
   styleUrls: ['./item.component.css']
 })
 export class ItemComponent implements OnInit, AfterViewInit {
+  id = 1;
   @ViewChild('tree') treeComponent: TreeComponent;
-  @ViewChild('editor') jsonEditorComponent: JsonEditorComponent;
+  // @ViewChild('editor') jsonEditorComponent: JsonEditorComponent;
+  @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
+  @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
   // qItem: any;
@@ -70,7 +75,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
   form: any = {item: [{text: 'Item 1'}]};
   exportForm: any;
   isTreeExpanded = false;
-  showType = 'item';
+  editType = 'ui';
   itemEditorSchema: any;
   editor = 'ngx';
 
@@ -178,7 +183,8 @@ export class ItemComponent implements OnInit, AfterViewInit {
     return this.exportForm;
   }
 
-  showJson(event) {
+  toggleEditType(event) {
+    this.editType = this.editType === 'json' ? 'ui' : 'json';
     if (event.index > 0) {
       this.updatedForm();
     }
@@ -194,6 +200,17 @@ export class ItemComponent implements OnInit, AfterViewInit {
       }
     }
     return ret.reverse();
+  }
+
+  addItem(event): void {
+    this.focusNode.parent.data.item.splice(this.focusNode.index + 1, 0, {text: 'New item ' + this.id++});
+    this.treeComponent.treeModel.update();
+    this.treeComponent.treeModel.focusNextNode();
+    this.setNode(this.treeComponent.treeModel.getFocusedNode());
+  }
+
+  addLoincItem(event): void {
+    this.addItem(event);
   }
 
   registerLinkId(linkId) {

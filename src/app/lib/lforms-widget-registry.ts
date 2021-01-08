@@ -1,7 +1,7 @@
 import { DefaultWidgetRegistry } from 'ngx-schema-form';
 import {RowLayoutComponent} from './widgets/row-layout.component';
 import {RowLayoutAComponent} from './widgets/row-layout-a.component';
-import {ArrayGridComponent} from './widgets/array-grid.component';
+// import {ArrayGridComponent} from './widgets/array-grid.component';
 import {GridComponent} from './widgets/grid.component';
 import {TableComponent} from './widgets/table.component';
 import {StringComponent} from './widgets/string.component';
@@ -27,7 +27,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     super();
     this.register('row-layout',  RowLayoutComponent);
     this.register('row-layout-a',  RowLayoutAComponent);
-    this.register('array-grid', ArrayGridComponent);
+//    this.register('array-grid', ArrayGridComponent);
     this.register('grid', GridComponent);
     this.register('stepper-grid', StepperGridComponent);
     this.register('table', TableComponent);

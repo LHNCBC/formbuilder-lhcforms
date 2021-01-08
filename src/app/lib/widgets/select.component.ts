@@ -71,7 +71,7 @@ export class SelectComponent extends AppControlWidgetComponent implements AfterV
   **/
   // options: any[] = [];
 
-  allowedOptions: [{value: string, label: string}];
+  allowedOptions: Array<{value: string, label: string}>;
 
   ngAfterViewInit(): void {
     super.ngAfterViewInit();

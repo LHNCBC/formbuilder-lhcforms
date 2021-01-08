@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {ObjectWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
-import {ITreeNode} from 'angular-tree-component/dist/defs/api';
 import {Util} from '../util';
 
 @Component({
