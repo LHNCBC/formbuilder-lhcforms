@@ -1,0 +1,61 @@
+import {Component, Input, OnInit} from '@angular/core';
+import {ArrayWidget} from 'ngx-schema-form';
+import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+
+@Component({
+  selector: 'app-array-widget',
+  template: `
+  `,
+  styles: [
+  ]
+})
+export class AppArrayWidgetComponent extends ArrayWidget implements OnInit {
+  faInfo = faInfoCircle;
+  @Input()
+  nolabel = false;
+  @Input()
+  labelPosition;
+  @Input()
+  labelWidthClass: string;
+  @Input()
+  controlWidthClass: string;
+  @Input()
+  booleanControlled = false;
+  @Input()
+  booleanLabel: string;
+  @Input()
+  booleanControlledInitial = true;
+
+  ngOnInit() {
+    const widget = this.formProperty.schema.widget;
+    // Input is priority followed by widget definition and default
+    this.labelPosition =
+      this.labelPosition
+        ? this.labelPosition
+        : widget.labelPosition
+        ? widget.labelPosition
+        : 'top';
+    // Apply width classes for only left positioned labels.
+    this.labelWidthClass =
+      this.labelPosition === 'left'
+        ? (this.labelWidthClass
+        ? this.labelWidthClass
+        : (widget.labelWidthClass
+          ? widget.labelWidthClass
+          : 'col-sm'))
+        : '';
+    this.controlWidthClass =
+      this.labelPosition === 'left'
+        ? (this.controlWidthClass
+        ? this.controlWidthClass
+        : (widget.controlWidthClass
+          ? widget.controlWidthClass
+          : 'col-sm'))
+        : '';
+    this.booleanControlled = this.booleanControlled ? this.booleanControlled : !!widget.booleanControlled;
+    this.booleanLabel = this.booleanLabel ? this.booleanLabel : widget.booleanLabel;
+
+    this.booleanControlledInitial = widget.booleanControlledInitial !== undefined ?
+      widget.booleanControlledInitial : this.booleanControlledInitial; // If not defined, show the control.
+  }
+}

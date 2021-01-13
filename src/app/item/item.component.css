@@ -1,0 +1,43 @@
+@import '~@circlon/angular-tree-component/css/angular-tree-component.css';
+
+.node-display-prefix {
+  font-weight: bold;
+  margin-right: 1rem;
+}
+.mat-sidenav {
+  width: 20%;
+  padding: 10px;
+}
+
+.mat-sidenav-content {
+  padding: 10px;
+}
+
+.mat-tab-body {
+  background-color: white;
+}
+
+.mat-toolbar.mat-primary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.json-radio-group {
+  display: flex;
+  margin: 5px 0;
+}
+
+.json-radio-button {
+  margin: 5px;
+}
+
+.search-box {
+  font-size: small;
+  width: 100%;
+  align-items: end;
+}
+
+::ng-deep .mat-tooltip {
+  font-size: 12px;
+}

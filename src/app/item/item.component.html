@@ -1,0 +1,76 @@
+<mat-sidenav-container>
+        <mat-sidenav #drawer mode="side" opened>
+          <!--
+          <mat-toolbar color="primary">
+            <app-auto-complete class="search-box" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
+          </mat-toolbar>
+          <button type="button" class="btn btn-link btn-sm" (click)="toggleTreeExpansion();">Toggle Expansion</button>
+          -->
+          <tree-root
+            #tree
+            [nodes]="form.item"
+            [options]="options"
+            (initialized)="onTreeInitialized($event)"
+            (focus)="onFocus($event)"
+          >
+            <ng-template #treeNodeTemplate let-node let-index="index">
+              <div [ngClass]="node.nodeClass">
+                <span class="node-display-prefix">{{getIndexPath(node).join('.')}}</span> <span [ngClass]="node.nodeClass">{{node.displayField}}</span>
+              </div>
+            </ng-template>
+          </tree-root>
+        </mat-sidenav>
+        <mat-sidenav-content>
+          <div>
+          <p>Edit item (question or header)</p>
+            <ul>
+              <li>
+                The questions are organized in hierarchical tree on the left side. Select the desired item to edit their properties here.
+              </li>
+            </ul>
+          </div>
+          <hr/>
+          <ng-container *ngIf="editType === 'ui'">
+            <app-ngx-schema-form #uiEditor [node]="focusNode"></app-ngx-schema-form>
+          </ng-container>
+          <ng-container *ngIf="editType === 'json'">
+            <app-item-json-editor #jsonEditor></app-item-json-editor>
+          </ng-container>
+          <!--
+          <mat-tab-group (selectedTabChange)="editJson($event)">
+            <mat-tab label="Editor">
+              <app-ngx-schema-form [node]="focusNode"></app-ngx-schema-form>
+            </mat-tab>
+            <mat-tab label="JSON Output">
+              <mat-radio-group
+                class="json-radio-group"
+                [(ngModel)]="showType">
+                <mat-radio-button class="json-radio-button" [value]="'item'">
+                  Focussed item
+                </mat-radio-button>
+                <mat-radio-button class="json-radio-button" [value]="'questionnaire'">
+                  Questionnaire
+                </mat-radio-button>
+              </mat-radio-group>
+              <div *ngIf="showType === 'item'">
+                <app-item-json-editor></app-item-json-editor>
+              </div>
+              <pre *ngIf="showType === 'questionnaire'">{{ exportForm | appJson }}</pre>
+            </mat-tab>
+          </mat-tab-group>
+          -->
+          <hr/>
+          <div class="btn-toolbar float-right" role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-group ml-2" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="toggleEditType($event)">{{ editType === 'ui' ? "View/Edit item's JSON" : "Edit item in GUI" }}</button>
+            </div>
+            <div class="btn-group ml-2" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="addItem($event)">Add an item</button>
+            </div>
+            <div class="btn-group ml-2" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="addLoincItem($event)">Add an item from LOINC</button>
+            </div>
+          </div>
+        </mat-sidenav-content>
+</mat-sidenav-container>
+

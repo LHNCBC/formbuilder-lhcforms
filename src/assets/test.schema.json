@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "properties": {
+    "resourceType": {
+      "title": "R Type",
+      "$ref": "#/definitions/resourceType"
+    },
+    "id": {
+      "$ref": "#/definitions/id"
+    },
+    "status": {
+      "$ref": "#/definitions/status"
+    }
+  },
+  "fieldsets": [
+    {
+      "id": "fieldset-default",
+      "title": "Field sets example",
+      "fields": [
+        "id",
+        "status"
+  
+      ]
+    }
+
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "resourceType": {
+      "type": "string",
+      "enum": ["Questionnaire"],
+      "title": "Res Type"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9\\.\\-\\_]+$",
+      "description": "FHIR id definition"
+    },
+    "status": {
+      "description": "The status of this questionnaire. Enables tracking the life-cycle of the content.",
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "retired",
+        "unknown"
+      ]
+    }
+  }
+}

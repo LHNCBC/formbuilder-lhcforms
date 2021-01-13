@@ -1,0 +1,50 @@
+#header {
+  /* margin-bottom: 20px; */
+  position: relative;
+  /* font-size: 12px;*/
+  font-family: 'Droid Sans',Arial,Helvetica,sans-serif;
+  color: #202020;
+  border-top: 2px solid #0BACB6;
+  border-bottom: 7px solid #17b4e3;
+  /*line-height: normal;*/
+  height: 84px;
+  background: transparent;
+  align-items: center;
+}
+#header a {
+  color: #1E4193;
+  text-decoration: none;
+}
+#logo  {
+  float: left;
+  width: 72px;
+  height: 72px;
+  margin: 0 20px 0 20px;
+}
+#logo {
+  display: block;
+}
+#logo .site-name-slogan {
+  font-size: 14px;
+  position: relative;
+  top: 10px;
+  left: -2px;
+}
+#logo .site-name-slogan span {
+  display: block;
+  font-size: 24px;
+  position: relative;
+  left: -2px;
+}
+#logo .site-name-slogan .slogan {
+  color: #202020;
+  font-size: 12px;
+  position: relative;
+  left: 1px;
+}
+#siteNameBox {
+  flex: 1 1 auto;
+}
+#siteName {
+  font-size: 125%;
+}

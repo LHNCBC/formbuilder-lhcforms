@@ -1,0 +1,129 @@
+[
+  {
+    "type": "div",
+    "displayFlex": true,
+    "flex-direction": "row",
+    "items": [
+      { "key": "type",   "flex": "1 1 50px", "description":  "" },
+      { "key": "linkId", "flex": "1 1 50px", "description":  "" }
+    ]
+  },
+  {
+    "type": "div",
+    "displayFlex": true,
+    "flex-direction": "row",
+    "items": [
+      { "key": "prefix", "flex": "1 1 20px", "description":  "" },
+      { "key": "text",   "flex": "7 7 50px", "description":  "" }
+    ]
+  },
+  {
+    "type": "div",
+    "condition": { "functionBody": "return model.type !== 'group' && model.type !== 'display'" },
+    "displayFlex": true,
+    "flex-direction": "row",
+    "items": [
+      { "key": "required", "flex": "1 1 50px", "description":  "" },
+      { "key": "repeats", "flex": "1 1 50px", "description":  "" },
+      { "key": "readOnly", "flex": "1 1 50px", "description":  ""},
+      { "key": "maxLength", "flex": "1 1 50px", "description":  "" }
+    ]
+  },
+  {
+    "key": "code",
+    "type": "array",
+    "items": [
+      {
+        "type": "div",
+        "displayFlex": true,
+        "flex-direction": "row",
+        "items": [
+          { "key": "code[].code", "flex": "1 1 50px", "description":  "" },
+          { "key": "code[].system", "flex": "3 3 50px", "description":  "" },
+          { "key": "code[].display", "flex": "3 3 50px", "description":  "" }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "answerOption",
+    "condition": {"functionBody": "return model.type === 'choice' || model.type === 'open-choice'"},
+    "type": "array",
+    "items": [
+      {
+        "type": "div",
+        "displayFlex": true,
+        "flex-direction": "row",
+        "items": [
+          {
+            "key": "answerOption[].valueCoding.system", "flex": "1 1 50px", "description":  ""
+          },
+          {
+            "key": "answerOption[].valueCoding.code", "flex": "1 1 50px", "description":  ""
+          },
+          {
+            "key": "answerOption[].valueCoding.display", "flex": "1 1 50px", "description":  ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key": "answerValueSet",
+    "condition": {"functionBody": "return model.type === 'choice' || model.type === 'open-choice'"}
+  },
+  {
+    "key": "extension",
+    "type": "array",
+    "items": [
+          {
+            "key": "extension[].url", "description":  ""
+          },
+          {
+            "key": "extension[].value", "description":  ""
+          },
+          {
+            "key": "extension[].valueCoding", "description": ""
+          }
+    ]
+  },
+  {
+    "key":  "enableWhen",
+    "type": "array",
+    "items": [
+      {
+        "type": "div",
+        "displayFlex": true,
+        "flex-direction": "row",
+        "items": [
+          {
+            "key": "enableWhen[].question", "flex": "1 1 50px", "title": "Link Id of Source", "description":  ""
+          },
+          {
+            "key": "enableWhen[].operator", "flex": "1 1 100px", "title": "Comparison", "description":  ""
+          },
+          {
+            "key": "enableWhen[].answerString", "flex": "1 1 100px", "title": "Answer", "description":  ""
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "key":  "initial",
+    "condition": {"functionBody": "return model.type !== 'group' && model.type !== 'display'"},
+    "type": "array",
+    "items": [
+      {
+        "type": "div",
+        "displayFlex": true,
+        "flex-direction": "row",
+        "items": [
+          {
+            "key": "initial[].valueString"
+          }
+        ]
+      }
+    ]
+  }
+]
