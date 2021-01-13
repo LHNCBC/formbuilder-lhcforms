@@ -13,9 +13,7 @@ export class FormFieldsComponent implements OnInit {
 
   @Input()
   questionnaire: any = {item: []};
-  qlSchema: any = {properties: {}};
-  qlTestSchema: any = {properties: {}};
-  // model: any;
+  qlSchema: any = {properties: {}}; // Combines questionnaire schema with layout schema.
   guidingStep = 'fl-editor'; // 'choose-start', 'home', 'item-editor'
   notHidden = true;
 
@@ -31,18 +29,7 @@ export class FormFieldsComponent implements OnInit {
   }
 
   ngOnInit() {
-    /*
-    this.http
-      .get('/assets/ngx-fl.schema.json', { responseType: 'json' })
-      .subscribe(schema => {
-        this.qlSchema = schema;
-      });
-    this.http
-      .get('/assets/test.schema.json', { responseType: 'json' })
-      .subscribe(schema => {
-        this.qlTestSchema = schema;
-      });
-*/
+    // ngx-fl.schema.json is schema extracted from FHIR Questionnaire schema.
     this.http.get('/assets/ngx-fl.schema.json', { responseType: 'json' }).pipe(
       switchMap((schema: any) => this.http.get('/assets/fl-fields-layout.json', { responseType: 'json' }).pipe(
         map((layout: any) => {
@@ -54,19 +41,7 @@ export class FormFieldsComponent implements OnInit {
       this.qlSchema = schema;
     });
 
-    /*
-    this.modelService.object$.subscribe((model) => {
-      if (this.model !== model) {
-        this.model = model;
-      }
-    });
-    */
   }
-/*
-  updateModel(model) {
-    this.modelService.setObject(model);
-  }
-*/
   // Button handlers
   editItem() {
     this.guidingStep = 'item-editor';

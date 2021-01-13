@@ -24,11 +24,12 @@
       },
       {
         "showFields": [
-          { "field": "enableWhen", "col": 12 }
+          { "field": "enableWhen", "col": 12 },
+          {"field": "enableBehavior", "col": 12}
         ]
       },
       {
-        "showFields": [{"field": "enableBehavior", "col": 3}]
+        "showFields": []
       }
 
     ]

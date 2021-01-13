@@ -1,25 +1,51 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LabelRadioComponent } from './label-radio.component';
+import {CommonTestingModule, TestComponent} from '../../testing/common-testing.module';
+import {By} from '@angular/platform-browser';
+import {DebugElement} from '@angular/core';
+import {ISchema} from 'ngx-schema-form';
 
-describe('LabelRadioComponent', () => {
-  let component: LabelRadioComponent;
-  let fixture: ComponentFixture<LabelRadioComponent>;
+const schema: ISchema = {
+  type: 'object',
+  properties: {
+    fieldA: {
+      enum: [
+        'one',
+        'two',
+        'three',
+        'four'
+      ],
+      type: 'string',
+      title: 'Field A',
+      widget: {
+        id: 'lb-radio',
+        layout: 'row',
+        labelPosition: 'left',
+        labelWidthClass: 'col-sm-2',
+        controlWidthClass: 'col-sm-6'
+      }
+    },
+  }
+};
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ LabelRadioComponent ]
-    })
-    .compileComponents();
-  }));
+const model: any = {fieldA: 'one'};
+
+describe('formProperty: lb-radio', () => {
+  let fixture: ComponentFixture<TestComponent>;
+
+  CommonTestingModule.setupTestBedOne();
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(LabelRadioComponent);
-    component = fixture.componentInstance;
+    fixture = TestBed.createComponent(TestComponent);
+    fixture.componentInstance.schema = schema;
+    fixture.componentInstance.model = model;
     fixture.detectChanges();
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(fixture.componentInstance).toBeTruthy();
+    const input = fixture.debugElement.query(By.css('input'));
+    expect(input.nativeElement.value).toBe('one');
   });
 });

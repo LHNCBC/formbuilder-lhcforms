@@ -113,7 +113,7 @@ import {Component, Input, OnInit} from '@angular/core';
     }
   `]
 })
-export class BasePageComponent implements OnInit {
+export class BasePageComponent {
 
   @Input()
   guidingStep = 'home'; // 'choose-start', 'home', 'item-editor'
@@ -123,14 +123,19 @@ export class BasePageComponent implements OnInit {
 
   constructor() {}
 
+  /**
+   * Switch guiding step
+   * @param step
+   */
   setStep(step) {
     this.guidingStep = step;
   }
 
-  ngOnInit(): void {
-  }
-
+  /**
+   * Handle continue button.
+   */
   onContinue() {
+    // TODO - Rethink the logic.
     if (this.startOption === 'scratch') {
       this.guidingStep = 'choose-start';
     } else if (this.startOption === 'existing' && this.importOption === 'loinc') {

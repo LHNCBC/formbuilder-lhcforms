@@ -1,17 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ElementChooserComponent } from './element-chooser.component';
+import {CommonTestingModule} from '../../testing/common-testing.module';
 
 describe('ElementChooserComponent', () => {
   let component: ElementChooserComponent;
   let fixture: ComponentFixture<ElementChooserComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ElementChooserComponent ]
-    })
-    .compileComponents();
-  }));
+  CommonTestingModule.setUpTestBed(ElementChooserComponent);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ElementChooserComponent);

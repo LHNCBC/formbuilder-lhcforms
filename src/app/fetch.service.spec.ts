@@ -1,12 +1,20 @@
 import { TestBed } from '@angular/core/testing';
 
 import { FetchService } from './fetch.service';
+import {CommonTestingModule} from './testing/common-testing.module';
+import {UtilService} from './services/util.service';
 
 describe('FetchService', () => {
-  beforeEach(() => TestBed.configureTestingModule({}));
+  let service: FetchService;
+
+  CommonTestingModule.setUpTestBedConfig({providers: [FetchService]});
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(FetchService);
+  });
 
   it('should be created', () => {
-    const service: FetchService = TestBed.inject(FetchService);
     expect(service).toBeTruthy();
   });
 });

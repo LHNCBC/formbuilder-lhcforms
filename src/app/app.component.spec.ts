@@ -1,18 +1,12 @@
 import { TestBed, async } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
+import {CommonTestingModule} from './testing/common-testing.module';
 
 describe('AppComponent', () => {
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule
-      ],
-      declarations: [
-        AppComponent
-      ],
-    }).compileComponents();
-  }));
+
+  CommonTestingModule.setUpTestBed(AppComponent);
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(AppComponent);
@@ -30,6 +24,8 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain('formbuilder-lhcforms app is running!');
+    const titleEl = compiled.querySelector('#resizableMiddle .container.card-body p');
+    expect(titleEl.textContent)
+      .toContain('How do you want to create your form?');
   });
 });

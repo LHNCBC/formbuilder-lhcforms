@@ -1,20 +1,16 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { StepperGridComponent } from './stepper-grid.component';
+import {CommonTestingModule, TestComponent} from '../../testing/common-testing.module';
 
 describe('StepperGridComponent', () => {
-  let component: StepperGridComponent;
-  let fixture: ComponentFixture<StepperGridComponent>;
+  let component: TestComponent;
+  let fixture: ComponentFixture<TestComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ StepperGridComponent ]
-    })
-    .compileComponents();
-  }));
+  CommonTestingModule.setupTestBedOne();
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(StepperGridComponent);
+    fixture = TestBed.createComponent(TestComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

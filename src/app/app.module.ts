@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { SchemaFormModule, WidgetRegistry, DefaultWidgetRegistry } from 'ngx-schema-form';
+import { SchemaFormModule, WidgetRegistry } from 'ngx-schema-form';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -27,8 +27,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
-import {DropdownModule, PanelModule, RadioButtonModule} from 'primeng';
-import { ToolbarModule } from 'primeng';
+// import {DropdownModule, PanelModule, RadioButtonModule} from 'primeng';
+// import { ToolbarModule } from 'primeng';
 import { TreeModule } from '@circlon/angular-tree-component';
 import { ItemJsonEditorComponent } from './lib/widgets/item-json-editor.component';
 import { RowLayoutComponent } from './lib/widgets/row-layout.component';
@@ -48,7 +48,7 @@ import { ElementChooserComponent } from './lib/widgets/element-chooser.component
 import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
 import { RadioComponent } from './lib/widgets/radio.component';
 import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
-import { SidebarModule} from 'primeng';
+// import { SidebarModule} from 'primeng';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { ItemtypeComponent } from './lib/widgets/itemtype.component';
@@ -135,16 +135,16 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     MatToolbarModule,
     MatTooltipModule,
     NgbModule,
-    PanelModule,
+    // PanelModule,
     SchemaFormModule.forRoot(),
-    SidebarModule,
-    ToolbarModule,
+//    SidebarModule,
+//    ToolbarModule,
     TreeModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatSelectModule,
-    DropdownModule,
-    RadioButtonModule
+    // DropdownModule,
+    // RadioButtonModule
   ],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}],
   bootstrap: [AppComponent]

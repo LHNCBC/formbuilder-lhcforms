@@ -1,5 +1,4 @@
 import {OnInit, AfterViewInit, Component, ViewChild, ElementRef, AfterContentInit, Input} from '@angular/core';
-// import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { TreeComponent, TreeModel, TreeNode, ITreeOptions } from '@circlon/angular-tree-component';
@@ -8,7 +7,6 @@ import {MatInput} from '@angular/material/input';
 import {JsonEditorComponent} from '../json-editor/json-editor.component';
 import {ShareObjectService} from '../share-object.service';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
-import { Panel, Toolbar, Header, Footer } from 'primeng';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor.component';

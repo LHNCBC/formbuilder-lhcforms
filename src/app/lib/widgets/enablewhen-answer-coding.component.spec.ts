@@ -1,17 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnablewhenAnswerCodingComponent } from './enablewhen-answer-coding.component';
+import {CommonTestingModule} from '../../testing/common-testing.module';
 
 describe('EnablewhenAnswerCodingComponent', () => {
   let component: EnablewhenAnswerCodingComponent;
   let fixture: ComponentFixture<EnablewhenAnswerCodingComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ EnablewhenAnswerCodingComponent ]
-    })
-    .compileComponents();
-  }));
+  CommonTestingModule.setUpTestBed(EnablewhenAnswerCodingComponent);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(EnablewhenAnswerCodingComponent);

@@ -16,11 +16,12 @@ import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.compone
 import {TreeComponent, TreeModule} from '@circlon/angular-tree-component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor.component';
 import {JsonEditorComponent} from '../json-editor/json-editor.component';
+import {CommonTestingModule} from '../testing/common-testing.module';
 
-fdescribe('ItemComponent', () => {
+describe('ItemComponent', () => {
   let component: ItemComponent;
   let fixture: ComponentFixture<ItemComponent>;
-
+/*
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ItemComponent, NgxSchemaFormComponent, JsonEditorComponent, ItemJsonEditorComponent, TreeComponent],
@@ -38,6 +39,8 @@ fdescribe('ItemComponent', () => {
       ]
     }).compileComponents();
   }));
+*/
+  CommonTestingModule.setUpTestBed(ItemComponent);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ItemComponent);

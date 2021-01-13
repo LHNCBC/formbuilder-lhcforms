@@ -1,17 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ItemJsonEditorComponent } from './item-json-editor.component';
+import {CommonTestingModule} from '../../testing/common-testing.module';
 
 describe('ItemJsonEditorComponent', () => {
   let component: ItemJsonEditorComponent;
   let fixture: ComponentFixture<ItemJsonEditorComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ItemJsonEditorComponent ]
-    })
-    .compileComponents();
-  }));
+  CommonTestingModule.setUpTestBed(ItemJsonEditorComponent);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ItemJsonEditorComponent);

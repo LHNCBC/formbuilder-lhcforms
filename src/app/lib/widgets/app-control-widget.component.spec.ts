@@ -1,17 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AppControlWidgetComponent } from './app-control-widget.component';
+import {CommonTestingModule} from '../../testing/common-testing.module';
 
 describe('AppControlWidgetComponent', () => {
   let component: AppControlWidgetComponent;
   let fixture: ComponentFixture<AppControlWidgetComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ AppControlWidgetComponent ]
-    })
-    .compileComponents();
-  }));
+  CommonTestingModule.setUpTestBed(AppControlWidgetComponent);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AppControlWidgetComponent);

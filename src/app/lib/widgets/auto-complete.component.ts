@@ -8,7 +8,7 @@ import {FetchService} from '../../fetch.service';
 export interface Options {
   searchUrl: string;
   httpOptions: any;
-  processResponse: (response: HttpResponse<any>) => Observable<Result[]>;
+  processResponse?: (response: HttpResponse<any>) => Observable<Result[]>;
 }
 
 export interface Result {

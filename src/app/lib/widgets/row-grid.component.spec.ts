@@ -1,17 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RowGridComponent } from './row-grid.component';
+import {CommonTestingModule} from '../../testing/common-testing.module';
 
-describe('CodingComponent', () => {
+describe('RowGridComponent', () => {
   let component: RowGridComponent;
   let fixture: ComponentFixture<RowGridComponent>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ RowGridComponent ]
-    })
-    .compileComponents();
-  }));
+  CommonTestingModule.setUpTestBed(RowGridComponent);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(RowGridComponent);

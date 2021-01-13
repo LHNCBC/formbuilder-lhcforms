@@ -35,15 +35,12 @@ import {DomSanitizer} from '@angular/platform-browser';
   `,
   styleUrls: ['./footer.component.css']
 })
-export class FooterComponent implements OnInit {
+export class FooterComponent {
 
   constructor(private iconRegistry: MatIconRegistry,
               private sanitizer: DomSanitizer) {
+    // Initialize icon registry
     this.iconRegistry.addSvgIcon('USAgov',
       this.sanitizer.bypassSecurityTrustResourceUrl('../../assets/images/USAgov.svg'));
   }
-
-  ngOnInit(): void {
-  }
-
 }
