@@ -12,29 +12,14 @@ path for the rest of the installation.
         $ npm ci
         $ source bashrc.formbuilder
         
-1. Install required bower packages:
-           
-        $ bower install
-           
-1. Edit formbuilder.conf.js to configure the application for your setup. 
- 
-    1. If choosing https option, specify your ssl key, certificate and authority files.
-    1. Specify server's host name (or IP) and port number.
-    1. Specify Google Analytics gtag tracking id.
-              
-1. Run grunt task to generate index.html from template.
-           
-        $ grunt template
-           
 1. Start formbuilder server for development.
 
-        $ grunt serve
+        $ ng serve
         
-1. Build the package for production and run.
+1. Build the package for production.
 
-        $ grunt build
-        $ cd dist
-        $ node app -env production
+        $ ng build
+        $ cp dist/formbuilder-lhcforms {webserver docs location}
         
 
         
