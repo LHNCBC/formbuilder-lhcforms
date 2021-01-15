@@ -1,7 +1,6 @@
 import { DefaultWidgetRegistry } from 'ngx-schema-form';
 import {RowLayoutComponent} from './widgets/row-layout.component';
 import {RowLayoutAComponent} from './widgets/row-layout-a.component';
-// import {ArrayGridComponent} from './widgets/array-grid.component';
 import {GridComponent} from './widgets/grid.component';
 import {TableComponent} from './widgets/table.component';
 import {StringComponent} from './widgets/string.component';
@@ -21,13 +20,19 @@ import {SideLabelCheckboxComponent} from './widgets/side-label-checkbox.componen
 import {EnablewhenAnswerCodingComponent} from './widgets/enablewhen-answer-coding.component';
 import {LabelRadioComponent} from './widgets/label-radio.component';
 
+
+/**
+ * Registry for custom widgets.
+ *
+ * The widget is identified by its id. The id is associated
+ * with the field in the schema.json.
+ */
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
   constructor() {
     super();
     this.register('row-layout',  RowLayoutComponent);
     this.register('row-layout-a',  RowLayoutAComponent);
-//    this.register('array-grid', ArrayGridComponent);
     this.register('grid', GridComponent);
     this.register('stepper-grid', StepperGridComponent);
     this.register('table', TableComponent);
@@ -38,7 +43,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('integer', IntegerComponent);
     this.register('number', IntegerComponent);
     this.register('radio', RadioComponent);
-    this.register('lb-radio', LabelRadioComponent),
+    this.register('lb-radio', LabelRadioComponent);
     this.register('item-type', ItemtypeComponent);
     this.register('choice', ChoiceComponent);
     this.register('row-grid', RowGridComponent);

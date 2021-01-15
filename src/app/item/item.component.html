@@ -1,11 +1,5 @@
 <mat-sidenav-container>
         <mat-sidenav #drawer mode="side" opened>
-          <!--
-          <mat-toolbar color="primary">
-            <app-auto-complete class="search-box" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
-          </mat-toolbar>
-          <button type="button" class="btn btn-link btn-sm" (click)="toggleTreeExpansion();">Toggle Expansion</button>
-          -->
           <tree-root
             #tree
             [nodes]="form.item"

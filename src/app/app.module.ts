@@ -7,7 +7,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { JsonEditorComponent } from './json-editor/json-editor.component';
 import { LayoutModule } from '@angular/cdk/layout';
 import { ItemComponent } from './item/item.component';
 import { MatButtonModule } from '@angular/material/button';
@@ -73,7 +72,6 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
 @NgModule({
   declarations: [
     AppComponent,
-    JsonEditorComponent,
     NgxSchemaFormComponent,
     ItemComponent,
     ItemJsonEditorComponent,
@@ -135,16 +133,11 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     MatToolbarModule,
     MatTooltipModule,
     NgbModule,
-    // PanelModule,
     SchemaFormModule.forRoot(),
-//    SidebarModule,
-//    ToolbarModule,
     TreeModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatSelectModule,
-    // DropdownModule,
-    // RadioButtonModule
   ],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}],
   bootstrap: [AppComponent]

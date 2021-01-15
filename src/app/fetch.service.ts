@@ -56,7 +56,7 @@ export class FetchService {
     return this.http.get(this.fhirUrl + '/' + id, {responseType: 'json'});
   }
 
-  getItemEditorSchema() {
+  getItemEditorSchema(): Observable<any> {
     return this.http.get(this.assetsUrl + '/item-editor.schema.json', {responseType: 'json'});
   }
 

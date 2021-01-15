@@ -51,13 +51,19 @@ export class HeaderComponent implements OnInit {
   @Input()
   isFirebaseEnabled = false;
   loginError: any = null;
+
   constructor(private loginService: LoginService,
               private iconRegistry: MatIconRegistry,
               private sanitizer: DomSanitizer) {
+    // Register our icon(s)
     this.iconRegistry.addSvgIcon('home',
       this.sanitizer.bypassSecurityTrustResourceUrl('../../assets/images/lhncbc.svg'));
   }
 
+
+  /**
+   * Initialize login service
+   */
   ngOnInit(): void {
     this.loginService.service().subscribe((loginEvent) => {
       if (loginEvent.event === 'signedIn') {
@@ -70,6 +76,10 @@ export class HeaderComponent implements OnInit {
     });
   }
 
+
+  /**
+   * Logout
+   */
   signOut() {
     this.loginService.logOut(this.userProfile);
   }

@@ -1,16 +1,8 @@
-import {Component, EventEmitter, Input, NgModule, OnChanges, SimpleChanges, Output, OnInit} from '@angular/core';
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {ItemComponent} from '../item/item.component';
-import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
-import {JsonEditorComponent} from '../json-editor/json-editor.component';
-import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor.component';
-import {TreeComponent, TreeModule} from '@circlon/angular-tree-component';
+import {Component, Input, NgModule, OnInit} from '@angular/core';
+import {async, TestBed} from '@angular/core/testing';
+import {TreeModule} from '@circlon/angular-tree-component';
 import {
-  ActionRegistry, BindingRegistry, DefaultWidgetRegistry, ExpressionCompilerFactory,
-  FormComponent, FormElementComponent, FormProperty, FormPropertyFactory,
-  ISchema, LogService,
-  SchemaFormModule, SchemaPreprocessor, SchemaValidatorFactory, TerminatorService,
-  ValidatorRegistry, Widget, WidgetFactory, WidgetRegistry, ZSchemaValidatorFactory
+  DefaultWidgetRegistry, ISchema, SchemaFormModule, SchemaValidatorFactory, WidgetRegistry, ZSchemaValidatorFactory
 } from 'ngx-schema-form';
 import {HttpClientModule} from '@angular/common/http';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
@@ -20,11 +12,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatListModule} from '@angular/material/list';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import {MatToolbarModule} from '@angular/material/toolbar';
-import {AppComponent} from '../app.component';
 import {AppModule} from '../app.module';
-import {By} from '@angular/platform-browser';
-import {FormsModule, NG_VALUE_ACCESSOR} from '@angular/forms';
-import {PropertyBindingRegistry} from 'ngx-schema-form/lib/property-binding-registry';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -85,7 +73,7 @@ export class CommonTestingModule {
         providers
       });
     });
-  }
+  };
 
   static setUpTestBedConfig1 = (moduleConfig: any) => {
     beforeEach(async(() => {
@@ -111,134 +99,13 @@ export class CommonTestingModule {
         ]
       }).compileComponents();
     }));
-  }
+  };
 
   static setUpTestBed = (TestingComponent: any) => {
     CommonTestingModule.setUpTestBedConfig({declarations: [TestingComponent]});
-  }
+  };
 
   static setupTestBedOne = () => {
     CommonTestingModule.setUpTestBedConfig1({declarations: [TestComponent]});
   }
 }
-
-/*
-const schemaA: ISchema = {
-  type: 'object',
-  properties: {
-    fieldB: {
-      type: 'string',
-      title: 'A title',
-      description: 'A description'
-    },
-    fieldA: {
-      type: 'string',
-      title: 'B title',
-      description: 'B description'
-    }
-  }
-};
-describe('TestHost', () => {
-
-  let fixture: ComponentFixture<TestComponent>;
-  let component: TestComponent;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [FormsModule, SchemaFormModule.forRoot()],
-      declarations: [TestComponent],
-      providers: []
-    }).compileComponents();
-  });
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(TestComponent);
-    fixture.detectChanges();
-    component = fixture.componentInstance;
-  });
-
-  it('should create', () => {
-    const predicate = By.directive(FormComponent);
-    const form = fixture.debugElement.query(predicate).componentInstance;
-    expect(form).toBeTruthy();
-  });
-
-  it('should generate form with input', () => {
-    const forms = fixture.debugElement.queryAll(By.css('form'));
-    expect(forms.length).toBe(1);
-
-    const inputs = forms[0].queryAll(By.css('input'));
-    expect(inputs.length).toBe(1);
-  });
-
-  it('should generate new form on schema changes', () => {
-    component.schema = schemaA;
-    fixture.detectChanges();
-
-    const forms = fixture.debugElement.queryAll(By.css('form'));
-    expect(forms.length).toBe(1);
-
-    const inputs = forms[0].queryAll(By.css('input'));
-    expect(inputs.length).toBe(2);
-  });
-
-  it('should populate respective input on changes to model', () => {
-    component.schema = schemaA;
-    fixture.detectChanges();
-
-    const inputs = fixture.nativeElement.querySelectorAll('input');
-
-    inputs.forEach(input => {
-      expect(input.value).toBeFalsy();
-    });
-
-    component.model = {
-      fieldA: 'A',
-      fieldB: 'B'
-    };
-    fixture.detectChanges();
-
-    expect(inputs[0].value).toEqual('B');
-    expect(inputs[1].value).toEqual('A');
-  });
-
-  it('should support 2 way data binding', () => {
-    const input = fixture.debugElement.query(By.css('input')).nativeElement;
-
-    expect(input.value).toBeFalsy();
-
-    component.model = {
-      fieldA: 'A'
-    };
-
-    fixture.detectChanges();
-
-    fixture.whenStable().then(() => {
-      expect(input.value).toEqual('A');
-
-      const value = 'CHANGED';
-      input.value = value;
-      input.dispatchEvent(new Event('input'));
-
-      expect(component.model.fieldA).toEqual(value);
-    });
-  });
-
-  it('should emit onChange events on field value change', () => {
-    const predicate = By.directive(FormComponent);
-    const form = fixture.debugElement.query(predicate).componentInstance;
-    spyOn(form.onChange, 'emit');
-
-    const input = fixture.debugElement.query(By.css('input')).nativeElement;
-    fixture.detectChanges();
-
-    fixture.whenStable().then(() => {
-      input.value = 'CHANGED';
-      input.dispatchEvent(new Event('input'));
-
-      const value = {fieldA: 'CHANGED'};
-      expect(form.onChange.emit).toHaveBeenCalledWith({value});
-    });
-  });
-});
-*/

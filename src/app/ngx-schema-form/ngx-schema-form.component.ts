@@ -8,6 +8,9 @@ import {map, switchMap, timeout} from 'rxjs/operators';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@circlon/angular-tree-component';
 
+/**
+ * Handle layout and editing of item level fields
+ */
 @Component({
   selector: 'app-ngx-schema-form',
   templateUrl: './ngx-schema-form.component.html',
@@ -26,7 +29,12 @@ export class NgxSchemaFormComponent implements OnInit {
   @Input()
   linkIdCollection = new LinkIdCollection();
 
+  /**
+   * Setup form validators
+   * TODO - link id is hidden for time being.
+   */
   myValidators: { [path: string]: Validator } = {
+    // Should have a value and should not exist in the form.
     '/linkId': (value, property, form) => {
       if (value.trim().length === 0 || this.linkIdCollection.hasLinkId(value)) {
         return [{
@@ -37,6 +45,9 @@ export class NgxSchemaFormComponent implements OnInit {
     }
   };
 
+  /**
+   * Field bindings
+   */
   myFieldBindings: { [path: string]: Binding } = {
     /*
     '/linkId': {
@@ -55,6 +66,9 @@ export class NgxSchemaFormComponent implements OnInit {
   constructor(private http: HttpClient, private modelService: ShareObjectService) {
   }
 
+  /**
+   * Merge schema and layout jsons
+   */
   ngOnInit() {
     this.http.get('/assets/ngx-item.schema.json', { responseType: 'json' }).pipe(
       switchMap((schema: any) => this.http.get('/assets/items-layout.json', { responseType: 'json' }).pipe(
@@ -67,24 +81,15 @@ export class NgxSchemaFormComponent implements OnInit {
       this.mySchema = schema;
       // console.log(JSON.stringify(this.mySchema.layout, null, 2));
     });
-    /*
-    this.http
-      .get('/assets/ngx-item.schema.json', { responseType: 'json' })
-      .subscribe(schema => {
-        this.mySchema = schema;
-      });
-    this.http
-      .get('/assets/test.schema.json', { responseType: 'json' })
-      .subscribe(schema => {
-        this.myTestSchema = schema;
-      });
-*/
+
+    // Setup listener on model.
     this.modelService.object$.subscribe((model) => {
       if (this.model !== model) {
         this.model = model;
       }
     });
 
+    // Setup listener on tree node.
     this.modelService.node$.subscribe((node) => {
       if (this.node !== node) {
         this.node = node;

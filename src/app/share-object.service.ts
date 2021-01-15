@@ -8,6 +8,7 @@ import {AppJsonPipe} from './lib/pipes/app-json.pipe';
   providedIn: 'root'
 })
 export class ShareObjectService {
+
   nodeSource$: BehaviorSubject<ITreeNode> = new BehaviorSubject<ITreeNode>(null);
   node$ = this.nodeSource$.asObservable();
   objSource$: BehaviorSubject<any> = new BehaviorSubject<any>({});
@@ -18,6 +19,12 @@ export class ShareObjectService {
   }));
   constructor() {}
 
+
+  /**
+   * Set an object to share it with listeners.
+   *
+   * @param obj - Object to share, can be a string representation.
+   */
   setObject(obj: any) {
     let valid = true;
     if (typeof obj === 'string') {
@@ -32,6 +39,11 @@ export class ShareObjectService {
     }
   }
 
+  /**
+   * Set a tree node to share it with listeners.
+   *
+   * @param obj
+   */
   setNode(node: ITreeNode): void {
     this.nodeSource$.next(node);
   }

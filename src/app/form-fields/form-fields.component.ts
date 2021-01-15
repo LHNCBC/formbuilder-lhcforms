@@ -4,6 +4,9 @@ import {ShareObjectService} from '../share-object.service';
 import {FetchService} from '../fetch.service';
 import {map, switchMap} from 'rxjs/operators';
 
+/**
+ * Handles editing of form level fields.
+ */
 @Component({
   selector: 'app-form-fields',
   templateUrl: './form-fields.component.html',
@@ -17,6 +20,7 @@ export class FormFieldsComponent implements OnInit {
   guidingStep = 'fl-editor'; // 'choose-start', 'home', 'item-editor'
   notHidden = true;
 
+  // Search LOINC forms from FHIR server.
   acOptions = {
     searchUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire',
     httpOptions: {
@@ -28,6 +32,9 @@ export class FormFieldsComponent implements OnInit {
   constructor(private http: HttpClient, private modelService: ShareObjectService, private dataSrv: FetchService) {
   }
 
+  /**
+   * Merge schema and layout
+   */
   ngOnInit() {
     // ngx-fl.schema.json is schema extracted from FHIR Questionnaire schema.
     this.http.get('/assets/ngx-fl.schema.json', { responseType: 'json' }).pipe(
@@ -42,7 +49,12 @@ export class FormFieldsComponent implements OnInit {
     });
 
   }
-  // Button handlers
+
+
+  /**
+   * Moves to item editor screen.
+   *
+   */
   editItem() {
     this.guidingStep = 'item-editor';
     if (!this.questionnaire.item || this.questionnaire.item.length === 0) {
@@ -50,28 +62,54 @@ export class FormFieldsComponent implements OnInit {
     }
   }
 
+
+  /**
+   * TODO
+   */
   startNew() {
+
   }
 
+
+  /**
+   * TODO
+   */
   saveAs() {
   }
 
+  /**
+   * View full Questionnaire json
+   */
   viewQuestionnaire() {
     this.guidingStep = 'qJSON';
   }
 
+
+  /**
+   * Json formatting
+   * @param json
+   */
   stringify(json): string {
     return JSON.stringify(json, null, 2);
   }
 
+
+  /**
+   * TODO
+   */
   allFields() {
   }
 
-  getForm(term: string) {
-    if (!term) {
+
+  /**
+   * Get questionnaire with id
+   * @param term
+   */
+  getForm(questionnaireId: string) {
+    if (!questionnaireId) {
       this.questionnaire = {status: 'draft', item: []};
     } else {
-      this.dataSrv.getFormData(term).subscribe((data) => {
+      this.dataSrv.getFormData(questionnaireId).subscribe((data) => {
         this.questionnaire = data;
         // this.model = this.questionnaire;
       });
