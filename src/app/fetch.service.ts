@@ -4,6 +4,7 @@ import {Observable, of} from 'rxjs';
 import {catchError, map, tap} from 'rxjs/operators';
 import {TreeNode, ITreeOptions} from '@circlon/angular-tree-component/';
 import {TREE_ACTIONS, KEYS, TreeModel} from '@circlon/angular-tree-component';
+import {LForms} from 'lforms';
 
 enum JsonFormatType {
   R4 = 'R4',
@@ -15,6 +16,10 @@ enum JsonFormatType {
   providedIn: 'root'
 })
 export class FetchService {
+  static loincBaseUrl = 'https://clinicaltables.nlm.nih.gov';
+  static loincSearchUrl = FetchService.loincBaseUrl + '/api/loinc_items/v3/search';
+  static loincFormsUrl = FetchService.loincBaseUrl + '/loinc_form_definitions';
+  static fhirUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire';
   treeOptions: ITreeOptions = {
     displayField: 'text',
    // isExpandedField: 'expanded',
@@ -48,12 +53,11 @@ export class FetchService {
     scrollContainer: document.documentElement // HTML
   };
 
-  fhirUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire';
   assetsUrl = '/assets';
   constructor(private http: HttpClient) { }
 
   getFormData(id: string): Observable<any> {
-    return this.http.get(this.fhirUrl + '/' + id, {responseType: 'json'});
+    return this.http.get(FetchService.fhirUrl + '/' + id, {responseType: 'json'});
   }
 
   getItemEditorSchema(): Observable<any> {
@@ -69,7 +73,7 @@ export class FetchService {
     options.observe = options.observe || 'body' as const;
     options.responseType = options.responseType || 'json' as const;
     options.params = (options.params || new HttpParams()).set('title', term).set('_elements', 'id,title');
-    return this.http.get<any []>(this.fhirUrl, options).pipe(
+    return this.http.get<any []>(FetchService.fhirUrl, options).pipe(
       tap((resp) => { console.log(resp); }),
       map((resp: any) => {
         return (resp.entry as Array<any>).map((e) => {
@@ -78,5 +82,24 @@ export class FetchService {
       }),
       catchError((error) => {console.log('searching for ' + term, error); return of([]); })
     );
+  }
+
+  /**
+   *
+   * @param loincNum - Loinc number
+   * @param options - Any http options.
+   */
+  getLoincItem(loincNum: string, options?): Observable<any> {
+    options = options || {};
+    options.observe = options.observe || 'body' as const;
+    options.responseType = options.responseType || 'json' as const;
+    options.params =
+      (options.params ||
+        new HttpParams())
+        .set('loinc_num', loincNum);
+    return this.http.get<any>(FetchService.loincFormsUrl, options).pipe(map((form) => {
+      // return LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R4', form);
+      return form;
+    }));
   }
 }

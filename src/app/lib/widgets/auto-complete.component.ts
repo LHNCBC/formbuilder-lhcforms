@@ -48,6 +48,8 @@ export class AutoCompleteComponent implements OnInit {
   acResults: Observable<Result[]>;
   @Output()
   optionSelected = new EventEmitter<Result>();
+  @Input()
+  searchCallback: (term: string) => Observable<Result[]>;
 
   constructor(private http: HttpClient, private lformsService: FetchService) { }
 
@@ -77,6 +79,7 @@ export class AutoCompleteComponent implements OnInit {
   }
 
   _search(value): Observable<Result []> {
-    return this.lformsService.searchForms(value);
+    return this.searchCallback(value);
+    // return this.lformsService.searchForms(value);
   }
 }

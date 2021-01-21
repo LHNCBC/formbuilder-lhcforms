@@ -3,6 +3,8 @@ import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {FetchService} from '../fetch.service';
 import {map, switchMap} from 'rxjs/operators';
+import {Observable} from 'rxjs';
+import {Result} from '../lib/widgets/auto-complete.component';
 
 /**
  * Handles editing of form level fields.
@@ -28,6 +30,14 @@ export class FormFieldsComponent implements OnInit {
       responseType: 'json' as const
     }
   };
+
+  /**
+   * Call back to auto complete search.
+   * @param term - Search term
+   */
+  acSearch = (term: string): Observable<Result []> => {
+    return this.dataSrv.searchForms(term);
+  }
 
   constructor(private http: HttpClient, private modelService: ShareObjectService, private dataSrv: FetchService) {
   }
@@ -87,7 +97,7 @@ export class FormFieldsComponent implements OnInit {
 
   /**
    * Json formatting
-   * @param json
+   * @param json - JSON object
    */
   stringify(json): string {
     return JSON.stringify(json, null, 2);
@@ -102,8 +112,8 @@ export class FormFieldsComponent implements OnInit {
 
 
   /**
-   * Get questionnaire with id
-   * @param term
+   * Get questionnaire by id
+   * @param questionnaireId - Id of the questionnaire to fetch. If empty, return empty questionnaire.
    */
   getForm(questionnaireId: string) {
     if (!questionnaireId) {

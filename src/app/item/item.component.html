@@ -62,9 +62,33 @@
               <button type="button" class="btn btn-primary" (click)="addItem($event)">Add an item</button>
             </div>
             <div class="btn-group ml-2" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="addLoincItem($event)">Add an item from LOINC</button>
+              <button type="button" class="btn btn-primary" (click)="addLoincItem(addLoincDlg)">Add an item from LOINC</button>
             </div>
           </div>
         </mat-sidenav-content>
 </mat-sidenav-container>
+
+<ng-template #addLoincDlg let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Add LOINC item</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss(false)">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="form-group">
+        <label for="searchBox">Search LOINC items</label>
+        <div class="input-group">
+          <app-auto-complete class="search-box container" placeholder="Search LOINC items" [options]="acOptions" (optionSelected)="getLoincItem($event.id)"></app-auto-complete>
+          <input id="searchBox" class="form-control" [(ngModel)]="loincItem" [ngModelOptions]="{standalone: true}">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" (click)="modal.close(true)" type="button">Add</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
 

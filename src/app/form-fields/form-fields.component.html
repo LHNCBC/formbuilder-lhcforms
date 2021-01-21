@@ -30,7 +30,7 @@
         </div>
         <div *ngIf="notHidden" class="col">
           <input type="checkbox" [(ngModel)]="notHidden">
-          <app-auto-complete class="search-box container" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
+          <app-auto-complete class="search-box container" placeholder="Search FHIR titles" [options]="acOptions" [searchCallback]="acSearch" (optionSelected)="getForm($event.id)"></app-auto-complete>
         </div>
       </div>
     </div>
