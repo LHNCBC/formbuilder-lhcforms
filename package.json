@@ -5,9 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng e2e",
+    "test": "npm run e2e",
     "lint": "ng lint",
-    "e2e": "ng e2e",
+    "e2e": "node ./node_modules/.bin/webdriver-manager clean && node ./node_modules/.bin/webdriver-manager update --versions.chrome  $(google-chrome --version |awk '{print $NF}') && ng e2e --webdriver-update=false",
     "postinstall": "ngcc"
   },
   "private": true,
