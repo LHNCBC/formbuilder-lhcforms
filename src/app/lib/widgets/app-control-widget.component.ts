@@ -2,6 +2,9 @@ import {Component, Input, OnInit} from '@angular/core';
 import {ControlWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
+/**
+ * Customize array-widget from ngx-schema-form.
+ */
 @Component({
   selector: 'app-control-widget',
   template: `
@@ -10,7 +13,10 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
   ]
 })
 export class AppControlWidgetComponent extends ControlWidget implements OnInit {
+  // Info icon
   faInfo = faInfoCircle;
+
+  // Properties to customize the layout, typically read from widget layout json.
   @Input()
   nolabel = false;
   @Input()

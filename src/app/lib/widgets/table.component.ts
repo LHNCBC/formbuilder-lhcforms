@@ -7,6 +7,13 @@ import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
 import {Util} from '../util';
 import {AppArrayWidgetComponent} from './app-array-widget.component';
 
+
+/**
+ * Component to display array of object fields in a table format with field names at the top,
+ * add button at the bottom, delete button for each row, label for the table at the left etc.
+ *
+ * It is optionally controlled by a boolean widget above the table.
+ */
 @Component({
   selector: 'app-table',
   template: `
@@ -105,25 +112,35 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
 })
 export class TableComponent extends AppArrayWidgetComponent implements AfterViewInit, DoCheck {
 
+  // Icons for buttons.
   faAdd = faPlusCircle;
   faRemove = faTrash;
   faRight = faAngleRight;
   faDown = faAngleDown;
+
   isCollapsed = false;
-  addButtonLabel = 'Add';
+  addButtonLabel = 'Add'; // Default label
   noCollapseButton = false;
   noTableLabel = false;
   noHeader = false;
   // Flag to control hiding of add/remove buttons.
   singleItem = false;
-  keyField = 'type';
+  keyField = 'type'; // Key property of the object, based on which some fields could be hidden/shown.
 
+
+  /**
+   * Make sure at least one row is present for zero length array?
+   */
   ngDoCheck(): void {
     if (this.formProperty.properties.length === 0) {
       this.addItem();
     }
   }
 
+
+  /**
+   * Initialize
+   */
   ngAfterViewInit() {
     super.ngAfterViewInit();
     const widget = this.formProperty.schema.widget;
@@ -137,6 +154,7 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
 
     const singleItemEnableSource = this.formProperty.schema.widget ? this.formProperty.schema.widget.singleItemEnableSource : null;
     // Although intended to be source agnostic, it is mainly intended for 'repeats' field as source.
+    // For example, when repeats is false, The initial field is only one row.
     // The requirement is:
     // . When source is false, hide add/remove buttons.
     // . Source if present and is true means show the buttons.
@@ -159,12 +177,16 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     if (keyField) {
       this.keyField = keyField;
     }
+    // Lookout for any changes to key field
     this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
       const showFields = this.getShowFields();
       this.noHeader = showFields.some((f) => f.noHeader);
     });
   }
 
+  /**
+   * Get fields to show.
+   */
   getShowFields(): any [] {
     let ret: any [] = [];
     if (this.formProperty.schema.widget && this.formProperty.schema.widget.showFields) {
@@ -176,6 +198,10 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     return ret;
   }
 
+  /**
+   * Check visibility i.e. based on visibleIf of ngx-schema-form
+   * @param propertyId
+   */
   isVisible(propertyId) {
     let ret = true;
     if (this.formProperty.properties.length > 0) {
@@ -184,6 +210,12 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     return ret;
   }
 
+  /**
+   * Search for formProperty based on '.' delimited property ids.
+   *
+   * @param parentProperty
+   * @param propertyId
+   */
   getProperty(parentProperty, propertyId) {
     const path = propertyId.split('.');
     let p = parentProperty;
@@ -193,6 +225,11 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     return p;
   }
 
+  /**
+   * Get title of a field, given property id.
+   * @param parentProperty
+   * @param propertyId
+   */
   getTitle(parentProperty, propertyId) {
     const p = this.getProperty(parentProperty, propertyId);
     return p.schema && p.schema.title ? p.schema.title : Util.capitalize(propertyId);

@@ -5,12 +5,18 @@ import {FormControl} from '@angular/forms';
 import {debounceTime, distinctUntilChanged, filter, map, startWith, switchMap} from 'rxjs/operators';
 import {FetchService} from '../../fetch.service';
 
+/**
+ * Define auto complete options
+ */
 export interface Options {
   searchUrl: string;
   httpOptions: any;
   processResponse?: (response: HttpResponse<any>) => Observable<Result[]>;
 }
 
+/**
+ * Define result item for auto complete results
+ */
 export interface Result {
   title: string;
   id: string;
@@ -46,6 +52,7 @@ export class AutoCompleteComponent implements OnInit {
   @Input()
   options: Options;
   acResults: Observable<Result[]>;
+  // Selected event
   @Output()
   optionSelected = new EventEmitter<Result>();
 
@@ -60,22 +67,34 @@ export class AutoCompleteComponent implements OnInit {
     }
     this.acResults = this.myControl.valueChanges.pipe(
       startWith(''),
-      filter(value => value.length > 2),
-      debounceTime(100),
-      distinctUntilChanged(),
-      // map(value => this._search(value))
-      switchMap((value) => this._search(value))
+      filter(value => value.length > 2), // Minimum two characters to search
+      debounceTime(100), // Wait for 100 millis of typing delays
+      distinctUntilChanged(), // Input should be changed
+      switchMap((value) => this._search(value)) // Final search term
     );
   }
 
-  selectOption(option) {
-    this.optionSelected.emit(option);
+  /**
+   *   Handle user selection of a result item.
+   *   @param result - Selected result item.
+   */
+  selectOption(result: Result) {
+    this.optionSelected.emit(result);
   }
 
+  /**
+   * Format result item display
+   * @param result - Result item to format
+   */
   displayFn(result: Result) {
     return result && result.title ? result.title : '';
   }
 
+  /**
+   * Search lforms service
+   * @param value - Search term from the input
+   * @private
+   */
   _search(value): Observable<Result []> {
     return this.lformsService.searchForms(value);
   }

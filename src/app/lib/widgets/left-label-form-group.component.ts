@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import {ObjectWidget} from 'ngx-schema-form';
 import { RowGridComponent } from './row-grid.component';
 
+/**
+ *
+ */
 @Component({
   selector: 'app-left-label-form-group',
   template: `

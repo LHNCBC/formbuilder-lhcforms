@@ -345,7 +345,7 @@
             "pattern": "^[ \\r\\n\\t\\S]+$",
             "type": "string",
             "widget": {
-              "id": "choice"
+              "id": "enable-when-source"
             }
           },
           "operator": {

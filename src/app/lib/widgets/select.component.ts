@@ -3,6 +3,10 @@ import {SelectWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {AppControlWidgetComponent} from './app-control-widget.component';
 
+
+/**
+ * Customized pull down box.
+ */
 @Component({
   selector: 'app-select',
   template: `
@@ -58,21 +62,17 @@ export class SelectComponent extends AppControlWidgetComponent implements AfterV
   faInfo = faInfoCircle;
   nolabel = false;
 
+  // A mapping for options display string. Typically, the display strings are from schema definition.
+  // This map helps to redefine the display string.
   @Input()
   selectOptionsMap: any = {};
-  /*
-  * {
-  *   remove: [removedOption1, ...],
-  *   map: {
-  *     originalOption: displayedOption
-  *   }
-  * }
-  *
-  **/
-  // options: any[] = [];
 
+  // Options list for the pulldown
   allowedOptions: Array<{value: string, label: string}>;
 
+  /**
+   * Initialize component, mainly the options list.
+   */
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
     this.selectOptionsMap = this.schema.widget.selectOptionsMap || {};
@@ -84,6 +84,10 @@ export class SelectComponent extends AppControlWidgetComponent implements AfterV
     });
   }
 
+  /**
+   * Map any display strings.
+   * @param opt
+   */
   mapOption(opt: string): {value: string, label: string} {
     const ret = {value: opt, label: opt};
     if (this.selectOptionsMap.map && this.selectOptionsMap.map[opt]) {
@@ -92,6 +96,10 @@ export class SelectComponent extends AppControlWidgetComponent implements AfterV
     return ret;
   }
 
+  /**
+   * Optionally to exlude any options from the schema.
+   * @param opt
+   */
   isIncluded(opt: string): boolean {
     return !(this.selectOptionsMap.remove && this.selectOptionsMap.remove.indexOf(opt) >= 0);
   }

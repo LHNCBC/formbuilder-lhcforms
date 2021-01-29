@@ -3,6 +3,10 @@ import {GridComponent} from './grid.component';
 import {Observable, of} from 'rxjs';
 import {Util} from '../util';
 
+/**
+ * Stepper component - Used and since discarded.
+ *
+ */
 @Component({
   selector: 'app-stepper-grid',
   template: `
@@ -39,12 +43,17 @@ export class StepperGridComponent extends GridComponent implements OnInit {
   completed: false;
   keyField = 'type';
 
+  /**
+   * Initialize -
+   */
   ngOnInit() {
     super.ngOnInit();
+
     const keyField = this.formProperty.findRoot().schema.widget.keyField;
     if (keyField) {
       this.keyField = keyField;
     }
+    // Listen to changes on keyField to refresh the steps.
     this.formProperty.findRoot().getProperty(this.keyField).valueChanges.subscribe(() => {
       this.steps = this.getSteps();
     });
@@ -54,6 +63,9 @@ export class StepperGridComponent extends GridComponent implements OnInit {
     return this.formProperty.findRoot().getProperty(this.keyField).widget;
   }
 
+  /**
+   * Get the steps having at least one visible row.
+   */
   getSteps(): any [] {
     return this.formProperty.schema.steps.filter((step) => {
       let ret = false;
@@ -68,6 +80,10 @@ export class StepperGridComponent extends GridComponent implements OnInit {
     });
   }
 
+  /**
+   * Get the visible fields in a row.
+   * @param row - Row containing the fields. See the /assets/*layout.json for rows.
+   */
   getVisibleFields(row): string [] {
     let ret: string [] = [];
     if (row && row.showFields) {

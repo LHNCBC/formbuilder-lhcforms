@@ -2,6 +2,9 @@ import {Component, Input, OnInit} from '@angular/core';
 import {CheckboxWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
+/**
+ * Customize checkbox
+ */
 @Component({
   selector: 'app-side-label-checkbox',
   template: `<div *ngIf="schema.type!='array'" class="widget row">

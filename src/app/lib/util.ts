@@ -19,7 +19,7 @@ export class Util {
    * Identify if a particular widget under the group is visible.
    *
    * @param group - Group property of the widget
-   * @param propertyId - It is '.' delimited property names its descendants.
+   * @param propertyId - It is '.' delimited property name of its descendants.
    */
   static isVisible(group: PropertyGroup, propertyId: string) {
     const path = propertyId.split('.');

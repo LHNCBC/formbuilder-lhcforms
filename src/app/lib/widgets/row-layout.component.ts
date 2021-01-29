@@ -1,6 +1,7 @@
 import {Component} from '@angular/core';
 import {ObjectWidget} from 'ngx-schema-form';
 import { Util } from '../util';
+import {GridComponent} from "./grid.component";
 
 @Component({
   selector: 'app-row-layout',
@@ -19,8 +20,9 @@ import { Util } from '../util';
 </fieldset>
 `
 })
-export class RowLayoutComponent extends ObjectWidget {
+export class RowLayoutComponent extends GridComponent {
 
+  /*
   getShowFieldProperty(showField) {
     const fieldId = typeof showField === 'string' ? showField : typeof showField === 'object' ? showField.field : null;
     const ret = this.formProperty.getProperty(fieldId);
@@ -34,4 +36,5 @@ export class RowLayoutComponent extends ObjectWidget {
   gridClass(showField) {
     return showField && showField.col ? 'col-' + showField.col : 'col';
   }
+  */
 }

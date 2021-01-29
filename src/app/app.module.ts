@@ -50,9 +50,8 @@ import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
 // import { SidebarModule} from 'primeng';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
-import { ItemtypeComponent } from './lib/widgets/itemtype.component';
 import {MatSelectModule} from '@angular/material/select';
-import { ChoiceComponent } from './lib/widgets/choice.component';
+import { EnableWhenSourceComponent } from './lib/widgets/enable-when-source.component';
 import { RowGridComponent } from './lib/widgets/row-grid.component';
 import { CodingComponent } from './lib/widgets/coding.component';
 import { CodingOperatorComponent } from './lib/widgets/coding-operator.component';
@@ -92,8 +91,7 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     StepperGridComponent,
     HeaderComponent,
     FooterComponent,
-    ItemtypeComponent,
-    ChoiceComponent,
+    EnableWhenSourceComponent,
     RowGridComponent,
     CodingComponent,
     CodingOperatorComponent,

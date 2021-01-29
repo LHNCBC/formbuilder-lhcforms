@@ -2,6 +2,10 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {StepperGridComponent} from './stepper-grid.component';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
+/**
+ * Expandable panels. Not used any more, but want to keep it around, in case
+ * we end up using it in some shape.
+ */
 @Component({
   selector: 'app-expandable-panels',
   template: `
