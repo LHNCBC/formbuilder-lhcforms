@@ -1,5 +1,4 @@
 import { DefaultWidgetRegistry } from 'ngx-schema-form';
-import {RowLayoutComponent} from './widgets/row-layout.component';
 import {RowLayoutAComponent} from './widgets/row-layout-a.component';
 import {GridComponent} from './widgets/grid.component';
 import {TableComponent} from './widgets/table.component';
@@ -11,7 +10,6 @@ import {RadioComponent} from './widgets/radio.component';
 import {StepperGridComponent} from './widgets/stepper-grid.component';
 import { Injectable } from '@angular/core';
 import {EnableWhenSourceComponent} from './widgets/enable-when-source.component';
-import {RowGridComponent} from './widgets/row-grid.component';
 import {CodingOperatorComponent} from './widgets/coding-operator.component';
 import {LeftLabelFormGroupComponent} from './widgets/left-label-form-group.component';
 import {ExpandablePanelsComponent} from './widgets/expandable-panels.component';
@@ -30,7 +28,6 @@ import {LabelRadioComponent} from './widgets/label-radio.component';
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
   constructor() {
     super();
-    this.register('row-layout',  RowLayoutComponent);
     this.register('row-layout-a',  RowLayoutAComponent);
     this.register('grid', GridComponent);
     this.register('stepper-grid', StepperGridComponent);
@@ -44,7 +41,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('radio', RadioComponent);
     this.register('lb-radio', LabelRadioComponent);
     this.register('enable-when-source', EnableWhenSourceComponent);
-    this.register('row-grid', RowGridComponent);
     this.register('coding-operator', CodingOperatorComponent);
     this.register('left-label-form-group', LeftLabelFormGroupComponent);
     this.register('expandable-panels', ExpandablePanelsComponent);

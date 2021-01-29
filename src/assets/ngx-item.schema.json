@@ -3878,7 +3878,7 @@
           "additionalProperties": false,
           "type": "object",
           "widget": {
-            "id": "row-layout"
+            "id": "row-layout-a"
           },
           "fieldsets": [
             {
@@ -4210,7 +4210,7 @@
           "additionalProperties": false,
           "type": "object",
           "widget": {
-            "id": "row-layout"
+            "id": "row-layout-a"
           },
           "fieldsets": [
             {

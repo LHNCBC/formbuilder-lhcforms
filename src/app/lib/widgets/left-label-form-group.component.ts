@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {ObjectWidget} from 'ngx-schema-form';
-import { RowGridComponent } from './row-grid.component';
+import {GridComponent} from "./grid.component";
 
 /**
  *
@@ -39,7 +38,7 @@ import { RowGridComponent } from './row-grid.component';
     }
   `]
 })
-export class LeftLabelFormGroupComponent  extends RowGridComponent implements OnInit {
+export class LeftLabelFormGroupComponent  extends GridComponent implements OnInit {
 
   labelWidthClass: string;
   controlWidthClass: string;
@@ -53,11 +52,7 @@ export class LeftLabelFormGroupComponent  extends RowGridComponent implements On
   }
 
   getShowFields(): string[] {
-    const ret = super.getShowFields();
-    if (!ret || ret.length === 0) {
-      // ret.push(this.formProperty.);
-    }
-    return ret;
+    return super.getShowFields(this.formProperty.schema.widget);
   }
 
   getSchema(propId: string) {

@@ -30,7 +30,6 @@ import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.compon
 // import { ToolbarModule } from 'primeng';
 import { TreeModule } from '@circlon/angular-tree-component';
 import { ItemJsonEditorComponent } from './lib/widgets/item-json-editor.component';
-import { RowLayoutComponent } from './lib/widgets/row-layout.component';
 // import { ArrayGridComponent } from './lib/widgets/array-grid.component';
 import { GridComponent } from './lib/widgets/grid.component';
 import { TableComponent } from './lib/widgets/table.component';
@@ -52,8 +51,6 @@ import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import {MatSelectModule} from '@angular/material/select';
 import { EnableWhenSourceComponent } from './lib/widgets/enable-when-source.component';
-import { RowGridComponent } from './lib/widgets/row-grid.component';
-import { CodingComponent } from './lib/widgets/coding.component';
 import { CodingOperatorComponent } from './lib/widgets/coding-operator.component';
 import { LeftLabelFormGroupComponent } from './lib/widgets/left-label-form-group.component';
 import { ExpandablePanelsComponent } from './lib/widgets/expandable-panels.component';
@@ -74,7 +71,6 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     NgxSchemaFormComponent,
     ItemComponent,
     ItemJsonEditorComponent,
-    RowLayoutComponent,
     // ArrayGridComponent,
     GridComponent,
     TableComponent,
@@ -92,8 +88,6 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     HeaderComponent,
     FooterComponent,
     EnableWhenSourceComponent,
-    RowGridComponent,
-    CodingComponent,
     CodingOperatorComponent,
     LeftLabelFormGroupComponent,
     ExpandablePanelsComponent,

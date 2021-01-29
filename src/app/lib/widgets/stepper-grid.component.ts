@@ -47,8 +47,6 @@ export class StepperGridComponent extends GridComponent implements OnInit {
    * Initialize -
    */
   ngOnInit() {
-    super.ngOnInit();
-
     const keyField = this.formProperty.findRoot().schema.widget.keyField;
     if (keyField) {
       this.keyField = keyField;

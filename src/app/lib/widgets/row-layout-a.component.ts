@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { GridComponent} from './grid.component';
 
+/**
+ * For layout of fields in rows. Field width could be entire 12 columns (bootstrap grid size),
+ * in which case next field starts on next line.
+ */
 @Component({
   selector: 'app-row-layout-a',
   template: `
@@ -17,8 +21,11 @@ export class RowLayoutAComponent extends GridComponent implements OnInit {
 
   rows: any = [];
 
+  /**
+   * Initialize
+   */
   ngOnInit() {
-    super.ngOnInit();
+    // Read rows from schema layout
     this.rows = this.formProperty.schema.layout.formLayout.rows;
   }
 

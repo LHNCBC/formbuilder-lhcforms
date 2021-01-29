@@ -1,10 +1,9 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {ObjectWidget} from 'ngx-schema-form';
 import {Util} from '../util';
 
 
 /**
- * TODO - Consolidate with RowGridComponent
  *
  * A component to layout multiple fields in horizontal layout using bootstrap grid
  */
@@ -30,19 +29,9 @@ import {Util} from '../util';
     }
   `]
 })
-export class GridComponent extends ObjectWidget implements OnInit {
+export class GridComponent extends ObjectWidget {
 
   /**
-   * Invoke super constructor.
-   */
-  constructor() {
-    super();
-  }
-  ngOnInit() {
-  }
-
-  /**
-   * TODO - Code duplication from RowGridComponent.
    * Get formProperty (refer to ngx-schema-form) of a showField (refer to assets/*layout.json).
    *
    * @param showField - Field object, see the assets/*-layout.json for the
@@ -74,6 +63,10 @@ export class GridComponent extends ObjectWidget implements OnInit {
   getShowFields(fieldset) {
     let ret = fieldset.showFields;
     ret = !ret ? fieldset.fields.map((e) => ({field: e})) : ret;
+    ret = ret.filter((field) => {
+      const propId = typeof field === 'string' ? field : typeof field === 'object' ? field.field : null;
+      return Util.isVisible(this.formProperty, propId);
+    });
     return ret;
   }
 }
