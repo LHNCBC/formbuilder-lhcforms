@@ -71,7 +71,7 @@ fb.service('fhirService', [
   thisService.search = function(searchStr, selfOnly) {
     var query = {$sort: ['-_lastUpdated'], _total: 'accurate'};
     if(searchStr) {
-      query['name'] = searchStr;
+      query['_content'] = searchStr;
     }
     if(selfOnly) {
       query['thisUserOnly'] = 'true';

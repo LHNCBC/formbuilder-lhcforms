@@ -11,15 +11,23 @@
     </md-toolbar>
     <div style="padding: 0px 24px 0px 24px;">
       <div layout="row">
-        <h4 ng-show="fhirCtrl.fhirResults.total === 1">{{fhirCtrl.fhirResults.total}} resource was found on the FHIR server:</h4>
-        <h4 ng-show="fhirCtrl.fhirResults.total > 1">{{fhirCtrl.fhirResults.total}} resources were found on the FHIR server:</h4>
-        <h4 ng-show="fhirCtrl.fhirResults.total === undefined">The following resources were found on the FHIR server:</h4>
+        <div layout="row" layout-align="start start">
+          <md-input-container>
+            <label>Filter term</label>
+            <input name="searchStr" ng-model="fhirCtrl.searchStr">
+            <div class="hint">Enter a search term to filter the results<md-icon></md-icon></div>
+          </md-input-container>
+          <div style="margin-top: 10px;">
+            <md-button ng-click="fhirCtrl.search()" class="md-raised md-primary" aria-label="Search">Filter</md-button>
+            <md-tooltip>By default, all questionnaires are assumed to be in the result set. Narrow down the results with a query term.</md-tooltip>
+            <md-icon md-font-library="material-icons" class="md-primary md-hue-3">info</md-icon>
+          </div>
+        </div>
+        <div flex="20"></div>
         <md-input-container
-          style="margin: 5px;"
-          layout="row"
-          layout-align="center start"
           class="md-primary"
         >
+          <label>FHIR Server</label>
           <md-select
             ng-model="fhirCtrl.fhirServer"
             ng-model-options="{trackBy: '$value.id'}"
@@ -30,6 +38,13 @@
           </md-select>
         </md-input-container>
       </div>
+      <div>
+        <div ng-messages="fhirCtrl.fhirError">{{fhirCtrl.fhirError.message}}</div>
+      </div>
+      <h4 ng-show="fhirCtrl.fhirResults.total === 1">{{fhirCtrl.fhirResults.total}} resource was found.</h4>
+      <h4 ng-show="fhirCtrl.fhirResults.total > 1">{{fhirCtrl.fhirResults.total}} resources were found.</h4>
+      <h4 ng-show="fhirCtrl.fhirResults.total === 0">No resources were found.</h4>
+      <h4 ng-show="fhirCtrl.fhirResults.total === undefined">The following resources were found.</h4>
       <div layout="row">
         <md-button ng-disabled="!fhirCtrl.hasLink('previous')" ng-click="fhirCtrl.getPage($event, 'previous')" class="md-primary">Previous</md-button>
         <md-button ng-disabled="!fhirCtrl.hasLink('next')" ng-click="fhirCtrl.getPage($event, 'next')" class="md-primary">Next</md-button>
@@ -38,10 +53,6 @@
     </div>
     <md-dialog-content>
       <div class="md-dialog-content">
-        <div>
-          <!-- <div ng-include="'app/form-builder/fhir-search.html'"></div> -->
-          <div ng-messages="fhirCtrl.fhirError">{{fhirCtrl.fhirError.message}}</div>
-        </div>
         <div>
           <md-list style="border: lightgrey solid 2px; padding: 0px;" class="md-dense" ng-show="fhirCtrl.fhirResults.entry && fhirCtrl.fhirResults.entry.length > 0">
             <md-list-item ng-click="fhirCtrl.loadResource($event, item.resource.id)"  ng-class-odd="'stripe-odd'" class="md-3-line" ng-repeat="item in fhirCtrl.fhirResults.entry track by $index">
@@ -53,7 +64,7 @@
                   <p>{{ item.resource.publisher }}</p>
                   <p>Last updated: {{item.resource.meta.lastUpdated | date: 'MMM d, y h:mm:ss a Z'}}</p>
                 </div>
-                <md-icon md-svg-src="/assets/images/delete-forever.svg"  ng-click="fhirCtrl.deleteResource($event, item.resource.id)" aria-label="Delete this resource" class="md-secondary md-hue-3" ></md-icon>
+                <md-icon ng-if="fhirCtrl.onlyUserResources" md-svg-src="/assets/images/delete-forever.svg"  ng-click="fhirCtrl.deleteResource($event, item.resource.id)" aria-label="Delete this resource" class="md-secondary md-hue-3" ></md-icon>
               </div>
             </md-list-item>
             <md-tooltip>Click to load this item into form builder</md-tooltip>

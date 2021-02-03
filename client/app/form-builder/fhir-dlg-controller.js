@@ -5,7 +5,7 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
 
   var self = this;
   self.fhirResultsCount = 0;
-  self.onlyUserResources = true;
+  self.onlyUserResources = false;
 
   self.fhirServerList = dataConstants.fhirServerList;
   self.savedFhirServer = self.getFhirServer();

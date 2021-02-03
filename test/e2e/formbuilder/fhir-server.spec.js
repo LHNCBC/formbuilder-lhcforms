@@ -94,28 +94,6 @@ describe('FHIR server interactions - ', function () {
       util.assertImportFromFhir(updatedTitle);
     });
 
-    // Assume there is a resource on the server
-    it('should delete', function () {
-
-      fb.exportMenu.click();
-      expect(fb.updateFhir.isEnabled()).toBeTruthy();
-      fb.dismissMenu();
-
-      util.getFhirResourceDeleteElement(updatedTitle, uhnServerName).click();
-
-      expect(fb.fhirResponse.isDisplayed()).toBeTruthy();
-      fb.fhirResponse.getText().then(function(text){
-        var resp = JSON.parse(text);
-        expect(resp.issue[0].diagnostics).toContain('Successfully deleted 1 resource(s) in');
-      });
-      fb.closeDialog(); // fhir response
-      fb.closeDialog(); // fhir results
-
-      fb.exportMenu.click();
-      expect(fb.updateFhir.isEnabled()).toBeFalsy();
-      fb.dismissMenu();
-    });
-
     it('should do next/previous page', function () {
 
       fb.importMenu.click();
@@ -128,14 +106,14 @@ describe('FHIR server interactions - ', function () {
       expect(fb.prevButton.isEnabled()).toBeFalsy();
       // First bundle is without total field, next three are with it.
       const eleForAbsentTotalField = element(by.cssContainingText('md-dialog div h4',
-          'The following resources were found on the FHIR server:'));
+          'The following resources were found.'));
       expect(eleForAbsentTotalField.isDisplayed()).toBeTruthy();
       fb.nextButton.click();
       expect(fb.nextButton.isEnabled()).toBeTruthy();
       expect(fb.prevButton.isEnabled()).toBeTruthy();
       // This bundle is with total field.
       const eleForTotalField = element(by.cssContainingText('md-dialog div h4',
-          '20 resources were found on the FHIR server:'));
+          '20 resources were found.'));
       expect(eleForTotalField.isDisplayed()).toBeTruthy();
       fb.nextButton.click();
       expect(fb.nextButton.isEnabled()).toBeTruthy();
