@@ -59,7 +59,7 @@
               <div style="display: grid; grid-template-columns: 40px 1fr 40px; align-items: start; justify-items: start; grid-gap: 3px 3px">
                 <div>{{ fhirCtrl.fhirResultsCount + $index + 1 }}</div>
                 <div class="md-list-item-text" layout="column">
-                  <p>ID: {{ item.resource.id }} (version: {{ item.resource.meta.versionId}})</p>
+                  <p style="line-height: 1.1">ID: {{ item.resource.id }} (version: {{ item.resource.meta.versionId}})</p>
                   <p>{{ item.resource.title }}</p>
                   <p>{{ item.resource.publisher }}</p>
                   <p>Last updated: {{item.resource.meta.lastUpdated | date: 'MMM d, y h:mm:ss a Z'}}</p>
