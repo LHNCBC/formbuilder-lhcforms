@@ -20,7 +20,7 @@ fb.service('fhirService', [
     // This field could be handy to retrieve user's resources from fhir server.
     // For now combine name and email to make it unique and searchable by name.
     var resource = JSON.parse(resourceStr);
-    resource.publisher = assignPublisher(resource, userProfile);
+    assignPublisher(resource, userProfile);
 
     return $fhir.create({resource: resource});
   };
@@ -35,7 +35,7 @@ fb.service('fhirService', [
    */
   thisService.update = function(resourceStr, userProfile) {
     var resource = JSON.parse(resourceStr);
-    resource.publisher = assignPublisher(resource, userProfile);
+    assignPublisher(resource, userProfile);
     return $fhir.update({resource: resource});
   };
 
