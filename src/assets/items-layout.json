@@ -6,7 +6,7 @@
           { "field": "text", "col": 12 },
           { "field": "type", "col": 12 },
           { "field": "linkId", "col": 12 },
-          { "field": "_codeYesNo", "col": 12 },
+          { "field": "__$codeYesNo", "col": 12 },
           { "field": "code", "col": 12 },
           { "field": "prefix", "col": 12}
         ]

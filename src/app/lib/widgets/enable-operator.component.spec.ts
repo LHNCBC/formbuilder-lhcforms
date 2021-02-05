@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CodingOperatorComponent } from './coding-operator.component';
+import { EnableOperatorComponent } from './enable-operator.component';
 
-describe('CodingOperatorComponent', () => {
-  let component: CodingOperatorComponent;
-  let fixture: ComponentFixture<CodingOperatorComponent>;
+describe('EnableOperatorComponent', () => {
+  let component: EnableOperatorComponent;
+  let fixture: ComponentFixture<EnableOperatorComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ CodingOperatorComponent ]
+      declarations: [ EnableOperatorComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(CodingOperatorComponent);
+    fixture = TestBed.createComponent(EnableOperatorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -6,7 +6,7 @@ import { GridComponent} from './grid.component';
  * in which case next field starts on next line.
  */
 @Component({
-  selector: 'app-row-layout-a',
+  selector: 'app-row-layout',
   template: `
     <div *ngFor="let row of rows">
       <div [class]="gridClass(field)" *ngFor="let field of getShowFields(row)">
@@ -17,7 +17,7 @@ import { GridComponent} from './grid.component';
   styles: [
   ]
 })
-export class RowLayoutAComponent extends GridComponent implements OnInit {
+export class RowLayoutComponent extends GridComponent implements OnInit {
 
   rows: any = [];
 

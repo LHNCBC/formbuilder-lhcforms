@@ -1881,6 +1881,6 @@
   ],
   "widget": {
     "keyField": "resourceType",
-    "id": "row-layout-a"
+    "id": "row-layout"
   }
 }

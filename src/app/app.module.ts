@@ -45,15 +45,12 @@ import { TitleComponent } from './lib/widgets/title.component';
 import { ElementChooserComponent } from './lib/widgets/element-chooser.component';
 import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
 import { RadioComponent } from './lib/widgets/radio.component';
-import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
-// import { SidebarModule} from 'primeng';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import {MatSelectModule} from '@angular/material/select';
 import { EnableWhenSourceComponent } from './lib/widgets/enable-when-source.component';
-import { CodingOperatorComponent } from './lib/widgets/coding-operator.component';
+import { EnableOperatorComponent } from './lib/widgets/enable-operator.component';
 import { LeftLabelFormGroupComponent } from './lib/widgets/left-label-form-group.component';
-import { ExpandablePanelsComponent } from './lib/widgets/expandable-panels.component';
 import { AppControlWidgetComponent } from './lib/widgets/app-control-widget.component';
 import { AppArrayWidgetComponent } from './lib/widgets/app-array-widget.component';
 import { SideLabelCheckboxComponent } from './lib/widgets/side-label-checkbox.component';
@@ -62,7 +59,7 @@ import { AppJsonPipe } from './lib/pipes/app-json.pipe';
 import { BasePageComponent } from './base-page/base-page.component';
 import { FormFieldsComponent } from './form-fields/form-fields.component';
 import { LabelRadioComponent } from './lib/widgets/label-radio.component';
-import { RowLayoutAComponent } from './lib/widgets/row-layout-a.component';
+import { RowLayoutComponent } from './lib/widgets/row-layout.component';
 import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.component';
 
 @NgModule({
@@ -84,13 +81,11 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     ElementChooserComponent,
     AutoCompleteComponent,
     RadioComponent,
-    StepperGridComponent,
     HeaderComponent,
     FooterComponent,
     EnableWhenSourceComponent,
-    CodingOperatorComponent,
+    EnableOperatorComponent,
     LeftLabelFormGroupComponent,
-    ExpandablePanelsComponent,
     AppControlWidgetComponent,
     AppArrayWidgetComponent,
     SideLabelCheckboxComponent,
@@ -99,7 +94,7 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     BasePageComponent,
     FormFieldsComponent,
     LabelRadioComponent,
-    RowLayoutAComponent,
+    RowLayoutComponent,
     BooleanControlledComponent
   ],
   imports: [

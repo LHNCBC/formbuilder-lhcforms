@@ -8,7 +8,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 
 /**
- * Enable when source input box to search eligible source items listed in the tree.
+ * An input box for enableWhen's source to search eligible source items listed in the tree.
  */
 @Component({
   selector: 'app-choice',
@@ -94,7 +94,7 @@ export class EnableWhenSourceComponent extends ControlWidget implements OnInit {
         this.model = source;
         this.formProperty.setValue(source.data.linkId, true);
         // Set answer type input
-        this.formProperty.searchProperty('_answerType').setValue(source.data.type, true);
+        this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
       }
     }
   }
@@ -105,7 +105,7 @@ export class EnableWhenSourceComponent extends ControlWidget implements OnInit {
    */
   onSelect($event): void {
     this.formProperty.setValue($event.item.data.linkId, true);
-    this.formProperty.searchProperty('_answerType').setValue($event.item.data.type, true);
+    this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, true);
   }
 
 

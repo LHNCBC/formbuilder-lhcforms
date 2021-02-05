@@ -24,7 +24,7 @@ describe('AppJsonPipe', () => {
     enableWhen: {question: 1}
   };
 
-  it('create an instance', () => {
+  it('should create an instance', () => {
     const pipe = new AppJsonPipe();
     expect(pipe).toBeTruthy();
   });

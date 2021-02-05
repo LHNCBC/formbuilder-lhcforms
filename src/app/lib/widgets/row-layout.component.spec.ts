@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RowLayoutAComponent } from './row-layout-a.component';
+import { RowLayoutComponent } from './row-layout.component';
 
-describe('RowLayoutAComponent', () => {
-  let component: RowLayoutAComponent;
-  let fixture: ComponentFixture<RowLayoutAComponent>;
+describe('RowLayoutComponent', () => {
+  let component: RowLayoutComponent;
+  let fixture: ComponentFixture<RowLayoutComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ RowLayoutAComponent ]
+      declarations: [ RowLayoutComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(RowLayoutAComponent);
+    fixture = TestBed.createComponent(RowLayoutComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

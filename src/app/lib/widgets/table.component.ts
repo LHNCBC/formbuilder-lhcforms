@@ -19,7 +19,7 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
   template: `
     <ng-container *ngIf="booleanControlled">
       <app-boolean-controlled
-        [(bool)]="booleanControlledInitial"
+        [(bool)]="booleanControlledOption"
         [controlWidthClass]="controlWidthClass"
         [labelWidthClass]="labelWidthClass"
         [label]="booleanLabel"
@@ -28,7 +28,7 @@ import {AppArrayWidgetComponent} from './app-array-widget.component';
       ></app-boolean-controlled>
     </ng-container>
 
-    <div *ngIf="!booleanControlled || booleanControlledInitial" class="widget form-group"  [ngClass]="{'row': labelPosition === 'left'}">
+    <div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group"  [ngClass]="{'row': labelPosition === 'left'}">
       <div [ngClass]="labelWidthClass">
         <button *ngIf="!noCollapseButton" href="#" type="button"
                 [ngClass]="{'float-sm-right': labelPosition === 'left'}"
@@ -126,15 +126,17 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
   // Flag to control hiding of add/remove buttons.
   singleItem = false;
   keyField = 'type'; // Key property of the object, based on which some fields could be hidden/shown.
+  booleanControlledOption = true;
 
 
   /**
    * Make sure at least one row is present for zero length array?
    */
   ngDoCheck(): void {
-    if (this.formProperty.properties.length === 0) {
+    if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
+
   }
 
 
@@ -150,7 +152,9 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     this.noTableLabel = !!widget.noTableLabel;
     this.noCollapseButton = !!widget.noCollapseButton;
     this.singleItem = !!widget.singleItem;
-    this.booleanControlledInitial = !!this.formProperty.value;
+    this.booleanControlledOption =
+      !this.booleanControlledInitial ||
+      !!(this.formProperty.value || this.formProperty.value.length > 0);
 
     const singleItemEnableSource = this.formProperty.schema.widget ? this.formProperty.schema.widget.singleItemEnableSource : null;
     // Although intended to be source agnostic, it is mainly intended for 'repeats' field as source.
@@ -234,6 +238,7 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     const p = this.getProperty(parentProperty, propertyId);
     return p.schema && p.schema.title ? p.schema.title : Util.capitalize(propertyId);
   }
+
 
 
 }

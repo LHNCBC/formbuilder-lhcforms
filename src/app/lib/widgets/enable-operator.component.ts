@@ -2,17 +2,17 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {SelectComponent} from './select.component';
 
 /**
- * This component Handles peculiar case of operator.
+ * This component handles peculiar case of operator.
  *
  * The semantics of exists and not-exists are implied by 'exists' value in operator (this.formProperty)
  * and followed by true/false value in answerBoolean.
  *
  * The template here is not directly bound to control's form property.
- * It is updated programatically in the class.
+ * It is updated programmatically in the class.
  */
 
 @Component({
-  selector: 'app-coding-operator',
+  selector: 'app-enable-operator',
   template: `
     <select #mySelect
             [(ngModel)]="model"
@@ -27,8 +27,9 @@ import {SelectComponent} from './select.component';
   styles: [
   ]
 })
-export class CodingOperatorComponent extends SelectComponent implements OnInit {
+export class EnableOperatorComponent extends SelectComponent implements OnInit {
 
+  // All operators
   userOptions: any [] = [
     {option: 'exists', label: 'Not empty'},
     {option: 'notexists', label: 'Empty'},
@@ -40,6 +41,7 @@ export class CodingOperatorComponent extends SelectComponent implements OnInit {
     {option: '<=', label: '<='}
   ];
 
+  // A subset of operators for certain types
   userOptions2: any [] = this.userOptions.filter((e) => {
     return (
       e.option === 'exists' ||
@@ -49,6 +51,7 @@ export class CodingOperatorComponent extends SelectComponent implements OnInit {
     );
   });
 
+  // Operators based on type.
   options = {
     decimal: this.userOptions,
     integer: this.userOptions,
@@ -69,6 +72,9 @@ export class CodingOperatorComponent extends SelectComponent implements OnInit {
   model: string;
   answerType: string;
 
+  /**
+   * Initialize
+   */
   ngOnInit(): void {
     // this.formProperty represents operator from schema.
     const answerBool = this.formProperty.searchProperty('answerBoolean');
@@ -88,19 +94,25 @@ export class CodingOperatorComponent extends SelectComponent implements OnInit {
       }
     });
 
-    this.formProperty.searchProperty('_answerType').valueChanges.subscribe((val) => {
+    this.formProperty.searchProperty('__$answerType').valueChanges.subscribe((val) => {
       this.answerType = val;
     });
   }
 
+  /**
+   * Update control property and its dependent answerBoolean based on user interaction with this widget.
+   */
   onSelected(): void {
     if (this.model === 'exists') {
+      // answerBoolean should be set to true.
       this.formProperty.searchProperty('answerBoolean').setValue(true, true);
       this.formProperty.setValue(this.model, true);
     } else if (this.model === 'notexists') {
+      // There is no notexists. It is 'exists' with answerBoolean set to false
       this.formProperty.searchProperty('answerBoolean').setValue(false, true);
       this.formProperty.setValue('exists', true);
     } else {
+      // All others cases
       this.formProperty.searchProperty('answerBoolean').reset(null, true);
       this.formProperty.setValue(this.model, true);
     }

@@ -3,7 +3,8 @@ import {ArrayWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 /**
- * Customize array-widget from ngx-schema-form.
+ * Customize array-widget from ngx-schema-form. ArrayWidget represents a component
+ * with array of objects, typically like a table of rows with columns.
  */
 @Component({
   selector: 'app-array-widget',

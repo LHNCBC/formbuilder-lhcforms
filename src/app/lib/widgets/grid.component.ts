@@ -34,7 +34,7 @@ export class GridComponent extends ObjectWidget {
   /**
    * Get formProperty (refer to ngx-schema-form) of a showField (refer to assets/*layout.json).
    *
-   * @param showField - Field object, see the assets/*-layout.json for the
+   * @param showField - Field object, see the assets/*-layout.json for the definition
    */
   getShowFieldProperty(showField) {
     const fieldId = typeof showField === 'string' ? showField : typeof showField === 'object' ? showField.field : null;

@@ -60,7 +60,7 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
       if (!source || !source.data) {
         return;
       }
-      const answerType = this.formProperty.searchProperty('_answerType').value;
+      const answerType = this.formProperty.searchProperty('__$answerType').value;
 
       if (answerType === 'choice' || answerType === 'open-choice') {
         const sourceNode = this.formService.getTreeNodeByLinkId(source.data.linkId);
