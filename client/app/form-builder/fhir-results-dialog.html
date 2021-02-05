@@ -14,7 +14,7 @@
         <div layout="row" layout-align="start start">
           <md-input-container>
             <label>Filter term</label>
-            <input name="searchStr" ng-model="fhirCtrl.searchStr">
+            <input name="searchStr" ng-keyup="$event.keyCode == 13 && fhirCtrl.search()" ng-model="fhirCtrl.searchStr">
             <div class="hint">Enter a search term to filter the results<md-icon></md-icon></div>
           </md-input-container>
           <div style="margin-top: 10px;">
