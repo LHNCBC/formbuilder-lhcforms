@@ -1,4 +1,4 @@
-<md-dialog aria-labelledby="titleId" style="width: 60%">
+<md-dialog aria-labelledby="titleId" style="width: 60%; height: 90%;">
   <form ng-cloak>
     <md-toolbar>
       <div class="md-toolbar-tools">
@@ -13,17 +13,17 @@
       <div layout="row">
         <div layout="row" layout-align="start start">
           <md-input-container>
-            <label>Filter term</label>
-            <input name="searchStr" ng-keyup="$event.keyCode == 13 && fhirCtrl.search()" ng-model="fhirCtrl.searchStr">
-            <div class="hint">Enter a search term to filter the results<md-icon></md-icon></div>
-          </md-input-container>
+              <label>Filter term</label>
+              <input name="searchStr" ng-keyup="$event.keyCode == 13 && fhirCtrl.search()" ng-model="fhirCtrl.searchStr">
+              <div class="hint">Enter a search term to filter the results</div>
+            </md-input-container>
           <div style="margin-top: 10px;">
-            <md-button ng-click="fhirCtrl.search()" class="md-raised md-primary" aria-label="Search">Filter</md-button>
-            <md-tooltip>By default, all questionnaires are assumed to be in the result set. Narrow down the results with a filter term.</md-tooltip>
-            <md-icon md-font-library="material-icons" class="md-primary md-hue-3">info</md-icon>
-          </div>
+              <md-button ng-click="fhirCtrl.search()" class="md-raised md-primary" aria-label="Search">Filter</md-button>
+              <md-tooltip>By default, all questionnaires are assumed to be in the result set. Narrow down the results with a filter term.</md-tooltip>
+              <md-icon md-font-library="material-icons" class="md-primary md-hue-3">info</md-icon>
+            </div>
         </div>
-        <div flex="20"></div>
+        <div flex="10"></div>
         <md-input-container
           class="md-primary"
         >
@@ -38,13 +38,25 @@
           </md-select>
         </md-input-container>
       </div>
-      <div>
-        <div ng-messages="fhirCtrl.fhirError">{{fhirCtrl.fhirError.message}}</div>
+      <div layout="row">
+        <label style="margin-right: 10px;">Filter by the term occurring: </label>
+        <md-radio-group
+                layout="row"
+                ng-model="fhirCtrl.searchField"
+                ng-change="fhirCtrl.search()"
+                aria-labelledby="Selected search field">
+          <md-radio-button ng-repeat="f in fhirCtrl.searchFieldList" ng-value="f.value">{{ f.display }}</md-radio-button>
+        </md-radio-group>
       </div>
-      <h4 ng-show="fhirCtrl.fhirResults.total === 1">{{fhirCtrl.fhirResults.total}} resource was found.</h4>
-      <h4 ng-show="fhirCtrl.fhirResults.total > 1">{{fhirCtrl.fhirResults.total}} resources were found.</h4>
-      <h4 ng-show="fhirCtrl.fhirResults.total === 0">No resources were found.</h4>
-      <h4 ng-show="fhirCtrl.fhirResults.total === undefined">The following resources were found.</h4>
+      <div style="margin-top: 20px;">
+        <div>
+          <div ng-messages="fhirCtrl.fhirError">{{fhirCtrl.fhirError.message}}</div>
+        </div>
+        <h4 ng-show="fhirCtrl.fhirResults.total === 1">{{fhirCtrl.fhirResults.total}} resource was found.</h4>
+        <h4 ng-show="fhirCtrl.fhirResults.total > 1">{{fhirCtrl.fhirResults.total}} resources were found.</h4>
+        <h4 ng-show="fhirCtrl.fhirResults.total === 0">No resources were found.</h4>
+        <h4 ng-show="fhirCtrl.fhirResults.total === undefined">The following resources were found.</h4>
+      </div>
       <div layout="row">
         <md-button ng-disabled="!fhirCtrl.hasLink('previous')" ng-click="fhirCtrl.getPage($event, 'previous')" class="md-primary">Previous</md-button>
         <md-button ng-disabled="!fhirCtrl.hasLink('next')" ng-click="fhirCtrl.getPage($event, 'next')" class="md-primary">Next</md-button>
