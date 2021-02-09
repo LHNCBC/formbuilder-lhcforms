@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.4.1]  2021-02-09
+### Updated
+- Merged dependabot PR.
+
 ## [6.4.0]  2021-02-03
 ### Added
 - Added functionality to narrow down the results from FHIR Server
