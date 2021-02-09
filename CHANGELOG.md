@@ -2,6 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.4.0]  2021-02-03
+### Added
+- Added functionality to narrow down the results from FHIR Server
+  using a search term.
+### Removed
+- Removed delete buttons from search results of a FHIR server.
+
 ## [6.3.2]  2020-12-21
 ### Fixed
 - Upgrade AngularJS to 1.8.x to address a security alert.

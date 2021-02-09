@@ -5,13 +5,30 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
 
   var self = this;
   self.fhirResultsCount = 0;
-  self.onlyUserResources = true;
+  self.onlyUserResources = false;
 
   self.fhirServerList = dataConstants.fhirServerList;
   self.savedFhirServer = self.getFhirServer();
   self.fhirServer = self.savedFhirServer;
   self.errorMessage = null;
   self.urlinput = {endpoint: null};
+  self.searchFieldList = [
+      /*
+    {
+      value: '_content',
+      display: 'Anywhere in resource'
+    },
+      */
+    {
+      value: 'title',
+      display: 'In title only'
+    },
+    {
+      value: 'name',
+      display: 'In name only'
+    }
+  ];
+  self.searchField = self.searchFieldList[0].value;
 
 
   /**
@@ -51,7 +68,7 @@ function ($mdDialog, fhirService, dataConstants, $http, $q) {
    */
   self.search = function(ev) {
     fhirService.setFhirServer(self.fhirServer);
-    fhirService.search(self.searchStr, self.onlyUserResources)
+    fhirService.search(self.searchStr, self.onlyUserResources, self.searchField)
       .then(self.handleFhirResults, function(err) {
         self.handleError(ev, err);
       });
