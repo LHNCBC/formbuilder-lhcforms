@@ -68,6 +68,8 @@ import { FormFieldsComponent } from './form-fields/form-fields.component';
 import { LabelRadioComponent } from './lib/widgets/label-radio.component';
 import { RowLayoutAComponent } from './lib/widgets/row-layout-a.component';
 import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.component';
+import { AddItemDialogComponent } from './lib/widgets/add-item-dialog.component';
+import {MatDialogModule} from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -108,7 +110,8 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     FormFieldsComponent,
     LabelRadioComponent,
     RowLayoutAComponent,
-    BooleanControlledComponent
+    BooleanControlledComponent,
+    AddItemDialogComponent
   ],
   imports: [
     AppRoutingModule,
@@ -138,6 +141,7 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.com
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatSelectModule,
+    MatDialogModule,
   ],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}],
   bootstrap: [AppComponent]

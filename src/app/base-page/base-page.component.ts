@@ -125,7 +125,7 @@ export class BasePageComponent {
 
   /**
    * Switch guiding step
-   * @param step
+   * @param step - a
    */
   setStep(step) {
     this.guidingStep = step;

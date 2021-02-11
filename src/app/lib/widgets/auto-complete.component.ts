@@ -8,10 +8,10 @@ import {FetchService} from '../../fetch.service';
 export interface Options {
   searchUrl: string;
   httpOptions: any;
-  processResponse?: (response: HttpResponse<any>) => Observable<Result[]>;
+  processResponse?: (response: HttpResponse<any>) => Observable<AutoCompleteResult[]>;
 }
 
-export interface Result {
+export interface AutoCompleteResult {
   title: string;
   id: string;
 }
@@ -24,7 +24,7 @@ export interface Result {
              [placeholder]="placeholder"
              [formControl]="myControl"
              [matAutocomplete]="autoGroup">
-      <mat-autocomplete [disableRipple]="true" #autoGroup="matAutocomplete" [panelWidth]="'100%'"
+      <mat-autocomplete autoActiveFirstOption [disableRipple]="true" #autoGroup="matAutocomplete" [panelWidth]="'100%'"
                         [displayWith]="displayFn" (optionSelected)="selectOption($event.option.value)">
         <mat-option *ngFor="let result of acResults | async" [value]="result">
           <div class="container-fluid">
@@ -45,11 +45,11 @@ export class AutoCompleteComponent implements OnInit {
   placeholder;
   @Input()
   options: Options;
-  acResults: Observable<Result[]>;
+  acResults: Observable<AutoCompleteResult[]>;
   @Output()
-  optionSelected = new EventEmitter<Result>();
+  optionSelected = new EventEmitter<AutoCompleteResult>();
   @Input()
-  searchCallback: (term: string) => Observable<Result[]>;
+  searchCallback: (term: string) => Observable<AutoCompleteResult[]>;
 
   constructor(private http: HttpClient, private lformsService: FetchService) { }
 
@@ -74,11 +74,11 @@ export class AutoCompleteComponent implements OnInit {
     this.optionSelected.emit(option);
   }
 
-  displayFn(result: Result) {
+  displayFn(result: AutoCompleteResult) {
     return result && result.title ? result.title : '';
   }
 
-  _search(value): Observable<Result []> {
+  _search(value): Observable<AutoCompleteResult []> {
     return this.searchCallback(value);
     // return this.lformsService.searchForms(value);
   }

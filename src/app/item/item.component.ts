@@ -8,7 +8,11 @@ import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor.component';
 import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
-import {Observable} from "rxjs";
+import {Observable, of, Subject} from 'rxjs';
+import {AutoCompleteResult} from '../lib/widgets/auto-complete.component';
+import { AddItemDialogComponent } from '../lib/widgets/add-item-dialog.component';
+import {MatDialog} from '@angular/material/dialog';
+import {debounceTime, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -90,7 +94,15 @@ export class ItemComponent implements OnInit, AfterViewInit {
 
   linkIdCollection = new LinkIdCollection();
 
+  acSearch = (term$: Observable<string>): Observable<AutoCompleteResult []> => {
+    return term$.pipe(
+      debounceTime(200),
+      distinctUntilChanged(),
+      switchMap((term) => term.length < 2 ? [] : this.dataSrv.searchLoincItems(term)));
+  }
+
   constructor(
+              public dialog: MatDialog,
               private modalService: NgbModal,
               private formService: FormService,
               private dataSrv: FetchService,
@@ -236,10 +248,13 @@ export class ItemComponent implements OnInit, AfterViewInit {
    * @param event - a
    */
   addItem(event): void {
-    this.insertAnItem({text: 'New item ' + this.id++}, this.focusNode.index + 1);
+    this.insertAnItem({text: 'New item ' + this.id++});
   }
 
-  insertAnItem(item, index) {
+  insertAnItem(item, index?: number) {
+    if (typeof index === 'undefined') {
+      index = this.focusNode.index + 1;
+    }
     this.focusNode.parent.data.item.splice(index, 0, item);
     this.treeComponent.treeModel.update();
     this.treeComponent.treeModel.focusNextNode();
@@ -269,6 +284,28 @@ export class ItemComponent implements OnInit, AfterViewInit {
     });
   }
 
+  addLOINCItem(): void {
+    const dialogRef = this.dialog.open(AddItemDialogComponent, {
+      width: '250px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+      this.getLoincItem(result).subscribe((item) => {
+        this.insertAnItem(item);
+      });
+    });
+  }
+
+  addLoincItemNgb(dialogTemplateRef): void {
+    this.modalService.open(dialogTemplateRef, {ariaLabelledBy: 'modal-basic-title'}).result.then((result) => {
+      this.getLoincItem(result).subscribe((item) => {
+        this.insertAnItem(item);
+      });
+    }, (reason) => {
+    });
+  }
+
   /**
    *
    * @param loincNum - Loinc number of the item.
@@ -291,5 +328,9 @@ export class ItemComponent implements OnInit, AfterViewInit {
    *
    */
   getItem(loincNum: string) {
+  }
+
+  formatter(acResult: AutoCompleteResult) {
+    return acResult.id + ': ' + acResult.title;
   }
 }

@@ -4,7 +4,7 @@ import {ShareObjectService} from '../share-object.service';
 import {FetchService} from '../fetch.service';
 import {map, switchMap} from 'rxjs/operators';
 import {Observable} from 'rxjs';
-import {Result} from '../lib/widgets/auto-complete.component';
+import {AutoCompleteResult} from '../lib/widgets/auto-complete.component';
 
 /**
  * Handles editing of form level fields.
@@ -35,7 +35,7 @@ export class FormFieldsComponent implements OnInit {
    * Call back to auto complete search.
    * @param term - Search term
    */
-  acSearch = (term: string): Observable<Result []> => {
+  acSearch = (term: string): Observable<AutoCompleteResult []> => {
     return this.dataSrv.searchForms(term);
   }
 

@@ -62,13 +62,64 @@
               <button type="button" class="btn btn-primary" (click)="addItem($event)">Add an item</button>
             </div>
             <div class="btn-group ml-2" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="addLoincItem(addLoincDlg)">Add an item from LOINC</button>
+              <button type="button" class="btn btn-primary" (click)="addLoincItemNgb(addItemDlg)">Add an item from LOINC</button>
             </div>
           </div>
         </mat-sidenav-content>
 </mat-sidenav-container>
 
+<ng-template #addItemDlg let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Add LOINC item</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="form-group">
+        <label for="acSearchBoxId">Search for a LOINC item:</label>
+        <input id="acSearchBoxId"  type="text" class="form-control"
+               [(ngModel)]="loincItem"
+               [ngModelOptions]="{standalone: true}"
+               [ngbTypeahead]="acSearch"
+               [resultFormatter]="formatter"
+               [inputFormatter]="formatter"
+               [editable]='false' />
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-dark" (click)="modal.dismiss(false)">Cancel</button>
+    <button type="button" class="btn btn-outline-dark" (click)="modal.close(loincItem.id)">Add</button>
+  </div>
+</ng-template>
+
 <ng-template #addLoincDlg let-modal>
+  <div mat-dialog-title>
+    <span>Add LOINC item</span>
+    <button type="button" class="close" aria-label="Close" (click)="dialog.closeAll()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div mat-dialog-content>
+    <!-- <p></p> -->
+      <app-auto-complete id="searchBox"
+                         class="search-box container"
+                         placeholder="Search LOINC items"
+                         [options]="acOptions"
+                         (optionSelected)="modal.close($event.id)"
+                         [searchCallback]="acSearch"
+      ></app-auto-complete>
+  </div>
+  <!--
+
+  <div mat-dialog-actions>
+    <button mat-button (click)="cancel()">No Thanks</button>
+    <button mat-button [mat-dialog-close]="data.animal" cdkFocusInitial>Ok</button>
+  </div>
+  -->
+  <!--
   <div class="modal-header">
     <h4 class="modal-title" id="modal-basic-title">Add LOINC item</h4>
     <button type="button" class="close" aria-label="Close" (click)="modal.dismiss(false)">
@@ -79,16 +130,17 @@
     <form>
       <div class="form-group">
         <label for="searchBox">Search LOINC items</label>
-        <div class="input-group">
-          <app-auto-complete class="search-box container" placeholder="Search LOINC items" [options]="acOptions" (optionSelected)="getLoincItem($event.id)"></app-auto-complete>
-          <input id="searchBox" class="form-control" [(ngModel)]="loincItem" [ngModelOptions]="{standalone: true}">
-          <div class="input-group-append">
-            <button class="btn btn-outline-secondary" (click)="modal.close(true)" type="button">Add</button>
-          </div>
-        </div>
+          <app-auto-complete id="searchBox"
+            class="search-box container"
+            placeholder="Search LOINC items"
+            [options]="acOptions"
+            (optionSelected)="modal.close($event.id)"
+            [searchCallback]="acSearch"
+          ></app-auto-complete>
       </div>
     </form>
   </div>
+  -->
 </ng-template>
 
 
