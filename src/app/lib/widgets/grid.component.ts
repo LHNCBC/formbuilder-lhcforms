@@ -1,7 +1,12 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {Component} from '@angular/core';
 import {ObjectWidget} from 'ngx-schema-form';
 import {Util} from '../util';
 
+
+/**
+ *
+ * A component to layout multiple fields in horizontal layout using bootstrap grid
+ */
 @Component({
   selector: 'app-grid',
   template: `
@@ -24,14 +29,13 @@ import {Util} from '../util';
     }
   `]
 })
-export class GridComponent extends ObjectWidget implements OnInit {
+export class GridComponent extends ObjectWidget {
 
-  constructor() {
-    super();
-  }
-  ngOnInit() {
-  }
-
+  /**
+   * Get formProperty (refer to ngx-schema-form) of a showField (refer to assets/*layout.json).
+   *
+   * @param showField - Field object, see the assets/*-layout.json for the definition
+   */
   getShowFieldProperty(showField) {
     const fieldId = typeof showField === 'string' ? showField : typeof showField === 'object' ? showField.field : null;
     const ret = this.formProperty.getProperty(fieldId);
@@ -42,13 +46,27 @@ export class GridComponent extends ObjectWidget implements OnInit {
     return ret;
   }
 
+  /**
+   * Return bootstrap column class based on showField's definition.
+   *
+   * @param showField
+   */
   gridClass(showField) {
     return showField && showField.col ? 'col-' + showField.col : 'col';
   }
 
+  /**
+   * Return show fields from fieldset. Fieldset and showFields are specified in layout json.
+   *
+   * @param fieldset
+   */
   getShowFields(fieldset) {
     let ret = fieldset.showFields;
     ret = !ret ? fieldset.fields.map((e) => ({field: e})) : ret;
+    ret = ret.filter((field) => {
+      const propId = typeof field === 'string' ? field : typeof field === 'object' ? field.field : null;
+      return Util.isVisible(this.formProperty, propId);
+    });
     return ret;
   }
 }

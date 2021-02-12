@@ -2,6 +2,10 @@ import {Component, OnInit, OnChanges, Input, OnDestroy, SimpleChanges, DoCheck} 
 import { FormElementComponent} from 'ngx-schema-form';
 import { Widget } from 'ngx-schema-form';
 
+
+/**
+ * Customize layout of form-element from ngx-schema-form
+ */
 @Component({
   selector: 'app-form-element',
   template: `
@@ -23,6 +27,7 @@ import { Widget } from 'ngx-schema-form';
   styles: []
 })
 export class AppFormElementComponent extends FormElementComponent {
+  // Input properties, typically read from layout schema json.
   @Input()
   nolabel = false;
   @Input()
@@ -61,6 +66,11 @@ ngOnChanges(changes: SimpleChanges): void {
   }
   */
 
+  /**
+   * Override to add custom properties
+   *
+   * @param widget
+   */
   onWidgetInstanciated(widget: Widget<any>): void {
     super.onWidgetInstanciated(widget);
     // @ts-ignore

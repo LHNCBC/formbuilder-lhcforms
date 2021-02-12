@@ -1,6 +1,8 @@
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
-import {AppControlWidgetComponent} from './app-control-widget.component';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 
+/**
+ * A boolean control typically to trigger hide and show of a sibling component.
+ */
 @Component({
   selector: 'app-boolean-controlled',
   template: `
@@ -18,14 +20,6 @@ import {AppControlWidgetComponent} from './app-control-widget.component';
               {{option}}
             </label>
           </div>
-
-          <!--
-          <mat-radio-group aria-label="Use code?" [ngModel]="bool" (ngModelChange)="boolChange.emit($event)">
-            <mat-radio-button color="primary" *ngFor="let option of ['No', 'Yes']" [value]="option === 'Yes'">
-              {{option}}
-            </mat-radio-button>
-          </mat-radio-group>
-          -->
         </div>
       </div>
     </ng-template>
@@ -42,10 +36,9 @@ import {AppControlWidgetComponent} from './app-control-widget.component';
   `]
 })
 export class BooleanControlledComponent  {
+  // Properties for layout, typically to be read from layout schema file.
   @Input()
   bool: boolean;
-  @Output()
-  boolChange = new EventEmitter<boolean>();
   @Input()
   label: string;
   @Input()
@@ -58,4 +51,7 @@ export class BooleanControlledComponent  {
   controlWidthClass: string;
   @Input()
   disabled = false;
+
+  @Output()
+  boolChange = new EventEmitter<boolean>();
 }

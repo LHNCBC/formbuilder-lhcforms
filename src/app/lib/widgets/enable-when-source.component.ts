@@ -7,6 +7,9 @@ import {ControlWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 
+/**
+ * An input box for enableWhen's source to search eligible source items listed in the tree.
+ */
 @Component({
   selector: 'app-choice',
   template: `
@@ -39,7 +42,8 @@ import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
   styles: [
   ]
 })
-export class ChoiceComponent extends ControlWidget implements OnInit {
+export class EnableWhenSourceComponent extends ControlWidget implements OnInit {
+  // Info icon.
   faInfo = faInfoCircle;
   nolabel = false;
   model: ITreeNode;
@@ -47,9 +51,15 @@ export class ChoiceComponent extends ControlWidget implements OnInit {
   sources: ITreeNode [];
 
   @ViewChild('instance') instance: NgbTypeahead;
+
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
 
+  /**
+   * Search through text of the source items, with input string. For empty term, show  all items.
+   *
+   * @param input$ - Observation for input string.
+   */
   search = (input$: Observable<string>): Observable<ITreeNode []> => {
     const debouncedText$ = input$.pipe(debounceTime(100), distinctUntilChanged());
     const clicksWithClosedPopup$ = this.click$.pipe(filter(() => !this.instance.isPopupOpen()));
@@ -59,31 +69,50 @@ export class ChoiceComponent extends ControlWidget implements OnInit {
       map(term => (term === '' ? this.sources
         : this.sources.filter(el => el.data.text.toLowerCase().indexOf(term.toLowerCase()) > -1)))
     );
-  }
+  };
 
 
+  /**
+   * Invoke super class constructor.
+   *
+   * @param formService - Service to help with collection of sources
+   */
   constructor(private formService: FormService) {
     super();
   }
 
+
+  /**
+   * Initialize the component
+   */
   ngOnInit(): void {
     this.sources = this.formService.getSourcesExcludingFocussedTree();
-    const value = this.formProperty.value;
+    const value = this.formProperty.value; // Source is already assigned for this item.
     if (this.sources && this.sources.length > 0 && value) {
       const source = this.sources.find((el) => el.data.linkId === value);
       if (source) {
         this.model = source;
         this.formProperty.setValue(source.data.linkId, true);
-        this.formProperty.searchProperty('_answerType').setValue(source.data.type, true);
+        // Set answer type input
+        this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
       }
     }
   }
 
+  /**
+   * Handle user selection event
+   * @param $event - Source tree node object
+   */
   onSelect($event): void {
     this.formProperty.setValue($event.item.data.linkId, true);
-    this.formProperty.searchProperty('_answerType').setValue($event.item.data.type, true);
+    this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, true);
   }
 
+
+  /**
+   * Format the input after selection
+   * @param item
+   */
   inputFormatter(item: ITreeNode): string {
     let ret: string;
     if (item && item.data) {
@@ -92,6 +121,11 @@ export class ChoiceComponent extends ControlWidget implements OnInit {
     return ret;
   }
 
+
+  /**
+   * Format item in the results popup.
+   * @param item
+   */
   resultListItemFormatter(item: ITreeNode): string {
     let indent = '';
     let ret: string;

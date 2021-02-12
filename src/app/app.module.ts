@@ -30,7 +30,6 @@ import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.compon
 // import { ToolbarModule } from 'primeng';
 import { TreeModule } from '@circlon/angular-tree-component';
 import { ItemJsonEditorComponent } from './lib/widgets/item-json-editor.component';
-import { RowLayoutComponent } from './lib/widgets/row-layout.component';
 // import { ArrayGridComponent } from './lib/widgets/array-grid.component';
 import { GridComponent } from './lib/widgets/grid.component';
 import { TableComponent } from './lib/widgets/table.component';
@@ -46,18 +45,12 @@ import { TitleComponent } from './lib/widgets/title.component';
 import { ElementChooserComponent } from './lib/widgets/element-chooser.component';
 import { AutoCompleteComponent } from './lib/widgets/auto-complete.component';
 import { RadioComponent } from './lib/widgets/radio.component';
-import { StepperGridComponent } from './lib/widgets/stepper-grid.component';
-// import { SidebarModule} from 'primeng';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
-import { ItemtypeComponent } from './lib/widgets/itemtype.component';
 import {MatSelectModule} from '@angular/material/select';
-import { ChoiceComponent } from './lib/widgets/choice.component';
-import { RowGridComponent } from './lib/widgets/row-grid.component';
-import { CodingComponent } from './lib/widgets/coding.component';
-import { CodingOperatorComponent } from './lib/widgets/coding-operator.component';
+import { EnableWhenSourceComponent } from './lib/widgets/enable-when-source.component';
+import { EnableOperatorComponent } from './lib/widgets/enable-operator.component';
 import { LeftLabelFormGroupComponent } from './lib/widgets/left-label-form-group.component';
-import { ExpandablePanelsComponent } from './lib/widgets/expandable-panels.component';
 import { AppControlWidgetComponent } from './lib/widgets/app-control-widget.component';
 import { AppArrayWidgetComponent } from './lib/widgets/app-array-widget.component';
 import { SideLabelCheckboxComponent } from './lib/widgets/side-label-checkbox.component';
@@ -66,7 +59,7 @@ import { AppJsonPipe } from './lib/pipes/app-json.pipe';
 import { BasePageComponent } from './base-page/base-page.component';
 import { FormFieldsComponent } from './form-fields/form-fields.component';
 import { LabelRadioComponent } from './lib/widgets/label-radio.component';
-import { RowLayoutAComponent } from './lib/widgets/row-layout-a.component';
+import { RowLayoutComponent } from './lib/widgets/row-layout.component';
 import { BooleanControlledComponent } from './lib/widgets/boolean-controlled.component';
 import { AddItemDialogComponent } from './lib/widgets/add-item-dialog.component';
 import {MatDialogModule} from '@angular/material/dialog';
@@ -77,7 +70,6 @@ import {MatDialogModule} from '@angular/material/dialog';
     NgxSchemaFormComponent,
     ItemComponent,
     ItemJsonEditorComponent,
-    RowLayoutComponent,
     // ArrayGridComponent,
     GridComponent,
     TableComponent,
@@ -91,16 +83,11 @@ import {MatDialogModule} from '@angular/material/dialog';
     ElementChooserComponent,
     AutoCompleteComponent,
     RadioComponent,
-    StepperGridComponent,
     HeaderComponent,
     FooterComponent,
-    ItemtypeComponent,
-    ChoiceComponent,
-    RowGridComponent,
-    CodingComponent,
-    CodingOperatorComponent,
+    EnableWhenSourceComponent,
+    EnableOperatorComponent,
     LeftLabelFormGroupComponent,
-    ExpandablePanelsComponent,
     AppControlWidgetComponent,
     AppArrayWidgetComponent,
     SideLabelCheckboxComponent,
@@ -109,9 +96,10 @@ import {MatDialogModule} from '@angular/material/dialog';
     BasePageComponent,
     FormFieldsComponent,
     LabelRadioComponent,
-    RowLayoutAComponent,
     BooleanControlledComponent,
-    AddItemDialogComponent
+    AddItemDialogComponent,
+    RowLayoutComponent,
+    BooleanControlledComponent
   ],
   imports: [
     AppRoutingModule,

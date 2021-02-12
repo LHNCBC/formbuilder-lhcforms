@@ -2,6 +2,10 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {ObjectWidget} from 'ngx-schema-form';
 import {FormService} from '../../services/form.service';
 
+/**
+ * Answer coding component for enableWhen. The component is used for answer type choice for
+ * selecting codes to satisfy a condition.
+ */
 @Component({
   selector: 'app-enablewhen-answer-coding',
   template: `
@@ -25,10 +29,20 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
 
   answerOption: any[] = [];
 
+  /**
+   * Invoke super constructor.
+   *
+   * @param formService
+   */
   constructor(private formService: FormService) {
     super();
   }
+
+  /**
+   * Component initialization.
+   */
   ngAfterViewInit(): void {
+    // Setup two binding between property value and control value.
     this.control.valueChanges.subscribe((value) => {
       this.formProperty.setValue(value, false);
     });
@@ -40,12 +54,13 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
       }
     });
 
+    // Listen to question value changes.
     this.formProperty.searchProperty('question').valueChanges.subscribe((source) => {
       this.answerOption = [];
       if (!source || !source.data) {
         return;
       }
-      const answerType = this.formProperty.searchProperty('_answerType').value;
+      const answerType = this.formProperty.searchProperty('__$answerType').value;
 
       if (answerType === 'choice' || answerType === 'open-choice') {
         const sourceNode = this.formService.getTreeNodeByLinkId(source.data.linkId);
@@ -56,6 +71,11 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
     });
   }
 
+
+  /**
+   *
+   * @param event
+   */
   onChange(event): void {
     console.log('answer code selected: ' + event);
   }

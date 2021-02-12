@@ -2,6 +2,10 @@ import {Component, Input, OnInit} from '@angular/core';
 import {ArrayWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
+/**
+ * Customize array-widget from ngx-schema-form. ArrayWidget represents a component
+ * with array of objects, typically like a table of rows with columns.
+ */
 @Component({
   selector: 'app-array-widget',
   template: `
@@ -10,7 +14,9 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
   ]
 })
 export class AppArrayWidgetComponent extends ArrayWidget implements OnInit {
+  // Info icon
   faInfo = faInfoCircle;
+  // Properties to customize the layout, typically read from layout schema json.
   @Input()
   nolabel = false;
   @Input()
@@ -35,6 +41,7 @@ export class AppArrayWidgetComponent extends ArrayWidget implements OnInit {
         : widget.labelPosition
         ? widget.labelPosition
         : 'top';
+
     // Apply width classes for only left positioned labels.
     this.labelWidthClass =
       this.labelPosition === 'left'
@@ -44,6 +51,7 @@ export class AppArrayWidgetComponent extends ArrayWidget implements OnInit {
           ? widget.labelWidthClass
           : 'col-sm'))
         : '';
+
     this.controlWidthClass =
       this.labelPosition === 'left'
         ? (this.controlWidthClass
@@ -52,6 +60,7 @@ export class AppArrayWidgetComponent extends ArrayWidget implements OnInit {
           ? widget.controlWidthClass
           : 'col-sm'))
         : '';
+
     this.booleanControlled = this.booleanControlled ? this.booleanControlled : !!widget.booleanControlled;
     this.booleanLabel = this.booleanLabel ? this.booleanLabel : widget.booleanLabel;
 

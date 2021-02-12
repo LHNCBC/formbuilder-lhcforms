@@ -1,6 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
+
+/**
+ * A label with help icon and associated help message.
+ */
 @Component({
   selector: 'app-label',
   template: `
@@ -19,6 +23,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 })
 export class LabelComponent implements OnInit {
 
+  // Input properties
   @Input()
   title: string;
   @Input()
