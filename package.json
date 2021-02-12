@@ -7,7 +7,7 @@
     "build": "ng build",
     "test": "npm run e2e",
     "lint": "ng lint",
-    "e2e": "node ./node_modules/.bin/webdriver-manager clean && node ./node_modules/.bin/webdriver-manager update --versions.chrome  $(google-chrome --version |awk '{print $NF}') && ng e2e --webdriver-update=false",
+    "e2e": "node ./node_modules/.bin/webdriver-manager clean && node ./node_modules/.bin/webdriver-manager update --versions.chrome  $(google-chrome --version |awk '{print $3}') && ng e2e --webdriver-update=false",
     "postinstall": "ngcc"
   },
   "private": true,
