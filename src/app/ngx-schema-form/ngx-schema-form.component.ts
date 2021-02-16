@@ -1,3 +1,6 @@
+/**
+ * Handle layout and editing of item level fields
+ */
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
@@ -8,9 +11,6 @@ import {map, switchMap, timeout} from 'rxjs/operators';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@circlon/angular-tree-component';
 
-/**
- * Handle layout and editing of item level fields
- */
 @Component({
   selector: 'app-ngx-schema-form',
   templateUrl: './ngx-schema-form.component.html',

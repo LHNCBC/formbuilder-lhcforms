@@ -1,9 +1,9 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-
 /**
  * Component for creating a title for a control.
  */
+import { Component, OnInit, Input } from '@angular/core';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+
 @Component({
   selector: 'app-title',
   template: `

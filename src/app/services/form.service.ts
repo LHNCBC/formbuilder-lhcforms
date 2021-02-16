@@ -1,11 +1,11 @@
+/**
+ * Form related helper functions.
+ */
 import { Injectable } from '@angular/core';
 import {IDType, ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@circlon/angular-tree-component';
 
 
-/**
- * Form related helper functions.
- */
 @Injectable({
   providedIn: 'root'
 })

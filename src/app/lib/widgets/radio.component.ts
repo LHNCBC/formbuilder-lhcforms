@@ -1,3 +1,6 @@
+/**
+ * Customize the radio widget template.
+ */
 import { Component } from '@angular/core';
 
 import { ControlWidget } from 'ngx-schema-form';

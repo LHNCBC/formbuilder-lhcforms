@@ -1,10 +1,10 @@
+/**
+ * Customize layout of checkbox from ngx-schema-form.
+ */
 import { Component, OnInit, Input } from '@angular/core';
 import {CheckboxWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
-/**
- * Customize layout of checkbox from ngx-schema-form.
- */
 @Component({
   selector: 'app-checkbox',
   template: `<div class="widget form-group">

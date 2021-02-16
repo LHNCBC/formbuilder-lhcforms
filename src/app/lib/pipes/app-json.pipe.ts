@@ -1,9 +1,9 @@
-import { Pipe, PipeTransform } from '@angular/core';
-
 /**
  * Special case pipe to convert questionnaire object to json string.
  * Ignore functions and _* keys. In a special case, handles enableWhen.question
  */
+import { Pipe, PipeTransform } from '@angular/core';
+
 @Pipe({
   name: 'appJson'
 })

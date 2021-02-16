@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { GridComponent} from './grid.component';
-
 /**
  * For layout of fields in rows. Field width could be entire 12 columns (bootstrap grid size),
  * in which case next field starts on next line.
  */
+import { Component, OnInit } from '@angular/core';
+import { GridComponent} from './grid.component';
+
 @Component({
   selector: 'app-row-layout',
   template: `

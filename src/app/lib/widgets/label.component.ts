@@ -1,10 +1,10 @@
+/**
+ * A label with help icon and associated help message.
+ */
 import { Component, OnInit, Input } from '@angular/core';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 
-/**
- * A label with help icon and associated help message.
- */
 @Component({
   selector: 'app-label',
   template: `

@@ -1,6 +1,3 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {SelectComponent} from './select.component';
-
 /**
  * This component handles peculiar case of operator.
  *
@@ -10,6 +7,9 @@ import {SelectComponent} from './select.component';
  * The template here is not directly bound to control's form property.
  * It is updated programmatically in the class.
  */
+
+import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {SelectComponent} from './select.component';
 
 @Component({
   selector: 'app-enable-operator',

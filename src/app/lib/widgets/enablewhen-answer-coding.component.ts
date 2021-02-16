@@ -1,11 +1,11 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {ObjectWidget} from 'ngx-schema-form';
-import {FormService} from '../../services/form.service';
-
 /**
  * Answer coding component for enableWhen. The component is used for answer type choice for
  * selecting codes to satisfy a condition.
  */
+import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {ObjectWidget} from 'ngx-schema-form';
+import {FormService} from '../../services/form.service';
+
 @Component({
   selector: 'app-enablewhen-answer-coding',
   template: `

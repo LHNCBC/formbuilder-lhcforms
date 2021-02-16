@@ -1,3 +1,6 @@
+/**
+ * Define auto complete options
+ */
 import {Component, OnInit, Input, Output, EventEmitter} from '@angular/core';
 import {HttpClient, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
@@ -5,9 +8,6 @@ import {FormControl} from '@angular/forms';
 import {debounceTime, distinctUntilChanged, filter, map, startWith, switchMap} from 'rxjs/operators';
 import {FetchService} from '../../fetch.service';
 
-/**
- * Define auto complete options
- */
 export interface Options {
   searchUrl: string;
   httpOptions: any;
