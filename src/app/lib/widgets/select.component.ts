@@ -1,12 +1,12 @@
+/**
+ * Customized pull down box.
+ */
 import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
 import {SelectWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {AppControlWidgetComponent} from './app-control-widget.component';
 
 
-/**
- * Customized pull down box.
- */
 @Component({
   selector: 'app-select',
   template: `

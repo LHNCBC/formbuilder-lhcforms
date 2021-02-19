@@ -1,11 +1,11 @@
+/**
+ * Component for general input box
+ */
 import {Component, Input, OnInit} from '@angular/core';
 import {ControlWidget, StringWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {AppControlWidgetComponent} from './app-control-widget.component';
 
-/**
- * Component for general input box
- */
 @Component({
   selector: 'app-string',
   template: `

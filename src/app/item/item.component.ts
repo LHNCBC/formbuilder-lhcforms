@@ -1,3 +1,6 @@
+/**
+ * Handle side bar tree, item level fields editing in ui and editing in json
+ */
 import {OnInit, AfterViewInit, Component, ViewChild, ElementRef, AfterContentInit, Input} from '@angular/core';
 import { TreeComponent, TreeModel, TreeNode, ITreeOptions } from '@circlon/angular-tree-component';
 import {FetchService} from '../fetch.service';
@@ -56,9 +59,6 @@ export class LinkIdCollection {
   }
 }
 
-/**
- * Handle side bar tree, item level fields editing in ui and editing in json
- */
 @Component({
   selector: 'app-item-component',
   templateUrl: './item.component.html',

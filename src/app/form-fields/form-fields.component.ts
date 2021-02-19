@@ -1,3 +1,6 @@
+/**
+ * Handles editing of form level fields.
+ */
 import { Component, OnInit, Input } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
@@ -6,9 +9,6 @@ import {map, switchMap} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete.component';
 
-/**
- * Handles editing of form level fields.
- */
 @Component({
   selector: 'app-form-fields',
   templateUrl: './form-fields.component.html',

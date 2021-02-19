@@ -1,3 +1,9 @@
+/**
+ * Registry for custom widgets.
+ *
+ * The widget is identified by its id. The id is associated
+ * with the field in the schema.json.
+ */
 import { DefaultWidgetRegistry } from 'ngx-schema-form';
 import {RowLayoutComponent} from './widgets/row-layout.component';
 import {GridComponent} from './widgets/grid.component';
@@ -16,12 +22,6 @@ import {EnablewhenAnswerCodingComponent} from './widgets/enablewhen-answer-codin
 import {LabelRadioComponent} from './widgets/label-radio.component';
 
 
-/**
- * Registry for custom widgets.
- *
- * The widget is identified by its id. The id is associated
- * with the field in the schema.json.
- */
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
   constructor() {

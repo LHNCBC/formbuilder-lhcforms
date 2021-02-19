@@ -1,3 +1,7 @@
+/**
+ * Component for editing json of questionnaire item.
+ *
+ */
 import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import { JSONEditor } from '@json-editor/json-editor';
 import {FetchService} from '../../fetch.service';
@@ -5,10 +9,6 @@ import {ShareObjectService} from '../../share-object.service';
 import {forkJoin} from 'rxjs';
 
 
-/**
- * Component for editing json of questionnaire item.
- *
- */
 @Component({
   selector: 'app-item-json-editor',
   template: `
