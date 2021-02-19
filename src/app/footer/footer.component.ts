@@ -33,7 +33,38 @@ import {DomSanitizer} from '@angular/platform-browser';
       </ul>
     </div>
   `,
-  styleUrls: ['./footer.component.css']
+  styles: [`
+    #fine-print {
+      border-top: 2px solid #0BACB6;
+      clear: left;
+      text-align: center;
+      font-size: 11px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    ul.horz-list {
+      margin: auto;
+    }
+
+    #fine-print ul.horz-list li {
+      list-style-type: none;
+      display: inline;
+      padding-left: 8px;
+      padding-right: 10px;
+      border-right: 1px solid #999;
+    }
+
+    #fine-print ul.horz-list li.last-item {
+      border-right: none;
+    }
+
+    #usagov {
+      margin-bottom: -2px;
+      vertical-align: bottom;
+      width: 60px;
+    }
+  `]
 })
 export class FooterComponent {
 

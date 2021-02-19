@@ -5,21 +5,21 @@
  * with the field in the schema.json.
  */
 import { DefaultWidgetRegistry } from 'ngx-schema-form';
-import {RowLayoutComponent} from './widgets/row-layout.component';
-import {GridComponent} from './widgets/grid.component';
-import {TableComponent} from './widgets/table.component';
-import {StringComponent} from './widgets/string.component';
-import {SelectComponent} from './widgets/select.component';
-import {CheckboxComponent} from './widgets/checkbox.component';
-import {IntegerComponent} from './widgets/integer.component';
-import {RadioComponent} from './widgets/radio.component';
+import {RowLayoutComponent} from './widgets/row-layout/row-layout.component';
+import {GridComponent} from './widgets/grid.component/grid.component';
+import {TableComponent} from './widgets/table/table.component';
+import {StringComponent} from './widgets/string/string.component';
+import {SelectComponent} from './widgets/select/select.component';
+import {CheckboxComponent} from './widgets/checkbox.component/checkbox.component';
+import {IntegerComponent} from './widgets/integer/integer.component';
+import {RadioComponent} from './widgets/radio/radio.component';
 import { Injectable } from '@angular/core';
-import {EnableWhenSourceComponent} from './widgets/enable-when-source.component';
-import {EnableOperatorComponent} from './widgets/enable-operator.component';
-import {LeftLabelFormGroupComponent} from './widgets/left-label-form-group.component';
-import {SideLabelCheckboxComponent} from './widgets/side-label-checkbox.component';
-import {EnablewhenAnswerCodingComponent} from './widgets/enablewhen-answer-coding.component';
-import {LabelRadioComponent} from './widgets/label-radio.component';
+import {EnableWhenSourceComponent} from './widgets/enable-when-source/enable-when-source.component';
+import {EnableOperatorComponent} from './widgets/enable-operator/enable-operator.component';
+import {LeftLabelFormGroupComponent} from './widgets/left-label-form-group/left-label-form-group.component';
+import {SideLabelCheckboxComponent} from './widgets/side-label-checkbox/side-label-checkbox.component';
+import {EnablewhenAnswerCodingComponent} from './widgets/enablewhen-answer-coding/enablewhen-answer-coding.component';
+import {LabelRadioComponent} from './widgets/label-radio/label-radio.component';
 
 
 @Injectable()

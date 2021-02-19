@@ -13,8 +13,50 @@ import {TreeModel} from '@circlon/angular-tree-component';
 
 @Component({
   selector: 'app-ngx-schema-form',
-  templateUrl: './ngx-schema-form.component.html',
-  styleUrls: ['./ngx-schema-form.component.css']
+  template: `
+    <div class="card-container">
+      <!--  <div class="title">{{model ? model.text : 'Questionnaire Item'}}</div> -->
+      <sf-form [schema]="mySchema"
+               [model]="model" (modelChange)="updateModel($event)"
+               [bindings]="myFieldBindings"
+      ></sf-form>
+    </div>
+  `,
+  styles: [`
+
+    pre {
+      padding: 02em;
+      border: solid 1px black;
+      background: #eee;
+    }
+
+    /* label */
+    :host /deep/ .formHelp {
+      display: block;
+      font-size: 0.7em;
+    }
+
+    :host /deep/ sf-form-element > div {
+      margin-top: 1em;
+      margin-bottom: 1em;
+    }
+
+    :host ::ng-deep .form-control {
+      height: calc(1.0em + .75rem + 2px);
+      padding: 0 3px 0 3px;
+    }
+
+    :host /deep/ fieldset {
+      border: 0;
+    }
+
+    .title {
+      margin-top: 10px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+  `]
 })
 export class NgxSchemaFormComponent implements OnInit {
   mySchema: any = {properties: {}};
@@ -70,8 +112,8 @@ export class NgxSchemaFormComponent implements OnInit {
    * Merge schema and layout jsons
    */
   ngOnInit() {
-    this.http.get('/assets/ngx-item.schema.json', { responseType: 'json' }).pipe(
-      switchMap((schema: any) => this.http.get('/assets/items-layout.json', { responseType: 'json' }).pipe(
+    this.http.get('/assets/ngx-item.schema.json', {responseType: 'json'}).pipe(
+      switchMap((schema: any) => this.http.get('/assets/items-layout.json', {responseType: 'json'}).pipe(
         map((layout: any) => {
           schema.layout = layout;
           return schema;

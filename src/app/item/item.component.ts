@@ -9,7 +9,7 @@ import {ShareObjectService} from '../share-object.service';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
-import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor.component';
+import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
 
 export class LinkIdCollection {
   linkIdHash = {};
