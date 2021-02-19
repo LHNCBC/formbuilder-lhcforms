@@ -1,3 +1,9 @@
+/**
+ * Component to display array of object fields in a table format with field names at the top,
+ * add button at the bottom, delete button for each row, label for the table at the left etc.
+ *
+ * It is optionally controlled by a boolean widget above the table.
+ */
 import {AfterViewInit, Component, DoCheck, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {ArrayWidget, FormProperty} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
@@ -5,13 +11,8 @@ import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
 import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
 import {Util} from '../util';
-/**
- * Component to display array of object fields in a table format with field names at the top,
- * add button at the bottom, delete button for each row, label for the table at the left etc.
- *
- * It is optionally controlled by a boolean widget above the table.
- */
 import {AppArrayWidgetComponent} from './app-array-widget.component';
+import {PropertyGroup} from 'ngx-schema-form/lib/model';
 
 
 @Component({
@@ -153,8 +154,7 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
     this.noCollapseButton = !!widget.noCollapseButton;
     this.singleItem = !!widget.singleItem;
     this.booleanControlledOption =
-      !this.booleanControlledInitial ||
-      !!(this.formProperty.value || this.formProperty.value.length > 0);
+      widget.booleanControlledInitial || Util.isEmpty(this.formProperty.value);
 
     const singleItemEnableSource = this.formProperty.schema.widget ? this.formProperty.schema.widget.singleItemEnableSource : null;
     // Although intended to be source agnostic, it is mainly intended for 'repeats' field as source.
@@ -204,7 +204,7 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
 
   /**
    * Check visibility i.e. based on visibleIf of ngx-schema-form
-   * @param propertyId
+   * @param propertyId - property id
    */
   isVisible(propertyId) {
     let ret = true;
@@ -217,10 +217,10 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
   /**
    * Search for formProperty based on '.' delimited property ids.
    *
-   * @param parentProperty
-   * @param propertyId
+   * @param parentProperty -
+   * @param propertyId -
    */
-  getProperty(parentProperty, propertyId) {
+  getProperty(parentProperty: PropertyGroup, propertyId: string) {
     const path = propertyId.split('.');
     let p = parentProperty;
     for (const id of path) {
@@ -231,8 +231,8 @@ export class TableComponent extends AppArrayWidgetComponent implements AfterView
 
   /**
    * Get title of a field, given property id.
-   * @param parentProperty
-   * @param propertyId
+   * @param parentProperty -
+   * @param propertyId -
    */
   getTitle(parentProperty, propertyId) {
     const p = this.getProperty(parentProperty, propertyId);
