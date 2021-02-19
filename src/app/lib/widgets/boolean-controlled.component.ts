@@ -1,8 +1,8 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
-
 /**
  * A boolean control typically to trigger hide and show of a sibling component.
  */
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+
 @Component({
   selector: 'app-boolean-controlled',
   template: `

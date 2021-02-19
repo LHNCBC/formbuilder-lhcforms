@@ -1,3 +1,6 @@
+/**
+ * An input box for enableWhen's source to search eligible source items listed in the tree.
+ */
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {BehaviorSubject, merge, Observable, of, Subject} from 'rxjs';
 import {FormService} from '../../services/form.service';
@@ -7,9 +10,6 @@ import {ControlWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 
-/**
- * An input box for enableWhen's source to search eligible source items listed in the tree.
- */
 @Component({
   selector: 'app-choice',
   template: `

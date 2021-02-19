@@ -1,15 +1,12 @@
-import {
-  Component,
-  Input, OnInit
-} from '@angular/core';
+/**
+ * Customize layout of integer component from ngx-schema-form.
+ */
+import { Component } from '@angular/core';
 
 import {IntegerWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {AppControlWidgetComponent} from './app-control-widget.component';
 
-/**
- * Customize layout of integer component from ngx-schema-form.
- */
 @Component({
   selector: 'app-integer-widget',
   template: `

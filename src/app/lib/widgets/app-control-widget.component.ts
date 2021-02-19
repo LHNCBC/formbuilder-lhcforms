@@ -1,10 +1,10 @@
+/**
+ * Customize array-widget from ngx-schema-form.
+ */
 import {Component, Input, OnInit} from '@angular/core';
 import {ControlWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
-/**
- * Customize array-widget from ngx-schema-form.
- */
 @Component({
   selector: 'app-control-widget',
   template: `

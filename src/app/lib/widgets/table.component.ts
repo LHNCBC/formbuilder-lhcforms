@@ -5,15 +5,15 @@ import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
 import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
 import {Util} from '../util';
-import {AppArrayWidgetComponent} from './app-array-widget.component';
-
-
 /**
  * Component to display array of object fields in a table format with field names at the top,
  * add button at the bottom, delete button for each row, label for the table at the left etc.
  *
  * It is optionally controlled by a boolean widget above the table.
  */
+import {AppArrayWidgetComponent} from './app-array-widget.component';
+
+
 @Component({
   selector: 'app-table',
   template: `

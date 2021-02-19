@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
-import {AppControlWidgetComponent} from './app-control-widget.component';
-
 /**
  * Customize ngx-schema-form radio component, mainly the layout.
  */
+import { Component, OnInit } from '@angular/core';
+import {AppControlWidgetComponent} from './app-control-widget.component';
+
 @Component({
   selector: 'app-label-radio',
   template: `
