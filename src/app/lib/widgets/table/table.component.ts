@@ -58,7 +58,7 @@ import {AppArrayWidgetComponent} from '../app-array-widget/app-array-widget.comp
             </td>
             <td [ngClass]="{'d-none': formProperty.properties.length === 1}" class="col-sm-1 align-middle action-column">
               <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
-                      [disabled]="isRemoveButtonDisabled()"
+                      [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
                       *ngIf="!(schema.hasOwnProperty('minItems') &&
                                schema.hasOwnProperty('maxItems') &&
                                schema.minItems === schema.maxItems)"
@@ -70,7 +70,7 @@ import {AppArrayWidgetComponent} from '../app-array-widget/app-array-widget.comp
           </tbody>
         </table>
         <button (click)="addItem()" class="btn-sm btn-light btn-link array-add-button"
-                [disabled]="isAddButtonDisabled()"
+                [attr.disabled]="isAddButtonDisabled() ? '' : null"
                 *ngIf="!singleItem &&
                 (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"
         >

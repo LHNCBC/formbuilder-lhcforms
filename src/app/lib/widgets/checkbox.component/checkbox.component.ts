@@ -11,7 +11,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 	<div *ngIf="schema.type!='array'" class="form-check">
     <input class="form-check-input" [formControl]="control" [attr.name]="name"
              [attr.id]="id" [indeterminate]="control.value !== false && control.value !== true ? true :null"
-             type="checkbox" [disabled]="schema.readOnly">
+             type="checkbox" [attr.disabled]="schema.readOnly ? '' : null">
     <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">
     <label *ngIf="!nolabel && schema.title" [attr.for]="id" class="form-check-label control-label">
       {{ schema.title }}
@@ -25,7 +25,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 			<label class="horizontal control-label">
 				<input [attr.name]="name"
 					value="{{option.enum[0]}}" type="checkbox"
-					[attr.disabled]="schema.readOnly"
+					[attr.disabled]="schema.readOnly ? '' : null"
 					(change)="onCheck($event.target)"
 					[attr.checked]="checked[option.enum[0]] ? true : null"
 					[attr.id]="id + '.' + option.enum[0]"

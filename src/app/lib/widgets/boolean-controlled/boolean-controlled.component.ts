@@ -16,7 +16,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
           <div *ngFor="let option of ['No', 'Yes']" class="radio">
             <label class="horizontal control-label">
               <input [ngModel]="bool" (ngModelChange)="boolChange.emit($event)" [attr.id]="option+'_1'"
-                     [value]="option === 'Yes'" type="radio" [disabled]="disabled">
+                     [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
               {{option}}
             </label>
           </div>
