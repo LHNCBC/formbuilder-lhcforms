@@ -22,8 +22,7 @@ import {AppControlWidgetComponent} from '../app-control-widget/app-control-widge
                 [formControl]="control"
                 [attr.name]="name"
                 [attr.id]="id"
-                [disabled]="schema.readOnly"
-                [disableControl]="schema.readOnly"
+                [attr.disabled]="schema.readOnly ? '' : null"
                 class="form-control {{controlWidthClass}}">
           <ng-container *ngIf="schema.oneOf; else use_enum">
             <option *ngFor="let option of schema.oneOf"
@@ -39,12 +38,11 @@ import {AppControlWidgetComponent} from '../app-control-widget/app-control-widge
                 [formControl]="control"
                 [attr.name]="name"
                 [attr.id]="id"
-                [disabled]="schema.readOnly"
-                [disableControl]="schema.readOnly"
+                [attr.disabled]="schema.readOnly ? '' : null"
                 class="form-control {{controlWidthClass}}">
           <option *ngFor="let option of schema.items.oneOf"
                   [ngValue]="option.enum[0]"
-                  [disabled]="option.readOnly">{{option.description}}</option>
+                  [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
         </select>
 
         <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">

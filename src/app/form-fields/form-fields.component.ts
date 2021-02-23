@@ -14,13 +14,13 @@ import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.com
   template: `
     <div class="btn-toolbar" role="toolbar" aria-label="Menu bar">
       <div class="btn-group-sm mr-2" role="group" aria-label="Edit form attributes">
-        <button type="button" class="btn btn-secondary" (click)="guidingStep = 'fl-editor'" [disabled]="guidingStep === 'fl-editor'">Edit form attributes</button>
+        <button type="button" class="btn btn-secondary" (click)="guidingStep = 'fl-editor'" [attr.disabled]="guidingStep === 'fl-editor' ? '' : null">Edit form attributes</button>
       </div>
       <div class="btn-group-sm mr-2" role="group" aria-label="Create questions">
-        <button type="button" class="btn btn-secondary" (click)="editItem()" [disabled]="guidingStep === 'item-editor'">Create questions</button>
+        <button type="button" class="btn btn-secondary" (click)="editItem()" [attr.disabled]="guidingStep === 'item-editor' ? '' : null">Create questions</button>
       </div>
       <div class="btn-group-sm mr-2" role="group" aria-label="View Questionnaire JSON">
-        <button type="button" class="btn btn-secondary" (click)="guidingStep = 'qJSON'" [disabled]="guidingStep === 'qJSON'">View Questionnaire JSON</button>
+        <button type="button" class="btn btn-secondary" (click)="guidingStep = 'qJSON'" [attr.disabled]="guidingStep === 'qJSON' ? '' : null">View Questionnaire JSON</button>
       </div>
       <div class="btn-group-sm mr-2" role="group" aria-label="Start new form">
         <button type="button" class="btn btn-secondary " (click)="startNew()">Start new form</button>

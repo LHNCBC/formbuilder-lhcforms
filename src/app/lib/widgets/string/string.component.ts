@@ -25,8 +25,8 @@ import {AppControlWidgetComponent} from '../app-control-widget/app-control-widge
                [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
                [attr.maxLength]="schema.maxLength || null"
                [attr.minLength]="schema.minLength || null"
-               [attr.required]="schema.isRequired || null"
-               [attr.disabled]="schema.disabled || null">
+               [attr.required]="schema.isRequired ? '' : null"
+               [attr.disabled]="schema.disabled ? '' : null">
       </div>
     </ng-template>
   `

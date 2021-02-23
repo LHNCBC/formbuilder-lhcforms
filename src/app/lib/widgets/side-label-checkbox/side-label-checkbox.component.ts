@@ -16,7 +16,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
       </label>
       <input [formControl]="control" [attr.name]="name"
              [attr.id]="id" [indeterminate]="control.value !== false && control.value !== true ? true :null"
-             type="checkbox" [disabled]="schema.readOnly">
+             type="checkbox" [attr.disabled]="schema.readOnly ? '' : null">
       <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">
   </div>`,
   styles: [`

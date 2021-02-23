@@ -18,7 +18,7 @@ import {SelectComponent} from '../select/select.component';
             [(ngModel)]="model"
             (change)="onSelected()"
             [attr.name]="name" [attr.id]="id"
-            [disabled]="schema.readOnly" [disableControl]="schema.readOnly" class="form-control">
+            [attr.disabled]="schema.readOnly ? '' : null" class="form-control">
       <ng-container>
         <option *ngFor="let option of options[answerType]" [ngValue]="option.option" >{{option.label}}</option>
       </ng-container>
