@@ -1,5 +1,5 @@
 import { browser, by, element } from 'protractor';
-import {ElementArrayFinder, ElementFinder} from "protractor/built/element";
+import {ElementArrayFinder, ElementFinder} from 'protractor/built/element';
 
 export class AppPage {
   useCodeYes: ElementFinder = element(by.id('Yes_1'));

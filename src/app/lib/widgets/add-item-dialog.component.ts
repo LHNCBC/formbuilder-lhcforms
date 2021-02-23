@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import {MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {Observable} from 'rxjs';
-import {AutoCompleteResult} from './auto-complete.component';
+import {AutoCompleteResult} from './auto-complete/auto-complete.component';
 import {FetchService} from '../../fetch.service';
 
 @Component({
