@@ -25,15 +25,15 @@
           </div>
           <hr/>
           <ng-container *ngIf="editType === 'ui'">
-            <app-ngx-schema-form #uiEditor [node]="focusNode"></app-ngx-schema-form>
+            <lfb-ngx-schema-form #uiEditor [node]="focusNode"></lfb-ngx-schema-form>
           </ng-container>
           <ng-container *ngIf="editType === 'json'">
-            <app-item-json-editor #jsonEditor></app-item-json-editor>
+            <lfb-item-json-editor #jsonEditor></lfb-item-json-editor>
           </ng-container>
           <!--
           <mat-tab-group (selectedTabChange)="editJson($event)">
             <mat-tab label="Editor">
-              <app-ngx-schema-form [node]="focusNode"></app-ngx-schema-form>
+              <lfb-ngx-schema-form [node]="focusNode"></lfb-ngx-schema-form>
             </mat-tab>
             <mat-tab label="JSON Output">
               <mat-radio-group
@@ -47,7 +47,7 @@
                 </mat-radio-button>
               </mat-radio-group>
               <div *ngIf="showType === 'item'">
-                <app-item-json-editor></app-item-json-editor>
+                <lfb-item-json-editor></lfb-item-json-editor>
               </div>
               <pre *ngIf="showType === 'questionnaire'">{{ exportForm | appJson }}</pre>
             </mat-tab>

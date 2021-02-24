@@ -22,7 +22,7 @@ export interface Result {
   id: string;
 }
 @Component({
-  selector: 'app-auto-complete',
+  selector: 'lfb-auto-complete',
   template: `
     <mat-form-field>
       <input type="text"

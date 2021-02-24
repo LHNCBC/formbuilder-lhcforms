@@ -51,8 +51,8 @@ import {MatSelectModule} from '@angular/material/select';
 import { EnableWhenSourceComponent } from './lib/widgets/enable-when-source/enable-when-source.component';
 import { EnableOperatorComponent } from './lib/widgets/enable-operator/enable-operator.component';
 import { LeftLabelFormGroupComponent } from './lib/widgets/left-label-form-group/left-label-form-group.component';
-import { AppControlWidgetComponent } from './lib/widgets/app-control-widget/app-control-widget.component';
-import { AppArrayWidgetComponent } from './lib/widgets/app-array-widget/app-array-widget.component';
+import { LfbControlWidgetComponent } from './lib/widgets/lfb-control-widget/lfb-control-widget.component';
+import { LfbArrayWidgetComponent } from './lib/widgets/lfb-array-widget/lfb-array-widget.component';
 import { SideLabelCheckboxComponent } from './lib/widgets/side-label-checkbox/side-label-checkbox.component';
 import { EnablewhenAnswerCodingComponent } from './lib/widgets/enablewhen-answer-coding/enablewhen-answer-coding.component';
 import { AppJsonPipe } from './lib/pipes/app-json.pipe';
@@ -86,8 +86,8 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled/boo
     EnableWhenSourceComponent,
     EnableOperatorComponent,
     LeftLabelFormGroupComponent,
-    AppControlWidgetComponent,
-    AppArrayWidgetComponent,
+    LfbControlWidgetComponent,
+    LfbArrayWidgetComponent,
     SideLabelCheckboxComponent,
     EnablewhenAnswerCodingComponent,
     AppJsonPipe,

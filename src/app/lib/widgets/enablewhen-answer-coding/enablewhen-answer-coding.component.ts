@@ -7,7 +7,7 @@ import {ObjectWidget} from 'ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 
 @Component({
-  selector: 'app-enablewhen-answer-coding',
+  selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm">
       <select [formControl]="control"

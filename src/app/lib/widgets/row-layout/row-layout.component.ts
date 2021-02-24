@@ -6,11 +6,11 @@ import { Component, OnInit } from '@angular/core';
 import { GridComponent} from '../grid.component/grid.component';
 
 @Component({
-  selector: 'app-row-layout',
+  selector: 'lfb-row-layout',
   template: `
     <div *ngFor="let row of rows">
       <div [class]="gridClass(field)" *ngFor="let field of getShowFields(row)">
-        <app-form-element [formProperty]="getShowFieldProperty(field)"></app-form-element>
+        <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
       </div>
     </div>
   `,

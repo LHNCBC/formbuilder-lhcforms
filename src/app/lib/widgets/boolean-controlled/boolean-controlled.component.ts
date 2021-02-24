@@ -4,12 +4,12 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 
 @Component({
-  selector: 'app-boolean-controlled',
+  selector: 'lfb-boolean-controlled',
   template: `
     <ng-template #controller>
       <div class="widget" [ngClass]="{'row': labelPosition === 'left'}">
         <div [ngClass]="labelWidthClass">
-          <app-label [title]="label" [helpMessage]="helpMessage"></app-label>
+          <lfb-label [title]="label" [helpMessage]="helpMessage"></lfb-label>
         </div>
 
         <div [ngClass]="controlWidthClass" class="row">

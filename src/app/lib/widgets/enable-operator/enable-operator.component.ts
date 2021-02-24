@@ -12,7 +12,7 @@ import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {SelectComponent} from '../select/select.component';
 
 @Component({
-  selector: 'app-enable-operator',
+  selector: 'lfb-enable-operator',
   template: `
     <select #mySelect
             [(ngModel)]="model"

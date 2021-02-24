@@ -6,7 +6,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 
 @Component({
-  selector: 'app-label',
+  selector: 'lfb-label',
   template: `
     <label *ngIf="title" [attr.for]="for" class="col-form-label-sm">
       {{title}}

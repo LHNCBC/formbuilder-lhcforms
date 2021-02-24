@@ -11,21 +11,21 @@ import {Util} from '../../util';
  *
  * It is optionally controlled by a boolean widget above the table.
  */
-import {AppArrayWidgetComponent} from '../app-array-widget/app-array-widget.component';
+import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 
 
 @Component({
-  selector: 'app-table',
+  selector: 'lfb-table',
   template: `
     <ng-container *ngIf="booleanControlled">
-      <app-boolean-controlled
+      <lfb-boolean-controlled
         [(bool)]="booleanControlledOption"
         [controlWidthClass]="controlWidthClass"
         [labelWidthClass]="labelWidthClass"
         [label]="booleanLabel"
         [labelPosition]="labelPosition"
         [helpMessage]="schema.description"
-      ></app-boolean-controlled>
+      ></lfb-boolean-controlled>
     </ng-container>
 
     <div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group"  [ngClass]="{'row': labelPosition === 'left'}">
@@ -36,17 +36,17 @@ import {AppArrayWidgetComponent} from '../app-array-widget/app-array-widget.comp
                 [attr.aria-expanded]="!isCollapsed" aria-controls="collapseTable">
           <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
         </button>
-        <app-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></app-label>
+        <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
       </div>
       <div [ngClass]="{card: !noHeader}" class="p-0 {{controlWidthClass}}" id="collapseTable">
-        <table class="table table-borderless table-sm app-table" *ngIf="formProperty.properties.length > 0">
+        <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
           <thead *ngIf="!noHeader" class="thead-light">
           <tr class="d-flex">
             <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
-              <app-title
+              <lfb-title
                 [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
                 [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
-              ></app-title>
+              ></lfb-title>
             </th>
             <th *ngIf="!singleItem" class="col-sm-1"></th>
           </tr>
@@ -54,7 +54,7 @@ import {AppArrayWidgetComponent} from '../app-array-widget/app-array-widget.comp
           <tbody [ngbCollapse]="isCollapsed">
           <tr class="d-flex" *ngFor="let itemProperty of formProperty.properties">
             <td *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
-              <app-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></app-form-element>
+              <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
             </td>
             <td [ngClass]="{'d-none': formProperty.properties.length === 1}" class="col-sm-1 align-middle action-column">
               <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
@@ -95,13 +95,13 @@ import {AppArrayWidgetComponent} from '../app-array-widget/app-array-widget.comp
       margin-left: 2px;
     }
 
-    .app-table {
+    .lfb-table {
       margin-bottom: 0;
     }
-    .app-table th {
+    .lfb-table th {
       text-align: center;
     }
-    .app-table th, .app-table td {
+    .lfb-table th, .lfb-table td {
       padding: 0;
   /*    vertical-align: bottom; */
     }
@@ -110,7 +110,7 @@ import {AppArrayWidgetComponent} from '../app-array-widget/app-array-widget.comp
     }
   `]
 })
-export class TableComponent extends AppArrayWidgetComponent implements AfterViewInit, DoCheck {
+export class TableComponent extends LfbArrayWidgetComponent implements AfterViewInit, DoCheck {
 
   // Icons for buttons.
   faAdd = faPlusCircle;

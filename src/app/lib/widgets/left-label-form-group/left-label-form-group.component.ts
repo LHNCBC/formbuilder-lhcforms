@@ -5,21 +5,21 @@ import {GridComponent} from "../grid.component/grid.component";
  *
  */
 @Component({
-  selector: 'app-left-label-form-group',
+  selector: 'lfb-left-label-form-group',
   template: `
       <div class="form-group row" *ngFor="let field of getShowFields()">
         <div [ngClass]="[labelWidthClass]">
-          <app-label
+          <lfb-label
             [for]="getShowFieldProperty(field).id"
             [title]="getSchema(field).title"
             [helpMessage]="getSchema(field).description"
-          ></app-label>
+          ></lfb-label>
         </div>
         <div [class]="controlWidthClass" >
-          <app-form-element
+          <lfb-form-element
             [nolabel]="true"
             [formProperty]="getShowFieldProperty(field)"
-          ></app-form-element>
+          ></lfb-form-element>
         </div>
       </div>
   `,

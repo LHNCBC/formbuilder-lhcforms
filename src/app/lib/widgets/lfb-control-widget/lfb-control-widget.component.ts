@@ -6,13 +6,13 @@ import {ControlWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  selector: 'app-control-widget',
+  selector: 'lfb-control-widget',
   template: `
   `,
   styles: [
   ]
 })
-export class AppControlWidgetComponent extends ControlWidget implements OnInit {
+export class LfbControlWidgetComponent extends ControlWidget implements OnInit {
   // Info icon
   faInfo = faInfoCircle;
 

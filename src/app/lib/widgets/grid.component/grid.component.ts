@@ -8,7 +8,7 @@ import {Util} from '../../util';
  * A component to layout multiple fields in horizontal layout using bootstrap grid
  */
 @Component({
-  selector: 'app-grid',
+  selector: 'lfb-grid',
   template: `
     <div *ngFor="let fieldset of formProperty.schema.fieldsets">
       <legend *ngIf="fieldset.title">{{fieldset.title}}</legend>

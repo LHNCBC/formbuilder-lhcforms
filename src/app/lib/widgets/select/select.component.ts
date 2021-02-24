@@ -4,20 +4,20 @@
 import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
 import {SelectWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
-import {AppControlWidgetComponent} from '../app-control-widget/app-control-widget.component';
+import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 
 @Component({
-  selector: 'app-select',
+  selector: 'lfb-select',
   template: `
     <ng-template #baseSelect>
       <div [ngClass]="{'row': labelPosition === 'left'}">
-        <app-label  *ngIf="!nolabel"
+        <lfb-label  *ngIf="!nolabel"
                     [for]="id"
                     [title]="schema.title"
                     [helpMessage]="schema.description"
                     [ngClass]="labelWidthClass"
-        ></app-label>
+        ></lfb-label>
         <select *ngIf="schema.type!='array'"
                 [formControl]="control"
                 [attr.name]="name"
@@ -56,7 +56,7 @@ import {AppControlWidgetComponent} from '../app-control-widget/app-control-widge
   styles: [`
   `]
 })
-export class SelectComponent extends AppControlWidgetComponent implements AfterViewInit {
+export class SelectComponent extends LfbControlWidgetComponent implements AfterViewInit {
   faInfo = faInfoCircle;
   nolabel = false;
 
