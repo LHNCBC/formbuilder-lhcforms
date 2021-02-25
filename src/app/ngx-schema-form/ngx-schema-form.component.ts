@@ -12,7 +12,7 @@ import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@circlon/angular-tree-component';
 
 @Component({
-  selector: 'app-ngx-schema-form',
+  selector: 'lfb-ngx-schema-form',
   template: `
     <div class="card-container">
       <!--  <div class="title">{{model ? model.text : 'Questionnaire Item'}}</div> -->

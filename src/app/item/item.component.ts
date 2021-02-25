@@ -60,7 +60,7 @@ export class LinkIdCollection {
 }
 
 @Component({
-  selector: 'app-item-component',
+  selector: 'lfb-item-component',
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css']
 })

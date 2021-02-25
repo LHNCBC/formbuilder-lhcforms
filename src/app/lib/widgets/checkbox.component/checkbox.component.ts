@@ -6,7 +6,7 @@ import {CheckboxWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  selector: 'app-checkbox',
+  selector: 'lfb-checkbox',
   template: `<div class="widget form-group">
 	<div *ngIf="schema.type!='array'" class="form-check">
     <input class="form-check-input" [formControl]="control" [attr.name]="name"

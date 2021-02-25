@@ -1,6 +1,6 @@
 /**
  * Special case pipe to convert questionnaire object to json string.
- * Ignore functions and _* keys. In a special case, handles enableWhen.question
+ * Ignore functions and __$* keys. In a special case, handles enableWhen.question
  */
 import { Pipe, PipeTransform } from '@angular/core';
 

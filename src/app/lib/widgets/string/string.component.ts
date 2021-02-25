@@ -4,21 +4,21 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ControlWidget, StringWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
-import {AppControlWidgetComponent} from '../app-control-widget/app-control-widget.component';
+import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
-  selector: 'app-string',
+  selector: 'lfb-string',
   template: `
     <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
            [attr.name]="name" type="hidden" [formControl]="control">
     <ng-template #notHiddenFieldBlock>
       <div [ngClass]="{'row': labelPosition === 'left'}">
-        <app-label *ngIf="!nolabel"
+        <lfb-label *ngIf="!nolabel"
                    [for]="id"
                    [title]="schema.title"
                    [helpMessage]="schema.description"
                    [ngClass]="labelWidthClass"
-        ></app-label>
+        ></lfb-label>
         <input [name]="name" [attr.readonly]="(schema.widget.id!=='color') && schema.readOnly?true:null"
                class="textline-widget form-control {{controlWidthClass}}"
                [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
@@ -31,5 +31,5 @@ import {AppControlWidgetComponent} from '../app-control-widget/app-control-widge
     </ng-template>
   `
 })
-export class StringComponent extends AppControlWidgetComponent {
+export class StringComponent extends LfbControlWidgetComponent {
 }

@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 
 @Component({
-  selector: 'app-root',
+  selector: 'lfb-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

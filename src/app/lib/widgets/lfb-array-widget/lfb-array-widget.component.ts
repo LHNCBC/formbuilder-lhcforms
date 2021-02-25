@@ -7,20 +7,20 @@ import {ArrayWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  selector: 'app-array-widget',
+  selector: 'lfb-array-widget',
   template: `
   `,
   styles: [
   ]
 })
-export class AppArrayWidgetComponent extends ArrayWidget implements OnInit {
+export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
   // Info icon
   faInfo = faInfoCircle;
   // Properties to customize the layout, typically read from layout schema json.
   @Input()
   nolabel = false;
   @Input()
-  labelPosition;
+  labelPosition: string;
   @Input()
   labelWidthClass: string;
   @Input()

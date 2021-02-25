@@ -1,10 +1,10 @@
 import {Component, Input, OnInit} from '@angular/core';
 
 @Component({
-  selector: 'app-base-page',
+  selector: 'lfb-base-page',
   template: `
     <div>
-      <app-header id="fixedTop" [isFirebaseEnabled]="true"></app-header>
+      <lfb-header id="fixedTop" [isFirebaseEnabled]="true"></lfb-header>
       <div id="resizableMiddle">
         <ng-container *ngIf="guidingStep === 'home'">
           <ng-container *ngTemplateOutlet="home"></ng-container>
@@ -16,7 +16,7 @@ import {Component, Input, OnInit} from '@angular/core';
           <ng-container *ngTemplateOutlet="itemLevelFields"></ng-container>
         </ng-container>
       </div>
-      <app-footer id="fixedBottom"></app-footer>
+      <lfb-footer id="fixedBottom"></lfb-footer>
     </div>
 
     <ng-template #home>
@@ -68,11 +68,11 @@ import {Component, Input, OnInit} from '@angular/core';
     </ng-template>
 
     <ng-template #formLevelFields>
-      <app-form-fields></app-form-fields>
+      <lfb-form-fields></lfb-form-fields>
     </ng-template>
 
     <ng-template #itemLevelFields>
-      <app-item-component></app-item-component>
+      <lfb-item-component></lfb-item-component>
     </ng-template>
   `,
   styles: [`

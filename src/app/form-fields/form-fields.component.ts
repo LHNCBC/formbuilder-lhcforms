@@ -10,7 +10,7 @@ import {Observable} from 'rxjs';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 
 @Component({
-  selector: 'app-form-fields',
+  selector: 'lfb-form-fields',
   template: `
     <div class="btn-toolbar" role="toolbar" aria-label="Menu bar">
       <div class="btn-group-sm mr-2" role="group" aria-label="Edit form attributes">
@@ -31,7 +31,7 @@ import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.com
     </div>
 
     <div class="card-body content">
-      <app-item-component *ngIf="guidingStep === 'item-editor'" [form]="questionnaire"></app-item-component>
+      <lfb-item-component *ngIf="guidingStep === 'item-editor'" [form]="questionnaire"></lfb-item-component>
       <div  *ngIf="guidingStep === 'fl-editor'">
         <p>Enter basic information about the form.</p>
         <div class="container-fluid">
@@ -44,7 +44,7 @@ import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.com
             </div>
             <div *ngIf="notHidden" class="col">
               <input type="checkbox" [(ngModel)]="notHidden">
-              <app-auto-complete class="search-box container" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></app-auto-complete>
+              <lfb-auto-complete class="search-box container" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></lfb-auto-complete>
             </div>
           </div>
         </div>

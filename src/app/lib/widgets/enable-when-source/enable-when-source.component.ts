@@ -11,13 +11,13 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-choice',
+  selector: 'lfb-choice',
   template: `
     <ng-template #rt let-r="result" let-t="term">
       <ngb-highlight [result]="r.name" [term]="t"></ngb-highlight>
     </ng-template>
 
-      <app-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></app-label>
+      <lfb-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
       <input *ngIf="schema.type!='array'"
              [formControl]="control"
              [attr.name]="name"

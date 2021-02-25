@@ -7,12 +7,12 @@ import { Widget } from 'ngx-schema-form';
 
 
 @Component({
-  selector: 'app-form-element',
+  selector: 'lfb-form-element',
   template: `
     <div *ngIf="formProperty.visible"
          [class.has-error]="!formProperty.valid"
          [class.has-success]="formProperty.valid">
-      <app-element-chooser
+      <lfb-element-chooser
         [nolabel]="nolabel"
         [layout]="layout"
         [labelWidthClass]="labelWidthClass"
@@ -20,7 +20,7 @@ import { Widget } from 'ngx-schema-form';
         [booleanLabel]="booleanLabel"
         (widgetInstanciated)="onWidgetInstanciated($event)"
         [widgetInfo]="formProperty.schema.widget">
-      </app-element-chooser>
+      </lfb-element-chooser>
       <sf-form-element-action *ngFor="let button of buttons" [button]="button" [formProperty]="formProperty"></sf-form-element-action>
     </div>
   `,

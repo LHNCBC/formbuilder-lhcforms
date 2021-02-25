@@ -3,7 +3,7 @@ import {MatIconRegistry} from '@angular/material/icon';
 import {DomSanitizer} from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-footer',
+  selector: 'lfb-footer',
   template: `
     <div id="fine-print">
       <ul class="horz-list">

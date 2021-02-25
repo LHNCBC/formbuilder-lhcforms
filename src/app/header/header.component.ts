@@ -5,7 +5,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 
 @Component({
-  selector: 'app-header',
+  selector: 'lfb-header',
   template: `
     <mat-toolbar id="header">
       <mat-icon id="logo" svgIcon="home" aria-label="Home"></mat-icon>

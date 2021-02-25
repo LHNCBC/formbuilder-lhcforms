@@ -10,7 +10,7 @@ import {forkJoin} from 'rxjs';
 
 
 @Component({
-  selector: 'app-item-json-editor',
+  selector: 'lfb-item-json-editor',
   template: `
     <div class="card-container">
       <div #itemJsonEditor style="height: 500px;" ></div>
