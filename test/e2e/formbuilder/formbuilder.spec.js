@@ -87,7 +87,7 @@ describe('GET /', function () {
       });
 
       it('should import the correct panel if a second panel is selected after the first', function () {
-        fb.autoCompSelectByText(fb.searchBox, 'hepat', 'Acute ');
+        fb.autoCompSelectByText(fb.searchBox, 'hepat', 'Hepatitis ');
         fb.searchBox.clear();
         fb.searchBox.click(); // restore focus to field
         fb.sendKeys(fb.searchBox, 'Vital ');
