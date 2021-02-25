@@ -2,10 +2,6 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [6.4.2]  2021-02-25
-### Fixed
-- Fixed a test due to changes in FHIR server output.
-
 ## [6.4.1]  2021-02-09
 ### Updated
 - Merged dependabot PR.
