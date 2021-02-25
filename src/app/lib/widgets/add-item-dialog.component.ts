@@ -5,7 +5,7 @@ import {AutoCompleteResult} from './auto-complete/auto-complete.component';
 import {FetchService} from '../../fetch.service';
 
 @Component({
-  selector: 'app-app-dialog',
+  selector: 'lfb-app-dialog',
   template: `
       <div mat-dialog-title>
         <span>{{data.title}}</span>
@@ -20,13 +20,13 @@ import {FetchService} from '../../fetch.service';
                 <input matInput [(ngModel)]="data.animal">
               </mat-form-field>
               -->
-        <app-auto-complete id="searchBox"
+        <lfb-auto-complete id="searchBox"
                            class="search-box container"
                            placeholder="Search LOINC items"
                            [options]="acOptions"
                            (optionSelected)="dialogRef.close($event.id)"
                            [searchCallback]="acSearch"
-        ></app-auto-complete>
+        ></lfb-auto-complete>
       </div>
       <div mat-dialog-actions>
         <button mat-button (click)="onNoClick()">Cancel</button>

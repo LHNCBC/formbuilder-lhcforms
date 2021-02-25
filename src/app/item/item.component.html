@@ -104,13 +104,13 @@
   </div>
   <div mat-dialog-content>
     <!-- <p></p> -->
-      <app-auto-complete id="searchBox"
+      <lfb-auto-complete id="searchBox"
                          class="search-box container"
                          placeholder="Search LOINC items"
                          [options]="acOptions"
                          (optionSelected)="modal.close($event.id)"
                          [searchCallback]="acSearch"
-      ></app-auto-complete>
+      ></lfb-auto-complete>
   </div>
   <!--
 
@@ -130,13 +130,13 @@
     <form>
       <div class="form-group">
         <label for="searchBox">Search LOINC items</label>
-          <app-auto-complete id="searchBox"
+          <lfb-auto-complete id="searchBox"
             class="search-box container"
             placeholder="Search LOINC items"
             [options]="acOptions"
             (optionSelected)="modal.close($event.id)"
             [searchCallback]="acSearch"
-          ></app-auto-complete>
+          ></lfb-auto-complete>
       </div>
     </form>
   </div>

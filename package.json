@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "install-and-build": "source bashrc.formbuilder && npm install && npm run clean-build",
-    "clean-build": "source bashrc.formbuilder && npm ci && npm run build",
+    "clean-build": "source bashrc.formbuilder && npm ci && source bashrc.formbuilder && npm run build",
     "build": "ng build",
     "test": "npm run e2e",
     "lint": "ng lint",
