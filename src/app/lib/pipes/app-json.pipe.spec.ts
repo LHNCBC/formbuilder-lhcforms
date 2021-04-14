@@ -1,15 +1,15 @@
 import { AppJsonPipe } from './app-json.pipe';
 
-describe('AppJsonPipe', () => {
+fdescribe('AppJsonPipe', () => {
   const obj = {
     test: () => {console.log('hi')},
-    _a: {
-      _b: '_b',
+    __$a: {
+      __$b: '_b',
       c: 'c'
     },
     A: {
       b: 'b',
-      _b: '_b'
+      __$b: '_b'
     },
     // Should be transformed to {question: 2}
     question: {

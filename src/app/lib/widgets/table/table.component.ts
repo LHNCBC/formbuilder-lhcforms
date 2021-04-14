@@ -35,8 +35,10 @@ import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.comp
       ></lfb-boolean-controlled>
     </ng-container>
 
-    <div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group"  [ngClass]="{'row': labelPosition === 'left'}">
-      <div [ngClass]="labelWidthClass">
+    <div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group m-0"
+         [ngClass]=
+           "{'row': labelPosition === 'left'}">
+      <div [ngClass]="labelWidthClass + ' pl-0 pr-1'">
         <button *ngIf="!noCollapseButton" href="#" type="button"
                 [ngClass]="{'float-sm-right': labelPosition === 'left'}"
                 class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
@@ -133,13 +135,17 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   // Flag to control hiding of add/remove buttons.
   singleItem = false;
   keyField = 'type'; // Key property of the object, based on which some fields could be hidden/shown.
-  booleanControlledOption = true;
+  booleanControlledOption = false;
+  booleanControlled = false;
 
 
   /**
    * Make sure at least one row is present for zero length array?
    */
   ngDoCheck(): void {
+    if(this.booleanControlled) {
+      this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
+    }
     if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
@@ -159,8 +165,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
     this.noTableLabel = !!widget.noTableLabel;
     this.noCollapseButton = !!widget.noCollapseButton;
     this.singleItem = !!widget.singleItem;
-    this.booleanControlledOption =
-      widget.booleanControlledInitial || Util.isEmpty(this.formProperty.value);
+    this.booleanControlled = !!widget.booleanControlled;
+    if(widget.booleanControlled) {
+      this.booleanControlledOption = !!widget.booleanControlledOption;
+    }
+
+    this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
 
     const singleItemEnableSource = this.formProperty.schema.widget ? this.formProperty.schema.widget.singleItemEnableSource : null;
     // Although intended to be source agnostic, it is mainly intended for 'repeats' field as source.

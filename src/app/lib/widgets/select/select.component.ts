@@ -11,12 +11,12 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
   selector: 'lfb-select',
   template: `
     <ng-template #baseSelect>
-      <div [ngClass]="{'row': labelPosition === 'left'}">
+      <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
         <lfb-label  *ngIf="!nolabel"
                     [for]="id"
                     [title]="schema.title"
                     [helpMessage]="schema.description"
-                    [ngClass]="labelWidthClass"
+                    [ngClass]="labelWidthClass+' pl-0 pr-1'"
         ></lfb-label>
         <select *ngIf="schema.type!='array'"
                 [formControl]="control"

@@ -20,6 +20,8 @@ import {LeftLabelFormGroupComponent} from './widgets/left-label-form-group/left-
 import {SideLabelCheckboxComponent} from './widgets/side-label-checkbox/side-label-checkbox.component';
 import {EnablewhenAnswerCodingComponent} from './widgets/enablewhen-answer-coding/enablewhen-answer-coding.component';
 import {LabelRadioComponent} from './widgets/label-radio/label-radio.component';
+import {EnableBehaviorComponent} from './widgets/enable-behavior/enable-behavior.component';
+import {BooleanRadioComponent} from './widgets/boolean-radio/boolean-radio.component';
 
 
 @Injectable()
@@ -42,5 +44,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('left-label-form-group', LeftLabelFormGroupComponent);
     this.register('left-label-checkbox', SideLabelCheckboxComponent);
     this.register('enable-when-answer-choice', EnablewhenAnswerCodingComponent);
+    this.register('enable-behavior', EnableBehaviorComponent);
+    this.register('boolean-radio', BooleanRadioComponent);
   }
 }

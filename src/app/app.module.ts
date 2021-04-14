@@ -26,11 +26,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
-// import {DropdownModule, PanelModule, RadioButtonModule} from 'primeng';
-// import { ToolbarModule } from 'primeng';
 import { TreeModule } from '@circlon/angular-tree-component';
 import { ItemJsonEditorComponent } from './lib/widgets/item-json-editor/item-json-editor.component';
-// import { ArrayGridComponent } from './lib/widgets/array-grid.component';
 import { GridComponent } from './lib/widgets/grid.component/grid.component';
 import { TableComponent } from './lib/widgets/table/table.component';
 import { LformsWidgetRegistry} from './lib/lforms-widget-registry';
@@ -63,6 +60,11 @@ import {MatDialogModule} from '@angular/material/dialog';
 import { LabelRadioComponent } from './lib/widgets/label-radio/label-radio.component';
 import { RowLayoutComponent } from './lib/widgets/row-layout/row-layout.component';
 import { BooleanControlledComponent } from './lib/widgets/boolean-controlled/boolean-controlled.component';
+import { EnableBehaviorComponent } from './lib/widgets/enable-behavior/enable-behavior.component';
+import { MessageDlgComponent } from './lib/widgets/message-dlg/message-dlg.component';
+import { FhirServersDlgComponent } from './lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
+import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
+import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 
 @NgModule({
   declarations: [
@@ -70,7 +72,6 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled/boo
     NgxSchemaFormComponent,
     ItemComponent,
     ItemJsonEditorComponent,
-    // ArrayGridComponent,
     GridComponent,
     TableComponent,
     StringComponent,
@@ -99,7 +100,12 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled/boo
     BooleanControlledComponent,
     AddItemDialogComponent,
     RowLayoutComponent,
-    BooleanControlledComponent
+    BooleanControlledComponent,
+    EnableBehaviorComponent,
+    MessageDlgComponent,
+    FhirServersDlgComponent,
+    FhirSearchDlgComponent,
+    BooleanRadioComponent
   ],
   imports: [
     AppRoutingModule,

@@ -1,71 +1,37 @@
 /**
  * Handles editing of form level fields.
  */
-import { Component, OnInit, Input } from '@angular/core';
+import {Component, OnInit, Input, OnDestroy, Output, EventEmitter} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {FetchService} from '../fetch.service';
-import {map, switchMap} from 'rxjs/operators';
-import {Observable} from 'rxjs';
+import {debounceTime, distinctUntilChanged, map, switchMap, takeUntil} from 'rxjs/operators';
+import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {FormService} from '../services/form.service';
+import { fhir } from '../fhir';
+import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 
 @Component({
   selector: 'lfb-form-fields',
   template: `
-    <div class="btn-toolbar" role="toolbar" aria-label="Menu bar">
-      <div class="btn-group-sm mr-2" role="group" aria-label="Edit form attributes">
-        <button type="button" class="btn btn-secondary" (click)="guidingStep = 'fl-editor'" [attr.disabled]="guidingStep === 'fl-editor' ? '' : null">Edit form attributes</button>
-      </div>
-      <div class="btn-group-sm mr-2" role="group" aria-label="Create questions">
-        <button type="button" class="btn btn-secondary" (click)="editItem()" [attr.disabled]="guidingStep === 'item-editor' ? '' : null">Create questions</button>
-      </div>
-      <div class="btn-group-sm mr-2" role="group" aria-label="View Questionnaire JSON">
-        <button type="button" class="btn btn-secondary" (click)="guidingStep = 'qJSON'" [attr.disabled]="guidingStep === 'qJSON' ? '' : null">View Questionnaire JSON</button>
-      </div>
-      <div class="btn-group-sm mr-2" role="group" aria-label="Start new form">
-        <button type="button" class="btn btn-secondary " (click)="startNew()">Start new form</button>
-      </div>
-      <div class="btn-group-sm mr-2" role="group" aria-label="Save as">
-        <button type="button" class="btn btn-secondary" (click)="saveAs()">Save as</button>
-      </div>
-    </div>
-
     <div class="card-body content">
-      <lfb-item-component *ngIf="guidingStep === 'item-editor'" [form]="questionnaire"></lfb-item-component>
-      <div  *ngIf="guidingStep === 'fl-editor'">
-        <p>Enter basic information about the form.</p>
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col">
-              <ul>
-                <li>* fields are required.</li>
-                <li>All other fields are optional.</li>
-              </ul>
-            </div>
-            <div *ngIf="notHidden" class="col">
-              <input type="checkbox" [(ngModel)]="notHidden">
-              <lfb-auto-complete class="search-box container" placeholder="Search FHIR titles" [options]="acOptions" (optionSelected)="getForm($event.id)"></lfb-auto-complete>
-            </div>
-          </div>
-        </div>
+      <div  *ngIf="true">
+        <h4 class="ml-2">Form level attributes</h4>
+        <p class="ml-4">Enter basic information about the form.</p>
         <hr/>
-        <div class="container-fluid">
+        <div class="container">
           <sf-form [schema]="qlSchema"
-                   [model]="questionnaire"
+                   [(model)]="questionnaire"
+                   (onChange)="notifyChange()"
           ></sf-form>
         </div>
         <hr/>
-        <div class="btn-toolbar float-right" role="toolbar" aria-label="Toolbar with button groups">
-          <div class="btn-group-sm" role="group" aria-label="Advanced fields button">
-            <button type="button" class="btn btn-primary mt-4 mr-2" (click)="allFields()">Enter Advanced fields</button>
-            <button type="button" class="btn btn-primary mt-4 mr-2" (click)="editItem()">Create questions</button>
-          </div>
-          <div class="btn-group-sm ml-sm-1" role="group" aria-label="Create questions button">
-          </div>
+        <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+            <button type="button" class="btn btn-sm btn-primary mt-4 mr-2" (click)="allFields()">Show advanced form fields</button>
+            <button type="button" class="btn btn-sm btn-primary mt-4 mr-2 ml-auto" (click)="goToItemEditor()">{{ createButtonLabel() }}</button>
         </div>
-      </div>
-      <div *ngIf="guidingStep === 'qJSON'">
-        <pre>{{ stringify(questionnaire) }}</pre>
       </div>
     </div>
   `,
@@ -78,29 +44,25 @@ import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.com
 export class FormFieldsComponent implements OnInit {
 
   @Input()
-  questionnaire: any = {item: []};
+  questionnaire: fhir.Questionnaire;
   qlSchema: any = {properties: {}}; // Combines questionnaire schema with layout schema.
-  guidingStep = 'fl-editor'; // 'choose-start', 'home', 'item-editor'
   notHidden = true;
+  acResult: AutoCompleteResult = null;
 
-  // Search LOINC forms from FHIR server.
-  acOptions = {
-    searchUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire',
-    httpOptions: {
-      observe: 'body' as const,
-      responseType: 'json' as const
-    }
-  };
+  objectUrl: any;
 
-  /**
-   * Call back to auto complete search.
-   * @param term - Search term
-   */
-  acSearch = (term: string): Observable<AutoCompleteResult []> => {
-    return this.dataSrv.searchForms(term);
-  }
+  @Output()
+  state = new EventEmitter<string>();
+  @Output()
+  questionnaireChange = new EventEmitter<fhir.Questionnaire>();
 
-  constructor(private http: HttpClient, private modelService: ShareObjectService, private dataSrv: FetchService) {
+  constructor(
+    private http: HttpClient,
+    private modelService: ShareObjectService,
+    private dataSrv: FetchService,
+    private modal: NgbModal,
+    private formService: FormService
+  ) {
   }
 
   /**
@@ -123,36 +85,18 @@ export class FormFieldsComponent implements OnInit {
 
 
   /**
-   * Moves to item editor screen.
-   *
+   * Send message to base page to switch the view.
    */
-  editItem() {
-    this.guidingStep = 'item-editor';
-    if (!this.questionnaire.item || this.questionnaire.item.length === 0) {
-      this.questionnaire.item = [{text: 'New item', type: 'string'}];
-    }
-  }
-
-
-  /**
-   * TODO
-   */
-  startNew() {
-
-  }
-
-
-  /**
-   * TODO
-   */
-  saveAs() {
+  setGuidingStep(step: string) {
+    this.formService.setGuidingStep(step);
+    this.formService.autoSave('state', step); // Record change of state.
   }
 
   /**
-   * View full Questionnaire json
+   * Emit the change event.
    */
-  viewQuestionnaire() {
-    this.guidingStep = 'qJSON';
+  notifyChange() {
+    this.questionnaireChange.emit(this.questionnaire);
   }
 
 
@@ -173,17 +117,24 @@ export class FormFieldsComponent implements OnInit {
 
 
   /**
-   * Get questionnaire by id
-   * @param questionnaireId - Id of the questionnaire to fetch. If empty, return empty questionnaire.
+   * Button handler for edit questions
    */
-  getForm(questionnaireId: string) {
-    if (!questionnaireId) {
-      this.questionnaire = {status: 'draft', item: []};
-    } else {
-      this.dataSrv.getFormData(questionnaireId).subscribe((data) => {
-        this.questionnaire = data;
-        // this.model = this.questionnaire;
-      });
+  goToItemEditor(): void {
+    if(this.questionnaire.item.length === 0) {
+      this.questionnaire.item.push({text: 'Item 0', linkId: null, type: 'string'});
     }
+    this.setGuidingStep('item-editor');
+  }
+
+
+  /**
+   * Change button text based on context
+   */
+  createButtonLabel(): string {
+    let ret = 'Create questions';
+    if(this.questionnaire && this.questionnaire.item && this.questionnaire.item.length > 0) {
+      ret = 'Edit questions'
+    }
+    return ret;
   }
 }

@@ -1,8 +1,8 @@
 <mat-sidenav-container>
-        <mat-sidenav #drawer mode="side" opened>
+        <mat-sidenav #drawer mode="side" opened class="p-1">
           <tree-root
             #tree
-            [nodes]="form.item"
+            [nodes]="model"
             [options]="options"
             (initialized)="onTreeInitialized($event)"
             (focus)="onFocus($event)"
@@ -16,7 +16,10 @@
         </mat-sidenav>
         <mat-sidenav-content>
           <div>
-          <p>Edit item (question or header)</p>
+            <div>
+              <span>Edit item (question or header)</span>
+              <button type="button" class="btn btn-sm btn-outline-primary float-right" (click)="toggleEditType($event)">{{ editType === 'ui' ? "View/Edit item's JSON" : "Edit item in GUI" }}</button>
+            </div>
             <ul>
               <li>
                 The questions are organized in hierarchical tree on the left side. Select the desired item to edit their properties here.
@@ -25,60 +28,44 @@
           </div>
           <hr/>
           <ng-container *ngIf="editType === 'ui'">
-            <lfb-ngx-schema-form #uiEditor [node]="focusNode"></lfb-ngx-schema-form>
+            <lfb-ngx-schema-form #uiEditor [model]="item" (modelChange)="itemChanged($event)"></lfb-ngx-schema-form>
           </ng-container>
           <ng-container *ngIf="editType === 'json'">
             <lfb-item-json-editor #jsonEditor></lfb-item-json-editor>
           </ng-container>
-          <!--
-          <mat-tab-group (selectedTabChange)="editJson($event)">
-            <mat-tab label="Editor">
-              <lfb-ngx-schema-form [node]="focusNode"></lfb-ngx-schema-form>
-            </mat-tab>
-            <mat-tab label="JSON Output">
-              <mat-radio-group
-                class="json-radio-group"
-                [(ngModel)]="showType">
-                <mat-radio-button class="json-radio-button" [value]="'item'">
-                  Focussed item
-                </mat-radio-button>
-                <mat-radio-button class="json-radio-button" [value]="'questionnaire'">
-                  Questionnaire
-                </mat-radio-button>
-              </mat-radio-group>
-              <div *ngIf="showType === 'item'">
-                <lfb-item-json-editor></lfb-item-json-editor>
-              </div>
-              <pre *ngIf="showType === 'questionnaire'">{{ exportForm | appJson }}</pre>
-            </mat-tab>
-          </mat-tab-group>
-          -->
           <hr/>
-          <div class="btn-toolbar float-right" role="toolbar" aria-label="Toolbar with button groups">
-            <div class="btn-group ml-2" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="toggleEditType($event)">{{ editType === 'ui' ? "View/Edit item's JSON" : "Edit item in GUI" }}</button>
+          <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with item action buttons">
+            <div class="btn-group-sm" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="deleteItem()">Delete this item</button>
             </div>
-            <div class="btn-group ml-2" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="addItem($event)">Add an item</button>
+            <div class="btn-group-sm ml-2 ml-auto" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="addItem($event)">Add new item</button>
             </div>
-            <div class="btn-group ml-2" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="addLoincItemNgb(addItemDlg)">Add an item from LOINC</button>
+            <div class="btn-group-sm ml-2" role="group" aria-label="Last group">
+              <button type="button" class="btn btn-primary" (click)="addLoincItem(addItemDlg)">Add new item from LOINC</button>
             </div>
           </div>
         </mat-sidenav-content>
 </mat-sidenav-container>
 
 <ng-template #addItemDlg let-modal>
-  <div class="modal-header">
+  <div class="modal-header btn-primary">
     <h4 class="modal-title" id="modal-basic-title">Add LOINC item</h4>
-    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+    <button type="button" class="close btn-primary" aria-label="Close" (click)="modal.dismiss('Cross click')">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <div class="modal-body">
     <form>
       <div class="form-group">
-        <label for="acSearchBoxId">Search for a LOINC item:</label>
+        <label for="loincTypeSelect1" class="align-middle">Select LOINC item type:</label>
+        <div class="btn-group" id="loincTypeSelect1" name="radioBasic"
+             [(ngModel)]="loincType" [ngModelOptions]="{standalone: true}" ngbRadioGroup>
+          <label *ngFor="let opt of loincTypeOpts" ngbButtonLabel>
+            <input ngbButton type="radio" name="radio" [value]="opt.value"/> {{ opt.display }}
+          </label>
+        </div>
+        <label class="" for="acSearchBoxId">Search for a LOINC item:</label>
         <input id="acSearchBoxId"  type="text" class="form-control"
                [(ngModel)]="loincItem"
                [ngModelOptions]="{standalone: true}"
@@ -90,57 +77,8 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline-dark" (click)="modal.dismiss(false)">Cancel</button>
-    <button type="button" class="btn btn-outline-dark" (click)="modal.close(loincItem.id)">Add</button>
+    <button type="button" class="btn btn-primary" (click)="modal.dismiss(false)">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="modal.close(loincItem)">Add</button>
   </div>
 </ng-template>
-
-<ng-template #addLoincDlg let-modal>
-  <div mat-dialog-title>
-    <span>Add LOINC item</span>
-    <button type="button" class="close" aria-label="Close" (click)="dialog.closeAll()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div mat-dialog-content>
-    <!-- <p></p> -->
-      <lfb-auto-complete id="searchBox"
-                         class="search-box container"
-                         placeholder="Search LOINC items"
-                         [options]="acOptions"
-                         (optionSelected)="modal.close($event.id)"
-                         [searchCallback]="acSearch"
-      ></lfb-auto-complete>
-  </div>
-  <!--
-
-  <div mat-dialog-actions>
-    <button mat-button (click)="cancel()">No Thanks</button>
-    <button mat-button [mat-dialog-close]="data.animal" cdkFocusInitial>Ok</button>
-  </div>
-  -->
-  <!--
-  <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">Add LOINC item</h4>
-    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss(false)">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-    <form>
-      <div class="form-group">
-        <label for="searchBox">Search LOINC items</label>
-          <lfb-auto-complete id="searchBox"
-            class="search-box container"
-            placeholder="Search LOINC items"
-            [options]="acOptions"
-            (optionSelected)="modal.close($event.id)"
-            [searchCallback]="acSearch"
-          ></lfb-auto-complete>
-      </div>
-    </form>
-  </div>
-  -->
-</ng-template>
-
 

@@ -1,5 +1,5 @@
 import {Component, Input, NgModule, OnInit} from '@angular/core';
-import {async, TestBed} from '@angular/core/testing';
+import {TestBed, waitForAsync} from '@angular/core/testing';
 import {TreeModule} from '@circlon/angular-tree-component';
 import {
   DefaultWidgetRegistry, ISchema, SchemaFormModule, SchemaValidatorFactory, WidgetRegistry, ZSchemaValidatorFactory
@@ -8,11 +8,13 @@ import {HttpClientModule} from '@angular/common/http';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {LayoutModule} from '@angular/cdk/layout';
 import {MatButtonModule} from '@angular/material/button';
-import {MatIconModule} from '@angular/material/icon';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
 import {MatListModule} from '@angular/material/list';
 import {MatSidenavModule} from '@angular/material/sidenav';
-import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatToolbar, MatToolbarModule} from '@angular/material/toolbar';
 import {AppModule} from '../app.module';
+import {LformsWidgetRegistry} from '../lib/lforms-widget-registry';
+import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -40,7 +42,7 @@ export class TestComponent implements OnInit {
 })
 export class CommonTestingModule {
 
-  static moduleImports: any[] = [
+  static commonTestingImports: any[] = [
     AppModule,
     SchemaFormModule.forRoot(),
     TreeModule,
@@ -52,17 +54,18 @@ export class CommonTestingModule {
     MatListModule,
     MatSidenavModule,
     MatToolbarModule,
+    NgbModule
   ];
 
-  static moduleDeclarations: any [] = [];
+  static commonTestingDeclarations: any [] = [];
 
-  static moduleProviders: any [] = [];
+  static commonTestProviders: any [] = [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, NgbActiveModal];
 
   static setUpTestBedConfig = (moduleConfig: any) => {
     beforeEach(() => {
-      let declarations = CommonTestingModule.moduleDeclarations;
-      let imports = CommonTestingModule.moduleImports;
-      let providers = CommonTestingModule.moduleProviders;
+      let declarations = CommonTestingModule.commonTestingDeclarations;
+      let imports = CommonTestingModule.commonTestingImports;
+      let providers = CommonTestingModule.commonTestProviders;
       declarations = moduleConfig.declarations ? [...declarations, ...moduleConfig.declarations] : declarations;
       imports = moduleConfig.imports ? [...imports, ...moduleConfig.imports] : imports;
       providers = moduleConfig.providers ? [...providers, ...moduleConfig.providers] : providers;
@@ -75,37 +78,11 @@ export class CommonTestingModule {
     });
   };
 
-  static setUpTestBedConfig1 = (moduleConfig: any) => {
-    beforeEach(async(() => {
-      let declarations = CommonTestingModule.moduleDeclarations;
-      let imports = CommonTestingModule.moduleImports;
-      let providers = CommonTestingModule.moduleProviders;
-      declarations = moduleConfig.declarations ? [...declarations, ...moduleConfig.declarations] : declarations;
-      imports = moduleConfig.imports ? [...imports, ...moduleConfig.imports] : imports;
-      providers = moduleConfig.providers ? [...providers, ...moduleConfig.providers] : providers;
-
-      TestBed.configureTestingModule({
-        imports: [
-          SchemaFormModule.forRoot(),
-          HttpClientModule
-        ],
-        declarations,
-        providers: [
-          {provide: WidgetRegistry, useClass: DefaultWidgetRegistry},
-          {
-            provide: SchemaValidatorFactory,
-            useClass: ZSchemaValidatorFactory
-          }
-        ]
-      }).compileComponents();
-    }));
-  };
-
   static setUpTestBed = (TestingComponent: any) => {
     CommonTestingModule.setUpTestBedConfig({declarations: [TestingComponent]});
   };
 
-  static setupTestBedOne = () => {
-    CommonTestingModule.setUpTestBedConfig1({declarations: [TestComponent]});
+  static setupTestBedWithTestForm = () => {
+    CommonTestingModule.setUpTestBedConfig({declarations: [TestComponent]});
   }
 }

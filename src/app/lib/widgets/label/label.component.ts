@@ -8,7 +8,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 @Component({
   selector: 'lfb-label',
   template: `
-    <label *ngIf="title" [attr.for]="for" class="col-form-label-sm">
+    <label *ngIf="title" [attr.for]="for" class="col-form-label align-self-center p-0">
       {{title}}
       <span *ngIf="helpMessage" [matTooltip]="helpMessage" matTooltipPosition="above">
         <fa-icon [icon]="helpIcon"></fa-icon>

@@ -1,21 +1,20 @@
 /**
  * Handle side bar tree, item level fields editing in ui and editing in json
  */
-import {OnInit, AfterViewInit, Component, ViewChild, ElementRef, AfterContentInit, Input} from '@angular/core';
-import { TreeComponent, TreeModel, TreeNode, ITreeOptions } from '@circlon/angular-tree-component';
-import {FetchService} from '../fetch.service';
+import {AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, Output, ViewChild, EventEmitter } from '@angular/core';
+import {ITreeOptions, TreeComponent} from '@circlon/angular-tree-component';
+import {FetchService, LoincItemType} from '../fetch.service';
 import {MatInput} from '@angular/material/input';
 import {ShareObjectService} from '../share-object.service';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
-import {NgbModal, ModalDismissReasons} from '@ng-bootstrap/ng-bootstrap';
-import {Observable, of, Subject} from 'rxjs';
-import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
-import { AddItemDialogComponent } from '../lib/widgets/add-item-dialog.component';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {debounceTime, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, switchMap, takeUntil} from 'rxjs/operators';
+import {fhir} from '../fhir';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -71,34 +70,40 @@ export class ItemComponent implements OnInit, AfterViewInit {
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
-  @ViewChild('addLoincDlg', { read: ElementRef }) addLNCDlg: ElementRef;
   // qItem: any;
   focusNode: ITreeNode;
+  item: fhir.QuestionnaireItem = null;
   options: ITreeOptions;
   @Input()
-  form: any = {item: [{text: 'Item 1'}]};
-  exportForm: any;
+  model: any [] = [];
+  @Output()
+  modelChange = new EventEmitter<any[]>();
   isTreeExpanded = false;
   editType = 'ui';
   itemEditorSchema: any;
   editor = 'ngx';
+  loincType = LoincItemType.PANEL;
+
+  loincTypeOpts = [
+    {
+      value: LoincItemType.PANEL,
+      display: 'Panel'
+    },
+    {
+      value: LoincItemType.QUESTION,
+      display: 'Question'
+    }
+  ]
 
   loincItem: any;
-  acOptions = {
-    searchUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire',
-    httpOptions: {
-      observe: 'body' as const,
-      responseType: 'json' as const
-    }
-  };
 
   linkIdCollection = new LinkIdCollection();
 
-  acSearch = (term$: Observable<string>): Observable<AutoCompleteResult []> => {
+  acSearch = (term$: Observable<string>): Observable<any []> => {
     return term$.pipe(
       debounceTime(200),
       distinctUntilChanged(),
-      switchMap((term) => term.length < 2 ? [] : this.dataSrv.searchLoincItems(term)));
+      switchMap((term) => term.length < 2 ? [] : this.dataSrv.searchLoincItems(term, this.loincType)));
   }
 
   constructor(
@@ -116,18 +121,18 @@ export class ItemComponent implements OnInit, AfterViewInit {
   ngOnInit() {
   }
 
+  itemChanged(item) {
+    this.notifyChange();
+  }
 
+  notifyChange() {
+    this.modelChange.emit(this.model);
+  }
   /**
    * Initialize component
    */
   ngAfterViewInit() {
-    // Setup listeners to pickup node selections
-   // this.onFocus();
-    this.selectedNodeSrv.object$.subscribe((itemData) => {
-      if (this.focusNode && this.focusNode.data !== itemData) {
-        this.focusNode.data = itemData;
-      }
-    });
+    this.item = this.focusNode ? this.focusNode.data : null;
     this.options.scrollContainer = this.sidenavEl.nativeElement;
     this.formService.setTreeModel(this.treeComponent.treeModel);
   }
@@ -153,13 +158,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
    */
   setNode(node: ITreeNode): void {
     this.focusNode = node;
-    this.selectedNodeSrv.setNode(this.focusNode);
-    if (this.focusNode) {
-      if (this.focusNode.data && !this.focusNode.data.linkId) {
-        this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
-      }
-      this.selectedNodeSrv.setObject(this.focusNode.data);
-    }
+    this.item = node.data;
   }
 
   /**
@@ -199,30 +198,11 @@ export class ItemComponent implements OnInit, AfterViewInit {
 
 
   /**
-   *
-   */
-  updatedForm() {
-    const items: any = [];
-    if (this.treeComponent) {
-      const roots = this.treeComponent.treeModel.roots;
-      if (roots && roots.length > 0) {
-        this.extractDataFromTree(roots, items);
-      }
-    }
-    this.exportForm = this.form;
-    this.exportForm.item = items;
-    return this.exportForm;
-  }
-
-  /**
    * Toggle between ui and json
    * @param event - a
    */
   toggleEditType(event) {
     this.editType = this.editType === 'json' ? 'ui' : 'json';
-    if (event.index > 0) {
-      this.updatedForm();
-    }
   }
 
 
@@ -262,56 +242,49 @@ export class ItemComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * TODO - Add loinc item from fhir server.
-   * @param event - a
+   * Handle delete item button
+   * @param index - Index of the node among its siblings.
    */
-  addLoincItem(dlgContent): void {
-    // this.addItem(event);
-    this.modalService.open(dlgContent, {ariaLabelledBy: 'modal-basic-title'}).result.then((result) => {
-      if (result) {
-        console.log('result: ' + result);
-        this.getLoincItem(result).subscribe((item) => {
-          if (item) {
-            this.insertAnItem(item, this.focusNode.index + 1);
-          }
-        });
-      } else {
+  deleteItem(index?: number) {
+    if (typeof index === 'undefined') {
+      index = this.focusNode.index;
+    }
+    this.focusNode.parent.data.item.splice(index, 1);
+    this.treeComponent.treeModel.update();
+    this.treeComponent.treeModel.focusNextNode();
+    this.setNode(this.treeComponent.treeModel.getFocusedNode());
+  }
+
+  /**
+   * TODO - Add loinc item from CT server.
+   * @param dialogTemplateRef - a
+   */
+  addLoincItem(dialogTemplateRef): void {
+    this.modalService.open(dialogTemplateRef, {ariaLabelledBy: 'modal-basic-title'}).result.then((autoCompResult) => {
+      this.getLoincItem(autoCompResult, this.loincType).subscribe((item) => {
+        this.insertAnItem(item);
         this.loincItem = null;
-      }
+      });
     }, (reason) => {
-      console.log('reason: ' + reason);
       this.loincItem = null;
-    });
-  }
-
-  addLOINCItem(): void {
-    const dialogRef = this.dialog.open(AddItemDialogComponent, {
-      width: '250px'
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
-      this.getLoincItem(result).subscribe((item) => {
-        this.insertAnItem(item);
-      });
-    });
-  }
-
-  addLoincItemNgb(dialogTemplateRef): void {
-    this.modalService.open(dialogTemplateRef, {ariaLabelledBy: 'modal-basic-title'}).result.then((result) => {
-      this.getLoincItem(result).subscribe((item) => {
-        this.insertAnItem(item);
-      });
-    }, (reason) => {
     });
   }
 
   /**
    *
-   * @param loincNum - Loinc number of the item.
+   * @param autoCompResult - Loinc number of the item.
+   * @param loincType - Loinc item type
    */
-  getLoincItem(loincNum): Observable<any> {
-    return this.dataSrv.getLoincItem(loincNum);
+  getLoincItem(autoCompResult, loincType: LoincItemType): Observable<any> {
+    let ret: Observable<any>;
+    if(loincType === LoincItemType.PANEL) {
+      ret = this.dataSrv.getLoincPanel(autoCompResult.code[0].code);
+    }
+    else if(loincType === LoincItemType.QUESTION) {
+      ret = of(autoCompResult);
+    }
+
+    return ret;
   }
 
   /**
@@ -330,7 +303,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
   getItem(loincNum: string) {
   }
 
-  formatter(acResult: AutoCompleteResult) {
-    return acResult.id + ': ' + acResult.title;
+  formatter(acResult: any) {
+    return acResult.code[0].code + ': ' + acResult.text;
   }
 }

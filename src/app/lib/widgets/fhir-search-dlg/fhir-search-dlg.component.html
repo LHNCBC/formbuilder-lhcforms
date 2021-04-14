@@ -1,0 +1,90 @@
+<div class="modal-header bg-primary text-white">
+  <h4 class="modal-title">Import a questionnaire</h4>
+  <button type="button" class="close text-white" aria-label="Close" (click)="close(false)">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<!--
+Put search in modal header and results in modal body.
+It helps to keep the search visible while results are scrolling
+-->
+<div class="modal-header"><ng-container *ngTemplateOutlet="search"></ng-container></div>
+<ng-container *ngTemplateOutlet="results"></ng-container>
+
+<!-- Search template -->
+<ng-template #search>
+  <form class="container">
+    <div class="row">
+      <div class="col">
+        <div class="input-group input-group-sm">
+          <input type="text" class="form-control"
+                 [(ngModel)]="inputTerm"
+                 [ngModelOptions]="{standalone: true}"
+                 [placeholder]="searchField.searchFieldPlaceholder"
+                 aria-label="Search term"
+                 aria-describedby="filterHelp">
+          <button
+            class="align-self-baseline btn btn-sm btn-primary input-group-append"
+            type="button"
+            id="button-addon2"
+            (click)="searchInput()"
+            [disabled]="loading$ | async">
+            <span *ngIf="loading$ | async" class="spinner-border spinner-border-sm mr-2" aria-hidden="true" role="status"></span>
+            <span *ngIf="loading$ | async">Loading...</span>
+            <span *ngIf="(loading$ | async) === false">Search</span>
+          </button>
+          <span class="ml-1 align-self-end" ngbTooltip="Choose a search field and enter the search term. Choosing 'Any text field' implies searching '_content'. Please refer to FHIR REST API for details.">
+            <fa-icon [icon]="infoIcon"></fa-icon>
+          </span>
+        </div>
+        <!-- <small id="filterHelp" class="form-text text-muted">Enter a term to narrow down the result set.</small> -->
+      </div>
+      <div class="col form-group d-sm-inline-flex">
+          <label for="SelectFHIRServer1" class="align-self-center mb-0 text-nowrap">FHIR Server:&nbsp;</label>
+          <select class="form-control form-control-sm" id="SelectFHIRServer1" [(ngModel)]="selectedFHIRServer" [ngModelOptions]="{standalone: true}">
+            <option *ngFor="let server of getServerList()" [ngValue]="server">{{server.endpoint}}</option>
+          </select>
+      </div>
+    </div>
+    <div class="m-0 mb-2 row">
+      <label for="searchField1" class="align-self-center mb-0 mr-2 text-nowrap">Search by term occurring in: </label>
+      <select class="form-control form-control-sm w-auto" id="searchField1" [(ngModel)]="searchField" [ngModelOptions]="{standalone: true}">
+        <option *ngFor="let field of searchFieldList" [ngValue]="field">{{field.display}}</option>
+      </select>
+    </div>
+    <div *ngIf="bundle$ | async" class="row">
+      <div class="col">
+        <h4 *ngIf="total === 1">{{ total }} resource was found.</h4>
+        <h4 *ngIf="total > 1">{{ total }} resources were found.</h4>
+        <h4 *ngIf="total === 0">No resources were found.</h4>
+        <h4 *ngIf="total === undefined">The following resources were found.</h4>
+      </div>
+      <div class="col-auto btn-group btn-group-sm btn-sm float-right" role="group" aria-label="Navigation">
+        <button type="button" class="btn btn-outline-primary" [disabled]="!prevUrl" (click)="prevPage()">Previous</button>
+        <button type="button" class="btn btn-outline-primary" [disabled]="!nextUrl" (click)="nextPage()">Next</button>
+      </div>
+    </div>
+  </form>
+</ng-template>
+
+<!-- Results template -->
+<ng-template #results>
+  <ng-container *ngIf="questionnaires">
+    <div class="modal-body bg-light">
+      <div class="list-group list-group-flush">
+        <a href="#" class="list-group-item list-group-item-action result-item" *ngFor="let q of questionnaires; index as i" (click)="close(q.id)">
+          <div class="row">
+            <div class="col-1">{{resultsOffset + i + 1}}</div>
+            <div class="col-11">
+              <div *ngIf="q.title || q.name">{{q.title || q.name}}</div>
+              <div *ngIf="(!q.title && !q.name)">(No title or name assigned)</div>
+              <div>ID: {{q.id}} <span *ngIf="q.version">(version: {{q.version}})</span></div>
+              <div *ngIf="q.publisher">Publisher: {{q.publisher}}</div>
+              <div *ngIf="q.date">Last changed: {{q.date}}</div>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </ng-container>
+</ng-template>

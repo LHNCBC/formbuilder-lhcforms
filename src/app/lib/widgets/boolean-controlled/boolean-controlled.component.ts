@@ -7,19 +7,23 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
   selector: 'lfb-boolean-controlled',
   template: `
     <ng-template #controller>
-      <div class="widget" [ngClass]="{'row': labelPosition === 'left'}">
-        <div [ngClass]="labelWidthClass">
-          <lfb-label [title]="label" [helpMessage]="helpMessage"></lfb-label>
-        </div>
+      <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+        <lfb-label [title]="label"
+                   [helpMessage]="helpMessage"
+                   [ngClass]="labelWidthClass + ' pl-0 pr-1'"
+        ></lfb-label>
 
-        <div [ngClass]="controlWidthClass" class="row">
-          <div *ngFor="let option of ['No', 'Yes']" class="radio">
-            <label class="horizontal control-label">
-              <input [ngModel]="bool" (ngModelChange)="boolChange.emit($event)" [attr.id]="option+'_1'"
+        <div ngbRadioGroup class="btn-group btn-group-sm btn-group-toggle"
+             [ngModel]="bool"
+             (ngModelChange)="boolChange.emit($event)"
+             [ngModelOptions]="{standalone: true}">
+          <ng-container *ngFor="let option of ['No', 'Yes']">
+            <label ngbButtonLabel class="btn-outline-secondary" [attr.id]="option+'_1'">
+              <input ngbButton
                      [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
               {{option}}
             </label>
-          </div>
+          </ng-container>
         </div>
       </div>
     </ng-template>

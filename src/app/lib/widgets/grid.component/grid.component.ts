@@ -49,7 +49,7 @@ export class GridComponent extends ObjectWidget {
   /**
    * Return bootstrap column class based on showField's definition.
    *
-   * @param showField
+   * @param showField - Field to retrieve the class from.
    */
   gridClass(showField) {
     return showField && showField.col ? 'col-' + showField.col : 'col';
@@ -58,7 +58,7 @@ export class GridComponent extends ObjectWidget {
   /**
    * Return show fields from fieldset. Fieldset and showFields are specified in layout json.
    *
-   * @param fieldset
+   * @param fieldset - Field set can include hidden fields.
    */
   getShowFields(fieldset) {
     let ret = fieldset.showFields;
@@ -67,6 +67,20 @@ export class GridComponent extends ObjectWidget {
       const propId = typeof field === 'string' ? field : typeof field === 'object' ? field.field : null;
       return Util.isVisible(this.formProperty, propId);
     });
+    return ret;
+  }
+
+  /**
+   * Get widget id.
+   * @param showField - Property id or field definition in layout
+   * @return widget id of the field.
+   */
+  getWidgetId(showField): string {
+    const p = this.getShowFieldProperty(showField);
+    let ret = null;
+    if(p && p.schema && p.schema.widget && p.schema.widget.id) {
+      ret = p.schema.widget.id;
+    }
     return ret;
   }
 }
