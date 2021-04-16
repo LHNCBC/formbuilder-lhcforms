@@ -224,7 +224,7 @@ md-menu-bar {
   position:absolute;
   top:0px;
   left:0px;
-  height:110px;
+  height:145px;
   right:0px;
   overflow:hidden;
 }
@@ -240,7 +240,7 @@ md-menu-bar {
 
 #resizableMiddle {
   position:absolute;
-  top:110px;
+  top:145px;
   bottom:65px;
   left:0px;
   right:0px;
@@ -254,10 +254,18 @@ md-menu-bar {
  /* font-size: 12px;*/
   font-family: 'Droid Sans',Arial,Helvetica,sans-serif;
   color: #202020;
-  border-top: 2px solid #0BACB6;
   border-bottom: 7px solid #17b4e3;
   /*line-height: normal;*/
   padding-bottom: 12px;
+}
+#nlm-logo {
+  width: 100%;
+  padding: 2px;
+  background-color: #17b4e3;
+}
+#nlm-logo img {
+  height: 35px;
+  width: auto;
 }
 #logo {
   position: relative;
