@@ -260,8 +260,9 @@ md-menu-bar {
 }
 #nlm-logo {
   width: 100%;
-  padding: 2px;
-  background-color: #17b4e3;
+  padding: 4px;
+  padding-left: 5px;
+  background-color: #0bacb6;
 }
 #nlm-logo img {
   height: 35px;
