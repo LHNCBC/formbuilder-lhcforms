@@ -3,7 +3,8 @@
 This project follows [Semantic Versioning](http://semver.org/).
 
 ## [6.4.2]  2021-04-16
-### New NLM logo
+### Added
+- New NLM logo
 
 ## [6.4.1]  2021-02-09
 ### Updated
