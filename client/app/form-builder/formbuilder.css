@@ -209,7 +209,7 @@ md-menu-bar button {
 }
 
 md-menu-bar {
-  padding: 0 5px;
+  padding: 0;
 }
 
 .nodeMenuContent {
@@ -264,7 +264,7 @@ md-menu-bar {
   padding-left: 5px;
   background-color: #0bacb6;
 }
-#nlm-logo img {
+#nlm-logo md-icon {
   height: 35px;
   width: auto;
 }
