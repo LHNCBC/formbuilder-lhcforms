@@ -34,13 +34,13 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
           </div>
         </div>
         -->
-        <div ngbRadioGroup [formControl]="control" class="btn-group btn-group-sm btn-group-toggle" >
-            <label *ngFor="let option of schema.oneOf" ngbButtonLabel class="btn-outline-secondary">
+        <div ngbRadioGroup [formControl]="control" class="form-check-inline btn-group btn-group-sm btn-group-toggle" >
+            <label *ngFor="let option of schema.oneOf" ngbButtonLabel class="btn-outline-success">
               <input ngbButton [attr.id]="id + '.' + option.enum[0]"
                      type="radio" [value]="option" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null">
               {{option.description}}
             </label>
-            <label *ngFor="let option of schema.enum" ngbButtonLabel class="btn-outline-secondary">
+            <label *ngFor="let option of schema.enum" ngbButtonLabel class="btn-outline-success">
               <input ngbButton [attr.id]="id + '.' + option"
                      type="radio" [value]="option" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null"><span class="ml-1 mr-3">{{option}}</span></label>
         </div>

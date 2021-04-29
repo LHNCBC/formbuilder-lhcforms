@@ -55,7 +55,6 @@ import { EnablewhenAnswerCodingComponent } from './lib/widgets/enablewhen-answer
 import { AppJsonPipe } from './lib/pipes/app-json.pipe';
 import { BasePageComponent } from './base-page/base-page.component';
 import { FormFieldsComponent } from './form-fields/form-fields.component';
-import { AddItemDialogComponent } from './lib/widgets/add-item-dialog.component';
 import {MatDialogModule} from '@angular/material/dialog';
 import { LabelRadioComponent } from './lib/widgets/label-radio/label-radio.component';
 import { RowLayoutComponent } from './lib/widgets/row-layout/row-layout.component';
@@ -98,7 +97,6 @@ import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio
     FormFieldsComponent,
     LabelRadioComponent,
     BooleanControlledComponent,
-    AddItemDialogComponent,
     RowLayoutComponent,
     BooleanControlledComponent,
     EnableBehaviorComponent,

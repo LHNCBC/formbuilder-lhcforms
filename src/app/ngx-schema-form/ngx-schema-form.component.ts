@@ -121,6 +121,11 @@ export class NgxSchemaFormComponent implements OnInit {
     });
   }
 
+
+  /**
+   * The model is changed, emit the event.
+   * @param model - Event value.
+   */
   updateModel(model) {
     this.modelChange.emit(model);
   }

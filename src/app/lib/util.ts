@@ -6,7 +6,7 @@ import {FormProperty} from 'ngx-schema-form';
 
 export class Util {
   // Capitalize the camel case strings.
-  static capitalize(str) {
+  static capitalize(str): string {
     let ret = '';
     if (str && str.length > 0) {
       ret = str.split(/(?=[A-Z])/).join(' ');
@@ -40,7 +40,7 @@ export class Util {
    * Anything null, undefined or empty string is empty.
    * Any object or an array containing all empty elements is empty.
    *
-   * @param json - Input to test the empty ness.
+   * @param json - Input to test the emptiness.
    * @return boolean - True if empty.
    */
   static isEmpty(json: unknown): boolean {
@@ -137,7 +137,7 @@ export class Util {
 
   /**
    * Convert lforms units to equivalent FHIR extensions.
-   * @param units
+   * @param units - units in lforms format.
    */
   static convertUnitsToExtensions(units): any [] {
     if(!units) {

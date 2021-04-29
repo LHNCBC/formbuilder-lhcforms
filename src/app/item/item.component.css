@@ -1,5 +1,9 @@
 @import '~@circlon/angular-tree-component/css/angular-tree-component.css';
 
+.sidenav-header {
+  background-color: grey;
+  color: white;
+}
 .node-display-prefix {
   font-weight: bold;
   margin-right: 1rem;

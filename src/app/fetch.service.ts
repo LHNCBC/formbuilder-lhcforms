@@ -66,18 +66,35 @@ export class FetchService {
   assetsUrl = '/assets';
   constructor(private http: HttpClient) { }
 
+  /**
+   * Get questionnaire by id from FHIR server.
+   * @param id - Id of the questionnaire
+   */
   getFormData(id: string): Observable<any> {
     return this.http.get(FetchService.fhirUrl + '/' + id, {responseType: 'json'});
   }
 
+  /**
+   * This is used to configure widget to edit item in json editor.
+   */
   getItemEditorSchema(): Observable<any> {
     return this.http.get(this.assetsUrl + '/item-editor.schema.json', {responseType: 'json'});
   }
 
-  getOptions() {
+  /**
+   * Options for sidebar tree
+   */
+  getTreeOptions() {
     return this.treeOptions;
   }
 
+
+  /**
+   * Search questionnaires on fhir server, intended for auto completion for importing questionnaires.
+   *
+   * @param term - Search term
+   * @param options - http request options
+   */
   searchForms(term: string, options?): Observable<AutoCompleteResult []> {
     options = options || {};
     options.observe = options.observe || 'body' as const;
@@ -94,6 +111,14 @@ export class FetchService {
     );
   }
 
+
+  /**
+   * Search CTSS for loinc items, intended for auto complete.
+   *
+   * @param term - Search term.
+   * @param loincType - Panel or question.
+   * @param options - http request options.
+   */
   searchLoincItems(term: string, loincType?: LoincItemType, options?): Observable<AutoCompleteResult []> {
     options = options || {};
     options.observe = options.observe || 'body' as const;
@@ -132,8 +157,10 @@ export class FetchService {
       })
     );
   }
+
+
   /**
-   *
+   * Fetch loinc panel based on loinc number.
    * @param loincNum - Loinc number
    * @param options - Any http options.
    */
@@ -167,6 +194,7 @@ export class FetchService {
   }
 
   /**
+   * Create FHIR Questionnaire.item from loinc question info.
    *
    */
   convertLoincQToItem(loincNum: string, text: string, answers: any [], units: any[], datatype: string): any {

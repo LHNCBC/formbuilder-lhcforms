@@ -1,10 +1,11 @@
 <mat-sidenav-container>
-        <mat-sidenav #drawer mode="side" opened class="p-1">
+        <mat-sidenav #drawer mode="side" opened class="p-1 bg-light">
+          <div class="sidenav-header p-1">Questions Tree</div>
           <tree-root
             #tree
             [nodes]="model"
-            [options]="options"
-            (initialized)="onTreeInitialized($event)"
+            [options]="treeOptions"
+            (initialized)="onTreeInitialized()"
             (focus)="onFocus($event)"
           >
             <ng-template #treeNodeTemplate let-node let-index="index">
@@ -15,6 +16,7 @@
           </tree-root>
         </mat-sidenav>
         <mat-sidenav-content>
+          <div class="sidenav-header p-1">Current Item <span *ngIf="item && item.text">({{item.text}})</span></div>
           <div>
             <div>
               <span>Edit item (question or header)</span>

@@ -13,7 +13,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
              [formControl]="control"
              class="btn-group form-check-inline btn-group-sm btn-group-toggle">
           <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
-            <label ngbButtonLabel class="btn-outline-secondary m-0">
+            <label ngbButtonLabel class="btn-outline-success m-0">
               <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
               {{option}}
             </label>
@@ -24,8 +24,11 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 
     <ng-container *ngTemplateOutlet="controller"></ng-container>
   `,
-  styles: [
-  ]
+  styles: [`
+    label:hover {
+      opacity: 0.5;
+    }
+  `]
 })
 export class BooleanRadioComponent  extends LfbControlWidgetComponent implements OnInit {
   ngOnInit() {

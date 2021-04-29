@@ -2,7 +2,6 @@ import {TestBed} from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {HttpResponse, HttpRequest} from '@angular/common/http';
 import {fhir} from '../fhir';
-import {MockRequestResponse, HttpMockService } from '../testing/http-mock.service';
 
 import { FhirService } from './fhir.service';
 import {Observable} from 'rxjs';
@@ -25,16 +24,6 @@ fdescribe('FhirService', () => {
     }]
   };
 
-  const mockReqResponses: MockRequestResponse [] = [
-    {
-      req: new HttpRequest<any>('GET', 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire/123456?_format=application/fhir+json'),
-      resp: new HttpResponse<any>({status: 200, body: testResource})
-    }
-  ];
-
-  beforeAll(() => {
-    HttpMockService.mocks = mockReqResponses;
-  });
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [ HttpClientTestingModule ],

@@ -250,7 +250,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
    * @param parentProperty -
    * @param propertyId -
    */
-  getTitle(parentProperty, propertyId) {
+  getTitle(parentProperty, propertyId): string {
     const p = this.getProperty(parentProperty, propertyId);
     return p.schema && p.schema.title ? p.schema.title : Util.capitalize(propertyId);
   }

@@ -13,12 +13,12 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
                    [ngClass]="labelWidthClass + ' pl-0 pr-1'"
         ></lfb-label>
 
-        <div ngbRadioGroup class="btn-group btn-group-sm btn-group-toggle"
+        <div ngbRadioGroup class="form-check-inline btn-group btn-group-sm btn-group-toggle"
              [ngModel]="bool"
              (ngModelChange)="boolChange.emit($event)"
              [ngModelOptions]="{standalone: true}">
           <ng-container *ngFor="let option of ['No', 'Yes']">
-            <label ngbButtonLabel class="btn-outline-secondary" [attr.id]="option+'_1'">
+            <label ngbButtonLabel class="btn-outline-success" [attr.id]="option+'_1'">
               <input ngbButton
                      [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
               {{option}}
@@ -36,6 +36,9 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
     }
     .radio {
       font-size: 0.875rem
+    }
+    label:hover {
+      opacity: 0.5;
     }
   `]
 })

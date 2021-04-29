@@ -193,13 +193,21 @@ export class FormService {
     return this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
   }
 
+
+  /**
+   * Store key, value to local storage. Checks the availability of storage before saving.
+   * @param key - Key for storage.
+   * @param value - Object or string to store.
+   */
   autoSave(key: string, value: any) {
     if(this._storageAvailable('localStorage')) {
       if(value) {
         if(key !== 'state' && value) {
+          // Non state are objects
           localStorage.setItem(key, JSON.stringify(value));
         }
         else {
+          // State is string type.
           localStorage.setItem(key, value);
         }
       }
