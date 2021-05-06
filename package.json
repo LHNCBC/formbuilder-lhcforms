@@ -70,7 +70,7 @@
     "jit-grunt": "^0.10.0",
     "jsdoc": "^3.6.3",
     "jshint-stylish": "^1.0.0",
-    "json": "^9.0.3",
+    "json": "^10.0.0",
     "json-query": "^1.5.0",
     "jsonfile": "^2.0.0",
     "jsonpath": "^1.0.2",
