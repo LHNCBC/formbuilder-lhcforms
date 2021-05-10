@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "6.4.2",
+  "version": "6.4.3",
   "main": [
     "client/app/app.js",
     "client/app/config.js",
@@ -27,7 +27,7 @@
   ],
   "dependencies": {
     "jquery-ui": "1.12.1",
-    "lodash": "~4.17.4",
+    "lodash": "~4.17.21",
     "angular": "1.8.x",
     "angular-animate": "1.8.x",
     "angular-aria": "1.8.x",
