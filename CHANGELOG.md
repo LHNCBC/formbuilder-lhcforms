@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.4.3]  2021-05-10
+### Changed.
+- Updated npm packages to address security vulnerabilities
+- Updated link to contact us page.
+
 ## [6.4.2]  2021-04-16
 ### Added
 - New NLM logo
