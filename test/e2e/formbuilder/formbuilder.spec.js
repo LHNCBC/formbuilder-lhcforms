@@ -1276,7 +1276,7 @@ describe('GET /', function () {
     });
   });
 
-  fdescribe('Questionnaire.identifier', function() {
+  describe('Questionnaire.identifier', function() {
     beforeEach(function() {
       util.resetForm();
     });
@@ -1327,7 +1327,7 @@ describe('GET /', function () {
     });
   });
 
-  fdescribe('Onload form warnings', function () {
+  describe('Onload form warnings', function () {
 
     beforeAll(function (done) {
       util.pageRefresh().then(function() {
@@ -1368,7 +1368,7 @@ describe('GET /', function () {
     });
   });
 
-  fdescribe('Import LOINC forms', function() {
+  describe('Import LOINC forms', function() {
     beforeAll((done) => {
       util.resetForm().then(function() {
         fb.basicFormEditTab.click();
