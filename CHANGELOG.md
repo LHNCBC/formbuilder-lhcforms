@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.4.4]  2021-05-12
+### Updated.
+- Updated formbuilder package to 29.0.3.
+
 ## [6.4.3]  2021-05-10
 ### Changed.
 - Updated npm packages to address security vulnerabilities
