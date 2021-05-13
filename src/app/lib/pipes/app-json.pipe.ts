@@ -3,7 +3,7 @@
  * Ignore functions and __$* keys. __$* are local fields, which should be ignored
  * when translating to form definitions.
  * In a special case, handles enableWhen.question, which may refer to
- * ITreeNode. ITeeNode should translate to its linkId.
+ * ITreeNode. ITreeNode should translate to its linkId.
  */
 import { Pipe, PipeTransform } from '@angular/core';
 

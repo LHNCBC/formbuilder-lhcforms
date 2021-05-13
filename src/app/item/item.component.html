@@ -17,7 +17,7 @@
         </mat-sidenav>
         <mat-sidenav-content>
           <div class="sidenav-header p-1">Current Item <span *ngIf="item && item.text">({{item.text}})</span></div>
-          <div>
+          <div class="mt-1">
             <div>
               <span>Edit item (question or header)</span>
               <button type="button" class="btn btn-sm btn-outline-primary float-right" (click)="toggleEditType($event)">{{ editType === 'ui' ? "View/Edit item's JSON" : "Edit item in GUI" }}</button>
@@ -38,7 +38,7 @@
           <hr/>
           <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with item action buttons">
             <div class="btn-group-sm" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="deleteItem()">Delete this item</button>
+              <button type="button" class="btn btn-primary" [disabled]="!(focusNode)" (click)="deleteItem()">Delete this item</button>
             </div>
             <div class="btn-group-sm ml-2 ml-auto" role="group" aria-label="Last group">
               <button type="button" class="btn btn-primary" (click)="addItem($event)">Add new item</button>

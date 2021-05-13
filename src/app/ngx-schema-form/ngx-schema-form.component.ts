@@ -13,7 +13,7 @@ import {map, switchMap, timeout} from 'rxjs/operators';
   template: `
     <div class="container">
       <!--  <div class="title">{{model ? model.text : 'Questionnaire Item'}}</div> -->
-      <sf-form [schema]="mySchema"
+      <sf-form *ngIf="model" [schema]="mySchema"
                [(model)]="model" (onChange)="updateModel($event.value)"
                [bindings]="myFieldBindings"
       ></sf-form>
