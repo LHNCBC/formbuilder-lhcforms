@@ -807,7 +807,7 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
               displayControl.answerLayout.type = thisService.getFormBuilderField(answerLayout.items, 'type').value.code;
               var columns = thisService.getFormBuilderField(answerLayout.items, 'columns').value;
               if(displayControl.answerLayout.type === 'RADIO_CHECKBOX' && columns) {
-                displayControl.answerLayout.columns = columns;
+                displayControl.answerLayout.columns = String(columns);
               }
             }
             else if(_externallyDefined) {
@@ -1770,7 +1770,10 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
         }
         if(importedDisplayControl.answerLayout.columns) {
           var fbAnswerLayoutColumns = lodash.find(fbAnswerLayout.items, {questionCode: 'columns'});
-          fbAnswerLayoutColumns.value = importedDisplayControl.answerLayout.columns;
+          var columns = parseInt(importedDisplayControl.answerLayout.columns);
+          if(!isNaN(columns)) {
+            fbAnswerLayoutColumns.value = columns;
+          }
         }
       }
 
