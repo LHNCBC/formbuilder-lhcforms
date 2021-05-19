@@ -231,4 +231,46 @@ describe('formbuilder.service ', function () {
       expect(fbQ.treeData[0].nodes[0].lfData.advanced.itemHash['/_observationLinkPeriod/unit/1/1'].value).toBeUndefined();
     });
   });
+  
+  describe('Preprocess raw lforms', function () {
+    const rawForm = {
+      type: 'LOINC',
+      items: [
+        {
+          question: 'test 1',
+          questionCode: '12345-1',
+          items: [
+            {
+              question: 'test 11',
+              questionCode: '12345-2'
+            }
+          ]
+        },
+        {
+          question: 'test 2',
+          questionCode: 'd1',
+          questionCodeSystem: 'different',
+          items: [
+            {
+              question: 'test 21',
+              questionCode: 'fs2',
+              questionCodeSystem: 'fakeSystem'
+            },
+            {
+              question: 'test 22',
+              questionCode: 'd2'
+            }
+          ]
+        }
+      ]
+    };
+    
+    it('should assign LOINC code system where questionCodeSystem is absent', () => {
+      fbService.processRawLForm(rawForm);
+      expect(rawForm.items[0].questionCodeSystem).toBe('LOINC'); // Gets from form level
+      expect(rawForm.items[0].items[0].questionCodeSystem).toBe('LOINC'); // Gets from parent, which is from form level
+      expect(rawForm.items[1].items[0].questionCodeSystem).toBe('fakeSystem'); // Don't change existing value
+      expect(rawForm.items[1].items[1].questionCodeSystem).toBe('different'); // Get it from parent.
+    });
+  });
 });

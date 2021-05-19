@@ -222,11 +222,56 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
     var dataUrl = dataConstants.formDefURL+'loinc_num='+loincNum;
     $http.get(dataUrl)
       .then(function(response) {
+        thisService.processRawLForm(response.data);
         callback(response.data, null);
       })
       .catch(function(error) {
         callback(null, error);
       });
+  };
+  
+  /**
+   * Do any pre-processing lforms json object before feeding into form builder.
+   * Intended to add missing questionCodeSystem based on the form type.
+   *
+   * @param rawForm - Initial lforms json object, typically downloaded from
+   * clinical table search service.
+   */
+  this.processRawLForm = function (rawForm) {
+    var codeSystem = rawForm.type || 'LOINC';
+    if(Array.isArray(rawForm.items) && rawForm.items.length > 0) {
+      for(var i = 0; i < rawForm.items.length; i++) {
+        thisService.traverseItem(rawForm.items[i], null,function(item, parent) {
+          // Assume parent code system where questionCodeSystem is absent.
+          // Assume form code system (type) if parent code system is absent.
+          // As traversing happens from top to bottom, parents should have the
+          // code system, except for top level items.
+          if(!item.questionCodeSystem) {
+            item.questionCodeSystem = parent ? parent.questionCodeSystem : codeSystem;
+          }
+        });
+      }
+    }
+  };
+  
+  /**
+   * Traverse through lforms.item objects.
+   * @param item - lforms item object
+   * @param parent - Parent item object.
+   * @param callback - Call back function. The function is invoked
+   * for every descendant item object.
+   * function signature: func(item)
+   */
+  this.traverseItem = function(item, parent, callback) {
+    if(!item) {
+      return;
+    }
+    callback(item, parent);
+    if(item.items) {
+      for(var i = 0; i < item.items.length; i++) {
+        thisService.traverseItem(item.items[i], item, callback);
+      }
+    }
   };
 
 
