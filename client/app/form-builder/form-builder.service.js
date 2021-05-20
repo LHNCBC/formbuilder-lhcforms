@@ -238,16 +238,24 @@ fb.service('formBuilderService', ['$window', 'lodash', '$q', '$http', 'dataConst
    * clinical table search service.
    */
   this.processRawLForm = function (rawForm) {
-    var codeSystem = rawForm.type || 'LOINC';
+    if(!rawForm.codeSystem && rawForm.type) {
+      rawForm.codeSystem = rawForm.type;
+    }
     if(Array.isArray(rawForm.items) && rawForm.items.length > 0) {
       for(var i = 0; i < rawForm.items.length; i++) {
         thisService.traverseItem(rawForm.items[i], null,function(item, parent) {
           // Assume parent code system where questionCodeSystem is absent.
           // Assume form code system (type) if parent code system is absent.
           // As traversing happens from top to bottom, parents should have the
-          // code system, except for top level items.
+          // code system, except for top level items. If form code system and
+          // parent code system is absent, leave it untouched.
           if(!item.questionCodeSystem) {
-            item.questionCodeSystem = parent ? parent.questionCodeSystem : codeSystem;
+            if(parent && parent.questionCodeSystem) {
+              item.questionCodeSystem = parent.questionCodeSystem;
+            }
+            else if (rawForm.codeSystem) {
+              item.questionCodeSystem = rawForm.codeSystem;
+            }
           }
         });
       }
