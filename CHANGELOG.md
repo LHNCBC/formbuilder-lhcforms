@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.4.5]  2021-05-14
+### Fixed.
+- Fixed a bug in outputting FHIR choice orientation extension when
+  displayControl.answerLayout.columns is one.
+- Fixed a bug in changing the loinc code with prefix 'Modified_' when a loinc item is edited
+
 ## [6.4.4]  2021-05-12
 ### Updated.
 - Updated formbuilder package to 29.0.3.

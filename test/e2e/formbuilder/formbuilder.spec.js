@@ -616,7 +616,7 @@ describe('GET /', function () {
         var lforms = JSON.parse(text);
         var inhaledO2ItemDisplayControl = lforms.items[0].items[15].displayControl;
         expect(inhaledO2ItemDisplayControl.answerLayout.type).toBe('RADIO_CHECKBOX');
-        expect(inhaledO2ItemDisplayControl.answerLayout.columns).toBe(2);
+        expect(inhaledO2ItemDisplayControl.answerLayout.columns).toBe('2');
       });
     });
 
