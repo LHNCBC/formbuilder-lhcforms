@@ -6,18 +6,15 @@ import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {Binding, FormProperty, Validator} from 'ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
-import {Form} from '@angular/forms';
 import {map, switchMap, timeout} from 'rxjs/operators';
-import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
-import {TreeModel} from '@circlon/angular-tree-component';
 
 @Component({
   selector: 'lfb-ngx-schema-form',
   template: `
-    <div class="card-container">
+    <div class="container">
       <!--  <div class="title">{{model ? model.text : 'Questionnaire Item'}}</div> -->
-      <sf-form [schema]="mySchema"
-               [model]="model" (modelChange)="updateModel($event)"
+      <sf-form *ngIf="model" [schema]="mySchema"
+               [(model)]="model" (onChange)="updateModel($event.value)"
                [bindings]="myFieldBindings"
       ></sf-form>
     </div>
@@ -64,10 +61,9 @@ export class NgxSchemaFormComponent implements OnInit {
   @Output()
   setLinkId = new EventEmitter();
   @Input()
-  node: ITreeNode;
-  @Input()
-  treeModel: TreeModel;
   model: any;
+  @Output()
+  modelChange = new EventEmitter<any>();
   @Input()
   linkIdCollection = new LinkIdCollection();
 
@@ -123,28 +119,15 @@ export class NgxSchemaFormComponent implements OnInit {
       this.mySchema = schema;
       // console.log(JSON.stringify(this.mySchema.layout, null, 2));
     });
-
-    // Setup listener on model.
-    this.modelService.object$.subscribe((model) => {
-      if (this.model !== model) {
-        this.model = model;
-      }
-    });
-
-    // Setup listener on tree node.
-    this.modelService.node$.subscribe((node) => {
-      if (this.node !== node) {
-        this.node = node;
-        this.model = node ? node.data : null;
-        if (this.model && !this.model.linkId) {
-          this.model.linkId = '' + node.id;
-        }
-      }
-    });
   }
 
+
+  /**
+   * The model is changed, emit the event.
+   * @param model - Event value.
+   */
   updateModel(model) {
-    this.modelService.setObject(model);
+    this.modelChange.emit(model);
   }
 
 }

@@ -4,6 +4,10 @@ import {browser, by, element, logging} from 'protractor';
 describe('formbuilder-lhcforms App', () => {
   let page: AppPage;
 
+  beforeAll(() => {
+    browser.waitForAngularEnabled(false);
+  });
+
   beforeEach(() => {
     page = new AppPage();
   });

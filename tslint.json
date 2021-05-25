@@ -87,5 +87,10 @@
   },
   "rulesDirectory": [
     "codelyzer"
-  ]
+  ],
+  "linterOptions": {
+    "exclude": [
+      "./app/fhir.d.ts"
+    ]
+  }
 }

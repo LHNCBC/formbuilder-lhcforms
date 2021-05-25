@@ -3,6 +3,19 @@
 @import '~@circlon/angular-tree-component/css/angular-tree-component.css';
 @import '~bootstrap/dist/css/bootstrap.min.css';
 
+.node-content-wrapper {
+  width: 100%;
+  background-color: whitesmoke;
+}
+
+.node-content-wrapper.node-content-wrapper-focused {
+  /* background-color: #b3d4fc; */
+  background-color: lightgrey;
+}
+.node-content-wrapper:hover {
+  /* background-color: #d3e4fc; */
+  background-color: lightgoldenrodyellow;
+}
 .form-control > p {
   display:none !important;
 }

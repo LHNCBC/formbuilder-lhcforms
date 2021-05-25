@@ -1,17 +1,19 @@
 import { AppJsonPipe } from './app-json.pipe';
 
-describe('AppJsonPipe', () => {
+fdescribe('AppJsonPipe', () => {
+  // The pipe ignores __$* keys.
   const obj = {
     test: () => {console.log('hi')},
-    _a: {
-      _b: '_b',
+    __$a: {
+      __$b: '_b',
       c: 'c'
     },
     A: {
       b: 'b',
-      _b: '_b'
+      __$b: '_b'
     },
-    // Should be transformed to {question: 2}
+    // question is referring to ITreeNode.
+    // {question: [ITreeNode]} should be translated to {question: [linkId]}.
     question: {
       // data => questionnaire.item
       data: {

@@ -12,12 +12,12 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
     <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
            [attr.name]="name" type="hidden" [formControl]="control">
     <ng-template #notHiddenFieldBlock>
-      <div [ngClass]="{'row': labelPosition === 'left'}">
+      <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
         <lfb-label *ngIf="!nolabel"
                    [for]="id"
                    [title]="schema.title"
                    [helpMessage]="schema.description"
-                   [ngClass]="labelWidthClass"
+                   [ngClass]="labelWidthClass+' pl-0 pr-1'"
         ></lfb-label>
         <input [name]="name" [attr.readonly]="(schema.widget.id!=='color') && schema.readOnly?true:null"
                class="textline-widget form-control {{controlWidthClass}}"

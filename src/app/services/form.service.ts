@@ -1,9 +1,13 @@
 /**
  * Form related helper functions.
  */
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {IDType, ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@circlon/angular-tree-component';
+import {fhir} from '../fhir';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
 
 @Injectable({
@@ -11,11 +15,23 @@ import {TreeModel} from '@circlon/angular-tree-component';
 })
 export class FormService {
 
+  _guidingStep$: Subject<string> = new Subject<string>();
+
+  localStorageError: Error = null;
   treeModel: TreeModel;
-  constructor() { }
+  constructor(private modalService: NgbModal) { }
+
+  get guidingStep$(): Observable<string> {
+    return this._guidingStep$.asObservable();
+  }
+
+  setGuidingStep(step: string) {
+    this._guidingStep$.next(step);
+  }
+
 
   /**
-   * Intended to collection source items for enable when logic
+   * Intended to collect source items for enable when logic
    * Get sources for focussed item.
    */
   getSourcesExcludingFocussedTree(): ITreeNode [] {
@@ -115,5 +131,157 @@ export class FormService {
         }
     }
     return ret;
+  }
+
+
+  /**
+   * General purpose information dialog
+   *
+   * @param title - Title of dialog
+   * @param message - Message to display
+   * @param type - INFO | WARNING | DANGER
+   */
+  showMessage(title: string, message: string, type: MessageType = MessageType.INFO) {
+
+    const modalRef = this.modalService.open(MessageDlgComponent);
+    modalRef.componentInstance.title = title;
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.type = type;
+  }
+
+
+  /**
+   * Parse input string to questionnaire.
+   * @param text
+   */
+  parseQuestionnaire(text: string): fhir.Questionnaire {
+    return this.validateFhirQuestionnaire(JSON.parse(text));
+  }
+
+
+  /**
+   * Possible validation checks.
+   *
+   * @param json
+   */
+  validateFhirQuestionnaire(json: any): fhir.Questionnaire {
+    return json as fhir.Questionnaire;
+  }
+
+
+  /**
+   * Remove questionnaire from local storage.
+   */
+  clearAutoSavedForm() {
+    localStorage.removeItem('fhirQuestionnaire');
+  }
+
+
+  /**
+   * Save questionnaire in local storage
+   * @param fhirQ - Questionnaire
+   */
+  autoSaveForm(fhirQ: fhir.Questionnaire) {
+    this.autoSave('fhirQuestionnaire', fhirQ);
+  }
+
+
+  /**
+   * Retrieve questionnaire from the storage.
+   */
+  autoLoadForm(): fhir.Questionnaire {
+    return this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
+  }
+
+
+  /**
+   * Store key, value to local storage. Checks the availability of storage before saving.
+   * @param key - Key for storage.
+   * @param value - Object or string to store.
+   */
+  autoSave(key: string, value: any) {
+    if(this._storageAvailable('localStorage')) {
+      if(value) {
+        if(key !== 'state' && value) {
+          // Non state are objects
+          localStorage.setItem(key, JSON.stringify(value));
+        }
+        else {
+          // State is string type.
+          localStorage.setItem(key, value);
+        }
+      }
+      else {
+        localStorage.removeItem(key);
+      }
+    }
+    else {
+      console.error('Local storage not available!');
+    }
+  }
+
+
+  /**
+   * Retrieve an item from local storage
+   * @param key - Key of the item to retrieve
+   */
+  autoLoad(key: string): any {
+    let ret: any = null;
+    if(this._storageAvailable('localStorage')) {
+      const str = localStorage.getItem(key);
+      if(str) {
+        if(key !== 'state') {
+          ret = JSON.parse(str);
+        }
+        else {
+          ret = str;
+        }
+      }
+    }
+    else {
+      console.error('Local storage not available!');
+    }
+    return ret;
+  }
+
+
+  /**
+   * Test the storage for availability
+   * @param type - localStorage | sessionStorage
+   * @return boolean
+   */
+  _storageAvailable(type): boolean {
+    let storage;
+    try {
+      storage = window[type];
+      const x = '__storage_test__';
+      storage.setItem(x, x);
+      storage.removeItem(x);
+      this.localStorageError = null;
+      return true;
+    }
+    catch(e) {
+      this.localStorageError = e;
+      return e instanceof DOMException && (
+          // everything except Firefox
+        e.code === 22 ||
+        // Firefox
+        e.code === 1014 ||
+        // test name field too, because code might not be present
+        // everything except Firefox
+        e.name === 'QuotaExceededError' ||
+        // Firefox
+        e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+        // acknowledge QuotaExceededError only if there's something already stored
+        (storage && storage.length !== 0);
+    }
+  }
+
+
+  /**
+   * Check if a questionnaire is saved in local storage.
+   */
+  isAutoSaved(): boolean {
+    return !!localStorage.getItem('fhirQuestionnaire');
   }
 }

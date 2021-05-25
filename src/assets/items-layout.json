@@ -4,11 +4,14 @@
       {
         "showFields": [
           { "field": "text", "col": 12 },
-          { "field": "type", "col": 12 },
+          { "field": "prefix", "col": 12},
           { "field": "linkId", "col": 12 },
           { "field": "__$codeYesNo", "col": 12 },
           { "field": "code", "col": 12 },
-          { "field": "prefix", "col": 12}
+          { "field": "type", "col": 12 },
+          { "field": "initial", "title": "Default value", "col": 12 },
+          { "field": "answerValueSet", "col": 12 },
+          { "field": "answerOption", "title": "Answer choices", "col": 12 }
         ]
       },
       {
@@ -16,16 +19,13 @@
           { "field": "repeats", "col": 12 },
           { "field": "required", "col": 12 },
           { "field": "readOnly", "col": 12 },
-          { "field": "maxLength", "col": 12 },
-          { "field": "answerValueSet", "col": 12 },
-          { "field": "answerOption", "title": "Answer choices", "col": 12 },
-          { "field": "initial", "title": "Default value", "col": 12 }
+          { "field": "maxLength", "col": 12 }
         ]
       },
       {
         "showFields": [
           { "field": "enableWhen", "col": 12 },
-          {"field": "enableBehavior", "col": 12}
+          { "field": "enableBehavior", "col": 12 }
         ]
       },
       {

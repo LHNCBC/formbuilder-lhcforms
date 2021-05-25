@@ -29,12 +29,12 @@ const schema: ISchema = {
   }
 };
 
-const model: any = {fieldA: 'one'};
+const model: any = {fieldA: 'two'};
 
 describe('formProperty: lb-radio', () => {
   let fixture: ComponentFixture<TestComponent>;
 
-  CommonTestingModule.setupTestBedOne();
+  CommonTestingModule.setUpTestBed(TestComponent);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestComponent);
@@ -44,8 +44,16 @@ describe('formProperty: lb-radio', () => {
   });
 
   it('should create', () => {
-    expect(fixture.componentInstance).toBeTruthy();
-    const input = fixture.debugElement.query(By.css('input'));
-    expect(input.nativeElement.value).toBe('one');
+    const instance = fixture.componentInstance;
+    expect(instance).toBeTruthy();
+    // expect(instance.formProperty.value).toBe('two');
+    let radioEl = fixture.debugElement.queryAll(By.css('input'))[1].nativeElement;
+    expect(radioEl.checked).toBe(true);
+    expect(instance.model.fieldA).toBe('two');
+    radioEl = fixture.debugElement.queryAll(By.css('input'))[0].nativeElement;
+    expect(radioEl.checked).toBe(false);
+    radioEl.click();
+    expect(radioEl.checked).toBe(true);
+    expect(instance.model.fieldA).toBe('one');
   });
 });

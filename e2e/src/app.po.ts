@@ -1,5 +1,5 @@
 import { browser, by, element } from 'protractor';
-import {ElementArrayFinder, ElementFinder} from "protractor/built/element";
+import {ElementArrayFinder, ElementFinder} from 'protractor/built/element';
 
 export class AppPage {
   useCodeYes: ElementFinder = element(by.id('Yes_1'));
@@ -8,7 +8,7 @@ export class AppPage {
   itemEditor: ElementFinder = element(by.css('mat-sidenav-content sf-form'));
   bottomCreateQuestionsButton: ElementFinder = element.all(by.buttonText('Create questions')).last();
   continueButton: ElementFinder = element(by.buttonText('Continue'));
-  addItemButton: ElementFinder = element(by.buttonText('Add an item'));
+  addItemButton: ElementFinder = element(by.buttonText('Add new item'));
   allTreeNodes: ElementArrayFinder  = element.all(by.css('tree-root tree-viewport tree-node-collection tree-node'));
   firstTreeNode: ElementFinder = this.allTreeNodes.first();
   lastTreeNode: ElementFinder = this.allTreeNodes.last();

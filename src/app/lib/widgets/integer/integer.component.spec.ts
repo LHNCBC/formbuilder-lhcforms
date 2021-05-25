@@ -20,7 +20,7 @@ describe('IntegerComponent', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 
-  CommonTestingModule.setupTestBedOne();
+  CommonTestingModule.setUpTestBed(TestComponent);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestComponent);

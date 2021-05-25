@@ -33,6 +33,9 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
   booleanControlledInitial = true;
 
   ngOnInit() {
+    if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0) {
+      this.formProperty.addItem();
+    }
     const widget = this.formProperty.schema.widget;
     // Input is priority followed by widget definition and default
     this.labelPosition =

@@ -88,7 +88,7 @@
       }
     },
     "__$codeYesNo": {
-      "description": "Controls how multiple enableWhen values are interpreted -  whether all or any must be true.",
+      "description": "",
       "enum": [
         "No",
         "Yes"
@@ -187,6 +187,7 @@
       },
       "widget": {
         "id": "table",
+        "noTableLabel": true,
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2",
         "controlWidthClass": "col-sm-10",
@@ -194,7 +195,7 @@
         "addButtonLabel": "Add new code",
         "singleItem": true,
         "booleanControlled": true,
-        "booleanLabel": "Use code?",
+        "booleanLabel": "Use question code?",
         "booleanControlledInitial": false,
         "showFields": [
           {"field": "code", "col": 4, "nolabel": true},
@@ -222,7 +223,7 @@
       "widget": {
         "id": "string",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
+        "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10"
       }
     },
@@ -247,11 +248,11 @@
         "display"
       ],
       "type": "string",
-      "title": "Item type",
+      "title": "Data type",
       "widget": {
         "id": "select",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
+        "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",
         "selectOptionsMap": {
           "remove": ["display", "reference", "attachment"],
@@ -270,6 +271,7 @@
           "__$answerType": {
             "title": "Source question type",
             "type": "string",
+            "default": "string",
             "widget": {"id": "hidden"}
           },
           "id": {
@@ -726,22 +728,22 @@
       "widget": {
         "noCollapseButton": true,
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
+        "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",
-        "addButtonLabel": "Add new condition",
+        "addButtonLabel": "Add another condition",
         "id": "table",
         "showFields": [
           {"field": "question",       "nolabel": true, "col": 5, "title": "Question"},
           {"field": "operator",       "nolabel": true, "col": 2, "title": "Operator"},
-          {"field": "answerBoolean",  "nolabel": true, "col": 4, "title": "Boolean value"},
-          {"field": "answerDecimal",  "nolabel": true, "col": 4, "title": "Decimal value"},
-          {"field": "answerInteger",  "nolabel": true, "col": 4, "title": "Integer value"},
-          {"field": "answerDate",     "nolabel": true, "col": 4, "title": "Date value"},
-          {"field": "answerDateTime", "nolabel": true, "col": 4, "title": "Date time value"},
-          {"field": "answerTime",     "nolabel": true, "col": 4, "title": "Time value"},
-          {"field": "answerString",   "nolabel": true, "col": 4, "title": "String value"},
-          {"field": "answerCoding",   "nolabel": true, "col": 4, "title": "Coding value"},
-          {"field": "answerQuantity", "nolabel": true, "col": 4, "title": "Quantity value"}
+          {"field": "answerBoolean",  "nolabel": true, "col": 4, "title": "Answer"},
+          {"field": "answerDecimal",  "nolabel": true, "col": 4, "title": "Answer"},
+          {"field": "answerInteger",  "nolabel": true, "col": 4, "title": "Answer"},
+          {"field": "answerDate",     "nolabel": true, "col": 4, "title": "Answer"},
+          {"field": "answerDateTime", "nolabel": true, "col": 4, "title": "Answer"},
+          {"field": "answerTime",     "nolabel": true, "col": 4, "title": "Answer"},
+          {"field": "answerString",   "nolabel": true, "col": 4, "title": "Answer"},
+          {"field": "answerCoding",   "nolabel": true, "col": 4, "title": "Answer"},
+          {"field": "answerQuantity", "nolabel": true, "col": 4, "title": "Answer"}
         ]
       }
     },
@@ -754,8 +756,10 @@
       "type": "string",
       "title": "Show this item when",
       "widget": {
-        "id": "radio",
-        "layout": "row"
+        "id": "enable-behavior",
+        "layout": "row",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-6"
       }
     },
     "required": {
@@ -769,8 +773,9 @@
         ]
       },
       "widget": {
-        "id": "left-label-checkbox",
-        "labelWidthClass": "col-sm-2"
+        "id": "boolean-radio",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
       }
     },
     "repeats": {
@@ -784,8 +789,9 @@
         ]
       },
       "widget": {
-        "id": "left-label-checkbox",
-        "labelWidthClass": "col-sm-2"
+        "id": "boolean-radio",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
       }
     },
     "readOnly": {
@@ -799,8 +805,9 @@
         ]
       },
       "widget": {
-        "id": "left-label-checkbox",
-        "labelWidthClass": "col-sm-2"
+        "id": "boolean-radio",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
       }
     },
     "maxLength": {
@@ -1100,9 +1107,9 @@
       "widget": {
         "id": "table",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
+        "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",
-        "addButtonLabel": "Add new answer",
+        "addButtonLabel": "Add another answer",
         "showFields": [
           {"field": "valueInteger", "col": 9, "nolabel": true},
           {"field": "valueDate", "col": 9, "nolabel": true},
@@ -1568,9 +1575,9 @@
       "widget": {
         "id": "table",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
+        "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",
-        "addButtonLabel": "Add new value",
+        "addButtonLabel": "Add another value",
         "singleItemEnableSource": "repeats",
         "showFields": [
           {"field": "valueBoolean", "noHeader": true, "title": "", "nolabel": true},
