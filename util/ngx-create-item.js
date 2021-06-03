@@ -89,7 +89,7 @@ adjustLayout(schema);
 console.log(JSON.stringify(schema, null, 2)); // tslint:disable-line no-console
 
 function adjustLayout(schema) {
-  const fieldsets = require('../src/assets/ngx-fieldsets.json');
+  const fieldsets = require('../src/assets/items-layout.json');
   // adjustOrderOfDisplay(schema);
   jp.set(schema, "/properties/type/widget", {id: 'select'});
   jp.set(schema, "/properties/enableBehavior/widget", {id: 'select'});

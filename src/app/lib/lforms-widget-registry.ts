@@ -22,6 +22,7 @@ import {EnablewhenAnswerCodingComponent} from './widgets/enablewhen-answer-codin
 import {LabelRadioComponent} from './widgets/label-radio/label-radio.component';
 import {EnableBehaviorComponent} from './widgets/enable-behavior/enable-behavior.component';
 import {BooleanRadioComponent} from './widgets/boolean-radio/boolean-radio.component';
+import {UnitsComponent} from './widgets/units/units.component';
 
 
 @Injectable()
@@ -46,5 +47,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('enable-when-answer-choice', EnablewhenAnswerCodingComponent);
     this.register('enable-behavior', EnableBehaviorComponent);
     this.register('boolean-radio', BooleanRadioComponent);
+    this.register('units', UnitsComponent);
   }
 }

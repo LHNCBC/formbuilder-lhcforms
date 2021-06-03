@@ -7,28 +7,34 @@ if (process.argv.length < 3) {
   return;
 }
 
+const extCircularReferencedFields = new Set([
+  'extension',
+  'valueTiming',
+  'valueDataRequirement',
+  'valueTriggerDefinition',
+  'valueDosage'
+]);
+
 let args = process.argv.slice(2);
 let schema = require(path.resolve(process.cwd(), args[0]));
-let fragment = jp(schema, '/definitions/Questionnaire_Item');
-// schema.$ref = '#'+args[1];
+let fragment = jp(schema, '/definitions/Extension');
 let newDefs = {};
-let refs = new Set();
+const refs = new Set();
 
 const removeFields = new Set([
   "contained",
   "ResourceList",
-]);
-const removePtrs = new Set([
-  "/discriminator",
-  "/oneOf",
-  "/properties/item"
+  "extension",
+  "modifiedExtension"
 ]);
 
-removePtrs.forEach(function(ptr) {
+["/discriminator", "/oneOf"].forEach((ptr) => {
   jp.remove(schema, ptr);
 });
 
-collectDefinitions(schema);
+// Collect all '$ref'
+collectDefinitions(fragment); // Collected in refs.
+
 
 refs.forEach(function(ptr) {
   let def = jp(schema, ptr);
@@ -36,7 +42,7 @@ refs.forEach(function(ptr) {
   if (def.hasOwnProperty("properties") && !def.hasOwnProperty("type")) {
     def.type = "object";
   }
-  jp(newDefs, ptr, jp(schema, ptr));
+  jp(newDefs, ptr, def); // Collect definitions
 });
 
 // Address some z-schema complaints.
@@ -47,53 +53,32 @@ refs.forEach(function(ptr) {
 // 4) Doesn't recognize $ref at root level.
 
 // Remove $schema and id to calm down z-schema!
-//schema.$schema = "../../node_modules/ngx-schema-form/ngx-schema-form-schema.json";
 delete schema.$schema;
 delete schema.id;
 schema.type = "object"; // Add type, another z-schema quirk?
-// Object.assign(schema, fragment); // Assign the desired fragment to the root.
 // Deleting and adding moves the definitions to end of properties.
 // Seems to follow insertion order. Is that javascript spec?
-delete schema.definitions;
+delete schema.definitions
 schema.definitions = newDefs.definitions;
 
 jp(schema, "/definitions/xhtml/$ref", "#/definitions/string");
-jp.remove(schema, "/definitions/base64Binary/type");
-jp(schema, "/definitions/base64Binary/$ref", "#/definitions/string");
 addMissingFields(schema, ["type"]);
 addMissingTitle(schema);
-// jp.remove(schema, "/definitions/Extension/properties/extension");
-replaceValue(jp(schema, "/definitions/Extension/properties"));
+removeCircularReferenceFields(jp(schema, "/definitions/Extension/properties"));
 
 // Remove extensions for now.
-// jp.remove(schema, "/properties/extension");
-jp.remove(schema, "/definitions/Extension/properties/extension");
 jp.set(schema, "/definitions/Coding/properties/id/widget/id", "hidden");
 jp.set(schema, "/definitions/Coding/properties/version/widget/id", "hidden");
+jp.set(schema, "/definitions/Extension/widget/id", "hidden");
+jp.set(schema, "/definitions/Extension/properties/id/widget/id", "hidden");
 hideExtensions(schema);
-//specifyTableFormat(jp(schema, "/properties/code"), 2);
-// For item schema, remove recursive definition
+jp.remove(schema, "/properties/item");
 jp.remove(schema, "/definitions/Questionnaire_Item");
 jp.remove(schema, "/definitions/Reference/properties/identifier");
-// codingLayout(schema);
-// addInfoText(schema);
-//detectCircularRef(schema);
-schema = deref(schema, schema);
-//detectCircularRef(schema);
-// adjustLayout(schema);
-delete schema.definitions;
-console.log(JSON.stringify(schema, null, 2)); // tslint:disable-line no-console
+codingLayout(schema);
+derefDefinitions(schema);
 
-function adjustLayout(schema) {
-  const fieldsets = require('../src/assets/fl-fields-layout.json');
-  // adjustOrderOfDisplay(schema);
-  jp.set(schema, "/properties/type/widget", {id: 'select'});
-  jp.set(schema, "/properties/enableBehavior/widget", {id: 'select'});
-  jp.set(schema, "/fieldsets", fieldsets);
-  jp.set(schema, "/properties/code/widget", {"id": "array-grid"});
-  jp.set(schema, "/properties/definition/widget/id", "hidden");
-  jp.set(schema, "/properties/id/widget/id", "hidden");
-}
+console.log(JSON.stringify(schema.definitions.Extension, null, 2)); // tslint:disable-line no-console
 
 function codingLayout(schema) {
   jp.set(schema, "/definitions/Coding/widget", {id: "row-layout"});
@@ -115,14 +100,6 @@ function collectDefinitions(def) {
     }
     return acc;
   }, refs);
-}
-
-function redefineConst(propertyDef) {
-  if (propertyDef && propertyDef.const) {
-    propertyDef.type = "string";
-    propertyDef.enum = [propertyDef.const];
-    delete propertyDef.const;
-  }
 }
 
 function addMissingFields(obj, fields) {
@@ -176,13 +153,6 @@ function capitalize(str) {
     }, "").replace(/^\w/, c => c.toUpperCase());
 }
 
-function addOptions(obj, opts) {
-  if (!obj.options) {
-    obj.options = {};
-  }
-  Object.assign(obj.options, opts);
-}
-
 function hideExtensions(obj) {
   traverse(obj).forEach(function(x) {
     if ((this.key === "extension" || this.key === "modifierExtension") &&
@@ -193,45 +163,33 @@ function hideExtensions(obj) {
   });
 }
 
-function replaceValue(obj) {
+function removeCircularReferenceFields(obj) {
   const keys = Object.keys(obj);
   keys.forEach((key) => {
-    if (key.startsWith("value") && key === 'valueCoding') {
+    if (extCircularReferencedFields.has(key)) {
       delete obj[key];
     }
   });
 }
 
-function specifyTableFormat(obj, columns) {
-  obj.format = "table";
-//  addOptions(obj, {grid_columns: columns});
-}
-
-function addInfoText(obj) {
-  const descr = obj.description;
-  if (descr) {
-    addOptions(obj, {infoText: descr});
-    delete obj.description;
-  }
-  if (obj.properties) {
-    const keys = Object.keys(obj.properties);
-    keys.forEach((key) => {
-      addInfoText(obj.properties[key]);
-    });
+function derefDefinitions(rootSchema) {
+  for(const k in rootSchema.definitions) {
+    deref(rootSchema, rootSchema.definitions[k]);
   }
 }
 
-function adjustOrderOfDisplay( schemaObj ) {
-  jp.set(schemaObj, "/order", ["type", "text", "linkId", "code", "required", "readOnly", "repeats", "maxLength"]);
-  jp.set(schemaObj.definitions.Coding.properties, "/order", ["code", "system", "display"]);
-}
-
-function deref(schemaObj, subSchemaObj) {
+/**
+ * Dereference the $ref pointers, i.e replace the references to definitions with actual definition objects.
+ * @param rootSchema
+ * @param subSchemaObj
+ * @returns {{description}|*}
+ */
+function deref(rootSchema, subSchemaObj) {
   if (subSchemaObj.$ref) {
 //    console.log("$ref = " + subSchemaObj.$ref);
-    let refSchema = jp(schemaObj, subSchemaObj.$ref.slice(1)); // Avoid reading '#'
+    let refSchema = jp(rootSchema, subSchemaObj.$ref.slice(1));
     delete subSchemaObj.$ref;
-    let derefSchema = deref(schemaObj, refSchema);
+    let derefSchema = deref(rootSchema, refSchema);
     if (subSchemaObj.title) {
       delete derefSchema.title;
     }
@@ -243,24 +201,14 @@ function deref(schemaObj, subSchemaObj) {
     for (let prop in subSchemaObj.properties) {
       if (subSchemaObj.properties.hasOwnProperty(prop)) {
 //        console.log("object prop = " + prop);
-        subSchemaObj.properties[prop] = deref(schemaObj, subSchemaObj.properties[prop]);
+        subSchemaObj.properties[prop] = deref(rootSchema, subSchemaObj.properties[prop]);
       }
     }
   } else if (subSchemaObj.type === "array") {
 //    console.log("array title = " + subSchemaObj.title);
-    subSchemaObj.items = deref(schemaObj, subSchemaObj.items);
+    subSchemaObj.items = deref(rootSchema, subSchemaObj.items);
   }
 
   return subSchemaObj;
 }
 
-function detectCircularRef(obj) {
-
-  traverse(obj).forEach(function(n) {
-//    console.log(this.path);
-    if (this.circular) {
-//      console.log("************" + this.path + "********************");
-      this.remove();
-    }
-  });
-}

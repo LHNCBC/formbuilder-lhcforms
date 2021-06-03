@@ -1596,6 +1596,21 @@
           {"field": "valueReference", "noHeader": true, "nolabel": true}
         ]
       }
+    },
+    "__$units": {
+      "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
+      "title": "Units",
+      "pattern": "^[ \\r\\n\\t\\S]+$",
+      "type": "string",
+      "widget": {
+        "id": "units",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2 pr-1",
+        "controlWidthClass": "col-sm-10"
+      },
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal'"]
+      }
     }
   },
   "required": ["text", "type", "linkId"],
@@ -4788,6 +4803,12 @@
       "fields": ["answerOption"],
       "showFields": [
         { "field": "answerOption", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["__$units"],
+      "showFields": [
+        { "field": "__$units", "col": 12 }
       ]
     },
     {

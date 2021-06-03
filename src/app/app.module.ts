@@ -64,6 +64,9 @@ import { MessageDlgComponent } from './lib/widgets/message-dlg/message-dlg.compo
 import { FhirServersDlgComponent } from './lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
+import { UnitsComponent } from './lib/widgets/units/units.component';
+import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
+// import { LhcAutocomplete } from 'autocomplete-lhc-ng';
 
 @NgModule({
   declarations: [
@@ -103,7 +106,9 @@ import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio
     MessageDlgComponent,
     FhirServersDlgComponent,
     FhirSearchDlgComponent,
-    BooleanRadioComponent
+    BooleanRadioComponent,
+    UnitsComponent,
+    ExtensionsComponent
   ],
   imports: [
     AppRoutingModule,

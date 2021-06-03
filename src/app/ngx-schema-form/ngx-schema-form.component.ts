@@ -7,6 +7,7 @@ import {ShareObjectService} from '../share-object.service';
 import {Binding, FormProperty, Validator} from 'ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {map, switchMap, timeout} from 'rxjs/operators';
+import * as traverse from 'json-schema-traverse';
 
 @Component({
   selector: 'lfb-ngx-schema-form',
@@ -109,6 +110,13 @@ export class NgxSchemaFormComponent implements OnInit {
    */
   ngOnInit() {
     this.http.get('/assets/ngx-item.schema.json', {responseType: 'json'}).pipe(
+      switchMap((schema: any) => this.http.get('/assets/fhir-extension-schema.json', {responseType:'json'}).pipe(
+        map((extension) => {
+          // schema.definitions.Extension = extension;
+//          this._updateExtension(schema);
+          return schema;
+        })
+      )),
       switchMap((schema: any) => this.http.get('/assets/items-layout.json', {responseType: 'json'}).pipe(
         map((layout: any) => {
           schema.layout = layout;
@@ -130,4 +138,28 @@ export class NgxSchemaFormComponent implements OnInit {
     this.modelChange.emit(model);
   }
 
+  _updateExtension(rootSchema: any) {
+    const extension = rootSchema.definitions.Extension;
+    traverse(rootSchema, {}, (
+      schema,
+      jsonPtr,
+      rootSch,
+      parentJsonPtr,
+      parentKeyword,
+      parentSchema,
+      indexOrProp) => {
+      if(parentKeyword === 'items' && parentJsonPtr.endsWith('extension') && parentJsonPtr.endsWith('modifierExtension')) {
+        // Save title and description before over writing them.
+        const commonFields = {title: schema.title, description: schema.description};
+        Object.assign(schema, extension);
+        // title and descroption are overwritten. Restore them.
+        if(commonFields.title) {
+          schema.title = commonFields.title;
+        }
+        if(commonFields.description) {
+          schema.description = commonFields.description;
+        }
+      }
+    });
+  }
 }
