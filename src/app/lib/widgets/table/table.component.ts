@@ -42,12 +42,12 @@ import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.comp
         <button *ngIf="!noCollapseButton" href="#" type="button"
                 [ngClass]="{'float-sm-right': labelPosition === 'left'}"
                 class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
-                [attr.aria-expanded]="!isCollapsed" aria-controls="collapseTable">
+                [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
           <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
         </button>
         <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
       </div>
-      <div [ngClass]="{card: !noHeader}" class="p-0 {{controlWidthClass}}" id="collapseTable">
+      <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
         <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
           <thead *ngIf="!noHeader" class="thead-light">
           <tr class="d-flex">
@@ -121,6 +121,7 @@ import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.comp
 })
 export class TableComponent extends LfbArrayWidgetComponent implements AfterViewInit, DoCheck {
 
+  static seqNum = 0;
   // Icons for buttons.
   faAdd = faPlusCircle;
   faRemove = faTrash;
@@ -137,6 +138,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   keyField = 'type'; // Key property of the object, based on which some fields could be hidden/shown.
   booleanControlledOption = false;
   booleanControlled = false;
+  tableId = 'tableComponent'+TableComponent.seqNum++;
 
 
   /**

@@ -93,7 +93,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
       value: LoincItemType.QUESTION,
       display: 'Question'
     }
-  ]
+  ];
 
   loincItem: any;
 
@@ -111,7 +111,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
       debounceTime(200),
       distinctUntilChanged(),
       switchMap((term) => term.length < 2 ? [] : this.dataSrv.searchLoincItems(term, this.loincType)));
-  }
+  };
 
   constructor(
               public dialog: MatDialog,
@@ -174,7 +174,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
    */
   setNode(node: ITreeNode): void {
     this.focusNode = node;
-    this.item = node.data;
+    this.item = node ? node.data : null;
   }
 
   /**
@@ -246,10 +246,16 @@ export class ItemComponent implements OnInit, AfterViewInit {
   }
 
   insertAnItem(item, index?: number) {
-    if (typeof index === 'undefined') {
-      index = this.focusNode.index + 1;
+    if(this.model.length === 0) {
+      this.model.push(item);
     }
-    this.focusNode.parent.data.item.splice(index, 0, item);
+    else {
+      if (typeof index === 'undefined') {
+        index = this.focusNode ? this.focusNode.index + 1 : 0;
+      }
+      this.focusNode.parent.data.item.splice(index, 0, item);
+    }
+
     this.treeComponent.treeModel.update();
     this.treeComponent.treeModel.focusNextNode();
     this.setNode(this.treeComponent.treeModel.getFocusedNode());

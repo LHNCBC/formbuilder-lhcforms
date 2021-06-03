@@ -14,7 +14,7 @@ import * as traverse from 'json-schema-traverse';
   template: `
     <div class="container">
       <!--  <div class="title">{{model ? model.text : 'Questionnaire Item'}}</div> -->
-      <sf-form [schema]="mySchema"
+      <sf-form *ngIf="model" [schema]="mySchema"
                [(model)]="model" (onChange)="updateModel($event.value)"
                [bindings]="myFieldBindings"
       ></sf-form>
