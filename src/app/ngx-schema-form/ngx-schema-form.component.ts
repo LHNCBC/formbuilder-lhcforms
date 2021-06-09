@@ -112,8 +112,8 @@ export class NgxSchemaFormComponent implements OnInit {
     this.http.get('/assets/ngx-item.schema.json', {responseType: 'json'}).pipe(
       switchMap((schema: any) => this.http.get('/assets/fhir-extension-schema.json', {responseType:'json'}).pipe(
         map((extension) => {
-          // schema.definitions.Extension = extension;
-//          this._updateExtension(schema);
+          schema.definitions.Extension = extension;
+          this._updateExtension(schema);
           return schema;
         })
       )),
@@ -148,7 +148,7 @@ export class NgxSchemaFormComponent implements OnInit {
       parentKeyword,
       parentSchema,
       indexOrProp) => {
-      if(parentKeyword === 'items' && parentJsonPtr.endsWith('extension') && parentJsonPtr.endsWith('modifierExtension')) {
+      if(parentKeyword === 'items' && (parentJsonPtr.endsWith('extension') || parentJsonPtr.endsWith('modifierExtension'))) {
         // Save title and description before over writing them.
         const commonFields = {title: schema.title, description: schema.description};
         Object.assign(schema, extension);

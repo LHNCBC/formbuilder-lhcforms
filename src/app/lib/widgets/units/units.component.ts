@@ -72,18 +72,33 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
 
   ngAfterViewInit() {
     this.options.toolTip = this.schema.placeholder;
+    // this.options.defaultValue =
     const autoComp = new Def.Autocompleter.Search(this.elementId, this.unitsUrl, this.options);
+    // Setup selection handler
     Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
       if(data.removed) {
-        this.removeExt(this.unitExtUrl, data.item_code);
+        this.removeExt(this.unitExtUrl, data.final_val); // We are displaying codes for the user.
       }
       else if(data.used_list) {
-        this.addExtension(this.createUnitExt(this.ucumSystemUrl, data.item_code, data.item_code));
+        const selectedUnit = data.list.find((unit) => {
+          return unit[0] === data.item_code;
+        });
+        this.addExtension(this.createUnitExt(this.ucumSystemUrl, data.item_code, selectedUnit[1]), 'valueCoding');
       }
       else {
-        this.addExtension(this.createUnitExt(null, data.final_val, data.final_val));
+        this.addExtension(this.createUnitExt(null, data.final_val, data.final_val), 'valueCoding');
       }
     });
+
+    const initialUnits = (this.extensionsProp.properties as FormProperty[]).filter((p) => {
+      return p.value.url === this.unitExtUrl;
+    });
+
+    for (let i=0, len=initialUnits.length; i<len; ++i) {
+      const dispVal = initialUnits[i].value.valueCoding.code;
+      autoComp.storeSelectedItem(dispVal, dispVal);
+      autoComp.addToSelectedArea(dispVal);
+    }
   }
 
   deleteUnit(unit: fhir.Extension): any {

@@ -408,11 +408,10 @@
               {
                 "fields": [
                   "id",
-                  "extension",
-                  "code",
                   "system",
-                  "display",
                   "version",
+                  "code",
+                  "display",
                   "userSelected"
                 ],
                 "showFields": [
@@ -495,11 +494,10 @@
         {
           "fields": [
             "id",
-            "extension",
-            "code",
             "system",
-            "display",
             "version",
+            "code",
+            "display",
             "userSelected"
           ],
           "showFields": [
@@ -875,11 +873,10 @@
                   {
                     "fields": [
                       "id",
-                      "extension",
-                      "code",
                       "system",
-                      "display",
                       "version",
+                      "code",
+                      "display",
                       "userSelected"
                     ],
                     "showFields": [
@@ -1427,11 +1424,10 @@
               {
                 "fields": [
                   "id",
-                  "extension",
-                  "code",
                   "system",
-                  "display",
                   "version",
+                  "code",
+                  "display",
                   "userSelected"
                 ],
                 "showFields": [
@@ -1992,11 +1988,10 @@
             {
               "fields": [
                 "id",
-                "extension",
-                "code",
                 "system",
-                "display",
                 "version",
+                "code",
+                "display",
                 "userSelected"
               ],
               "showFields": [
@@ -2078,11 +2073,10 @@
                   {
                     "fields": [
                       "id",
-                      "extension",
-                      "code",
                       "system",
-                      "display",
                       "version",
+                      "code",
+                      "display",
                       "userSelected"
                     ],
                     "showFields": [
@@ -2369,11 +2363,10 @@
               {
                 "fields": [
                   "id",
-                  "extension",
-                  "code",
                   "system",
-                  "display",
                   "version",
+                  "code",
+                  "display",
                   "userSelected"
                 ],
                 "showFields": [
@@ -2448,11 +2441,10 @@
               {
                 "fields": [
                   "id",
-                  "extension",
-                  "code",
                   "system",
-                  "display",
                   "version",
+                  "code",
+                  "display",
                   "userSelected"
                 ],
                 "showFields": [

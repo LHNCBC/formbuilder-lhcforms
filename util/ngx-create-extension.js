@@ -82,7 +82,8 @@ console.log(JSON.stringify(schema.definitions.Extension, null, 2)); // tslint:di
 
 function codingLayout(schema) {
   jp.set(schema, "/definitions/Coding/widget", {id: "row-layout"});
-  jp.set(schema, "/definitions/Coding/fieldsets", [{fields: ['id', 'extension', 'code', 'system', 'display', 'version', 'userSelected'], showFields: [{code: {col: 2}}, {system: {col: 6}}, {display: {col: 4}}]}]);
+  const fieldList = Object.keys(jp(schema, "/definitions/Coding/properties"));
+  jp.set(schema, "/definitions/Coding/fieldsets", [{fields: fieldList, showFields: [{code: {col: 2}}, {system: {col: 6}}, {display: {col: 4}}]}]);
 }
 
 function collectDefinitions(def) {
