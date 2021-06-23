@@ -66,6 +66,7 @@ import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-searc
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
 import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
+import { TotalScoreComponent } from './lib/widgets/total-score/total-score.component';
 // import { LhcAutocomplete } from 'autocomplete-lhc-ng';
 
 @NgModule({
@@ -108,7 +109,8 @@ import { ExtensionsComponent } from './lib/widgets/extensions/extensions.compone
     FhirSearchDlgComponent,
     BooleanRadioComponent,
     UnitsComponent,
-    ExtensionsComponent
+    ExtensionsComponent,
+    TotalScoreComponent
   ],
   imports: [
     AppRoutingModule,
