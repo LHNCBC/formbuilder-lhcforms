@@ -1612,6 +1612,13 @@
         "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal'"]
       }
     },
+    "__$totalScoreItem": {
+      "type": "boolean",
+      "default": "false",
+      "widget": {
+        "id": "hidden"
+      }
+    },
     "__$totalScore": {
       "description": "Makes this as an item with total score, i.e. totaling scores in pre-defined answers of the choice type items. The eligible scored items are previous siblings of this item.",
       "title": "Make this total score item",
@@ -1625,13 +1632,6 @@
       },
       "visibleIf": {
         "__$totalScoreItem": ["$EXP$ target.value == true"]
-      }
-    },
-    "__$totalScoreItem": {
-      "type": "boolean",
-      "default": "false",
-      "widget": {
-        "id": "hidden"
       }
     }
   },

@@ -23,7 +23,7 @@ import {fhir} from '../../../fhir';
 })
 export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
 
-  dummyTotalScore: fhir.Extension = [{
+  dummyTotalScore: any [] = [{
     url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression',
     valueExpression: {
       description: '',
