@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.4.6]  2021-07-23
+### Fixed
+- Updated lforms to version 29.1.2, to get an update to fhirpath.js to fix an
+  issue with choice types.
+
 ## [6.4.5]  2021-05-14
 ### Fixed.
 - Fixed a bug in outputting FHIR choice orientation extension when
@@ -107,15 +112,15 @@ This project follows [Semantic Versioning](http://semver.org/).
   Updated lforms package to 24.0.0.
 
 ## [4.1.0]  2020-04-02
-### Changed 
+### Changed
 - Changed questionCodeSystem to accept any input, still defaults to 'Custom'.
 
 ## [4.0.0]  2020-03-03
 ### Fixed.
 - Fixed skip logic trigger equal and not equal operators.
 ### Changed.
-- Updated lforms package to 21.2.1. Since lforms package has a major version update, 
-  bumped up the major version in this package as well. 
+- Updated lforms package to 21.2.1. Since lforms package has a major version update,
+  bumped up the major version in this package as well.
 
 ## [3.4.1]  2019-01-30
 ### Fixed.
@@ -124,8 +129,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [3.4.0]  2019-12-31
 ### Added.
 - Support FHIR calculatedExpression extension. The extension will take FHIRPath expression.
-  Validation of expression is not supported yet. The user is expected to enter a valid FHIRPath 
-  expression. 
+  Validation of expression is not supported yet. The user is expected to enter a valid FHIRPath
+  expression.
 - Support FHIR display (LForms TITLE) type.
 - Added a new field to select item type to align with FHIR notion of group, display and question.
 
@@ -144,7 +149,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [3.1.6]  2019-09-16
 ### Fixed.
-- Fixed a bug importing a file with an item having answer list and answerRequired fields. 
+- Fixed a bug importing a file with an item having answer list and answerRequired fields.
 
 ## [3.1.5]  2019-09-10
 ### Added.
@@ -152,7 +157,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Changed.
 - Remove default form name.
 ### Fixed.
-- Fix a bug converting restrictions to corresponding FHIR extensions. 
+- Fix a bug converting restrictions to corresponding FHIR extensions.
 
 ## [3.1.4]  2019-08-28
 ### Fixed.
@@ -164,8 +169,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Fixed overwriting of linkid in enableWhen.question, when converted to FHIR Questionnaire.
 
 ### Changed
-- Removed restriction on insisting code for answer lists. 
-### Added 
+- Removed restriction on insisting code for answer lists.
+### Added
 - Added support for Questionnaire.item.prefix field
 
 ## [3.1.2]  2019-08-13
@@ -204,21 +209,21 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [3.0.5]  2019-04-16
 ### Fixed.
 - Fixed a bug in ui-tree display for multiple items on the root.
-- Fixed a bug in importing R4 version of Questionnaire from the local disk. 
+- Fixed a bug in importing R4 version of Questionnaire from the local disk.
 
 ## [3.0.4]  2019-04-11
 ### Fixed.
 - Fixed restrictions output format to conform to latest lforms spec.
-- Removed hard coded templateOptions in the lforms format for export. 
+- Removed hard coded templateOptions in the lforms format for export.
 
 ## [3.0.3]  2019-03-22
 ### Fixed.
 - Fix next/previous page display in FHIR results dialog.
-- Fix errors in mocking FHIR server for protractor tests. 
+- Fix errors in mocking FHIR server for protractor tests.
 
 ## [3.0.2]  2019-03-08
 ### Fixed.
-- Fix errors in tests. 
+- Fix errors in tests.
 
 ## [3.0.1]  2019-03-08
 ### Fixed.
@@ -228,7 +233,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Added.
 -  Support exporting/importing R4 versions of FHIR format.
 ### Changed.
--  Breaking change: Added FHIR version number to the FHIR server definition in client/config.js. It is mandatory that the 
+-  Breaking change: Added FHIR version number to the FHIR server definition in client/config.js. It is mandatory that the
 servers are tagged with supported FHIR version such as R4, STU3 etc.
 
 ## [2.2.0]  2019-01-29
@@ -257,9 +262,9 @@ servers are tagged with supported FHIR version such as R4, STU3 etc.
 
 ## [2.0.0]  2018-10-29
 ### Changed.
-- Changed module exports of the server. Newly exported functions 
-will help to pre-configure the express app with customized middlewares before doing 
-form builder specific configurations. 
+- Changed module exports of the server. Newly exported functions
+will help to pre-configure the express app with customized middlewares before doing
+form builder specific configurations.
 
 This is a breaking change due to signature changes in import/require statements if using
 this as an npm package.
@@ -274,14 +279,14 @@ this as an npm package.
 
 ## [1.0.2]  2018-10-02
 ### Added
-- In units field, units associated with item's loinc property are 
+- In units field, units associated with item's loinc property are
 ranked higher during the auto-completion.
 ### Fixed
 - Fixed a bug in usage clause of the server.
 
 ## [1.0.1]  2018-09-28
 ### Changed
-- Rename package 
+- Rename package
 
 ## [1.0.0]  2018-09-12
 ### Changed
@@ -302,7 +307,7 @@ ranked higher during the auto-completion.
 
 ## [0.8.5]  2018-06-07
 ### Changed
-- Changed units lookup from static list to ajax call to clinical table search 
+- Changed units lookup from static list to ajax call to clinical table search
   service and used table format display for auto completion.
 
 ## [0.8.4]  2018-06-01
