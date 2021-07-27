@@ -3,6 +3,8 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 
 @Component({
   selector: 'lfb-boolean-radio',
+  templateUrl: 'boolean-radio.component.html',
+  /*
   template: `
     <ng-template #controller>
       <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0' : true}">
@@ -24,6 +26,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 
     <ng-container *ngTemplateOutlet="controller"></ng-container>
   `,
+  */
   styles: [`
     label:hover {
       opacity: 0.5;

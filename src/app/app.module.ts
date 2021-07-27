@@ -67,6 +67,8 @@ import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio
 import { UnitsComponent } from './lib/widgets/units/units.component';
 import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
 import { TotalScoreComponent } from './lib/widgets/total-score/total-score.component';
+import { RuleEditorModule } from 'rule-editor';
+
 // import { LhcAutocomplete } from 'autocomplete-lhc-ng';
 
 @NgModule({
@@ -135,6 +137,7 @@ import { TotalScoreComponent } from './lib/widgets/total-score/total-score.compo
     MatToolbarModule,
     MatTooltipModule,
     NgbModule,
+    RuleEditorModule,
     SchemaFormModule.forRoot(),
     TreeModule,
     ReactiveFormsModule,

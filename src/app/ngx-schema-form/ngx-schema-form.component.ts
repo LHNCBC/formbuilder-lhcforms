@@ -8,6 +8,7 @@ import {Binding, FormProperty, Validator} from 'ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {map, switchMap, timeout} from 'rxjs/operators';
 import * as traverse from 'json-schema-traverse';
+import {FormService} from '../services/form.service';
 
 @Component({
   selector: 'lfb-ngx-schema-form',
@@ -102,13 +103,16 @@ export class NgxSchemaFormComponent implements OnInit {
       */
   };
 
-  constructor(private http: HttpClient, private modelService: ShareObjectService) {
+  constructor(private http: HttpClient, private modelService: ShareObjectService, private formService: FormService) {
+    this.mySchema = formService.getItemSchema();
   }
 
   /**
    * Merge schema and layout jsons
    */
   ngOnInit() {
+    this.mySchema = this.formService.getItemSchema();
+    /*
     this.http.get('/assets/ngx-item.schema.json', {responseType: 'json'}).pipe(
       switchMap((schema: any) => this.http.get('/assets/fhir-extension-schema.json', {responseType:'json'}).pipe(
         map((extension) => {
@@ -127,6 +131,7 @@ export class NgxSchemaFormComponent implements OnInit {
       this.mySchema = schema;
       // console.log(JSON.stringify(this.mySchema.layout, null, 2));
     });
+    */
   }
 
 
@@ -136,30 +141,7 @@ export class NgxSchemaFormComponent implements OnInit {
    */
   updateModel(model) {
     this.modelChange.emit(model);
+    this.modelService.currentItem = model;
   }
 
-  _updateExtension(rootSchema: any) {
-    const extension = rootSchema.definitions.Extension;
-    traverse(rootSchema, {}, (
-      schema,
-      jsonPtr,
-      rootSch,
-      parentJsonPtr,
-      parentKeyword,
-      parentSchema,
-      indexOrProp) => {
-      if(parentKeyword === 'items' && (parentJsonPtr.endsWith('extension') || parentJsonPtr.endsWith('modifierExtension'))) {
-        // Save title and description before over writing them.
-        const commonFields = {title: schema.title, description: schema.description};
-        Object.assign(schema, extension);
-        // title and descroption are overwritten. Restore them.
-        if(commonFields.title) {
-          schema.title = commonFields.title;
-        }
-        if(commonFields.description) {
-          schema.description = commonFields.description;
-        }
-      }
-    });
-  }
 }

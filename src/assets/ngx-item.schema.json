@@ -1614,7 +1614,7 @@
     },
     "__$totalScoreItem": {
       "type": "boolean",
-      "default": "false",
+      "default": "true",
       "widget": {
         "id": "hidden"
       }
@@ -1623,6 +1623,7 @@
       "description": "Makes this as an item with total score, i.e. totaling scores in pre-defined answers of the choice type items. The eligible scored items are previous siblings of this item.",
       "title": "Make this total score item",
       "pattern": "^true|false$",
+      "default": "false",
       "type": "boolean",
       "widget": {
         "id": "totalScore",
@@ -1631,7 +1632,7 @@
         "controlWidthClass": "col-sm-10"
       },
       "visibleIf": {
-        "__$totalScoreItem": ["$EXP$ target.value == true"]
+        "__$totalScoreItem": ["$EXP$ target.value == 'true'"]
       }
     }
   },
@@ -4834,15 +4835,15 @@
       ]
     },
     {
-      "fields": ["initial"],
+      "fields": ["__$totalScoreItem", "__$totalScore"],
       "showFields": [
-        { "field": "initial", "col": 12 }
+        {"field": "__$totalScore", "col": 12}
       ]
     },
     {
-      "fields": ["__$totalScore"],
+      "fields": ["initial"],
       "showFields": [
-        {"field": "__$totalScore", "col": 12}
+        { "field": "initial", "col": 12 }
       ]
     },
     {

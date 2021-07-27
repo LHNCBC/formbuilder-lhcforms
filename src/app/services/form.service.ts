@@ -8,6 +8,9 @@ import {fhir} from '../fhir';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
+import {HttpClient} from '@angular/common/http';
+import * as traverse from 'json-schema-traverse';
 
 
 @Injectable({
@@ -19,7 +22,79 @@ export class FormService {
 
   localStorageError: Error = null;
   treeModel: TreeModel;
-  constructor(private modalService: NgbModal) { }
+  itemSchema: any = {properties: {}};
+  flSchema: any = {properties: {}};
+
+  constructor(private modalService: NgbModal, private http: HttpClient) {
+    this.http.get('/assets/ngx-item.schema.json', {responseType: 'json'}).pipe(
+      switchMap((schema: any) => this.http.get('/assets/fhir-extension-schema.json', {responseType:'json'}).pipe(
+        map((extension) => {
+          schema.definitions.Extension = extension;
+          this._updateExtension(schema);
+          return schema;
+        })
+      )),
+      switchMap((schema: any) => this.http.get('/assets/items-layout.json', {responseType: 'json'}).pipe(
+        map((layout: any) => {
+          schema.layout = layout;
+          return schema;
+        })
+      ))
+    ).subscribe((schema) => {
+      this.itemSchema = schema;
+      // console.log(JSON.stringify(this.mySchema.layout, null, 2));
+    });
+
+    this.fetchFormLevelSchema().subscribe((schema) => {
+      this.flSchema = schema;
+    });
+  }
+
+  fetchFormLevelSchema(): Observable<any> {
+    // ngx-fl.schema.json is schema extracted from FHIR Questionnaire schema.
+    return this.http.get('/assets/ngx-fl.schema.json', { responseType: 'json' }).pipe(
+      switchMap((schema: any) => this.http.get('/assets/fl-fields-layout.json', { responseType: 'json' }).pipe(
+        map((layout: any) => {
+          schema.layout = layout;
+          return schema;
+        })
+      ))
+    );
+  }
+
+  getItemSchema() {
+    return this.itemSchema;
+  }
+
+  getFormLevelSchema() {
+    return this.flSchema;
+  }
+
+
+  _updateExtension(rootSchema: any) {
+    const extension = rootSchema.definitions.Extension;
+    traverse(rootSchema, {}, (
+      schema,
+      jsonPtr,
+      rootSch,
+      parentJsonPtr,
+      parentKeyword,
+      parentSchema,
+      indexOrProp) => {
+      if(parentKeyword === 'items' && (parentJsonPtr.endsWith('extension') || parentJsonPtr.endsWith('modifierExtension'))) {
+        // Save title and description before over writing them.
+        const commonFields = {title: schema.title, description: schema.description};
+        Object.assign(schema, extension);
+        // title and description are overwritten. Restore them.
+        if(commonFields.title) {
+          schema.title = commonFields.title;
+        }
+        if(commonFields.description) {
+          schema.description = commonFields.description;
+        }
+      }
+    });
+  }
 
   get guidingStep$(): Observable<string> {
     return this._guidingStep$.asObservable();

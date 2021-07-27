@@ -129,7 +129,7 @@ import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search
           <hr>
           <div class="btn-toolbar float-right mb-2" role="toolbar" aria-label="Toolbar with button groups">
             <div class="btn-group" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="onContinue()">Continue</button>
+              <button type="button" class="btn-sm btn-primary" (click)="onContinue()">Continue</button>
             </div>
           </div>
         </div>
@@ -145,7 +145,7 @@ import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search
               class="ml-2 font-weight-bold btn btn-link"
               (click)="setStep('fl-editor')"
       >{{questionnaire.title}}</button>
-      <lfb-item-component [model]="questionnaire.item"
+      <lfb-item-component [model]="questionnaire.item" [questionnaire]="questionnaire"
                           (modelChange)="notifyChange($event)"
       ></lfb-item-component>
     </ng-template>
@@ -290,12 +290,11 @@ export class BasePageComponent implements OnDestroy {
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
       this.questionnaire = this.createDefaultForm();
-      this.formSubject.next(this.questionnaire);
     } else if (this.startOption === 'existing' && this.importOption === 'loinc') {
       this.setStep('choose-start');
       this.questionnaire = this.createDefaultForm();
-      this.formSubject.next(this.questionnaire);
     }
+    this.formSubject.next(this.questionnaire);
   }
 
   /**

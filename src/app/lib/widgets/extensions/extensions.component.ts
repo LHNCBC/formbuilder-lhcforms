@@ -34,15 +34,24 @@ export class ExtensionsComponent extends LfbArrayWidgetComponent implements OnIn
   }
 
 
-  removeExt(url: fhir.uri, code: string, system?: fhir.uri) {
+  /**
+   * Remove extension from the array, matching url, code and system. Code and system are optional
+   * and should be used to match with increased specificity.
+   * @param url
+   * @param code
+   * @param system
+   */
+  removeExt(url: fhir.uri, code?: string, system?: fhir.uri) {
     const extension: FormProperty = (this.extensionsProp.properties as FormProperty[]).find((ext) => {
-      const ret = (ext.value.url === url && ext.value.valueCoding.code === code);
+      let ret = ext.value.url === url;
+      ret = code ? (ret && ext.value.valueCoding && ext.value.valueCoding.code === code) : ret;
       return system ? (ret && ext.value.valueCoding.system === system) : ret;
     });
     this.extensionsProp.removeItem(extension);
   }
 
   removeExtension(ext: fhir.Extension): void {
+
     this.removeExt(ext.url, ext.valueCoding.code, ext.valueCoding.system);
   }
 

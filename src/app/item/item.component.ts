@@ -75,7 +75,9 @@ export class ItemComponent implements OnInit, AfterViewInit {
   item: fhir.QuestionnaireItem = null;
   treeOptions: ITreeOptions;
   @Input()
-  model: any [] = [];
+  questionnaire: fhir.Questionnaire = {status: 'draft', item: []};
+  @Input()
+  model: any [] = this.questionnaire.item;
   @Output()
   modelChange = new EventEmitter<any[]>();
   isTreeExpanded = false;
