@@ -68,6 +68,8 @@ import { UnitsComponent } from './lib/widgets/units/units.component';
 import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
 import { TotalScoreComponent } from './lib/widgets/total-score/total-score.component';
 import { RuleEditorModule } from 'rule-editor';
+import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
+import { InitialComponent } from './lib/widgets/initial/initial.component';
 
 // import { LhcAutocomplete } from 'autocomplete-lhc-ng';
 
@@ -112,7 +114,9 @@ import { RuleEditorModule } from 'rule-editor';
     BooleanRadioComponent,
     UnitsComponent,
     ExtensionsComponent,
-    TotalScoreComponent
+    TotalScoreComponent,
+    AnswerOptionComponent,
+    InitialComponent
   ],
   imports: [
     AppRoutingModule,

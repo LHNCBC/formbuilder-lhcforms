@@ -1007,6 +1007,11 @@
                 "pattern": "^[ \\r\\n\\t\\S]+$",
                 "type": "string"
               },
+              "__$score": {
+                "description": "If desired, enter a number to assign a numerical value to this answer for scoring purposes.",
+                "type": "number",
+                "title": "Score"
+              },
               "userSelected": {
                 "description": "Indicates that this coding was chosen by a user directly - e.g. off a pick list of available items (codes or displays).",
                 "pattern": "^true|false$",
@@ -1015,16 +1020,6 @@
             },
             "additionalProperties": false,
             "type": "object",
-            "widget": {
-              "id": "table",
-              "addButtonLabel": "Add new answer item",
-              "showFields": [
-                {"field": "display", "title": "Display", "col": 4, "nolabel": true},
-                {"field": "code", "title": "Code", "col": 2, "nolabel": true},
-                {"field": "system", "title": "System", "col": 5, "nolabel": true},
-                {"field": "userSelected", "col": 1, "nolabel": true}
-              ]
-            },
             "visibleIf": {
               "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
             }
@@ -1105,19 +1100,22 @@
         "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
       },
       "widget": {
-        "id": "table",
+        "id": "answer-option",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",
         "addButtonLabel": "Add another answer",
+        "rowSelection": true,
+        "multipleSelectionEnableSource": "repeats",
         "showFields": [
           {"field": "valueInteger", "col": 9, "nolabel": true},
           {"field": "valueDate", "col": 9, "nolabel": true},
           {"field": "valueTime", "col": 9, "nolabel": true},
           {"field": "valueString", "col": 9, "nolabel": true},
-          {"field": "valueCoding.code", "title": "Code", "col": 3, "nolabel": true},
-          {"field": "valueCoding.system", "title": "System", "col": 5, "nolabel": true},
           {"field": "valueCoding.display", "title": "Display", "col": 3, "nolabel": true},
+          {"field": "valueCoding.code", "title": "Code", "col": 2, "nolabel": true},
+          {"field": "valueCoding.system", "title": "System", "col": 2, "nolabel": true},
+          {"field": "valueCoding.__$score", "title": "Score", "col": 2, "nolabel": true},
           {"field": "valueReference", "col": 9, "nolabel": true}
         ]
       }
@@ -1201,6 +1199,10 @@
             "title": "Value boolean",
             "visibleIf": {
               "/type": ["boolean"]
+            },
+            "widget": {
+              "id": "boolean-radio",
+              "nolabel": true
             }
           },
           "valueDecimal": {
@@ -1425,6 +1427,9 @@
             "type": "object",
             "visibleIf": {
               "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+            },
+            "widget": {
+              "id": "hidden"
             }
           },
           "valueQuantity": {
@@ -1573,7 +1578,7 @@
         "type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
       },
       "widget": {
-        "id": "table",
+        "id": "initial",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",

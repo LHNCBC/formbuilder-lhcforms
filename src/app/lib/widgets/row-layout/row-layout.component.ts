@@ -26,6 +26,7 @@ import { GridComponent} from '../grid.component/grid.component';
     .hideRow {
       border: none !important;
       padding: 0 !important;
+      display: none;
     }
   `]
 })

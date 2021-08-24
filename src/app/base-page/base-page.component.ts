@@ -145,8 +145,8 @@ import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search
               class="ml-2 font-weight-bold btn btn-link"
               (click)="setStep('fl-editor')"
       >{{questionnaire.title}}</button>
-      <lfb-item-component [model]="questionnaire.item" [questionnaire]="questionnaire"
-                          (modelChange)="notifyChange($event)"
+      <lfb-item-component [questionnaire]="questionnaire"
+                          (itemChange)="notifyItemChange($event)"
       ></lfb-item-component>
     </ng-template>
 
@@ -260,6 +260,10 @@ export class BasePageComponent implements OnDestroy {
 
   notifyChange(event) {
     this.formSubject.next(event);
+  }
+
+  notifyItemChange(event) {
+    this.formSubject.next(this.questionnaire);
   }
 
 

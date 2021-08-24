@@ -44,7 +44,7 @@
     "math-to-fhirpath": "NLMLHC/math-to-fhirpath",
     "ngx-schema-form": "2.6.5",
     "popper.js": "^1.16.1",
-    "rule-editor": "git+https://github.com/NLMLHC/rule-editor#ng-rule-editor",
+    "rule-editor": "git+https://github.com/NLMLHC/rule-editor.git#ng-rule-editor",
     "rxjs": "^6.6.3",
     "tslib": "^2.1.0",
     "z-schema": "^4.2.3",

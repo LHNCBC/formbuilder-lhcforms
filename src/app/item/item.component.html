@@ -3,7 +3,7 @@
           <div class="sidenav-header p-1">Questions Tree</div>
           <tree-root
             #tree
-            [nodes]="model"
+            [nodes]="itemList"
             [options]="treeOptions"
             (initialized)="onTreeInitialized()"
             (focus)="onFocus($event)"
@@ -16,7 +16,7 @@
           </tree-root>
         </mat-sidenav>
         <mat-sidenav-content>
-          <div class="sidenav-header p-1">Current Item <span *ngIf="item && item.text">({{item.text}})</span></div>
+          <div class="sidenav-header p-1">Current Item <span *ngIf="focusNode && focusNode.data && focusNode.data.text">({{focusNode.data.text}})</span></div>
           <div class="mt-1">
             <div>
               <span>Edit item (question or header)</span>
@@ -30,7 +30,7 @@
           </div>
           <hr/>
           <ng-container *ngIf="editType === 'ui'">
-            <lfb-ngx-schema-form #uiEditor [model]="item" (modelChange)="itemChanged($event)"></lfb-ngx-schema-form>
+            <lfb-ngx-schema-form #uiEditor [model]="item" (valueChange)="itemChanged($event)"></lfb-ngx-schema-form>
           </ng-container>
           <ng-container *ngIf="editType === 'json'">
             <lfb-item-json-editor #jsonEditor></lfb-item-json-editor>

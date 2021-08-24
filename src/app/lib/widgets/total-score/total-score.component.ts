@@ -1,3 +1,6 @@
+/**
+ * Handles total score input on the item level form
+ */
 import { Component, OnInit } from '@angular/core';
 import {ExtensionsComponent} from '../extensions/extensions.component';
 import {fhir} from '../../../fhir';
@@ -9,25 +12,12 @@ import {ShareObjectService} from '../../../share-object.service';
 @Component({
   selector: 'lfb-total-score',
   template: `
-    <!--
-    <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-      <lfb-label *ngIf="!nolabel"
-                 [for]="id"
-                 [title]="schema.title"
-                 [helpMessage]="schema.description"
-                 [ngClass]="labelWidthClass+' pl-0 pr-1'"
-      ></lfb-label>
-      <div class="{{controlWidthClass}} p-0">
-        <input type="checkbox" [ngModel]="selected" (ngModelChange)="onChange($event)">
-      </div>
-    </div>
-    -->
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0' : true, 'widget': true}">
       <lfb-label [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelWidthClass + ' pl-0 pr-1'"></lfb-label>
 
       <div ngbRadioGroup
            [attr.name]="name"
-           class="btn-group form-check-inline btn-group-sm btn-group-toggle" [(ngModel)]="selected">
+           class="btn-group form-check-inline btn-group-sm btn-group-toggle" [ngModel]="selected" (ngModelChange)="onChange($event)">
         <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
           <label ngbButtonLabel class="btn-outline-success m-0">
             <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
@@ -56,6 +46,7 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
   selected = false;
   questionnaire: fhir.Questionnaire;
   item: fhir.QuestionnaireItem;
+
   constructor(private ruleEditorService: RuleEditorService, private modelService: ShareObjectService) {
     super();
   }
@@ -64,11 +55,15 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
     super.ngOnInit();
     const eligibleIndicator: FormProperty = this.formProperty.searchProperty('__$totalScoreItem');
     // TODO - Use rule-editor service to determine eligibility.
-    const eligible = true;
+    const eligible = 'true';
     eligibleIndicator.setValue(eligible, true);
-    if(eligible) {
-      this.selected = this.isTotalScoreAssigned(this.extensionsProp.properties as FormProperty[]);
-    }
+    eligibleIndicator.valueChanges.subscribe((value) => {
+      if(value) {
+        this.selected = this.isTotalScoreAssigned(this.extensionsProp.properties as FormProperty[]);
+      }
+    });
+
+    // Listen to changes in questionnaire and item.
     this.modelService.currentItem$.subscribe((item) => {
       this.item = item;
     });
@@ -78,12 +73,17 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
 
   }
 
+  /**
+   * Handle user interactions with this widget.
+   *
+   * @param selected - boolean from radio box.
+   */
   onChange(selected) {
     if(selected) {
       this.ruleEditorService.addTotalScoreRule(this.questionnaire, this.item);
     }
     else {
-      this.ruleEditorService.addTotalScoreRule(this.questionnaire, this.item);
+      this.removeTotalScore();
     }
   }
 
@@ -104,19 +104,19 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
     });
   }
 
+
+  /**
+   * Remove any existing total score extension.
+   */
   removeTotalScore(): void {
-
-  }
-
-  addTotalScore(): fhir.Extension {
-    let ret: fhir.Extension;
-    ret = this.createTotalScoreExtension();
-    return ret;
-  }
-
-  createTotalScoreExtension(): fhir.Extension {
-    const ret: fhir.Extension = null;
-
-    return ret;
+    const props = this.extensionsProp.properties as FormProperty[];
+    if(props && props.length > 0) {
+      const i = props.findIndex((p) => {
+        return p.value.url === TotalScoreComponent.CALCULATED_EXPRESSION && p.value.valueExpression.description.toLowerCase().isEqual('total score calculation')
+      })
+      if(i >= 0) {
+        props.splice(i, 1);
+      }
+    }
   }
 }

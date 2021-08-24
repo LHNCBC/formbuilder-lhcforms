@@ -15,6 +15,7 @@ import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {debounceTime, distinctUntilChanged, switchMap, takeUntil} from 'rxjs/operators';
 import {fhir} from '../fhir';
+import {TreeService} from '../services/tree.service';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -76,10 +77,9 @@ export class ItemComponent implements OnInit, AfterViewInit {
   treeOptions: ITreeOptions;
   @Input()
   questionnaire: fhir.Questionnaire = {status: 'draft', item: []};
-  @Input()
-  model: any [] = this.questionnaire.item;
+  itemList: any [];
   @Output()
-  modelChange = new EventEmitter<any[]>();
+  itemChange = new EventEmitter<fhir.QuestionnaireItem>();
   isTreeExpanded = false;
   editType = 'ui';
   itemEditorSchema: any;
@@ -118,6 +118,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
   constructor(
               public dialog: MatDialog,
               private modalService: NgbModal,
+              private treeService: TreeService,
               private formService: FormService,
               private dataSrv: FetchService,
               private selectedNodeSrv: ShareObjectService) {
@@ -128,26 +129,25 @@ export class ItemComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.itemList = this.questionnaire.item;
+    if(this.itemList.length === 0) {
+      this.itemList.push({text: 'Item 0', type: 'string'});
+    }
   }
 
   /**
    * Inform the change to host element.
    */
   itemChanged(item) {
-    this.notifyChange();
+    // this.item = item;
+    // Object.assign(this.focusNode.data, item);
+    this.itemChange.emit(item);
   }
 
-  /**
-   * Emit the change event to notify host element.
-   */
-  notifyChange() {
-    this.modelChange.emit(this.model);
-  }
   /**
    * Initialize component
    */
   ngAfterViewInit() {
-    this.item = this.focusNode ? this.focusNode.data : null;
     this.treeOptions.scrollContainer = this.sidenavEl.nativeElement;
     this.formService.setTreeModel(this.treeComponent.treeModel);
   }
@@ -175,8 +175,16 @@ export class ItemComponent implements OnInit, AfterViewInit {
    * @param node - Selected node.
    */
   setNode(node: ITreeNode): void {
+    // this.item = node && node.data || null;
     this.focusNode = node;
-    this.item = node ? node.data : null;
+    this.item = this.focusNode.data;
+    // Not sure why new item is having some fields from prev item. Nonetheless reset the form.
+    // Resetting has side effects. Revisit -- TODO
+    // this.uiItemEditor.resetForm(this.item);
+    if(this.focusNode && this.focusNode.data && !this.focusNode.data.linkId) {
+      this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
+    }
+    this.treeService.nodeFocus.next(node);
   }
 
   /**
@@ -248,8 +256,8 @@ export class ItemComponent implements OnInit, AfterViewInit {
   }
 
   insertAnItem(item, index?: number) {
-    if(this.model.length === 0) {
-      this.model.push(item);
+    if(this.itemList.length === 0) {
+      this.itemList.push(item);
     }
     else {
       if (typeof index === 'undefined') {
@@ -260,7 +268,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
 
     this.treeComponent.treeModel.update();
     this.treeComponent.treeModel.focusNextNode();
-    this.setNode(this.treeComponent.treeModel.getFocusedNode());
+    // this.setNode(this.treeComponent.treeModel.getFocusedNode());
   }
 
   /**
@@ -274,7 +282,7 @@ export class ItemComponent implements OnInit, AfterViewInit {
     this.focusNode.parent.data.item.splice(index, 1);
     this.treeComponent.treeModel.update();
     this.treeComponent.treeModel.focusNextNode();
-    this.setNode(this.treeComponent.treeModel.getFocusedNode());
+    // this.setNode(this.treeComponent.treeModel.getFocusedNode());
   }
 
   /**

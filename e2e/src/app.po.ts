@@ -1,4 +1,4 @@
-import { browser, by, element } from 'protractor';
+import {browser, by, element, promise} from 'protractor';
 import {ElementArrayFinder, ElementFinder} from 'protractor/built/element';
 
 export class AppPage {
@@ -12,11 +12,37 @@ export class AppPage {
   allTreeNodes: ElementArrayFinder  = element.all(by.css('tree-root tree-viewport tree-node-collection tree-node'));
   firstTreeNode: ElementFinder = this.allTreeNodes.first();
   lastTreeNode: ElementFinder = this.allTreeNodes.last();
+  type: ElementFinder = element(by.id('type'));
+  typeDecimal: ElementFinder = this.type.element(by.cssContainingText('option', 'decimal'));
+  typeString: ElementFinder = this.type.element(by.cssContainingText('option', 'string'));
+  units: ElementFinder = element(by.id('units0'));
+  unitsSearchResults: ElementFinder = element(by.id('searchResults'));
+  selectSecondUnit: ElementFinder = element(by.cssContainingText('tr > td', 'in_us'));
+  viewQuestionnaireJSON: ElementFinder = element(by.buttonText('View Questionnaire JSON'));
+  deleteItemButton: ElementFinder = element(by.buttonText('Delete this item'));
+
+  questionnaireJSON(): promise.Promise<any> {
+    browser.actions().mouseMove(this.viewQuestionnaireJSON).perform();
+    this.viewQuestionnaireJSON.click();
+    return element(by.css('ngb-modal-window div.modal-body pre')).getText().then((text) => {
+      return JSON.parse(text);
+    });
+  }
 
 
-  /**
-   * Load the page
-   */
+  cleanUpTree() {
+    let isPresent = true;
+    while(this.allTreeNodes.count) {
+      browser.wait(this.firstTreeNode.isDisplayed().then((bool) => {
+        isPresent = bool;
+        this.deleteItemButton.click();
+      }), 3000);
+    }
+    this.addItemButton.click();
+  }
+  /*
+  Load the page
+  */
   navigateTo() {
     return browser.get(browser.baseUrl) as Promise<any>;
   }
