@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.5.0]  2021-08-24
+### Added
+- Added support for attachment type.
+- Updated nodejs to 14.17.5.
+
 ## [6.4.6]  2021-07-23
 ### Fixed
 - Updated lforms to version 29.1.2, to get an update to fhirpath.js to fix an

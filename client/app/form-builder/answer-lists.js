@@ -428,6 +428,10 @@ var answerLists = {
     {
       "text": "Year",
       "code": "YEAR"
+    },
+    {
+      "text": "Attachment",
+      "code": "attachment"
     }
   ],
   "editable": [
