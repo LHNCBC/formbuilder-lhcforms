@@ -14,8 +14,9 @@ export class AppPage {
   lastTreeNode: ElementFinder = this.allTreeNodes.last();
   type: ElementFinder = element(by.id('type'));
   typeDecimal: ElementFinder = this.type.element(by.cssContainingText('option', 'decimal'));
+  typeQuantity: ElementFinder = this.type.element(by.cssContainingText('option', 'quantity'));
   typeString: ElementFinder = this.type.element(by.cssContainingText('option', 'string'));
-  units: ElementFinder = element(by.id('units0'));
+  units: ElementFinder = element.all(by.css('[id^="units"]')).last();
   unitsSearchResults: ElementFinder = element(by.id('searchResults'));
   selectSecondUnit: ElementFinder = element(by.cssContainingText('tr > td', 'in_us'));
   viewQuestionnaireJSON: ElementFinder = element(by.buttonText('View Questionnaire JSON'));

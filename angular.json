@@ -25,11 +25,10 @@
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "src/styles.css",
-              "src/assets/autocomplete-lhc-18.1.1/autocomplete-lhc.min.css"
+              "src/styles.css"
             ],
             "scripts": [
-              "src/assets/autocomplete-lhc-18.1.1/autocomplete-lhc.js"
+              "./node_modules/jquery/dist/jquery.min.js"
             ]
           },
           "configurations": {
@@ -95,7 +94,9 @@
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [
+              "./node_modules/jquery/dist/jquery.min.js"
+            ]
           }
         },
         "lint": {

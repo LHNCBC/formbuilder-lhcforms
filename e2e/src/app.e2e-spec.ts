@@ -62,7 +62,7 @@ describe('formbuilder-lhcforms App', () => {
         page.type.click();
         page.typeString.click();
         expect(page.units.isPresent()).toBeFalsy();
-        page.typeDecimal.click();
+        page.typeQuantity.click();
         expect(page.units.isDisplayed()).toBeTruthy();
         expect(page.unitsSearchResults.isDisplayed()).toBeFalsy();
         page.units.click();
@@ -75,7 +75,7 @@ describe('formbuilder-lhcforms App', () => {
           expect(element(by.cssContainingText('span.autocomp_selected li', units)).isDisplayed()).toBeTruthy();
         });
         const qJson: any = await page.questionnaireJSON();
-        expect(qJson.item[0].type).toEqual('decimal');
+        expect(qJson.item[0].type).toEqual('quantity');
         expect(qJson.item[0].extension[0].url).toEqual('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).toEqual('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[0].valueCoding.code).toEqual('[in_i]');

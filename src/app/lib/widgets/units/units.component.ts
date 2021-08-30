@@ -5,7 +5,7 @@ import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.comp
 import {fhir} from '../../../fhir';
 import uri = fhir.uri;
 import {ExtensionsComponent} from '../extensions/extensions.component';
-declare var Def: any;
+import Def from 'autocomplete-lhc';
 
 interface UnitExtension {
   url: string,
@@ -49,7 +49,7 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
   unitsUrl = 'https://clinicaltables.nlm.nih.gov/api/ucum/v3/search?df=cs_code,name,guidance';
   options: any = {
     matchListValue: false,
-    maxSelect: '*',
+    maxSelect: 1,
     suggestionMode: Def.Autocompleter.USE_STATISTICS,
     autocomp: true,
     tableFormat: true,
@@ -67,6 +67,14 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
 
   ngOnInit() {
     super.ngOnInit();
+    this.formProperty.searchProperty('/type').valueChanges.subscribe((changedValue) => {
+      if(changedValue === 'quantity') {
+        this.options.maxSelect = '*';
+      }
+      else {
+        this.options.maxSelect = 1;
+      }
+    });
   }
 
 
@@ -97,14 +105,29 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
     for (let i=0, len=initialUnits.length; i<len; ++i) {
       const dispVal = initialUnits[i].value.valueCoding.code;
       autoComp.storeSelectedItem(dispVal, dispVal);
-      autoComp.addToSelectedArea(dispVal);
+      if(this.options.maxSelect === '*') {
+        autoComp.addToSelectedArea(dispVal);
+      }
     }
   }
 
+
+  /**
+   * Delete unit extension object from the extension array.
+   * @param unit
+   */
   deleteUnit(unit: fhir.Extension): any {
     this.removeExtension(unit);
   }
 
+
+  /**
+   * Create unit extension object
+   *
+   * @param system
+   * @param code
+   * @param display
+   */
   createUnitExt(system: fhir.uri, code: string, display: string): fhir.Extension {
     const ret: UnitExtension =
       {

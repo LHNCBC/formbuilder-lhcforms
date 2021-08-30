@@ -1488,7 +1488,10 @@
               "unit": {
                 "description": "A human-readable form of the unit.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "units"
+                }
               },
               "system": {
                 "description": "The identification of the system that provides the coded form of the unit.",
@@ -1596,8 +1599,8 @@
           {"field": "valueCoding.display", "title": "Display", "col": 4, "nolabel": true},
           {"field": "valueCoding.code", "title": "Code", "col": 3, "nolabel": true},
           {"field": "valueCoding.system", "title": "System", "col": 4, "nolabel": true},
-          {"field": "valueQuantity.value","title": "Value", "col": 9, "nolabel": true},
-          {"field": "valueQuantity.unit", "title": "Unit", "col": 2, "nolabel": true},
+          {"field": "valueQuantity.value","title": "Value", "col": 6, "nolabel": true},
+          {"field": "valueQuantity.unit", "title": "Units", "col": 5, "nolabel": true},
           {"field": "valueReference", "noHeader": true, "nolabel": true}
         ]
       }
@@ -1614,7 +1617,7 @@
         "controlWidthClass": "col-sm-10"
       },
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal'"]
+        "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal' || target.value == 'quantity'"]
       }
     },
     "__$totalScoreItem": {
@@ -1625,8 +1628,8 @@
       }
     },
     "__$totalScore": {
-      "description": "Makes this as an item with total score, i.e. totaling scores in pre-defined answers of the choice type items. The eligible scored items are previous siblings of this item.",
-      "title": "Make this total score item",
+      "description": "Makes this as an item with total score, i.e. totaling scores in pre-defined answers of the choice type items.",
+      "title": "Make this a total score item",
       "pattern": "^true|false$",
       "default": "false",
       "type": "boolean",

@@ -1,3 +1,8 @@
+/**
+ * A tool for form level schema to massage it before
+ * using it in the application (this is not something that runs in the application).
+ *
+ */
 const jp = require("json-pointer");
 const path = require("path");
 const traverse = require("traverse");
@@ -63,7 +68,7 @@ jp(schema, "/definitions/base64Binary/$ref", "#/definitions/string");
 addMissingFields(schema, ["type"]);
 addMissingTitle(schema);
 // jp.remove(schema, "/definitions/Extension/properties/extension");
-replaceValue(jp(schema, "/definitions/Extension/properties"));
+removeValueCoding(jp(schema, "/definitions/Extension/properties"));
 
 // Remove extensions for now.
 // jp.remove(schema, "/properties/extension");
@@ -71,35 +76,17 @@ jp.remove(schema, "/definitions/Extension/properties/extension");
 jp.set(schema, "/definitions/Coding/properties/id/widget/id", "hidden");
 jp.set(schema, "/definitions/Coding/properties/version/widget/id", "hidden");
 hideExtensions(schema);
-//specifyTableFormat(jp(schema, "/properties/code"), 2);
 // For item schema, remove recursive definition
 jp.remove(schema, "/definitions/Questionnaire_Item");
 jp.remove(schema, "/definitions/Reference/properties/identifier");
-// codingLayout(schema);
-// addInfoText(schema);
-//detectCircularRef(schema);
 schema = deref(schema, schema);
-//detectCircularRef(schema);
-// adjustLayout(schema);
 delete schema.definitions;
 console.log(JSON.stringify(schema, null, 2)); // tslint:disable-line no-console
 
-function adjustLayout(schema) {
-  const fieldsets = require('../src/assets/fl-fields-layout.json');
-  // adjustOrderOfDisplay(schema);
-  jp.set(schema, "/properties/type/widget", {id: 'select'});
-  jp.set(schema, "/properties/enableBehavior/widget", {id: 'select'});
-  jp.set(schema, "/fieldsets", fieldsets);
-  jp.set(schema, "/properties/code/widget", {"id": "array-grid"});
-  jp.set(schema, "/properties/definition/widget/id", "hidden");
-  jp.set(schema, "/properties/id/widget/id", "hidden");
-}
-
-function codingLayout(schema) {
-  jp.set(schema, "/definitions/Coding/widget", {id: "row-layout"});
-  jp.set(schema, "/definitions/Coding/fieldsets", [{fields: ['id', 'extension', 'code', 'system', 'display', 'version', 'userSelected'], showFields: [{code: {col: 2}}, {system: {col: 6}}, {display: {col: 4}}]}]);
-}
-
+/**
+ *
+ * @param def
+ */
 function collectDefinitions(def) {
   traverse(def).reduce(function(acc, n) {
     if (this.notRoot) {
@@ -117,14 +104,14 @@ function collectDefinitions(def) {
   }, refs);
 }
 
-function redefineConst(propertyDef) {
-  if (propertyDef && propertyDef.const) {
-    propertyDef.type = "string";
-    propertyDef.enum = [propertyDef.const];
-    delete propertyDef.const;
-  }
-}
 
+/**
+ * The schema some times doesn't specify things like type, and title.
+ * This infers the value based on other properties.
+ *
+ * @param obj - Schema object
+ * @param fields - Missing fields. Supports only type and title for now.
+ */
 function addMissingFields(obj, fields) {
   traverse(obj).forEach(function(n) {
     let thisContext = this;
@@ -153,6 +140,12 @@ function addMissingFields(obj, fields) {
   });
 }
 
+
+/**
+ * Add missing title. The title is assumed from field name.
+ *
+ * @param obj - schema object
+ */
 function addMissingTitle(obj) {
   const objProp = obj.properties;
   Object.keys(objProp).forEach(function(key) {
@@ -162,6 +155,12 @@ function addMissingTitle(obj) {
   });
 }
 
+
+/**
+ * Capitalize camel case string to title case.
+ * @param str
+ * @returns {*}
+ */
 function capitalize(str) {
   return str.split(/(?<!^)([A-Z])/) // Don't split on the first char and retain the separators in the array.
     .map(function(word) {
@@ -176,13 +175,12 @@ function capitalize(str) {
     }, "").replace(/^\w/, c => c.toUpperCase());
 }
 
-function addOptions(obj, opts) {
-  if (!obj.options) {
-    obj.options = {};
-  }
-  Object.assign(obj.options, opts);
-}
 
+/**
+ * Hide extensions by default.
+ *
+ * @param obj - Schema object.
+ */
 function hideExtensions(obj) {
   traverse(obj).forEach(function(x) {
     if ((this.key === "extension" || this.key === "modifierExtension") &&
@@ -193,39 +191,28 @@ function hideExtensions(obj) {
   });
 }
 
-function replaceValue(obj) {
+
+/**
+ * Remove valueCoding from obj.
+ * @param obj
+ */
+function removeValueCoding(obj) {
   const keys = Object.keys(obj);
   keys.forEach((key) => {
-    if (key.startsWith("value") && key === 'valueCoding') {
+    if (key === 'valueCoding') {
       delete obj[key];
     }
   });
 }
 
-function specifyTableFormat(obj, columns) {
-  obj.format = "table";
-//  addOptions(obj, {grid_columns: columns});
-}
 
-function addInfoText(obj) {
-  const descr = obj.description;
-  if (descr) {
-    addOptions(obj, {infoText: descr});
-    delete obj.description;
-  }
-  if (obj.properties) {
-    const keys = Object.keys(obj.properties);
-    keys.forEach((key) => {
-      addInfoText(obj.properties[key]);
-    });
-  }
-}
-
-function adjustOrderOfDisplay( schemaObj ) {
-  jp.set(schemaObj, "/order", ["type", "text", "linkId", "code", "required", "readOnly", "repeats", "maxLength"]);
-  jp.set(schemaObj.definitions.Coding.properties, "/order", ["code", "system", "display"]);
-}
-
+/**
+ * Dereference the $ref from the schema, i.e replace $ref with actual schema definition it is referring to.
+ *
+ * @param schemaObj - Root schema Object
+ * @param subSchemaObj - Sub schema requiring dereference
+ * @returns {{description}|*} - Sub schema object after it is dereferenced.
+ */
 function deref(schemaObj, subSchemaObj) {
   if (subSchemaObj.$ref) {
 //    console.log("$ref = " + subSchemaObj.$ref);
@@ -252,15 +239,4 @@ function deref(schemaObj, subSchemaObj) {
   }
 
   return subSchemaObj;
-}
-
-function detectCircularRef(obj) {
-
-  traverse(obj).forEach(function(n) {
-//    console.log(this.path);
-    if (this.circular) {
-//      console.log("************" + this.path + "********************");
-      this.remove();
-    }
-  });
 }

@@ -37,7 +37,6 @@ export class InitialComponent extends TableComponent implements OnInit, AfterVie
       const widget = this.formProperty.schema.widget;
       widget.id = InitialComponent.typeMap[newValue];
       widget.noHeader = true;
-      console.log('initial widget id: '+this.formProperty.schema.widget.id);
     });
   }
 
