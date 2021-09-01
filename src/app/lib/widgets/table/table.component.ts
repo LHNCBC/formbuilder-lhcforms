@@ -220,11 +220,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
         this.addItem();
       }
       else {
-        if (popoverRef.isOpen()) {
-          popoverRef.close();
-        } else {
-          popoverRef.open();
-        }
+        popoverRef.open();
       }
     }
   }

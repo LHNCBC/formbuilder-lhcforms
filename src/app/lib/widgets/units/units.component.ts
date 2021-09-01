@@ -28,7 +28,7 @@ interface UnitExtension {
                  [ngClass]="labelWidthClass+' pl-0 pr-1'"
       ></lfb-label>
       <div class="{{controlWidthClass}} p-0">
-        <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for ucum units or type your own" class="form-control" />
+        <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control" />
       </div>
     </div>
   `,
