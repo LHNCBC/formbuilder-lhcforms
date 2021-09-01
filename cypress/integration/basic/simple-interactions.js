@@ -72,18 +72,31 @@ describe('Home page', () => {
         cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'Item 0');
       });
 
-      it('should display units', () => {
+      it('should display quantity units', () => {
         cy.get('#type').select('string');
-        cy.get('#units0').should('not.exist');
-        cy.get('#type').select('decimal');
-        cy.get('#units0').should('be.visible');
+        cy.get('[id^="units"]').should('not.exist');
+        cy.get('#type').select('quantity');
+        cy.get('[id^="units"]').last().as('units');
+        cy.get('@units').should('be.visible');
         cy.get('#searchResults').should('not.be.visible');
-        cy.get('#units0').type('inch');
+        cy.get('@units').type('inch');
         cy.contains('#completionOptions tr', '[in_i]').click();
         cy.contains('span.autocomp_selected li', '[in_i]').should('be.visible');
         cy.contains('#completionOptions tr', '[in_br]').click();
         cy.contains('span.autocomp_selected li', '[in_br]').should('be.visible');
       });
+      it('should display decimal/integer units', () => {
+        cy.get('#type').select('string');
+        cy.get('[id^="units"]').should('not.exist');
+        cy.get('#type').select('decimal');
+        cy.get('[id^="units"]').last().as('units');
+        cy.get('@units').should('be.visible');
+        cy.get('#searchResults').should('not.be.visible');
+        cy.get('@units').type('inch');
+        cy.contains('#completionOptions tr', '[in_i]').click();
+        cy.get('@units').last().should('have.value','[in_i]');
+      });
     });
-  })
+
+  });
 })
