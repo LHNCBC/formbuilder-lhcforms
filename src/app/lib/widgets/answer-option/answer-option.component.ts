@@ -52,7 +52,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
 
   /**
-   * Setup score column reading scores form properties
+   * Setup score column by reading scores form properties
    */
   updateScoreColumnFromFormProperties() {
     const formProperties = this.formProperty.properties as FormProperty[];

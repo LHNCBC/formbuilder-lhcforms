@@ -58,7 +58,7 @@ describe('formbuilder-lhcforms App', () => {
         page.deleteItemButton.click();
       });
 
-      it('should display units', async () => {
+      it('should display quantity units', async () => {
         page.type.click();
         page.typeString.click();
         expect(page.units.isPresent()).toBeFalsy();
@@ -67,8 +67,7 @@ describe('formbuilder-lhcforms App', () => {
         expect(page.unitsSearchResults.isDisplayed()).toBeFalsy();
         page.units.click();
         page.units.sendKeys('inch');
-        // browser.wait(element.all(by.css('#completionOptions tr')).first().isDisplayed(), 2000);
-        browser.sleep(1000);
+        browser.sleep(500);
         ['[in_i]', '[in_br]'].forEach((units) => {
           const unitsEl = element.all(by.cssContainingText('#completionOptions tr', units)).first();
           unitsEl.click();
@@ -76,14 +75,34 @@ describe('formbuilder-lhcforms App', () => {
         });
         const qJson: any = await page.questionnaireJSON();
         expect(qJson.item[0].type).toEqual('quantity');
+        expect(qJson.item[0].extension[0].url).toEqual('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[0].valueCoding.system).toEqual('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).toEqual('[in_i]');
+        expect(qJson.item[0].extension[0].valueCoding.display).toEqual('inch');
+        expect(qJson.item[0].extension[1].url).toEqual('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[1].valueCoding.system).toEqual('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[1].valueCoding.code).toEqual('[in_br]');
+        expect(qJson.item[0].extension[1].valueCoding.display).toEqual('inch - British');
+      });
+
+      it('should display decimal/integer units', async () => {
+        page.type.click();
+        page.typeString.click();
+        expect(page.units.isPresent()).toBeFalsy();
+        page.typeDecimal.click();
+        expect(page.units.isDisplayed()).toBeTruthy();
+        expect(page.unitsSearchResults.isDisplayed()).toBeFalsy();
+        page.units.click();
+        page.units.sendKeys('inch');
+        browser.sleep(500);
+        const unitsEl = element.all(by.cssContainingText('#completionOptions tr', '[in_i]')).first();
+        unitsEl.click();
+        const qJson: any = await page.questionnaireJSON();
+        expect(qJson.item[0].type).toEqual('decimal');
         expect(qJson.item[0].extension[0].url).toEqual('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).toEqual('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[0].valueCoding.code).toEqual('[in_i]');
         expect(qJson.item[0].extension[0].valueCoding.display).toEqual('inch');
-        expect(qJson.item[0].extension[1].url).toEqual('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
-        expect(qJson.item[0].extension[1].valueCoding.system).toEqual('http://unitsofmeasure.org');
-        expect(qJson.item[0].extension[1].valueCoding.code).toEqual('[in_br]');
-        expect(qJson.item[0].extension[1].valueCoding.display).toEqual('inch - British');
       });
     });
   });

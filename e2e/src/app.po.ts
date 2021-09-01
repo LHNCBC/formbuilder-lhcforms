@@ -1,4 +1,4 @@
-import {browser, by, element, promise} from 'protractor';
+import {browser, by, element, promise, protractor} from 'protractor';
 import {ElementArrayFinder, ElementFinder} from 'protractor/built/element';
 
 export class AppPage {
@@ -26,7 +26,8 @@ export class AppPage {
     browser.actions().mouseMove(this.viewQuestionnaireJSON).perform();
     this.viewQuestionnaireJSON.click();
     return element(by.css('ngb-modal-window div.modal-body pre')).getText().then((text) => {
-      return JSON.parse(text);
+      const ret = JSON.parse(text);
+      return browser.actions().sendKeys(protractor.Key.ESCAPE).perform().then(() => ret);
     });
   }
 
