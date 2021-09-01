@@ -3,7 +3,13 @@
  * add button at the bottom, delete button for each row, label for the table at the left etc.
  *
  * It is optionally controlled by a boolean widget above the table.
+ *
+ * An optional selection column is provided to select rows with either radio buttons or checkboxes. For example,
+ * It could be used as selection of rows for defaults in answer options table.
+ * The checkbox selections are captured in an array of boolean values, while index of radio selection is captured
+ * in an integer variable.
  */
+
 import {AfterViewInit, Component, DoCheck, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {ArrayWidget, FormProperty} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
@@ -12,17 +18,7 @@ import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
 import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import {Util} from '../../util';
-/**
- * Component to display array of object fields in a table format with field names at the top,
- * add button at the bottom, delete button for each row, label for the table at the left etc.
- *
- * It is optionally controlled by a boolean widget above the table.
- */
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
-import {fhir} from '../../../fhir';
-import {FormGroup} from '@angular/forms';
-import {EventEmitter} from '@angular/core';
-
 
 @Component({
   selector: 'lfb-table',
@@ -252,6 +248,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
       }
       if(this.selectionRadio >= 0) {
         if(this.selectionRadio === propIndex) {
+          this.selectionRadio = -1; // selected row is deleted. No selected radio button.
         }
         else if (this.selectionRadio > propIndex) {
           this.selectionRadio--;

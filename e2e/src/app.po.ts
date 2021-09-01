@@ -1,4 +1,4 @@
-import {browser, by, element, promise} from 'protractor';
+import {browser, by, element, promise, protractor} from 'protractor';
 import {ElementArrayFinder, ElementFinder} from 'protractor/built/element';
 
 export class AppPage {
@@ -14,8 +14,9 @@ export class AppPage {
   lastTreeNode: ElementFinder = this.allTreeNodes.last();
   type: ElementFinder = element(by.id('type'));
   typeDecimal: ElementFinder = this.type.element(by.cssContainingText('option', 'decimal'));
+  typeQuantity: ElementFinder = this.type.element(by.cssContainingText('option', 'quantity'));
   typeString: ElementFinder = this.type.element(by.cssContainingText('option', 'string'));
-  units: ElementFinder = element(by.id('units0'));
+  units: ElementFinder = element.all(by.css('[id^="units"]')).last();
   unitsSearchResults: ElementFinder = element(by.id('searchResults'));
   selectSecondUnit: ElementFinder = element(by.cssContainingText('tr > td', 'in_us'));
   viewQuestionnaireJSON: ElementFinder = element(by.buttonText('View Questionnaire JSON'));
@@ -25,7 +26,8 @@ export class AppPage {
     browser.actions().mouseMove(this.viewQuestionnaireJSON).perform();
     this.viewQuestionnaireJSON.click();
     return element(by.css('ngb-modal-window div.modal-body pre')).getText().then((text) => {
-      return JSON.parse(text);
+      const ret = JSON.parse(text);
+      return browser.actions().sendKeys(protractor.Key.ESCAPE).perform().then(() => ret);
     });
   }
 

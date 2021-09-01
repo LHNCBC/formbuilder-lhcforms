@@ -34,15 +34,6 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
 
   public static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
 
-  dummyTotalScore: any [] = [{
-    url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression',
-    valueExpression: {
-      description: '',
-      name: 'testCalculatedExpression',
-      language: 'text/fhirpath',
-      expression: 'test expression'
-    }
-  }];
   selected = false;
   questionnaire: fhir.Questionnaire;
   item: fhir.QuestionnaireItem;

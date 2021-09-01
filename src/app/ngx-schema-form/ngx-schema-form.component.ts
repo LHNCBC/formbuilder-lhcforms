@@ -115,26 +115,6 @@ export class NgxSchemaFormComponent implements OnInit /*, OnChanges */ {
    */
   ngOnInit() {
     this.mySchema = this.formService.getItemSchema();
-    /*
-    this.http.get('/assets/ngx-item.schema.json', {responseType: 'json'}).pipe(
-      switchMap((schema: any) => this.http.get('/assets/fhir-extension-schema.json', {responseType:'json'}).pipe(
-        map((extension) => {
-          schema.definitions.Extension = extension;
-          this._updateExtension(schema);
-          return schema;
-        })
-      )),
-      switchMap((schema: any) => this.http.get('/assets/items-layout.json', {responseType: 'json'}).pipe(
-        map((layout: any) => {
-          schema.layout = layout;
-          return schema;
-        })
-      ))
-    ).subscribe((schema) => {
-      this.mySchema = schema;
-      // console.log(JSON.stringify(this.mySchema.layout, null, 2));
-    });
-    */
   }
 
 

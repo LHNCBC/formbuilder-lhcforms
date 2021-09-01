@@ -16,7 +16,7 @@
           </tree-root>
         </mat-sidenav>
         <mat-sidenav-content>
-          <div class="sidenav-header p-1">Current Item <span *ngIf="focusNode && focusNode.data && focusNode.data.text">({{focusNode.data.text}})</span></div>
+          <div class="sidenav-header p-1">Current Item <span *ngIf="focusNode?.data?.text">({{focusNode.data.text}})</span></div>
           <div class="mt-1">
             <div>
               <span>Edit item (question or header)</span>

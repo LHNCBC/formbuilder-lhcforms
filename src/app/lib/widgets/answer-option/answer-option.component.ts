@@ -48,20 +48,12 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
       this.updateDefaultSelections();
       this.updateScoreColumnFromFormProperties();
     })
-    /*
-    const initialUnits = (this.extensionsProp.properties as FormProperty[]).filter((p) => {
-      return p.value.url === this.unitExtUrl;
-    });
-
-    for (let i=0, len=initialUnits.length; i<len; ++i) {
-      const dispVal = initialUnits[i].value.valueCoding.code;
-      autoComp.storeSelectedItem(dispVal, dispVal);
-      autoComp.addToSelectedArea(dispVal);
-    }
-*/
   }
 
 
+  /**
+   * Setup score column by reading scores form properties
+   */
   updateScoreColumnFromFormProperties() {
     const formProperties = this.formProperty.properties as FormProperty[];
     formProperties.forEach((prop, index) => {
@@ -84,6 +76,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    * Compare two FHIR Coding objects.
    * Matching rules:
    *   1. When only code exists, match code
+   *   2. When only display exists, match display
    *   2. When code and system exists, match both
    *   3. When code and display exists, match both
    *   4. When code, display and system exists, match all three.
@@ -95,33 +88,33 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
       return true; // Match if both are undefined
     }
 
-    if(JSON.stringify(coding1) === JSON.stringify(coding2)) {
-      return true; // Identical
-    }
-
     if(!coding1 || !coding2) {
        return false; // null vs non-null;
-     }
+    }
 
-     let ret = false;
-     if(coding1.code || coding2.code) {
-       ret = coding1 === coding2;
-     }
-     else if(coding1.display || coding2.display) {
-       ret = coding1.display === coding2.display;
-     }
+    let ret = false;
+    if(coding1.code || coding2.code) {
+      ret = coding1.code === coding2.code;
+    }
+    else if(coding1.display || coding2.display) {
+      ret = coding1.display === coding2.display;
+    }
 
-     if(ret && (coding1.system || coding2.system)) {
-       ret = coding1.system === coding2.system; // code/display and system are match
-     }
-     if (ret && (coding1.display || coding2.display)) {
-       ret = coding1.display === coding1.display; // code and display are match
-     }
+    if(ret && (coding1.system || coding2.system)) {
+      ret = coding1.system === coding2.system; // code/display and system are match
+    }
 
-     return ret;
+    if (ret && (coding1.display || coding2.display)) {
+      ret = coding1.display === coding1.display; // code and display are match
+    }
+
+    return ret;
   }
 
 
+  /**
+   * Set up defaults column reading 'initial' form properties.
+   */
   updateDefaultSelections() {
     const initialFormProperties = (this.formProperty.searchProperty('/initial') as ArrayProperty).properties as FormProperty [];
     const formProperties = this.formProperty.properties as FormProperty[];
@@ -139,6 +132,12 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   }
 
 
+  /**
+   * Update extension form property with user input.
+   *
+   * @param score - Score from widget
+   * @param index - Index of the row
+   */
   updateScoreExtensions(score, index) {
       const answerOptionExtProperties = this.formProperty.properties[index].getProperty('extension');
       const answerOptionExtensions = answerOptionExtProperties.value;
@@ -158,6 +157,10 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   }
 
 
+  /**
+   * Override method.
+   * Handle user input for radio selection. Set initial form property value.
+   */
   radioSelection(event) {
     super.radioSelection(event);
     if(this.rowSelectionType === 'radio') {
@@ -169,6 +172,11 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     }
   }
 
+
+  /**
+   * Override method.
+   * Handle user input for checkboxes selection. Set initial form property value.
+   */
   checkboxSelection(event) {
     super.checkboxSelection(event);
     const selectedCodings = [];
@@ -180,6 +188,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     });
     const initialProperty = this.formProperty.searchProperty('/initial') as PropertyGroup;
     initialProperty.setValue(selectedCodings, false);
-    console.log(new AppJsonPipe().transform(this.formProperty.root.value));
+    // console.log(new AppJsonPipe().transform(this.formProperty.root.value));
   }
 }

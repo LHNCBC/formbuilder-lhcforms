@@ -10,7 +10,12 @@ import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/messa
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
-import * as traverse from 'json-schema-traverse';
+import traverse from 'json-schema-traverse';
+import ngxItemSchema from '../../assets/ngx-item.schema.json';
+import fhirExtensionSchema from '../../assets/fhir-extension-schema.json';
+import itemLayout from '../../assets/items-layout.json';
+import ngxFlSchema from '../../assets/ngx-fl.schema.json';
+import flLayout from '../../assets/fl-fields-layout.json';
 
 
 @Injectable({
@@ -26,51 +31,35 @@ export class FormService {
   flSchema: any = {properties: {}};
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
-    this.http.get('/assets/ngx-item.schema.json', {responseType: 'json'}).pipe(
-      switchMap((schema: any) => this.http.get('/assets/fhir-extension-schema.json', {responseType:'json'}).pipe(
-        map((extension) => {
-          schema.definitions.Extension = extension;
-          this._updateExtension(schema);
-          return schema;
-        })
-      )),
-      switchMap((schema: any) => this.http.get('/assets/items-layout.json', {responseType: 'json'}).pipe(
-        map((layout: any) => {
-          schema.layout = layout;
-          return schema;
-        })
-      ))
-    ).subscribe((schema) => {
-      this.itemSchema = schema;
-      // console.log(JSON.stringify(this.mySchema.layout, null, 2));
-    });
+    ngxItemSchema.definitions.Extension = fhirExtensionSchema as any;
+    this._updateExtension(ngxItemSchema);
+    this.itemSchema = ngxItemSchema;
+    this.itemSchema.layout = itemLayout;
 
-    this.fetchFormLevelSchema().subscribe((schema) => {
-      this.flSchema = schema;
-    });
+    this.flSchema = ngxFlSchema;
+    this.flSchema.layout = flLayout;
   }
 
-  fetchFormLevelSchema(): Observable<any> {
-    // ngx-fl.schema.json is schema extracted from FHIR Questionnaire schema.
-    return this.http.get('/assets/ngx-fl.schema.json', { responseType: 'json' }).pipe(
-      switchMap((schema: any) => this.http.get('/assets/fl-fields-layout.json', { responseType: 'json' }).pipe(
-        map((layout: any) => {
-          schema.layout = layout;
-          return schema;
-        })
-      ))
-    );
-  }
 
+  /**
+   * Get item level schema
+   */
   getItemSchema() {
     return this.itemSchema;
   }
 
+  /**
+   * Get form level schema
+   */
   getFormLevelSchema() {
     return this.flSchema;
   }
 
-
+  /**
+   * Update main schema with adjusted extension schema recursively
+   *
+   * @param rootSchema
+   */
   _updateExtension(rootSchema: any) {
     const extension = rootSchema.definitions.Extension;
     traverse(rootSchema, {}, (
@@ -96,10 +85,19 @@ export class FormService {
     });
   }
 
+
+  /**
+   * Access guiding step observable.
+   */
   get guidingStep$(): Observable<string> {
     return this._guidingStep$.asObservable();
   }
 
+
+  /**
+   * Inform the listeners of change in step.
+   * @param step
+   */
   setGuidingStep(step: string) {
     this._guidingStep$.next(step);
   }

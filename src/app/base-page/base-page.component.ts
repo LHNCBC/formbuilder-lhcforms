@@ -146,7 +146,7 @@ import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search
               (click)="setStep('fl-editor')"
       >{{questionnaire.title}}</button>
       <lfb-item-component [questionnaire]="questionnaire"
-                          (itemChange)="notifyItemChange($event)"
+                          (itemChange)="notifyChange(questionnaire)"
       ></lfb-item-component>
     </ng-template>
 
@@ -249,6 +249,10 @@ export class BasePageComponent implements OnDestroy {
 
   }
 
+
+  /**
+   * Create bare minimum form.
+   */
   createDefaultForm(): fhir.Questionnaire {
     return {
       title: 'New Form',
@@ -258,12 +262,13 @@ export class BasePageComponent implements OnDestroy {
     }
   }
 
-  notifyChange(event) {
-    this.formSubject.next(event);
-  }
 
-  notifyItemChange(event) {
-    this.formSubject.next(this.questionnaire);
+  /**
+   * Notify changes to form.
+   * @param event - form object, a.k.a questionnaire
+   */
+  notifyChange(form) {
+    this.formSubject.next(form);
   }
 
 

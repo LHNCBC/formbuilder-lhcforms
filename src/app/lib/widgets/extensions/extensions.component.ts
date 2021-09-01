@@ -50,6 +50,26 @@ export class ExtensionsComponent extends LfbArrayWidgetComponent implements OnIn
     this.extensionsProp.removeItem(extension);
   }
 
+
+  /**
+   * Remove extensions by extension url.
+   * @param extUrl
+   */
+  removeExtensionsByUrl(extUrl: string) {
+    const otherExts: any [] = (this.extensionsProp.properties as FormProperty[]).filter((ext) => {
+      return ext.value.url !== extUrl;
+    }).map(p => p.value);
+
+    if(otherExts.length !== this.extensionsProp.properties.length) {
+      this.extensionsProp.reset(otherExts);
+    }
+  }
+
+
+  /**
+   * Remove extension comparing the fields of given extension.
+   * @param ext
+   */
   removeExtension(ext: fhir.Extension): void {
 
     this.removeExt(ext.url, ext.valueCoding.code, ext.valueCoding.system);
