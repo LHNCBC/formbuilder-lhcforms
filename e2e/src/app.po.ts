@@ -23,11 +23,14 @@ export class AppPage {
   deleteItemButton: ElementFinder = element(by.buttonText('Delete this item'));
 
   questionnaireJSON(): promise.Promise<any> {
+    const closeButton = element(by.css('ngb-modal-window')).element(by.buttonText('Close'));
     browser.actions().mouseMove(this.viewQuestionnaireJSON).perform();
     this.viewQuestionnaireJSON.click();
     return element(by.css('ngb-modal-window div.modal-body pre')).getText().then((text) => {
       const ret = JSON.parse(text);
-      return browser.actions().sendKeys(protractor.Key.ESCAPE).perform().then(() => ret);
+      browser.actions().mouseMove(closeButton).perform();
+      closeButton.click();
+      return ret;
     });
   }
 
