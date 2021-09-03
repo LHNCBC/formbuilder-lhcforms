@@ -303,7 +303,8 @@ export class BasePageComponent implements OnDestroy {
       this.setStep('choose-start');
       this.questionnaire = this.createDefaultForm();
     }
-    this.formSubject.next(this.questionnaire);
+    this.notifyChange(this.questionnaire);
+    // this.formSubject.next(this.questionnaire);
   }
 
   /**
@@ -331,11 +332,14 @@ export class BasePageComponent implements OnDestroy {
    */
   onFileSelected(event) {
     const selectedFile = event.target.files[0];
+    event.target.value = null; //
     const fileReader = new FileReader();
     fileReader.readAsText(selectedFile, 'UTF-8');
     fileReader.onload = () => {
       try {
         this.questionnaire = this.formService.parseQuestionnaire(fileReader.result as string);
+        this.notifyChange(this.questionnaire);
+        // this.formSubject.next(this.questionnaire);
       }
       catch (e) {
         this.showError(e);
