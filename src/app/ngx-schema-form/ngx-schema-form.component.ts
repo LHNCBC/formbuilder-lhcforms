@@ -1,7 +1,17 @@
 /**
  * Handle layout and editing of item level fields
  */
-import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {Binding, FormComponent, FormProperty, Validator} from 'ngx-schema-form';
@@ -56,7 +66,10 @@ import {FormService} from '../services/form.service';
 
   `]
 })
-export class NgxSchemaFormComponent implements OnInit /*, OnChanges */ {
+export class NgxSchemaFormComponent implements OnInit, OnChanges, OnDestroy {
+
+  static _id = 0;
+  id = NgxSchemaFormComponent._id++;
   @ViewChild('itemForm') itemForm: FormComponent;
 
   mySchema: any = {properties: {}};
@@ -118,16 +131,25 @@ export class NgxSchemaFormComponent implements OnInit /*, OnChanges */ {
   }
 
 
-  /*
+
   ngOnChanges(changes: SimpleChanges) {
-    if(changes.model.currentValue !== changes.model.previousValue) {
+    console.log('ngx-comp:'+this.id+':ngOnChanges(): this.model is previous = '+(this.model === changes.model.previousValue));
+    console.log('ngx-comp:'+this.id+':ngOnChanges(): this.model is current = '+(this.model === changes.model.currentValue));
+    console.log('ngx-comp:'+this.id+':ngOnChanges(): this.model.text = '+this.model?.text);
+    console.log('ngx-comp:'+this.id+':ngOnChanges(): changes.model.previous.text = '+changes.model?.previousValue?.text);
+    console.log('ngx-comp:'+this.id+':ngOnChanges(): changes.model.current.text = '+changes.model?.currentValue?.text);
+    /*
+    if(changes.model.currentValue !== this.model) {
+      console.log('ngx-comp:'+this.id+':ngOnChanges(): 6 changes.model.currentValue.text = '+changes.model?.currentValue?.text);
       if(this.itemForm) {
-        this.itemForm.reset();
-        this.itemForm.writeValue(changes.model.currentValue);
+        // this.itemForm.reset();
+        console.log('ngx-comp:'+this.id+':ngOnChanges(): 7');
+        // this.itemForm.writeValue(changes.model.currentValue);
       }
     }
+    */
   }
-*/
+
 
 
   /**
@@ -137,13 +159,28 @@ export class NgxSchemaFormComponent implements OnInit /*, OnChanges */ {
   updateValue(value) {
     // this.modelChange.emit(value);
     this.valueChange.emit(value);
+    console.log('ngx-comp:'+this.id+':updateValue(): 1 value.text = '+value?.text);
+    console.log('ngx-comp:'+this.id+':updateValue(): 2 this.model.text = '+this.model?.text);
+    console.log('ngx-comp:'+this.id+':updateValue(): 3 this.model.answerOption.length = '+this.model?.answerOption?.length);
+    if(this.model?.answerOption?.length > 0) {
+      console.log('ngx-comp:'+this.id
+        +':updateValue(): 4 this.model.answerOption[0].valueCoding.code = '
+        +this.model?.answerOption[0]?.valueCoding?.code);
+    }
+
     this.modelService.currentItem = value;
+//    console.log('ngx-comp:'+this.id+':updateValue(): 2 this.model.text = '+this.model?.text);
   }
 
   /**
    * Reset ngx- form with new model
    */
   resetForm(model: any): void {
+    console.log('ngx-comp:'+this.id+':resetForm(): 1');
     this.model = model;
+  }
+
+  ngOnDestroy() {
+    console.log('ngx-comp:'+this.id+':ngOnDestroy() 1');
   }
 }

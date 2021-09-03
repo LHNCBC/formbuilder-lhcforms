@@ -10,7 +10,7 @@
  * in an integer variable.
  */
 
-import {AfterViewInit, Component, DoCheck, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
+import {AfterViewInit, Component, DoCheck, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
 import {ArrayWidget, FormProperty} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
@@ -19,13 +19,14 @@ import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'lfb-table',
   templateUrl: './table.component.html', // Use separate files for possible reuse from a derived class
   styleUrls: ['./table.component.css']
 })
-export class TableComponent extends LfbArrayWidgetComponent implements AfterViewInit, DoCheck {
+export class TableComponent extends LfbArrayWidgetComponent implements AfterViewInit, DoCheck, OnDestroy {
 
   static seqNum = 0;
   // Icons for buttons.
@@ -52,6 +53,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   rowSelectionType = null; // 'radio' or 'checkbox'
   rowSelection = false; // If a row selection column is displayed. Default is no column.
 
+  subscriptions: Subscription [] = [];
   /**
    * Make sure at least one row is present for zero length array?
    */
@@ -111,8 +113,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
     // . Source if present and is true means show the buttons.
     // . Absence of source condition means the default behavior which is show the buttons.
     let prop = singleItemEnableSource ? this.formProperty.searchProperty(singleItemEnableSource) : null;
+    let subsciption: Subscription;
     if (prop) {
-      prop.valueChanges.subscribe((newValue) => {
+      subsciption = prop.valueChanges.subscribe((newValue) => {
         if (newValue === false) {
           // If already has multiple items in the array, remove all items except first one.
           if (this.formProperty.properties.length > 1) {
@@ -126,11 +129,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
           this.rowSelectionType = this.singleItem ? 'radio' : 'checkbox';
         }
       });
+      this.subscriptions.push(subsciption);
     }
 
     prop = multipleSelectionEnableSource ? this.formProperty.searchProperty(multipleSelectionEnableSource) : null;
     if (prop) {
-      prop.valueChanges.subscribe((newValue) => {
+      subsciption = prop.valueChanges.subscribe((newValue) => {
         this.selectionRadio = -1;
         this.selectionCheckbox = [];
         if (newValue === false && this.rowSelection) {
@@ -143,6 +147,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
           this.rowSelectionType = 'checkbox';
         }
       });
+      this.subscriptions.push(subsciption);
     }
 
     const keyField = this.formProperty.findRoot().schema.widget.keyField;
@@ -150,10 +155,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
       this.keyField = keyField;
     }
     // Lookout for any changes to key field
-    this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
+    subsciption = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
       const showFields = this.getShowFields();
       this.noHeader = showFields.some((f) => f.noHeader);
     });
+
+    this.subscriptions.push(subsciption);
   }
 
   /**
@@ -270,5 +277,11 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
    * Possible method for handling row selections for checkboxes.
    */
   checkboxSelection(event) {
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((s) => {
+      s.unsubscribe();
+    });
   }
 }

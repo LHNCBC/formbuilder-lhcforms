@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, DoCheck, OnInit} from '@angular/core';
+import {AfterViewInit, Component, DoCheck, OnDestroy, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
 import {ArrayProperty, FormProperty, ObjectProperty} from 'ngx-schema-form';
@@ -8,16 +8,18 @@ import {A} from '@angular/cdk/keycodes';
 import {timeout} from 'rxjs/operators';
 import {AppJsonPipe} from '../../pipes/app-json.pipe';
 import {TreeService} from '../../../services/tree.service';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'lfb-answer-option',
   templateUrl: '../table/table.component.html',
   styleUrls: ['../table/table.component.css', './answer-option.component.css']
 })
-export class AnswerOptionComponent extends TableComponent implements AfterViewInit, DoCheck {
+export class AnswerOptionComponent extends TableComponent implements AfterViewInit, DoCheck, OnDestroy {
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
 
+  subscriptions: Subscription [] = [];
   constructor(private treeService: TreeService) {
     super();
   }
@@ -34,7 +36,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.formProperty.valueChanges.subscribe((newValue) => {
+    let sub = this.formProperty.valueChanges.subscribe((newValue) => {
       setTimeout(() => {
         this.formProperty.value.forEach((row, index) => {
           if(row.valueCoding) {
@@ -43,11 +45,14 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
         });
       });
     });
+    this.subscriptions.push(sub);
 
-    this.treeService.nodeFocus.subscribe((node) => {
+    sub = this.treeService.nodeFocus.subscribe((node) => {
       this.updateDefaultSelections();
       this.updateScoreColumnFromFormProperties();
     })
+
+    this.subscriptions.push(sub);
   }
 
 
@@ -189,5 +194,11 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     const initialProperty = this.formProperty.searchProperty('/initial') as PropertyGroup;
     initialProperty.setValue(selectedCodings, false);
     // console.log(new AppJsonPipe().transform(this.formProperty.root.value));
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
+    });
   }
 }
