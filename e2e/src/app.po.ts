@@ -1,5 +1,6 @@
 import {browser, by, element, promise, protractor} from 'protractor';
 import {ElementArrayFinder, ElementFinder} from 'protractor/built/element';
+var EC = protractor.ExpectedConditions;
 
 export class AppPage {
   useCodeYes: ElementFinder = element(by.id('Yes_1'));
@@ -26,8 +27,18 @@ export class AppPage {
     const closeButton = element(by.css('ngb-modal-window')).element(by.buttonText('Close'));
     browser.actions().mouseMove(this.viewQuestionnaireJSON).perform();
     this.viewQuestionnaireJSON.click();
-    return element(by.css('ngb-modal-window div.modal-body pre')).getText().then((text) => {
-      const ret = JSON.parse(text);
+    let elementWithQ = element(by.css('ngb-modal-window div.modal-body pre'));
+    browser.wait(EC.textToBePresentInElement(elementWithQ, '{'), 5000);
+    return elementWithQ.getText().then((text) => {
+      let ret;
+      try {
+        ret = JSON.parse(text);
+      }
+      catch(e) {
+        console.log("Failed to parse text="+text);
+        console.log(e);
+        throw e;
+      }
       browser.actions().mouseMove(closeButton).perform();
       closeButton.click();
       return ret;
