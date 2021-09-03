@@ -8,6 +8,14 @@ import {fhir} from '../fhir';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {map, switchMap} from 'rxjs/operators';
+import {HttpClient} from '@angular/common/http';
+import traverse from 'json-schema-traverse';
+import ngxItemSchema from '../../assets/ngx-item.schema.json';
+import fhirExtensionSchema from '../../assets/fhir-extension-schema.json';
+import itemLayout from '../../assets/items-layout.json';
+import ngxFlSchema from '../../assets/ngx-fl.schema.json';
+import flLayout from '../../assets/fl-fields-layout.json';
 
 
 @Injectable({
@@ -19,12 +27,77 @@ export class FormService {
 
   localStorageError: Error = null;
   treeModel: TreeModel;
-  constructor(private modalService: NgbModal) { }
+  itemSchema: any = {properties: {}};
+  flSchema: any = {properties: {}};
 
+  constructor(private modalService: NgbModal, private http: HttpClient) {
+    ngxItemSchema.definitions.Extension = fhirExtensionSchema as any;
+    this._updateExtension(ngxItemSchema);
+    this.itemSchema = ngxItemSchema;
+    this.itemSchema.layout = itemLayout;
+
+    this.flSchema = ngxFlSchema;
+    this.flSchema.layout = flLayout;
+  }
+
+
+  /**
+   * Get item level schema
+   */
+  getItemSchema() {
+    return this.itemSchema;
+  }
+
+  /**
+   * Get form level schema
+   */
+  getFormLevelSchema() {
+    return this.flSchema;
+  }
+
+  /**
+   * Update main schema with adjusted extension schema recursively
+   *
+   * @param rootSchema
+   */
+  _updateExtension(rootSchema: any) {
+    const extension = rootSchema.definitions.Extension;
+    traverse(rootSchema, {}, (
+      schema,
+      jsonPtr,
+      rootSch,
+      parentJsonPtr,
+      parentKeyword,
+      parentSchema,
+      indexOrProp) => {
+      if(parentKeyword === 'items' && (parentJsonPtr.endsWith('extension') || parentJsonPtr.endsWith('modifierExtension'))) {
+        // Save title and description before over writing them.
+        const commonFields = {title: schema.title, description: schema.description};
+        Object.assign(schema, extension);
+        // title and description are overwritten. Restore them.
+        if(commonFields.title) {
+          schema.title = commonFields.title;
+        }
+        if(commonFields.description) {
+          schema.description = commonFields.description;
+        }
+      }
+    });
+  }
+
+
+  /**
+   * Access guiding step observable.
+   */
   get guidingStep$(): Observable<string> {
     return this._guidingStep$.asObservable();
   }
 
+
+  /**
+   * Inform the listeners of change in step.
+   * @param step
+   */
   setGuidingStep(step: string) {
     this._guidingStep$.next(step);
   }

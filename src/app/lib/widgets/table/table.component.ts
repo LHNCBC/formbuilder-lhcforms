@@ -3,8 +3,14 @@
  * add button at the bottom, delete button for each row, label for the table at the left etc.
  *
  * It is optionally controlled by a boolean widget above the table.
+ *
+ * An optional selection column is provided to select rows with either radio buttons or checkboxes. For example,
+ * It could be used as selection of rows for defaults in answer options table.
+ * The checkbox selections are captured in an array of boolean values, while index of radio selection is captured
+ * in an integer variable.
  */
-import {AfterViewInit, Component, DoCheck, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+
+import {AfterViewInit, Component, DoCheck, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {ArrayWidget, FormProperty} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
@@ -12,112 +18,12 @@ import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
 import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import {Util} from '../../util';
-/**
- * Component to display array of object fields in a table format with field names at the top,
- * add button at the bottom, delete button for each row, label for the table at the left etc.
- *
- * It is optionally controlled by a boolean widget above the table.
- */
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
-
 
 @Component({
   selector: 'lfb-table',
-  template: `
-    <ng-container *ngIf="booleanControlled">
-      <lfb-boolean-controlled
-        [(bool)]="booleanControlledOption"
-        [controlWidthClass]="controlWidthClass"
-        [labelWidthClass]="labelWidthClass"
-        [label]="booleanLabel"
-        [labelPosition]="labelPosition"
-        [helpMessage]="schema.description"
-      ></lfb-boolean-controlled>
-    </ng-container>
-
-    <div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group m-0"
-         [ngClass]=
-           "{'row': labelPosition === 'left'}">
-      <div [ngClass]="labelWidthClass + ' pl-0 pr-1'">
-        <button *ngIf="!noCollapseButton" href="#" type="button"
-                [ngClass]="{'float-sm-right': labelPosition === 'left'}"
-                class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
-                [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
-          <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
-        </button>
-        <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
-      </div>
-      <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
-        <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
-          <thead *ngIf="!noHeader" class="thead-light">
-          <tr class="d-flex">
-            <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
-              <lfb-title
-                [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
-                [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
-              ></lfb-title>
-            </th>
-            <th *ngIf="!singleItem" class="col-sm-1"></th>
-          </tr>
-          </thead>
-          <tbody [ngbCollapse]="isCollapsed">
-          <tr class="d-flex" *ngFor="let itemProperty of formProperty.properties">
-            <td *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
-              <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
-            </td>
-            <td [ngClass]="{'d-none': formProperty.properties.length === 1}" class="col-sm-1 align-middle action-column">
-              <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
-                      [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
-                      *ngIf="!(schema.hasOwnProperty('minItems') &&
-                               schema.hasOwnProperty('maxItems') &&
-                               schema.minItems === schema.maxItems)"
-                      matTooltip="Remove" matTooltipPosition="above"
-              >
-                <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-        <button (click)="addItem()" class="btn-sm btn-light btn-link array-add-button"
-                [attr.disabled]="isAddButtonDisabled() ? '' : null"
-                *ngIf="!singleItem &&
-                (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"
-        >
-          <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
-        </button>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .action-column {
-      text-align: end;
-    }
-    .collapse-button {
-      padding-left: 5px;
-      padding-right: 5px;
-      margin-right: 5px;
-      margin-left: 2px;
-    }
-
-    .collapse-button.float-sm-right {
-      margin-right: 0;
-      margin-left: 2px;
-    }
-
-    .lfb-table {
-      margin-bottom: 0;
-    }
-    .lfb-table th {
-      text-align: center;
-    }
-    .lfb-table th, .lfb-table td {
-      padding: 0;
-  /*    vertical-align: bottom; */
-    }
-    .table-header {
-      font-weight: normal;
-    }
-  `]
+  templateUrl: './table.component.html', // Use separate files for possible reuse from a derived class
+  styleUrls: ['./table.component.css']
 })
 export class TableComponent extends LfbArrayWidgetComponent implements AfterViewInit, DoCheck {
 
@@ -140,6 +46,11 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   booleanControlled = false;
   tableId = 'tableComponent'+TableComponent.seqNum++;
 
+  // Row selection variables. Selections can be checkboxes or radio buttons.
+  selectionRadio = -1; // Store array index of the radio button selection.
+  selectionCheckbox: boolean [] = []; // Store an array of selected rows. Unselected elements are nulls or false.
+  rowSelectionType = null; // 'radio' or 'checkbox'
+  rowSelection = false; // If a row selection column is displayed. Default is no column.
 
   /**
    * Make sure at least one row is present for zero length array?
@@ -148,10 +59,19 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
     if(this.booleanControlled) {
       this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
     }
-    if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
+    if (this.formProperty.value.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
-
+    /*
+    // If a single radio item, change it checkbox.
+    if (this.rowSelection && this.rowSelectionType === 'radio' && this.formProperty.value.length === 1) {
+      this.rowSelectionType = 'checkbox';
+      // If single radio was selected, transfer the selection to checkbox.
+      if(this.selectionRadio === 0) {
+        this.selectionCheckbox[0] = true;
+      }
+    }
+    */
   }
 
 
@@ -174,14 +94,23 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
 
     this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
 
-    const singleItemEnableSource = this.formProperty.schema.widget ? this.formProperty.schema.widget.singleItemEnableSource : null;
+    if(widget.rowSelection) {
+      this.rowSelection = widget.rowSelection;
+      this.rowSelectionType = widget.rowSelectionType || 'radio'; // Defaults to radio buttons.
+    }
+    this.selectionRadio = -1;
+    this.selectionCheckbox = [];
+    const singleItemEnableSource = this.formProperty.schema.widget ?
+      this.formProperty.schema.widget.singleItemEnableSource : null;
+    const multipleSelectionEnableSource = this.formProperty.schema.widget ?
+      this.formProperty.schema.widget.multipleSelectionEnableSource : null;
     // Although intended to be source agnostic, it is mainly intended for 'repeats' field as source.
     // For example, when repeats is false, The initial field is only one row.
     // The requirement is:
     // . When source is false, hide add/remove buttons.
     // . Source if present and is true means show the buttons.
     // . Absence of source condition means the default behavior which is show the buttons.
-    const prop = singleItemEnableSource ? this.formProperty.searchProperty(singleItemEnableSource) : null;
+    let prop = singleItemEnableSource ? this.formProperty.searchProperty(singleItemEnableSource) : null;
     if (prop) {
       prop.valueChanges.subscribe((newValue) => {
         if (newValue === false) {
@@ -193,8 +122,29 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
         }
         this.singleItem = !newValue;
         this.noCollapseButton = this.singleItem;
+        if(this.rowSelection) {
+          this.rowSelectionType = this.singleItem ? 'radio' : 'checkbox';
+        }
       });
     }
+
+    prop = multipleSelectionEnableSource ? this.formProperty.searchProperty(multipleSelectionEnableSource) : null;
+    if (prop) {
+      prop.valueChanges.subscribe((newValue) => {
+        this.selectionRadio = -1;
+        this.selectionCheckbox = [];
+        if (newValue === false && this.rowSelection) {
+          this.rowSelectionType = 'radio';
+        }
+        else if(newValue && this.rowSelection) {
+          this.rowSelectionType = 'checkbox';
+        }
+        if(newValue === false && this.rowSelection && this.formProperty.properties.length === 1) {
+          this.rowSelectionType = 'checkbox';
+        }
+      });
+    }
+
     const keyField = this.formProperty.findRoot().schema.widget.keyField;
     if (keyField) {
       this.keyField = keyField;
@@ -258,5 +208,63 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   }
 
 
+  /**
+   * When clicking add button, prevent adding multiple empty rows. Alert the user with a popover message.
+   * @param popoverRef - popover reference template.
+   */
+  addItemWithAlert(popoverRef) {
+    const elements = this.formProperty.value as [];
+    if(elements.length > 0) {
+      const lastItem = elements[elements.length - 1];
+      if(!Util.isEmpty(lastItem)) {
+        this.addItem();
+      }
+      else {
+        popoverRef.open();
+      }
+    }
+  }
 
+
+  /**
+   * Remove a given item, i.e. a row in the table.
+   *
+   * Before calling parent class api to remove the item, we need to do some house keeping with respect to table's
+   * selection (radio/checkbox) indexes.
+   *
+   * @param formProperty - The row represented by its form property.
+   */
+  removeItem(formProperty) {
+    const props = this.formProperty.properties as FormProperty [];
+
+    const propIndex = props.findIndex((e) => e === formProperty);
+    if(propIndex >= 0) {
+      if(this.selectionCheckbox.length > 0) {
+        this.selectionCheckbox.splice(propIndex, 1);
+      }
+      if(this.selectionRadio >= 0) {
+        if(this.selectionRadio === propIndex) {
+          this.selectionRadio = -1; // selected row is deleted. No selected radio button.
+        }
+        else if (this.selectionRadio > propIndex) {
+          this.selectionRadio--;
+        }
+      }
+    }
+    super.removeItem(formProperty);
+  }
+
+
+  /**
+   * Possible method for handling row selections for radio buttons.
+   */
+  radioSelection(event) {
+  }
+
+
+  /**
+   * Possible method for handling row selections for checkboxes.
+   */
+  checkboxSelection(event) {
+  }
 }

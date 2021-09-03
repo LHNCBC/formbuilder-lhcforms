@@ -7,8 +7,8 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'lfb-checkbox',
-  template: `<div class="widget form-group">
-	<div *ngIf="schema.type!='array'" class="form-check">
+  template: `<div class="widget">
+	<div *ngIf="schema.type!='array'" [attr.class]="'form-check '+lfbClass">
     <input class="form-check-input" [formControl]="control" [attr.name]="name"
              [attr.id]="id" [indeterminate]="control.value !== false && control.value !== true ? true :null"
              type="checkbox" [attr.disabled]="schema.readOnly ? '' : null">
@@ -40,4 +40,6 @@ export class CheckboxComponent extends CheckboxWidget {
   @Input()
   nolabel = false;
   faInfo = faInfoCircle;
+  @Input()
+  lfbClass = 'text-center';
 }

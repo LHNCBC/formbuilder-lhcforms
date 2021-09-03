@@ -1,7 +1,7 @@
 /**
  * Handles editing of form level fields.
  */
-import {Component, OnInit, Input, OnDestroy, Output, EventEmitter} from '@angular/core';
+import {Component, OnInit, Input, OnDestroy, Output, EventEmitter, OnChanges, SimpleChanges} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {FetchService} from '../fetch.service';
@@ -41,7 +41,7 @@ import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
     }
   `]
 })
-export class FormFieldsComponent implements OnInit {
+export class FormFieldsComponent implements OnInit, OnChanges {
 
   @Input()
   questionnaire: fhir.Questionnaire;
@@ -69,20 +69,17 @@ export class FormFieldsComponent implements OnInit {
    * Merge schema and layout
    */
   ngOnInit() {
-    // ngx-fl.schema.json is schema extracted from FHIR Questionnaire schema.
-    this.http.get('/assets/ngx-fl.schema.json', { responseType: 'json' }).pipe(
-      switchMap((schema: any) => this.http.get('/assets/fl-fields-layout.json', { responseType: 'json' }).pipe(
-        map((layout: any) => {
-          schema.layout = layout;
-          return schema;
-        })
-      ))
-    ).subscribe((schema) => {
-      this.qlSchema = schema;
-    });
-
+    this.qlSchema = this.formService.getFormLevelSchema();
+    this.modelService.questionnaire = this.questionnaire;
   }
 
+
+  ngOnChanges(changes: SimpleChanges) {
+    const qChange = changes.quetionnaire;
+    if(qChange) {
+      this.modelService.questionnaire = qChange.currentValue;
+    }
+  }
 
   /**
    * Send message to base page to switch the view.

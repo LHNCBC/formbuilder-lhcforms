@@ -64,6 +64,14 @@ import { MessageDlgComponent } from './lib/widgets/message-dlg/message-dlg.compo
 import { FhirServersDlgComponent } from './lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
+import { UnitsComponent } from './lib/widgets/units/units.component';
+import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
+import { TotalScoreComponent } from './lib/widgets/total-score/total-score.component';
+import { RuleEditorModule } from 'rule-editor';
+import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
+import { InitialComponent } from './lib/widgets/initial/initial.component';
+
+// import { LhcAutocomplete } from 'autocomplete-lhc-ng';
 
 @NgModule({
   declarations: [
@@ -103,7 +111,12 @@ import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio
     MessageDlgComponent,
     FhirServersDlgComponent,
     FhirSearchDlgComponent,
-    BooleanRadioComponent
+    BooleanRadioComponent,
+    UnitsComponent,
+    ExtensionsComponent,
+    TotalScoreComponent,
+    AnswerOptionComponent,
+    InitialComponent
   ],
   imports: [
     AppRoutingModule,
@@ -128,6 +141,7 @@ import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio
     MatToolbarModule,
     MatTooltipModule,
     NgbModule,
+    RuleEditorModule,
     SchemaFormModule.forRoot(),
     TreeModule,
     ReactiveFormsModule,

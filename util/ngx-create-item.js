@@ -1,3 +1,7 @@
+/**
+ * A tool to adjust input schema for ngx-schema-form in a preprocessing step.
+ *
+ */
 const jp = require("json-pointer");
 const path = require("path");
 const traverse = require("traverse");
@@ -88,8 +92,14 @@ adjustLayout(schema);
 
 console.log(JSON.stringify(schema, null, 2)); // tslint:disable-line no-console
 
+
+/**
+ * Overwrite default widget assignment.
+ *
+ * @param schema - Schema object
+ */
 function adjustLayout(schema) {
-  const fieldsets = require('../src/assets/ngx-fieldsets.json');
+  const fieldsets = require('../src/assets/items-layout.json');
   // adjustOrderOfDisplay(schema);
   jp.set(schema, "/properties/type/widget", {id: 'select'});
   jp.set(schema, "/properties/enableBehavior/widget", {id: 'select'});

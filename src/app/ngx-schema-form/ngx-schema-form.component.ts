@@ -1,20 +1,21 @@
 /**
  * Handle layout and editing of item level fields
  */
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
-import {Binding, FormProperty, Validator} from 'ngx-schema-form';
+import {Binding, FormComponent, FormProperty, Validator} from 'ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {map, switchMap, timeout} from 'rxjs/operators';
+import * as traverse from 'json-schema-traverse';
+import {FormService} from '../services/form.service';
 
 @Component({
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-      <!--  <div class="title">{{model ? model.text : 'Questionnaire Item'}}</div> -->
-      <sf-form *ngIf="model" [schema]="mySchema"
-               [(model)]="model" (onChange)="updateModel($event.value)"
+      <sf-form #itemForm *ngIf="model" [schema]="mySchema"
+               [(model)]="model" (onChange)="updateValue($event.value)"
                [bindings]="myFieldBindings"
       ></sf-form>
     </div>
@@ -55,15 +56,19 @@ import {map, switchMap, timeout} from 'rxjs/operators';
 
   `]
 })
-export class NgxSchemaFormComponent implements OnInit {
+export class NgxSchemaFormComponent implements OnInit /*, OnChanges */ {
+  @ViewChild('itemForm') itemForm: FormComponent;
+
   mySchema: any = {properties: {}};
   myTestSchema: any;
   @Output()
   setLinkId = new EventEmitter();
   @Input()
   model: any;
+  // @Output()
+  // modelChange = new EventEmitter<any>();
   @Output()
-  modelChange = new EventEmitter<any>();
+  valueChange = new EventEmitter<any>();
   @Input()
   linkIdCollection = new LinkIdCollection();
 
@@ -101,33 +106,44 @@ export class NgxSchemaFormComponent implements OnInit {
       */
   };
 
-  constructor(private http: HttpClient, private modelService: ShareObjectService) {
+  constructor(private http: HttpClient, private modelService: ShareObjectService, private formService: FormService) {
+    this.mySchema = formService.getItemSchema();
   }
 
   /**
    * Merge schema and layout jsons
    */
   ngOnInit() {
-    this.http.get('/assets/ngx-item.schema.json', {responseType: 'json'}).pipe(
-      switchMap((schema: any) => this.http.get('/assets/items-layout.json', {responseType: 'json'}).pipe(
-        map((layout: any) => {
-          schema.layout = layout;
-          return schema;
-        })
-      ))
-    ).subscribe((schema) => {
-      this.mySchema = schema;
-      // console.log(JSON.stringify(this.mySchema.layout, null, 2));
-    });
+    this.mySchema = this.formService.getItemSchema();
   }
+
+
+  /*
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes.model.currentValue !== changes.model.previousValue) {
+      if(this.itemForm) {
+        this.itemForm.reset();
+        this.itemForm.writeValue(changes.model.currentValue);
+      }
+    }
+  }
+*/
 
 
   /**
    * The model is changed, emit the event.
    * @param model - Event value.
    */
-  updateModel(model) {
-    this.modelChange.emit(model);
+  updateValue(value) {
+    // this.modelChange.emit(value);
+    this.valueChange.emit(value);
+    this.modelService.currentItem = value;
   }
 
+  /**
+   * Reset ngx- form with new model
+   */
+  resetForm(model: any): void {
+    this.model = model;
+  }
 }
