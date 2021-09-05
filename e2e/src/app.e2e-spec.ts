@@ -2,6 +2,7 @@ import { AppPage } from './app.po';
 import {browser, by, element, logging} from 'protractor';
 import {ElementFinder} from 'protractor/built/element';
 import {protractor} from 'protractor/built/ptor';
+import {HelpTextComponent} from "../../src/app/lib/widgets/help-text/help-text.component";
 const page = new AppPage();
 
 describe('formbuilder-lhcforms App', () => {
@@ -36,6 +37,17 @@ describe('formbuilder-lhcforms App', () => {
     });
 
     describe('item level fields', () => {
+      const helpTextExtension = [{
+        url: HelpTextComponent.ITEM_CONTROL_EXT_URL,
+        valueCodeableConcept: {
+          text: 'Help-Button',
+          coding: [{
+            code: 'help',
+            display: 'Help-Button',
+            system: 'http://hl7.org/fhir/questionnaire-item-control'
+          }]
+        }
+      }];
       beforeAll(() => {
         page.navigateTo();
         page.continueButton.click();
@@ -56,6 +68,29 @@ describe('formbuilder-lhcforms App', () => {
         page.addItemButton.click();
         expect(page.lastTreeNode.all(by.css('span')).last().getText()).toEqual('New item 1');
         page.deleteItemButton.click();
+      });
+
+      it('should add help text', async () => {
+        const helpString = 'Test help text!';
+        page.helpText.click();
+        page.helpText.sendKeys(helpString);
+        const qJson: any = await page.questionnaireJSON();
+        expect(qJson.item[0].item[0].text).toEqual(helpString);
+        expect(qJson.item[0].item[0].type).toEqual('display');
+        expect(qJson.item[0].item[0].extension).toEqual(helpTextExtension);
+      });
+
+      xit('should import help text item', async () => {
+        const helpTextFormFilename = './fixtures/help-text-sample.json';
+        const helpString = 'testing help text from import';
+        page.loadFormFromDisk(helpTextFormFilename);
+        browser.sleep(5000);
+        page.bottomCreateQuestionsButton.click();
+        expect(page.helpText.getAttribute('value')).toEqual(helpString);
+        const qJson: any = await page.questionnaireJSON();
+        expect(qJson.item[0].item[0].text).toEqual(helpString);
+        expect(qJson.item[0].item[0].type).toEqual('display');
+        expect(qJson.item[0].item[0].extension).toEqual(helpTextExtension);
       });
 
       it('should display quantity units', async () => {

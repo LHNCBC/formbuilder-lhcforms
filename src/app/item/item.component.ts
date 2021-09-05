@@ -1,7 +1,19 @@
 /**
  * Handle side bar tree, item level fields editing in ui and editing in json
  */
-import {AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, Output, ViewChild, EventEmitter } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges
+} from '@angular/core';
 import {ITreeOptions, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../fetch.service';
 import {MatInput} from '@angular/material/input';
@@ -64,7 +76,7 @@ export class LinkIdCollection {
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css']
 })
-export class ItemComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ItemComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   id = 1;
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
@@ -136,6 +148,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnDestroy {
     if(this.itemList.length === 0) {
       this.itemList.push({text: 'Item 0', type: 'string'});
     }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    this.itemList = changes.questionnaire.currentValue?.item;
   }
 
   /**

@@ -70,6 +70,7 @@ import { TotalScoreComponent } from './lib/widgets/total-score/total-score.compo
 import { RuleEditorModule } from 'rule-editor';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
+import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
 
 // import { LhcAutocomplete } from 'autocomplete-lhc-ng';
 
@@ -116,7 +117,8 @@ import { InitialComponent } from './lib/widgets/initial/initial.component';
     ExtensionsComponent,
     TotalScoreComponent,
     AnswerOptionComponent,
-    InitialComponent
+    InitialComponent,
+    HelpTextComponent
   ],
   imports: [
     AppRoutingModule,

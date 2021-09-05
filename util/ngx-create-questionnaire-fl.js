@@ -84,11 +84,13 @@ delete schema.definitions;
 console.log(JSON.stringify(schema, null, 2)); // tslint:disable-line no-console
 
 /**
+ * Walk through schema and collect referred definitions in 'refs' variable.
+ * Exclude unwanted fields listed in 'removeFields' variable.
  *
- * @param def
+ * @param mainSchema
  */
-function collectDefinitions(def) {
-  traverse(def).reduce(function(acc, n) {
+function collectDefinitions(mainSchema) {
+  traverse(mainSchema).reduce(function(acc, n) {
     if (this.notRoot) {
       if (this.key.match(/^_/) || removeFields.has(this.key)) {
         this.remove(true);
