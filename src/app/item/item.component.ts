@@ -22,7 +22,7 @@ import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
+import {BehaviorSubject, Observable, of, Subject, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {debounceTime, distinctUntilChanged, switchMap} from 'rxjs/operators';
 import {fhir} from '../fhir';
@@ -75,7 +75,7 @@ export class LinkIdCollection {
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css']
 })
-export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterViewChecked {
+export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterViewChecked, OnDestroy {
   id = 1;
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
@@ -116,6 +116,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
 
   treeReloaded$ = new BehaviorSubject<fhir.Questionnaire>(null);
 
+  subscriptions: Subscription [] = [];
+
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
    * Wait at least for two characters, 200 millis of inactivity and not the
@@ -137,9 +139,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
               private formService: FormService,
               private dataSrv: FetchService) {
     this.treeOptions = this.dataSrv.getTreeOptions();
-    this.dataSrv.getItemEditorSchema().subscribe((data) => {
+    const subscription = this.dataSrv.getItemEditorSchema().subscribe((data) => {
       this.itemEditorSchema = data;
     });
+    this.subscriptions.push(subscription);
   }
 
   ngOnInit() {
@@ -329,9 +332,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
    */
   addLoincItem(dialogTemplateRef): void {
     this.modalService.open(dialogTemplateRef, {ariaLabelledBy: 'modal-basic-title'}).result.then((autoCompResult) => {
-      this.getLoincItem(autoCompResult, this.loincType).subscribe((item) => {
+      const subscription = this.getLoincItem(autoCompResult, this.loincType).subscribe((item) => {
         this.insertAnItem(item);
         this.loincItem = null;
+        subscription.unsubscribe();
       });
     }, (reason) => {
       this.loincItem = null;
@@ -382,5 +386,15 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
    */
   formatter(acResult: any) {
     return acResult.code[0].code + ': ' + acResult.text;
+  }
+
+
+  /**
+   * Unsubscribe any subscriptions.
+   */
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
+    });
   }
 }
