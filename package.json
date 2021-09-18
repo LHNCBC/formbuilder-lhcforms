@@ -10,7 +10,8 @@
     "test": "npm run unit-test && npm run e2e",
     "unit-test": "ng test --watch=false --browsers ChromeHeadless",
     "lint": "ng lint",
-    "e2e": "node ./node_modules/.bin/webdriver-manager clean && node ./node_modules/.bin/webdriver-manager update --versions.chrome  $(google-chrome --version |awk '{print $3}') && ng e2e --webdriver-update=false --port 8101",
+    "update-webdriver": "./update-webdriver.sh",
+    "e2e": "npm run update-webdriver && ng e2e --webdriver-update=false --port 8101",
     "postinstall": "ngcc"
   },
   "private": true,

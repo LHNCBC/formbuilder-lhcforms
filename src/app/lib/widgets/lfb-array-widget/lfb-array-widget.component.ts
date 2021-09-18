@@ -33,35 +33,43 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
   booleanControlledInitial = true;
 
   ngOnInit() {
+    this.formProperty.valueChanges.subscribe((vals) => {
+      this.updateWidget();
+
+    });
     if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0) {
       this.formProperty.addItem();
     }
+  }
+
+
+  updateWidget() {
     const widget = this.formProperty.schema.widget;
     // Input is priority followed by widget definition and default
     this.labelPosition =
       this.labelPosition
         ? this.labelPosition
         : widget.labelPosition
-        ? widget.labelPosition
-        : 'top';
+          ? widget.labelPosition
+          : 'top';
 
     // Apply width classes for only left positioned labels.
     this.labelWidthClass =
       this.labelPosition === 'left'
         ? (this.labelWidthClass
-        ? this.labelWidthClass
-        : (widget.labelWidthClass
-          ? widget.labelWidthClass
-          : 'col-sm'))
+          ? this.labelWidthClass
+          : (widget.labelWidthClass
+            ? widget.labelWidthClass
+            : 'col-sm'))
         : '';
 
     this.controlWidthClass =
       this.labelPosition === 'left'
         ? (this.controlWidthClass
-        ? this.controlWidthClass
-        : (widget.controlWidthClass
-          ? widget.controlWidthClass
-          : 'col-sm'))
+          ? this.controlWidthClass
+          : (widget.controlWidthClass
+            ? widget.controlWidthClass
+            : 'col-sm'))
         : '';
 
     this.booleanControlled = this.booleanControlled ? this.booleanControlled : !!widget.booleanControlled;

@@ -7,15 +7,17 @@ import {TreeModel} from '@circlon/angular-tree-component';
 import {fhir} from '../fhir';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import traverse from 'json-schema-traverse';
+import jsonTraverse from 'traverse';
 import ngxItemSchema from '../../assets/ngx-item.schema.json';
 import fhirExtensionSchema from '../../assets/fhir-extension-schema.json';
 import itemLayout from '../../assets/items-layout.json';
 import ngxFlSchema from '../../assets/ngx-fl.schema.json';
 import flLayout from '../../assets/fl-fields-layout.json';
+import {Util} from '../lib/util';
 
 
 @Injectable({
@@ -238,6 +240,24 @@ export class FormService {
    * @param json
    */
   validateFhirQuestionnaire(json: any): fhir.Questionnaire {
+    jsonTraverse(json).forEach(function(x) {
+        if (this.key === 'item') {
+          let htIndex = -1;
+          const index = x.findIndex((e) => {
+            htIndex = Util.findItemIndexWithHelpText(e.item);
+            return htIndex >= 0;
+          });
+          if(index >= 0) {
+            const helpText = x[index].item[htIndex].text;
+            x[index].item.splice(htIndex, 1);
+            if(x[index].item.length === 0) {
+              delete x[index].item;
+            }
+            jsonTraverse(x[index]).set(['__$helpText'], helpText);
+          }
+        }
+    });
+
     return json as fhir.Questionnaire;
   }
 

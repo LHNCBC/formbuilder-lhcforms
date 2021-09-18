@@ -19,3 +19,4 @@ then
   PATH=${dir}/node_modules/.bin:${PATH}
 fi
 umask 0022
+

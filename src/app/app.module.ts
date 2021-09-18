@@ -71,8 +71,7 @@ import { RuleEditorModule } from 'rule-editor';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
-
-// import { LhcAutocomplete } from 'autocomplete-lhc-ng';
+import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.component';
 
 @NgModule({
   declarations: [
@@ -118,7 +117,8 @@ import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
     TotalScoreComponent,
     AnswerOptionComponent,
     InitialComponent,
-    HelpTextComponent
+    HelpTextComponent,
+    SfFormWrapperComponent
   ],
   imports: [
     AppRoutingModule,
@@ -151,7 +151,7 @@ import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
     MatSelectModule,
     MatDialogModule,
   ],
-  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}],
+  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

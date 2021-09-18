@@ -12,12 +12,11 @@ import {
   ViewChild,
   EventEmitter,
   OnChanges,
-  SimpleChanges
+  SimpleChanges, AfterViewChecked
 } from '@angular/core';
 import {ITreeOptions, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../fetch.service';
 import {MatInput} from '@angular/material/input';
-import {ShareObjectService} from '../share-object.service';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
@@ -25,7 +24,7 @@ import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {debounceTime, distinctUntilChanged, switchMap, takeUntil} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, switchMap} from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
 
@@ -76,7 +75,7 @@ export class LinkIdCollection {
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css']
 })
-export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
+export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterViewChecked {
   id = 1;
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
@@ -85,7 +84,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
   // qItem: any;
   focusNode: ITreeNode;
-  item: fhir.QuestionnaireItem = null;
+  itemData: fhir.QuestionnaireItem = null;
   treeOptions: ITreeOptions;
   @Input()
   questionnaire: fhir.Questionnaire = {status: 'draft', item: []};
@@ -112,6 +111,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
   loincItem: any;
 
   linkIdCollection = new LinkIdCollection();
+  itemLoading$ = new BehaviorSubject<boolean>(false);
+  itemLoading = false;
+
+  treeReloaded$ = new BehaviorSubject<fhir.Questionnaire>(null);
 
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
@@ -132,8 +135,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
               private modalService: NgbModal,
               private treeService: TreeService,
               private formService: FormService,
-              private dataSrv: FetchService,
-              private selectedNodeSrv: ShareObjectService) {
+              private dataSrv: FetchService) {
     this.treeOptions = this.dataSrv.getTreeOptions();
     this.dataSrv.getItemEditorSchema().subscribe((data) => {
       this.itemEditorSchema = data;
@@ -145,10 +147,28 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
     if(this.itemList.length === 0) {
       this.itemList.push({text: 'Item 0', type: 'string'});
     }
+    this.itemLoading$.subscribe((isLoading) => {
+      this.itemLoading = isLoading;
+      /*
+      setTimeout(() => {
+        this.itemLoading = isLoading;
+      }, 0);
+      */
+    });
+    this.treeReloaded$.subscribe((questionnaire) => {
+      setTimeout(() => {
+        this.onTreeInitialized();
+      }, 0);
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
     this.itemList = changes.questionnaire.currentValue?.item;
+    this.treeReloaded$.next(changes.questionnaire.currentValue);
+  }
+
+  ngAfterViewChecked() {
+    this.itemLoading$.next(false);
   }
 
   /**
@@ -156,8 +176,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
    */
   itemChanged(item) {
     // this.item = item;
-    // Object.assign(this.focusNode.data, item);
-    this.itemChange.emit(item);
+    this.focusNode.data = item;
+    this.itemChange.emit(this.focusNode.data);
   }
 
   /**
@@ -183,6 +203,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
    * @param event - Focus event.
    */
   onFocus(event) {
+    this.itemLoading$.next(true);
     this.setNode(event.node);
   }
 
@@ -193,7 +214,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
   setNode(node: ITreeNode): void {
     // this.item = node && node.data || null;
     this.focusNode = node;
-    this.item = this.focusNode.data;
+    this.itemData = this.focusNode.data;
     // Not sure why new item is having some fields from prev item. Nonetheless reset the form.
     // Resetting has side effects. Revisit -- TODO
     // this.uiItemEditor.resetForm(this.item);
@@ -255,9 +276,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges {
     const ret: number [] = [];
     if (node) {
       ret.push(node.index + 1);
-      while (node.level > 1) {
+      while (node?.level > 1) {
         node = node.parent;
-        ret.push(node.index + 1);
+        const index = node ? node.index : 0;
+        ret.push(index + 1);
       }
     }
     return ret.reverse();

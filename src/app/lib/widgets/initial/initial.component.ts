@@ -33,14 +33,19 @@ export class InitialComponent extends TableComponent implements OnInit, AfterVie
 
   ngOnInit() {
     super.ngOnInit();
+  }
+
+  ngOnAfterViewInit(): void {
+    super.ngAfterViewInit();
+    this.formProperty.valueChanges.subscribe((val) => {
+      const type = this.formProperty.searchProperty('/type').value;
+      this.formProperty.schema.widget.id = InitialComponent.typeMap[type];
+      this.formProperty.schema.widget.noHeader = true;
+    });
     this.formProperty.searchProperty('/type').valueChanges.subscribe((newValue) => {
       const widget = this.formProperty.schema.widget;
       widget.id = InitialComponent.typeMap[newValue];
       widget.noHeader = true;
     });
-  }
-
-  ngOnAfterViewInit(): void {
-    super.ngAfterViewInit();
   }
 }

@@ -31,7 +31,7 @@ export class AppPage {
     const closeButton = element(by.css('ngb-modal-window')).element(by.buttonText('Close'));
     browser.actions().mouseMove(this.viewQuestionnaireJSON).perform();
     this.viewQuestionnaireJSON.click();
-    let elementWithQ = element(by.css('ngb-modal-window div.modal-body pre'));
+    const elementWithQ = element(by.css('ngb-modal-window div.modal-body pre'));
     browser.wait(EC.textToBePresentInElement(elementWithQ, '{'), 5000);
     return elementWithQ.getText().then((text) => {
       let ret;
@@ -39,12 +39,14 @@ export class AppPage {
         ret = JSON.parse(text);
       }
       catch(e) {
-        console.log("Failed to parse text="+text);
+        console.log('Failed to parse text='+text);
         console.log(e);
         throw e;
       }
-      browser.actions().mouseMove(closeButton).perform();
-      closeButton.click();
+      finally {
+        browser.actions().mouseMove(closeButton).perform();
+        closeButton.click();
+      }
       return ret;
     });
   }

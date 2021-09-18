@@ -1,8 +1,7 @@
 import { AppPage } from './app.po';
 import {browser, by, element, logging} from 'protractor';
-import {ElementFinder} from 'protractor/built/element';
 import {protractor} from 'protractor/built/ptor';
-import {HelpTextComponent} from "../../src/app/lib/widgets/help-text/help-text.component";
+import { Util } from '../../src/app/lib/util';
 const page = new AppPage();
 
 describe('formbuilder-lhcforms App', () => {
@@ -38,7 +37,7 @@ describe('formbuilder-lhcforms App', () => {
 
     describe('item level fields', () => {
       const helpTextExtension = [{
-        url: HelpTextComponent.ITEM_CONTROL_EXT_URL,
+        url: Util.ITEM_CONTROL_EXT_URL,
         valueCodeableConcept: {
           text: 'Help-Button',
           coding: [{
@@ -80,12 +79,10 @@ describe('formbuilder-lhcforms App', () => {
         expect(qJson.item[0].item[0].extension).toEqual(helpTextExtension);
       });
 
-      xit('should import help text item', async () => {
+      it('should import help text item', async () => {
         const helpTextFormFilename = './fixtures/help-text-sample.json';
         const helpString = 'testing help text from import';
         page.loadFormFromDisk(helpTextFormFilename);
-        browser.sleep(5000);
-        page.bottomCreateQuestionsButton.click();
         expect(page.helpText.getAttribute('value')).toEqual(helpString);
         const qJson: any = await page.questionnaireJSON();
         expect(qJson.item[0].item[0].text).toEqual(helpString);
