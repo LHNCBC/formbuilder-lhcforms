@@ -16,6 +16,7 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run --browser chrome",
     "ci:cy-run": "start-server-and-test ci:start-server http://localhost:8101 cy:run",
+    "ci:cy-open": "start-server-and-test ci:start-server http://localhost:8101 cy:run",
     "ci:start-server": "angular-http-server --path ./dist/formbuilder-lhcforms -p 8101",
     "postinstall": "ngcc"
   },
@@ -71,6 +72,7 @@
     "angular-http-server": "^1.10.0",
     "codelyzer": "^6.0.1",
     "cypress": "^8.3.0",
+    "cypress-file-upload": "^5.0.8",
     "jasmine-core": "~3.7.1",
     "jasmine-spec-reporter": "~6.0.0",
     "json-pointer": "^0.6.1",

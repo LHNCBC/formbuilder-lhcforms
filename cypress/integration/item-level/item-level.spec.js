@@ -11,6 +11,8 @@
 // please read our getting started guide:
 // https://on.cypress.io/introduction-to-cypress
 
+import {Util} from '../../../src/app/lib/util';
+
 describe('Home page', () => {
   before(() => {
     // Cypress starts out with a blank slate for each test
@@ -27,10 +29,25 @@ describe('Home page', () => {
   });
 
   context('Item level fields', () => {
+    const helpTextExtension = [{
+      url: Util.ITEM_CONTROL_EXT_URL,
+      valueCodeableConcept: {
+        text: 'Help-Button',
+        coding: [{
+          code: 'help',
+          display: 'Help-Button',
+          system: 'http://hl7.org/fhir/questionnaire-item-control'
+        }]
+      }
+    }];
+
     before(() => {
       cy.get('button').contains('Create questions').click();
     });
 
+    beforeEach(() => {
+      cy.get('#__\\$helpText').as('helpText');
+    });
     it('should display item editor page', () => {
       cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
       cy.get('@codeYes').check({force: true});
@@ -47,6 +64,29 @@ describe('Home page', () => {
       cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'Item 0');
     });
 
+    it('should add help text', () => {
+      const helpString = 'Test help text!';
+      cy.get('@helpText').click();
+      cy.get('@helpText').type(helpString);
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].text).equal(helpString);
+        expect(qJson.item[0].item[0].type).equal('display');
+        expect(qJson.item[0].item[0].extension).to.deep.equal(helpTextExtension);
+      });
+    });
+
+    it('should import help text item', () => {
+      const helpTextFormFilename = 'help-text-sample.json';
+      const helpString = 'testing help text from import';
+      cy.uploadFile(helpTextFormFilename);
+      cy.get('@helpText').should('have.value', helpString);
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].text).equal(helpString);
+        expect(qJson.item[0].item[0].type).equal('display');
+        expect(qJson.item[0].item[0].extension).to.deep.equal(helpTextExtension);
+      });
+    });
+
     it('should display quantity units', () => {
       cy.get('#type').select('string');
       cy.get('[id^="units"]').should('not.exist');
@@ -55,11 +95,23 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
-      cy.contains('#completionOptions tr', '[in_i]').click();
-      cy.contains('span.autocomp_selected li', '[in_i]').should('be.visible');
-      cy.contains('#completionOptions tr', '[in_br]').click();
-      cy.contains('span.autocomp_selected li', '[in_br]').should('be.visible');
+      ['[in_i]', '[in_br]'].forEach((result) => {
+        cy.contains('#completionOptions tr', result).click();
+        cy.contains('span.autocomp_selected li', result).should('be.visible');
+      });
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('quantity');
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('[in_i]');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('inch');
+        expect(qJson.item[0].extension[1].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[1].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[1].valueCoding.code).equal('[in_br]');
+        expect(qJson.item[0].extension[1].valueCoding.display).equal('inch - British');
+      });
     });
+
     it('should display decimal/integer units', () => {
       cy.get('#type').select('string');
       cy.get('[id^="units"]').should('not.exist');
@@ -70,6 +122,13 @@ describe('Home page', () => {
       cy.get('@units').type('inch');
       cy.contains('#completionOptions tr', '[in_i]').click();
       cy.get('@units').last().should('have.value','[in_i]');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('decimal');
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('[in_i]');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('inch');
+      });
     });
   });
 })

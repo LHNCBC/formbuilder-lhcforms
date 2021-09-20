@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { FormService } from './form.service';
-import sampleJson from '../../../e2e/src/fixtures/help-text-sample.json';
+import sampleJson from '../../../cypress/fixtures/help-text-sample.json';
 import traverse from 'traverse';
 import {HttpClient, HttpHandler} from '@angular/common/http';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';

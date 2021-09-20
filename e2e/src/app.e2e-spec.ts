@@ -47,6 +47,7 @@ describe('formbuilder-lhcforms App', () => {
           }]
         }
       }];
+
       beforeAll(() => {
         page.navigateTo();
         page.continueButton.click();
@@ -80,7 +81,7 @@ describe('formbuilder-lhcforms App', () => {
       });
 
       it('should import help text item', async () => {
-        const helpTextFormFilename = './fixtures/help-text-sample.json';
+        const helpTextFormFilename = '../../cypress/fixtures/help-text-sample.json';
         const helpString = 'testing help text from import';
         page.loadFormFromDisk(helpTextFormFilename);
         expect(page.helpText.getAttribute('value')).toEqual(helpString);
