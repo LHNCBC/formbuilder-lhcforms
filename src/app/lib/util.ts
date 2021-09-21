@@ -2,7 +2,6 @@
  * A utility class
  */
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
-import {FormProperty} from 'ngx-schema-form';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -178,6 +177,10 @@ export class Util {
   }
 
 
+  /**
+   * Find index of the item containing help text.
+   * @param itemsArray - List of items to search for.
+   */
   static findItemIndexWithHelpText(itemsArray) {
     if(!itemsArray) {
       return -1;
@@ -194,6 +197,12 @@ export class Util {
     });
   }
 
+  /**
+   * Create help text item. Most of it is boiler plate structure except item.text and item.linkId.
+   *
+   * @param item - Item for which help text item is created, mainly to help assign linkId.
+   * @param helpText - Help text, typically obtained from user input box.
+   */
   static createHelpTextItem(item, helpText) {
     let helpTextItem;
     if(helpText) {
@@ -203,7 +212,5 @@ export class Util {
     }
     return helpTextItem;
   }
-
-
 
 }

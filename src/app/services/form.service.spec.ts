@@ -18,7 +18,7 @@ fdescribe('FormService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should update _$helpText', () => {
+  it('should update __$helpText', () => {
     const clonedSample = traverse(sampleJson).clone();
     service.validateFhirQuestionnaire(clonedSample);
     expect(clonedSample.item[0].__$helpText).toBe(sampleJson.item[0].item[0].text);

@@ -19,4 +19,13 @@
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+  on(`task`, {
+    error ( message ) {
+      // write the error in red color
+      console.error( ansi.red(message) );
+      // play `beep` sound for extra purchase
+      process.stdout.write(`\u0007`);
+      return null;
+    }
+  });
 }

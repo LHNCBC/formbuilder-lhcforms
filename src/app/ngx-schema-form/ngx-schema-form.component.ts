@@ -174,16 +174,14 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
       return;
     }
 
-    setTimeout(() => {
-      const resolver = this.cfr.resolveComponentFactory(SfFormWrapperComponent);
-      this.containerRef.clear();
-      const componentRef = this.containerRef.createComponent(resolver);
-      this.model = model;
-      componentRef.instance.model = this.model;
-      componentRef.instance.modelChange.subscribe((value) => {
-        this.updateValue(value);
-      })
-    }, 0);
+    const resolver = this.cfr.resolveComponentFactory(SfFormWrapperComponent);
+    this.containerRef.clear();
+    const componentRef = this.containerRef.createComponent(resolver);
+    this.model = model;
+    componentRef.instance.model = this.model;
+    componentRef.instance.modelChange.subscribe((value) => {
+      this.updateValue(value);
+    })
   }
 
   ngOnDestroy() {

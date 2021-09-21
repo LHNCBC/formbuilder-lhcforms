@@ -25,11 +25,18 @@ import 'cypress-file-upload';
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
+/**
+ * Command to upload a file.
+ * @param fileName - Name of the file to upload
+ */
 Cypress.Commands.add('uploadFile',(fileName) => {
   // cy.get('[data-cy="file-input"]').attachFile(fileName, {force: true});
   cy.get('input[type="file"]').attachFile(fileName, {force: true});
 });
 
+/**
+ * Command to get json from 'View Questionnaire JSON'
+ */
 Cypress.Commands.add('questionnaireJSON', () => {
   cy.contains('View Questionnaire JSON').scrollIntoView().click();cy.get('.modal-footer > .btn')
   return cy.get('ngb-modal-window div.modal-body pre').invoke('text').then((text) => {

@@ -306,7 +306,6 @@ export class BasePageComponent implements OnDestroy {
       this.questionnaire = this.createDefaultForm();
     }
     this.notifyChange(this.questionnaire);
-    // this.formSubject.next(this.questionnaire);
   }
 
   /**
@@ -341,7 +340,6 @@ export class BasePageComponent implements OnDestroy {
       try {
         this.questionnaire = this.formService.parseQuestionnaire(fileReader.result as string);
         this.notifyChange(this.questionnaire);
-        // this.formSubject.next(this.questionnaire);
       }
       catch (e) {
         this.showError(e);
@@ -468,6 +466,14 @@ export class BasePageComponent implements OnDestroy {
     });
   }
 
+  /**
+   * Transform questionnaire model to FHIR compliant questionnaire in string format.
+   *
+   * The questionnaire, although mostly a FHIR questionnaire object, has some internal fields for processing.
+   * Get a fully compliant FHIR questionnaire in string format.
+   *
+   * @param questionnaire - Questionnaire model is in the form builder.
+   */
   toString(questionnaire: fhir.Questionnaire): string {
     return this.appJsonPipe.transform(questionnaire);
   }

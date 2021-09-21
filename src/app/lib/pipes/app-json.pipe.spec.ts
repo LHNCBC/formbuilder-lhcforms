@@ -1,6 +1,5 @@
 import { AppJsonPipe } from './app-json.pipe';
 import {Util} from '../util';
-import exp from 'constants';
 
 fdescribe('AppJsonPipe', () => {
   // The pipe ignores __$* keys.

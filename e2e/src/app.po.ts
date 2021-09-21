@@ -44,6 +44,7 @@ export class AppPage {
         throw e;
       }
       finally {
+        browser.sleep(1000);
         browser.actions().mouseMove(closeButton).perform();
         closeButton.click();
       }

@@ -150,28 +150,23 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
     if(this.itemList.length === 0) {
       this.itemList.push({text: 'Item 0', type: 'string'});
     }
-    this.itemLoading$.subscribe((isLoading) => {
+    let sub = this.itemLoading$.subscribe((isLoading) => {
       this.itemLoading = isLoading;
-      /*
-      setTimeout(() => {
-        this.itemLoading = isLoading;
-      }, 0);
-      */
     });
-    this.treeReloaded$.subscribe((questionnaire) => {
-      setTimeout(() => {
-        this.onTreeInitialized();
-      }, 0);
+    this.subscriptions.push(sub);
+    sub = this.treeReloaded$.subscribe((questionnaire) => {
+      this.onTreeInitialized();
     });
+    this.subscriptions.push(sub);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     this.itemList = changes.questionnaire.currentValue?.item;
-    this.treeReloaded$.next(changes.questionnaire.currentValue);
+    setTimeout(()=>{this.treeReloaded$.next(changes.questionnaire.currentValue)});
   }
 
   ngAfterViewChecked() {
-    this.itemLoading$.next(false);
+    setTimeout(() => {this.itemLoading$.next(false)});
   }
 
   /**
@@ -196,9 +191,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
    * Tree initialization
    */
   onTreeInitialized() {
-    const node = this.treeComponent.treeModel.getFirstRoot();
-    this.treeComponent.treeModel.setFocusedNode(node);
-    this.setNode(node);
+    const node = this.treeComponent?.treeModel?.getFirstRoot();
+    if(node) {
+      this.treeComponent.treeModel.setFocusedNode(node);
+      this.setNode(node);
+    }
   }
 
   /**
@@ -309,7 +306,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
 
     this.treeComponent.treeModel.update();
     this.treeComponent.treeModel.focusNextNode();
-    // this.setNode(this.treeComponent.treeModel.getFocusedNode());
   }
 
   /**

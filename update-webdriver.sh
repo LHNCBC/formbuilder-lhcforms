@@ -1,10 +1,12 @@
-googleCmd='google-chrome'
+# Script to update chrome webdriver, intended to be used in npm script.
+
+chromeCmd='google-chrome'
 hostOS=$(uname)
 if [[ $hostOS = 'Darwin' ]];
 then
-  googleCmd='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+  chromeCmd='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 fi
-chromeVersion=$("$googleCmd" --version | awk '{print $3}')
+chromeVersion=$("$chromeCmd" --version | awk '{print $3}')
 chromeDriverVersion=$(webdriver-manager status | grep chromedriver | awk '{print $7}')
 
 if [[ "$chromeDriverVersion" == "$chromeVersion" ]];

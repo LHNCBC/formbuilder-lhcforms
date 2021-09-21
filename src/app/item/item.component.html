@@ -30,7 +30,6 @@
           </div>
           <hr/>
           <ng-container *ngIf="editType === 'ui'">
-            <!--
             <div *ngIf="itemLoading" class="overlay">
               <div class="d-flex justify-content-center">
                 <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem; z-index: 20;">
@@ -38,8 +37,6 @@
                 </div>
               </div>
             </div>
-            -->
-            <!-- <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: itemList }"></ng-container> -->
             <lfb-ngx-schema-form #uiEditor [model]="itemData" (valueChange)="itemChanged($event)"></lfb-ngx-schema-form>
           </ng-container>
           <ng-container *ngIf="editType === 'json'">
@@ -92,13 +89,4 @@
     <button type="button" class="btn btn-primary" (click)="modal.dismiss(false)">Cancel</button>
     <button type="button" class="btn btn-primary" (click)="modal.close(loincItem)">Add</button>
   </div>
-</ng-template>
-
-<ng-template #recursiveList let-list>
-  <ng-container *ngFor="let item of list">
-    <lfb-ngx-schema-form #uiEditor [model]="item" *ngIf="item.id === focusNode?.data.id" (valueChange)="itemChanged($event)"></lfb-ngx-schema-form>
-    <ng-container *ngIf="item.item?.length > 0">
-      <ng-container *ngTemplateOutlet="recursiveList; context:{ $implicit: item.item }"></ng-container>
-    </ng-container>
-  </ng-container>
 </ng-template>

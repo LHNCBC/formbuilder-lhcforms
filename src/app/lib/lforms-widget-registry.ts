@@ -26,7 +26,7 @@ import {UnitsComponent} from './widgets/units/units.component';
 import {TotalScoreComponent} from './widgets/total-score/total-score.component';
 import {AnswerOptionComponent} from './widgets/answer-option/answer-option.component';
 import {InitialComponent} from './widgets/initial/initial.component';
-import {HelpTextComponent} from "./widgets/help-text/help-text.component";
+import {HelpTextComponent} from './widgets/help-text/help-text.component';
 
 
 @Injectable()

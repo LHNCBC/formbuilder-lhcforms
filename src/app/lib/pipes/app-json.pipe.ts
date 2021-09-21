@@ -14,8 +14,16 @@ import traverse from 'traverse';
 })
 export class AppJsonPipe implements PipeTransform {
 
+  /**
+   * Filter transformation.
+   *
+   * @param value - JSON object
+   */
   transform(value: any): string {
     const transformed = traverse(value).map(function(x) {
+      // __$helpText is a simple string input control. It should translate to .item[x] with display type and
+      // display control extension.
+
       if(x?.__$helpText?.trim().length > 0) {
         const index = Util.findItemIndexWithHelpText(x.item);
         let helpTextItem;
@@ -34,9 +42,11 @@ export class AppJsonPipe implements PipeTransform {
         delete x.__$helpText;
         this.update(x);
       }
+      // Internally the question is target TreeNode. Change that to node's linkId.
       else if(this.key === 'question' && typeof x?.data === 'object') {
         this.update(x.data.linkId);
       }
+      // Remove all custom fields starting with __$ and empty fields.
       else if(this.key?.startsWith('__$') || typeof x === 'function' || Util.isEmpty(x)) {
         this.delete();
       }

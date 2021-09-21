@@ -16,7 +16,7 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run --browser chrome",
     "ci:cy-run": "start-server-and-test ci:start-server http://localhost:8101 cy:run",
-    "ci:cy-open": "start-server-and-test ci:start-server http://localhost:8101 cy:run",
+    "ci:cy-open": "start-server-and-test ci:start-server http://localhost:8101 cy:open",
     "ci:start-server": "angular-http-server --path ./dist/formbuilder-lhcforms -p 8101",
     "postinstall": "ngcc"
   },
