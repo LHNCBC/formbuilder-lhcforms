@@ -844,6 +844,19 @@ describe('GET /', function () {
       expect(fb.questionCodeSystem.getAttribute('value')).toBe('http://loinc.org/modified');
       expect(fb.questionCode.getAttribute('value')).toBe('Modified_12345-6');
     });
+
+    it('should load a form after loading a form with valuesets', function(done) {
+      const valueSetForm = path.join(__dirname, './fixtures/54127-6-x.json');
+      const normalForm = path.join(__dirname, './fixtures/phq9.json');
+      fb.cleanupSideBar(); // Clear any existing form items
+      Promise.all([util.loadLFormFromDisk(valueSetForm, 'R4'), util.loadLFormFromDisk(normalForm, 'R4')])
+          .then((previewSrc) => {
+            const q = JSON.parse(previewSrc);
+            expect(q.item.length > 0).toBeTruthy();
+            done();
+          })
+          .catch((err) => {done(err);});
+    });
   });
 
   describe('Loading form with css styles', function () {
