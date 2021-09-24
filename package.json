@@ -72,6 +72,7 @@
     "angular-http-server": "^1.10.0",
     "codelyzer": "^6.0.1",
     "cypress": "^8.3.0",
+    "cypress-fail-on-console-error": "^2.1.2",
     "cypress-file-upload": "^5.0.8",
     "jasmine-core": "~3.7.1",
     "jasmine-spec-reporter": "~6.0.0",

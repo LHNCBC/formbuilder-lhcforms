@@ -1,16 +1,5 @@
 /// <reference types="cypress" />
 
-// Welcome to Cypress!
-//
-// This spec file contains a variety of sample tests
-// for a todo list app that are designed to demonstrate
-// the power of writing tests in Cypress.
-//
-// To learn more about how Cypress works and
-// what makes it such an awesome testing tool,
-// please read our getting started guide:
-// https://on.cypress.io/introduction-to-cypress
-
 describe('Home page', () => {
   before(() => {
     // Cypress starts out with a blank slate for each test
@@ -30,8 +19,8 @@ describe('Home page', () => {
     });
 
     beforeEach(() => {
-      cy.get('#Yes_1').find(':radio').as('codeYes');
-      cy.get('#No_1').find(':radio').as('codeNo');
+      cy.get('#Yes_1').find('[type="radio"]').as('codeYes');
+      cy.get('#No_1').find('[type="radio"]').as('codeNo');
     });
 
     it('should move to form level fields', () => {
