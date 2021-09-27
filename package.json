@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 8100",
+    "start-public": "ng serve --disable-host-check --port 8100 --host 0.0.0.0",
     "install-and-build": "source ./bashrc.formbuilder && npm install && npm run clean-build",
     "clean-build": "source ./bashrc.formbuilder && npm ci && source ./bashrc.formbuilder && npm run build",
     "build": "ng build",
