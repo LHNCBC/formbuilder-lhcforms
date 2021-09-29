@@ -28,7 +28,7 @@ import { DomSanitizer } from '@angular/platform-browser';
       <div class="float-lg-right" *ngIf="isFirebaseEnabled">
         <div *ngIf="!isUserSignedIn">
           <button mat-button color="primary" (click)="showSignInDialog()">
-            <button class="btn border-0 m-0 p-0" ngbTooltip="Login with OAuth authenticators">Sign in</button>
+            <button class="btn border-0 m-0 p-0" matTooltip="Login with OAuth authenticators">Sign in</button>
           </button>
         </div>
         <div *ngIf="isUserSignedIn">
