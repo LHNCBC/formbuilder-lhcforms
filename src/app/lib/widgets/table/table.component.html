@@ -57,7 +57,7 @@
                   *ngIf="!(schema.hasOwnProperty('minItems') &&
                                schema.hasOwnProperty('maxItems') &&
                                schema.minItems === schema.maxItems)"
-                  matTooltip="Remove" title="Remove"
+                  matTooltip="Remove" aria-label="Remove"
           >
             <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
         </td>

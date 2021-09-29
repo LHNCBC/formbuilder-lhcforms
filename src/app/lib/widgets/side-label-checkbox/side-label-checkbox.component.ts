@@ -11,7 +11,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
       <label *ngIf="!nolabel && schema.title" [attr.for]="id" class="form-check-label {{labelWidthClass}}">
         {{ schema.title }}
         <button *ngIf="schema.description"  class="btn border-0 m-0 p-0"
-                role="tooltip" [title]="schema.description" [matTooltip]="schema.description">
+                role="tooltip" [attr.aria-label]="schema.description" aria-hidden="true" [matTooltip]="schema.description">
           <fa-icon [icon]="faInfo"></fa-icon>
         </button>
       </label>
