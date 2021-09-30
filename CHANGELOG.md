@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.5.1]  2021-09-30
+### Fixed
+- Changed broken CTSS url.
+
 ## [6.5.0]  2021-08-24
 ### Added
 - Added support for attachment type.
