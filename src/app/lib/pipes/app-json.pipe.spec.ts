@@ -1,8 +1,11 @@
 import { AppJsonPipe } from './app-json.pipe';
+import {Util} from '../util';
 
 fdescribe('AppJsonPipe', () => {
   // The pipe ignores __$* keys.
   const obj = {
+    linkId: 'l1',
+    __$helpText: 'Help text!',
     test: () => {console.log('hi')},
     __$a: {
       __$b: '_b',
@@ -33,7 +36,13 @@ fdescribe('AppJsonPipe', () => {
 
   it('should transform ignoring functions', () => {
     const pipe = new AppJsonPipe();
-    expect(JSON.parse(pipe.transform(obj))).toEqual({
+    const helpTextItem = JSON.parse(JSON.stringify(Util.helpItemTemplate));
+    helpTextItem.text = 'Help text!';
+    helpTextItem.linkId = 'l1_helpText';
+    const expected = JSON.parse(pipe.transform(obj));
+    expect(expected).toEqual({
+      linkId: 'l1',
+      item: [helpTextItem],
       A: {b: 'b'},
       question: 2,
       enableWhen: {question: 1}

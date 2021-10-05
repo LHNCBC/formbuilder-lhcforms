@@ -70,8 +70,8 @@ import { TotalScoreComponent } from './lib/widgets/total-score/total-score.compo
 import { RuleEditorModule } from 'rule-editor';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
-
-// import { LhcAutocomplete } from 'autocomplete-lhc-ng';
+import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
+import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.component';
 
 @NgModule({
   declarations: [
@@ -116,7 +116,9 @@ import { InitialComponent } from './lib/widgets/initial/initial.component';
     ExtensionsComponent,
     TotalScoreComponent,
     AnswerOptionComponent,
-    InitialComponent
+    InitialComponent,
+    HelpTextComponent,
+    SfFormWrapperComponent
   ],
   imports: [
     AppRoutingModule,
@@ -149,7 +151,7 @@ import { InitialComponent } from './lib/widgets/initial/initial.component';
     MatSelectModule,
     MatDialogModule,
   ],
-  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}],
+  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

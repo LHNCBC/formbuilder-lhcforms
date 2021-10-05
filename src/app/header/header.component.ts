@@ -28,14 +28,14 @@ import { DomSanitizer } from '@angular/platform-browser';
       <div class="float-lg-right" *ngIf="isFirebaseEnabled">
         <div *ngIf="!isUserSignedIn">
           <button mat-button color="primary" (click)="showSignInDialog()">
-            <span matTooltipPosition="above" matTooltip="Login with OAuth authenticators">Sign in</span>
+            <button class="btn border-0 m-0 p-0" matTooltip="Login with OAuth authenticators">Sign in</button>
           </button>
         </div>
         <div *ngIf="isUserSignedIn">
           <span>{{userProfile.displayName}}</span>
           <button mat-button color="primary" (click)="signOut()">
-            <span matTooltipPosition="above"
-                  [matTooltip]="userProfile.displayName + userProfile.email ? (' : ' + userProfile.email) : ''">Sign out</span>
+            <button class="btn border-0 m-0 p-0"
+                  [ngbTooltip]="userProfile.displayName + userProfile.email ? (' : ' + userProfile.email) : ''">Sign out</button>
           </button>
         </div>
         <div *ngIf="loginError">{{loginError.message}}</div>

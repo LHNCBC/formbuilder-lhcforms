@@ -1,12 +1,13 @@
 /**
  * Handles total score input on the item level form
  */
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ExtensionsComponent} from '../extensions/extensions.component';
 import {fhir} from '../../../fhir';
 import {ArrayProperty, FormProperty} from 'ngx-schema-form';
 import { RuleEditorService } from 'rule-editor';
 import {ShareObjectService} from '../../../share-object.service';
+import {Subscription} from 'rxjs';
 
 
 @Component({
@@ -30,13 +31,15 @@ import {ShareObjectService} from '../../../share-object.service';
   styles: [
   ]
 })
-export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
+export class TotalScoreComponent extends ExtensionsComponent implements OnInit, OnDestroy {
 
   public static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
 
   selected = false;
   questionnaire: fhir.Questionnaire;
   item: fhir.QuestionnaireItem;
+
+  subscriptions: Subscription [] = [];
 
   constructor(private ruleEditorService: RuleEditorService, private modelService: ShareObjectService) {
     super();
@@ -48,19 +51,21 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
     // TODO - Use rule-editor service to determine eligibility.
     const eligible = 'true';
     eligibleIndicator.setValue(eligible, true);
-    eligibleIndicator.valueChanges.subscribe((value) => {
+    let subscrption = eligibleIndicator.valueChanges.subscribe((value) => {
       if(value) {
         this.selected = this.isTotalScoreAssigned(this.extensionsProp.properties as FormProperty[]);
       }
     });
-
+    this.subscriptions.push(subscrption);
     // Listen to changes in questionnaire and item.
-    this.modelService.currentItem$.subscribe((item) => {
+    subscrption = this.modelService.currentItem$.subscribe((item) => {
       this.item = item;
     });
-    this.modelService.questionnaire$.subscribe((q) => {
+    this.subscriptions.push(subscrption);
+    subscrption = this.modelService.questionnaire$.subscribe((q) => {
       this.questionnaire = q;
     });
+    this.subscriptions.push(subscrption);
 
   }
 
@@ -109,5 +114,12 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit {
         props.splice(i, 1);
       }
     }
+  }
+
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((s) => {
+      s.unsubscribe();
+    });
   }
 }

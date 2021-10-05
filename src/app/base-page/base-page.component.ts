@@ -10,6 +10,7 @@ import {FetchService} from '../fetch.service';
 import {FhirService} from '../services/fhir.service';
 import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
+import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
 
 @Component({
   selector: 'lfb-base-page',
@@ -228,7 +229,8 @@ export class BasePageComponent implements OnDestroy {
   constructor(private formService: FormService,
               private modal: NgbModal,
               private dataSrv: FetchService,
-              private fhirService: FhirService) {
+              private fhirService: FhirService,
+              private appJsonPipe: AppJsonPipe) {
     this.initialForm = this.createDefaultForm();
     const isAutoSaved = this.formService.isAutoSaved();
     if(isAutoSaved) {
@@ -303,7 +305,7 @@ export class BasePageComponent implements OnDestroy {
       this.setStep('choose-start');
       this.questionnaire = this.createDefaultForm();
     }
-    this.formSubject.next(this.questionnaire);
+    this.notifyChange(this.questionnaire);
   }
 
   /**
@@ -331,11 +333,13 @@ export class BasePageComponent implements OnDestroy {
    */
   onFileSelected(event) {
     const selectedFile = event.target.files[0];
+    event.target.value = null; //
     const fileReader = new FileReader();
     fileReader.readAsText(selectedFile, 'UTF-8');
     fileReader.onload = () => {
       try {
         this.questionnaire = this.formService.parseQuestionnaire(fileReader.result as string);
+        this.notifyChange(this.questionnaire);
       }
       catch (e) {
         this.showError(e);
@@ -370,7 +374,7 @@ export class BasePageComponent implements OnDestroy {
    * Save form to local file, mostly copied from current form builder.
    */
   saveToFile() {
-    const content = JSON.stringify(this.questionnaire);
+    const content = this.toString(this.questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
     const formName = this.questionnaire.title;
     const formShortName = this.questionnaire.name;
@@ -460,6 +464,18 @@ export class BasePageComponent implements OnDestroy {
     }, (reason) => {
       console.error(reason);
     });
+  }
+
+  /**
+   * Transform questionnaire model to FHIR compliant questionnaire in string format.
+   *
+   * The questionnaire, although mostly a FHIR questionnaire object, has some internal fields for processing.
+   * Get a fully compliant FHIR questionnaire in string format.
+   *
+   * @param questionnaire - Questionnaire model is in the form builder.
+   */
+  toString(questionnaire: fhir.Questionnaire): string {
+    return this.appJsonPipe.transform(questionnaire);
   }
 
 }

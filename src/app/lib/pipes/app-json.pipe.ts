@@ -7,24 +7,52 @@
  */
 import { Pipe, PipeTransform } from '@angular/core';
 import {Util} from '../util';
+import traverse from 'traverse';
 
 @Pipe({
   name: 'appJson'
 })
 export class AppJsonPipe implements PipeTransform {
 
+  /**
+   * Filter transformation.
+   *
+   * @param value - JSON object
+   */
   transform(value: any): string {
-    const replacer = (k, v) => {
+    const transformed = traverse(value).map(function(x) {
+      // __$helpText is a simple string input control. It should translate to .item[x] with display type and
+      // display control extension.
 
-      return (
-        k.startsWith('__$') ||
-        typeof v === 'function' ||
-        Util.isEmpty(v)
-      ) ? undefined :
-        // Special case: enableWhen.question is a TreeNode. It should include linkId.
-        (k === 'question' && v && v.data && typeof v.data === 'object' ? v.data.linkId : v);
-    };
-    return JSON.stringify(value, replacer, 2);
+      if(x?.__$helpText?.trim().length > 0) {
+        const index = Util.findItemIndexWithHelpText(x.item);
+        let helpTextItem;
+        if(index < 0) {
+          helpTextItem = Util.createHelpTextItem(x, x.__$helpText.trim());
+          if(!x.item) {
+            x.item = [];
+          }
+          x.item.push(helpTextItem);
+        }
+        else {
+          helpTextItem = x.item[index];
+          helpTextItem.text = x.__$helpText;
+        }
+        // Replace helpText with sub item
+        delete x.__$helpText;
+        this.update(x);
+      }
+      // Internally the question is target TreeNode. Change that to node's linkId.
+      else if(this.key === 'question' && typeof x?.data === 'object') {
+        this.update(x.data.linkId);
+      }
+      // Remove all custom fields starting with __$ and empty fields.
+      else if(this.key?.startsWith('__$') || typeof x === 'function' || Util.isEmpty(x)) {
+        this.delete();
+      }
+    });
+
+    return JSON.stringify(transformed, null, 2);
   }
 
 }

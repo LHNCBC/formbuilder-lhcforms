@@ -2,9 +2,28 @@
  * A utility class
  */
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
-import {FormProperty} from 'ngx-schema-form';
 
 export class Util {
+  static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
+  static helpItemTemplate = {
+    text: '',  // Update with value from input box.
+    type: 'display',
+    linkId: '', // Update at run time.
+    extension: [{
+      url: Util.ITEM_CONTROL_EXT_URL,
+      valueCodeableConcept: {
+        text: 'Help-Button',
+        coding: [
+          {
+            code: 'help',
+            display: 'Help-Button',
+            system: 'http://hl7.org/fhir/questionnaire-item-control'
+          }
+        ]
+      }
+    }]
+  };
+
   // Capitalize the camel case strings.
   static capitalize(str): string {
     let ret = '';
@@ -156,4 +175,42 @@ export class Util {
     });
     return ret;
   }
+
+
+  /**
+   * Find index of the item containing help text.
+   * @param itemsArray - List of items to search for.
+   */
+  static findItemIndexWithHelpText(itemsArray) {
+    if(!itemsArray) {
+      return -1;
+    }
+    return itemsArray?.findIndex((item) => {
+      let ret = false;
+      if (item.type === 'display') {
+        ret = item.extension?.some((e) => {
+          return e.url === Util.ITEM_CONTROL_EXT_URL &&
+            e.valueCodeableConcept?.coding?.some((coding) => coding.code === 'help');
+        });
+      }
+      return ret;
+    });
+  }
+
+  /**
+   * Create help text item. Most of it is boiler plate structure except item.text and item.linkId.
+   *
+   * @param item - Item for which help text item is created, mainly to help assign linkId.
+   * @param helpText - Help text, typically obtained from user input box.
+   */
+  static createHelpTextItem(item, helpText) {
+    let helpTextItem;
+    if(helpText) {
+      helpTextItem = JSON.parse(JSON.stringify(Util.helpItemTemplate));
+      helpTextItem.linkId = item.linkId + '_helpText';
+      helpTextItem.text = helpText;
+    }
+    return helpTextItem;
+  }
+
 }
