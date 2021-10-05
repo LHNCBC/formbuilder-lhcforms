@@ -197,15 +197,18 @@ angular.module('formBuilder')
        * @param jsonInput
        */
       function setPreviewData(jsonInput) {
+        $scope.previewSourceErrors = {};
         $scope.previewSource.lforms = toJsonFilter(jsonInput, ['_', '$']);
         const previewSrcObj = JSON.parse($scope.previewSource.lforms);
+        LForms.Util.setFHIRContext(FHIR.client({serverUrl: $scope.getFhirServer().endpoint}));
         $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
           $scope.previewSource[ele.format] = null;
+          $scope.previewSourceErrors[ele.format] = null;
           try {
             const fhirData = LForms.FHIR[ele.format].SDC.convertLFormsToQuestionnaire(previewSrcObj);
             $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
           } catch (e) {
-            console.error(e.message);
+            $scope.previewSourceErrors[ele.format] = [e.message];
           }
         });
         if(previewSrcObj.items.length > 0) {
@@ -220,10 +223,12 @@ angular.module('formBuilder')
             $scope.previewLfData.templateOptions.showFormHeader = false;
             $scope.previewLfData.templateOptions.hideFormControls = true;
             $scope.previewLfData.templateOptions.viewMode = 'md';
+            $scope.previewErrors = null;
           }
           catch(e) {
-            console.error('Failed to create preview widget!');
-            console.error(e.message);
+            var err = 'Failed to create preview widget!';
+            $scope.previewErrors = [err];
+            $scope.previewErrors.push(e.message);
             $scope.previewLfData = null;
           }
         }
