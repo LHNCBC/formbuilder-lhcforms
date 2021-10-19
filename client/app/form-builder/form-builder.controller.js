@@ -197,23 +197,40 @@ angular.module('formBuilder')
        * @param jsonInput
        */
       function setPreviewData(jsonInput) {
-        $scope.previewSource['lforms'] = toJsonFilter(jsonInput, ['_', '$']);
-        var previewSrcObj = JSON.parse($scope.previewSource['lforms']);
+        $scope.previewSourceErrors = {};
+        $scope.previewSource.lforms = toJsonFilter(jsonInput, ['_', '$']);
+        const previewSrcObj = JSON.parse($scope.previewSource.lforms);
+        LForms.Util.setFHIRContext(FHIR.client({serverUrl: $scope.getFhirServer().endpoint}));
         $scope.formatList.slice(0, ($scope.formatList.length - 1)).forEach(function (ele) {
-          var fhirData = LForms.FHIR[ele.format].SDC.convertLFormsToQuestionnaire(previewSrcObj);
-          $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
+          $scope.previewSource[ele.format] = null;
+          $scope.previewSourceErrors[ele.format] = null;
+          try {
+            const fhirData = LForms.FHIR[ele.format].SDC.convertLFormsToQuestionnaire(previewSrcObj);
+            $scope.previewSource[ele.format] = toJsonFilter(fhirData, ['_', '$']);
+          } catch (e) {
+            $scope.previewSourceErrors[ele.format] = [e.message];
+          }
         });
         if(previewSrcObj.items.length > 0) {
-          $scope.previewLfData = new LForms.LFormsData(previewSrcObj);
-          if(previewSrcObj.id) {
-            $scope.previewLfData.id = previewSrcObj.id;
-          }
+          try {
+            $scope.previewLfData = new LForms.LFormsData(previewSrcObj);
+            if(previewSrcObj.id) {
+              $scope.previewLfData.id = previewSrcObj.id;
+            }
 
-          //Customize preview in formbuilder.
-          $scope.previewLfData.templateOptions = $scope.previewLfData.templateOptions || {};
-          $scope.previewLfData.templateOptions.showFormHeader = false;
-          $scope.previewLfData.templateOptions.hideFormControls = true;
-          $scope.previewLfData.templateOptions.viewMode = 'md';
+            //Customize preview in formbuilder.
+            $scope.previewLfData.templateOptions = $scope.previewLfData.templateOptions || {};
+            $scope.previewLfData.templateOptions.showFormHeader = false;
+            $scope.previewLfData.templateOptions.hideFormControls = true;
+            $scope.previewLfData.templateOptions.viewMode = 'md';
+            $scope.previewErrors = null;
+          }
+          catch(e) {
+            var err = 'Failed to create preview widget!';
+            $scope.previewErrors = [err];
+            $scope.previewErrors.push(e.message);
+            $scope.previewLfData = null;
+          }
         }
         else {
           $scope.previewLfData = null;
@@ -272,7 +289,7 @@ angular.module('formBuilder')
             // Use hidden anchor to do file download.
             var downloadLink = document.getElementById('exportAnchor');
             var urlFactory = (window.URL || window.webkitURL);
-            if(objectUrl != null) {
+            if(objectUrl !== null) {
               // First release any resources on existing object url
               urlFactory.revokeObjectURL(objectUrl);
             }
@@ -610,7 +627,7 @@ angular.module('formBuilder')
       $scope.isHeaderItem = function (lfData) {
         var ret = false;
         if(formBuilderService.isNodeFbLfItem(lfData)) {
-          var indexInfo = dataConstants.INITIAL_FIELD_INDICES['__itemType'];
+          var indexInfo = dataConstants.INITIAL_FIELD_INDICES.__itemType;
           ret = formBuilderService.getFormBuilderField(lfData[indexInfo.category].items, '__itemType').value.code === 'group';
         }
         return ret;

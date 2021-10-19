@@ -418,4 +418,8 @@ md-menu-bar {
   color: red;
   font-weight: bold;
 }
+
+.message-box {
+  padding: 10px;
+}
 /* End of styles for the footer */

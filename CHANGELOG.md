@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.5.2]  2021-10-05
+### Fixed
+- Fixed a bug that fails to load forms after loading a form with ValueSet
+  having no terminology server.
+
 ## [6.5.1]  2021-09-30
 ### Fixed
 - Changed broken CTSS url.

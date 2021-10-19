@@ -95,7 +95,10 @@
                       </div>
                     </md-tab-label>
                     <md-tab-body>
-                      <lforms lf-data="previewLfData"></lforms>
+                      <div ng-if="previewErrors" class="error-message">
+                        <div ng-repeat="e in previewErrors" class="message-box">{{e}}</div>
+                      </div>
+                      <lforms ng-if="previewLfData" lf-data="previewLfData"></lforms>
                     </md-tab-body>
                   </md-tab>
                   <md-tab>
@@ -112,7 +115,10 @@
                           </md-radio-button>
                         </md-radio-group>
                       </div>
-                      <pre class="formbuilder-pre">{{previewSource[selectedFormat.format]}}</pre>
+                      <div ng-if="previewSourceErrors[selectedFormat.format]" class="error-message">
+                        <div ng-repeat="e in previewSourceErrors[selectedFormat.format]" class="message-box">{{e}}</div>
+                      </div>
+                      <pre ng-if="previewSource[selectedFormat.format]" class="formbuilder-pre">{{previewSource[selectedFormat.format]}}</pre>
                     </md-tab-body>
                   </md-tab>
                 </md-tabs>
