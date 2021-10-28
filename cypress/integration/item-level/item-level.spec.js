@@ -38,6 +38,7 @@ describe('Home page', () => {
       cy.uploadFile('reset-form.json');
       cy.get('#text').should('have.value', 'Item from reset form', {timeout: 10000});
       cy.get('#__\\$helpText').as('helpText');
+      cy.wait(1000);
     });
 
     it('should display item editor page', () => {
@@ -81,6 +82,8 @@ describe('Home page', () => {
       cy.get('[id="initial.0.valueCoding.display"]').should('not.exist');
       cy.get('[id="answerOption.0.valueCoding.display"]').should('not.exist');
       cy.selectDataType('choice');
+      // No widget for choice. User selects default radio in answer option table.
+      cy.get('[id^="initial"]').should('not.be.visible');
       cy.get('[id="answerOption.0.valueCoding.display"]').type('d1');
       cy.get('[id="answerOption.0.valueCoding.code"]').type('c1');
       cy.get('[id="answerOption.0.valueCoding.system"]').type('s1');
@@ -93,13 +96,52 @@ describe('Home page', () => {
           url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
           valueDecimal: 2
         }]);
+        expect(qJson.item[0].initial).to.be.undefined; // No default selected
+      });
+
+      // Add a second answerOption.
+      cy.contains('button', 'Add another answer').click();
+
+      cy.get('[id="answerOption.1.valueCoding.display"]').type('d2');
+      cy.get('[id="answerOption.1.valueCoding.code"]').type('c2');
+      cy.get('[id="answerOption.1.valueCoding.system"]').type('s2');
+      cy.get('[id="answerOption.1.valueCoding.__$score"]').type('3');
+      // Select a default a.k.a initial
+      cy.get('input[type="radio"][ng-reflect-value="0"]').click();
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].answerOption[1].valueCoding).to.deep.equal({display: 'd2', code: 'c2', system: 's2'});
+        expect(qJson.item[0].answerOption[1].extension).to.deep.equal([{
+          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          valueDecimal: 3
+        }]);
+        // Default/initial value coding.
+        expect(qJson.item[0].initial[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
+      });
+    });
+
+    it('should add initial values', () => {
+      cy.selectDataType('string');
+      cy.get('[id="initial.0.valueString"]').type('initial string');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('string');
+        expect(qJson.item[0].initial[0].valueString).equal('initial string');
+      });
+      cy.selectDataType('decimal');
+      cy.get('[id="initial.0.valueDecimal"]').type('100');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('decimal');
+        expect(qJson.item[0].initial[0].valueDecimal).equal(100);
+      });
+
+      cy.selectDataType('choice');
+      cy.get('[id^="initial"]').should('not.be.visible');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
         expect(qJson.item[0].initial).to.be.undefined;
       });
 
-      cy.get('input[type="radio"][ng-reflect-value="0"]').click();
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].initial[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
-      });
     });
 
     it('should import item with answer option', () => {
