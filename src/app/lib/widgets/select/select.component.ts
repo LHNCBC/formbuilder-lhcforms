@@ -9,52 +9,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 
 @Component({
   selector: 'lfb-select',
-  template: `
-    <ng-template #baseSelect>
-      <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-        <lfb-label  *ngIf="!nolabel"
-                    [for]="id"
-                    [title]="schema.title"
-                    [helpMessage]="schema.description"
-                    [ngClass]="labelWidthClass+' pl-0 pr-1'"
-        ></lfb-label>
-        <select *ngIf="schema.type!='array'"
-                [formControl]="control"
-                [attr.name]="name"
-                [attr.id]="id"
-                [attr.disabled]="schema.readOnly ? '' : null"
-                class="form-control {{controlWidthClass}}">
-          <ng-container *ngIf="schema.oneOf; else use_enum">
-            <option *ngFor="let option of schema.oneOf"
-                    [ngValue]="option.enum[0]" >{{option.description}}</option>
-          </ng-container>
-          <ng-template #use_enum>
-            <option *ngFor="let option of allowedOptions"
-                    [ngValue]="option.value" >{{option.label}}</option>
-          </ng-template>
-        </select>
-
-        <select *ngIf="schema.type==='array'" multiple
-                [formControl]="control"
-                [attr.name]="name"
-                [attr.id]="id"
-                [attr.disabled]="schema.readOnly ? '' : null"
-                class="form-control {{controlWidthClass}}">
-          <option *ngFor="let option of schema.items.oneOf"
-                  [ngValue]="option.enum[0]"
-                  [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
-        </select>
-
-        <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">
-      </div>
-    </ng-template>
-
-    <ng-container *ngTemplateOutlet="baseSelect">
-
-    </ng-container>
-  `,
-  styles: [`
-  `]
+  templateUrl: './select.component.html'
 })
 export class SelectComponent extends LfbControlWidgetComponent implements AfterViewInit {
   faInfo = faInfoCircle;

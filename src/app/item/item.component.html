@@ -5,8 +5,8 @@
             #tree
             [nodes]="itemList"
             [options]="treeOptions"
-            (initialized)="onTreeInitialized()"
             (focus)="onFocus($event)"
+            (updateData)="onTreeUpdated($event)"
           >
             <ng-template #treeNodeTemplate let-node let-index="index">
               <div [ngClass]="node.nodeClass">

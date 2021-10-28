@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
@@ -10,9 +10,9 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
     }
   `]
 })
-export class BooleanRadioComponent  extends LfbControlWidgetComponent implements OnInit {
-  ngOnInit() {
+export class BooleanRadioComponent  extends LfbControlWidgetComponent implements AfterViewInit {
+  ngAfterViewInit() {
     this.labelPosition = 'left';
-    super.ngOnInit();
+    super.ngAfterViewInit();
   }
 }

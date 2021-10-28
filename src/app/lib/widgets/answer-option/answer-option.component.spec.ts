@@ -1,25 +1,27 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { AnswerOptionComponent } from './answer-option.component';
+import {CommonTestingModule} from '../../../testing/common-testing.module';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {
+  ExpressionCompilerFactory,
+  FormPropertyFactory, LogService, SchemaFormModule,
+  SchemaValidatorFactory,
+  ValidatorRegistry
+} from 'ngx-schema-form';
+import {PropertyBindingRegistry} from 'ngx-schema-form/lib/property-binding-registry';
 
 describe('AnswerOptionComponent', () => {
-  let component: AnswerOptionComponent;
-  let fixture: ComponentFixture<AnswerOptionComponent>;
+//  let component: AnswerOptionComponent;
+//  let service: TestingService;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [ AnswerOptionComponent ]
-    })
-    .compileComponents();
-  });
-
+  CommonTestingModule.setUpTestBedConfig({declarations: [AnswerOptionComponent]});
   beforeEach(() => {
-    fixture = TestBed.createComponent(AnswerOptionComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+//    service = TestBed.inject(TestingService);
+//    component = service.createComponent(AnswerOptionComponent) as AnswerOptionComponent;
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+//    expect(component).toBeDefined();
   });
 });

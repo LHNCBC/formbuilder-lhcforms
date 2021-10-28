@@ -24,13 +24,13 @@ import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
         <div class="container">
           <sf-form [schema]="qlSchema"
                    [(model)]="questionnaire"
-                   (onChange)="notifyChange()"
+                   (onChange)="notifyChange($event)"
           ></sf-form>
         </div>
         <hr/>
         <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
             <button type="button" class="btn btn-sm btn-primary mt-4 mr-2" (click)="allFields()">Show advanced form fields</button>
-            <button type="button" class="btn btn-sm btn-primary mt-4 mr-2 ml-auto" (click)="goToItemEditor()">{{ createButtonLabel() }}</button>
+            <button type="button" class="btn btn-sm btn-primary mt-4 mr-2 ml-auto" (click)="goToItemEditor()">{{ questionsButtonLabel }}</button>
         </div>
       </div>
     </div>
@@ -43,6 +43,8 @@ import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 })
 export class FormFieldsComponent implements OnInit, OnChanges {
 
+  @Input()
+  questionsButtonLabel = 'Create questions';
   @Input()
   questionnaire: fhir.Questionnaire;
   qlSchema: any = {properties: {}}; // Combines questionnaire schema with layout schema.
@@ -75,7 +77,7 @@ export class FormFieldsComponent implements OnInit, OnChanges {
 
 
   ngOnChanges(changes: SimpleChanges) {
-    const qChange = changes.quetionnaire;
+    const qChange = changes.questionnaire;
     if(qChange) {
       this.modelService.questionnaire = qChange.currentValue;
     }
@@ -92,8 +94,8 @@ export class FormFieldsComponent implements OnInit, OnChanges {
   /**
    * Emit the change event.
    */
-  notifyChange() {
-    this.questionnaireChange.emit(this.questionnaire);
+  notifyChange(event) {
+    this.questionnaireChange.emit(event.value);
   }
 
 
@@ -117,9 +119,6 @@ export class FormFieldsComponent implements OnInit, OnChanges {
    * Button handler for edit questions
    */
   goToItemEditor(): void {
-    if(this.questionnaire.item.length === 0) {
-      this.questionnaire.item.push({text: 'Item 0', linkId: null, type: 'string'});
-    }
     this.setGuidingStep('item-editor');
   }
 
@@ -127,6 +126,7 @@ export class FormFieldsComponent implements OnInit, OnChanges {
   /**
    * Change button text based on context
    */
+  /*
   createButtonLabel(): string {
     let ret = 'Create questions';
     if(this.questionnaire && this.questionnaire.item && this.questionnaire.item.length > 0) {
@@ -134,4 +134,5 @@ export class FormFieldsComponent implements OnInit, OnChanges {
     }
     return ret;
   }
+   */
 }

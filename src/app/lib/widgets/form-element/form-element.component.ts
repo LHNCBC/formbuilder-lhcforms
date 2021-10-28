@@ -27,6 +27,7 @@ import { Widget } from 'ngx-schema-form';
   styles: []
 })
 export class AppFormElementComponent extends FormElementComponent {
+  static seqNum = 0;
   // Input properties, typically read from layout schema json.
   @Input()
   nolabel = false;
@@ -73,6 +74,7 @@ ngOnChanges(changes: SimpleChanges): void {
    */
   onWidgetInstanciated(widget: Widget<any>): void {
     super.onWidgetInstanciated(widget);
+    this.setCanonicalId(); // Re-assign ids with canonical paths with proper indices.
     // @ts-ignore
     this.widget.nolabel = this.nolabel;
     // @ts-ignore
@@ -81,5 +83,23 @@ ngOnChanges(changes: SimpleChanges): void {
     this.widget.labelWidthClass = this.labelWidthClass;
     // @ts-ignore
     this.widget.controlWidthClass = this.controlWidthClass;
+  }
+
+
+  /**
+   * For some reason, the canonical path is includes '*' for array items.
+   * This method is to replace them with proper array indices. These ids are used for html element id
+   */
+  setCanonicalId(): void {
+    // Parent path has proper index. Replace ancestral portion of the path with parent's path.
+    const parentId = this.formProperty.parent?.canonicalPathNotation;
+    if(parentId) {
+      let id = parentId + this.formProperty.canonicalPathNotation.replace(/^.*\./, '.');
+      if (this.formProperty.root.rootName) {
+        id = `${this.formProperty.root.rootName}:${id}`;
+      }
+      this.widget.name = id;
+      this.widget.id = id;
+    }
   }
 }

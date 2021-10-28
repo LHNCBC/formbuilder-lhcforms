@@ -4,6 +4,7 @@
 /dist
 /tmp
 /out-tsc
+/ngx-schema-form
 # Only exists if Bazel was run
 /bazel-out
 

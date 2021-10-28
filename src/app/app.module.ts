@@ -72,6 +72,7 @@ import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option
 import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
 import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.component';
+import { TypeComponent } from './lib/widgets/type/type.component';
 
 @NgModule({
   declarations: [
@@ -118,7 +119,8 @@ import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.compon
     AnswerOptionComponent,
     InitialComponent,
     HelpTextComponent,
-    SfFormWrapperComponent
+    SfFormWrapperComponent,
+    TypeComponent
   ],
   imports: [
     AppRoutingModule,

@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {ISchema} from 'ngx-schema-form';
+import {FormProperty, ISchema} from 'ngx-schema-form';
 
 import {RadioComponent} from './radio.component';
 import {CommonTestingModule, TestComponent} from '../../../testing/common-testing.module';
@@ -29,10 +29,16 @@ const schema: ISchema = {
   }
 };
 
-const model: any = {fieldA: 'one'};
+// const model: any = {fieldA: 'one'};
+const model: any = {
+      text: 'Field A',
+      linkId: 'l1',
+      type: 'string',
+      repeats: false
+};
 
 
-describe('formProperty: radio', () => {
+fdescribe('formProperty: radio', () => {
   let fixture: ComponentFixture<TestComponent>;
 
   CommonTestingModule.setUpTestBed(TestComponent);
@@ -53,9 +59,11 @@ describe('formProperty: radio', () => {
   });
 });
 
-function recursiveWalk(debugElements: DebugElement [], callback) {
-  debugElements.forEach((de) => {
-    callback(de);
-    recursiveWalk(de.children, callback);
+function recursiveWalk(debugElements: DebugElement [], callback, stack) {
+  debugElements?.forEach((de) => {
+    stack.push(de.name);
+    callback(de, stack);
+    recursiveWalk(de.children, callback, stack);
+    stack.pop();
   });
 }

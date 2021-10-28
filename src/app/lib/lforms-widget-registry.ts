@@ -27,6 +27,7 @@ import {TotalScoreComponent} from './widgets/total-score/total-score.component';
 import {AnswerOptionComponent} from './widgets/answer-option/answer-option.component';
 import {InitialComponent} from './widgets/initial/initial.component';
 import {HelpTextComponent} from './widgets/help-text/help-text.component';
+import {TypeComponent} from './widgets/type/type.component';
 
 
 @Injectable()
@@ -53,6 +54,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('boolean-radio', BooleanRadioComponent);
     this.register('units', UnitsComponent);
     this.register('totalScore', TotalScoreComponent);
+    this.register('type', TypeComponent);
     this.register('answer-option', AnswerOptionComponent);
     this.register('initial', InitialComponent);
     this.register('help-text', HelpTextComponent);

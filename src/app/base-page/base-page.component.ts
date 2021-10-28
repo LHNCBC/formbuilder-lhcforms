@@ -138,7 +138,11 @@ import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
     </ng-template>
 
     <ng-template #formLevelFields>
-      <lfb-form-fields (state)="setStep($event)" [questionnaire]="questionnaire" (questionnaireChange)="notifyChange($event)"></lfb-form-fields>
+      <lfb-form-fields (state)="setStep($event)"
+                       [questionnaire]="formFields"
+                       (questionnaireChange)="formFieldsChanged($event)"
+                       [questionsButtonLabel]="createButtonLabel()"
+      ></lfb-form-fields>
     </ng-template>
 
     <ng-template #itemLevelFields>
@@ -147,7 +151,7 @@ import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
               (click)="setStep('fl-editor')"
       >{{questionnaire.title}}</button>
       <lfb-item-component [questionnaire]="questionnaire"
-                          (itemChange)="notifyChange(questionnaire)"
+                          (itemChange)="itemComponentChanged($event)"
       ></lfb-item-component>
     </ng-template>
 
@@ -218,6 +222,7 @@ export class BasePageComponent implements OnDestroy {
   importOption = '';
   editMode = 'fresh';
   questionnaire: fhir.Questionnaire = null;
+  formFields: fhir.Questionnaire = null;
   formSubject: Subject<fhir.Questionnaire>;
   initialForm: fhir.Questionnaire;
   @Output()
@@ -273,6 +278,24 @@ export class BasePageComponent implements OnDestroy {
     this.formSubject.next(form);
   }
 
+  formFieldsChanged(event) {
+    Object.assign(this.questionnaire, event);
+    this.notifyChange(this.questionnaire);
+  }
+
+
+  itemComponentChanged(event) {
+    this.notifyChange(this.questionnaire);
+  }
+
+
+  setQuestionnaire(questionnaire) {
+    this.questionnaire = questionnaire;
+    this.formFields = Object.assign({}, questionnaire);
+    delete this.formFields.item;
+    this.notifyChange(this.questionnaire);
+  }
+
 
   /**
    * Switch guiding step
@@ -296,16 +319,15 @@ export class BasePageComponent implements OnDestroy {
     // TODO - Rethink the logic.
     if(this.startOption === 'from_autosave') {
       this.formService.setGuidingStep(this.formService.autoLoad('state'));
-      this.questionnaire = this.formService.autoLoadForm();
+      this.setQuestionnaire(this.formService.autoLoadForm());
     }
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
-      this.questionnaire = this.createDefaultForm();
+      this.setQuestionnaire(this.createDefaultForm());
     } else if (this.startOption === 'existing' && this.importOption === 'loinc') {
       this.setStep('choose-start');
-      this.questionnaire = this.createDefaultForm();
+      this.setQuestionnaire(this.createDefaultForm());
     }
-    this.notifyChange(this.questionnaire);
   }
 
   /**
@@ -338,8 +360,7 @@ export class BasePageComponent implements OnDestroy {
     fileReader.readAsText(selectedFile, 'UTF-8');
     fileReader.onload = () => {
       try {
-        this.questionnaire = this.formService.parseQuestionnaire(fileReader.result as string);
-        this.notifyChange(this.questionnaire);
+        this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string))
       }
       catch (e) {
         this.showError(e);
@@ -413,12 +434,10 @@ export class BasePageComponent implements OnDestroy {
    */
   getForm(questionnaireId: string) {
     if (!questionnaireId) {
-      this.questionnaire = {status: 'draft', item: []};
-      this.notifyChange(this.questionnaire);
+      this.setQuestionnaire({status: 'draft', item: []});
     } else {
       this.dataSrv.getFormData(questionnaireId).subscribe((data) => {
-        this.questionnaire = data;
-        this.notifyChange(this.questionnaire);
+        this.setQuestionnaire(data);
         this.acResult = null;
       });
     }
@@ -441,9 +460,8 @@ export class BasePageComponent implements OnDestroy {
    */
   newStart() {
     localStorage.clear();
-    this.questionnaire = this.createDefaultForm();
+    this.setQuestionnaire(this.createDefaultForm());
     this.setStep('home');
-    this.notifyChange(this.questionnaire);
   }
 
   /**
@@ -455,8 +473,7 @@ export class BasePageComponent implements OnDestroy {
         this.modal.open(FhirSearchDlgComponent, {size: 'lg', scrollable: true}).result.then((selected) => {
           if(selected !== false) { // Questionnaire picked, get the item from the server.
             this.fhirService.read(selected).subscribe((resp)=>{
-                this.questionnaire = resp as fhir.Questionnaire;
-                this.notifyChange(this.questionnaire);
+              this.setQuestionnaire(resp);
             });
           }
         });

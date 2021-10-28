@@ -19,7 +19,7 @@
     "ci:cy-run": "start-server-and-test ci:start-server http://localhost:8101 cy:run",
     "ci:cy-open": "start-server-and-test ci:start-server http://localhost:8101 cy:open",
     "ci:start-server": "angular-http-server --path ./dist/formbuilder-lhcforms -p 8101",
-    "postinstall": "ngcc"
+    "postinstall": "rm -rf ./ngx-schema-form && mkdir ./ngx-schema-form && cd ./ngx-schema-form && git init && git remote add -f origin https://github.com/akanduru/ngx-schema-form.git && git config core.sparseCheckout true && echo \"dist/schema-form\" >> .git/info/sparse-checkout && git pull --depth=1 origin fix-schema-default && cd .. && npm i ./ngx-schema-form/dist/schema-form --no-save && ngcc"
   },
   "private": true,
   "dependencies": {
@@ -51,7 +51,6 @@
     "jquery": "^3.6.0",
     "json-schema-traverse": "^1.0.0",
     "math-to-fhirpath": "NLMLHC/math-to-fhirpath",
-    "ngx-schema-form": "2.6.5",
     "popper.js": "^1.16.1",
     "rule-editor": "github:NLMLHC/rule-editor#ng-rule-editor",
     "rxjs": "^6.6.3",

@@ -250,7 +250,7 @@
       "type": "string",
       "title": "Data type",
       "widget": {
-        "id": "select",
+        "id": "type",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",

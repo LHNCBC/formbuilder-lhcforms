@@ -161,9 +161,13 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
    * @param value - Event value.
    */
   updateValue(value: any) {
-    this.modelChange.emit({value});
     this.valueChange.emit(value);
     this.modelService.currentItem = value;
+  }
+
+  updateModel(model: any) {
+    this.modelChange.emit(model);
+    this.modelService.currentItem = model;
   }
 
   /**
@@ -179,7 +183,7 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
     const componentRef = this.containerRef.createComponent(resolver);
     this.model = model;
     componentRef.instance.model = this.model;
-    componentRef.instance.modelChange.subscribe((value) => {
+    componentRef.instance.valueChange.subscribe((value) => {
       this.updateValue(value);
     })
   }
