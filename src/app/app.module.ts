@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { SchemaFormModule, WidgetRegistry } from 'ngx-schema-form';
+import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';

@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {StringComponent} from '../string/string.component';
-import {ArrayProperty, ArrayWidget, FormProperty} from 'ngx-schema-form';
+import {ArrayProperty, ArrayWidget, FormProperty} from '@lhncbc/ngx-schema-form';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {fhir} from '../../../fhir';
 import uri = fhir.uri;

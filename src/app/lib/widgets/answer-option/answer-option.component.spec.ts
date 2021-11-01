@@ -8,8 +8,8 @@ import {
   FormPropertyFactory, LogService, SchemaFormModule,
   SchemaValidatorFactory,
   ValidatorRegistry
-} from 'ngx-schema-form';
-import {PropertyBindingRegistry} from 'ngx-schema-form/lib/property-binding-registry';
+} from '@lhncbc/ngx-schema-form';
+import {PropertyBindingRegistry} from '@lhncbc/ngx-schema-form/lib/property-binding-registry';
 
 describe('AnswerOptionComponent', () => {
 //  let component: AnswerOptionComponent;

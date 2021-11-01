@@ -17,7 +17,7 @@
     "ci:cy-run": "start-server-and-test ci:start-server http://localhost:8101 cy:run",
     "ci:cy-open": "start-server-and-test ci:start-server http://localhost:8101 cy:open",
     "ci:start-server": "angular-http-server --path ./dist/formbuilder-lhcforms -p 8101",
-    "postinstall": "rm -rf ./ngx-schema-form && mkdir ./ngx-schema-form && cd ./ngx-schema-form && git init && git remote add -f origin https://github.com/akanduru/ngx-schema-form.git && git config core.sparseCheckout true && echo \"dist/schema-form\" >> .git/info/sparse-checkout && git pull --depth=1 origin fix-schema-default && cd .. && npm i ./ngx-schema-form/dist/schema-form --no-save && ngcc"
+    "postinstall": "ngcc"
   },
   "private": true,
   "dependencies": {
@@ -39,6 +39,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fullcalendar/core": "^5.7.0",
     "@json-editor/json-editor": "^2.5.4",
+    "@lhncbc/ngx-schema-form": "2.6.6",
     "@ng-bootstrap/ng-bootstrap": "^9.1.1",
     "autocomplete-lhc": "^18.1.3",
     "bootstrap": "^4.6.0",

@@ -278,17 +278,31 @@ export class BasePageComponent implements OnDestroy {
     this.formSubject.next(form);
   }
 
+
+  /**
+   * Handle value changes in form-fields component.
+   * @param event - Emits questionnaire (Form level copy)
+   */
   formFieldsChanged(event) {
     Object.assign(this.questionnaire, event);
     this.notifyChange(this.questionnaire);
   }
 
 
+  /**
+   * Handle value changes in item-component.
+   * @param event - Emits questionnaire (with items). Form level fields should be untouched.
+   */
   itemComponentChanged(event) {
     this.notifyChange(this.questionnaire);
   }
 
 
+  /**
+   * Set questionnaire.
+   * Make
+   * @param questionnaire - Input FHIR questionnaire
+   */
   setQuestionnaire(questionnaire) {
     this.questionnaire = questionnaire;
     this.formFields = Object.assign({}, questionnaire);

@@ -10,7 +10,7 @@ import {
   WidgetRegistry,
   ZSchemaValidatorFactory,
   SchemaPreprocessor, ValidatorRegistry, ExpressionCompilerFactory, LogService
-} from 'ngx-schema-form';
+} from '@lhncbc/ngx-schema-form';
 import {HttpClientModule} from '@angular/common/http';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {LayoutModule} from '@angular/cdk/layout';

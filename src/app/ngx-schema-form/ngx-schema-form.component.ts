@@ -14,7 +14,7 @@ import {
   ViewChild, ViewContainerRef
 } from '@angular/core';
 import {ShareObjectService} from '../share-object.service';
-import {Binding, FormComponent, FormProperty, Validator} from 'ngx-schema-form';
+import {Binding, FormComponent, FormProperty, Validator} from '@lhncbc/ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {map, switchMap, timeout} from 'rxjs/operators';
 import * as traverse from 'json-schema-traverse';

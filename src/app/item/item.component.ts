@@ -163,7 +163,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       interval(10)
         .pipe(
           startWith(0), // So that we don't initially wait
-          // To prevent a memory leak on two closely times route changes, take until the next nav start
           takeUntil(this.itemLoading$),
           // Turn the interval number into the current state of the zone
           map(() => !this.zone.hasPendingMacrotasks),

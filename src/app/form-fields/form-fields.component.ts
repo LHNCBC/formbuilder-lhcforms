@@ -121,18 +121,4 @@ export class FormFieldsComponent implements OnInit, OnChanges {
   goToItemEditor(): void {
     this.setGuidingStep('item-editor');
   }
-
-
-  /**
-   * Change button text based on context
-   */
-  /*
-  createButtonLabel(): string {
-    let ret = 'Create questions';
-    if(this.questionnaire && this.questionnaire.item && this.questionnaire.item.length > 0) {
-      ret = 'Edit questions'
-    }
-    return ret;
-  }
-   */
 }

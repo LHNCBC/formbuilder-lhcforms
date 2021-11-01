@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, DoCheck, OnDestroy, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {fhir} from '../../../fhir';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {TreeService} from '../../../services/tree.service';
 import {Subscription} from 'rxjs';
 
@@ -27,6 +27,11 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     this.subscriptions.push(sub);
   }
 
+
+  /**
+   * Set row selection type, i.e multiple selections or single selection
+   * @param isRepeat - Repeat indicates multiple selections, set in 'repeat' field.
+   */
   setSelectionType(isRepeat: boolean) {
     if(isRepeat) {
       this.rowSelectionType = 'checkbox';

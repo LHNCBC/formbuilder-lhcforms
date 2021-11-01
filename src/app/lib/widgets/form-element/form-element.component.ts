@@ -2,8 +2,8 @@
  * Customize layout of form-element from ngx-schema-form
  */
 import {Component, OnInit, OnChanges, Input, OnDestroy, SimpleChanges, DoCheck} from '@angular/core';
-import { FormElementComponent} from 'ngx-schema-form';
-import { Widget } from 'ngx-schema-form';
+import { FormElementComponent} from '@lhncbc/ngx-schema-form';
+import { Widget } from '@lhncbc/ngx-schema-form';
 
 
 @Component({
@@ -70,7 +70,7 @@ ngOnChanges(changes: SimpleChanges): void {
   /**
    * Override to add custom properties
    *
-   * @param widget
+   * @param widget - Component widget
    */
   onWidgetInstanciated(widget: Widget<any>): void {
     super.onWidgetInstanciated(widget);
@@ -87,7 +87,7 @@ ngOnChanges(changes: SimpleChanges): void {
 
 
   /**
-   * For some reason, the canonical path is includes '*' for array items.
+   * For some reason, the canonical path includes '*' for array items.
    * This method is to replace them with proper array indices. These ids are used for html element id
    */
   setCanonicalId(): void {
