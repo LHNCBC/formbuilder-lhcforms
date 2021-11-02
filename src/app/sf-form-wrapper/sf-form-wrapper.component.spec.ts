@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SfFormWrapperComponent } from './sf-form-wrapper.component';
+import {HttpClient, HttpHandler} from '@angular/common/http';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 describe('SfFormWrapperComponent', () => {
   let component: SfFormWrapperComponent;
@@ -8,7 +10,8 @@ describe('SfFormWrapperComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SfFormWrapperComponent ]
+      declarations: [ SfFormWrapperComponent ],
+      providers: [HttpClient, HttpHandler]
     })
     .compileComponents();
   });

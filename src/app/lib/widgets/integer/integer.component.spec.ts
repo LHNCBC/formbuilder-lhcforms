@@ -16,7 +16,7 @@ const schema: ISchema = {
   }
 };
 const model: any = {fieldA: 2};
-describe('IntegerComponent', () => {
+xdescribe('IntegerComponent', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 

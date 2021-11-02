@@ -126,7 +126,6 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
 
   constructor(private modelService: ShareObjectService, private formService: FormService,
               private cfr: ComponentFactoryResolver, private cd: ChangeDetectorRef) {
-    console.log('ngx-comp (' + this._id + ') constructed!');
     this.mySchema = formService.getItemSchema();
   }
 
@@ -189,7 +188,6 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
   }
 
   ngOnDestroy() {
-    console.log('ngx-comp (' + this._id + ') destroyed!');
   }
 
 }

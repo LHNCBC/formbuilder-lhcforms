@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LeftLabelFormGroupComponent } from './left-label-form-group.component';
 
-describe('LeftLabelFormGroupComponent', () => {
+xdescribe('LeftLabelFormGroupComponent', () => {
   let component: LeftLabelFormGroupComponent;
   let fixture: ComponentFixture<LeftLabelFormGroupComponent>;
 

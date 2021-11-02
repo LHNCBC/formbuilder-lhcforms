@@ -38,7 +38,7 @@ const model: any = {
 };
 
 
-fdescribe('formProperty: radio', () => {
+describe('formProperty: radio', () => {
   let fixture: ComponentFixture<TestComponent>;
 
   CommonTestingModule.setUpTestBed(TestComponent);

@@ -1,7 +1,17 @@
 /**
  * Handles editing of form level fields.
  */
-import {Component, OnInit, Input, OnDestroy, Output, EventEmitter, OnChanges, SimpleChanges} from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  OnDestroy,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  AfterViewInit
+} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {ShareObjectService} from '../share-object.service';
 import {FetchService} from '../fetch.service';
@@ -41,7 +51,7 @@ import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
     }
   `]
 })
-export class FormFieldsComponent implements OnInit, OnChanges {
+export class FormFieldsComponent implements OnInit, AfterViewInit, OnChanges {
 
   @Input()
   questionsButtonLabel = 'Create questions';
@@ -65,16 +75,19 @@ export class FormFieldsComponent implements OnInit, OnChanges {
     private modal: NgbModal,
     private formService: FormService
   ) {
+    this.qlSchema = this.formService.getFormLevelSchema();
   }
 
   /**
    * Merge schema and layout
    */
   ngOnInit() {
-    this.qlSchema = this.formService.getFormLevelSchema();
-    this.modelService.questionnaire = this.questionnaire;
+    // this.modelService.questionnaire = this.questionnaire;
   }
 
+  ngAfterViewInit() {
+    this.modelService.questionnaire = this.questionnaire;
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     const qChange = changes.questionnaire;

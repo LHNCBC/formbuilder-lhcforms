@@ -18,7 +18,7 @@ import {of} from 'rxjs';
 import {fhir} from '../../../fhir';
 import {ChangeDetectionStrategy} from '@angular/core';
 
-fdescribe('FhirSearchDlgComponent', () => {
+describe('FhirSearchDlgComponent', () => {
   let component: FhirSearchDlgComponent;
   let fixture: ComponentFixture<FhirSearchDlgComponent>;
 

@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnableOperatorComponent } from './enable-operator.component';
 
-describe('EnableOperatorComponent', () => {
+xdescribe('EnableOperatorComponent', () => {
   let component: EnableOperatorComponent;
   let fixture: ComponentFixture<EnableOperatorComponent>;
 

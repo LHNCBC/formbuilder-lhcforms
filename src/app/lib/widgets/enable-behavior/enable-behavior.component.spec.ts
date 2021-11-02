@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EnableBehaviorComponent } from './enable-behavior.component';
 
-describe('EnableBehaviorComponent', () => {
+xdescribe('EnableBehaviorComponent', () => {
   let component: EnableBehaviorComponent;
   let fixture: ComponentFixture<EnableBehaviorComponent>;
 
