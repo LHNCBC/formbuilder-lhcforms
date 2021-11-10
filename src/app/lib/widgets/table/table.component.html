@@ -25,7 +25,7 @@
     <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
       <thead *ngIf="!noHeader" class="thead-light">
       <tr class="d-flex">
-        <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
+        <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
           <lfb-title
             [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
             [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"

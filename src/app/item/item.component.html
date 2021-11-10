@@ -6,7 +6,7 @@
             [nodes]="itemList"
             [options]="treeOptions"
             (focus)="onFocus($event)"
-            (updateData)="onTreeUpdated($event)"
+            (updateData)="onTreeUpdated()"
           >
             <ng-template #treeNodeTemplate let-node let-index="index">
               <div [ngClass]="node.nodeClass">
@@ -16,7 +16,7 @@
           </tree-root>
         </mat-sidenav>
         <mat-sidenav-content>
-          <div class="sidenav-header p-1">Current Item <span *ngIf="focusNode?.data?.text">({{focusNode.data.text}})</span></div>
+          <div class="sidenav-header p-1" aria-live="polite" aria-atomic="true" id="itemContent">Current Item <span *ngIf="focusNode?.data?.text">({{focusNode.data.text}})</span></div>
           <div class="mt-1">
             <div>
               <span>Edit item (question or header)</span>
@@ -45,13 +45,24 @@
           <hr/>
           <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with item action buttons">
             <div class="btn-group-sm" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" [disabled]="!(focusNode && focusNode.parent)" (click)="deleteItem()">Delete this item</button>
+              <button type="button" class="btn btn-primary"
+                      [disabled]="!(focusNode && focusNode.parent)"
+                      aria-label="Delete this item"
+                      (click)="deleteItem()">Delete this item</button>
             </div>
             <div class="btn-group-sm ml-2 ml-auto" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="addItem($event)">Add new item</button>
+              <button type="button" class="btn btn-primary"
+                      (click)="addItem($event)"
+                      aria-label="Add new item"
+                      aria-controls="itemContent"
+              >Add new item</button>
             </div>
             <div class="btn-group-sm ml-2" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary" (click)="addLoincItem(addItemDlg)">Add new item from LOINC</button>
+              <button type="button" class="btn btn-primary"
+                      (click)="addLoincItem(addItemDlg)"
+                      aria-label="Add new item from LOINC"
+                      aria-controls="itemContent"
+              >Add new item from LOINC</button>
             </div>
           </div>
         </mat-sidenav-content>

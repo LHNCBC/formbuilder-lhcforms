@@ -222,7 +222,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   /**
    * Tree initialization
    */
-  onTreeInitialized(event) {
+  onTreeInitialized() {
     const node = this.treeComponent?.treeModel?.getFirstRoot();
     if(node) {
       this.treeComponent.treeModel.setFocusedNode(node);
@@ -235,7 +235,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Handles tree update event
    * @param event - Event
    */
-  onTreeUpdated(event) {
+  onTreeUpdated() {
     if(!this.treeComponent.treeModel.getFocusedNode()) {
       const node = this.treeComponent.treeModel.getFirstRoot();
       this.treeComponent.treeModel.setFocusedNode(node);
@@ -340,6 +340,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
     this.treeComponent.treeModel.update();
     this.treeComponent.treeModel.focusNextNode();
+    setTimeout(() => {
+      document.getElementById('text').focus();
+    });
   }
 
   /**
