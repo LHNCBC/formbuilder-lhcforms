@@ -1,7 +1,7 @@
 /**
  * A utility class
  */
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -212,5 +212,6 @@ export class Util {
     }
     return helpTextItem;
   }
+
 
 }

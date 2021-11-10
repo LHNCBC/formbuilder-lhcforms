@@ -48,7 +48,9 @@ export class AppJsonPipe implements PipeTransform {
       }
       // Remove all custom fields starting with __$ and empty fields.
       else if(this.key?.startsWith('__$') || typeof x === 'function' || Util.isEmpty(x)) {
-        this.delete();
+        if(this.notRoot) {
+          this.delete();
+        }
       }
     });
 

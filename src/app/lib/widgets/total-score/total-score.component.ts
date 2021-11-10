@@ -4,7 +4,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ExtensionsComponent} from '../extensions/extensions.component';
 import {fhir} from '../../../fhir';
-import {ArrayProperty, FormProperty} from 'ngx-schema-form';
+import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import { RuleEditorService } from 'rule-editor';
 import {ShareObjectService} from '../../../share-object.service';
 import {Subscription} from 'rxjs';

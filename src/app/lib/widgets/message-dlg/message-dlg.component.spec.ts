@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MessageDlgComponent } from './message-dlg.component';
+import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
 describe('MessageDlgComponent', () => {
   let component: MessageDlgComponent;
@@ -8,7 +9,8 @@ describe('MessageDlgComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ MessageDlgComponent ]
+      declarations: [ MessageDlgComponent ],
+      providers: [NgbActiveModal]
     })
     .compileComponents();
   });

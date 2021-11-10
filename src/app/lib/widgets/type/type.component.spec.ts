@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EnableBehaviorComponent } from './enable-behavior.component';
+import { TypeComponent } from './type.component';
 
-xdescribe('EnableBehaviorComponent', () => {
-  let component: EnableBehaviorComponent;
-  let fixture: ComponentFixture<EnableBehaviorComponent>;
+xdescribe('TypeComponent', () => {
+  let component: TypeComponent;
+  let fixture: ComponentFixture<TypeComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ EnableBehaviorComponent ]
+      declarations: [ TypeComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(EnableBehaviorComponent);
+    fixture = TestBed.createComponent(TypeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {ISchema} from 'ngx-schema-form';
+import {FormProperty, ISchema} from '@lhncbc/ngx-schema-form';
 
 import {RadioComponent} from './radio.component';
 import {CommonTestingModule, TestComponent} from '../../../testing/common-testing.module';
@@ -29,7 +29,13 @@ const schema: ISchema = {
   }
 };
 
-const model: any = {fieldA: 'one'};
+// const model: any = {fieldA: 'one'};
+const model: any = {
+      text: 'Field A',
+      linkId: 'l1',
+      type: 'string',
+      repeats: false
+};
 
 
 describe('formProperty: radio', () => {
@@ -53,9 +59,22 @@ describe('formProperty: radio', () => {
   });
 });
 
-function recursiveWalk(debugElements: DebugElement [], callback) {
-  debugElements.forEach((de) => {
-    callback(de);
-    recursiveWalk(de.children, callback);
+
+/**
+ * Walk through children of given set of nodes.
+ *
+ * @param debugElements - Set of nodes to walk down through their children.
+ * @param callback - Callback function visiting each node. The function parameters are
+ *   debugEl: DebugElement - Node visited.
+ *   path: string[] - Array of names of ancestral nodes.
+ * @param path? - Initial path - Typically not empty or undefined at the initial call.
+ */
+function recursiveWalk(debugElements: DebugElement [], callback, path?) {
+  path = path || [];
+  debugElements?.forEach((de) => {
+    path.push(de.name);
+    callback(de, path);
+    recursiveWalk(de.children, callback, path);
+    path.pop();
   });
 }

@@ -9,7 +9,7 @@ import {fhirclient} from 'fhirclient/lib/types';
 import RequestOptions = fhirclient.RequestOptions;
 import {TestUtil} from '../testing/util';
 
-fdescribe('FhirService', () => {
+describe('FhirService', () => {
   let service: FhirService;
   const dummyQ: fhir.Resource = {resourceType: 'Questionnaire', status: 'draft', id: '12345-6'};
 

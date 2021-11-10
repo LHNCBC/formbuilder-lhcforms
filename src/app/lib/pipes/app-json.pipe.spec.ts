@@ -1,7 +1,7 @@
 import { AppJsonPipe } from './app-json.pipe';
 import {Util} from '../util';
 
-fdescribe('AppJsonPipe', () => {
+describe('AppJsonPipe', () => {
   // The pipe ignores __$* keys.
   const obj = {
     linkId: 'l1',

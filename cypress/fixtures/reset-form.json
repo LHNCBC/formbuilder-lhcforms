@@ -1,0 +1,11 @@
+{
+  "title": "New Form",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Item from reset form",
+      "type": "string"
+    }
+  ]
+}

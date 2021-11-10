@@ -12,7 +12,7 @@ import {
   ViewChild,
   EventEmitter,
   OnChanges,
-  SimpleChanges, AfterViewChecked
+  SimpleChanges, AfterViewChecked, NgZone
 } from '@angular/core';
 import {ITreeOptions, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../fetch.service';
@@ -22,9 +22,19 @@ import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {BehaviorSubject, Observable, of, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, interval, Observable, of, Subject, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {debounceTime, distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith,
+  switchMap,
+  take,
+  takeUntil,
+  tap
+} from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
 
@@ -75,7 +85,7 @@ export class LinkIdCollection {
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css']
 })
-export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterViewChecked, OnDestroy {
+export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   id = 1;
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
@@ -90,7 +100,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
   questionnaire: fhir.Questionnaire = {status: 'draft', item: []};
   itemList: any [];
   @Output()
-  itemChange = new EventEmitter<fhir.QuestionnaireItem>();
+  itemChange = new EventEmitter<fhir.Questionnaire>();
   isTreeExpanded = false;
   editType = 'ui';
   itemEditorSchema: any;
@@ -133,6 +143,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
   };
 
   constructor(
+              private zone: NgZone,
               public dialog: MatDialog,
               private modalService: NgbModal,
               private treeService: TreeService,
@@ -146,27 +157,57 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
   }
 
   ngOnInit() {
-    this.itemList = this.questionnaire.item;
-    if(this.itemList.length === 0) {
-      this.itemList.push({text: 'Item 0', type: 'string'});
-    }
-    let sub = this.itemLoading$.subscribe((isLoading) => {
+    /*
+    this.zone.runOutsideAngular(() => {
+      // Check very regularly to see if the pending macrotasks have all cleared
+      interval(10)
+        .pipe(
+          startWith(0), // So that we don't initially wait
+          takeUntil(this.itemLoading$),
+          // Turn the interval number into the current state of the zone
+          map(() => !this.zone.hasPendingMacrotasks),
+          // Don't emit until the zone state actually flips from `false` to `true`
+          distinctUntilChanged(),
+          // Filter out unstable event. Only emit once the state is stable again
+          filter(stateStable => stateStable === true),
+          // Complete the observable after it emits the first result
+          take(1),
+          tap(stateStable => {
+            // FULLY RENDERED!!!!
+            this.itemLoading$.next(false);
+            // Add code here to report Fully Rendered
+          })
+        ).subscribe();
+    });
+*/
+
+    const sub = this.itemLoading$.subscribe((isLoading) => {
       this.itemLoading = isLoading;
     });
     this.subscriptions.push(sub);
-    sub = this.treeReloaded$.subscribe((questionnaire) => {
-      this.onTreeInitialized();
+  }
+
+
+  /**
+   * Initialize component
+   */
+  ngAfterViewInit() {
+    this.treeOptions.scrollContainer = this.sidenavEl.nativeElement;
+    this.formService.setTreeModel(this.treeComponent.treeModel);
+    setTimeout(() => {
+      this.treeComponent.treeModel.update();
     });
-    this.subscriptions.push(sub);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     this.itemList = changes.questionnaire.currentValue?.item;
-    setTimeout(()=>{this.treeReloaded$.next(changes.questionnaire.currentValue)});
-  }
-
-  ngAfterViewChecked() {
-    setTimeout(() => {this.itemLoading$.next(false)});
+    this.itemList = this.itemList || [];
+    if(this.itemList.length === 0) {
+      this.itemList.push({text: 'Item 0', type: 'string'});
+    }
+    if(this.treeComponent?.treeModel) {
+      this.treeComponent?.treeModel.update();
+    }
   }
 
   /**
@@ -175,17 +216,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
   itemChanged(item) {
     // this.item = item;
     this.focusNode.data = item;
-    this.itemChange.emit(this.focusNode.data);
+    this.itemChange.emit(this.questionnaire);
   }
-
-  /**
-   * Initialize component
-   */
-  ngAfterViewInit() {
-    this.treeOptions.scrollContainer = this.sidenavEl.nativeElement;
-    this.formService.setTreeModel(this.treeComponent.treeModel);
-  }
-
 
   /**
    * Tree initialization
@@ -198,12 +230,26 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
     }
   }
 
+
+  /**
+   * Handles tree update event
+   * @param event - Event
+   */
+  onTreeUpdated() {
+    if(!this.treeComponent.treeModel.getFocusedNode()) {
+      const node = this.treeComponent.treeModel.getFirstRoot();
+      this.treeComponent.treeModel.setFocusedNode(node);
+      this.setNode(node);
+    }
+  }
+
+
   /**
    * Handle tree's on focus event
    * @param event - Focus event.
    */
   onFocus(event) {
-    this.itemLoading$.next(true);
+    // this.itemLoading$.next(true);
     this.setNode(event.node);
   }
 
@@ -239,18 +285,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
     }
   }
 
-
-  /*
-  extractDataFromTree(roots: any [], collection) {
-    for (const root of roots) {
-      collection.push(root.data);
-      if (root.children && root.children.length > 0) {
-        collection.item = [];
-        this.extractDataFromTree(root.children, collection.item);
-      }
-    }
-  }
-*/
 
   /**
    * Create linkId, using a random number generated by the tree.
@@ -306,6 +340,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, AfterVie
 
     this.treeComponent.treeModel.update();
     this.treeComponent.treeModel.focusNextNode();
+    setTimeout(() => {
+      document.getElementById('text').focus();
+    });
   }
 
   /**

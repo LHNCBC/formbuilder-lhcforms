@@ -25,7 +25,7 @@
     <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
       <thead *ngIf="!noHeader" class="thead-light">
       <tr class="d-flex">
-        <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
+        <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
           <lfb-title
             [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
             [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
@@ -46,7 +46,7 @@
           <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
         </td>
         <td *ngIf="rowSelectionType === 'radio'" class="col-sm-2 text-center align-self-center">
-          <input type="radio" [(ngModel)]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind">
+          <input type="radio" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind">
         </td>
         <td *ngIf="rowSelectionType === 'checkbox'" class="col-sm-2 text-center align-self-center">
           <input type="checkbox" [(ngModel)]="selectionCheckbox[ind]" (ngModelChange)="checkboxSelection($event)">

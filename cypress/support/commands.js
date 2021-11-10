@@ -30,7 +30,6 @@ import 'cypress-file-upload';
  * @param fileName - Name of the file to upload
  */
 Cypress.Commands.add('uploadFile',(fileName) => {
-  // cy.get('[data-cy="file-input"]').attachFile(fileName, {force: true});
   cy.get('input[type="file"]').attachFile(fileName, {force: true});
 });
 
@@ -38,9 +37,13 @@ Cypress.Commands.add('uploadFile',(fileName) => {
  * Command to get json from 'View Questionnaire JSON'
  */
 Cypress.Commands.add('questionnaireJSON', () => {
-  cy.contains('View Questionnaire JSON').scrollIntoView().click();cy.get('.modal-footer > .btn')
+  cy.contains('View Questionnaire JSON').scrollIntoView().click();
   return cy.get('ngb-modal-window div.modal-body pre').invoke('text').then((text) => {
     cy.get('.modal-footer > .btn').scrollIntoView().click();
     return cy.wrap(JSON.parse(text));
   });
+});
+
+Cypress.Commands.add('selectDataType', (type) => {
+  cy.get('#type').select(type);
 });

@@ -1,7 +1,7 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import {Subscription} from 'rxjs';
-import {ArrayProperty} from 'ngx-schema-form';
+import {ArrayProperty} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
 
 @Component({
@@ -9,13 +9,13 @@ import {Util} from '../../util';
   templateUrl: '../string/string.component.html',
   styleUrls: ['./help-text.component.css']
 })
-export class HelpTextComponent extends StringComponent implements OnInit, OnDestroy {
+export class HelpTextComponent extends StringComponent implements AfterViewInit, OnDestroy {
 
 
   subscriptions: Subscription [] = [];
 
-  ngOnInit(): void {
-    super.ngOnInit();
+  ngAfterViewInit(): void {
+    super.ngAfterViewInit();
     /*
     let itemArray;
     const itemProp = this.formProperty.searchProperty('/item') as ArrayProperty;

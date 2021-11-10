@@ -1,12 +1,7 @@
 import {AfterViewInit, Component, DoCheck, OnDestroy, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import {Util} from '../../util';
-import {ArrayProperty, FormProperty, ObjectProperty} from 'ngx-schema-form';
 import {fhir} from '../../../fhir';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
-import {A} from '@angular/cdk/keycodes';
-import {timeout} from 'rxjs/operators';
-import {AppJsonPipe} from '../../pipes/app-json.pipe';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {TreeService} from '../../../services/tree.service';
 import {Subscription} from 'rxjs';
 
@@ -15,7 +10,7 @@ import {Subscription} from 'rxjs';
   templateUrl: '../table/table.component.html',
   styleUrls: ['../table/table.component.css', './answer-option.component.css']
 })
-export class AnswerOptionComponent extends TableComponent implements AfterViewInit, DoCheck, OnDestroy {
+export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
 
@@ -23,11 +18,27 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   constructor(private treeService: TreeService) {
     super();
   }
+
+  ngOnInit() {
+    super.ngOnInit();
+    const repeatProp = this.formProperty.findRoot().getProperty('repeats');
+    this.setSelectionType(repeatProp.value);
+    const sub = repeatProp.valueChanges.subscribe((isRepeating) => {this.setSelectionType(isRepeating);});
+    this.subscriptions.push(sub);
+  }
+
+
   /**
-   * Make sure at least one row is present for zero length array?
+   * Set row selection type, i.e multiple selections or single selection
+   * @param isRepeat - Repeat indicates multiple selections, set in 'repeat' field.
    */
-  ngDoCheck(): void {
-    super.ngDoCheck();
+  setSelectionType(isRepeat: boolean) {
+    if(isRepeat) {
+      this.rowSelectionType = 'checkbox';
+    }
+    else {
+      this.rowSelectionType = 'radio';
+    }
   }
 
 
@@ -36,44 +47,37 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    let sub = this.formProperty.valueChanges.subscribe((newValue) => {
-      setTimeout(() => {
-        this.formProperty.value.forEach((row, index) => {
-          if(row.valueCoding) {
-            this.updateScoreExtensions(row.valueCoding.__$score, index);
-          }
-        });
-      });
-    });
+
+    const repeatProp = this.formProperty.findRoot().getProperty('repeats');
+    this.setSelectionType(repeatProp.value);
+    let sub = repeatProp.valueChanges.subscribe((isRepeating) => {this.setSelectionType(isRepeating);});
     this.subscriptions.push(sub);
-
-    sub = this.treeService.nodeFocus.subscribe((node) => {
-      this.updateDefaultSelections();
-      this.updateScoreColumnFromFormProperties();
-    })
-
+    const aOptions = this.formProperty.value;
+    const initials = this.formProperty.findRoot().getProperty('initial').value;
+    this.setDefaultSelections(initials || [], aOptions || []);
+    this.setAnswerOptions(aOptions);
+    sub = this.formProperty.valueChanges.subscribe((newValue) => {
+      this.updateScoreExtensions(newValue);
+    });
     this.subscriptions.push(sub);
   }
 
 
   /**
-   * Setup score column by reading scores form properties
+   * Setup answer options along with score column by reading scores form properties
    */
-  updateScoreColumnFromFormProperties() {
-    const formProperties = this.formProperty.properties as FormProperty[];
-    formProperties.forEach((prop, index) => {
-      const row = prop.value;
-      if(row && row.extension && row.extension.length > 0) {
-        const scoreExt = row.extension.find(ext => ext.url === AnswerOptionComponent.ORDINAL_URI);
-        const scoreProp = (prop as ObjectProperty).getProperty('valueCoding/__$score');
+  setAnswerOptions(answerOptions: any []) {
+    answerOptions?.forEach((option) => {
+      if(option.valueCoding) {
+        const scoreExt = option.extension?.find(ext => ext.url === AnswerOptionComponent.ORDINAL_URI);
         if(scoreExt) {
-          scoreProp.setValue(scoreExt.valueDecimal);
-        }
-        else {
-          scoreProp.reset();
+          option.valueCoding.__$score = scoreExt.valueDecimal;
         }
       }
     });
+    if(answerOptions) {
+      this.formProperty.setValue(answerOptions, true);
+    }
   }
 
 
@@ -120,13 +124,9 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   /**
    * Set up defaults column reading 'initial' form properties.
    */
-  updateDefaultSelections() {
-    const initialFormProperties = (this.formProperty.searchProperty('/initial') as ArrayProperty).properties as FormProperty [];
-    const formProperties = this.formProperty.properties as FormProperty[];
-    formProperties.forEach((prop, index) => {
-      const row = prop.value;
-      const rowFromInitial = initialFormProperties
-        .find(initial => initial.value && this.isEqualCoding(initial.value.valueCoding, row.valueCoding));
+  setDefaultSelections(initialArray: any [], answerOptionArray: any []) {
+    answerOptionArray.forEach((prop, index) => {
+      const rowFromInitial = initialArray.find(initial => this.isEqualCoding(initial.valueCoding, prop.valueCoding));
       if(rowFromInitial) {
         if(this.rowSelectionType === 'radio')
           this.selectionRadio = index;
@@ -134,6 +134,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
           this.selectionCheckbox[index] = true;
       }
     });
+    this.radioSelection(null);
   }
 
 
@@ -143,24 +144,24 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    * @param score - Score from widget
    * @param index - Index of the row
    */
-  updateScoreExtensions(score, index) {
-      const answerOptionExtProperties = this.formProperty.properties[index].getProperty('extension');
-      const answerOptionExtensions = answerOptionExtProperties.value;
-      const i = answerOptionExtensions.findIndex((ext) => ext.url === AnswerOptionComponent.ORDINAL_URI);
+  updateScoreExtensions(options) {
+    options?.forEach((option) => {
+      const i = option.extension?.findIndex((ext) => ext.url === AnswerOptionComponent.ORDINAL_URI);
+      const score = option.valueCoding?.__$score;
       const isAdd = score !== null && score !== undefined; // True is add, false is remove.
       if(isAdd && i < 0) {
         const scoreExt = {url: AnswerOptionComponent.ORDINAL_URI, valueDecimal: score};
-        answerOptionExtensions.push(scoreExt);
+        option.extension = option.extension || [];
+        option.extension.push(scoreExt);
       }
       else if(isAdd && i >= 0) {
-        answerOptionExtensions[i].valueDecimal = score;
+        option.extension[i].valueDecimal = score;
       }
       else if(i >= 0) {
-        answerOptionExtensions.removeExtension(answerOptionExtensions[i]);
+        option.extension.splice(i, 1);
       }
-      answerOptionExtProperties.reset(answerOptionExtensions, true);
+    });
   }
-
 
   /**
    * Override method.
@@ -169,8 +170,11 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   radioSelection(event) {
     super.radioSelection(event);
     if(this.rowSelectionType === 'radio') {
+      if(event !== undefined && event !== null && !Number.isNaN(event)) {
+        this.selectionRadio = event;
+      }
       if(this.selectionRadio >= 0) {
-        const initialProperty = this.formProperty.searchProperty('/initial') as PropertyGroup;
+        const initialProperty = this.formProperty.findRoot().getProperty('initial') as PropertyGroup;
         const valueCoding = JSON.parse(JSON.stringify(this.formProperty.value[this.selectionRadio].valueCoding));
         initialProperty.setValue([{valueCoding}], false);
       }

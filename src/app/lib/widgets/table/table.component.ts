@@ -11,12 +11,12 @@
  */
 
 import {AfterViewInit, Component, DoCheck, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
-import {ArrayWidget, FormProperty} from 'ngx-schema-form';
+import {ArrayWidget, FormProperty} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
 import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Subscription} from 'rxjs';
@@ -225,11 +225,31 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
       const lastItem = elements[elements.length - 1];
       if(!Util.isEmpty(lastItem)) {
         this.addItem();
+        setTimeout(() => {
+          const props = this.formProperty.properties as FormProperty [];
+          document.getElementById(this.getCanonicalPath(props,props.length - 1, 0)).focus();
+        });
       }
       else {
         popoverRef.open();
       }
     }
+  }
+
+  /**
+   * Get canonical path of the control located in a cell in the table.
+   *
+   * @param arrayProperties - ArrayProperty of the table
+   * @param row - Row index of the cell
+   * @param col - Column index of the cell.
+   */
+  getCanonicalPath(arrayProperties, row, col) {
+    let prop = arrayProperties[row];
+    let fieldPath = this.getShowFields()[col].field;
+    fieldPath.split('.').forEach((field) => {
+      prop = prop.getProperty(field);
+    });
+    return prop.canonicalPathNotation;
   }
 
 

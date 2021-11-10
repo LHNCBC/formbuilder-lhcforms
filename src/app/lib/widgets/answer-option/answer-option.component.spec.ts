@@ -1,25 +1,20 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 
 import { AnswerOptionComponent } from './answer-option.component';
+import {CommonTestingModule} from '../../../testing/common-testing.module';
+import {TestingService} from '../../../testing/testing.service';
 
-describe('AnswerOptionComponent', () => {
+xdescribe('AnswerOptionComponent', () => {
   let component: AnswerOptionComponent;
-  let fixture: ComponentFixture<AnswerOptionComponent>;
+  let service: TestingService;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [ AnswerOptionComponent ]
-    })
-    .compileComponents();
-  });
-
+  CommonTestingModule.setUpTestBedConfig({declarations: [AnswerOptionComponent]});
   beforeEach(() => {
-    fixture = TestBed.createComponent(AnswerOptionComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    service = TestBed.inject(TestingService);
+    component = service.createComponent(AnswerOptionComponent) as AnswerOptionComponent;
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    expect(component).toBeDefined();
   });
 });

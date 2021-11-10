@@ -3,7 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormFieldsComponent } from './form-fields.component';
 import {CommonTestingModule} from '../testing/common-testing.module';
 
-describe('FormFieldsComponent', () => {
+xdescribe('FormFieldsComponent', () => {
   let component: FormFieldsComponent;
   let fixture: ComponentFixture<FormFieldsComponent>;
 

@@ -3,7 +3,7 @@
  * with array of objects, typically like a table of rows with columns.
  */
 import {Component, Input, OnInit} from '@angular/core';
-import {ArrayWidget} from 'ngx-schema-form';
+import {ArrayWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({

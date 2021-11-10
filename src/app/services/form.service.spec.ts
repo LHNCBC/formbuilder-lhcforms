@@ -6,7 +6,7 @@ import traverse from 'traverse';
 import {HttpClient, HttpHandler} from '@angular/common/http';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 
-fdescribe('FormService', () => {
+describe('FormService', () => {
   let service: FormService;
 
   beforeEach(() => {

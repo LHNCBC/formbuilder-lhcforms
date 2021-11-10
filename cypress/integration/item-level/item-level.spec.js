@@ -35,8 +35,12 @@ describe('Home page', () => {
     });
 
     beforeEach(() => {
+      cy.uploadFile('reset-form.json');
+      cy.get('#text').should('have.value', 'Item from reset form', {timeout: 10000});
       cy.get('#__\\$helpText').as('helpText');
+      cy.wait(1000);
     });
+
     it('should display item editor page', () => {
       cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
       cy.get('@codeYes').check({force: true});
@@ -44,16 +48,12 @@ describe('Home page', () => {
       cy.get('@code').should('be.visible');
       cy.get('@codeNo').check({force: true});
       cy.get('@code').should('not.exist');
-    });
 
-    it('should add a new item', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'New item 1');
       cy.contains('Delete this item').scrollIntoView().click();
-      cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'Item 0');
-    });
+      cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'Item from reset form');
 
-    it('should add help text', () => {
       const helpString = 'Test help text!';
       cy.get('@helpText').click();
       cy.get('@helpText').type(helpString);
@@ -62,6 +62,7 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].type).equal('display');
         expect(qJson.item[0].item[0].extension).to.deep.equal(helpTextExtension);
       });
+
     });
 
     it('should import help text item', () => {
@@ -76,10 +77,87 @@ describe('Home page', () => {
       });
     });
 
+    it('should add answer-option', () => {
+      cy.selectDataType('string');
+      cy.get('[id="initial.0.valueCoding.display"]').should('not.exist');
+      cy.get('[id="answerOption.0.valueCoding.display"]').should('not.exist');
+      cy.selectDataType('choice');
+      // No widget for choice. User selects default radio in answer option table.
+      cy.get('[id^="initial"]').should('not.be.visible');
+      cy.get('[id="answerOption.0.valueCoding.display"]').type('d1');
+      cy.get('[id="answerOption.0.valueCoding.code"]').type('c1');
+      cy.get('[id="answerOption.0.valueCoding.system"]').type('s1');
+      cy.get('[id="answerOption.0.valueCoding.__$score"]').type('2');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].answerOption[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
+        expect(qJson.item[0].answerOption[0].extension).to.deep.equal([{
+          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          valueDecimal: 2
+        }]);
+        expect(qJson.item[0].initial).to.be.undefined; // No default selected
+      });
+
+      // Add a second answerOption.
+      cy.contains('button', 'Add another answer').click();
+
+      cy.get('[id="answerOption.1.valueCoding.display"]').type('d2');
+      cy.get('[id="answerOption.1.valueCoding.code"]').type('c2');
+      cy.get('[id="answerOption.1.valueCoding.system"]').type('s2');
+      cy.get('[id="answerOption.1.valueCoding.__$score"]').type('3');
+      // Select a default a.k.a initial
+      cy.get('input[type="radio"][ng-reflect-value="0"]').click();
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].answerOption[1].valueCoding).to.deep.equal({display: 'd2', code: 'c2', system: 's2'});
+        expect(qJson.item[0].answerOption[1].extension).to.deep.equal([{
+          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          valueDecimal: 3
+        }]);
+        // Default/initial value coding.
+        expect(qJson.item[0].initial[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
+      });
+    });
+
+    it('should add initial values', () => {
+      cy.selectDataType('string');
+      cy.get('[id="initial.0.valueString"]').type('initial string');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('string');
+        expect(qJson.item[0].initial[0].valueString).equal('initial string');
+      });
+      cy.selectDataType('decimal');
+      cy.get('[id="initial.0.valueDecimal"]').type('100');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('decimal');
+        expect(qJson.item[0].initial[0].valueDecimal).equal(100);
+      });
+
+      cy.selectDataType('choice');
+      cy.get('[id^="initial"]').should('not.be.visible');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].initial).to.be.undefined;
+      });
+
+    });
+
+    it('should import item with answer option', () => {
+      const sampleFile = 'answer-option-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile);
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
+        expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
+      });
+    });
+
     it('should display quantity units', () => {
-      cy.get('#type').select('string');
-      cy.get('[id^="units"]').should('not.exist');
-      cy.get('#type').select('quantity');
+      cy.get('[id^="units"]').should('not.exist'); // looking for *units*
+      cy.selectDataType('quantity');
       cy.get('[id^="units"]').last().as('units');
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
@@ -102,9 +180,8 @@ describe('Home page', () => {
     });
 
     it('should display decimal/integer units', () => {
-      cy.get('#type').select('string');
       cy.get('[id^="units"]').should('not.exist');
-      cy.get('#type').select('decimal');
+      cy.selectDataType('decimal');
       cy.get('[id^="units"]').last().as('units');
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');

@@ -14,7 +14,7 @@ import {
   ViewChild, ViewContainerRef
 } from '@angular/core';
 import {ShareObjectService} from '../share-object.service';
-import {Binding, FormComponent, FormProperty, Validator} from 'ngx-schema-form';
+import {Binding, FormComponent, FormProperty, Validator} from '@lhncbc/ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {map, switchMap, timeout} from 'rxjs/operators';
 import * as traverse from 'json-schema-traverse';
@@ -126,7 +126,6 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
 
   constructor(private modelService: ShareObjectService, private formService: FormService,
               private cfr: ComponentFactoryResolver, private cd: ChangeDetectorRef) {
-    console.log('ngx-comp (' + this._id + ') constructed!');
     this.mySchema = formService.getItemSchema();
   }
 
@@ -161,9 +160,13 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
    * @param value - Event value.
    */
   updateValue(value: any) {
-    this.modelChange.emit({value});
     this.valueChange.emit(value);
     this.modelService.currentItem = value;
+  }
+
+  updateModel(model: any) {
+    this.modelChange.emit(model);
+    this.modelService.currentItem = model;
   }
 
   /**
@@ -179,13 +182,12 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
     const componentRef = this.containerRef.createComponent(resolver);
     this.model = model;
     componentRef.instance.model = this.model;
-    componentRef.instance.modelChange.subscribe((value) => {
+    componentRef.instance.valueChange.subscribe((value) => {
       this.updateValue(value);
     })
   }
 
   ngOnDestroy() {
-    console.log('ngx-comp (' + this._id + ') destroyed!');
   }
 
 }
