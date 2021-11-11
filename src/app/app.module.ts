@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
 import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
 
 import { AppComponent } from './app.component';
@@ -153,6 +153,7 @@ import { TypeComponent } from './lib/widgets/type/type.component';
     MatSelectModule,
     MatDialogModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe],
   bootstrap: [AppComponent]
 })

@@ -2,6 +2,7 @@
  * A utility class
  */
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import traverse from 'traverse';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -82,9 +83,14 @@ export class Util {
       }
     }
     else if (typeof json === 'object') { // Iterate through object properties
-      for(let i = 0, keys = Object.keys(json); ret && i < keys.length; i++) {
-        if(json.hasOwnProperty(keys[i])) {
-          ret = Util.isEmpty(json[keys[i]]);
+      if(Object.keys(json).length === 0) {
+        ret = true;
+      }
+      else {
+        for(let i = 0, keys = Object.keys(json); ret && i < keys.length; i++) {
+          if(json.hasOwnProperty(keys[i])) {
+            ret = Util.isEmpty(json[keys[i]]);
+          }
         }
       }
     }
@@ -214,4 +220,62 @@ export class Util {
   }
 
 
+  static pruneEmptyValues(value) {
+    traverse(value).forEach(function (node) {
+      this.before(function () {
+        if (node?.__$helpText?.trim().length > 0) {
+          const index = Util.findItemIndexWithHelpText(node.item);
+          let helpTextItem;
+          if (index < 0) {
+            helpTextItem = Util.createHelpTextItem(node, node.__$helpText.trim());
+            if (!node.item) {
+              node.item = [];
+            }
+            node.item.push(helpTextItem);
+          } else {
+            helpTextItem = node.item[index];
+            helpTextItem.text = node.__$helpText;
+          }
+          // Replace helpText with sub item
+          delete node.__$helpText;
+          this.update(node);
+        }
+        // Internally the question is target TreeNode. Change that to node's linkId.
+        else if (this.key === 'question' && typeof node?.data === 'object') {
+          this.update(node.data.linkId);
+        }
+      });
+
+      this.after(function () {
+        // Remove all custom fields starting with __$ and empty fields.
+        if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
+          // tslint:disable-next-line:only-arrow-functions
+          if (this.notRoot) {
+            this.delete();
+          }
+        }
+      });
+    });
+    return value;
+  }
+
+  static mirrorObject(target, source): any {
+    Object.keys(target).forEach((k) => {
+      if(target.hasOwnProperty(k)) {
+        delete target[k];
+      }
+    });
+
+    return Object.assign(target, source);
+  }
+
+  static noZonePatchFileReader(cb: () => void) {
+    const orig = FileReader;
+    const unpatched = ((window as any).FileReader as any).__zone_symbol__OriginalDelegate;
+    if (unpatched) {
+      (window as any).FileReader = unpatched;
+    }
+    cb();
+    (window as any).FileReader = orig;
+  }
 }

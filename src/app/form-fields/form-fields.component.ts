@@ -22,6 +22,7 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
 import { fhir } from '../fhir';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+import {Util} from '../lib/util';
 
 @Component({
   selector: 'lfb-form-fields',
@@ -34,7 +35,7 @@ import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
         <div class="container">
           <sf-form [schema]="qlSchema"
                    [(model)]="questionnaire"
-                   (onChange)="notifyChange($event)"
+                   (onChange)="valueChanged($event)"
           ></sf-form>
         </div>
         <hr/>
@@ -107,8 +108,8 @@ export class FormFieldsComponent implements OnInit, AfterViewInit, OnChanges {
   /**
    * Emit the change event.
    */
-  notifyChange(event) {
-    this.questionnaireChange.emit(event.value);
+  valueChanged(event) {
+    this.questionnaireChange.emit(Util.pruneEmptyValues(event.value));
   }
 
 

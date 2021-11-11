@@ -21,7 +21,27 @@
             "aot": true,
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              {
+                "glob": "**/*.js",
+                "input": "./node_modules/@webcomponents/webcomponentsjs",
+                "output": "webcomponents/"
+              },
+              {
+                "glob": "**/*.js",
+                "input": "./src/lib/lforms",
+                "output": "lforms/"
+              },
+              {
+                "glob": "**/*.map",
+                "input": "./src/lib/lforms",
+                "output": "lforms/"
+              },
+              {
+                "glob": "**/*.css",
+                "input": "./src/lib/lforms",
+                "output": "lforms/"
+              }
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",

@@ -37,6 +37,7 @@ import {
 } from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
+import {Util} from '../lib/util';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -100,7 +101,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   questionnaire: fhir.Questionnaire = {status: 'draft', item: []};
   itemList: any [];
   @Output()
-  itemChange = new EventEmitter<fhir.Questionnaire>();
+  itemChange = new EventEmitter<any []>();
   isTreeExpanded = false;
   editType = 'ui';
   itemEditorSchema: any;
@@ -214,9 +215,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Inform the change to host element.
    */
   itemChanged(item) {
-    // this.item = item;
-    this.focusNode.data = item;
-    this.itemChange.emit(this.questionnaire);
+    Util.mirrorObject(this.focusNode.data, Util.pruneEmptyValues(item));
+    this.itemChange.emit(this.itemList);
   }
 
   /**

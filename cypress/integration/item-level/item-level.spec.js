@@ -36,7 +36,7 @@ describe('Home page', () => {
 
     beforeEach(() => {
       cy.uploadFile('reset-form.json');
-      cy.get('#text').should('have.value', 'Item from reset form', {timeout: 10000});
+      cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
       cy.get('#__\\$helpText').as('helpText');
       cy.wait(1000);
     });

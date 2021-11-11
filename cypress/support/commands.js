@@ -34,10 +34,10 @@ Cypress.Commands.add('uploadFile',(fileName) => {
 });
 
 /**
- * Command to get json from 'View Questionnaire JSON'
+ * Command to get json from 'Preview'
  */
 Cypress.Commands.add('questionnaireJSON', () => {
-  cy.contains('View Questionnaire JSON').scrollIntoView().click();
+  cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
   return cy.get('ngb-modal-window div.modal-body pre').invoke('text').then((text) => {
     cy.get('.modal-footer > .btn').scrollIntoView().click();
     return cy.wrap(JSON.parse(text));
