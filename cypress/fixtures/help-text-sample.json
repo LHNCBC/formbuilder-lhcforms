@@ -1,4 +1,5 @@
 {
+  "resourceType": "Questionnaire",
   "title": "Help text sample form",
   "status": "draft",
   "item": [

@@ -20,9 +20,11 @@ import {FetchService} from '../fetch.service';
 import {FhirService} from '../services/fhir.service';
 import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
+import { PreviewDlgComponent } from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
 import {Util} from '../lib/util';
 import {MatTabChangeEvent} from '@angular/material/tabs';
+import {MatDialog} from '@angular/material/dialog';
 declare var LForms: any;
 
 
@@ -72,11 +74,12 @@ export class BasePageComponent implements OnDestroy {
 
 
   constructor(private formService: FormService,
-              private modal: NgbModal,
+              private modalService: NgbModal,
               private dataSrv: FetchService,
               private fhirService: FhirService,
               private appJsonPipe: AppJsonPipe,
-              private cdr: ChangeDetectorRef
+              private cdr: ChangeDetectorRef,
+              private matDlg: MatDialog
               ) {
     const isAutoSaved = this.formService.isAutoSaved();
     if(isAutoSaved) {
@@ -97,14 +100,9 @@ export class BasePageComponent implements OnDestroy {
 
 
   get lfData(): any {
-    return LForms.FHIR.R4.SDC.convertQuestionnaireToLForms(this.formValue);
+    return LForms.Util.convertFHIRQuestionnaireToLForms(this.formValue, 'R4');
   }
 
-  setLfDataToWidget(event: MatTabChangeEvent) {
-    if(event.index === 0) {
-      this.previewEl.nativeElement.lfData = this.lfData;
-    }
-  }
   /**
    * Create bare minimum form.
    */
@@ -220,28 +218,21 @@ export class BasePageComponent implements OnDestroy {
    * @param event - Object having selected file from the browser file dialog.
    */
   onFileSelected(event) {
-    // Use unpatched FileReader. See Util.noZonePatchFileReader()
-    // for work-around to zone.js FileReader patching problem.
-    Util.noZonePatchFileReader(() => {
-      const fileReader = new FileReader();
-      const selectedFile = event.target.files[0];
-      event.target.value = null; //
-      fileReader.onload = () => {
-        try {
-          this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
-          this.cdr.detectChanges(); // Unpatched FileReader fails to detect the changes. Call change detector manually.
-        }
-        catch (e) {
-          this.showError(e);
-          this.cdr.detectChanges();
-        }
+    const fileReader = new FileReader();
+    const selectedFile = event.target.files[0];
+    event.target.value = null; //
+    fileReader.onload = () => {
+      try {
+        this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
       }
-      fileReader.onerror = (error) => {
-        this.showError('Error occurred reading file: ${selectedFile.name}');
-        this.cdr.detectChanges();
+      catch (e) {
+        this.showError(e);
       }
-      fileReader.readAsText(selectedFile, 'UTF-8');
-    });
+    }
+    fileReader.onerror = (error) => {
+      this.showError('Error occurred reading file: ${selectedFile.name}');
+    }
+    fileReader.readAsText(selectedFile, 'UTF-8');
   }
 
   showError(error: any) {
@@ -252,8 +243,12 @@ export class BasePageComponent implements OnDestroy {
    * View full Questionnaire json
    */
   showDlg(dialogTemplateRef) {
-    this.modal.open(dialogTemplateRef, {scrollable: true, centered: true, size: 'xl'});
+    this.modalService.open(dialogTemplateRef, {scrollable: true, centered: true, size: 'xl'});
     // this.guidingStep = 'qJSON';
+  }
+
+  showDlgMat() {
+    this.matDlg.open(PreviewDlgComponent, {data: {questionnaire: this.formValue, lfData: this.lfData}, width: '80vw', height: '80vh'});
   }
 
   /**
@@ -341,9 +336,9 @@ export class BasePageComponent implements OnDestroy {
    * Import FHIR server menu handler.
    */
   importFromFHIRServer() {
-    this.modal.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
+    this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
       if(result) { // Server picked, invoke search dialog.
-        this.modal.open(FhirSearchDlgComponent, {size: 'lg', scrollable: true}).result.then((selected) => {
+        this.modalService.open(FhirSearchDlgComponent, {size: 'lg', scrollable: true}).result.then((selected) => {
           if(selected !== false) { // Questionnaire picked, get the item from the server.
             this.fhirService.read(selected).subscribe((resp)=>{
               this.setQuestionnaire(resp);

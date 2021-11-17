@@ -1,4 +1,5 @@
 {
+  "resourceType": "Questionnaire",
   "title": "Decimal type form",
   "status": "draft",
   "item": [

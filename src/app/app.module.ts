@@ -12,6 +12,7 @@ import { ItemComponent } from './item/item.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule} from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule} from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -55,7 +56,6 @@ import { EnablewhenAnswerCodingComponent } from './lib/widgets/enablewhen-answer
 import { AppJsonPipe } from './lib/pipes/app-json.pipe';
 import { BasePageComponent } from './base-page/base-page.component';
 import { FormFieldsComponent } from './form-fields/form-fields.component';
-import {MatDialogModule} from '@angular/material/dialog';
 import { LabelRadioComponent } from './lib/widgets/label-radio/label-radio.component';
 import { RowLayoutComponent } from './lib/widgets/row-layout/row-layout.component';
 import { BooleanControlledComponent } from './lib/widgets/boolean-controlled/boolean-controlled.component';
@@ -73,6 +73,7 @@ import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
 import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.component';
 import { TypeComponent } from './lib/widgets/type/type.component';
+import { PreviewDlgComponent } from './lib/widgets/preview-dlg/preview-dlg.component';
 
 @NgModule({
   declarations: [
@@ -120,7 +121,8 @@ import { TypeComponent } from './lib/widgets/type/type.component';
     InitialComponent,
     HelpTextComponent,
     SfFormWrapperComponent,
-    TypeComponent
+    TypeComponent,
+    PreviewDlgComponent
   ],
   imports: [
     AppRoutingModule,

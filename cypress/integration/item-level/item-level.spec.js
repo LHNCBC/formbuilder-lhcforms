@@ -52,7 +52,7 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'New item 1');
       cy.contains('Delete this item').scrollIntoView().click();
-      cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'Item from reset form');
+      cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'Item 0');
 
       const helpString = 'Test help text!';
       cy.get('@helpText').click();

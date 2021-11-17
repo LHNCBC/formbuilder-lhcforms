@@ -15,6 +15,7 @@ describe('BasePageComponent', () => {
   });
 
   it('should create', () => {
+    // @ts-ignore
     expect(component).toBeTruthy();
   });
 });

@@ -22,11 +22,30 @@
   <lfb-root></lfb-root>
   <script src="https://cdn.jsdelivr.net/npm/ace-builds@latest/src-noconflict/ace.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script src="lforms/lib/elements/lhc-forms.es5.js"></script>
   <script>
+    /**
+     * Script loading
+     * @param url - Url of the script
+     */
+    var loadScript = function (url) {
+      try {
+        var script = document.createElement("script");
+        script.src = url;
+        document.body.appendChild(script);
+      }
+      catch(err) {
+        console.error(err);
+      }
+    };
+
     window.ace.config.set("basePath", "https://cdn.jsdelivr.net/npm/ace-builds@latest/src-noconflict/");
     window.onload = function() {
-      LForms.Util.loadFHIRLibs("lforms/lib/fhir/R4/lformsFHIR.min.js", "lforms/lib/fhir/STU3/lformsFHIR.min.js");
+      setTimeout(() => {
+        loadScript('lforms/lib/elements/lhc-forms.es5.js');
+        setTimeout(() => {
+          LForms.Util.loadFHIRLibs('lforms/lib/fhir/R4/lformsFHIR.min.js', 'lforms/lib/fhir/STU3/lformsFHIR.min.js');
+        }, 1000);
+      }, 500);
     };
   </script>
 

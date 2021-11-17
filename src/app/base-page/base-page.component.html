@@ -43,7 +43,7 @@
       </div>
       <div class="btn-group-sm mr-2 ml-auto" role="group" aria-label="Preview">
         <button type="button" class="btn btn-secondary"
-                (click)="showDlg(previewDlg)"
+                (click)="showDlgMat()"
                 [attr.disabled]="guidingStep === 'qJSON' ? '' : null">Preview</button>
       </div>
       <div class="btn-group-sm mr-2" role="group" aria-label="Close editor">
@@ -154,10 +154,10 @@
 </ng-template>
 
 <ng-template #previewDlgBody>
-  <mat-tab-group [(selectedIndex)]="selectedPreviewTab" (selectedTabChange)="setLfDataToWidget($event)">
+  <mat-tab-group [(selectedIndex)]="selectedPreviewTab">
     <mat-tab label="View Rendered Form">
       <ng-template matTabContent>
-        <wc-lhc-form #lhcFormPreview></wc-lhc-form>
+        <wc-lhc-form [lfData]="lfData"></wc-lhc-form>
       </ng-template>
     </mat-tab>
     <mat-tab label="View Questionnaire JSON">
