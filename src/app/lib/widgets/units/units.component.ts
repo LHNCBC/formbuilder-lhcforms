@@ -1,12 +1,9 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {StringComponent} from '../string/string.component';
-import {ArrayProperty, ArrayWidget, FormProperty} from '@lhncbc/ngx-schema-form';
-import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
+import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {fhir} from '../../../fhir';
-import uri = fhir.uri;
 import {ExtensionsComponent} from '../extensions/extensions.component';
 import Def from 'autocomplete-lhc';
-import {Subscription} from "rxjs";
+import {Subscription} from 'rxjs';
 
 interface UnitExtension {
   url: string,
@@ -46,6 +43,16 @@ interface UnitExtension {
 export class UnitsComponent extends ExtensionsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   static seqNum = 0;
+  static questionUnitExtUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit';
+  static questionUnitOptionExtUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption';
+  static ucumSystemUrl = 'http://unitsofmeasure.org'
+
+  static unitsExtUrl = {
+    quantity: UnitsComponent.questionUnitOptionExtUrl,
+    decimal: UnitsComponent.questionUnitExtUrl,
+    integer: UnitsComponent.questionUnitExtUrl
+  }
+
   elementId: string;
   unitsSearchUrl = 'https://clinicaltables.nlm.nih.gov/api/ucum/v3/search?df=cs_code,name,guidance';
   options: any = {
@@ -63,29 +70,20 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
   }
 
   autoComp: Def.Autocompleter;
-  static questionUnitExtUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit';
-  static questionUnitOptionExtUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption';
-  static ucumSystemUrl = 'http://unitsofmeasure.org'
-
-  static unitsExtUrl = {
-    quantity: UnitsComponent.questionUnitOptionExtUrl,
-    decimal: UnitsComponent.questionUnitExtUrl,
-    integer: UnitsComponent.questionUnitExtUrl
-  }
 
   dataType = 'string';
-  typePropertySubscription: Subscription;
-  propertySubscription: Subscription;
+  subscriptions: Subscription [];
 
   constructor() {
     super();
     this.elementId = 'units'+UnitsComponent.seqNum++;
+    this.subscriptions = [];
   }
 
   ngAfterViewInit() {
     this.options.toolTip = this.schema.placeholder;
     // Watch item type to setup autocomplete
-    this.typePropertySubscription = this.formProperty.searchProperty('/type')
+    let sub = this.formProperty.searchProperty('/type')
       .valueChanges.subscribe((changedValue) => {
       if(this.dataType !== changedValue) {
         if(changedValue === 'quantity') {
@@ -106,21 +104,23 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
         this.dataType = changedValue;
       }
     });
+    this.subscriptions.push(sub);
 
-    this.propertySubscription = this.formProperty.valueChanges.subscribe(() => {
+    sub = this.formProperty.valueChanges.subscribe(() => {
       this.resetAutocomplete();
       const initialUnits = (this.extensionsProp.properties as FormProperty[]).filter((p) => {
         return p.value.url === UnitsComponent.unitsExtUrl[this.dataType];
       });
 
       for (let i=0, len=initialUnits.length; i<len; ++i) {
-        const dispVal = initialUnits[i].value.valueCoding.code;
+        const dispVal = initialUnits[i].value.valueCoding.code || initialUnits[i].value.valueCoding.display;
         this.autoComp.storeSelectedItem(dispVal, dispVal);
         if(this.options.maxSelect === '*') {
           this.autoComp.addToSelectedArea(dispVal);
         }
       }
     });
+    this.subscriptions.push(sub);
 
     // Setup selection handler
     Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
@@ -131,10 +131,12 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
         const selectedUnit = data.list.find((unit) => {
           return unit[0] === data.item_code;
         });
-        this.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType], UnitsComponent.ucumSystemUrl, data.item_code, selectedUnit[1]), 'valueCoding');
+        this.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+          UnitsComponent.ucumSystemUrl, data.item_code, selectedUnit[1]), 'valueCoding');
       }
       else {
-        this.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType], null, data.final_val, data.final_val), 'valueCoding');
+        this.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+          null, data.final_val, data.final_val), 'valueCoding');
       }
     });
 
@@ -164,7 +166,7 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
 
   /**
    * Delete unit extension object from the extension array.
-   * @param unit
+   * @param unit - FHIR extension represented as unit
    */
   deleteUnit(unit: fhir.Extension): any {
     this.removeExtension(unit);
@@ -174,10 +176,10 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
   /**
    * Create unit extension object
    *
-   * @param unitsExtUrl
-   * @param system
-   * @param code
-   * @param display
+   * @param unitsExtUrl - Extension uri for the associated unit.
+   * @param system - System uri of the coding.
+   * @param code - Code of the coding.
+   * @param display - Display text of the coding.
    */
   createUnitExt(unitsExtUrl: fhir.uri, system: fhir.uri, code: string, display: string): fhir.Extension {
     const ret: UnitExtension =
@@ -202,7 +204,10 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
    */
   ngOnDestroy() {
     this.destroyAutocomplete();
-    this.typePropertySubscription.unsubscribe();
-    this.propertySubscription.unsubscribe();
+    this.subscriptions.forEach((s) => {
+      if(s) {
+        s.unsubscribe();
+      }
+    });
   }
 }

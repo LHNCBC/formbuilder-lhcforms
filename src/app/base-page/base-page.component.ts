@@ -1,4 +1,14 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild
+} from '@angular/core';
 import {FormService} from '../services/form.service';
 import {fhir} from '../fhir';
 import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
@@ -10,208 +20,18 @@ import {FetchService} from '../fetch.service';
 import {FhirService} from '../services/fhir.service';
 import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
+import { PreviewDlgComponent } from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
+import {Util} from '../lib/util';
+import {MatTabChangeEvent} from '@angular/material/tabs';
+import {MatDialog} from '@angular/material/dialog';
+declare var LForms: any;
+
 
 @Component({
   selector: 'lfb-base-page',
-  template: `
-    <div class="page-defaults container bg-white">
-      <lfb-header id="fixedTop" [isFirebaseEnabled]="false"></lfb-header>
-      <div id="resizableMiddle">
-
-        <nav class="navbar navbar-light bg-light" aria-label="Menu bar" *ngIf="guidingStep !== 'home'">
-          <div class="btn-group-sm mr-2" ngbDropdown role="group" aria-label="Export menu">
-            <button class="btn btn-sm btn-secondary" ngbDropdownToggle>
-              Export
-            </button>
-            <div class="dropdown-menu" ngbDropdownMenu>
-              <button ngbDropdownItem (click)="saveToFile()">Export to file ...</button>
-              <button ngbDropdownItem>Create a new questionnaire on a FHIR server...</button>
-              <button ngbDropdownItem>Update the questionnaire on the server</button>
-            </div>
-          </div>
-          <div class="btn-group-sm mr-2" ngbDropdown role="group" aria-label="Import menu">
-            <button class="btn btn-sm btn-secondary" ngbDropdownToggle>
-              Import
-            </button>
-            <div class="dropdown-menu" ngbDropdownMenu>
-              <button ngbDropdownItem (click)="fileInput.click()">Import from file...</button>
-              <!-- <button ngbDropdownItem (click)="importLoinc()">Import a LOINC form...</button> -->
-              <button ngbDropdownItem (click)="importFromFHIRServer()">Import from a FHIR server...</button>
-              <div class="dropdown-divider"></div>
-              <form class="px-4 py-3">
-                <label>Import LOINC forms:</label>
-                <input type="text"
-                       placeholder="Search LOINC"
-                       [(ngModel)]="acResult"
-                       [ngModelOptions]="{standalone: true}"
-                       [ngbTypeahead]="acSearch"
-                       (selectItem)="getForm($event.item.id)"
-                       [resultFormatter]="formatter"
-                       [inputFormatter]="formatter"
-                       [editable]='false' />
-              </form>
-            </div>
-          </div>
-
-          <div class="btn-group-sm mr-2" role="group" aria-label="Edit form attributes">
-            <button type="button" class="btn btn-secondary"
-                    (click)="setStep('fl-editor')" [attr.disabled]="guidingStep === 'fl-editor' ? '' : null">Edit form attributes</button>
-          </div>
-          <div class="btn-group-sm mr-2 ml-auto" role="group" aria-label="View Questionnaire JSON">
-            <button type="button" class="btn btn-secondary"
-                    (click)="viewQuestionnaire(showQuestionnaireJson)"
-                    [attr.disabled]="guidingStep === 'qJSON' ? '' : null">View Questionnaire JSON</button>
-          </div>
-          <div class="btn-group-sm mr-2" role="group" aria-label="Close editor">
-            <button type="button" class="btn btn-secondary " (click)="newStart()">Close</button>
-          </div>
-        </nav>
-        <a target="_self" id="exportAnchor" class="d-none">Export</a>
-        <input #fileInput class="d-none" type="file" (change)="onFileSelected($event)">
-
-        <ng-container *ngIf="guidingStep === 'home'">
-          <ng-container *ngTemplateOutlet="home"></ng-container>
-        </ng-container>
-        <ng-container *ngIf="guidingStep === 'fl-editor'">
-          <ng-container *ngTemplateOutlet="formLevelFields"></ng-container>
-        </ng-container>
-        <ng-container *ngIf="guidingStep === 'item-editor'">
-          <ng-container *ngTemplateOutlet="itemLevelFields"></ng-container>
-        </ng-container>
-      </div>
-      <lfb-footer id="fixedBottom"></lfb-footer>
-    </div>
-
-    <ng-template #home>
-      <div class="card-body container">
-        <div>
-          <p class="lead">How do you want to create your form?</p>
-          <ul class="list-unstyled ml-5" ngbRadioGroup [(ngModel)]="startOption" >
-            <li *ngIf="isAutoSaved()">
-              <label ngbButtonLabel>
-                <input ngbButton value="from_autosave" type="radio">
-                Would you like to start from where you left off before?
-              </label>
-            </li>
-            <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="scratch" type="radio">
-                Start from scratch
-              </label>
-            </li>
-            <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="existing" type="radio">
-                Start with existing form
-              </label>
-              <ul *ngIf="startOption === 'existing'" class="list-unstyled ml-5"  ngbRadioGroup [(ngModel)]="importOption" >
-                <li>
-                  <label ngbButtonLabel>
-                    <input ngbButton value="local" type="radio">
-                    Import from local file
-                  </label>
-                </li>
-                <li>
-                  <label ngbButtonLabel>
-                    <input ngbButton value="fhirServer" type="radio">
-                    Import from FHIR server
-                  </label>
-                </li>
-                <li>
-                  <label ngbButtonLabel>
-                    <input ngbButton value="loinc" type="radio">
-                    Import from LOINC
-                  </label>
-                </li>
-              </ul>
-            </li>
-          </ul>
-          <hr>
-          <div class="btn-toolbar float-right mb-2" role="toolbar" aria-label="Toolbar with button groups">
-            <div class="btn-group" role="group" aria-label="Last group">
-              <button type="button" class="btn-sm btn-primary" (click)="onContinue()">Continue</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ng-template>
-
-    <ng-template #formLevelFields>
-      <lfb-form-fields (state)="setStep($event)"
-                       [questionnaire]="formFields"
-                       (questionnaireChange)="formFieldsChanged($event)"
-                       [questionsButtonLabel]="createButtonLabel()"
-      ></lfb-form-fields>
-    </ng-template>
-
-    <ng-template #itemLevelFields>
-      <button type="button"
-              class="ml-2 font-weight-bold btn btn-link"
-              (click)="setStep('fl-editor')"
-      >{{questionnaire.title}}</button>
-      <lfb-item-component [questionnaire]="questionnaire"
-                          (itemChange)="itemComponentChanged($event)"
-      ></lfb-item-component>
-    </ng-template>
-
-    <ng-template #showQuestionnaireJson  let-modal>
-      <div class="modal-header btn-primary">
-        <h4 class="modal-title" id="modal-basic-title">FHIR Questionnaire JSON</h4>
-        <button type="button" class="close btn-primary text-white" aria-label="Close" (click)="modal.close('Cross click')">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <pre>{{ questionnaire | appJson }}</pre>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="modal.close('Close click')">Close</button>
-      </div>
-    </ng-template>
-
-  `,
-  styles: [`
-    .page-defaults {
-
-    }
-
-    #fixedTop {
-      /* position:absolute; */
-      top:0;
-      left:0;
-      height:84px;
-      right:0;
-      overflow:hidden;
-    }
-
-    #fixedBottom {
-     /* position:absolute; */
-      bottom:0;
-      height:65px;
-      left:0;
-      right:0;
-      overflow:hidden;
-    }
-
-    #resizableMiddle {
-     /* position:absolute; */
-      top:84px;
-      bottom:65px;
-      left:0;
-      right:0;
-      overflow:auto;
-    }
-
-    .radio-group {
-      border: lightgray 1px solid;
-      vertical-align: center;
-      margin: 5px 0 5px 0;
-    }
-    .radio-button {
-      margin: 5px;
-    }
-  `]
+  templateUrl: './base-page.component.html',
+  styleUrls: ['./base-page.component.css']
 })
 export class BasePageComponent implements OnDestroy {
 
@@ -223,26 +43,28 @@ export class BasePageComponent implements OnDestroy {
   editMode = 'fresh';
   questionnaire: fhir.Questionnaire = null;
   formFields: fhir.Questionnaire = null;
-  formSubject: Subject<fhir.Questionnaire>;
-  initialForm: fhir.Questionnaire;
+  formValue: fhir.Questionnaire;
+  formSubject = new Subject<fhir.Questionnaire>();
   @Output()
   state = new EventEmitter<string>();
   objectUrl: any;
   acResult: AutoCompleteResult = null;
+  @ViewChild('lhcFormPreview') previewEl: ElementRef;
+  selectedPreviewTab = 0;
 
 
   constructor(private formService: FormService,
-              private modal: NgbModal,
+              private modalService: NgbModal,
               private dataSrv: FetchService,
               private fhirService: FhirService,
-              private appJsonPipe: AppJsonPipe) {
-    this.initialForm = this.createDefaultForm();
+              private appJsonPipe: AppJsonPipe,
+              private cdr: ChangeDetectorRef,
+              private matDlg: MatDialog
+              ) {
     const isAutoSaved = this.formService.isAutoSaved();
     if(isAutoSaved) {
       this.startOption = 'from_autosave';
-      this.initialForm = formService.autoLoadForm();
     }
-    this.formSubject = new Subject<fhir.Questionnaire>();
     this.formSubject.asObservable().pipe(
       debounceTime(500),
       switchMap((fhirQ) => {
@@ -256,6 +78,14 @@ export class BasePageComponent implements OnDestroy {
 
   }
 
+
+  /**
+   * Convert the questionnaire to lfData.
+   */
+  get lfData(): any {
+    const q = Util.convertToQuestionnaireJSON(this.formValue);
+    return LForms.Util.convertFHIRQuestionnaireToLForms(q, 'R4');
+  }
 
   /**
    * Create bare minimum form.
@@ -284,17 +114,20 @@ export class BasePageComponent implements OnDestroy {
    * @param event - Emits questionnaire (Form level copy)
    */
   formFieldsChanged(event) {
-    Object.assign(this.questionnaire, event);
-    this.notifyChange(this.questionnaire);
+    const itemList = this.formValue.item;
+    Util.mirrorObject(this.formValue, Util.convertToQuestionnaireJSON(event));
+    this.formValue.item = itemList;
+    this.notifyChange(this.formValue);
   }
 
 
   /**
    * Handle value changes in item-component.
-   * @param event - Emits questionnaire (with items). Form level fields should be untouched.
+   * @param itemList - Emits item list. Form level fields should be untouched.
    */
-  itemComponentChanged(event) {
-    this.notifyChange(this.questionnaire);
+  itemComponentChanged(itemList) {
+    this.formValue.item = itemList;
+    this.notifyChange(this.formValue);
   }
 
 
@@ -305,9 +138,10 @@ export class BasePageComponent implements OnDestroy {
    */
   setQuestionnaire(questionnaire) {
     this.questionnaire = questionnaire;
+    this.formValue = Object.assign({}, questionnaire);
     this.formFields = Object.assign({}, questionnaire);
     delete this.formFields.item;
-    this.notifyChange(this.questionnaire);
+    this.notifyChange(this.formValue);
   }
 
 
@@ -368,13 +202,12 @@ export class BasePageComponent implements OnDestroy {
    * @param event - Object having selected file from the browser file dialog.
    */
   onFileSelected(event) {
+    const fileReader = new FileReader();
     const selectedFile = event.target.files[0];
     event.target.value = null; //
-    const fileReader = new FileReader();
-    fileReader.readAsText(selectedFile, 'UTF-8');
     fileReader.onload = () => {
       try {
-        this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string))
+        this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
       }
       catch (e) {
         this.showError(e);
@@ -383,6 +216,7 @@ export class BasePageComponent implements OnDestroy {
     fileReader.onerror = (error) => {
       this.showError('Error occurred reading file: ${selectedFile.name}');
     }
+    fileReader.readAsText(selectedFile, 'UTF-8');
   }
 
   showError(error: any) {
@@ -390,11 +224,10 @@ export class BasePageComponent implements OnDestroy {
   }
 
   /**
-   * View full Questionnaire json
+   * View preview of lforms widget and questionnaire json
    */
-  viewQuestionnaire(dialogTemplateRef) {
-    this.modal.open(dialogTemplateRef, {scrollable: true, centered: true, size: 'xl'});
-    // this.guidingStep = 'qJSON';
+  showPreviewDlg() {
+    this.matDlg.open(PreviewDlgComponent, {data: {questionnaire: this.formValue, lfData: this.lfData}, width: '80vw', height: '80vh'});
   }
 
   /**
@@ -482,9 +315,9 @@ export class BasePageComponent implements OnDestroy {
    * Import FHIR server menu handler.
    */
   importFromFHIRServer() {
-    this.modal.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
+    this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
       if(result) { // Server picked, invoke search dialog.
-        this.modal.open(FhirSearchDlgComponent, {size: 'lg', scrollable: true}).result.then((selected) => {
+        this.modalService.open(FhirSearchDlgComponent, {size: 'lg', scrollable: true}).result.then((selected) => {
           if(selected !== false) { // Questionnaire picked, get the item from the server.
             this.fhirService.read(selected).subscribe((resp)=>{
               this.setQuestionnaire(resp);

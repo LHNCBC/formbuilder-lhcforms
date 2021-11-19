@@ -1,4 +1,5 @@
 {
+  "resourceType": "Questionnaire",
   "title": "Answer options form",
   "status": "draft",
   "item": [

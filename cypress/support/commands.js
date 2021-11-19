@@ -34,12 +34,13 @@ Cypress.Commands.add('uploadFile',(fileName) => {
 });
 
 /**
- * Command to get json from 'View Questionnaire JSON'
+ * Command to get json from 'Preview'
  */
 Cypress.Commands.add('questionnaireJSON', () => {
-  cy.contains('View Questionnaire JSON').scrollIntoView().click();
-  return cy.get('ngb-modal-window div.modal-body pre').invoke('text').then((text) => {
-    cy.get('.modal-footer > .btn').scrollIntoView().click();
+  cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
+  cy.contains('.mat-tab-label-content', 'View Questionnaire JSON').scrollIntoView().click();
+  return cy.get('mat-tab-body div.mat-tab-body-content pre').invoke('text').then((text) => {
+    cy.get('mat-dialog-actions > button').scrollIntoView().click();
     return cy.wrap(JSON.parse(text));
   });
 });

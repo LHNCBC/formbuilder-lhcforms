@@ -2,6 +2,7 @@
  * A utility class
  */
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import traverse from 'traverse';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -82,9 +83,14 @@ export class Util {
       }
     }
     else if (typeof json === 'object') { // Iterate through object properties
-      for(let i = 0, keys = Object.keys(json); ret && i < keys.length; i++) {
-        if(json.hasOwnProperty(keys[i])) {
-          ret = Util.isEmpty(json[keys[i]]);
+      if(Object.keys(json).length === 0) {
+        ret = true;
+      }
+      else {
+        for(let i = 0, keys = Object.keys(json); ret && i < keys.length; i++) {
+          if(json.hasOwnProperty(keys[i])) {
+            ret = Util.isEmpty(json[keys[i]]);
+          }
         }
       }
     }
@@ -214,4 +220,70 @@ export class Util {
   }
 
 
+  /**
+   * Prunes the questionnaire model using the following conditions:
+   * . Removes 'empty' values from the object. Emptiness is defined in Util.isEmpty().
+   *   The following are considred empty: undefined, null, {}, [], and  ''.
+   * . Removes any thing with __$* keys.
+   * . Removes functions.
+   * . Converts __$helpText to appropriate FHIR help text item.
+   * . Converts converts enableWhen[x].question object to linkId.
+   *
+   * @param value - Questionnaire object used in the form builder.
+   */
+  static convertToQuestionnaireJSON(value) {
+    traverse(value).forEach(function (node) {
+      this.before(function () {
+        if (node?.__$helpText?.trim().length > 0) {
+          const index = Util.findItemIndexWithHelpText(node.item);
+          let helpTextItem;
+          if (index < 0) {
+            helpTextItem = Util.createHelpTextItem(node, node.__$helpText.trim());
+            if (!node.item) {
+              node.item = [];
+            }
+            node.item.push(helpTextItem);
+          } else {
+            helpTextItem = node.item[index];
+            helpTextItem.text = node.__$helpText;
+          }
+          // Replace helpText with sub item
+          delete node.__$helpText;
+          this.update(node);
+        }
+        // Internally the question is target TreeNode. Change that to node's linkId.
+        else if (this.key === 'question' && typeof node?.data === 'object') {
+          this.update(node.data.linkId);
+        }
+      });
+
+      this.after(function () {
+        // Remove all custom fields starting with __$ and empty fields.
+        if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
+          // tslint:disable-next-line:only-arrow-functions
+          if (this.notRoot) {
+            this.delete();
+          }
+        }
+      });
+    });
+    return value;
+  }
+
+
+  /**
+   * Remove the content of target and copy (shallow) source to target.
+   * More like a clone of source, without changing target reference.
+   * @param target - object to be mirrored
+   * @param source - source to copy.
+   */
+  static mirrorObject(target, source): any {
+    Object.keys(target).forEach((k) => {
+      if(target.hasOwnProperty(k)) {
+        delete target[k];
+      }
+    });
+
+    return Object.assign(target, source);
+  }
 }

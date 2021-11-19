@@ -1,10 +1,11 @@
 {
+  "resourceType": "Questionnaire",
   "title": "New Form",
   "status": "draft",
   "item": [
     {
       "linkId": "1",
-      "text": "Item from reset form",
+      "text": "Item 0",
       "type": "string"
     }
   ]
