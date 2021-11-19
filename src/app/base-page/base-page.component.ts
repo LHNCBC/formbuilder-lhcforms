@@ -221,14 +221,9 @@ export class BasePageComponent implements OnDestroy {
   }
 
   /**
-   * View full Questionnaire json
+   * View preview of lforms widget and questionnaire json
    */
-  showDlg(dialogTemplateRef) {
-    this.modalService.open(dialogTemplateRef, {scrollable: true, centered: true, size: 'xl'});
-    // this.guidingStep = 'qJSON';
-  }
-
-  showDlgMat() {
+  showPreviewDlg() {
     this.matDlg.open(PreviewDlgComponent, {data: {questionnaire: this.formValue, lfData: this.lfData}, width: '80vw', height: '80vh'});
   }
 
