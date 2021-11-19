@@ -215,7 +215,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Inform the change to host element.
    */
   itemChanged(item) {
-    Util.mirrorObject(this.focusNode.data, Util.convertToQuestionnaireJSON(item));
+    // Util.mirrorObject(this.focusNode.data, Util.convertToQuestionnaireJSON(item));
+    Util.mirrorObject(this.focusNode.data, item);
     this.itemChange.emit(this.itemList);
   }
 

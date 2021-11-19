@@ -80,7 +80,8 @@ export class BasePageComponent implements OnDestroy {
 
 
   get lfData(): any {
-    return LForms.Util.convertFHIRQuestionnaireToLForms(this.formValue, 'R4');
+    const q = Util.convertToQuestionnaireJSON(this.formValue);
+    return LForms.Util.convertFHIRQuestionnaireToLForms(q, 'R4');
   }
 
   /**
