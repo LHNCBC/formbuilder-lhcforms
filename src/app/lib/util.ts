@@ -221,16 +221,13 @@ export class Util {
 
 
   /**
-   * Prunes the object using the following conditions:
+   * Prunes the questionnaire model using the following conditions:
    * . Removes 'empty' values from the object. Emptiness is defined in Util.isEmpty().
    *   The following are considred empty: undefined, null, {}, [], and  ''.
    * . Removes any thing with __$* keys.
    * . Removes functions.
-   *
-   * Apart from the above, it handles the following cases, assuming the argument is a
-   * questionnaire from the form builder.
-   * . As a special case for questionnaire object, it converts __$helpText to appropriate FHIR help text item.
-   * . As a speial case for questinnaire object, it converts converts enableWhen[x].question object to linkId.
+   * . Converts __$helpText to appropriate FHIR help text item.
+   * . Converts converts enableWhen[x].question object to linkId.
    *
    * @param value - Questionnaire object used in the form builder.
    */

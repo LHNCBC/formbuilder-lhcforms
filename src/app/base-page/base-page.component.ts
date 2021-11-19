@@ -79,6 +79,9 @@ export class BasePageComponent implements OnDestroy {
   }
 
 
+  /**
+   * Convert the questionnaire to lfData.
+   */
   get lfData(): any {
     const q = Util.convertToQuestionnaireJSON(this.formValue);
     return LForms.Util.convertFHIRQuestionnaireToLForms(q, 'R4');
