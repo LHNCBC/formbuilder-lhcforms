@@ -220,7 +220,21 @@ export class Util {
   }
 
 
-  static pruneEmptyValues(value) {
+  /**
+   * Prunes the object using the following conditions:
+   * . Removes 'empty' values from the object. Emptiness is defined in Util.isEmpty().
+   *   The following are considred empty: undefined, null, {}, [], and  ''.
+   * . Removes any thing with __$* keys.
+   * . Removes functions.
+   *
+   * Apart from the above, it handles the following cases, assuming the argument is a
+   * questionnaire from the form builder.
+   * . As a special case for questionnaire object, it converts __$helpText to appropriate FHIR help text item.
+   * . As a speial case for questinnaire object, it converts converts enableWhen[x].question object to linkId.
+   *
+   * @param value - Questionnaire object used in the form builder.
+   */
+  static convertToQuestionnaireJSON(value) {
     traverse(value).forEach(function (node) {
       this.before(function () {
         if (node?.__$helpText?.trim().length > 0) {
@@ -259,6 +273,13 @@ export class Util {
     return value;
   }
 
+
+  /**
+   * Remove the content of target and copy (shallow) source to target.
+   * More like a clone of source, without changing target reference.
+   * @param target - object to be mirrored
+   * @param source - source to copy.
+   */
   static mirrorObject(target, source): any {
     Object.keys(target).forEach((k) => {
       if(target.hasOwnProperty(k)) {
@@ -267,15 +288,5 @@ export class Util {
     });
 
     return Object.assign(target, source);
-  }
-
-  static noZonePatchFileReader(cb: () => void) {
-    const orig = FileReader;
-    const unpatched = ((window as any).FileReader as any).__zone_symbol__OriginalDelegate;
-    if (unpatched) {
-      (window as any).FileReader = unpatched;
-    }
-    cb();
-    (window as any).FileReader = orig;
   }
 }

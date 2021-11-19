@@ -19,6 +19,6 @@ export class AppJsonPipe implements PipeTransform {
    * @param value - JSON object
    */
   transform(value: any): string {
-    return JSON.stringify(Util.pruneEmptyValues(value), null, 2);
+    return JSON.stringify(Util.convertToQuestionnaireJSON(value), null, 2);
   }
 }

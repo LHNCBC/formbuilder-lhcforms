@@ -15,7 +15,7 @@ export interface PreviewData {
   templateUrl: './preview-dlg.component.html',
   styleUrls: ['./preview-dlg.component.css']
 })
-export class PreviewDlgComponent implements AfterViewInit{
+export class PreviewDlgComponent {
 
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
 
@@ -23,10 +23,4 @@ export class PreviewDlgComponent implements AfterViewInit{
     public dialogRef: MatDialogRef<PreviewDlgComponent>,
     @Inject(MAT_DIALOG_DATA) public data: PreviewData,
   ) {}
-
-  ngAfterViewInit() {
-    console.log('ngAfterViewInit(): lhcForm offsetHeight: '+this.wcForm.nativeElement.offsetHeight);
-    console.log('ngAfterViewInit(): lhcForm clientHeight: '+this.wcForm.nativeElement.clientHeight);
-  }
-
 }

@@ -7,16 +7,11 @@ describe('Home page', () => {
     // Since we want to visit the same URL at the start of all our tests,
     // we include it in our beforeEach function so that it runs before each test
     cy.visit('/');
-    cy.wait(2000);
-  })
+  });
 
   it('display home page title', () => {
     cy.get('.lead').first().should('have.text', 'How do you want to create your form?')
-    cy.window().then((win) => {
-      expect(win.LForms).to.exist;
-      expect(win.LForms.FHIR).to.exist;
-    });
-  })
+  });
 
   context('Form level fields', () => {
     before(() => {

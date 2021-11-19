@@ -109,7 +109,7 @@ export class FormFieldsComponent implements OnInit, AfterViewInit, OnChanges {
    * Emit the change event.
    */
   valueChanged(event) {
-    this.questionnaireChange.emit(Util.pruneEmptyValues(event.value));
+    this.questionnaireChange.emit(Util.convertToQuestionnaireJSON(event.value));
   }
 
 

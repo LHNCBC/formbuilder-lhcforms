@@ -23,6 +23,8 @@
   <script src="https://cdn.jsdelivr.net/npm/ace-builds@latest/src-noconflict/ace.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script>
+    (function () {
+      'use strict';
     /**
      * Script loading
      * @param url - Url of the script
@@ -38,15 +40,32 @@
       }
     };
 
+    /**
+     * Wait until a condition is true to perform an action
+     * @param condition_cb - Call back function for a condition to check.
+     * @param action_cb - Call back function to execute an action.
+     */
+    var waitUntil = function (condition_cb, action_cb){
+      var done = condition_cb();
+      if(done) {
+        action_cb(); // Condition is true, perform the action.
+      }
+      else { // Wait until condition is true.
+        setTimeout(function() {waitUntil(condition_cb, action_cb)}, 100);
+      }
+    };
+
     window.ace.config.set("basePath", "https://cdn.jsdelivr.net/npm/ace-builds@latest/src-noconflict/");
     window.onload = function() {
-      setTimeout(() => {
-        loadScript('lforms/lib/elements/lhc-forms.es5.js');
-        setTimeout(() => {
+      loadScript('lforms/lib/elements/lhc-forms.es5.js');
+      waitUntil(
+        function () {return (typeof LForms !== 'undefined');}, // Wait until lhc-forms is loaded.
+        function() {
           LForms.Util.loadFHIRLibs('lforms/lib/fhir/R4/lformsFHIR.min.js', 'lforms/lib/fhir/STU3/lformsFHIR.min.js');
-        }, 1000);
-      }, 500);
+        }
+      );
     };
+    })();
   </script>
 
 </body>

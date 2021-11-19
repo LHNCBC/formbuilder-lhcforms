@@ -28,26 +28,6 @@ import {MatDialog} from '@angular/material/dialog';
 declare var LForms: any;
 
 
-/**
- * Patch FileReader to avoid zone.js patching issue. Solution copied from
- * https://stackoverflow.com/questions/45542462/angular-4-x-cordova-filereader-fails-silently-white-screen-of-death
- */
-class HackFileReader extends FileReader {
-
-  constructor() {
-    let ret;
-    const preZoneFileReader = ((window as any).FileReader as any).__zone_symbol__OriginalDelegate;
-    if (preZoneFileReader) {
-      ret = new preZoneFileReader();
-    } else {
-      console.log('NO preZoneFileReader was found, returning regular File Reader');
-      ret = super();
-    }
-    return ret;
-  }
-
-}
-
 @Component({
   selector: 'lfb-base-page',
   templateUrl: './base-page.component.html',
@@ -131,7 +111,7 @@ export class BasePageComponent implements OnDestroy {
    */
   formFieldsChanged(event) {
     const itemList = this.formValue.item;
-    Util.mirrorObject(this.formValue, Util.pruneEmptyValues(event));
+    Util.mirrorObject(this.formValue, Util.convertToQuestionnaireJSON(event));
     this.formValue.item = itemList;
     this.notifyChange(this.formValue);
   }
