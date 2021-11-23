@@ -79,32 +79,32 @@ export class FhirService {
     /**
      * Creates a resource on the fhir server, assigning publisher field from the user profile.
      *
-     * @param resourceStr - A string representation of json fhir resource.
+     * @param resource - A string representation of json fhir resource.
      * @param userProfile - User's login profile.
      * @returns - An http promise
      */
-    create(resourceStr, userProfile): Observable<fhir.Resource> {
+    create(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
       // There is no equivalent field to identify the author/publisher in lforms.
       // This field could be handy to retrieve user's resources from fhir server.
       // For now combine name and email to make it unique and searchable by name.
-      const resource = JSON.parse(resourceStr);
-      this.assignPublisher(resource, userProfile);
+      const res = typeof resource === 'string' ? JSON.parse(resource) : resource;
+      this.assignPublisher(res, userProfile);
 
-      return this.promiseToObservable(this.smartClient.create(resource));
+      return this.promiseToObservable(this.smartClient.create(res));
     };
 
 
     /**
      * Creates a resource on the fhir server.
      *
-     * @param resourceStr - A string representation of json fhir resource.
+     * @param resource - A string representation of json fhir resource.
      * @param userProfile - User's login profile.
      * @returns - An http promise
      */
-    update(resourceStr, userProfile): Observable<fhir.Resource> {
-      const resource = JSON.parse(resourceStr);
-      this.assignPublisher(resource, userProfile);
-      return this.promiseToObservable(this.smartClient.update(resource));
+    update(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
+      const res = typeof resource === 'string' ? JSON.parse(resource) : resource;
+      this.assignPublisher(res, userProfile);
+      return this.promiseToObservable(this.smartClient.update(res));
     };
 
 
@@ -137,6 +137,7 @@ export class FhirService {
      *
      * @param searchStr - A search term to search FHIR resources
      * @param searchField - Field to search, should be a valid searchable field. Refer to FHIR REST API for list of fields.
+     * @param otherQueryParams
      * @returns Http promise
      */
     search(searchStr: string, searchField?: string, otherQueryParams?: any): Observable<fhir.Bundle> {

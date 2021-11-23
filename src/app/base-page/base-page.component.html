@@ -9,8 +9,11 @@
         </button>
         <div class="dropdown-menu" ngbDropdownMenu>
           <button ngbDropdownItem (click)="saveToFile()">Export to file ...</button>
-          <button ngbDropdownItem>Create a new questionnaire on a FHIR server...</button>
-          <button ngbDropdownItem>Update the questionnaire on the server</button>
+          <button ngbDropdownItem (click)="exportToServer('CREATE')">Create a new questionnaire on a FHIR server...</button>
+          <button ngbDropdownItem
+                  (click)="exportToServer('UPDATE')"
+                  [disabled]="!questionnaire.id"
+          >Update the questionnaire on the server ({{fhirService.getFhirServer().endpoint}})</button>
         </div>
       </div>
       <div class="btn-group-sm mr-2" ngbDropdown role="group" aria-label="Import menu">

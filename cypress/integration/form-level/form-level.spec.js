@@ -50,5 +50,31 @@ describe('Home page', () => {
       cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
       cy.uploadFile('reset-form.json');
     });
+
+    it('should create questionnaire on the fhir server', () => {
+      cy.uploadFile('answer-option-sample.json');
+      cy.contains('button.dropdown-toggle.btn', 'Export').as('exportMenu');
+      cy.get('@exportMenu').click(); // Open menu
+      cy.contains('button.dropdown-item', 'Update the questionnaire').as('updateMenuItem');
+      cy.get('@updateMenuItem').should('have.class', 'disabled');
+      cy.get('@exportMenu').click();  // Close the menu
+      cy.FHIRServerResponse('Create a new questionnaire').should((json) => {
+        expect(json.id).not.undefined;
+        expect(json.meta).not.undefined;
+      });
+
+      // Update
+      cy.get('#title').clear().type('Modified title');
+      cy.get('@exportMenu').click();
+      cy.get('@updateMenuItem').should('be.visible');
+      cy.get('@updateMenuItem').should('not.have.class', 'disabled');
+      cy.get('@exportMenu').click();
+      cy.FHIRServerResponse('Update').should((json) => {
+        expect(json.title).equal('Modified title');
+      });
+
+      // Reset changes
+      cy.uploadFile('reset-form.json');
+    });
   });
 })

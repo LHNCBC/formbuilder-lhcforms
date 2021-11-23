@@ -12,7 +12,7 @@ import {
 import {FormService} from '../services/form.service';
 import {fhir} from '../fhir';
 import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
-import {debounceTime, distinctUntilChanged, switchMap, takeUntil} from 'rxjs/operators';
+import {catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil} from 'rxjs/operators';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
@@ -25,8 +25,10 @@ import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
 import {Util} from '../lib/util';
 import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatDialog} from '@angular/material/dialog';
+import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 declare var LForms: any;
 
+type ExportType = 'CREATE' | 'UPDATE';
 
 @Component({
   selector: 'lfb-base-page',
@@ -56,7 +58,7 @@ export class BasePageComponent implements OnDestroy {
   constructor(private formService: FormService,
               private modalService: NgbModal,
               private dataSrv: FetchService,
-              private fhirService: FhirService,
+              public fhirService: FhirService,
               private appJsonPipe: AppJsonPipe,
               private cdr: ChangeDetectorRef,
               private matDlg: MatDialog
@@ -85,18 +87,6 @@ export class BasePageComponent implements OnDestroy {
   get lfData(): any {
     const q = Util.convertToQuestionnaireJSON(this.formValue);
     return LForms.Util.convertFHIRQuestionnaireToLForms(q, 'R4');
-  }
-
-  /**
-   * Create bare minimum form.
-   */
-  createDefaultForm(): fhir.Questionnaire {
-    return {
-      title: 'New Form',
-      status: 'draft',
-      // item: [{text: 'Item 0', linkId: null, type: 'string'}]
-      item: []
-    }
   }
 
 
@@ -171,10 +161,10 @@ export class BasePageComponent implements OnDestroy {
     }
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
-      this.setQuestionnaire(this.createDefaultForm());
+      this.setQuestionnaire(Util.createDefaultForm());
     } else if (this.startOption === 'existing' && this.importOption === 'loinc') {
       this.setStep('choose-start');
-      this.setQuestionnaire(this.createDefaultForm());
+      this.setQuestionnaire(Util.createDefaultForm());
     }
   }
 
@@ -281,7 +271,7 @@ export class BasePageComponent implements OnDestroy {
    */
   getForm(questionnaireId: string) {
     if (!questionnaireId) {
-      this.setQuestionnaire({status: 'draft', item: []});
+      this.setQuestionnaire(Util.createDefaultForm());
     } else {
       this.dataSrv.getFormData(questionnaireId).subscribe((data) => {
         this.setQuestionnaire(data);
@@ -307,7 +297,7 @@ export class BasePageComponent implements OnDestroy {
    */
   newStart() {
     localStorage.clear();
-    this.setQuestionnaire(this.createDefaultForm());
+    this.setQuestionnaire(Util.createDefaultForm());
     this.setStep('home');
   }
 
@@ -330,6 +320,86 @@ export class BasePageComponent implements OnDestroy {
     });
   }
 
+
+  /**
+   * Create/Update questionnaire on the FHIR server.
+   * @param type - 'CREATE' | 'UPDATE'
+   */
+  exportToServer(type: ExportType) {
+    let observer: Observable<any>;
+    if(type === 'CREATE') {
+      this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
+        if (result) { // Server picked, invoke search dialog.
+          observer = this.fhirService.create(Util.convertToQuestionnaireJSON(this.formValue), null);
+          this.handleServerResponse(observer);
+        }
+      }, (reason) => {
+        console.error(reason);
+      });
+    }
+    else if(type === 'UPDATE') {
+      observer = this.fhirService.update(Util.convertToQuestionnaireJSON(this.formValue), null);
+      this.handleServerResponse(observer);
+    }
+  }
+
+
+  /**
+   * Handle FHIR server response after create/update.
+   * @param serverResponse - An observable yielding fhir resource.
+   */
+  handleServerResponse(serverResponse: Observable<fhir.Resource>) {
+    serverResponse.pipe(
+      catchError((err) => {
+        console.error(err.message);
+        return of(err);
+      }),
+      finalize(() => {
+      })
+    )
+      .subscribe((response) => {
+        const modelRef = this.modalService.open(FhirExportDlgComponent, {size: 'lg', scrollable: true});
+        if(response instanceof Error) {
+          modelRef.componentInstance.error = response;
+          modelRef.componentInstance.serverResponse = null;
+        }
+        else {
+          this.setQuestionnaire(response);
+          modelRef.componentInstance.error = null;
+          modelRef.componentInstance.serverResponse = response;
+        }
+      });
+  }
+
+
+/*
+  exportToServer(type: ExportType) {
+    this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
+      if(result) { // Server picked, invoke search dialog.
+        this.fhirService.create(Util.convertToQuestionnaireJSON(this.questionnaire), null)
+          .pipe(
+            catchError((err) => {
+              console.error(err.message);
+              return of(err);
+            })
+          )
+          .subscribe((response) => {
+            const modelRef = this.modalService.open(FhirExportDlgComponent, {size: 'lg', scrollable: true});
+            if(response instanceof Error) {
+              modelRef.componentInstance.error = response;
+              modelRef.componentInstance.serverResponse = null;
+            }
+            else {
+              modelRef.componentInstance.error = null;
+              modelRef.componentInstance.serverResponse = response;
+            }
+          });
+      }
+    }, (reason) => {
+      console.error(reason);
+    });
+  }
+*/
   /**
    * Transform questionnaire model to FHIR compliant questionnaire in string format.
    *
