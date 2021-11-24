@@ -11,6 +11,7 @@ describe('BasePageComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(BasePageComponent);
     component = fixture.componentInstance;
+    component.acceptTermsOfUse = true;
     fixture.detectChanges();
   });
 
@@ -18,4 +19,14 @@ describe('BasePageComponent', () => {
     // @ts-ignore
     expect(component).toBeTruthy();
   });
+
+  it('should render title', waitForAsync(() => {
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      const compiled = fixture.debugElement.nativeElement;
+      const titleEl = compiled.querySelector('#resizableMiddle .container.card-body p');
+      expect(titleEl.textContent)
+        .toContain('How do you want to create your form?');
+    });
+  }));
 });

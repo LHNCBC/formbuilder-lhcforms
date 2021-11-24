@@ -9,6 +9,7 @@ describe('Home page', () => {
     // Since we want to visit the same URL at the start of all our tests,
     // we include it in our beforeEach function so that it runs before each test
     cy.visit('/');
+    cy.contains('lfb-loinc-notice button', 'Accept').click();
     cy.get('button').contains('Continue').click();
   })
 

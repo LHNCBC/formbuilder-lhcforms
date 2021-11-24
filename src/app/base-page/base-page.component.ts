@@ -26,6 +26,7 @@ import {Util} from '../lib/util';
 import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
+import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
 declare var LForms: any;
 
 type ExportType = 'CREATE' | 'UPDATE';
@@ -53,6 +54,7 @@ export class BasePageComponent implements OnDestroy {
   acResult: AutoCompleteResult = null;
   @ViewChild('lhcFormPreview') previewEl: ElementRef;
   selectedPreviewTab = 0;
+  acceptTermsOfUse = false;
 
 
   constructor(private formService: FormService,
@@ -67,6 +69,22 @@ export class BasePageComponent implements OnDestroy {
     if(isAutoSaved) {
       this.startOption = 'from_autosave';
     }
+
+    this.acceptTermsOfUse = sessionStorage.acceptTermsOfUse === 'true';
+    if(!this.acceptTermsOfUse) {
+      this.modalService.open(
+        LoincNoticeComponent,{size: 'lg', centered: true, keyboard: false, backdrop: 'static'}
+      ).result
+        .then(
+          (result) => {
+            this.acceptTermsOfUse = result;
+            sessionStorage.acceptTermsOfUse = result;
+          },
+          (reason) => {
+            console.error(reason);
+          });
+    }
+
     this.formSubject.asObservable().pipe(
       debounceTime(500),
       switchMap((fhirQ) => {
@@ -372,34 +390,6 @@ export class BasePageComponent implements OnDestroy {
   }
 
 
-/*
-  exportToServer(type: ExportType) {
-    this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
-      if(result) { // Server picked, invoke search dialog.
-        this.fhirService.create(Util.convertToQuestionnaireJSON(this.questionnaire), null)
-          .pipe(
-            catchError((err) => {
-              console.error(err.message);
-              return of(err);
-            })
-          )
-          .subscribe((response) => {
-            const modelRef = this.modalService.open(FhirExportDlgComponent, {size: 'lg', scrollable: true});
-            if(response instanceof Error) {
-              modelRef.componentInstance.error = response;
-              modelRef.componentInstance.serverResponse = null;
-            }
-            else {
-              modelRef.componentInstance.error = null;
-              modelRef.componentInstance.serverResponse = response;
-            }
-          });
-      }
-    }, (reason) => {
-      console.error(reason);
-    });
-  }
-*/
   /**
    * Transform questionnaire model to FHIR compliant questionnaire in string format.
    *
