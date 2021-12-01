@@ -197,5 +197,42 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].valueCoding.display).equal('inch');
       });
     });
+
+    it('should add/edit css to text and prefix fields', () => {
+      ['#text', '#prefix'].forEach((field) => {
+        cy.get(field+'dropdownButton').as('cssButton');
+        cy.get(field+'css').as('cssInput');
+        cy.contains(field+'dropdownForm button', 'Close').as('closeButton')
+        cy.get('@cssButton').click();
+
+        cy.get('@cssInput').should('be.visible');
+        cy.get('@cssInput').type('font-weight: bold;');
+        cy.get('@closeButton').click();
+      });
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0]._text.extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/rendering-style');
+        expect(qJson.item[0]._text.extension[0].valueString).equal('font-weight: bold;');
+        expect(qJson.item[0]._prefix.extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/rendering-style');
+        expect(qJson.item[0]._prefix.extension[0].valueString).equal('font-weight: bold;');
+      });
+
+      ['#text', '#prefix'].forEach((field) => {
+        cy.get(field+'dropdownButton').as('cssButton');
+        cy.get(field+'css').as('cssInput');
+        cy.contains(field+'dropdownForm button', 'Close').as('closeButton')
+        cy.get('@cssButton').click();
+
+        cy.get('@cssInput').should('be.visible');
+        cy.get('@cssInput').should('have.value', 'font-weight: bold;');
+        cy.get('@cssInput').clear();
+        cy.get('@closeButton').click();
+      });
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0]._text).to.be.undefined;
+        expect(qJson.item[0]._prefix).to.be.undefined;
+      });
+    });
   });
 })

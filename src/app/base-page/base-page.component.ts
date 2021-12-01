@@ -27,6 +27,7 @@ import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
+import {ShareObjectService} from '../share-object.service';
 declare var LForms: any;
 
 type ExportType = 'CREATE' | 'UPDATE';
@@ -58,6 +59,7 @@ export class BasePageComponent implements OnDestroy {
 
 
   constructor(private formService: FormService,
+              private modelService: ShareObjectService,
               private modalService: NgbModal,
               private dataSrv: FetchService,
               public fhirService: FhirService,
@@ -126,6 +128,7 @@ export class BasePageComponent implements OnDestroy {
     Util.mirrorObject(this.formValue, Util.convertToQuestionnaireJSON(event));
     this.formValue.item = itemList;
     this.notifyChange(this.formValue);
+    this.modelService.questionnaire = this.questionnaire;
   }
 
 

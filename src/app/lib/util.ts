@@ -300,4 +300,31 @@ export class Util {
       item: []
     }
   }
+
+
+  /**
+   * Find the extension based on a given url from an array.
+   * @param extensions - Array of extensions.
+   * @param url - The url of the extension to search for.
+   */
+  static findExtensionByUrl(extensions: fhir.Extension [], url: string) {
+    const i = this.findExtensionIndexByUrl(extensions, url);
+    return i >= 0 ? extensions[i] : null;
+  }
+
+
+  /**
+   * Find the first index of the extension based on a given url.
+   * @param extensions - Array of extensions.
+   * @param url - The url of the extension to search for.
+   */
+  static findExtensionIndexByUrl(extensions: fhir.Extension [], url: string) {
+    let ret = -1;
+    if(extensions && extensions.length) {
+      ret = extensions?.findIndex((ext) => {
+        return ext.url === url;
+      });
+    }
+    return ret;
+  }
 }

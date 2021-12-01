@@ -52,7 +52,7 @@ import {Util} from '../lib/util';
     }
   `]
 })
-export class FormFieldsComponent implements OnInit, AfterViewInit, OnChanges {
+export class FormFieldsComponent {
 
   @Input()
   questionsButtonLabel = 'Create questions';
@@ -71,30 +71,11 @@ export class FormFieldsComponent implements OnInit, AfterViewInit, OnChanges {
 
   constructor(
     private http: HttpClient,
-    private modelService: ShareObjectService,
     private dataSrv: FetchService,
     private modal: NgbModal,
     private formService: FormService
   ) {
     this.qlSchema = this.formService.getFormLevelSchema();
-  }
-
-  /**
-   * Merge schema and layout
-   */
-  ngOnInit() {
-    // this.modelService.questionnaire = this.questionnaire;
-  }
-
-  ngAfterViewInit() {
-    this.modelService.questionnaire = this.questionnaire;
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    const qChange = changes.questionnaire;
-    if(qChange) {
-      this.modelService.questionnaire = qChange.currentValue;
-    }
   }
 
   /**

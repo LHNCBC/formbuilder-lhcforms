@@ -76,7 +76,7 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit, 
    */
   onChange(selected) {
     if(selected) {
-      this.ruleEditorService.addTotalScoreRule(this.questionnaire, this.item);
+      this.ruleEditorService.addTotalScoreRule(this.questionnaire, this.item.linkId);
     }
     else {
       this.removeTotalScore();

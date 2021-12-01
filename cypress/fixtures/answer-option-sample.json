@@ -5,6 +5,23 @@
   "item": [
     {
       "text": "Item with answer option and initial",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "font-weight: bold"
+          }
+        ]
+      },
+      "prefix": "1.",
+      "_prefix": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "font-style: italic"
+          }
+        ]
+      },
       "linkId": "1",
       "type": "choice",
       "initial": [
