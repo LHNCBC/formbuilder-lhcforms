@@ -372,34 +372,6 @@ export class BasePageComponent implements OnDestroy {
   }
 
 
-/*
-  exportToServer(type: ExportType) {
-    this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
-      if(result) { // Server picked, invoke search dialog.
-        this.fhirService.create(Util.convertToQuestionnaireJSON(this.questionnaire), null)
-          .pipe(
-            catchError((err) => {
-              console.error(err.message);
-              return of(err);
-            })
-          )
-          .subscribe((response) => {
-            const modelRef = this.modalService.open(FhirExportDlgComponent, {size: 'lg', scrollable: true});
-            if(response instanceof Error) {
-              modelRef.componentInstance.error = response;
-              modelRef.componentInstance.serverResponse = null;
-            }
-            else {
-              modelRef.componentInstance.error = null;
-              modelRef.componentInstance.serverResponse = response;
-            }
-          });
-      }
-    }, (reason) => {
-      console.error(reason);
-    });
-  }
-*/
   /**
    * Transform questionnaire model to FHIR compliant questionnaire in string format.
    *
