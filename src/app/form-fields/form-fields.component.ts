@@ -3,25 +3,16 @@
  */
 import {
   Component,
-  OnInit,
   Input,
-  OnDestroy,
   Output,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges,
-  AfterViewInit
+  EventEmitter
 } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ShareObjectService} from '../share-object.service';
 import {FetchService} from '../fetch.service';
-import {debounceTime, distinctUntilChanged, map, switchMap, takeUntil} from 'rxjs/operators';
-import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
 import { fhir } from '../fhir';
-import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {Util} from '../lib/util';
 
 @Component({

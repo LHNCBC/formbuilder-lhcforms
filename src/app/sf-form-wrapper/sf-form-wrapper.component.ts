@@ -7,7 +7,7 @@ import {
   OnInit, Output,
   SimpleChanges, ViewChild, ViewContainerRef
 } from '@angular/core';
-import {ShareObjectService} from '../share-object.service';
+import {SharedObjectService} from '../shared-object.service';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
 
@@ -32,7 +32,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
   @Input()
   linkIdCollection = new LinkIdCollection();
 
-  constructor(private modelService: ShareObjectService, private formService: FormService,
+  constructor(private modelService: SharedObjectService, private formService: FormService,
               private cfr: ComponentFactoryResolver, private cd: ChangeDetectorRef) {
     this.mySchema = formService.getItemSchema();
   }

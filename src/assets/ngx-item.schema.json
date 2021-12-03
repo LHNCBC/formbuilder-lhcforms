@@ -216,8 +216,8 @@
       }
     },
     "_prefix": {
-      "description": "Extensions for text",
-      "title": "Questionnaire prefix extension",
+      "description": "Extensions for prefix",
+      "title": "Questionnaire prefix extensions",
       "properties": {
         "id": {
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -272,7 +272,7 @@
     },
     "_text": {
       "description": "Extensions for text",
-      "title": "Questionnaire text extension",
+      "title": "Questionnaire text extensions",
       "properties": {
         "id": {
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",

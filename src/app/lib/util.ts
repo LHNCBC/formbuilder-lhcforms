@@ -320,8 +320,8 @@ export class Util {
    */
   static findExtensionIndexByUrl(extensions: fhir.Extension [], url: string) {
     let ret = -1;
-    if(extensions && extensions.length) {
-      ret = extensions?.findIndex((ext) => {
+    if(extensions?.length) {
+      ret = extensions.findIndex((ext) => {
         return ext.url === url;
       });
     }

@@ -13,11 +13,9 @@ import {
   SimpleChanges,
   ViewChild, ViewContainerRef
 } from '@angular/core';
-import {ShareObjectService} from '../share-object.service';
-import {Binding, FormComponent, FormProperty, Validator} from '@lhncbc/ngx-schema-form';
+import {SharedObjectService} from '../shared-object.service';
+import {Binding, Validator} from '@lhncbc/ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
-import {map, switchMap, timeout} from 'rxjs/operators';
-import * as traverse from 'json-schema-traverse';
 import {FormService} from '../services/form.service';
 import {SfFormWrapperComponent} from '../sf-form-wrapper/sf-form-wrapper.component';
 
@@ -124,7 +122,7 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
       */
   };
 
-  constructor(private modelService: ShareObjectService, private formService: FormService,
+  constructor(private modelService: SharedObjectService, private formService: FormService,
               private cfr: ComponentFactoryResolver, private cd: ChangeDetectorRef) {
     this.mySchema = formService.getItemSchema();
   }

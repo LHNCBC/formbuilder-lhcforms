@@ -5,7 +5,7 @@
 import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import { JSONEditor } from '@json-editor/json-editor';
 import {FetchService} from '../../../fetch.service';
-import {ShareObjectService} from '../../../share-object.service';
+import {SharedObjectService} from '../../../shared-object.service';
 import {forkJoin} from 'rxjs';
 
 
@@ -21,7 +21,7 @@ export class ItemJsonEditorComponent implements AfterViewInit {
   @ViewChild('itemJsonEditor') editorElement: ElementRef;
   val: any;
 
-  constructor(private dataSrv: FetchService, private itemSrv: ShareObjectService) {}
+  constructor(private dataSrv: FetchService, private itemSrv: SharedObjectService) {}
 
   /**
    * Initialize component.

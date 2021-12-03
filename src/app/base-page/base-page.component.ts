@@ -27,7 +27,7 @@ import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
-import {ShareObjectService} from '../share-object.service';
+import {SharedObjectService} from '../shared-object.service';
 declare var LForms: any;
 
 type ExportType = 'CREATE' | 'UPDATE';
@@ -59,7 +59,7 @@ export class BasePageComponent implements OnDestroy {
 
 
   constructor(private formService: FormService,
-              private modelService: ShareObjectService,
+              private modelService: SharedObjectService,
               private modalService: NgbModal,
               private dataSrv: FetchService,
               public fhirService: FhirService,

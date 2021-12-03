@@ -6,7 +6,7 @@ import {ExtensionsComponent} from '../extensions/extensions.component';
 import {fhir} from '../../../fhir';
 import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import { RuleEditorService } from 'rule-editor';
-import {ShareObjectService} from '../../../share-object.service';
+import {SharedObjectService} from '../../../shared-object.service';
 import {Subscription} from 'rxjs';
 
 
@@ -41,7 +41,7 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit, 
 
   subscriptions: Subscription [] = [];
 
-  constructor(private ruleEditorService: RuleEditorService, private modelService: ShareObjectService) {
+  constructor(private ruleEditorService: RuleEditorService, private modelService: SharedObjectService) {
     super();
   }
 

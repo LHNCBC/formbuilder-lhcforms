@@ -24,6 +24,8 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
   constructor() {
     super();
   }
+
+
   /**
    * Initialize member variables.
    */
@@ -48,7 +50,7 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
     this.cssValue = cssString.trim();
     if(this.cssValue) {
       if(ind < 0) {
-        ext = this.extensionTmpl;
+        ext = Object.assign({}, this.extensionTmpl);
       }
       else {
         ext = this.elementTypeFieldValue.extension[ind];
