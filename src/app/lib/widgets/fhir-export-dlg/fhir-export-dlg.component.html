@@ -1,12 +1,13 @@
-<div class="modal-header bg-primary">
-  <h4 class="modal-title text-white">FHIR Server Reply</h4>
-  <button type="button" class="close" aria-label="Close" (click)="close(true)">
-    <span class="text-white" aria-hidden="true">&times;</span>
-  </button>
+<div role="alertdialog">
+  <div class="modal-header bg-primary">
+    <h4 class="modal-title text-white">FHIR Server Reply</h4>
+    <button type="button" class="close" aria-label="Close" (click)="close(true)">
+      <span class="text-white" aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body bg-light" *ngIf="serverResponse"><pre class="fhir-response">{{serverResponse | json }}</pre></div>
+  <div class="modal-body bg-light" *ngIf="error"><pre class="fhir-response">{{error.message}}</pre></div>
+  <div class="modal-footer btn-group-sm">
+    <button type="button" class="btn btn-primary" (click)="close(true)">Close</button>
+  </div>
 </div>
-<div class="modal-body bg-light" *ngIf="serverResponse"><pre class="fhir-response">{{serverResponse | json }}</pre></div>
-<div class="modal-body bg-light" *ngIf="error"><pre class="fhir-response">{{error.message}}</pre></div>
-<div class="modal-footer btn-group-sm">
-  <button type="button" class="btn btn-primary" (click)="close(true)">Close</button>
-</div>
-
