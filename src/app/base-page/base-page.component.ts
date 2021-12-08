@@ -376,15 +376,15 @@ export class BasePageComponent implements OnDestroy {
       })
     )
       .subscribe((response) => {
-        const modelRef = this.modalService.open(FhirExportDlgComponent, {size: 'lg', scrollable: true});
+        const modalRef = this.modalService.open(FhirExportDlgComponent, {size: 'lg', scrollable: true});
         if(response instanceof Error) {
-          modelRef.componentInstance.error = response;
-          modelRef.componentInstance.serverResponse = null;
+          modalRef.componentInstance.error = response;
+          modalRef.componentInstance.serverResponse = null;
         }
         else {
           this.setQuestionnaire(response);
-          modelRef.componentInstance.error = null;
-          modelRef.componentInstance.serverResponse = response;
+          modalRef.componentInstance.error = null;
+          modalRef.componentInstance.serverResponse = response;
         }
       });
   }
