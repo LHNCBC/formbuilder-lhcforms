@@ -79,7 +79,7 @@ export class FhirService {
     /**
      * Creates a resource on the fhir server, assigning publisher field from the user profile.
      *
-     * @param resource - A string representation of json fhir resource.
+     * @param resource - A string representation of fhir resource or fhir resource object.
      * @param userProfile - User's login profile.
      * @returns - An http promise
      */
@@ -97,7 +97,7 @@ export class FhirService {
     /**
      * Creates a resource on the fhir server.
      *
-     * @param resource - A string representation of json fhir resource.
+     * @param resource - A string representation of fhir resource or fhir resource object.
      * @param userProfile - User's login profile.
      * @returns - An http promise
      */
@@ -137,7 +137,7 @@ export class FhirService {
      *
      * @param searchStr - A search term to search FHIR resources
      * @param searchField - Field to search, should be a valid searchable field. Refer to FHIR REST API for list of fields.
-     * @param otherQueryParams
+     * @param otherQueryParams? - (Optional) Any additional or overriding query parameters to send to FHIR server.
      * @returns Http promise
      */
     search(searchStr: string, searchField?: string, otherQueryParams?: any): Observable<fhir.Bundle> {
