@@ -8,7 +8,11 @@ import {fhir} from './fhir';
 @Injectable({
   providedIn: 'root'
 })
-export class ShareObjectService {
+/**
+ * A service to share objects across the components, mainly intended for
+ * sharing changed questionnaire and questionnaire item.
+ */
+export class SharedObjectService {
 
   private questionnaireSource$ = new BehaviorSubject<fhir.Questionnaire>(null);
   private itemSource$ = new BehaviorSubject<fhir.QuestionnaireItem>(null);

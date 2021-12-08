@@ -28,6 +28,7 @@ import {AnswerOptionComponent} from './widgets/answer-option/answer-option.compo
 import {InitialComponent} from './widgets/initial/initial.component';
 import {HelpTextComponent} from './widgets/help-text/help-text.component';
 import {TypeComponent} from './widgets/type/type.component';
+import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.component';
 
 
 @Injectable()
@@ -58,5 +59,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('answer-option', AnswerOptionComponent);
     this.register('initial', InitialComponent);
     this.register('help-text', HelpTextComponent);
+    this.register('string-with-css', StringWithCssComponent);
   }
 }

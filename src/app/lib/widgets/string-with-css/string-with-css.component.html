@@ -1,0 +1,43 @@
+<input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
+       [attr.name]="name" type="hidden" [formControl]="control">
+<ng-template #notHiddenFieldBlock>
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label *ngIf="!nolabel"
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelWidthClass+' pl-0 pr-1'"
+    ></lfb-label>
+    <div class="input-group {{controlWidthClass}} p-0">
+      <input [name]="name" [attr.readonly]="(schema.widget.id!=='color') && schema.readOnly?true:null"
+             class="textline-widget form-control"
+             [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
+             [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+             [attr.maxLength]="schema.maxLength || null"
+             [attr.minLength]="schema.minLength || null"
+             [attr.required]="schema.isRequired ? '' : null"
+             [attr.disabled]="schema.disabled ? '' : null">
+      <div class="input-group-append">
+        <div ngbDropdown class="d-inline-block" #myDropdown="ngbDropdown" placement="bottom-right">
+          <button class="btn btn-sm btn-outline-primary" [attr.id]="id+'dropdownButton'" ngbDropdownToggle>{{cssButtonLabel()}}</button>
+          <div ngbDropdownMenu [attr.aria-labelledby]="id+'dropdownButton'" style="{height: 200px; width: 200px}">
+            <form class="px-1 py-1" [attr.id]="id+'dropdownForm'">
+              <div class="form-group">
+                <label [attr.for]="id+'css'" class="text-nowrap">Specify CSS Styles:</label>
+                <textarea
+                  rows="4"
+                  cols="50"
+                  (change)="cssChanged($event.target.value)"
+                  class="form-control"
+                  [attr.id]="id+'css'"
+                  >{{cssValue}}</textarea>
+              </div>
+              <button class="btn-sm btn-primary" (click)="myDropdown.close()">Close</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+

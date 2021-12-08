@@ -76,6 +76,7 @@ import { TypeComponent } from './lib/widgets/type/type.component';
 import { PreviewDlgComponent } from './lib/widgets/preview-dlg/preview-dlg.component';
 import { FhirExportDlgComponent } from './lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import { LoincNoticeComponent } from './lib/widgets/loinc-notice/loinc-notice.component';
+import { StringWithCssComponent } from './lib/widgets/string-with-css/string-with-css.component';
 
 @NgModule({
   declarations: [
@@ -126,7 +127,8 @@ import { LoincNoticeComponent } from './lib/widgets/loinc-notice/loinc-notice.co
     TypeComponent,
     PreviewDlgComponent,
     FhirExportDlgComponent,
-    LoincNoticeComponent
+    LoincNoticeComponent,
+    StringWithCssComponent
   ],
   imports: [
     AppRoutingModule,

@@ -117,7 +117,7 @@ function codingLayout(schema) {
 function collectDefinitions(def) {
   traverse(def).reduce(function(acc, n) {
     if (this.notRoot) {
-      if (this.key.match(/^_/) || removeFields.has(this.key)) {
+      if ((this.key.match(/^_/) && (this.key !== '_text' || this.key !== '_prefix')) || removeFields.has(this.key)) {
         this.remove(true);
       } else if (this.key.match(/^\$ref/)) {
         const ref = n.slice(1);
