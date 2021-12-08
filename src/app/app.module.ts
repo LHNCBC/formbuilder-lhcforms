@@ -75,6 +75,7 @@ import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.compon
 import { TypeComponent } from './lib/widgets/type/type.component';
 import { PreviewDlgComponent } from './lib/widgets/preview-dlg/preview-dlg.component';
 import { FhirExportDlgComponent } from './lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
+import { LoincNoticeComponent } from './lib/widgets/loinc-notice/loinc-notice.component';
 
 @NgModule({
   declarations: [
@@ -124,7 +125,8 @@ import { FhirExportDlgComponent } from './lib/widgets/fhir-export-dlg/fhir-expor
     SfFormWrapperComponent,
     TypeComponent,
     PreviewDlgComponent,
-    FhirExportDlgComponent
+    FhirExportDlgComponent,
+    LoincNoticeComponent
   ],
   imports: [
     AppRoutingModule,

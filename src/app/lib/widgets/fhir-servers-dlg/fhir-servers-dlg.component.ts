@@ -8,10 +8,10 @@ import {FhirService} from '../../../services/fhir.service';
 @Component({
   selector: 'lfb-fhir-servers-dlg',
   template: `
-    <div class="modal-header bg-primary text-white">
-      <h4 class="modal-title">Choose a FHIR server</h4>
-      <button type="button" class="close text-white" aria-label="Close" (click)="dismiss()">
-        <span aria-hidden="true">&times;</span>
+    <div class="modal-header bg-primary">
+      <h4 class="modal-title text-white">Choose a FHIR server</h4>
+      <button type="button" class="close" aria-label="Close" (click)="dismiss()">
+        <span class="text-white" aria-hidden="true">&times;</span>
       </button>
     </div>
     <div class="modal-body">

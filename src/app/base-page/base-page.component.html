@@ -1,72 +1,74 @@
 <div class="page-defaults container bg-white">
-  <lfb-header id="fixedTop" [isFirebaseEnabled]="false"></lfb-header>
-  <div id="resizableMiddle">
+  <div *ngIf="acceptTermsOfUse === true">
+    <lfb-header id="fixedTop" [isFirebaseEnabled]="false"></lfb-header>
+    <div id="resizableMiddle">
 
-    <nav class="navbar navbar-light bg-light" aria-label="Menu bar" *ngIf="guidingStep !== 'home'">
-      <div class="btn-group-sm mr-2" ngbDropdown role="group" aria-label="Export menu">
-        <button class="btn btn-sm btn-secondary" ngbDropdownToggle>
-          Export
-        </button>
-        <div class="dropdown-menu" ngbDropdownMenu>
-          <button ngbDropdownItem (click)="saveToFile()">Export to file ...</button>
-          <button ngbDropdownItem (click)="exportToServer('CREATE')">Create a new questionnaire on a FHIR server...</button>
-          <button ngbDropdownItem
-                  (click)="exportToServer('UPDATE')"
-                  [disabled]="!questionnaire.id"
-          >Update the questionnaire on the server ({{fhirService.getFhirServer().endpoint}})</button>
+      <nav class="navbar navbar-light bg-light" aria-label="Menu bar" *ngIf="guidingStep !== 'home'">
+        <div class="btn-group-sm mr-2" ngbDropdown role="group" aria-label="Export menu">
+          <button class="btn btn-sm btn-secondary" ngbDropdownToggle>
+            Export
+          </button>
+          <div class="dropdown-menu" ngbDropdownMenu>
+            <button ngbDropdownItem (click)="saveToFile()">Export to file ...</button>
+            <button ngbDropdownItem (click)="exportToServer('CREATE')">Create a new questionnaire on a FHIR server...</button>
+            <button ngbDropdownItem
+                    (click)="exportToServer('UPDATE')"
+                    [disabled]="!questionnaire.id"
+            >Update the questionnaire on the server ({{fhirService.getFhirServer().endpoint}})</button>
+          </div>
         </div>
-      </div>
-      <div class="btn-group-sm mr-2" ngbDropdown role="group" aria-label="Import menu">
-        <button class="btn btn-sm btn-secondary" ngbDropdownToggle>
-          Import
-        </button>
-        <div class="dropdown-menu" ngbDropdownMenu>
-          <button ngbDropdownItem (click)="fileInput.click()">Import from file...</button>
-          <!-- <button ngbDropdownItem (click)="importLoinc()">Import a LOINC form...</button> -->
-          <button ngbDropdownItem (click)="importFromFHIRServer()">Import from a FHIR server...</button>
-          <div class="dropdown-divider"></div>
-          <form class="px-4 py-3">
-            <label>Import LOINC forms:</label>
-            <input type="text"
-                   placeholder="Search LOINC"
-                   [(ngModel)]="acResult"
-                   [ngModelOptions]="{standalone: true}"
-                   [ngbTypeahead]="acSearch"
-                   (selectItem)="getForm($event.item.id)"
-                   [resultFormatter]="formatter"
-                   [inputFormatter]="formatter"
-                   [editable]='false' />
-          </form>
+        <div class="btn-group-sm mr-2" ngbDropdown role="group" aria-label="Import menu">
+          <button class="btn btn-sm btn-secondary" ngbDropdownToggle>
+            Import
+          </button>
+          <div class="dropdown-menu" ngbDropdownMenu>
+            <button ngbDropdownItem (click)="fileInput.click()">Import from file...</button>
+            <!-- <button ngbDropdownItem (click)="importLoinc()">Import a LOINC form...</button> -->
+            <button ngbDropdownItem (click)="importFromFHIRServer()">Import from a FHIR server...</button>
+            <div class="dropdown-divider"></div>
+            <form class="px-4 py-3">
+              <label>Import LOINC forms:</label>
+              <input type="text"
+                     placeholder="Search LOINC"
+                     [(ngModel)]="acResult"
+                     [ngModelOptions]="{standalone: true}"
+                     [ngbTypeahead]="acSearch"
+                     (selectItem)="getForm($event.item.id)"
+                     [resultFormatter]="formatter"
+                     [inputFormatter]="formatter"
+                     [editable]='false' />
+            </form>
+          </div>
         </div>
-      </div>
 
-      <div class="btn-group-sm mr-2" role="group" aria-label="Edit form attributes">
-        <button type="button" class="btn btn-secondary"
-                (click)="setStep('fl-editor')" [attr.disabled]="guidingStep === 'fl-editor' ? '' : null">Edit form attributes</button>
-      </div>
-      <div class="btn-group-sm mr-2 ml-auto" role="group" aria-label="Preview">
-        <button type="button" class="btn btn-secondary"
-                (click)="showPreviewDlg()"
-                [attr.disabled]="guidingStep === 'qJSON' ? '' : null">Preview</button>
-      </div>
-      <div class="btn-group-sm mr-2" role="group" aria-label="Close editor">
-        <button type="button" class="btn btn-secondary " (click)="newStart()">Close</button>
-      </div>
-    </nav>
-    <a target="_self" id="exportAnchor" class="d-none">Export</a>
-    <input #fileInput class="d-none" type="file" (change)="onFileSelected($event)">
+        <div class="btn-group-sm mr-2" role="group" aria-label="Edit form attributes">
+          <button type="button" class="btn btn-secondary"
+                  (click)="setStep('fl-editor')" [attr.disabled]="guidingStep === 'fl-editor' ? '' : null">Edit form attributes</button>
+        </div>
+        <div class="btn-group-sm mr-2 ml-auto" role="group" aria-label="Preview">
+          <button type="button" class="btn btn-secondary"
+                  (click)="showPreviewDlg()"
+                  [attr.disabled]="guidingStep === 'qJSON' ? '' : null">Preview</button>
+        </div>
+        <div class="btn-group-sm mr-2" role="group" aria-label="Close editor">
+          <button type="button" class="btn btn-secondary " (click)="newStart()">Close</button>
+        </div>
+      </nav>
+      <a target="_self" id="exportAnchor" class="d-none">Export</a>
+      <input #fileInput class="d-none" type="file" (change)="onFileSelected($event)">
 
-    <ng-container *ngIf="guidingStep === 'home'">
-      <ng-container *ngTemplateOutlet="home"></ng-container>
-    </ng-container>
-    <ng-container *ngIf="guidingStep === 'fl-editor'">
-      <ng-container *ngTemplateOutlet="formLevelFields"></ng-container>
-    </ng-container>
-    <ng-container *ngIf="guidingStep === 'item-editor'">
-      <ng-container *ngTemplateOutlet="itemLevelFields"></ng-container>
-    </ng-container>
+      <ng-container *ngIf="guidingStep === 'home'">
+        <ng-container *ngTemplateOutlet="home"></ng-container>
+      </ng-container>
+      <ng-container *ngIf="guidingStep === 'fl-editor'">
+        <ng-container *ngTemplateOutlet="formLevelFields"></ng-container>
+      </ng-container>
+      <ng-container *ngIf="guidingStep === 'item-editor'">
+        <ng-container *ngTemplateOutlet="itemLevelFields"></ng-container>
+      </ng-container>
+    </div>
+    <lfb-footer id="fixedBottom"></lfb-footer>
   </div>
-  <lfb-footer id="fixedBottom"></lfb-footer>
 </div>
 
 <ng-template #home>
