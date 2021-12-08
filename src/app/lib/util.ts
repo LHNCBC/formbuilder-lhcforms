@@ -3,6 +3,7 @@
  */
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import traverse from 'traverse';
+import {fhir} from '../fhir';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -285,5 +286,18 @@ export class Util {
     });
 
     return Object.assign(target, source);
+  }
+
+
+  /**
+   * Create bare minimum form.
+   */
+  static createDefaultForm(): fhir.Questionnaire {
+    return {
+      resourceType: 'Questionnaire',
+      title: 'New Form',
+      status: 'draft',
+      item: []
+    }
   }
 }

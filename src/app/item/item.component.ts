@@ -98,7 +98,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   itemData: fhir.QuestionnaireItem = null;
   treeOptions: ITreeOptions;
   @Input()
-  questionnaire: fhir.Questionnaire = {status: 'draft', item: []};
+  questionnaire: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', item: []};
   itemList: any [];
   @Output()
   itemChange = new EventEmitter<any []>();
