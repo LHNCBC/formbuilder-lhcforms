@@ -3,19 +3,28 @@
  *
  */
 import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
-import { JSONEditor } from '@json-editor/json-editor';
+import * as ace from 'ace-builds';
 import {FetchService} from '../../../fetch.service';
 import {SharedObjectService} from '../../../shared-object.service';
-import {forkJoin} from 'rxjs';
+import {AppJsonPipe} from '../../pipes/app-json.pipe';
 
 
 @Component({
   selector: 'lfb-item-json-editor',
   template: `
     <div class="card-container">
-      <div #itemJsonEditor style="height: 500px;" ></div>
+      <div class="app-ace-editor" #itemJsonEditor style="height: 500px;" ></div>
     </div>
-  `
+  `,
+  styles: [
+    `
+      .app-ace-editor {
+        border: 2px solid #f8f9fa;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+      }
+    `,
+  ],
+
 })
 export class ItemJsonEditorComponent implements AfterViewInit {
   @ViewChild('itemJsonEditor') editorElement: ElementRef;
@@ -27,28 +36,29 @@ export class ItemJsonEditorComponent implements AfterViewInit {
    * Initialize component.
    */
   ngAfterViewInit(): void {
-    // Setup JSONEditor widget based on questionnaire item's schema
-    this.dataSrv.getItemEditorSchema().subscribe( (itemSchema) => {
-      const editor = new JSONEditor(this.editorElement.nativeElement, {
-        schema: itemSchema,
-      });
 
-      // Let listeners of object sharing service know about the changes.
-      editor.on('change', () => {
-        const val = editor.getValue();
-        if (val !== this.val) {
-          this.val = val;
-          this.itemSrv.setObject(this.val);
-        }
-      });
+    ace.config.set('fontSize', '14px');
+    ace.config.set(
+      'basePath',
+      'https://unpkg.com/ace-builds@1.4.12/src-noconflict'
+    );
+    const aceEditor = ace.edit(this.editorElement.nativeElement);
+    aceEditor.setTheme('ace/theme/twilight');
+    aceEditor.session.setMode('ace/mode/json');
+    aceEditor.on('change', () => {
+      const val = aceEditor.getValue();
+      if (val !== this.val) {
+        this.val = val;
+        this.itemSrv.setObject(this.val);
+      }
+    });
 
-      // Update the this editor's content with any update to the item from outside.
-      this.itemSrv.objectStr$.subscribe((item) => {
-        if (item !== this.val) {
-          this.val = item;
-          editor.setValue(this.val);
-        }
-      });
+    // Update this editor's content with any update to the item from outside.
+    this.itemSrv.currentItem$.subscribe((item) => {
+      if (item !== this.val) {
+        this.val = item;
+        aceEditor.setValue(new AppJsonPipe().transform(this.val));
+      }
     });
   }
 }
