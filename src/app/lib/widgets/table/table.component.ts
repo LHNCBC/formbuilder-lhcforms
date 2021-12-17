@@ -246,6 +246,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   }
 
 
+  /**
+   * Get form property of the control located in a table cell.
+   * @param arrayProperties - ArrayProperty of the table.
+   * @param row - Row index of the cell.
+   * @param col - Col index of the cell.
+   */
   getPropertyFromTable(arrayProperties, row, col): FormProperty {
     let prop = arrayProperties[row];
     const fieldPath = this.getShowFields()[col].field;
