@@ -29,6 +29,8 @@ import {InitialComponent} from './widgets/initial/initial.component';
 import {HelpTextComponent} from './widgets/help-text/help-text.component';
 import {TypeComponent} from './widgets/type/type.component';
 import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.component';
+import {RestrictionsComponent} from './widgets/restrictions/restrictions.component';
+import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/restrictions-operator.component';
 
 
 @Injectable()
@@ -60,5 +62,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('initial', InitialComponent);
     this.register('help-text', HelpTextComponent);
     this.register('string-with-css', StringWithCssComponent);
+    this.register('restrictions', RestrictionsComponent);
+    this.register('restrictions-operator', RestrictionsOperatorComponent);
   }
 }

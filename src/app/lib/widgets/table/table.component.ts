@@ -61,7 +61,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
     if(this.booleanControlled) {
       this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
     }
-    if (this.formProperty.value.length === 0 && this.booleanControlledOption) {
+    if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
     /*
@@ -220,19 +220,17 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
    * @param popoverRef - popover reference template.
    */
   addItemWithAlert(popoverRef) {
-    const elements = this.formProperty.value as [];
-    if(elements.length > 0) {
-      const lastItem = elements[elements.length - 1];
-      if(!Util.isEmpty(lastItem)) {
-        this.addItem();
-        setTimeout(() => {
-          const props = this.formProperty.properties as FormProperty [];
-          document.getElementById(this.getCanonicalPath(props,props.length - 1, 0)).focus();
-        });
-      }
-      else {
-        popoverRef.open();
-      }
+    const items = this.formProperty.properties as [];
+    const lastItem = items.length ? items[items.length - 1] : null;
+    if(!lastItem || !Util.isEmpty(lastItem.value)) { // If no lastItem or be not empty.
+      this.addItem();
+      setTimeout(() => {
+        const props = this.formProperty.properties as FormProperty [];
+        document.getElementById(this.getCanonicalPath(props,props.length - 1, 0)).focus();
+      });
+    }
+    else {
+      popoverRef.open();
     }
   }
 
@@ -244,12 +242,17 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
    * @param col - Column index of the cell.
    */
   getCanonicalPath(arrayProperties, row, col) {
+    return this.getPropertyFromTable(arrayProperties, row, col)?.canonicalPathNotation;
+  }
+
+
+  getPropertyFromTable(arrayProperties, row, col): FormProperty {
     let prop = arrayProperties[row];
-    let fieldPath = this.getShowFields()[col].field;
+    const fieldPath = this.getShowFields()[col].field;
     fieldPath.split('.').forEach((field) => {
       prop = prop.getProperty(field);
     });
-    return prop.canonicalPathNotation;
+    return prop;
   }
 
 

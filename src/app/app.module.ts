@@ -77,6 +77,8 @@ import { PreviewDlgComponent } from './lib/widgets/preview-dlg/preview-dlg.compo
 import { FhirExportDlgComponent } from './lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import { LoincNoticeComponent } from './lib/widgets/loinc-notice/loinc-notice.component';
 import { StringWithCssComponent } from './lib/widgets/string-with-css/string-with-css.component';
+import { RestrictionsComponent } from './lib/widgets/restrictions/restrictions.component';
+import { RestrictionsOperatorComponent } from './lib/widgets/restrictions-operator/restrictions-operator.component';
 
 @NgModule({
   declarations: [
@@ -128,7 +130,9 @@ import { StringWithCssComponent } from './lib/widgets/string-with-css/string-wit
     PreviewDlgComponent,
     FhirExportDlgComponent,
     LoincNoticeComponent,
-    StringWithCssComponent
+    StringWithCssComponent,
+    RestrictionsComponent,
+    RestrictionsOperatorComponent
   ],
   imports: [
     AppRoutingModule,

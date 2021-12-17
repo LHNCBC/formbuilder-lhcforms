@@ -905,7 +905,7 @@
         "type": ["$EXP$ target.value == 'boolean' || target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
       },
       "widget": {
-        "id": "integer",
+        "id": "hidden",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2",
         "controlWidthClass": "col-sm-1"
@@ -1738,6 +1738,55 @@
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10"
+      }
+    },
+    "__$restrictions": {
+      "description": "Choose to add value restrictions to the input.",
+      "title": "Restrictions",
+      "type": "array",
+      "items": {
+        "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
+        "properties": {
+          "operator": {
+            "description": "Comparing operator to restrict the input value",
+            "type": "string",
+            "enum": [
+              "maxLength",
+              "minLength",
+              "regex",
+              "minValue",
+              "maxValue",
+              "mazSize",
+              "mimeType"
+            ],
+            "title": "Restriction",
+            "widget": {"id": "restrictions-operator"}
+          },
+          "value": {
+            "description": "Value to restrict the input",
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      "widget": {
+        "id": "restrictions",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2 pr-1",
+        "controlWidthClass": "col-sm-10",
+        "noTableLabel": true,
+        "noCollapseButton": true,
+        "addButtonLabel": "Add new restriction",
+        "booleanControlled": true,
+        "booleanLabel": "Use restrictions?",
+        "booleanControlledInitial": false,
+        "showFields": [
+          {"field": "operator", "col": 7, "nolabel": true},
+          {"field": "value", "col": 4, "nolabel": true}
+        ]
+
       }
     },
     "item": {
@@ -5078,6 +5127,12 @@
       "fields": ["initial"],
       "showFields": [
         { "field": "initial", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["__$restrictions"],
+      "showFields": [
+        { "field": "__$restrictions", "col": 12 }
       ]
     },
     {

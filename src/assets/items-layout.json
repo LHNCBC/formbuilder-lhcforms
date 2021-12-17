@@ -21,7 +21,8 @@
           { "field": "repeats", "col": 12 },
           { "field": "required", "col": 12 },
           { "field": "readOnly", "col": 12 },
-          { "field": "maxLength", "col": 12 }
+          { "field": "maxLength", "col": 12 },
+          { "field": "__$restrictions", "col": 12 }
         ]
       },
       {
