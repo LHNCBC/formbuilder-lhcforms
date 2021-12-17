@@ -1771,6 +1771,9 @@
         "additionalProperties": false,
         "type": "object"
       },
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
+      },
       "widget": {
         "id": "restrictions",
         "labelPosition": "left",

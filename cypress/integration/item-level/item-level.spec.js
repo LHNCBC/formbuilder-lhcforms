@@ -234,5 +234,37 @@ describe('Home page', () => {
         expect(qJson.item[0]._prefix).to.be.undefined;
       });
     });
+
+    it('should add restrictions', () => {
+      cy.get('lfb-restrictions #Yes_1').click();
+
+      cy.get('#__\\$restrictions\\.0\\.operator').select('Maximum length');
+      cy.get('#__\\$restrictions\\.0\\.value').type('10');
+      cy.contains('lfb-restrictions button', 'Add new restriction')
+        .as('addRestrictionButton').click();
+      cy.get('#__\\$restrictions\\.1\\.operator').select('Minimum length');
+      cy.get('#__\\$restrictions\\.1\\.value').type('5');
+      cy.get('@addRestrictionButton').click();
+      cy.get('#__\\$restrictions\\.2\\.operator').select('Regex pattern');
+      cy.get('#__\\$restrictions\\.2\\.value').type('xxx');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].maxLength).equal(10);
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/minLength');
+        expect(qJson.item[0].extension[0].valueInteger).equal(5);
+        expect(qJson.item[0].extension[1].url).equal('http://hl7.org/fhir/StructureDefinition/regex');
+        expect(qJson.item[0].extension[1].valueString).equal('xxx');
+      });
+    });
+
+    it('should import form with restrictions', () => {
+      const sampleFile = 'restrictions-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile);
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
+      });
+    });
   });
 })

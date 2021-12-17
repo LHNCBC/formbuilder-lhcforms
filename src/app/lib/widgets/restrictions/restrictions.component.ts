@@ -215,6 +215,9 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
         if(indices && indices[extUrl] !== undefined && indices[extUrl] !== null) {
           // Update
           ext = extensions[indices[extUrl]];
+          for(const key in ext) {
+            if(/^value/.test(key)) delete ext[key];
+          }
         }
         else {
           // new
@@ -240,8 +243,10 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     let ret: number | string = value;
     switch (valueType) {
       case 'integer':
-      case 'decimal':
         ret = parseInt(value, 10);
+        break;
+      case 'decimal':
+        ret = parseFloat(value);
         break;
       case 'date':
       case 'dateTime':

@@ -54,6 +54,7 @@ export class BasePageComponent implements OnDestroy {
   objectUrl: any;
   acResult: AutoCompleteResult = null;
   @ViewChild('lhcFormPreview') previewEl: ElementRef;
+  @ViewChild('fileInput') fileInput: ElementRef;
   selectedPreviewTab = 0;
   acceptTermsOfUse = false;
 
@@ -183,8 +184,15 @@ export class BasePageComponent implements OnDestroy {
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
       this.setQuestionnaire(Util.createDefaultForm());
+    } else if (this.startOption === 'existing' && this.importOption === 'local') {
+      this.fileInput.nativeElement.click();
+      this.setStep('fl-editor');
+      this.setQuestionnaire(Util.createDefaultForm());
+    } else if (this.startOption === 'existing' && this.importOption === 'fhirServer') {
+      this.setStep('fl-editor');
+      this.setQuestionnaire(Util.createDefaultForm());
     } else if (this.startOption === 'existing' && this.importOption === 'loinc') {
-      this.setStep('choose-start');
+      this.setStep('fl-editor');
       this.setQuestionnaire(Util.createDefaultForm());
     }
   }
