@@ -8,13 +8,13 @@
                [helpMessage]="schema.description"
                [ngClass]="labelWidthClass+' pl-0 pr-1'"
     ></lfb-label>
-    <input [name]="name" [attr.readonly]="(schema.widget.id!=='color') && schema.readOnly?true:null"
+    <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
            class="textline-widget form-control {{controlWidthClass}}"
            [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
            [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
            [attr.maxLength]="schema.maxLength || null"
            [attr.minLength]="schema.minLength || null"
-           [attr.required]="schema.isRequired ? '' : null"
-           [attr.disabled]="schema.disabled ? '' : null">
+           [required]="schema.isRequired"
+           [disabled]="schema.disabled">
   </div>
 </ng-template>

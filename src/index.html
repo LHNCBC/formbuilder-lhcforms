@@ -20,7 +20,6 @@
 </head>
 <body class="bg-light">
   <lfb-root></lfb-root>
-  <script src="https://cdn.jsdelivr.net/npm/ace-builds@latest/src-noconflict/ace.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script>
     (function () {
@@ -55,7 +54,6 @@
       }
     };
 
-    window.ace.config.set("basePath", "https://cdn.jsdelivr.net/npm/ace-builds@latest/src-noconflict/");
     window.onload = function() {
       loadScript('lforms/lib/elements/lhc-forms.es5.js');
       waitUntil(
