@@ -17,7 +17,7 @@
     "ci:cy-run": "start-server-and-test ci:start-server http://localhost:9031 cy:run",
     "ci:cy-open": "start-server-and-test ci:start-server http://localhost:9031 cy:open",
     "ci:start-server": "angular-http-server --path ./dist/formbuilder-lhcforms -p 9031",
-    "postinstall": "ngcc"
+    "postinstall": "ngcc && npm run build"
   },
   "private": true,
   "dependencies": {
