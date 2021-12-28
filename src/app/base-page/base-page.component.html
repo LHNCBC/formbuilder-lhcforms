@@ -13,7 +13,7 @@
             <button ngbDropdownItem (click)="exportToServer('CREATE')">Create a new questionnaire on a FHIR server...</button>
             <button ngbDropdownItem
                     (click)="exportToServer('UPDATE')"
-                    [disabled]="!questionnaire.id"
+                    [disabled]="!questionnaire || !questionnaire.id"
             >Update the questionnaire on the server ({{fhirService.getFhirServer().endpoint}})</button>
           </div>
         </div>
@@ -47,8 +47,7 @@
         </div>
         <div class="btn-group-sm mr-2 ml-auto" role="group" aria-label="Preview">
           <button type="button" class="btn btn-secondary"
-                  (click)="showPreviewDlg()"
-                  [attr.disabled]="guidingStep === 'qJSON' ? '' : null">Preview</button>
+                  (click)="showPreviewDlg()">Preview</button>
         </div>
         <div class="btn-group-sm mr-2" role="group" aria-label="Close editor">
           <button type="button" class="btn btn-secondary " (click)="newStart()">Close</button>

@@ -54,6 +54,9 @@ export class BasePageComponent implements OnDestroy {
   objectUrl: any;
   acResult: AutoCompleteResult = null;
   @ViewChild('lhcFormPreview') previewEl: ElementRef;
+  @ViewChild('fileInput') fileInputEl: ElementRef;
+  formLoaded$ = new Subject<boolean>();
+  formLoaded = false;
   selectedPreviewTab = 0;
   acceptTermsOfUse = false;
 
@@ -94,9 +97,15 @@ export class BasePageComponent implements OnDestroy {
         return of(fhirQ);
       }),
       takeUntil(this.unsubscribe)
-    ).subscribe(() => console.log('Saved'));
+    ).subscribe(() => {
+      console.log('Saved');
+      this.formLoaded$.next(true);
+    });
 
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
+    this.formLoaded$.subscribe((bool) => {
+      this.formLoaded = bool;
+    });
 
   }
 
@@ -112,10 +121,18 @@ export class BasePageComponent implements OnDestroy {
 
   /**
    * Notify changes to form.
-   * @param event - form object, a.k.a questionnaire
+   * @param form - form object, a.k.a questionnaire
    */
   notifyChange(form) {
     this.formSubject.next(form);
+  }
+
+
+  /**
+   * Set form loaded flag
+   */
+  setFormLoaded(bool) {
+    this.formLoaded$.next(bool);
   }
 
 
@@ -183,9 +200,20 @@ export class BasePageComponent implements OnDestroy {
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
       this.setQuestionnaire(Util.createDefaultForm());
-    } else if (this.startOption === 'existing' && this.importOption === 'loinc') {
-      this.setStep('choose-start');
-      this.setQuestionnaire(Util.createDefaultForm());
+    }
+    else if (this.importOption === 'local') {
+      this.fileInputEl.nativeElement.click();
+      if(this.formLoaded) {
+        this.setStep('fl-editor');
+      }
+
+    }
+    else if (this.importOption === 'fhirServer') {
+      this.setStep('fl-editor');
+      this.importFromFHIRServer();
+    }
+    else if (this.importOption === 'loinc') {
+      this.setStep('fl-editor');
     }
   }
 
