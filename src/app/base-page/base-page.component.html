@@ -172,3 +172,25 @@
   </mat-tab-group>
 </ng-template>
 
+<ng-template #loincSearchDlg let-modal>
+  <div class="modal-header btn-primary">
+    <h4 class="modal-title" id="loinc-search-dlg-title">Import a LOINC Form</h4>
+    <button type="button" class="close btn-primary text-white" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form class="px-4 py-3">
+      <label for="loincSearch"><span class="p-1">Search LOINC form:</span></label>
+      <input type="text"
+             id="loincSearch"
+             placeholder="Search LOINC forms"
+             [ngbTypeahead]="acSearch"
+             (selectItem)="modal.close($event.item.id)"
+             [resultFormatter]="formatter"
+             [inputFormatter]="formatter"
+             [editable]='false' />
+    </form>
+  </div>
+</ng-template>
+
