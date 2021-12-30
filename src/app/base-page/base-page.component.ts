@@ -57,8 +57,6 @@ export class BasePageComponent implements OnDestroy {
   @ViewChild('lhcFormPreview') previewEl: ElementRef;
   @ViewChild('fileInput') fileInputEl: ElementRef;
   @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
-  formLoaded$ = new Subject<boolean>();
-  formLoaded = false;
   selectedPreviewTab = 0;
   acceptTermsOfUse = false;
 
@@ -105,11 +103,6 @@ export class BasePageComponent implements OnDestroy {
     });
 
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
-    this.formLoaded$.subscribe((bool) => {
-      this.formLoaded = bool;
-      this.guidingStep = 'fl-editor';
-    });
-
   }
 
 
@@ -128,14 +121,6 @@ export class BasePageComponent implements OnDestroy {
    */
   notifyChange(form) {
     this.formSubject.next(form);
-  }
-
-
-  /**
-   * Set form loaded flag
-   */
-  setFormLoaded(bool) {
-    this.formLoaded$.next(bool);
   }
 
 
@@ -255,7 +240,9 @@ export class BasePageComponent implements OnDestroy {
     fileReader.onload = () => {
       try {
         this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
-        this.setFormLoaded(true);
+        setTimeout(() => {
+          this.setStep('fl-editor');
+        });
       }
       catch (e) {
         this.showError(e);

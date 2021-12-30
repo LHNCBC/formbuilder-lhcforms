@@ -14,8 +14,54 @@ describe('Home page', () => {
     cy.get('.lead').first().should('have.text', 'How do you want to create your form?')
   });
 
+  context('Home page import options', () => {
+    beforeEach(() => {
+      cy.visit('/');
+      cy.get('input[type="radio"][value="existing"]').click();
+    });
+
+    it('should import local file', () => {
+      cy.get('input[type="radio"][value="local"]').should('be.visible').click();
+      cy.readFile('cypress/fixtures/answer-option-sample.json').then((json) => {
+        cy.uploadFile('answer-option-sample.json');
+        cy.get('#title').should('have.value', 'Answer options form');
+        cy.questionnaireJSON().then((previewJson) => {
+          expect(previewJson).to.be.deep.equal(previewJson);
+        });
+      });
+    });
+
+    it('should import LOINC form', () => {
+      cy.get('input[type="radio"][value="loinc"]').should('be.visible').click();
+      cy.contains('button', 'Continue').click();
+      cy.get('#loincSearch').type('vital');
+      cy.get('ngb-typeahead-window').should('be.visible');
+      cy.get('ngb-typeahead-window button').first().click();
+      cy.get('#title').should('have.value', 'Vital signs with method details panel');
+      cy.get('#Yes_1').should('have.class', 'active');
+      cy.get('[id="code.0.code"]').should('have.value', '34566-0');
+    });
+
+    it('should import form FHIR server', () => {
+      cy.get('input[type="radio"][value="fhirServer"]').should('be.visible').click();
+      cy.contains('button', 'Continue').click();
+      cy.get('input[type="radio"][name="fhirServer"]').first().click();
+      cy.contains('div.modal-footer button', 'Continue').click();
+      cy.get('input[type="text"]').type('vital');
+      cy.get('#searchField1').select('Form title only');
+      cy.get('#button-addon2').click();
+      cy.get('div.list-group').should('be.visible');
+      cy.get('a.result-item').first().click();
+      cy.get('#title').should('include.value', 'Vital');
+      cy.get('#Yes_1').should('have.class', 'active');
+      cy.get('[id="code.0.code"]').should('have.value', '74728-7_modified');
+    });
+  });
+
   context('Form level fields', () => {
     before(() => {
+      cy.visit('/');
+      cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
     });
 
