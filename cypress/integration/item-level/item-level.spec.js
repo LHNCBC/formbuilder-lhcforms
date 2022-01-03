@@ -10,6 +10,7 @@ describe('Home page', () => {
     // we include it in our beforeEach function so that it runs before each test
     cy.visit('/');
     cy.contains('lfb-loinc-notice button', 'Accept').click();
+    cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
   })
 
@@ -37,6 +38,7 @@ describe('Home page', () => {
 
     beforeEach(() => {
       cy.uploadFile('reset-form.json');
+      cy.contains('button', 'Edit questions').click();
       cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
       cy.get('#__\\$helpText').as('helpText');
       cy.wait(1000);
@@ -70,6 +72,7 @@ describe('Home page', () => {
       const helpTextFormFilename = 'help-text-sample.json';
       const helpString = 'testing help text from import';
       cy.uploadFile(helpTextFormFilename);
+      cy.contains('button', 'Edit questions').click();
       cy.get('@helpText').should('have.value', helpString);
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].text).equal(helpString);

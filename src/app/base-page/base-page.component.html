@@ -13,7 +13,7 @@
             <button ngbDropdownItem (click)="exportToServer('CREATE')">Create a new questionnaire on a FHIR server...</button>
             <button ngbDropdownItem
                     (click)="exportToServer('UPDATE')"
-                    [disabled]="!questionnaire.id"
+                    [disabled]="!questionnaire || !questionnaire.id"
             >Update the questionnaire on the server ({{fhirService.getFhirServer().endpoint}})</button>
           </div>
         </div>
@@ -47,8 +47,7 @@
         </div>
         <div class="btn-group-sm mr-2 ml-auto" role="group" aria-label="Preview">
           <button type="button" class="btn btn-secondary"
-                  (click)="showPreviewDlg()"
-                  [attr.disabled]="guidingStep === 'qJSON' ? '' : null">Preview</button>
+                  (click)="showPreviewDlg()">Preview</button>
         </div>
         <div class="btn-group-sm mr-2" role="group" aria-label="Close editor">
           <button type="button" class="btn btn-secondary " (click)="newStart()">Close</button>
@@ -171,5 +170,27 @@
       </ng-template>
     </mat-tab>
   </mat-tab-group>
+</ng-template>
+
+<ng-template #loincSearchDlg let-modal>
+  <div class="modal-header btn-primary">
+    <h4 class="modal-title" id="loinc-search-dlg-title">Import a LOINC Form</h4>
+    <button type="button" class="close btn-primary text-white" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form class="px-4 py-3">
+      <label for="loincSearch"><span class="p-1">Search LOINC form:</span></label>
+      <input type="text"
+             id="loincSearch"
+             placeholder="Search LOINC forms"
+             [ngbTypeahead]="acSearch"
+             (selectItem)="modal.close($event.item.id)"
+             [resultFormatter]="formatter"
+             [inputFormatter]="formatter"
+             [editable]='false' />
+    </form>
+  </div>
 </ng-template>
 
