@@ -6,15 +6,15 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  Output,
+  Output, TemplateRef,
   ViewChild
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import {fhir} from '../fhir';
-import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
-import {catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil} from 'rxjs/operators';
+import {BehaviorSubject, from, Observable, of, Subject} from 'rxjs';
+import {catchError, debounceTime, distinctUntilChanged, finalize, mergeMap, switchMap, takeUntil} from 'rxjs/operators';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 import {FetchService} from '../fetch.service';
 import {FhirService} from '../services/fhir.service';
@@ -35,7 +35,8 @@ type ExportType = 'CREATE' | 'UPDATE';
 @Component({
   selector: 'lfb-base-page',
   templateUrl: './base-page.component.html',
-  styleUrls: ['./base-page.component.css']
+  styleUrls: ['./base-page.component.css'],
+  providers: [NgbActiveModal]
 })
 export class BasePageComponent implements OnDestroy {
 
@@ -54,6 +55,8 @@ export class BasePageComponent implements OnDestroy {
   objectUrl: any;
   acResult: AutoCompleteResult = null;
   @ViewChild('lhcFormPreview') previewEl: ElementRef;
+  @ViewChild('fileInput') fileInputEl: ElementRef;
+  @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
   selectedPreviewTab = 0;
   acceptTermsOfUse = false;
 
@@ -61,6 +64,7 @@ export class BasePageComponent implements OnDestroy {
   constructor(private formService: FormService,
               private modelService: SharedObjectService,
               private modalService: NgbModal,
+              private activeModal: NgbActiveModal,
               private dataSrv: FetchService,
               public fhirService: FhirService,
               private appJsonPipe: AppJsonPipe,
@@ -94,10 +98,11 @@ export class BasePageComponent implements OnDestroy {
         return of(fhirQ);
       }),
       takeUntil(this.unsubscribe)
-    ).subscribe(() => console.log('Saved'));
+    ).subscribe(() => {
+      console.log('Saved');
+    });
 
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
-
   }
 
 
@@ -112,7 +117,7 @@ export class BasePageComponent implements OnDestroy {
 
   /**
    * Notify changes to form.
-   * @param event - form object, a.k.a questionnaire
+   * @param form - form object, a.k.a questionnaire
    */
   notifyChange(form) {
     this.formSubject.next(form);
@@ -183,9 +188,25 @@ export class BasePageComponent implements OnDestroy {
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
       this.setQuestionnaire(Util.createDefaultForm());
-    } else if (this.startOption === 'existing' && this.importOption === 'loinc') {
-      this.setStep('choose-start');
-      this.setQuestionnaire(Util.createDefaultForm());
+    }
+    else if (this.importOption === 'local') {
+      this.fileInputEl.nativeElement.click();
+    }
+    else if (this.importOption === 'fhirServer') {
+      this.fetchFormFromFHIRServer$().subscribe((form) => {
+        if(form) {
+          this.setQuestionnaire(form);
+          this.setStep('fl-editor');
+        }
+      });
+    }
+    else if (this.importOption === 'loinc') {
+      this.modalService.open(this.loincSearchDlg).result.then((qId)=>{
+        this.dataSrv.getFormData(qId).subscribe((data) => {
+          this.setQuestionnaire(data);
+          this.setStep('fl-editor');
+        });
+      }, ()=>{});
     }
   }
 
@@ -219,6 +240,9 @@ export class BasePageComponent implements OnDestroy {
     fileReader.onload = () => {
       try {
         this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
+        setTimeout(() => {
+          this.setStep('fl-editor');
+        });
       }
       catch (e) {
         this.showError(e);
@@ -339,6 +363,28 @@ export class BasePageComponent implements OnDestroy {
     }, (reason) => {
       console.error(reason);
     });
+  }
+
+  /**
+   * Fetch form from FHIR server invoking dialogs for server selection and search for forms.
+   */
+  fetchFormFromFHIRServer$(): Observable<any> {
+    return from(this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result)
+      .pipe(switchMap((result) => {
+        if(result) {
+          return from(this.modalService.open(FhirSearchDlgComponent, {size: 'lg', scrollable: true}).result);
+        }
+        else {
+          return of(false);
+        }
+      }), switchMap((selected) => {
+        if(selected !== false) {
+          return this.fhirService.read(selected);
+        }
+        else {
+          return of(null);
+        }
+      }));
   }
 
 
