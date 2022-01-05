@@ -1,0 +1,12 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "New Form",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Item 0",
+      "type": "string"
+    }
+  ]
+}

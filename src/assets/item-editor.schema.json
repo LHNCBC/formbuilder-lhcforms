@@ -1,0 +1,13 @@
+{
+  "type": "string",
+  "title": "JSON Editor",
+  "format": "json",
+  "options": {
+    "ace": {
+      "theme": "ace/theme/vibrant_ink",
+      "tabSize": 2,
+      "useSoftTabs": true,
+      "wrap": true
+    }
+  }
+}
