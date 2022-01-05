@@ -19,6 +19,7 @@
     "ci:start-server": "angular-http-server --path ./dist/formbuilder-lhcforms -p 9031",
     "postinstall": "ngcc"
   },
+  "files": ["dist/formbuilder-lhcforms"],
   "private": true,
   "dependencies": {
     "@angular/animations": "~11.2.14",
