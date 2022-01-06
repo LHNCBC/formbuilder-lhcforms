@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import * as fhirServerMocks from '../../support/mocks/fhir-server-mocks';
 
 describe('Home page', () => {
   before(() => {
@@ -42,19 +43,24 @@ describe('Home page', () => {
       cy.get('[id="code.0.code"]').should('have.value', '34566-0');
     });
 
-    it('should import form FHIR server', () => {
+    it('should import form from FHIR server', () => {
+      const titleSearchTerm = 'vital';
+
+      fhirServerMocks.searchFHIRServer(titleSearchTerm,
+        `fhir-server-mock-response-${titleSearchTerm}.json`);
       cy.get('input[type="radio"][value="fhirServer"]').should('be.visible').click();
       cy.contains('button', 'Continue').click();
       cy.get('input[type="radio"][name="fhirServer"]').first().click();
       cy.contains('div.modal-footer button', 'Continue').click();
-      cy.get('input[type="text"]').type('vital');
+      cy.get('input[type="text"]').type(titleSearchTerm);
       cy.get('#searchField1').select('Form title only');
       cy.get('#button-addon2').click();
+      cy.wait('@searchFHIRServer');
       cy.get('div.list-group').should('be.visible');
       cy.get('a.result-item').first().click();
-      cy.get('#title').should('include.value', 'Vital');
+      cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
       cy.get('#Yes_1').should('have.class', 'active');
-      cy.get('[id="code.0.code"]').should('have.value', '74728-7_modified');
+      cy.get('[id="code.0.code"]').should('have.value', '88121-9');
     });
   });
 
