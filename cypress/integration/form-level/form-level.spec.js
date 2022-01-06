@@ -46,7 +46,8 @@ describe('Home page', () => {
     it('should import form from FHIR server', () => {
       const titleSearchTerm = 'vital';
 
-      fhirServerMocks.searchFHIRServer(titleSearchTerm, 'vital-fhir-server-mock-response.json');
+      fhirServerMocks.searchFHIRServer(titleSearchTerm,
+        `fhir-server-mock-response-${titleSearchTerm}.json`);
       cy.get('input[type="radio"][value="fhirServer"]').should('be.visible').click();
       cy.contains('button', 'Continue').click();
       cy.get('input[type="radio"][name="fhirServer"]').first().click();
