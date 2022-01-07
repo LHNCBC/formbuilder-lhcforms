@@ -262,7 +262,7 @@ export class BasePageComponent implements OnDestroy {
    * View preview of lforms widget and questionnaire json
    */
   showPreviewDlg() {
-    this.matDlg.open(PreviewDlgComponent, {data: {questionnaire: this.formValue, lfData: this.lfData}, width: '80vw', height: '80vh'});
+    this.matDlg.open(PreviewDlgComponent, {data: {questionnaire: Util.convertToQuestionnaireJSON(this.formValue), lfData: this.lfData}, width: '80vw', height: '80vh'});
   }
 
   /**
