@@ -52,4 +52,4 @@ scratch/
 /cypress/screenshots/*
 
 # Project specific
-# /src/lib/lforms/*
+/src/lib/lforms/
