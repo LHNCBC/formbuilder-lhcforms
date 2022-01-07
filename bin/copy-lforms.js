@@ -20,7 +20,7 @@ const filePathMap = {
   'fhir/lformsFHIRAll.min.js.map'   : 'fhir'
 }
 
-const appFolder = path.dirname(path.dirname(destinationFolder));
+const appFolder = path.dirname(path.dirname(path.dirname(destinationFolder)));
 if(!fs.existsSync(appFolder)) {
   errorExit(null, `${appFolder} directory does not exist. Please make sure to create it before running this script`);
 }
