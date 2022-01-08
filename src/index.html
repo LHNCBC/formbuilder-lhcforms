@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>NLM Form Builder</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="lforms/lib/elements/styles.css" rel="stylesheet">
+  <script src="webcomponents/webcomponents-loader.js"></script>
+  <script>
+    if (!window.customElements) {
+      document.write('<!--');
+    }
+  </script>
+  <script src="webcomponents/custom-elements-es5-adapter.js"></script>
+  <!-- ! DO NOT REMOVE THIS COMMENT, WE NEED ITS CLOSING MARKER -->
+</head>
+<body class="bg-light">
+  <lfb-root></lfb-root>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script>
+    (function () {
+      'use strict';
+    /**
+     * Script loading
+     * @param url - Url of the script
+     */
+    var loadScript = function (url) {
+      try {
+        var script = document.createElement("script");
+        script.src = url;
+        document.body.appendChild(script);
+      }
+      catch(err) {
+        console.error(err);
+      }
+    };
+
+    /**
+     * Wait until a condition is true to perform an action
+     * @param condition_cb - Call back function for a condition to check.
+     * @param action_cb - Call back function to execute an action.
+     */
+    var waitUntil = function (condition_cb, action_cb){
+      var done = condition_cb();
+      if(done) {
+        action_cb(); // Condition is true, perform the action.
+      }
+      else { // Wait until condition is true.
+        setTimeout(function() {waitUntil(condition_cb, action_cb)}, 100);
+      }
+    };
+
+    window.onload = function() {
+      loadScript('lforms/lib/elements/lhc-forms.es5.js');
+      waitUntil(
+        function () {return (typeof LForms !== 'undefined');}, // Wait until lhc-forms is loaded.
+        function() {
+          LForms.Util.loadFHIRLibs('lforms/lib/fhir/R4/lformsFHIR.min.js', 'lforms/lib/fhir/STU3/lformsFHIR.min.js');
+        }
+      );
+    };
+    })();
+  </script>
+
+</body>
+</html>

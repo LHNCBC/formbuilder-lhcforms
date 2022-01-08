@@ -1,0 +1,66 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Answer options form",
+  "status": "draft",
+  "item": [
+    {
+      "text": "Item with answer option and initial",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "font-weight: bold"
+          }
+        ]
+      },
+      "prefix": "1.",
+      "_prefix": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "font-style: italic"
+          }
+        ]
+      },
+      "linkId": "1",
+      "type": "choice",
+      "initial": [
+        {
+          "valueCoding": {
+            "system": "s",
+            "code": "b",
+            "display": "d2"
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 1
+            }
+          ],
+          "valueCoding": {
+            "system": "s",
+            "code": "a",
+            "display": "d1"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 2
+            }
+          ],
+          "valueCoding": {
+            "system": "s",
+            "code": "b",
+            "display": "d2"
+          }
+        }
+      ]
+    }
+  ]
+}

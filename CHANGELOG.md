@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.0]  2021-12-30
+### Feature
+- This version of form builder is revised using angular2 frame work.
+  The user interface is revised aligning with FHIR questionnaire definition.
+
 ## [6.5.2]  2021-10-05
 ### Fixed
 - Fixed a bug that fails to load forms after loading a form with ValueSet

@@ -7,19 +7,16 @@
 
 
 # Use the globally installed node and its modules
-LFORMS_NODE=node-v10.18.0-linux-x64
+LFORMS_NODE=node-v14
 # Set path
 PATH=~/${LFORMS_NODE}/bin:/bin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/etc
 
 # Identify directory of this source and set node_modules/.bin to PATH
-
-dir=`dirname ${BASH_SOURCE}`
-dir=`readlink -f ${dir}`
+dir=$(cd $(dirname ${BASH_SOURCE}); pwd)
 
 if [[ -e "$dir/node_modules" ]]
 then
   PATH=${dir}/node_modules/.bin:${PATH}
 fi
 umask 0022
-
 

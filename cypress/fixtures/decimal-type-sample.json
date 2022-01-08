@@ -1,0 +1,13 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Decimal type form",
+  "status": "draft",
+  "item": [
+    {
+      "text": "Item with decimal data type",
+      "linkId": "1",
+      "type": "decimal",
+      "initial": 1.1
+    }
+  ]
+}

@@ -1,9 +1,0 @@
-{
-  "exceptions": [
-    /*
-    The following is a DOS alert coming from firebase-admin@5.12.0.
-    */
-    "https://nodesecurity.io/advisories/605"
-
-  ]
-}

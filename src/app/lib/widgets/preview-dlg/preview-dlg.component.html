@@ -1,0 +1,21 @@
+ <h2 mat-dialog-title class="bg-primary text-white pb-3 pt-3 pl-2 pr-2 rounded">Preview of Questionnaire
+   <button mat-icon-button class="close-button" [mat-dialog-close]="true">
+     <mat-icon class="close-icon">close</mat-icon>
+   </button>
+ </h2>
+ <mat-dialog-content>
+   <mat-tab-group>
+     <mat-tab label="View Rendered Form">
+       <ng-template matTabContent>
+         <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire"></wc-lhc-form>
+       </ng-template>
+     </mat-tab>
+     <mat-tab label="View Questionnaire JSON">
+       <pre class="fix-pre">{{ data?.questionnaire | json }}</pre>
+     </mat-tab>
+   </mat-tab-group>
+ </mat-dialog-content>
+ <mat-dialog-actions align="end">
+   <button mat-button class="btn-primary" [mat-dialog-close]="true">Close</button>
+ </mat-dialog-actions>
+
