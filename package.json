@@ -21,7 +21,6 @@
     "postinstall": "ngcc"
   },
   "files": ["dist/formbuilder-lhcforms"],
-  "private": true,
   "dependencies": {
     "@angular/animations": "~11.2.14",
     "@angular/cdk": "^11.2.13",
