@@ -1,6 +1,13 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "7.0.1",
+  "version": "7.0.2",
+  "description": "Build LHC-Forms and FHIR Questionnaires",
+  "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lhncbc/formbuilder-lhcforms"
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 9030",
@@ -20,7 +27,9 @@
     "ci:start-server": "angular-http-server --path ./dist/formbuilder-lhcforms -p 9031",
     "postinstall": "ngcc"
   },
-  "files": ["dist/formbuilder-lhcforms"],
+  "files": [
+    "dist/formbuilder-lhcforms"
+  ],
   "dependencies": {
     "@angular/animations": "~11.2.14",
     "@angular/cdk": "^11.2.13",
