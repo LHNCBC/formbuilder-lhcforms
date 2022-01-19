@@ -239,7 +239,7 @@ export class FhirService {
       return defer(() => from(promise));
     }
 
-    _getSmartClient(): Client {
+    getSmartClient(): Client {
       return this.smartClient;
     }
 }

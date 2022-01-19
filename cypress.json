@@ -2,5 +2,6 @@
   "baseUrl": "http://localhost:9031",
   "viewportWidth": 1000,
   "viewportHeight": 660,
-  "integrationFolder": "cypress/integration"
+  "integrationFolder": "cypress/integration",
+  "watchForFileChanges": false
 }

@@ -1,6 +1,8 @@
 import {AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import {fhir} from '../../../fhir';
+import {FhirService} from '../../../services/fhir.service';
+declare var LForms: any;
 
 /**
  * Define data structure for dialog
@@ -20,7 +22,10 @@ export class PreviewDlgComponent {
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
 
   constructor(
+    private fhirService: FhirService,
     public dialogRef: MatDialogRef<PreviewDlgComponent>,
     @Inject(MAT_DIALOG_DATA) public data: PreviewData,
-  ) {}
+  ) {
+    LForms.Util.setFHIRContext(this.fhirService.getSmartClient());
+  }
 }

@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.3]  2022-01-18
+### Bugfix
+- Fix setting FHIR context for lforms preview.
+
 ## [7.0.0]  2021-12-30
 ### Feature
 - This version of form builder is revised using angular2 frame work.

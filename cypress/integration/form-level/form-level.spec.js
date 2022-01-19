@@ -7,7 +7,8 @@ describe('Home page', () => {
     // so we must tell it to visit our website with the `cy.visit()` command.
     // Since we want to visit the same URL at the start of all our tests,
     // we include it in our beforeEach function so that it runs before each test
-    cy.visit('/');
+    // loadHomePage() calls visit() with assertions for LForms object on window.
+    cy.loadHomePage();
     cy.contains('lfb-loinc-notice button', 'Accept').click();
   });
 
@@ -17,7 +18,7 @@ describe('Home page', () => {
 
   context('Home page import options', () => {
     beforeEach(() => {
-      cy.visit('/');
+      cy.loadHomePage();
       cy.get('input[type="radio"][value="existing"]').click();
     });
 
@@ -66,7 +67,7 @@ describe('Home page', () => {
 
   context('Form level fields', () => {
     before(() => {
-      cy.visit('/');
+      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
     });
@@ -100,6 +101,23 @@ describe('Home page', () => {
       cy.get('#completionOptionsScroller ul > li').should('have.length', 2);
       cy.get('#completionOptionsScroller ul > li').first().click();
       cy.get('#1\\/1').should('have.value', 'd1 - 1');
+      cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
+      cy.uploadFile('reset-form.json');
+    });
+
+    it('should work with ethnicity ValueSet in preview', () => {
+      cy.uploadFile('USSG-family-portrait.json');
+      cy.get('#title').should('have.value', 'US Surgeon General family health portrait', {timeout: 10000});
+      cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
+      cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
+      cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
+      cy
+      cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
+      cy.get('@ethnicity').scrollIntoView().type('latin');
+      cy.get('#completionOptions').should('be.visible', true);
+      cy.get('@ethnicity').type('{downarrow}');
+      cy.get('@ethnicity').type('{enter}');
+      cy.get('span.autocomp_selected').contains('Latin American');
       cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
       cy.uploadFile('reset-form.json');
     });

@@ -29,6 +29,16 @@ import 'cypress-file-upload';
  * Command to upload a file.
  * @param fileName - Name of the file to upload
  */
+Cypress.Commands.add('loadHomePage',() => {
+  cy.visit('/');
+  cy.window().should('have.property', 'LForms');
+});
+
+
+/**
+ * Command to upload a file.
+ * @param fileName - Name of the file to upload
+ */
 Cypress.Commands.add('uploadFile',(fileName) => {
   cy.get('input[type="file"]').attachFile(fileName, {force: true});
 });
