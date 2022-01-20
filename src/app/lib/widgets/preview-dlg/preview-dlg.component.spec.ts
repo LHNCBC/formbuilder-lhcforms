@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PreviewDlgComponent } from './preview-dlg.component';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
+declare var LForms: any;
 
 describe('PreviewDlgComponent', () => {
   let component: PreviewDlgComponent;

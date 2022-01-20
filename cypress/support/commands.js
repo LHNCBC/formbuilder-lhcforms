@@ -26,6 +26,15 @@ import 'cypress-file-upload';
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 /**
+ * Load home page and wait until LForms is loaded.
+ */
+Cypress.Commands.add('loadHomePage',() => {
+  cy.visit('/');
+  cy.window().should('have.property', 'LForms');
+});
+
+
+/**
  * Command to upload a file.
  * @param fileName - Name of the file to upload
  */
