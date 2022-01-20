@@ -14,25 +14,6 @@
       }
     ]
   },
-  "extension": [
-    {
-      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-launchContext",
-      "extension": [
-        {
-          "url": "name",
-          "valueId": "patient"
-        },
-        {
-          "url": "type",
-          "valueCode": "Patient"
-        },
-        {
-          "url": "descripton",
-          "valueString": "For filling in patient information as the subject for the form"
-        }
-      ]
-    }
-  ],
   "identifier": [
     {
       "system": "http://loinc.org",
@@ -42,10 +23,6 @@
   "name": "US Surgeon General family health portrait",
   "title": "US Surgeon General family health portrait",
   "status": "draft",
-  "subjectType": [
-    "Patient",
-    "Person"
-  ],
   "date": "2018-11-05T16:54:56-05:00",
   "code": [
     {
@@ -69,16 +46,6 @@
       "required": false,
       "item": [
         {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-initialExpression",
-              "valueExpression": {
-                "description": "Name from patient resource",
-                "language": "text/fhirpath",
-                "expression": "%patient.name[0].select(given.first() + ' ' +  family)"
-              }
-            }
-          ],
           "linkId": "/54126-8/54125-0",
           "code": [
             {
@@ -143,16 +110,6 @@
           ]
         },
         {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-initialExpression",
-              "valueExpression": {
-                "description": "Birth date from patient resource",
-                "language": "text/fhirpath",
-                "expression": "%patient.birthDate"
-              }
-            }
-          ],
           "linkId": "/54126-8/21112-8",
           "code": [
             {
@@ -1078,14 +1035,6 @@
                   }
                 ],
                 "text": "Drop down"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-initialExpression",
-              "valueExpression": {
-                "description": "Gender from patient resource",
-                "language": "text/fhirpath",
-                "expression": "%patient.gender"
               }
             }
           ],

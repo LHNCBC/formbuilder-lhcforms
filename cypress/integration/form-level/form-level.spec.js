@@ -111,7 +111,6 @@ describe('Home page', () => {
       cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
       cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
-      cy
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
       cy.get('@ethnicity').scrollIntoView().type('latin');
       cy.get('#completionOptions').should('be.visible', true);

@@ -34,7 +34,7 @@ describe('FhirService', () => {
 
   it('should create this service', () => {
     expect(service).toBeTruthy();
-    const serverUrl = service._getSmartClient().getState('serverUrl');
+    const serverUrl = service.getSmartClient().getState('serverUrl');
     expect(service.getFhirServer().endpoint).toBe(serverUrl);
   });
 
@@ -42,7 +42,7 @@ describe('FhirService', () => {
     // Ideally would like to intercept underlying XHR requests and mock them. For some reason angular test bed modules
     // are not intercepting those calls from fhirclient.js.
     // Alternatively spy on smart client api calls and mock the responses.
-    const reqSpy = spyOn(service._getSmartClient(), 'request')
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
       .withArgs({url: 'Questionnaire/12345-6?_format=application/fhir+json'})
       .and.returnValue(Promise.resolve(dummyQ));
     service.read('12345-6').subscribe((q) => {
@@ -55,7 +55,7 @@ describe('FhirService', () => {
   });
 
   it('should read() fail', (done) => {
-    const reqSpy = spyOn(service._getSmartClient(), 'request')
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
       .withArgs({url: 'Questionnaire/UNKNOWN?_format=application/fhir+json'})
       .and.returnValue(Promise.reject({status: 404, statusText: 'Not found'}));
     service.read('UNKNOWN').subscribe((q) => {
@@ -69,7 +69,7 @@ describe('FhirService', () => {
 
   it('should search()', (done) => {
     const dummyBundle: fhir.Bundle = TestUtil.createDummySearchBundle({total: 1});
-    const reqSpy = spyOn(service._getSmartClient(), 'request')
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
       .and.callFake((requestOptions: RequestOptions): Promise<any> => {
         return new Promise<any>((resolve, reject) => {
           try {
@@ -101,7 +101,7 @@ describe('FhirService', () => {
   });
 
   it('Should create() fail', (done) => {
-    const reqSpy = spyOn(service._getSmartClient(), 'request')
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
       .withArgs({
         url: 'Questionnaire',
         method: 'POST',
@@ -119,7 +119,7 @@ describe('FhirService', () => {
   });
 
   it('Should create()', (done) => {
-    const reqSpy = spyOn(service._getSmartClient(), 'request')
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
       .withArgs({
         url: 'Questionnaire',
         method: 'POST',
@@ -138,7 +138,7 @@ describe('FhirService', () => {
   });
 
   it('Should update() fail', (done) => {
-    const reqSpy = spyOn(service._getSmartClient(), 'request')
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
       .withArgs({
         url: 'Questionnaire/12345-6',
         method: 'PUT',
@@ -158,7 +158,7 @@ describe('FhirService', () => {
   });
 
   it('Should update()', (done) => {
-    const reqSpy = spyOn(service._getSmartClient(), 'request')
+    const reqSpy = spyOn(service.getSmartClient(), 'request')
       .withArgs({
         url: 'Questionnaire/12345-6',
         method: 'PUT',
