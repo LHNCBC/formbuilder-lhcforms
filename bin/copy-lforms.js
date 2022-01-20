@@ -1,14 +1,35 @@
 /**
  * This script copies lforms build files from LForms website.
+ *
+ * By default the CTSS url is used to download the files.
+ * The version of lforms is hard coded in this script. To upgrade
+ * lforms version, change version string below.
+ *
+ * Optionally to copy files from other websites, an url could be
+ * specified as argument to this script.
  */
 
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
+let downloadUrl = 'https://clinicaltables.nlm.nih.gov/lforms-versions';
+
+// Change version here to update LForms package.
+const version = '30.0.0-beta.1'
+
+// External scripts could change version?
+if(version?.length) {
+  downloadUrl = [downloadUrl,  version].join('/');
+}
+
+// Optional argument could change download url.
+if(process.argv.length > 2) {
+  downloadUrl = process.argv[2];
+}
+
 const destinationFolder = path.join(__dirname, '../src/lib/lforms/lib');
-const downloadUrl = 'https://clinicaltables.nlm.nih.gov/lforms-versions';
-const version = '30.0.0-beta.1';
 const filePathMap = {
   'webcomponent/lhc-forms.es5.js'   : 'elements',
   'webcomponent/styles.css'         : 'elements',
@@ -27,7 +48,7 @@ if(!fs.existsSync(appFolder)) {
 
 Object.keys(filePathMap).map((k) => {
  // Create a map between url to destination file path.
-  let url = [downloadUrl, version, k].join('/');
+  let url = [downloadUrl, k].join('/');
   let file = [destinationFolder, filePathMap[k], path.basename(k)].join('/');
   return {url, file};
 }).forEach((m) => {
@@ -62,7 +83,8 @@ function copyFileFromUrl(url, filePath) {
     errorExit(e, `Error writing file ${filePath}`);
   });
 
-  https.get(url, function(response) {
+  const httpReq = downloadUrl.startsWith('https') ? https : http;
+  httpReq.get(url, function(response) {
     if(response.statusCode === 200) {
       response.pipe(file);
     }

@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.4]  2022-01-20
+### Maintenance
+- Update LForms down load script.
+
 ## [7.0.3]  2022-01-18
 ### Bugfix
 - Fix setting FHIR context for lforms preview.
