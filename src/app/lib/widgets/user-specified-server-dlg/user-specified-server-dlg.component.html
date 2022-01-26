@@ -1,0 +1,32 @@
+<div class="modal-header bg-primary text-white">
+  <span class="modal-title h5">Add your FHIR server</span>
+  <button type="button" class="close text-white" aria-label="Close" (click)="activeModal.dismiss('Cancel')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div *ngIf="!valid" class="ng-invalid"></div>
+  <div *ngIf="valid" class="ng-valid"></div>
+  <p class="text-success" *ngIf="message">{{message}}</p>
+  <p class="text-danger" *ngIf="errorMessage">{{errorMessage}}</p>
+  <label>Specify base URL of your FHIR server</label>
+  <div class="input-group input-group-sm">
+    <input #urlInput="ngModel" type="url" required class="form-control"
+           [(ngModel)]="inputUrl"
+           placeholder="Enter valid url of your FHIR server"
+           aria-label=""
+           aria-describedby="filterHelp">
+    <button
+      class="align-self-baseline btn btn-sm btn-primary input-group-append"
+      type="button"
+      id="button-addon2"
+      [disabled]="urlInput.errors"
+      (click)="validateFHIRUrl(inputUrl)">
+      <span>Validate</span>
+    </button>
+  </div>
+</div>
+<div class="modal-footer btn-group-sm border-0">
+  <button type="button" class="btn btn-sm btn-primary" [disabled]="!newServerObj" (click)="activeModal.close(newServerObj)">Add</button>
+  <button type="button" class="btn btn-sm btn-primary" (click)="activeModal.dismiss('Cancel')">Cancel</button>
+</div>

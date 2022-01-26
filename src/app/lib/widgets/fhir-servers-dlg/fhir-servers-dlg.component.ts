@@ -1,9 +1,10 @@
 /**
  * Dialog to select FHIR server from the list of servers.
  */
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {FhirService} from '../../../services/fhir.service';
+import {FHIRServer, FhirService} from '../../../services/fhir.service';
+import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/user-specified-server-dlg.component';
 
 @Component({
   selector: 'lfb-fhir-servers-dlg',
@@ -15,26 +16,29 @@ import {FhirService} from '../../../services/fhir.service';
       </button>
     </div>
     <div class="modal-body">
-      <table class="table table-striped">
+      <table class="table table-sm table-striped table-bordered">
         <thead>
         <tr>
           <th scope="col"></th>
           <th scope="col">Fhir Server</th>
+          <th scope="col">FHIR Version</th>
           <th scope="col">Description</th>
         </tr>
         </thead>
         <tbody ngbRadioGroup name="fhirServer" [(ngModel)]="selectedServer">
         <tr *ngFor="let fhirServer of fhirServerList; index as i">
-          <th scope="row">
-            <label ngbButtonLabel><input ngbButton type="radio" [value]="fhirServer"></label>
+          <th scope="row" class="align-middle">
+            <label ngbButtonLabel class="m-0 p-0"><input ngbButton type="radio" [value]="fhirServer"></label>
           </th>
-          <td>{{fhirServer.displayName}}</td>
-          <td>{{ fhirServer.desc}}</td>
+          <td class="align-middle">{{fhirServer.endpoint}}</td>
+          <td class="align-middle">{{ fhirServer.version}}</td>
+          <td class="align-middle">{{ fhirServer.desc}}</td>
         </tr>
         </tbody>
       </table>
     </div>
-    <div class="modal-footer btn-group-sm">
+    <div class="modal-footer btn-group-sm border-0">
+      <button type="button" class="btn btn-primary" (click)="addFHIRServer()">Add your FHIR server...</button>
       <button type="button" class="btn btn-primary" (click)="continue()">Continue</button>
       <button type="button" class="btn btn-primary" (click)="dismiss()">Cancel</button>
     </div>
@@ -57,6 +61,20 @@ export class FhirServersDlgComponent implements OnInit {
 
   ngOnInit(): void {
   }
+
+  /**
+   * Button handler to add user specified FHIR server to the list.
+   */
+  addFHIRServer() {
+    const modalRef = this.modalService.open(UserSpecifiedServerDlgComponent);
+    modalRef.result.then((fhirServer: FHIRServer) => {
+      if(!this.fhirService.hasFhirServer(fhirServer.endpoint)) {
+        this.fhirService.addNewFhirServer(fhirServer);
+      }
+      this.selectedServer = this.fhirService.getFhirServer();
+    }, (cancelled) => {});
+  }
+
 
   /**
    * Handler for continue button

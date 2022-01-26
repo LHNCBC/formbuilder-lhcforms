@@ -62,6 +62,7 @@ import { BooleanControlledComponent } from './lib/widgets/boolean-controlled/boo
 import { EnableBehaviorComponent } from './lib/widgets/enable-behavior/enable-behavior.component';
 import { MessageDlgComponent } from './lib/widgets/message-dlg/message-dlg.component';
 import { FhirServersDlgComponent } from './lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
+import { UserSpecifiedServerDlgComponent } from './lib/widgets/user-specified-server-dlg/user-specified-server-dlg.component';
 import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
@@ -117,6 +118,7 @@ import { RestrictionsOperatorComponent } from './lib/widgets/restrictions-operat
     EnableBehaviorComponent,
     MessageDlgComponent,
     FhirServersDlgComponent,
+    UserSpecifiedServerDlgComponent,
     FhirSearchDlgComponent,
     BooleanRadioComponent,
     UnitsComponent,

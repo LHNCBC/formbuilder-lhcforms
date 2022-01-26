@@ -17,5 +17,9 @@
 import './commands'
 import failOnConsoleError, { consoleType } from 'cypress-fail-on-console-error';
 
-failOnConsoleError();
+const config = {
+  excludeMessages: ['Http failure response for http://localhost/metadata:']
+};
+
+failOnConsoleError(config);
 

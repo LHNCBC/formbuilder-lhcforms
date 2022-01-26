@@ -9,11 +9,11 @@ import Resource = fhirclient.FHIR.Resource;
 export interface FHIRServer {
   // resultsOffset: number;
   // pageSize: number;
-  id: number;
-  displayName: string;
+  id?: number;
+  displayName?: string;
   endpoint: fhir.uri;
-  desc: string;
-  version: string;
+  desc?: string;
+  version?: string;
 }
 
 @Injectable({
@@ -242,4 +242,24 @@ export class FhirService {
     getSmartClient(): Client {
       return this.smartClient;
     }
+
+  /**
+   * Add new FHIR server to the list.
+   * @param newFHIRServer - New server objecy
+   */
+  addNewFhirServer(newFHIRServer: FHIRServer) {
+    this.fhirServerList.unshift(newFHIRServer);
+    this.setFhirServer(newFHIRServer);
+  }
+
+
+  /**
+   * Find out if a fhir server object exists for a base url.
+   * @param endpoint - Base url to search.
+   */
+  hasFhirServer(endpoint: fhir.uri): boolean {
+    return this.fhirServerList.some((server) => {
+      return server.endpoint === endpoint;
+    });
+  }
 }

@@ -29,8 +29,50 @@ import 'cypress-file-upload';
  * Load home page and wait until LForms is loaded.
  */
 Cypress.Commands.add('loadHomePage',() => {
+  cy.goToHomePage();
+  cy.loincAccepted().then((flag) => {
+    if (flag !== 'true') {
+      cy.acceptLoinc();
+    }
+  });
+});
+
+
+/**
+ * Visit home page and assert LForms, but do not deal with LOINC notice.
+ */
+Cypress.Commands.add('goToHomePage', () => {
   cy.visit('/');
   cy.window().should('have.property', 'LForms');
+});
+
+
+/**
+ * Accept LOINC notice dialog.
+ */
+Cypress.Commands.add('acceptLoinc', () => {
+  cy.contains('lfb-loinc-notice button', 'Accept').click();
+});
+
+
+/**
+ * Clear session storage. Used to test LOINC notice.
+ */
+Cypress.Commands.add('clearSession',() => {
+  cy.window()
+    .its('sessionStorage')
+    .invoke('clear');
+});
+
+
+/**
+ * Check if loinc notice is accepted. Used to avoid invoking
+ * element locator when restarting stopped tests in cy-open.
+ */
+Cypress.Commands.add('loincAccepted',() => {
+  return cy.window()
+    .its('sessionStorage')
+    .invoke('getItem', 'acceptTermsOfUse');
 });
 
 
