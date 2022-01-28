@@ -13,9 +13,11 @@ module.exports = function (config) {
       require('@angular-devkit/build-angular/plugins/karma')
     ],
     files: [
-      'dist/formbuilder-lhcforms/lforms/lib/elements/lhc-forms.es5.js',
-      'dist/formbuilder-lhcforms/lforms/lib/fhir/R4/lformsFHIR.min.js',
-      'dist/formbuilder-lhcforms/lforms/lib/fhir/STU3/lformsFHIR.min.js'
+      'dist/formbuilder-lhcforms/lforms/lib/elements/runtime-es5.js',
+      'dist/formbuilder-lhcforms/lforms/lib/elements/polyfills-es5.js',
+      'dist/formbuilder-lhcforms/lforms/lib/elements/scripts.js',
+      'dist/formbuilder-lhcforms/lforms/lib/elements/main-es5.js',
+      'dist/formbuilder-lhcforms/lforms/lib/fhir/lformsFHIRAll.min.js',
     ],
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
