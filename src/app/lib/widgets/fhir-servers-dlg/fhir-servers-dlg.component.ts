@@ -9,42 +9,49 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
 @Component({
   selector: 'lfb-fhir-servers-dlg',
   template: `
-    <div class="modal-header bg-primary">
-      <h4 class="modal-title text-white">Choose a FHIR server</h4>
-      <button type="button" class="close" aria-label="Close" (click)="dismiss()">
-        <span class="text-white" aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <div class="modal-body">
-      <table class="table table-sm table-striped table-bordered">
-        <thead>
-        <tr>
-          <th scope="col"></th>
-          <th scope="col">Fhir Server</th>
-          <th scope="col">FHIR Version</th>
-          <th scope="col">Description</th>
-        </tr>
-        </thead>
-        <tbody ngbRadioGroup name="fhirServer" [(ngModel)]="selectedServer">
-        <tr *ngFor="let fhirServer of fhirServerList; index as i">
-          <th scope="row" class="align-middle">
-            <label ngbButtonLabel class="m-0 p-0"><input ngbButton type="radio" [value]="fhirServer"></label>
-          </th>
-          <td class="align-middle">{{fhirServer.endpoint}}</td>
-          <td class="align-middle">{{ fhirServer.version}}</td>
-          <td class="align-middle">{{ fhirServer.desc}}</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="modal-footer btn-group-sm border-0">
-      <button type="button" class="btn btn-primary" (click)="addFHIRServer()">Add your FHIR server...</button>
-      <button type="button" class="btn btn-primary" (click)="continue()">Continue</button>
-      <button type="button" class="btn btn-primary" (click)="dismiss()">Cancel</button>
+    <div role="dialog" aria-labelledby="serverDlgTitle" aria-describedby="ServerListCaption">
+      <div class="modal-header bg-primary">
+        <h4 id="serverDlgTitle" class="modal-title text-white">Choose a FHIR server</h4>
+        <button type="button" class="close" aria-label="Close" (click)="dismiss()">
+          <span class="text-white" aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-sm table-striped table-bordered">
+          <caption id="serverListCaption">List of available FHIR servers.</caption>
+          <thead>
+          <tr>
+            <th scope="col"></th>
+            <th scope="col">Fhir Server</th>
+            <th scope="col">FHIR Version</th>
+            <th scope="col">Description</th>
+          </tr>
+          </thead>
+          <tbody ngbRadioGroup name="fhirServer" [(ngModel)]="selectedServer">
+          <tr *ngFor="let fhirServer of fhirServerList; index as i">
+            <th scope="row" class="align-middle">
+              <label ngbButtonLabel class="m-0 p-0"><input ngbButton type="radio" [value]="fhirServer"></label>
+            </th>
+            <td class="align-middle">{{fhirServer.endpoint}}</td>
+            <td class="align-middle">{{ fhirServer.version}}</td>
+            <td class="align-middle">{{ fhirServer.desc}}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer btn-group-sm border-0">
+        <button type="button" class="btn btn-primary" (click)="addFHIRServer()">Add your FHIR server...</button>
+        <button type="button" class="btn btn-primary" (click)="continue()">Continue</button>
+        <button type="button" class="btn btn-primary" (click)="dismiss()">Cancel</button>
+      </div>
     </div>
   `,
-  styles: [
-  ]
+  styles: [`
+    caption {
+      caption-side: top;
+      font-size: 130%;
+    }
+  `]
 })
 export class FhirServersDlgComponent implements OnInit {
 

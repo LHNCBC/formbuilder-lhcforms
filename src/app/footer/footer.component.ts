@@ -5,7 +5,7 @@ import {DomSanitizer} from '@angular/platform-browser';
 @Component({
   selector: 'lfb-footer',
   template: `
-    <div id="fine-print">
+    <div role="contentinfo" id="fine-print">
       <ul class="horz-list">
         <li><a title="NLM copyright information"
                href="http://www.nlm.nih.gov/copyright.html">Copyright</a></li>

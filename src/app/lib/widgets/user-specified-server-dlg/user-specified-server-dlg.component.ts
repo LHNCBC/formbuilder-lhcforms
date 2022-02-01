@@ -55,36 +55,35 @@ export class UserSpecifiedServerDlgComponent implements OnInit {
 
     this._http.get<fhir.CapabilityStatement>(baseUrl.replace(/\/$/,'')+'/metadata', options)
       .subscribe((resp: HttpResponse<fhir.CapabilityStatement>) => {
-          let ver: string = null;
-          if (resp.status !== 200) {
-            this.errorMessage = resp.statusText;
-            return;
-          }
-          const body = resp.body;
-          if (body.fhirVersion) {
-            ver = LForms.Util._fhirVersionToRelease(body.fhirVersion); // Convert to R4, STU3 etc.
-            if (ver === body.fhirVersion) {
-              ver = null; // Not converted, unsupported version.
-            }
-          }
-          if (ver) {
-            const newServerObj: FHIRServer = {
-              id: this.fhirService.fhirServerList.length + 1,
-              endpoint: body.implementation?.url || baseUrl,
-              desc: body.implementation?.description || '',
-              version: ver
-            }
-            // Remove any trailing slashes.
-            newServerObj.endpoint = newServerObj.endpoint.replace(/\/+$/, '');
-            this.message = `${baseUrl} is a recognized FHIR server.`;
-            this.newServerObj = newServerObj;
-          } else {
-            this.errorMessage = `${baseUrl} returned an unsupported FHIR version: ${body.fhirVersion}`;
-          }
-        }, (error) => {
-          console.error(error.message);
-          this.errorMessage = 'Failed to recognize your FHIR server.';
+        let ver: string = null;
+        if (resp.status !== 200) {
+          this.errorMessage = resp.statusText;
+          return;
         }
-      );
+        const body = resp.body;
+        if (body.fhirVersion) {
+          ver = LForms.Util._fhirVersionToRelease(body.fhirVersion); // Convert to R4, STU3 etc.
+          if (ver === body.fhirVersion) {
+            ver = null; // Not converted, unsupported version.
+          }
+        }
+        if (ver) {
+          const newServerObj: FHIRServer = {
+            id: this.fhirService.fhirServerList.length + 1,
+            endpoint: body.implementation?.url || baseUrl,
+            desc: body.implementation?.description || '',
+            version: ver
+          }
+          // Remove any trailing slashes.
+          newServerObj.endpoint = newServerObj.endpoint.replace(/\/+$/, '');
+          this.message = `${baseUrl} was verified to be a FHIR server.`;
+          this.newServerObj = newServerObj;
+        } else {
+          this.errorMessage = `${baseUrl} returned an unsupported FHIR version: ${body.fhirVersion}`;
+        }
+      }, (error) => {
+        console.error(error.message);
+        this.errorMessage = 'Unable to confirm that that URL is a FHIR server.';
+      });
   }
 }
