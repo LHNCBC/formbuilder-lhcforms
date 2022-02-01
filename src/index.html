@@ -55,11 +55,14 @@
     };
 
     window.onload = function() {
-      loadScript('lforms/lib/elements/lhc-forms.es5.js');
+      loadScript('lforms/lib/elements/runtime-es5.js');
+      loadScript('lforms/lib/elements/polyfills-es5.js');
+      loadScript('lforms/lib/elements/scripts.js');
+      loadScript('lforms/lib/elements/main-es5.js');
       waitUntil(
         function () {return (typeof LForms !== 'undefined');}, // Wait until lhc-forms is loaded.
         function() {
-          LForms.Util.loadFHIRLibs('lforms/lib/fhir/R4/lformsFHIR.min.js', 'lforms/lib/fhir/STU3/lformsFHIR.min.js');
+          LForms.Util.loadScript('lforms/lib/fhir/lformsFHIRAll.min.js');
         }
       );
     };

@@ -5,9 +5,10 @@
  */
 const hostName = require('os').hostname();
 const { spawn } = require('child_process');
+const packageJson = require('../package.json');
 
 // Port 9030 for form builder.
-const ngArgs = ['serve', '--port', '9030', '--host', hostName];
+const ngArgs = ['serve', '--port', packageJson.scripts.devPort, '--host', hostName];
 // Use production configuration for dist folder which contains production artifacts.
 if (process.argv[2] && process.argv[2] === '--dist') {
   ngArgs.push('--configuration');
