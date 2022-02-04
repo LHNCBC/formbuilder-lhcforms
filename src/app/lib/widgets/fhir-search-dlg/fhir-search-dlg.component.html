@@ -1,6 +1,6 @@
-<div class="modal-header bg-primary">
+<div class="modal-header bg-primary" role="dialog">
   <h4 class="modal-title text-white">Import a questionnaire</h4>
-  <button type="button" class="close" aria-label="Close" (click)="close(false)">
+  <button type="button btn-sm" class="close" aria-label="Close" (click)="close(false)">
     <span class="text-white" aria-hidden="true">&times;</span>
   </button>
 </div>
@@ -13,7 +13,7 @@ It helps to keep the search visible while results are scrolling
 
 <!-- Search template -->
 <ng-template #search>
-  <form class="container">
+  <form class="container" role="search" aria-label="Search selected FHIR server">
     <div class="row">
       <div class="col">
         <div class="input-group input-group-sm">
@@ -54,10 +54,10 @@ It helps to keep the search visible while results are scrolling
     </div>
     <div *ngIf="bundle$ | async" class="row">
       <div class="col">
-        <h4 *ngIf="total === 1">{{ total }} resource was found.</h4>
-        <h4 *ngIf="total > 1">{{ total }} resources were found.</h4>
-        <h4 *ngIf="total === 0">No resources were found.</h4>
-        <h4 *ngIf="total === undefined">The following resources were found.</h4>
+        <h4 *ngIf="total === 1" role="alert">{{ total }} resource was found.</h4>
+        <h4 *ngIf="total > 1" role="alert">{{ total }} resources were found.</h4>
+        <h4 *ngIf="total === 0" role="alert">No resources were found.</h4>
+        <h4 *ngIf="total === undefined" role="alert">The following resources were found.</h4>
       </div>
       <div class="col-auto btn-group btn-group-sm btn-sm float-right" role="group" aria-label="Navigation">
         <button type="button" class="btn btn-outline-primary" [disabled]="!prevUrl" (click)="prevPage()">Previous</button>
@@ -70,7 +70,7 @@ It helps to keep the search visible while results are scrolling
 <!-- Results template -->
 <ng-template #results>
   <ng-container *ngIf="questionnaires">
-    <div class="modal-body bg-light">
+    <div class="modal-body bg-light" aria-live="polite">
       <div class="list-group list-group-flush">
         <a href="#" class="list-group-item list-group-item-action result-item" *ngFor="let q of questionnaires; index as i" (click)="close(q.id)">
           <div class="row">

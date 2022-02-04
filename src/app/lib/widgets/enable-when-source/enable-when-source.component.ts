@@ -34,6 +34,7 @@ import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
              (click)="click$.next($any($event).target.value)"
              (selectItem)="onSelect($event)"
              #instance="ngbTypeahead"
+             popupClass="add-scrolling"
       >
 
       <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">

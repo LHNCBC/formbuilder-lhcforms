@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.5]  2022-01-26
+### Feature
+- Add user specified FHIR server.
+- Fix scrolling in conditional display source field.
+
 ## [7.0.4]  2022-01-20
 ### Maintenance
 - Update LForms down load script.

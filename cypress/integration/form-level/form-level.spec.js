@@ -1,5 +1,16 @@
 /// <reference types="cypress" />
 import * as fhirServerMocks from '../../support/mocks/fhir-server-mocks';
+describe('Home page accept LOINC notice', () => {
+  before(() => {
+    cy.clearSession();
+  });
+
+  it('should accept LOINC notice', () => {
+    cy.goToHomePage();
+    cy.acceptLoinc();
+    cy.loincAccepted().should('equal', 'true');
+  });
+});
 
 describe('Home page', () => {
   before(() => {
@@ -8,8 +19,8 @@ describe('Home page', () => {
     // Since we want to visit the same URL at the start of all our tests,
     // we include it in our beforeEach function so that it runs before each test
     // loadHomePage() calls visit() with assertions for LForms object on window.
+    // It also deals with loinc notice, if needed.
     cy.loadHomePage();
-    cy.contains('lfb-loinc-notice button', 'Accept').click();
   });
 
   it('display home page title', () => {
@@ -147,4 +158,60 @@ describe('Home page', () => {
       cy.uploadFile('reset-form.json');
     });
   });
+
+  context('User specified FHIR server dialog', () => {
+    before(() => {
+      cy.loadHomePage();
+      cy.contains('button', 'Continue').click();
+      cy.contains('button', 'Import').click();
+      cy.contains('button', 'Import from a FHIR server...').click();
+    });
+
+    beforeEach(() => {
+      cy.contains('div.modal-footer button', 'Add your FHIR server').click();
+      cy.get('input[type="url"]').as('inputUrl');
+      cy.contains('button', 'Validate').as('validate');
+      cy.contains('lfb-user-server-dlg button', 'Add').as('add');
+      cy.contains('lfb-user-server-dlg button', 'Cancel').as('cancel');
+    });
+
+    it('should detect invalid FHIR url in user specified server dialog', () => {
+      // Validate button is disabled for empty input.
+      cy.get('@validate').should('have.attr', 'disabled');
+      // Add button is enabled only when a validated url is recognized.
+      cy.get('@add').should('have.attr', 'disabled');
+
+      // Invalid url format
+      cy.get('@inputUrl').type('xxx');
+      cy.get('@validate').should('not.have.attr', 'disabled'); // Enabled.
+      cy.get('@add').should('have.attr', 'disabled'); //
+      cy.get('@validate').click();
+      cy.contains('p.text-danger', 'You entered an invalid url: xxx').should('be.visible', true);
+      cy.get('@add').should('have.attr', 'disabled');
+
+      cy.get('@inputUrl').clear();
+      cy.get('@inputUrl').type('http://localhost'); // Valid format, but a FHIR server.
+      cy.get('@validate').click();
+      cy.contains('p.text-danger', 'Unable to confirm that that URL is a FHIR server.').should('be.visible', true);
+      cy.get('@add').should('have.attr', 'disabled');
+      cy.get('@cancel').click();
+    });
+
+    it('should validate and select user specified FHIR server', () => {
+      cy.get('@inputUrl').clear();
+      cy.get('@inputUrl').type('https://dummyhost.com/baseR4'); // Valid FHIR server.
+      cy.intercept('https://dummyhost.com/baseR4/metadata?*',
+        {fixture: 'fhir-metadata-elements.json'}).as('metaFHIRServer');
+      cy.get('@validate').click();
+      cy.wait('@metaFHIRServer');
+      cy.contains('p.text-success', 'https://dummyhost.com/baseR4 was verified to be a FHIR server.').should('be.visible', true);
+      cy.get('@add').click();
+      cy.get('input[type="radio"][name="fhirServer"]').first().should('be.checked');
+      cy.get('lfb-fhir-servers-dlg table tr')
+        .first().get('td')
+        .first().should('have.text', 'https://dummyhost-1.com/baseR4');
+    });
+
+  });
+
 })
