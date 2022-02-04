@@ -8,7 +8,6 @@ describe('Home page accept LOINC notice', () => {
   it('should accept LOINC notice', () => {
     cy.goToHomePage();
     cy.acceptLoinc();
-    cy.contains('lfb-loinc-notice button', 'Accept').click();
     cy.loincAccepted().should('equal', 'true');
   });
 });
@@ -193,7 +192,7 @@ describe('Home page', () => {
       cy.get('@inputUrl').clear();
       cy.get('@inputUrl').type('http://localhost'); // Valid format, but a FHIR server.
       cy.get('@validate').click();
-      cy.contains('p.text-danger', 'Failed to recognize your FHIR server.').should('be.visible', true);
+      cy.contains('p.text-danger', 'Unable to confirm that that URL is a FHIR server.').should('be.visible', true);
       cy.get('@add').should('have.attr', 'disabled');
       cy.get('@cancel').click();
     });
@@ -205,7 +204,7 @@ describe('Home page', () => {
         {fixture: 'fhir-metadata-elements.json'}).as('metaFHIRServer');
       cy.get('@validate').click();
       cy.wait('@metaFHIRServer');
-      cy.contains('p.text-success', 'https://dummyhost.com/baseR4 is a recognized FHIR server.').should('be.visible', true);
+      cy.contains('p.text-success', 'https://dummyhost.com/baseR4 was verified to be a FHIR server.').should('be.visible', true);
       cy.get('@add').click();
       cy.get('input[type="radio"][name="fhirServer"]').first().should('be.checked');
       cy.get('lfb-fhir-servers-dlg table tr')
