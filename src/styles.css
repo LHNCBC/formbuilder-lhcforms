@@ -20,6 +20,11 @@
 .form-control > p {
   display:none !important;
 }
+.add-scrolling {
+  max-height: 200px;
+  max-width: 240%;
+  overflow: auto;
+}
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
