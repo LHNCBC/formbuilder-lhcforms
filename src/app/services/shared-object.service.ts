@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
-import {AppJsonPipe} from './lib/pipes/app-json.pipe';
-import {fhir} from './fhir';
+import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
+import {fhir} from '../fhir';
 
 @Injectable({
   providedIn: 'root'

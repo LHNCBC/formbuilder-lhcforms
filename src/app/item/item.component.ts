@@ -15,7 +15,7 @@ import {
   SimpleChanges, AfterViewChecked, NgZone
 } from '@angular/core';
 import {ITreeOptions, TreeComponent} from '@circlon/angular-tree-component';
-import {FetchService, LoincItemType} from '../fetch.service';
+import {FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';

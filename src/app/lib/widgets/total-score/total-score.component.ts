@@ -6,7 +6,7 @@ import {ExtensionsComponent} from '../extensions/extensions.component';
 import {fhir} from '../../../fhir';
 import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import { RuleEditorService } from 'rule-editor';
-import {SharedObjectService} from '../../../shared-object.service';
+import {SharedObjectService} from '../../../services/shared-object.service';
 import {Subscription} from 'rxjs';
 
 

@@ -13,7 +13,7 @@ import {
   SimpleChanges,
   ViewChild, ViewContainerRef
 } from '@angular/core';
-import {SharedObjectService} from '../shared-object.service';
+import {SharedObjectService} from '../services/shared-object.service';
 import {Binding, Validator} from '@lhncbc/ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {FormService} from '../services/form.service';

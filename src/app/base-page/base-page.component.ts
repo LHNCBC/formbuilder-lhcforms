@@ -16,7 +16,7 @@ import {catchError, debounceTime, distinctUntilChanged, finalize, mergeMap, swit
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
-import {FetchService} from '../fetch.service';
+import {FetchService} from '../services/fetch.service';
 import {FhirService} from '../services/fhir.service';
 import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
@@ -27,7 +27,7 @@ import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
-import {SharedObjectService} from '../shared-object.service';
+import {SharedObjectService} from '../services/shared-object.service';
 declare var LForms: any;
 
 type ExportType = 'CREATE' | 'UPDATE';

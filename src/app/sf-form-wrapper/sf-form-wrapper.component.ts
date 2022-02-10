@@ -7,7 +7,7 @@ import {
   OnInit, Output,
   SimpleChanges, ViewChild, ViewContainerRef
 } from '@angular/core';
-import {SharedObjectService} from '../shared-object.service';
+import {SharedObjectService} from '../services/shared-object.service';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
 

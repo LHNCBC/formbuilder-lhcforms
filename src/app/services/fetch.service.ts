@@ -7,8 +7,8 @@ import {Observable, of} from 'rxjs';
 import {catchError, map, tap} from 'rxjs/operators';
 import {TreeNode, ITreeOptions} from '@circlon/angular-tree-component/';
 import {TREE_ACTIONS, KEYS, TreeModel} from '@circlon/angular-tree-component';
-import {AutoCompleteResult} from './lib/widgets/auto-complete/auto-complete.component';
-import {Util} from './lib/util';
+import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
+import {Util} from '../lib/util';
 declare var LForms: any;
 
 enum JsonFormatType {
