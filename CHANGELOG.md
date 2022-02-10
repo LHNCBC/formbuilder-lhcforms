@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.6]  2022-02-10
+### Bugfix
+- Fix type display/group based on presence of child items.
+
 ## [7.0.5]  2022-01-26
 ### Feature
 - Add user specified FHIR server.
