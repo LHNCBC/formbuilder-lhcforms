@@ -377,4 +377,8 @@ export class FormService {
   isAutoSaved(): boolean {
     return !!localStorage.getItem('fhirQuestionnaire');
   }
+
+  doesFocussedNodeHaveChildren(): boolean {
+    return this.treeModel?.getFocusedNode()?.children?.length > 0;
+  }
 }

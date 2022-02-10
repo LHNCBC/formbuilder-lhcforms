@@ -135,3 +135,37 @@ Cypress.Commands.add('FHIRServerResponse', (menuText) => {
     return cy.wrap(JSON.parse(text));
   });
 });
+
+//For Cypress drag and drop custom command
+/**
+ * TODO - Not working, revisit.
+ * @param dragNodeText - Identifying text of the source node.
+ * @param dropNodeText - Identifying text of destination node
+ */
+Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
+
+  const dropSelector = '.node-content-wrapper span:contains("' + dropNodeText + '")';
+  const dragSelector = '.node-content-wrapper span:contains("' + dragNodeText + '")';
+  let droppable, coords;
+  cy.get(dropSelector).should(($eList) => {
+    droppable = $eList[0];
+    coords = droppable.getBoundingClientRect();
+  });
+
+  cy.get(dragSelector).should(($eList) => {
+    const draggable = $eList[0];
+    // The sequence of mouse events
+    draggable.dispatchEvent(new MouseEvent('mousedown'));
+    draggable.dispatchEvent(new MouseEvent('mousemove', { clientX: 5, clientY: 0 }));
+    draggable.dispatchEvent(new MouseEvent('mousemove', {
+      clientX: coords.left + 5,
+      clientY: coords.top + 5  // A few extra pixels to get the ordering right
+    }));
+    draggable.dispatchEvent(new MouseEvent('mouseup'));
+  });
+
+  return cy.get(dropSelector).should(($eList) => {
+    const classList = Array.from($eList[0].classList);
+    return classList.includes('node-content-wrapper-focused');
+  });
+})

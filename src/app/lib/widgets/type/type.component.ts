@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {SelectComponent} from '../select/select.component';
+import {FormService} from '../../../services/form.service';
 
 @Component({
   selector: 'lfb-type',
@@ -7,7 +8,7 @@ import {SelectComponent} from '../select/select.component';
 })
 export class TypeComponent extends SelectComponent implements OnInit {
 
-  constructor() {
+  constructor(private formService: FormService) {
     super();
   }
 
@@ -16,6 +17,17 @@ export class TypeComponent extends SelectComponent implements OnInit {
       const initialProp = this.formProperty.findRoot().getProperty('initial');
       const widget = initialProp.schema.widget;
       widget.id = (type === 'choice' || type === 'open-choice') ? 'hidden' : 'initial';
+      const hasChildren = this.formService.doesFocussedNodeHaveChildren();
+      if(hasChildren) {
+        if(type === 'display') {
+          this.formProperty.setValue('group', true);
+        }
+      }
+      else {
+        if(type === 'group') {
+          this.formProperty.setValue('display', true);
+        }
+      }
     });
   }
 

@@ -8,8 +8,7 @@ describe('Home page', () => {
     // so we must tell it to visit our website with the `cy.visit()` command.
     // Since we want to visit the same URL at the start of all our tests,
     // we include it in our beforeEach function so that it runs before each test
-    cy.visit('/');
-    cy.contains('lfb-loinc-notice button', 'Accept').click();
+    cy.loadHomePage();
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
   })
@@ -40,6 +39,7 @@ describe('Home page', () => {
       cy.uploadFile('reset-form.json');
       cy.contains('button', 'Edit questions').click();
       cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
+      cy.get('#type').as('type');
       cy.get('#__\\$helpText').as('helpText');
       cy.wait(1000);
     });
@@ -267,6 +267,30 @@ describe('Home page', () => {
       cy.uploadFile(sampleFile);
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
+      });
+    });
+
+    xit('should create display type', () => {
+      cy.get('@type').contains('string');
+      cy.selectDataType('header');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+      });
+      cy.get('.btn-toolbar').contains('button', 'Add new item').click();
+
+      cy.contains('.node-content-wrapper', 'Item 0').as('item0');
+      cy.contains('.node-content-wrapper span', 'New item 1').as('item1');
+
+      cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('group');
+      });
+      cy.get('@item0').dblclick();
+      cy.get('@item1').click();
+      cy.get('.btn-toolbar').contains('button', 'Delete this item').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
       });
     });
   });
