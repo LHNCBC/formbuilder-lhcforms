@@ -94,7 +94,7 @@ export class BasePageComponent implements OnDestroy {
     this.formSubject.asObservable().pipe(
       debounceTime(500),
       switchMap((fhirQ) => {
-        this.formService.autoSaveForm(fhirQ);
+        this.formService.autoSaveForm(Util.convertToQuestionnaireJSON(fhirQ));
         return of(fhirQ);
       }),
       takeUntil(this.unsubscribe)

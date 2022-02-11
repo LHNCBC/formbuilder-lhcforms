@@ -13,10 +13,9 @@ import {FormService} from '../../../services/form.service';
       <select [formControl]="control"
               [attr.name]="name" [attr.id]="id"
               class="form-control"
-              (change)="onChange($event)"
       >
         <ng-container>
-          <option *ngFor="let option of answerOption" [ngValue]="option.valueCoding"
+          <option *ngFor="let option of answerOptions" [ngValue]="option.valueCoding"
           >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
         </ng-container>
       </select>
@@ -27,7 +26,7 @@ import {FormService} from '../../../services/form.service';
 })
 export class EnablewhenAnswerCodingComponent extends ObjectWidget implements AfterViewInit {
 
-  answerOption: any[] = [];
+  answerOptions: any[] = [];
 
   /**
    * Invoke super constructor.
@@ -42,6 +41,7 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
    * Component initialization.
    */
   ngAfterViewInit(): void {
+    super.ngAfterViewInit();
     // Setup two binding between property value and control value.
     this.control.valueChanges.subscribe((value) => {
       this.formProperty.setValue(value, false);
@@ -56,7 +56,7 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
 
     // Listen to question value changes.
     this.formProperty.searchProperty('question').valueChanges.subscribe((source) => {
-      this.answerOption = [];
+      this.answerOptions = [];
       if (!source || !source.data) {
         return;
       }
@@ -64,19 +64,10 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
 
       if (answerType === 'choice' || answerType === 'open-choice') {
         const sourceNode = this.formService.getTreeNodeByLinkId(source.data.linkId);
-        this.answerOption =
+        this.answerOptions =
           (sourceNode && sourceNode.data && sourceNode.data.answerOption)
             ? sourceNode.data.answerOption : [];
       }
     });
-  }
-
-
-  /**
-   *
-   * @param event
-   */
-  onChange(event): void {
-    console.log('answer code selected: ' + event);
   }
 }
