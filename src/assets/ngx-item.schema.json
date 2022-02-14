@@ -620,6 +620,11 @@
                 "description": "Indicates that this coding was chosen by a user directly - e.g. off a pick list of available items (codes or displays).",
                 "pattern": "^true|false$",
                 "type": "boolean"
+              },
+              "__$score": {
+                "description": "If desired, enter a number to assign a numerical value to this answer for scoring purposes.",
+                "type": "number",
+                "title": "Score"
               }
             },
             "additionalProperties": false,
