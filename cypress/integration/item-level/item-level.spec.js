@@ -82,47 +82,7 @@ describe('Home page', () => {
     });
 
     it('should add answer-option', () => {
-      cy.selectDataType('string');
-      cy.get('[id="initial.0.valueCoding.display"]').should('not.exist');
-      cy.get('[id="answerOption.0.valueCoding.display"]').should('not.exist');
-      cy.selectDataType('choice');
-      // No widget for choice. User selects default radio in answer option table.
-      cy.get('[id^="initial"]').should('not.be.visible');
-      cy.get('[id="answerOption.0.valueCoding.display"]').type('d1');
-      cy.get('[id="answerOption.0.valueCoding.code"]').type('c1');
-      cy.get('[id="answerOption.0.valueCoding.system"]').type('s1');
-      cy.get('[id="answerOption.0.valueCoding.__$score"]').type('2');
-
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
-        expect(qJson.item[0].answerOption[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
-        expect(qJson.item[0].answerOption[0].extension).to.deep.equal([{
-          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
-          valueDecimal: 2
-        }]);
-        expect(qJson.item[0].initial).to.be.undefined; // No default selected
-      });
-
-      // Add a second answerOption.
-      cy.contains('button', 'Add another answer').click();
-
-      cy.get('[id="answerOption.1.valueCoding.display"]').type('d2');
-      cy.get('[id="answerOption.1.valueCoding.code"]').type('c2');
-      cy.get('[id="answerOption.1.valueCoding.system"]').type('s2');
-      cy.get('[id="answerOption.1.valueCoding.__$score"]').type('3');
-      // Select a default a.k.a initial
-      cy.get('input[type="radio"][ng-reflect-value="0"]').click();
-
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
-        expect(qJson.item[0].answerOption[1].valueCoding).to.deep.equal({display: 'd2', code: 'c2', system: 's2'});
-        expect(qJson.item[0].answerOption[1].extension).to.deep.equal([{
-          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
-          valueDecimal: 3
-        }]);
-        // Default/initial value coding.
-        expect(qJson.item[0].initial[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
-      });
+      cy.addAnswerOptions();
     });
 
     it('should add initial values', () => {
@@ -269,6 +229,25 @@ describe('Home page', () => {
         expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
       });
     });
+
+    it('should work conditional display with answer coding source', () => {
+      cy.addAnswerOptions();
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#enableWhen\\.0\\.question').type('{downarrow}{enter}');
+      cy.get('#enableWhen\\.0\\.operator').select('=');
+      cy.get('#enableWhen\\.0\\.answerCoding').select('d1 (c1)');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item.length).equal(2);
+        // Verify enableWhen construct.
+        expect(qJson.item[1].enableWhen.length).equal(1);
+        expect(qJson.item[1].enableWhen[0].question).equal(qJson.item[0].linkId);
+        expect(qJson.item[1].enableWhen[0].operator).equal('=');
+        expect(qJson.item[1].enableWhen[0].answerCoding.display).equal(qJson.item[0].answerOption[0].valueCoding.display);
+        expect(qJson.item[1].enableWhen[0].answerCoding.code).equal(qJson.item[0].answerOption[0].valueCoding.code);
+        expect(qJson.item[1].enableWhen[0].answerCoding.system).equal(qJson.item[0].answerOption[0].valueCoding.system);
+      });
+    })
 
     xit('should create display type', () => {
       cy.get('@type').contains('string');
