@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import {SelectComponent} from '../select/select.component';
-import {FormService} from '../../../services/form.service';
 
 @Component({
   selector: 'lfb-type',
@@ -8,7 +7,7 @@ import {FormService} from '../../../services/form.service';
 })
 export class TypeComponent extends SelectComponent implements OnInit {
 
-  constructor(private formService: FormService) {
+  constructor() {
     super();
   }
 
@@ -17,16 +16,10 @@ export class TypeComponent extends SelectComponent implements OnInit {
       const initialProp = this.formProperty.findRoot().getProperty('initial');
       const widget = initialProp.schema.widget;
       widget.id = (type === 'choice' || type === 'open-choice') ? 'hidden' : 'initial';
-      const hasChildren = this.formService.doesFocussedNodeHaveChildren();
-      if(hasChildren) {
-        if(type === 'display') {
-          this.formProperty.setValue('group', true);
-        }
-      }
-      else {
-        if(type === 'group') {
-          this.formProperty.setValue('display', true);
-        }
+      // Internally represent display type as group. Identifying display/group type is differed until
+      // the form is converted to json output.
+      if(type === 'display') {
+        this.formProperty.setValue('group', true);
       }
     });
   }

@@ -41,15 +41,6 @@ export class FetchService {
           if (node.hasChildren) { TREE_ACTIONS.TOGGLE_EXPANDED(tree, node, $event); }
         },
         click: TREE_ACTIONS.FOCUS,
-        drop: (tree: TreeModel, node: TreeNode, $event: any, {from, to}) => {
-          if (to.parent.data.type === 'display') {
-            to.parent.data.type = 'group';
-          }
-          if (from.parent.data.type === 'group' && from.parent.data.item.length === 0) {
-            from.parent.data.type = 'display';
-          }
-          TREE_ACTIONS.MOVE_NODE(tree, node, $event, {from, to});
-        }
       },
       keys: {
         [KEYS.ENTER]: TREE_ACTIONS.EXPAND

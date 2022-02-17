@@ -40,6 +40,8 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
       cy.get('#type').as('type');
+      cy.contains('.node-content-wrapper', 'Item 0').as('item0').click();
+      cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
       cy.wait(1000);
     });
@@ -255,9 +257,8 @@ describe('Home page', () => {
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
-      cy.get('.btn-toolbar').contains('button', 'Add new item').click();
+      cy.get('@addNewItem').click();
 
-      cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.contains('.node-content-wrapper span', 'New item 1').as('item1');
 
       cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
@@ -270,6 +271,34 @@ describe('Home page', () => {
       cy.get('.btn-toolbar').contains('button', 'Delete this item').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
+      });
+    });
+
+    it('should retain header type after switching to another item and switching back', () => {
+      cy.get('@type').contains('string');
+      cy.selectDataType('header');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+      });
+      cy.get('@addNewItem').click();
+      cy.get('@type').contains('string');
+      cy.get('@item0').click();
+      cy.get('@type').contains('header');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+        expect(qJson.item[1].type).equal('string');
+      });
+    });
+
+    it('should import display type', () => {
+      const sampleFile = 'group-display-type-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile);
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).to.deep.equal(fixtureJson.item[0].type);
+        expect(qJson.item[1].type).to.deep.equal(fixtureJson.item[1].type);
+        expect(qJson.item[1].item[0].type).to.deep.equal(fixtureJson.item[1].item[0].type);
       });
     });
   });
