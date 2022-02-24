@@ -217,7 +217,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   itemChanged(item) {
     setTimeout(() => {
       Util.mirrorObject(this.focusNode.data, item);
-      this.treeComponent?.treeModel.update();
+      this.treeComponent.treeModel.update();
       this.focusNode = this.treeComponent.treeModel.focusedNode;
       this.itemChange.emit(this.itemList);
     });
