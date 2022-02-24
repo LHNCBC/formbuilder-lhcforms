@@ -104,6 +104,14 @@ Cypress.Commands.add('selectDataType', (type) => {
 });
 
 /**
+ * Select a node by its text in the sidebar.
+ */
+Cypress.Commands.add('selectTreeNode', (text) => {
+  return cy.contains('tree-root tree-viewport tree-node-collection tree-node span', text).should('be.visible');
+});
+
+
+/**
  * Load LOINC form using a search term. Picks first item from the result list.
  * @param searchTerm - Search term to search LOINC database.
  */

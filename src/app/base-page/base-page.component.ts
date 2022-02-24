@@ -40,7 +40,7 @@ type ExportType = 'CREATE' | 'UPDATE';
 })
 export class BasePageComponent implements OnDestroy {
 
-  private unsubscribe = new Subject<void>()
+  private unsubscribe = new Subject<void>();
   @Input()
   guidingStep = 'home'; // 'choose-start', 'home', 'item-editor'
   startOption = 'scratch';

@@ -115,6 +115,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'Answer options form');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
         expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
@@ -227,6 +228,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'Form with restrictions');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
       });
@@ -249,7 +251,7 @@ describe('Home page', () => {
         expect(qJson.item[1].enableWhen[0].answerCoding.code).equal(qJson.item[0].answerOption[0].valueCoding.code);
         expect(qJson.item[1].enableWhen[0].answerCoding.system).equal(qJson.item[0].answerOption[0].valueCoding.system);
       });
-    })
+    });
 
     xit('should create display type', () => {
       cy.get('@type').contains('string');
@@ -295,6 +297,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'New Form');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).to.deep.equal(fixtureJson.item[0].type);
         expect(qJson.item[1].type).to.deep.equal(fixtureJson.item[1].type);
@@ -302,4 +305,42 @@ describe('Home page', () => {
       });
     });
   });
-})
+
+  context('Test descendant items and display/group type changes', () => {
+    beforeEach(() => {
+      const sampleFile = 'ussg-fhp.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+    });
+
+    it('should preserve descendant item array', () => {
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[10].item.length).to.equal(2);
+      });
+    });
+
+    it('should preserve change of datatype display', () => {
+      cy.contains('button', 'Edit questions').click();
+      cy.selectTreeNode('My health history').dblclick();
+      cy.selectTreeNode('Name').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].text).to.equal('Name');
+        expect(qJson.item[0].item[0].type).to.equal('string');
+      });
+      cy.get('#text').clear().type('xxx');
+      cy.get('#type').select('header');
+
+      cy.selectTreeNode('My health history').click();
+      cy.selectTreeNode('xxx').click();
+      cy.get('#text').should('have.value', 'xxx');
+      cy.get('#type').should('have.value', '12: group');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].text).to.equal('xxx');
+        expect(qJson.item[0].item[0].type).to.equal('display');
+      });
+    });
+  });
+});
