@@ -161,7 +161,7 @@
   <mat-tab-group [(selectedIndex)]="selectedPreviewTab">
     <mat-tab label="View Rendered Form">
       <ng-template matTabContent>
-        <wc-lhc-form [lfData]="lfData"></wc-lhc-form>
+        <wc-lhc-form [questionnaire]="formValue"></wc-lhc-form>
       </ng-template>
     </mat-tab>
     <mat-tab label="View Questionnaire JSON">

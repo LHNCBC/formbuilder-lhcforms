@@ -4,9 +4,9 @@ import {FormService} from '../services/form.service';
 import {
   DefaultWidgetRegistry,
   FormProperty,
-  FormPropertyFactory} from '@lhncbc/ngx-schema-form';
+  FormPropertyFactory} from 'ngx-schema-form';
 import {CommonTestingModule} from './common-testing.module';
-import {SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
+import {SchemaPreprocessor} from 'ngx-schema-form';
 
 @Injectable({
   providedIn: 'root'

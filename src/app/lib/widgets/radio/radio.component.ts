@@ -3,7 +3,7 @@
  */
 import { Component } from '@angular/core';
 
-import { ControlWidget } from '@lhncbc/ngx-schema-form';
+import { ControlWidget } from 'ngx-schema-form';
 
 @Component({
   selector: 'lfb-radio-widget',

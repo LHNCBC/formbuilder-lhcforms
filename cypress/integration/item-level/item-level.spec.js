@@ -253,6 +253,32 @@ describe('Home page', () => {
       });
     });
 
+    it('should import form with conditional display field', () => {
+      const sampleFile = 'enable-when-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+
+      cy.contains('button', 'Edit questions').click();
+      cy.selectTreeNode('Family member health history').dblclick();
+      cy.selectTreeNode('Living?').dblclick();
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
+      cy.get('#answerOption\\.0\\.valueCoding\\.display').should('have.value', 'Yes');
+      cy.get('#answerOption\\.0\\.valueCoding\\.code').should('have.value', 'LA33-6');
+      cy.selectTreeNode('Date of Birth').dblclick();
+      cy.get('#enableWhen\\.0\\.question').should('have.value', 'Living?');
+      cy.get('#enableWhen\\.0\\.operator')
+        .find('option:selected').should('have.text','=');
+      cy.get('#enableWhen\\.0\\.answerCoding')
+        .find('option:selected').should('have.text','Yes (LA33-6)');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].item[0].enableWhen)
+          .to.deep.equal(fixtureJson.item[0].item[0].item[0].enableWhen);
+      });
+    });
+
     xit('should create display type', () => {
       cy.get('@type').contains('string');
       cy.selectDataType('header');
@@ -308,7 +334,7 @@ describe('Home page', () => {
 
   context('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
-      const sampleFile = 'ussg-fhp.json';
+      const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile);

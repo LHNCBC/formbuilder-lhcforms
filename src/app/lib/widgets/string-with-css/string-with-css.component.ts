@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import {StringComponent} from '../string/string.component';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {FormProperty} from 'ngx-schema-form';
 import {fhir} from '../../../fhir';
 import {Util} from '../../util';
 

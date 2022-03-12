@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, DoCheck, OnDestroy, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {fhir} from '../../../fhir';
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import {TreeService} from '../../../services/tree.service';
 import {Subscription} from 'rxjs';
 

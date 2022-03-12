@@ -3,14 +3,15 @@
  * selecting codes to satisfy a condition.
  */
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {ObjectWidget} from '@lhncbc/ngx-schema-form';
+import {ObjectWidget} from 'ngx-schema-form';
 import {FormService} from '../../../services/form.service';
+import {fhir} from '../../../fhir';
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm">
-      <select [formControl]="control"
+      <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
               [attr.name]="name" [attr.id]="id"
               class="form-control"
       >
@@ -27,11 +28,12 @@ import {FormService} from '../../../services/form.service';
 export class EnablewhenAnswerCodingComponent extends ObjectWidget implements AfterViewInit {
 
   answerOptions: any[] = [];
+  model: fhir.Coding;
 
   /**
    * Invoke super constructor.
    *
-   * @param formService
+   * @param formService - Inject form service
    */
   constructor(private formService: FormService) {
     super();
@@ -42,32 +44,52 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
    */
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
-    // Setup two binding between property value and control value.
-    this.control.valueChanges.subscribe((value) => {
-      this.formProperty.setValue(value, false);
-    });
 
     this.formProperty.valueChanges.subscribe((newValue) => {
-      const currentValue = this.control.value;
-      if (currentValue.display !== newValue.display || currentValue.code !== newValue.code) {
-        this.control.setValue(newValue, {emitEvent: false});
-      }
+      this.model = newValue;
     });
 
     // Listen to question value changes.
     this.formProperty.searchProperty('question').valueChanges.subscribe((source) => {
       this.answerOptions = [];
-      if (!source || !source.data) {
+      if (!source) {
         return;
       }
       const answerType = this.formProperty.searchProperty('__$answerType').value;
 
       if (answerType === 'choice' || answerType === 'open-choice') {
-        const sourceNode = this.formService.getTreeNodeByLinkId(source.data.linkId);
+        const sourceNode = this.formService.getTreeNodeByLinkId(source);
         this.answerOptions =
           (sourceNode && sourceNode.data && sourceNode.data.answerOption)
             ? sourceNode.data.answerOption : [];
       }
     });
   }
+
+
+
+  /**
+   * Handle model change event in <select> tag.
+   * @param coding - Option value
+   */
+  modelChanged(coding: fhir.Coding) {
+    this.formProperty.setValue(coding, false);
+  }
+
+
+  /**
+   * Call back for <select> tag to pick matching option for a given model.
+   * For comparison, it prioritizes code equality before display equality.
+   *
+   * @param c1 - Option value
+   * @param c2 - Model object to compare
+   */
+  compareFn(c1: fhir.Coding, c2: fhir.Coding): boolean {
+    return c1 && c2
+      ? (c1.code && c2.code
+        ? c1.code === c2.code
+        : (c1.display === c2.display))
+      : c1 === c2;
+  }
+
 }

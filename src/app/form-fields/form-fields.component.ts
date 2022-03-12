@@ -25,7 +25,7 @@ import {Util} from '../lib/util';
         <hr/>
         <div class="container">
           <sf-form [schema]="qlSchema"
-                   [(model)]="questionnaire"
+                   [model]="questionnaire"
                    (onChange)="valueChanged($event)"
           ></sf-form>
         </div>
