@@ -14,7 +14,7 @@ import {
   ViewChild, ViewContainerRef
 } from '@angular/core';
 import {SharedObjectService} from '../services/shared-object.service';
-import {Binding, Validator} from '@lhncbc/ngx-schema-form';
+import {Binding, Validator} from 'ngx-schema-form';
 import {LinkIdCollection} from '../item/item.component';
 import {FormService} from '../services/form.service';
 import {SfFormWrapperComponent} from '../sf-form-wrapper/sf-form-wrapper.component';

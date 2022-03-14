@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import {WidgetChooserComponent} from '@lhncbc/ngx-schema-form';
+import {WidgetChooserComponent} from 'ngx-schema-form';
 
 @Component({
   selector: 'lfb-element-chooser',

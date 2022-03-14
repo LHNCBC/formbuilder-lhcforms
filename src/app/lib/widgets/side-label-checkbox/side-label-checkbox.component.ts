@@ -2,7 +2,7 @@
  * Customize checkbox
  */
 import {Component, Input, OnInit} from '@angular/core';
-import {CheckboxWidget} from '@lhncbc/ngx-schema-form';
+import {CheckboxWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
