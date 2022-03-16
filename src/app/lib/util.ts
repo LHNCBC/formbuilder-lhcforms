@@ -4,6 +4,7 @@
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import {fhir} from '../fhir';
+import {isEqual} from 'lodash';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -306,6 +307,10 @@ export class Util {
     }
   }
 
+  static isDefaultForm(q: fhir.Questionnaire): boolean {
+    const defForm = Util.createDefaultForm();
+    return isEqual(defForm, q);
+  }
 
   /**
    * Find the extension based on a given url from an array.

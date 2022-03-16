@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.8]  2022-03-16
+### Bugfix
+- Add warning dialog when replacing an existing form.
+
 ## [7.0.7]  2022-02-14
 ### Bugfix
 - Fix type display/group based on presence of child items.
