@@ -6,7 +6,7 @@ import {BehaviorSubject, merge, Observable, of, Subject} from 'rxjs';
 import {FormService} from '../../../services/form.service';
 import {debounceTime, distinctUntilChanged, filter, map, startWith, switchMap} from 'rxjs/operators';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
-import {ControlWidget} from '@lhncbc/ngx-schema-form';
+import {ControlWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 
@@ -19,7 +19,6 @@ import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 
       <lfb-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
       <input *ngIf="schema.type!='array'"
-             [formControl]="control"
              [attr.name]="name"
              [attr.id]="id"
              [attr.disabled]="schema.readOnly ? '' : null"

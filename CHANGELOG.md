@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.7]  2022-02-14
+### Bugfix
+- Fix type display/group based on presence of child items.
+
 ## [7.0.6]  2022-02-10
 ### Bugfix
 - Fix missing answer coding in conditional display.

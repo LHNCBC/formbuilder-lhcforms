@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {FormProperty} from 'ngx-schema-form';
 import {fhir} from '../../../fhir';
 import {ExtensionsComponent} from '../extensions/extensions.component';
 import Def from 'autocomplete-lhc';

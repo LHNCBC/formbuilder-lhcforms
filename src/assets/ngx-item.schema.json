@@ -1796,128 +1796,6 @@
         ]
 
       }
-    },
-    "item": {
-      "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
-      "type": "array",
-      "title": "Sub items",
-      "items": {
-        "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
-        "title": "Item",
-        "type": "object",
-        "properties": {
-          "type": {
-            "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.).",
-            "enum": [
-              "boolean",
-              "decimal",
-              "integer",
-              "date",
-              "dateTime",
-              "time",
-              "string",
-              "text",
-              "url",
-              "choice",
-              "open-choice",
-              "attachment",
-              "reference",
-              "quantity",
-              "group",
-              "display"
-            ],
-            "type": "string",
-            "title": "Data type",
-            "widget": {
-              "id": "hidden"
-            }
-          },
-          "text": {
-            "description": "The name of a section, the text of a question or text content for a display item.",
-            "title": "Question text",
-            "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string",
-            "widget": {
-              "id": "hidden",
-              "labelPosition": "left",
-              "labelWidthClass": "col-sm-2 pr-1",
-              "controlWidthClass": "col-sm-10"
-            }
-          },
-          "extension": {
-            "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
-            "items": {
-              "description": "Optional Extension Element - found in all resources.",
-              "properties": {
-                "id": {
-                  "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                },
-                "url": {
-                  "description": "Source of the definition for the extension code - a logical name or a URL.",
-                  "pattern": "^\\S*$",
-                  "type": "string"
-                },
-                "value": {
-                  "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Extension",
-            "widget": {
-              "id": "hidden"
-            }
-          },
-          "modifierExtension": {
-            "description": "May be used to represent additional information that is not part of the basic definition of the element and that modifies the understanding of the element in which it is contained and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
-            "items": {
-              "description": "Optional Extension Element - found in all resources.",
-              "properties": {
-                "id": {
-                  "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                },
-                "url": {
-                  "description": "Source of the definition for the extension code - a logical name or a URL.",
-                  "pattern": "^\\S*$",
-                  "type": "string"
-                },
-                "value": {
-                  "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object"
-            },
-            "type": "array",
-            "title": "Modifier extension",
-            "widget": {
-              "id": "hidden"
-            }
-          },
-          "linkId": {
-            "description": "An identifier that is unique within the Questionnaire allowing linkage to the equivalent item in a QuestionnaireResponse resource.",
-            "title": "Link id",
-            "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string",
-            "widget": {
-              "id": "hidden"
-            }
-          }
-        }
-      },
-      "widget": {
-        "id": "hidden"
-      }
     }
   },
   "required": ["text", "type", "linkId"],
@@ -5102,7 +4980,7 @@
       ]
     },
     {
-      "fields": ["__$helpText", "item"],
+      "fields": ["__$helpText"],
       "showFields": [
         { "field": "__$units", "col": 12 }
       ]

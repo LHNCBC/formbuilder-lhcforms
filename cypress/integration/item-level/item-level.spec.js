@@ -8,8 +8,7 @@ describe('Home page', () => {
     // so we must tell it to visit our website with the `cy.visit()` command.
     // Since we want to visit the same URL at the start of all our tests,
     // we include it in our beforeEach function so that it runs before each test
-    cy.visit('/');
-    cy.contains('lfb-loinc-notice button', 'Accept').click();
+    cy.loadHomePage();
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
   })
@@ -40,6 +39,9 @@ describe('Home page', () => {
       cy.uploadFile('reset-form.json');
       cy.contains('button', 'Edit questions').click();
       cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
+      cy.get('#type').as('type');
+      cy.contains('.node-content-wrapper', 'Item 0').as('item0').click();
+      cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
       cy.wait(1000);
     });
@@ -113,6 +115,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'Answer options form');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
         expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
@@ -225,6 +228,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'Form with restrictions');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
       });
@@ -247,6 +251,122 @@ describe('Home page', () => {
         expect(qJson.item[1].enableWhen[0].answerCoding.code).equal(qJson.item[0].answerOption[0].valueCoding.code);
         expect(qJson.item[1].enableWhen[0].answerCoding.system).equal(qJson.item[0].answerOption[0].valueCoding.system);
       });
-    })
+    });
+
+    it('should import form with conditional display field', () => {
+      const sampleFile = 'enable-when-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+
+      cy.contains('button', 'Edit questions').click();
+      cy.selectTreeNode('Family member health history').dblclick();
+      cy.selectTreeNode('Living?').dblclick();
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
+      cy.get('#answerOption\\.0\\.valueCoding\\.display').should('have.value', 'Yes');
+      cy.get('#answerOption\\.0\\.valueCoding\\.code').should('have.value', 'LA33-6');
+      cy.selectTreeNode('Date of Birth').dblclick();
+      cy.get('#enableWhen\\.0\\.question').should('have.value', 'Living?');
+      cy.get('#enableWhen\\.0\\.operator')
+        .find('option:selected').should('have.text','=');
+      cy.get('#enableWhen\\.0\\.answerCoding')
+        .find('option:selected').should('have.text','Yes (LA33-6)');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].item[0].enableWhen)
+          .to.deep.equal(fixtureJson.item[0].item[0].item[0].enableWhen);
+      });
+    });
+
+    xit('should create display type', () => {
+      cy.get('@type').contains('string');
+      cy.selectDataType('header');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+      });
+      cy.get('@addNewItem').click();
+
+      cy.contains('.node-content-wrapper span', 'New item 1').as('item1');
+
+      cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('group');
+      });
+      cy.get('@item0').dblclick();
+      cy.get('@item1').click();
+      cy.get('.btn-toolbar').contains('button', 'Delete this item').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+      });
+    });
+
+    it('should retain header type after switching to another item and switching back', () => {
+      cy.get('@type').contains('string');
+      cy.selectDataType('header');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+      });
+      cy.get('@addNewItem').click();
+      cy.get('@type').contains('string');
+      cy.get('@item0').click();
+      cy.get('@type').contains('header');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+        expect(qJson.item[1].type).equal('string');
+      });
+    });
+
+    it('should import display type', () => {
+      const sampleFile = 'group-display-type-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'New Form');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).to.deep.equal(fixtureJson.item[0].type);
+        expect(qJson.item[1].type).to.deep.equal(fixtureJson.item[1].type);
+        expect(qJson.item[1].item[0].type).to.deep.equal(fixtureJson.item[1].item[0].type);
+      });
+    });
   });
-})
+
+  context('Test descendant items and display/group type changes', () => {
+    beforeEach(() => {
+      const sampleFile = 'USSG-family-portrait.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile);
+      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+    });
+
+    it('should preserve descendant item array', () => {
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[10].item.length).to.equal(2);
+      });
+    });
+
+    it('should preserve change of datatype display', () => {
+      cy.contains('button', 'Edit questions').click();
+      cy.selectTreeNode('My health history').dblclick();
+      cy.selectTreeNode('Name').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].text).to.equal('Name');
+        expect(qJson.item[0].item[0].type).to.equal('string');
+      });
+      cy.get('#text').clear().type('xxx');
+      cy.get('#type').select('header');
+
+      cy.selectTreeNode('My health history').click();
+      cy.selectTreeNode('xxx').click();
+      cy.get('#text').should('have.value', 'xxx');
+      cy.get('#type').should('have.value', '12: group');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].text).to.equal('xxx');
+        expect(qJson.item[0].item[0].type).to.equal('display');
+      });
+    });
+  });
+});

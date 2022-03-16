@@ -1,7 +1,7 @@
 /**
  * A utility class
  */
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import {fhir} from '../fhir';
 
@@ -255,6 +255,11 @@ export class Util {
         // Internally the question is target TreeNode. Change that to node's linkId.
         else if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);
+        }
+        // Update type for header
+        else if(this.key === 'type' && (node === 'group' || node === 'display')) {
+          const type = this.parent.node.item?.length > 0 ? 'group' : 'display';
+          this.update(type);
         }
       });
 

@@ -15,7 +15,7 @@ import {
   SimpleChanges, AfterViewChecked, NgZone
 } from '@angular/core';
 import {ITreeOptions, TreeComponent} from '@circlon/angular-tree-component';
-import {FetchService, LoincItemType} from '../fetch.service';
+import {FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
@@ -215,9 +215,12 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Inform the change to host element.
    */
   itemChanged(item) {
-    // Util.mirrorObject(this.focusNode.data, Util.convertToQuestionnaireJSON(item));
-    Util.mirrorObject(this.focusNode.data, item);
-    this.itemChange.emit(this.itemList);
+    setTimeout(() => {
+      Object.assign(this.itemData, item);
+      this.treeComponent?.treeModel.update();
+      this.focusNode = this.treeComponent.treeModel.focusedNode;
+      this.itemChange.emit(this.itemList);
+    });
   }
 
   /**

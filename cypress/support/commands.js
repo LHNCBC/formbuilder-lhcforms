@@ -104,6 +104,14 @@ Cypress.Commands.add('selectDataType', (type) => {
 });
 
 /**
+ * Select a node by its text in the sidebar.
+ */
+Cypress.Commands.add('selectTreeNode', (text) => {
+  return cy.contains('tree-root tree-viewport tree-node-collection tree-node span', text, {timeout: 10000}).should('be.visible');
+});
+
+
+/**
  * Load LOINC form using a search term. Picks first item from the result list.
  * @param searchTerm - Search term to search LOINC database.
  */
@@ -179,4 +187,38 @@ Cypress.Commands.add('addAnswerOptions', () => {
     expect(qJson.item[0].initial[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
   });
 
+});
+
+//For Cypress drag and drop custom command
+/**
+ * TODO - Not working, revisit.
+ * @param dragNodeText - Identifying text of the source node.
+ * @param dropNodeText - Identifying text of destination node
+ */
+Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
+
+  const dropSelector = '.node-content-wrapper span:contains("' + dropNodeText + '")';
+  const dragSelector = '.node-content-wrapper span:contains("' + dragNodeText + '")';
+  let droppable, coords;
+  cy.get(dropSelector).should(($eList) => {
+    droppable = $eList[0];
+    coords = droppable.getBoundingClientRect();
+  });
+
+  cy.get(dragSelector).should(($eList) => {
+    const draggable = $eList[0];
+    // The sequence of mouse events
+    draggable.dispatchEvent(new MouseEvent('mousedown'));
+    draggable.dispatchEvent(new MouseEvent('mousemove', { clientX: 5, clientY: 0 }));
+    draggable.dispatchEvent(new MouseEvent('mousemove', {
+      clientX: coords.left + 5,
+      clientY: coords.top + 5  // A few extra pixels to get the ordering right
+    }));
+    draggable.dispatchEvent(new MouseEvent('mouseup'));
+  });
+
+  return cy.get(dropSelector).should(($eList) => {
+    const classList = Array.from($eList[0].classList);
+    return classList.includes('node-content-wrapper-focused');
+  });
 });

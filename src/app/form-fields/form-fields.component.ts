@@ -8,7 +8,7 @@ import {
   EventEmitter
 } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {FetchService} from '../fetch.service';
+import {FetchService} from '../services/fetch.service';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
@@ -25,7 +25,7 @@ import {Util} from '../lib/util';
         <hr/>
         <div class="container">
           <sf-form [schema]="qlSchema"
-                   [(model)]="questionnaire"
+                   [model]="questionnaire"
                    (onChange)="valueChanged($event)"
           ></sf-form>
         </div>

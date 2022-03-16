@@ -4,8 +4,8 @@
  */
 import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import * as ace from 'ace-builds';
-import {FetchService} from '../../../fetch.service';
-import {SharedObjectService} from '../../../shared-object.service';
+import {FetchService} from '../../../services/fetch.service';
+import {SharedObjectService} from '../../../services/shared-object.service';
 import {AppJsonPipe} from '../../pipes/app-json.pipe';
 
 

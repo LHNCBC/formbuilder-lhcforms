@@ -2,8 +2,8 @@
  * Customize layout of form-element from ngx-schema-form
  */
 import {Component, OnInit, OnChanges, Input, OnDestroy, SimpleChanges, DoCheck} from '@angular/core';
-import { FormElementComponent} from '@lhncbc/ngx-schema-form';
-import { Widget } from '@lhncbc/ngx-schema-form';
+import { FormElementComponent} from 'ngx-schema-form';
+import { Widget } from 'ngx-schema-form';
 
 
 @Component({

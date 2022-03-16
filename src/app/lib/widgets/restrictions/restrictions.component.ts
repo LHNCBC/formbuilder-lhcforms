@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {TableComponent} from '../table/table.component';
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import {fhir} from '../../../fhir';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';

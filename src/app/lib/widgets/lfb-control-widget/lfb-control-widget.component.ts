@@ -2,7 +2,7 @@
  * Customize array-widget from ngx-schema-form.
  */
 import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
-import {ControlWidget} from '@lhncbc/ngx-schema-form';
+import {ControlWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
