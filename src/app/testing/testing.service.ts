@@ -1,12 +1,8 @@
-import {Component, Injectable, Input, NgModule, OnInit} from '@angular/core';
-import {TestBed, waitForAsync} from '@angular/core/testing';
+import {Injectable} from '@angular/core';
+import {TestBed} from '@angular/core/testing';
 import {FormService} from '../services/form.service';
-import {
-  DefaultWidgetRegistry,
-  FormProperty,
-  FormPropertyFactory} from 'ngx-schema-form';
+import {FormProperty, FormPropertyFactory, SchemaPreprocessor} from 'ngx-schema-form';
 import {CommonTestingModule} from './common-testing.module';
-import {SchemaPreprocessor} from 'ngx-schema-form';
 
 @Injectable({
   providedIn: 'root'
