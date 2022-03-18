@@ -58,18 +58,10 @@ describe('Home page', () => {
     it('should import form from FHIR server', () => {
       const titleSearchTerm = 'vital';
 
-      fhirServerMocks.searchFHIRServer(titleSearchTerm,
-        `fhir-server-mock-response-${titleSearchTerm}.json`);
       cy.get('input[type="radio"][value="fhirServer"]').should('be.visible').click();
       cy.contains('button', 'Continue').click();
-      cy.get('input[type="radio"][name="fhirServer"]').first().click();
-      cy.contains('div.modal-footer button', 'Continue').click();
-      cy.get('input[type="text"]').type(titleSearchTerm);
-      cy.get('#searchField1').select('Form title only');
-      cy.get('#button-addon2').click();
-      cy.wait('@searchFHIRServer');
-      cy.get('div.list-group').should('be.visible');
-      cy.get('a.result-item').first().click();
+      cy.fhirSearch(titleSearchTerm);
+
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
       cy.get('#Yes_1').should('have.class', 'active');
       cy.get('[id="code.0.code"]').should('have.value', '88121-9');
@@ -84,6 +76,7 @@ describe('Home page', () => {
     });
 
     beforeEach(() => {
+      cy.resetForm();
       cy.get('#Yes_1').find('[type="radio"]').as('codeYes');
       cy.get('#No_1').find('[type="radio"]').as('codeNo');
     });
@@ -113,7 +106,6 @@ describe('Home page', () => {
       cy.get('#completionOptionsScroller ul > li').first().click();
       cy.get('#1\\/1').should('have.value', 'd1 - 1');
       cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
-      cy.uploadFile('reset-form.json');
     });
 
     it('should work with ethnicity ValueSet in preview', () => {
@@ -129,7 +121,6 @@ describe('Home page', () => {
       cy.get('@ethnicity').type('{enter}');
       cy.get('span.autocomp_selected').contains('Latin American');
       cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
-      cy.uploadFile('reset-form.json');
     });
 
     it('should create questionnaire on the fhir server', () => {
@@ -153,9 +144,6 @@ describe('Home page', () => {
       cy.FHIRServerResponse('Update').should((json) => {
         expect(json.title).equal('Modified title');
       });
-
-      // Reset changes
-      cy.uploadFile('reset-form.json');
     });
   });
 
@@ -212,6 +200,73 @@ describe('Home page', () => {
         .first().should('have.text', 'https://dummyhost-1.com/baseR4');
     });
 
+  });
+
+  context('Warning dialog when replacing current form', () => {
+    before(() => {
+      cy.loadHomePage();
+      cy.get('input[type="radio"][value="scratch"]').click();
+      cy.contains('button', 'Continue').click();
+    })
+
+    beforeEach(() => {
+      cy.resetForm();
+      cy.uploadFile('answer-option-sample.json');
+    });
+
+    it('should display warning dialog when replacing from local file', () => {
+      cy.get('#title').should('have.value', 'Answer options form');
+
+      cy.uploadFile('decimal-type-sample.json');
+      cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
+      cy.contains('div.modal-footer button', 'Cancel').click();
+      cy.get('#title').should('have.value', 'Answer options form');
+
+      cy.uploadFile('decimal-type-sample.json', true);
+      cy.get('#title').should('have.value', 'Decimal type form');
+    });
+
+    it('should display warning dialog when replacing from FHIR server', () => {
+      cy.get('#title').should('have.value', 'Answer options form');
+
+      cy.contains('nav.navbar button.dropdown-toggle', 'Import ').click();
+      cy.get('form > input[placeholder="Search LOINC"]').type('Vital signs with method details panel');
+      cy.get('ngb-typeahead-window').should('be.visible');
+      cy.get('ngb-typeahead-window button').first().click();
+      cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
+      cy.contains('div.modal-footer button', 'Cancel').click();
+      cy.get('#title').should('have.value', 'Answer options form');
+
+      cy.contains('nav.navbar button.dropdown-toggle', 'Import ').click();
+      cy.get('form > input[placeholder="Search LOINC"]').type('Vital signs with method details panel');
+      cy.get('ngb-typeahead-window').should('be.visible');
+      cy.get('ngb-typeahead-window button').first().click();
+      cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
+      cy.contains('div.modal-footer button', 'Continue').click();
+
+      cy.get('#title').should('have.value', 'Vital signs with method details panel');
+    });
+
+    it('should display warning dialog when replacing from FHIR server', () => {
+      const titleSearchTerm = 'vital';
+      cy.get('#title').should('have.value', 'Answer options form');
+      cy.contains('button', 'Import').click();
+      cy.contains('button', 'Import from a FHIR server...').click();
+      cy.fhirSearch(titleSearchTerm);
+      cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
+      cy.contains('div.modal-footer button', 'Cancel').click();
+      cy.get('#title').should('have.value', 'Answer options form');
+
+      cy.contains('button', 'Import').click();
+      cy.contains('button', 'Import from a FHIR server...').click();
+      cy.fhirSearch(titleSearchTerm);
+      cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
+      cy.contains('div.modal-footer button', 'Continue').click();
+
+      cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
+      cy.get('#Yes_1').should('have.class', 'active');
+      cy.get('[id="code.0.code"]').should('have.value', '88121-9');
+    });
   });
 
 })

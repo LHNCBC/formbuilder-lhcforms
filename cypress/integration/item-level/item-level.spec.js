@@ -36,8 +36,8 @@ describe('Home page', () => {
     });
 
     beforeEach(() => {
-      cy.uploadFile('reset-form.json');
-      cy.contains('button', 'Edit questions').click();
+      cy.resetForm();
+      cy.contains('button', 'Create questions').click();
       cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
       cy.get('#type').as('type');
       cy.contains('.node-content-wrapper', 'Item 0').as('item0').click();
@@ -73,7 +73,7 @@ describe('Home page', () => {
     it('should import help text item', () => {
       const helpTextFormFilename = 'help-text-sample.json';
       const helpString = 'testing help text from import';
-      cy.uploadFile(helpTextFormFilename);
+      cy.uploadFile(helpTextFormFilename, true);
       cy.contains('button', 'Edit questions').click();
       cy.get('@helpText').should('have.value', helpString);
       cy.questionnaireJSON().should((qJson) => {
@@ -114,7 +114,7 @@ describe('Home page', () => {
       const sampleFile = 'answer-option-sample.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.uploadFile(sampleFile);
+      cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Answer options form');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
@@ -227,7 +227,7 @@ describe('Home page', () => {
       const sampleFile = 'restrictions-sample.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.uploadFile(sampleFile);
+      cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Form with restrictions');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
@@ -257,7 +257,7 @@ describe('Home page', () => {
       const sampleFile = 'enable-when-sample.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.uploadFile(sampleFile);
+      cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
 
       cy.contains('button', 'Edit questions').click();
@@ -322,7 +322,7 @@ describe('Home page', () => {
       const sampleFile = 'group-display-type-sample.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.uploadFile(sampleFile);
+      cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'New Form');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).to.deep.equal(fixtureJson.item[0].type);
@@ -337,7 +337,7 @@ describe('Home page', () => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.uploadFile(sampleFile);
+      cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
     });
 
