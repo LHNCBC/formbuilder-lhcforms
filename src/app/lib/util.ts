@@ -27,6 +27,12 @@ export class Util {
     }]
   };
 
+  private static _defaultForm = {
+    resourceType: 'Questionnaire',
+    title: 'New Form',
+    status: 'draft',
+    item: []
+  };
   // Capitalize the camel case strings.
   static capitalize(str): string {
     let ret = '';
@@ -299,17 +305,22 @@ export class Util {
    * Create bare minimum form.
    */
   static createDefaultForm(): fhir.Questionnaire {
-    return {
-      resourceType: 'Questionnaire',
-      title: 'New Form',
-      status: 'draft',
-      item: []
-    }
+    return Util.cloneDefaultForm();
   }
 
+  /**
+   * Clone default form, mainly to create a new form.
+   */
+  static cloneDefaultForm(): fhir.Questionnaire {
+    return JSON.parse(JSON.stringify(Util._defaultForm));
+  }
+
+  /**
+   * Compare with default form with deep equal.
+   * @param q - Questionnaire to compare with default.
+   */
   static isDefaultForm(q: fhir.Questionnaire): boolean {
-    const defForm = Util.createDefaultForm();
-    return isEqual(defForm, q);
+    return isEqual(Util._defaultForm, q);
   }
 
   /**

@@ -195,8 +195,8 @@
 </ng-template>
 
 <ng-template #warnFormLoading let-modal>
-  <div class="modal-header btn-primary">
-    <h4 class="modal-title">Replace existing form?</h4>
+  <div role="dialog" aria-labelledby="warningDlgTitle" class="modal-header btn-primary">
+    <h4 id="warningDlgTitle" class="modal-title text-white">Replace existing form?</h4>
     <button type="button" class="close btn-primary text-white" aria-label="Close" (click)="modal.dismiss()">
       <span aria-hidden="true">&times;</span>
     </button>

@@ -309,7 +309,7 @@ export class BasePageComponent implements OnDestroy {
 
   /**
    * Call back to auto complete search.
-   * @param term - Search term
+   * @param term$ - Search term
    */
   acSearch = (term$: Observable<string>): Observable<AutoCompleteResult []> => {
     return term$.pipe(
@@ -319,7 +319,7 @@ export class BasePageComponent implements OnDestroy {
   }
 
   /**
-   * Get questionnaire by id
+   * Get questionnaire by id from FHIR server.
    * @param questionnaireId - Id of the questionnaire to fetch. If empty, return empty questionnaire.
    */
   getForm(questionnaireId: string) {
@@ -479,6 +479,11 @@ export class BasePageComponent implements OnDestroy {
     return this.appJsonPipe.transform(questionnaire);
   }
 
+  /**
+   * Show warning dialog when overwriting existing form.
+   * @param loadFn - Callback method after user clicks continue button.
+   * @param cancelFn - Callback method after user clicks cancel button.
+   */
   warnFormLoading(loadFn, cancelFn?) {
     if(Util.isDefaultForm(this.questionnaire)) {
       loadFn(true);

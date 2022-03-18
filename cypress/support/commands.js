@@ -230,6 +230,8 @@ Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
 
 
 /**
+ * Interact with FHIR server selection and do search server with <code>titleSearhTerm</code>
+ * and pick first result to load into the form builder.
  * Make sure to create mock response based on titleSearchTerm.
  */
 Cypress.Commands.add('fhirSearch', (titleSearchTerm) => {
@@ -245,11 +247,18 @@ Cypress.Commands.add('fhirSearch', (titleSearchTerm) => {
   cy.get('a.result-item').first().click();
 });
 
+/**
+ * Expect warning dialog and click continue.
+ */
 Cypress.Commands.add('handleWarning', () => {
   cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
   cy.contains('div.modal-footer button', 'Continue').click();
 });
 
+/**
+ * Read form from local storage and compare it with default form.
+ * Yields boolean
+ */
 Cypress.Commands.add('isDefault', () => {
   let defaultForm = {
     resourceType: 'Questionnaire',
@@ -264,22 +273,31 @@ Cypress.Commands.add('isDefault', () => {
   });
 });
 
+/**
+ * Read local storage to get the loaded form.
+ */
 Cypress.Commands.add('getCurrentForm', () => {
-  return cy.getLocalStorageItem('fhirQuestionnaire').then((itemStr) => {
-    console.log('getCurrentForm(): itemStr = ', itemStr);
-    const item = itemStr && itemStr.length > 0 ? JSON.parse(itemStr) : null;
-    return cy.wrap(item);
+  return cy.getLocalStorageItem('fhirQuestionnaire').then((formStr) => {
+    const form = formStr && formStr.length > 0 ? JSON.parse(formStr) : null;
+    return cy.wrap(form);
   }, (err) => {
     return err;
   });
 });
 
+/**
+ * Read a local storage item.
+ */
 Cypress.Commands.add('getLocalStorageItem', (itemName) => {
   return cy.window()
     .its('localStorage')
     .invoke('getItem', itemName);
 });
 
+/**
+ * Reset form builder.
+ * Using Close menu option to reset.
+ */
 Cypress.Commands.add('resetForm', () => {
   cy.contains('nav.navbar > div > button', 'Close').click();
   cy.get('input[type="radio"][value="scratch"]').click();

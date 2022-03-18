@@ -3,15 +3,15 @@
 This project follows [Semantic Versioning](http://semver.org/).
 
 ## [7.0.8]  2022-03-16
-### Bugfix
+### Fixed
 - Add warning dialog when replacing an existing form.
 
 ## [7.0.7]  2022-02-14
-### Bugfix
+### Fixed
 - Fix type display/group based on presence of child items.
 
 ## [7.0.6]  2022-02-10
-### Bugfix
+### Fixed
 - Fix missing answer coding in conditional display.
 
 ## [7.0.5]  2022-01-26
@@ -24,7 +24,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Update LForms down load script.
 
 ## [7.0.3]  2022-01-18
-### Bugfix
+### Fixed
 - Fix setting FHIR context for lforms preview.
 
 ## [7.0.0]  2021-12-30
