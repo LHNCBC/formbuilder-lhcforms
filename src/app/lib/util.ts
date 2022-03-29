@@ -33,6 +33,8 @@ export class Util {
     status: 'draft',
     item: []
   };
+
+
   // Capitalize the camel case strings.
   static capitalize(str): string {
     let ret = '';

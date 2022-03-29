@@ -365,9 +365,12 @@ export class BasePageComponent implements OnDestroy {
    * Close menu handler.
    */
   newStart() {
-    localStorage.clear();
-    this.setQuestionnaire(Util.createDefaultForm());
-    this.setStep('home');
+    this.warnFormLoading((load: boolean) => {
+      if(load) {
+        localStorage.clear();
+        this.setStep('home');
+      }
+    });
   }
 
   /**

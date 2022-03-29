@@ -230,7 +230,7 @@ Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
 
 
 /**
- * Interact with FHIR server selection and do search server with <code>titleSearhTerm</code>
+ * Interact with FHIR server selection and do search with <code>titleSearchTerm</code>
  * and pick first result to load into the form builder.
  * Make sure to create mock response based on titleSearchTerm.
  */
