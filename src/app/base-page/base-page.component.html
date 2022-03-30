@@ -75,7 +75,7 @@
     <div>
       <p class="lead">How do you want to create your form?</p>
       <ul class="list-unstyled ml-5" ngbRadioGroup [(ngModel)]="startOption" >
-        <li *ngIf="isAutoSaved()">
+        <li *ngIf="isAutoSaved() && !isDefaultForm()">
           <label ngbButtonLabel>
             <input ngbButton value="from_autosave" type="radio">
             Would you like to start from where you left off before?

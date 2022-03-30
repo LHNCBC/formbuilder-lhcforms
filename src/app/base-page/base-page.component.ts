@@ -74,7 +74,7 @@ export class BasePageComponent implements OnDestroy {
               ) {
     this.acResult = null;
     const isAutoSaved = this.formService.isAutoSaved();
-    if(isAutoSaved) {
+    if(isAutoSaved && !this.isDefaultForm()) {
       this.startOption = 'from_autosave';
     }
 
@@ -172,9 +172,10 @@ export class BasePageComponent implements OnDestroy {
    * Handle continue button.
    */
   onContinue() {
-    // TODO - Rethink the logic.
     if(this.startOption === 'from_autosave') {
-      this.formService.setGuidingStep(this.formService.autoLoad('state'));
+      let state = this.formService.autoLoad('state');
+      state = state === 'home' ? 'fl-editor' : state;
+      this.formService.setGuidingStep(state);
       this.setQuestionnaire(this.formService.autoLoadForm());
     }
     else if (this.startOption === 'scratch') {
@@ -365,12 +366,10 @@ export class BasePageComponent implements OnDestroy {
    * Close menu handler.
    */
   newStart() {
-    this.warnFormLoading((load: boolean) => {
-      if(load) {
-        localStorage.clear();
-        this.setStep('home');
-      }
-    });
+    this.setStep('home');
+    if(!this.isDefaultForm()) {
+      this.startOption = 'from_autosave';
+    }
   }
 
   /**
@@ -500,5 +499,16 @@ export class BasePageComponent implements OnDestroy {
         }
       });
     }
+  }
+
+  /**
+   * Compare if a stored form is equal to default form.
+   */
+  isDefaultForm(): boolean {
+    const storedQ = this.formService.autoLoadForm();
+    if(storedQ) {
+      storedQ.item = storedQ.item || [];
+    }
+    return Util.isDefaultForm(storedQ);
   }
 }
