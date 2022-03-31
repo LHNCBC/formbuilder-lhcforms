@@ -4,6 +4,7 @@
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import {fhir} from '../fhir';
+import {isEqual} from 'lodash';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -25,6 +26,14 @@ export class Util {
       }
     }]
   };
+
+  private static _defaultForm = {
+    resourceType: 'Questionnaire',
+    title: 'New Form',
+    status: 'draft',
+    item: []
+  };
+
 
   // Capitalize the camel case strings.
   static capitalize(str): string {
@@ -298,14 +307,23 @@ export class Util {
    * Create bare minimum form.
    */
   static createDefaultForm(): fhir.Questionnaire {
-    return {
-      resourceType: 'Questionnaire',
-      title: 'New Form',
-      status: 'draft',
-      item: []
-    }
+    return Util.cloneDefaultForm();
   }
 
+  /**
+   * Clone default form, mainly to create a new form.
+   */
+  static cloneDefaultForm(): fhir.Questionnaire {
+    return JSON.parse(JSON.stringify(Util._defaultForm));
+  }
+
+  /**
+   * Compare with default form with deep equal.
+   * @param q - Questionnaire to compare with default.
+   */
+  static isDefaultForm(q: fhir.Questionnaire): boolean {
+    return isEqual(Util._defaultForm, q);
+  }
 
   /**
    * Find the extension based on a given url from an array.

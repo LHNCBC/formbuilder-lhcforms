@@ -10,6 +10,8 @@
 //
 //
 import 'cypress-file-upload';
+import {isEqual} from 'lodash';
+import * as fhirServerMocks from "./mocks/fhir-server-mocks";
 // -- This is a parent command --
 // Cypress.Commands.add('login', (email, password) => { ... })
 //
@@ -80,8 +82,11 @@ Cypress.Commands.add('loincAccepted',() => {
  * Command to upload a file.
  * @param fileName - Name of the file to upload
  */
-Cypress.Commands.add('uploadFile',(fileName) => {
+Cypress.Commands.add('uploadFile',(fileName, handleWarning) => {
   cy.get('input[type="file"]').attachFile(fileName, {force: true});
+  if(handleWarning) {
+    cy.handleWarning();
+  }
 });
 
 /**
@@ -221,4 +226,80 @@ Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
     const classList = Array.from($eList[0].classList);
     return classList.includes('node-content-wrapper-focused');
   });
+});
+
+
+/**
+ * Interact with FHIR server selection and do search with <code>titleSearchTerm</code>
+ * and pick first result to load into the form builder.
+ * Make sure to create mock response based on titleSearchTerm.
+ */
+Cypress.Commands.add('fhirSearch', (titleSearchTerm) => {
+  fhirServerMocks.searchFHIRServer(titleSearchTerm,
+    `fhir-server-mock-response-${titleSearchTerm}.json`);
+  cy.get('input[type="radio"][name="fhirServer"]').first().click();
+  cy.contains('div.modal-footer button', 'Continue').click();
+  cy.get('input.form-control[placeholder="Search any text field"]').type(titleSearchTerm);
+  cy.get('#searchField1').select('Form title only');
+  cy.get('#button-addon2').click();
+  cy.wait('@searchFHIRServer');
+  cy.get('div.list-group').should('be.visible');
+  cy.get('a.result-item').first().click();
+});
+
+/**
+ * Expect warning dialog and click continue.
+ */
+Cypress.Commands.add('handleWarning', () => {
+  cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
+  cy.contains('div.modal-footer button', 'Continue').click();
+});
+
+/**
+ * Read form from local storage and compare it with default form.
+ * Yields boolean
+ */
+Cypress.Commands.add('isDefault', () => {
+  let defaultForm = {
+    resourceType: 'Questionnaire',
+    title: 'New Form',
+    status: 'draft',
+    item: []
+  };
+  let ret = false;
+  return cy.getCurrentForm().then((form) => {
+    ret = isEqual(form, defaultForm);
+    return cy.wrap(ret);
+  });
+});
+
+/**
+ * Read local storage to get the loaded form.
+ */
+Cypress.Commands.add('getCurrentForm', () => {
+  return cy.getLocalStorageItem('fhirQuestionnaire').then((formStr) => {
+    const form = formStr && formStr.length > 0 ? JSON.parse(formStr) : null;
+    return cy.wrap(form);
+  }, (err) => {
+    return err;
+  });
+});
+
+/**
+ * Read a local storage item.
+ */
+Cypress.Commands.add('getLocalStorageItem', (itemName) => {
+  return cy.window()
+    .its('localStorage')
+    .invoke('getItem', itemName);
+});
+
+/**
+ * Reset form builder.
+ * Using Close menu option to reset.
+ */
+Cypress.Commands.add('resetForm', () => {
+  cy.contains('nav.navbar > div > button', 'Close').click();
+  cy.get('input[type="radio"][value="scratch"]').click();
+  cy.get('button').contains('Continue').click();
 });

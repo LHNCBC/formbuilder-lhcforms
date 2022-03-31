@@ -57,6 +57,7 @@ export class BasePageComponent implements OnDestroy {
   @ViewChild('lhcFormPreview') previewEl: ElementRef;
   @ViewChild('fileInput') fileInputEl: ElementRef;
   @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
+  @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
   selectedPreviewTab = 0;
   acceptTermsOfUse = false;
 
@@ -71,8 +72,9 @@ export class BasePageComponent implements OnDestroy {
               private cdr: ChangeDetectorRef,
               private matDlg: MatDialog
               ) {
+    this.acResult = null;
     const isAutoSaved = this.formService.isAutoSaved();
-    if(isAutoSaved) {
+    if(isAutoSaved && !this.isDefaultForm()) {
       this.startOption = 'from_autosave';
     }
 
@@ -170,9 +172,10 @@ export class BasePageComponent implements OnDestroy {
    * Handle continue button.
    */
   onContinue() {
-    // TODO - Rethink the logic.
     if(this.startOption === 'from_autosave') {
-      this.formService.setGuidingStep(this.formService.autoLoad('state'));
+      let state = this.formService.autoLoad('state');
+      state = state === 'home' ? 'fl-editor' : state;
+      this.formService.setGuidingStep(state);
       this.setQuestionnaire(this.formService.autoLoadForm());
     }
     else if (this.startOption === 'scratch') {
@@ -224,24 +227,35 @@ export class BasePageComponent implements OnDestroy {
    * @param event - Object having selected file from the browser file dialog.
    */
   onFileSelected(event) {
-    const fileReader = new FileReader();
-    const selectedFile = event.target.files[0];
-    event.target.value = null; //
-    fileReader.onload = () => {
-      try {
-        this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
-        setTimeout(() => {
-          this.setStep('fl-editor');
-        });
+    const loadFromFile = () => {
+      const fileReader = new FileReader();
+      const selectedFile = event.target.files[0];
+      event.target.value = null; //
+      fileReader.onload = () => {
+        try {
+          this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
+          setTimeout(() => {
+            this.setStep('fl-editor');
+          });
+        }
+        catch (e) {
+          this.showError(e);
+        }
       }
-      catch (e) {
-        this.showError(e);
+      fileReader.onerror = (error) => {
+        this.showError('Error occurred reading file: ${selectedFile.name}');
       }
+      fileReader.readAsText(selectedFile, 'UTF-8');
+    };
+
+    if(this.questionnaire) {
+      this.warnFormLoading((load) => {
+        loadFromFile();
+      }, );
     }
-    fileReader.onerror = (error) => {
-      this.showError('Error occurred reading file: ${selectedFile.name}');
+    else {
+      loadFromFile();
     }
-    fileReader.readAsText(selectedFile, 'UTF-8');
   }
 
   showError(error: any) {
@@ -296,7 +310,7 @@ export class BasePageComponent implements OnDestroy {
 
   /**
    * Call back to auto complete search.
-   * @param term - Search term
+   * @param term$ - Search term
    */
   acSearch = (term$: Observable<string>): Observable<AutoCompleteResult []> => {
     return term$.pipe(
@@ -306,17 +320,33 @@ export class BasePageComponent implements OnDestroy {
   }
 
   /**
-   * Get questionnaire by id
+   * Get questionnaire by id from FHIR server.
    * @param questionnaireId - Id of the questionnaire to fetch. If empty, return empty questionnaire.
    */
   getForm(questionnaireId: string) {
-    if (!questionnaireId) {
-      this.setQuestionnaire(Util.createDefaultForm());
-    } else {
-      this.dataSrv.getFormData(questionnaireId).subscribe((data) => {
-        this.setQuestionnaire(data);
+    const func = () => {
+      if (!questionnaireId) {
+        this.setQuestionnaire(Util.createDefaultForm());
+      } else {
+        this.dataSrv.getFormData(questionnaireId).subscribe((data) => {
+          this.setQuestionnaire(data);
+          this.acResult = null;
+        });
+      }
+    };
+
+    if(this.questionnaire) {
+      this.warnFormLoading((load) => {
+        if(load) {
+          func();
+        }
+        this.acResult = null;
+      }, () => {
         this.acResult = null;
       });
+    }
+    else {
+      func();
     }
   }
 
@@ -336,9 +366,10 @@ export class BasePageComponent implements OnDestroy {
    * Close menu handler.
    */
   newStart() {
-    localStorage.clear();
-    this.setQuestionnaire(Util.createDefaultForm());
     this.setStep('home');
+    if(!this.isDefaultForm()) {
+      this.startOption = 'from_autosave';
+    }
   }
 
   /**
@@ -349,8 +380,12 @@ export class BasePageComponent implements OnDestroy {
       if(result) { // Server picked, invoke search dialog.
         this.modalService.open(FhirSearchDlgComponent, {size: 'lg', scrollable: true}).result.then((selected) => {
           if(selected !== false) { // Questionnaire picked, get the item from the server.
-            this.fhirService.read(selected).subscribe((resp)=>{
-              this.setQuestionnaire(resp);
+            this.warnFormLoading((load: boolean) => {
+              if(load) {
+                this.fhirService.read(selected).subscribe((resp)=>{
+                  this.setQuestionnaire(resp);
+                });
+              }
             });
           }
         });
@@ -446,4 +481,34 @@ export class BasePageComponent implements OnDestroy {
     return this.appJsonPipe.transform(questionnaire);
   }
 
+  /**
+   * Show warning dialog when overwriting existing form.
+   * @param loadFn - Callback method after user clicks continue button.
+   * @param cancelFn - Callback method after user clicks cancel button.
+   */
+  warnFormLoading(loadFn, cancelFn?) {
+    if(Util.isDefaultForm(this.questionnaire)) {
+      loadFn(true);
+    }
+    else {
+      this.modalService.open(this.warnFormLoadingDlg, {size: 'lg', scrollable: true}).result.then((result) => {
+        loadFn(result);
+      }, (reason) => {
+        if(cancelFn) {
+          cancelFn(reason);
+        }
+      });
+    }
+  }
+
+  /**
+   * Compare if a stored form is equal to default form.
+   */
+  isDefaultForm(): boolean {
+    const storedQ = this.formService.autoLoadForm();
+    if(storedQ) {
+      storedQ.item = storedQ.item || [];
+    }
+    return Util.isDefaultForm(storedQ);
+  }
 }
