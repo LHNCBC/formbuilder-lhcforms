@@ -27,7 +27,7 @@ describe('Home page', () => {
     cy.get('.lead').first().should('have.text', 'How do you want to create your form?')
   });
 
-  context('Home page import options', () => {
+  describe('Home page import options', () => {
     beforeEach(() => {
       cy.loadHomePage();
       cy.get('input[type="radio"][value="existing"]').click();
@@ -68,7 +68,7 @@ describe('Home page', () => {
     });
   });
 
-  context('Form level fields', () => {
+  describe('Form level fields', () => {
     before(() => {
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
@@ -147,7 +147,7 @@ describe('Home page', () => {
     });
   });
 
-  context('User specified FHIR server dialog', () => {
+  describe('User specified FHIR server dialog', () => {
     before(() => {
       cy.loadHomePage();
       cy.contains('button', 'Continue').click();
@@ -202,7 +202,7 @@ describe('Home page', () => {
 
   });
 
-  context('Warning dialog when replacing current form', () => {
+  describe('Warning dialog when replacing current form', () => {
     before(() => {
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
@@ -226,7 +226,7 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Decimal type form');
     });
 
-    it('should display warning dialog when replacing from FHIR server', () => {
+    it('should display warning dialog when replacing form from LOINC', () => {
       cy.get('#title').should('have.value', 'Answer options form');
 
       cy.contains('nav.navbar button.dropdown-toggle', 'Import ').click();
@@ -247,7 +247,7 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Vital signs with method details panel');
     });
 
-    it('should display warning dialog when replacing from FHIR server', () => {
+    it('should display warning dialog when replacing form from FHIR server', () => {
       const titleSearchTerm = 'vital';
       cy.get('#title').should('have.value', 'Answer options form');
       cy.contains('button', 'Import').click();
