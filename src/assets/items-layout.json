@@ -33,6 +33,11 @@
       },
       {
         "showFields": [
+          { "field": "__$observationLinkPeriod", "col": 12}
+        ]
+      },
+      {
+        "showFields": [
           { "field": "__$totalScore", "col": 12}
         ]
       }

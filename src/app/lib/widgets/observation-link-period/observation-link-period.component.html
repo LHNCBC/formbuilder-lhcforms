@@ -1,0 +1,46 @@
+<div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+  <lfb-label *ngIf="!nolabel"
+             [for]="elementId"
+             [title]="schema.title"
+             [helpMessage]="schema.description"
+             [ngClass]="labelWidthClass+' pl-0 pr-1'"
+  ></lfb-label>
+
+  <div class="{{controlWidthClass}} p-0 {{adjustVAlignClass}}">
+
+    <div ngbRadioGroup
+         [attr.name]="name"
+         class="btn-group form-check-inline btn-group-sm btn-group-toggle" [ngModel]="showOlp" (ngModelChange)="onBooleanChange($event)">
+      <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
+        <label ngbButtonLabel class="btn-outline-success m-auto" [attr.id]="name+'_'+option">
+          <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
+          {{option}}
+        </label>
+      </ng-container>
+    </div>
+
+    <div *ngIf="showOlp">
+      <div *ngIf="isCodePresent() else warning" class="row mt-1 ml-auto mr-auto">
+        <div class="input-group input-group-sm">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Time window</span>
+          </div>
+          <input autocomplete="off" type="number" [ngModel]="value" (change)="onValueChange($event)" [attr.id]="elementId" aria-label="Time window" placeholder="" class="form-control" />
+          <div class="input-group-append">
+            <select [ngModel]="unitIndex" (ngModelChange)="onUnitChange($event)"
+                    class="form-control lfb-select-append" [attr.id]="'select_'+elementId">
+              <ng-container>
+                <option *ngFor="let option of unitOptions; index as i"
+                        [ngValue]="i">{{option.unit}}</option>
+              </ng-container>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #warning>
+      <p class="text-info mt-1">Linking to FHIR Observation requires a code assigned to this item. Please enter a code before entering the time window.</p>
+    </ng-template>
+  </div>
+</div>

@@ -2,6 +2,8 @@
 
 import {Util} from '../../../src/app/lib/util';
 
+const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
+const ucumUrl = 'http://unitsofmeasure.org';
 describe('Home page', () => {
   before(() => {
     // Cypress starts out with a blank slate for each test
@@ -13,12 +15,7 @@ describe('Home page', () => {
     cy.get('button').contains('Continue').click();
   })
 
-  beforeEach(() => {
-    cy.get('#Yes_1').find('[type="radio"]').as('codeYes');
-    cy.get('#No_1').find('[type="radio"]').as('codeNo');
-  });
-
-  context('Item level fields', () => {
+  describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
       valueCodeableConcept: {
@@ -43,15 +40,22 @@ describe('Home page', () => {
       cy.contains('.node-content-wrapper', 'Item 0').as('item0').click();
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
+      cy.contains('div', 'Use question code?')
+        .find('[id^="booleanControlled_Yes"]').as('codeYes');
+      cy.contains('div', 'Use question code?')
+        .find('[id^="booleanControlled_No"]').as('codeNo');
+      cy.get('#__\\$observationLinkPeriod_No').as('olpNo');
+      cy.get('#__\\$observationLinkPeriod_Yes').as('olpYes');
+
       cy.wait(1000);
     });
 
     it('should display item editor page', () => {
       cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
-      cy.get('@codeYes').check({force: true});
+      cy.get('@codeYes').click();
       cy.get('#code\\.0\\.code').as('code');
       cy.get('@code').should('be.visible');
-      cy.get('@codeNo').check({force: true});
+      cy.get('@codeNo').click();
       cy.get('@code').should('not.exist');
 
       cy.contains('Add new item').scrollIntoView().click();
@@ -202,7 +206,7 @@ describe('Home page', () => {
     });
 
     it('should add restrictions', () => {
-      cy.get('lfb-restrictions #Yes_1').click();
+      cy.get('lfb-restrictions [id^="booleanControlled_Yes"]').click();
 
       cy.get('#__\\$restrictions\\.0\\.operator').select('Maximum length');
       cy.get('#__\\$restrictions\\.0\\.value').type('10');
@@ -330,9 +334,79 @@ describe('Home page', () => {
         expect(qJson.item[1].item[0].type).to.deep.equal(fixtureJson.item[1].item[0].type);
       });
     });
+
+    it('should create observation link period', () => {
+      // Yes/no option
+      cy.get('@olpNo').should('be.visible').should('have.class', 'active');
+      cy.get('@olpYes').should('be.visible').should('not.have.class', 'active');
+      cy.get('@olpYes').click();
+      // Code missing message.
+      cy.get('lfb-observation-link-period > div > div > div > p').as('olpMsg')
+        .should('contain.text', 'Linking to FHIR Observation');
+      cy.get('[id^="observationLinkPeriod"]').should('not.exist');
+      cy.get('@codeYes').click();
+      cy.get('#code\\.0\\.code').type('C1');
+      cy.get('@olpMsg').should('not.exist');
+      cy.get('[id^="observationLinkPeriod"]').as('timeWindow')
+        .should('exist').should('be.visible');
+      // Time window input.
+      cy.get('@timeWindow').type('2');
+      // Unit selection.
+      cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'years');
+      cy.get('[id^="select_observationLinkPeriod"]').select('months');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].code[0].code).to.equal('C1');
+        expect(qJson.item[0].extension[0]).to.deep.equal({
+            url: olpExtUrl,
+            valueDuration: {
+              value: 2,
+              unit: 'months',
+              system: ucumUrl,
+              code: 'mo'
+            }
+          });
+      });
+    });
+
+    it('should import item with observation link period extension', () => {
+      // Display of time window when item with extension is imported.
+      const sampleFile = 'olp-sample.json';
+      let fixtureJson, originalExtension;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {
+        fixtureJson = json;
+        originalExtension = JSON.parse(JSON.stringify(json.item[0].extension));
+      });
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Form with observation link period');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('@codeYes').should('have.class', 'active');
+      cy.get('#code\\.0\\.code').should('have.value', 'Code1');
+      cy.get('[id^="observationLinkPeriod"]').as('timeWindow')
+        .should('exist')
+        .should('be.visible')
+        .should('have.value', '200');
+      // Unit selection.
+      cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'days');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson).to.deep.equal(fixtureJson);
+      });
+
+      // Remove
+      cy.get('@timeWindow').clear();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension.length).to.equal(2); // Other than olp extension.
+        const extExists = qJson.item[0].extension.some((ext) => {
+          return ext.url === olpExtUrl;
+        });
+        expect(extExists).to.equal(false);
+      });
+
+    });
   });
 
-  context('Test descendant items and display/group type changes', () => {
+  describe('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;

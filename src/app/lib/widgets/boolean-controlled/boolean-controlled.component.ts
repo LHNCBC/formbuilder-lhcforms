@@ -18,7 +18,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
              (ngModelChange)="boolChange.emit($event)"
              [ngModelOptions]="{standalone: true}">
           <ng-container *ngFor="let option of ['No', 'Yes']">
-            <label ngbButtonLabel class="btn-outline-success" [attr.id]="option+'_1'">
+            <label ngbButtonLabel class="btn-outline-success" [attr.id]="'booleanControlled_'+option+_id">
               <input ngbButton
                      [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
               {{option}}
@@ -43,6 +43,8 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
   `]
 })
 export class BooleanControlledComponent  {
+  static ID = 0;
+  _id = BooleanControlledComponent.ID++;
   // Properties for layout, typically to be read from layout schema file.
   @Input()
   bool: boolean;

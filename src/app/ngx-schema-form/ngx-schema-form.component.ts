@@ -23,13 +23,7 @@ import {SfFormWrapperComponent} from '../sf-form-wrapper/sf-form-wrapper.compone
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-     <ng-container #viewContainer></ng-container>
-      <!--
-      <sf-form #itemForm *ngIf="model" [schema]="mySchema"
-               [(model)]="model"
-               [bindings]="myFieldBindings"
-      ></sf-form>
-      -->
+      <ng-container #viewContainer></ng-container>
     </div>
   `,
   styles: [`
@@ -142,14 +136,6 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
     if(changes.model) {
       this.resetForm(changes.model.currentValue);
     }
-    /*
-    if(changes.model.currentValue !== changes.model.previousValue) {
-      if(this.itemForm) {
-        this.itemForm.reset();
-        this.itemForm.writeValue(changes.model.currentValue);
-      }
-    }
-    */
   }
 
 
@@ -162,10 +148,6 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
     this.modelService.currentItem = value;
   }
 
-  updateModel(model: any) {
-    this.modelChange.emit(model);
-    this.modelService.currentItem = model;
-  }
 
   /**
    * Reset ngx- form with new model

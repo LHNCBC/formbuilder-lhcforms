@@ -80,6 +80,7 @@ import { LoincNoticeComponent } from './lib/widgets/loinc-notice/loinc-notice.co
 import { StringWithCssComponent } from './lib/widgets/string-with-css/string-with-css.component';
 import { RestrictionsComponent } from './lib/widgets/restrictions/restrictions.component';
 import { RestrictionsOperatorComponent } from './lib/widgets/restrictions-operator/restrictions-operator.component';
+import { ObservationLinkPeriodComponent } from './lib/widgets/observation-link-period/observation-link-period.component';
 
 @NgModule({
   declarations: [
@@ -134,7 +135,8 @@ import { RestrictionsOperatorComponent } from './lib/widgets/restrictions-operat
     LoincNoticeComponent,
     StringWithCssComponent,
     RestrictionsComponent,
-    RestrictionsOperatorComponent
+    RestrictionsOperatorComponent,
+    ObservationLinkPeriodComponent,
   ],
   imports: [
     AppRoutingModule,
