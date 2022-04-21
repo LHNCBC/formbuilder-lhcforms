@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.11]  2022-04-21
+### Changed
+- Load LOINC forms from CTSS.
+
 ## [7.0.10]  2022-04-19
 ### Added
 - Add observation link period field.

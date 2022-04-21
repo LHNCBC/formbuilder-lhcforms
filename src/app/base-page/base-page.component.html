@@ -33,7 +33,7 @@
                      [(ngModel)]="acResult"
                      [ngModelOptions]="{standalone: true}"
                      [ngbTypeahead]="acSearch"
-                     (selectItem)="getForm($event.item.id)"
+                     (selectItem)="getLoincForm($event.item.id)"
                      [resultFormatter]="formatter"
                      [inputFormatter]="formatter"
                      [editable]='false' />
