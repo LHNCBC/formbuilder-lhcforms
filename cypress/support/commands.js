@@ -111,7 +111,7 @@ Cypress.Commands.add('selectDataType', (type) => {
 /**
  * Select a node by its text in the sidebar.
  */
-Cypress.Commands.add('selectTreeNode', (text) => {
+Cypress.Commands.add('getTreeNode', (text) => {
   return cy.contains('tree-root tree-viewport tree-node-collection tree-node span', text, {timeout: 10000}).should('be.visible');
 });
 

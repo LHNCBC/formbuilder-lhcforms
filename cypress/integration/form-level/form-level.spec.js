@@ -226,7 +226,7 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Decimal type form');
     });
 
-    it('should display warning dialog when replacing from FHIR server', () => {
+    it('should display warning dialog when replacing form from LOINC', () => {
       cy.get('#title').should('have.value', 'Answer options form');
 
       cy.contains('nav.navbar button.dropdown-toggle', 'Import ').click();
@@ -247,7 +247,7 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Vital signs with method details panel');
     });
 
-    it('should display warning dialog when replacing from FHIR server', () => {
+    it('should display warning dialog when replacing form from FHIR server', () => {
       const titleSearchTerm = 'vital';
       cy.get('#title').should('have.value', 'Answer options form');
       cy.contains('button', 'Import').click();

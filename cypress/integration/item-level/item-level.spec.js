@@ -265,12 +265,12 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
 
       cy.contains('button', 'Edit questions').click();
-      cy.selectTreeNode('Family member health history').dblclick();
-      cy.selectTreeNode('Living?').dblclick();
+      cy.getTreeNode('Family member health history').dblclick();
+      cy.getTreeNode('Living?').dblclick();
       cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
       cy.get('#answerOption\\.0\\.valueCoding\\.display').should('have.value', 'Yes');
       cy.get('#answerOption\\.0\\.valueCoding\\.code').should('have.value', 'LA33-6');
-      cy.selectTreeNode('Date of Birth').dblclick();
+      cy.getTreeNode('Date of Birth').dblclick();
       cy.get('#enableWhen\\.0\\.question').should('have.value', 'Living?');
       cy.get('#enableWhen\\.0\\.operator')
         .find('option:selected').should('have.text','=');
@@ -423,8 +423,8 @@ describe('Home page', () => {
 
     it('should preserve change of datatype display', () => {
       cy.contains('button', 'Edit questions').click();
-      cy.selectTreeNode('My health history').dblclick();
-      cy.selectTreeNode('Name').click();
+      cy.getTreeNode('My health history').dblclick();
+      cy.getTreeNode('Name').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].text).to.equal('Name');
         expect(qJson.item[0].item[0].type).to.equal('string');
@@ -432,8 +432,8 @@ describe('Home page', () => {
       cy.get('#text').clear().type('xxx');
       cy.get('#type').select('header');
 
-      cy.selectTreeNode('My health history').click();
-      cy.selectTreeNode('xxx').click();
+      cy.getTreeNode('My health history').click();
+      cy.getTreeNode('xxx').click();
       cy.get('#text').should('have.value', 'xxx');
       cy.get('#type').should('have.value', '12: group');
 
