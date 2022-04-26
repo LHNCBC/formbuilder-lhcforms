@@ -320,7 +320,7 @@ export class BasePageComponent implements OnDestroy {
   }
 
   /**
-   * Get questionnaire by id from FHIR server.
+   * Get questionnaire by id from CTSS.
    * @param questionnaireId - Id of the questionnaire to fetch. If empty, return empty questionnaire.
    */
   getLoincForm(questionnaireId: string) {
