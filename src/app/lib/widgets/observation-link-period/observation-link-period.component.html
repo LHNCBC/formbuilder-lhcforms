@@ -13,7 +13,7 @@
          class="btn-group form-check-inline btn-group-sm btn-group-toggle" [ngModel]="showOlp" (ngModelChange)="onBooleanChange($event)">
       <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
         <label ngbButtonLabel class="btn-outline-success m-auto" [attr.id]="name+'_'+option">
-          <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
+          <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null"  [attr.aria-controls]="'timeWindowGroup_'+elementId" >
           {{option}}
         </label>
       </ng-container>
@@ -21,13 +21,13 @@
 
     <div *ngIf="showOlp">
       <div *ngIf="isCodePresent() else warning" class="row mt-1 ml-auto mr-auto">
-        <div class="input-group input-group-sm">
+        <div class="input-group input-group-sm" [attr.id]="'timeWindowGroup_'+elementId" role="region" aria-live="polite">
           <div class="input-group-prepend">
-            <span class="input-group-text">Time window</span>
+            <span [attr.id]="elementId + 'timeWindow'" class="input-group-text">Time window</span>
           </div>
-          <input autocomplete="off" type="number" [ngModel]="value" (change)="onValueChange($event)" [attr.id]="elementId" aria-label="Time window" placeholder="" class="form-control" />
+          <input autocomplete="off" type="number" [ngModel]="value" (change)="onValueChange($event)" [attr.id]="elementId" [attr.aria-labelledby]="elementId + 'timeWindow'" placeholder="" class="form-control" />
           <div class="input-group-append">
-            <select [ngModel]="unitIndex" (ngModelChange)="onUnitChange($event)"
+            <select [ngModel]="unitIndex" (ngModelChange)="onUnitChange($event)" aria-label="Time window units"
                     class="form-control lfb-select-append" [attr.id]="'select_'+elementId">
               <ng-container>
                 <option *ngFor="let option of unitOptions; index as i"
@@ -40,7 +40,7 @@
     </div>
 
     <ng-template #warning>
-      <p class="text-info mt-1">Linking to FHIR Observation requires a code assigned to this item. Please enter a code before entering the time window.</p>
+      <p class="alert alert-warning mt-1" role="alert">Linking to FHIR Observation requires a code assigned to this item. Please enter a code before entering the time window.</p>
     </ng-template>
   </div>
 </div>

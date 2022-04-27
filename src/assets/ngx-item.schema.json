@@ -1697,7 +1697,7 @@
       }
     },
     "__$observationLinkPeriod": {
-      "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
+      "description": "Time window to link to pre-populate FHIR Observation. Code field is required for this to work. Make sure to enter a code first.",
       "title": "Add link to pre-populate FHIR Observation?",
       "pattern": "^[ \\r\\n\\t\\S]+$",
       "type": "string",
