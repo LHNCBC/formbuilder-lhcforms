@@ -320,15 +320,15 @@ export class BasePageComponent implements OnDestroy {
   }
 
   /**
-   * Get questionnaire by id from CTSS.
-   * @param questionnaireId - Id of the questionnaire to fetch. If empty, return empty questionnaire.
+   * Get LOINC form in questionnaire format using LOINC number.
+   * @param LOINCNumber - LOINC number of the form to fetch. If empty, return empty questionnaire.
    */
-  getLoincForm(questionnaireId: string) {
+  getLoincForm(LOINCNumber: string) {
     const func = () => {
-      if (!questionnaireId) {
+      if (!LOINCNumber) {
         this.setQuestionnaire(Util.createDefaultForm());
       } else {
-        this.dataSrv.getLoincFormData(questionnaireId).subscribe((data) => {
+        this.dataSrv.getLoincFormData(LOINCNumber).subscribe((data) => {
           this.setQuestionnaire(data);
           this.acResult = null;
         });
