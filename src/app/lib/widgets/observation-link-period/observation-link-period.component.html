@@ -23,9 +23,9 @@
       <div *ngIf="isCodePresent() else warning" class="row mt-1 ml-auto mr-auto">
         <div class="input-group input-group-sm" [attr.id]="'timeWindowGroup_'+elementId" role="region" aria-live="polite">
           <div class="input-group-prepend">
-            <span [attr.id]="elementId + 'timeWindow'" class="input-group-text">Time window</span>
+            <span [attr.id]="'timeWindow_' + elementId" class="input-group-text">Time window</span>
           </div>
-          <input autocomplete="off" type="number" [ngModel]="value" (change)="onValueChange($event)" [attr.id]="elementId" [attr.aria-labelledby]="elementId + 'timeWindow'" placeholder="" class="form-control" />
+          <input autocomplete="off" type="number" [ngModel]="value" (change)="onValueChange($event)" [attr.id]="elementId" [attr.aria-labelledby]="'timeWindow_' + elementId" placeholder="" class="form-control" />
           <div class="input-group-append">
             <select [ngModel]="unitIndex" (ngModelChange)="onUnitChange($event)" aria-label="Time window units"
                     class="form-control lfb-select-append" [attr.id]="'select_'+elementId">
