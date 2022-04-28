@@ -1697,7 +1697,7 @@
       }
     },
     "__$observationLinkPeriod": {
-      "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
+      "description": "Sets a time window within which to look for an Observation with a matching code, for pre-population. Requires that a code be assigned to this item.",
       "title": "Add link to pre-populate FHIR Observation?",
       "pattern": "^[ \\r\\n\\t\\S]+$",
       "type": "string",
