@@ -22,7 +22,7 @@ export class ExtensionsComponent extends LfbArrayWidgetComponent implements OnIn
     super.ngOnInit();
     this.extensionsProp = this.formProperty.searchProperty('extension') as ArrayProperty;
     /* this.extensionsProp.valueChanges.subscribe((val) => {}); */
-    this._extMap = this.extensionsProp.value.reduce((acc: Map<uri, any>, ext: fhir.Extension, index: number) => {
+    this._extMap = this.extensionsProp.value.reduce((acc: Map<fhir.uri, any>, ext: fhir.Extension, index: number) => {
       let e: fhir.Extension [] = acc.get(ext.url);
       if(!e) {
         e = [];
@@ -37,9 +37,9 @@ export class ExtensionsComponent extends LfbArrayWidgetComponent implements OnIn
   /**
    * Remove extension from the array, matching url, code and system. Code and system are optional
    * and should be used to match with increased specificity.
-   * @param url
-   * @param code
-   * @param system
+   * @param url - Extension url
+   * @param code - Code in valueCoding of the extension
+   * @param system - System url of the code in valueCoding of the extension
    */
   removeExt(url: fhir.uri, code?: string, system?: fhir.uri) {
     const extension: FormProperty = (this.extensionsProp.properties as FormProperty[]).find((ext) => {
@@ -53,7 +53,7 @@ export class ExtensionsComponent extends LfbArrayWidgetComponent implements OnIn
 
   /**
    * Remove extensions by extension url.
-   * @param extUrl
+   * @param extUrl - Url to identify the extension.
    */
   removeExtensionsByUrl(extUrl: string) {
     const otherExts: any [] = (this.extensionsProp.properties as FormProperty[]).filter((ext) => {
@@ -68,7 +68,7 @@ export class ExtensionsComponent extends LfbArrayWidgetComponent implements OnIn
 
   /**
    * Remove extension comparing the fields of given extension.
-   * @param ext
+   * @param ext - Extension object to remove.
    */
   removeExtension(ext: fhir.Extension): void {
 

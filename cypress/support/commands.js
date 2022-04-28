@@ -9,7 +9,6 @@
 // ***********************************************
 //
 //
-import 'cypress-file-upload';
 import {isEqual} from 'lodash';
 import * as fhirServerMocks from "./mocks/fhir-server-mocks";
 // -- This is a parent command --
@@ -83,7 +82,8 @@ Cypress.Commands.add('loincAccepted',() => {
  * @param fileName - Name of the file to upload
  */
 Cypress.Commands.add('uploadFile',(fileName, handleWarning) => {
-  cy.get('input[type="file"]').attachFile(fileName, {force: true});
+  cy.fixture(fileName, { encoding: null }).as('myFixture');
+  cy.get('input[type="file"]').selectFile('@myFixture', {force: true});
   if(handleWarning) {
     cy.handleWarning();
   }

@@ -1696,6 +1696,21 @@
         ]
       }
     },
+    "__$observationLinkPeriod": {
+      "description": "Sets a time window within which to look for an Observation with a matching code, for pre-population. Requires that a code be assigned to this item.",
+      "title": "Add link to pre-populate FHIR Observation?",
+      "pattern": "^[ \\r\\n\\t\\S]+$",
+      "type": "string",
+      "widget": {
+        "id": "observation-link-period",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2 pr-1",
+        "controlWidthClass": "col-sm-10"
+      },
+      "visibleIf": {
+        "type": ["$EXP$ target.value != 'display'"]
+      }
+    },
     "__$units": {
       "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
       "title": "Units",
@@ -5030,6 +5045,10 @@
     {
       "fields": ["enableBehavior"],
       "showFields": [{"field": "enableBehavior", "col": 3}]
+    },
+    {
+      "fields": ["__$observationLinkPeriod"],
+      "showFields": [{"field": "__$observationLinkPeriod", "col": 10}]
     },
     {
       "fields": ["id", "extension", "modifierExtension", "definition"]

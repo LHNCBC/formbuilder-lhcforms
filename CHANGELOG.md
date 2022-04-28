@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.10]  2022-04-19
+### Added
+- Add observation link period field.
+
 ## [7.0.9]  2022-04-06
 ### Fixed
 - Fix test descriptions.

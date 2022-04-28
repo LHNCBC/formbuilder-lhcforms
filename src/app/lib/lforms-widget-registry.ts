@@ -31,6 +31,7 @@ import {TypeComponent} from './widgets/type/type.component';
 import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.component';
 import {RestrictionsComponent} from './widgets/restrictions/restrictions.component';
 import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/restrictions-operator.component';
+import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
 
 
 @Injectable()
@@ -64,5 +65,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('string-with-css', StringWithCssComponent);
     this.register('restrictions', RestrictionsComponent);
     this.register('restrictions-operator', RestrictionsOperatorComponent);
+    this.register('observation-link-period', ObservationLinkPeriodComponent);
   }
 }
