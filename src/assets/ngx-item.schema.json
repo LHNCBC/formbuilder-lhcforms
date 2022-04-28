@@ -1697,7 +1697,7 @@
       }
     },
     "__$observationLinkPeriod": {
-      "description": "Time window to link to pre-populate FHIR Observation. Code field is required for this to work. Make sure to enter a code first.",
+      "description": "Sets a time window within which to look for an Observation with a matching code, for pre-population. Requires that a code be assigned to this item.",
       "title": "Add link to pre-populate FHIR Observation?",
       "pattern": "^[ \\r\\n\\t\\S]+$",
       "type": "string",
