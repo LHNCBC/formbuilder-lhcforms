@@ -99,6 +99,5 @@ export class AutoCompleteComponent implements OnInit {
    */
   _search(value): Observable<AutoCompleteResult []> {
     return this.searchCallback(value);
-    // return this.lformsService.searchForms(value);
   }
 }

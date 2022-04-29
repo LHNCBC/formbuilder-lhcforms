@@ -195,7 +195,7 @@ export class BasePageComponent implements OnDestroy {
     }
     else if (this.importOption === 'loinc') {
       this.modalService.open(this.loincSearchDlg).result.then((qId)=>{
-        this.dataSrv.getFormData(qId).subscribe((data) => {
+        this.dataSrv.getLoincFormData(qId).subscribe((data) => {
           this.setQuestionnaire(data);
           this.setStep('fl-editor');
         });
@@ -316,19 +316,19 @@ export class BasePageComponent implements OnDestroy {
     return term$.pipe(
       debounceTime(200),
       distinctUntilChanged(),
-      switchMap((term) => term.length < 2 ? [] : this.dataSrv.searchForms(term)));
+      switchMap((term) => term.length < 2 ? [] : this.dataSrv.searchLoincForms(term)));
   }
 
   /**
-   * Get questionnaire by id from FHIR server.
-   * @param questionnaireId - Id of the questionnaire to fetch. If empty, return empty questionnaire.
+   * Get LOINC form in questionnaire format using LOINC number.
+   * @param LOINCNumber - LOINC number of the form to fetch. If empty, return empty questionnaire.
    */
-  getForm(questionnaireId: string) {
+  getLoincForm(LOINCNumber: string) {
     const func = () => {
-      if (!questionnaireId) {
+      if (!LOINCNumber) {
         this.setQuestionnaire(Util.createDefaultForm());
       } else {
-        this.dataSrv.getFormData(questionnaireId).subscribe((data) => {
+        this.dataSrv.getLoincFormData(LOINCNumber).subscribe((data) => {
           this.setQuestionnaire(data);
           this.acResult = null;
         });

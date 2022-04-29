@@ -9,6 +9,7 @@ import {TreeNode, ITreeOptions} from '@circlon/angular-tree-component/';
 import {TREE_ACTIONS, KEYS, TreeModel} from '@circlon/angular-tree-component';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 import {Util} from '../lib/util';
+import {fhir} from '../fhir';
 declare var LForms: any;
 
 enum JsonFormatType {
@@ -70,8 +71,27 @@ export class FetchService {
    * Get questionnaire by id from FHIR server.
    * @param id - Id of the questionnaire
    */
-  getFormData(id: string): Observable<any> {
-    return this.http.get(FetchService.fhirUrl + '/' + id, {responseType: 'json'});
+  getFhirFormData(id: string): Observable<fhir.Questionnaire> {
+    return this.http.get<fhir.Questionnaire>(FetchService.fhirUrl + '/' + id, {responseType: 'json'});
+  }
+
+
+  /**
+   * Get questionnaire by id from LOINC.
+   *
+   * @param loincNum - LOINC number of the form.
+   */
+  getLoincFormData(loincNum: string): Observable<fhir.Questionnaire> {
+    const options: any = {observe: 'body', responseType: 'json'};
+    options.params = new HttpParams().set('loinc_num', loincNum);
+
+    return this.http.get<fhir.Questionnaire>(FetchService.loincFormsUrl + '?loinc_num=' + loincNum,{responseType: 'json'})
+      .pipe(
+        map((response: any) => {
+          return LForms.Util.getFormFHIRData('Questionnaire', 'R4', response);
+        }),
+        catchError((error) => {console.log(`Loading loinc form ${loincNum}`, error); return of([]); })
+      );
   }
 
   /**
@@ -90,27 +110,30 @@ export class FetchService {
 
 
   /**
-   * Search questionnaires on fhir server, intended for auto completion for importing questionnaires.
+   * Search LOINC questionnaires on ctss, intended for auto completion for importing questionnaires.
    *
    * @param term - Search term
    * @param options - http request options
    */
-  searchForms(term: string, options?): Observable<AutoCompleteResult []> {
+  searchLoincForms(term: string, options?): Observable<AutoCompleteResult []> {
     options = options || {};
     options.observe = options.observe || 'body' as const;
     options.responseType = options.responseType || 'json' as const;
-    options.params = (options.params || new HttpParams()).set('title', term).set('_elements', 'id,title');
-    return this.http.get<AutoCompleteResult []>(FetchService.fhirUrl, options).pipe(
+    options.params = (options.params || new HttpParams())
+      .set('terms', term)
+      .set('df', 'LOINC_NUM,text')
+      .set('type', 'form_and_section')
+      .set('available', 'true');
+    return this.http.get<AutoCompleteResult []>(FetchService.loincSearchUrl, options).pipe(
       tap((resp) => { console.log(resp); }),
       map((resp: any) => {
-        return (resp.entry as Array<any>).map((e) => {
-          return {title: e.resource.title, id: e.resource.id};
+        return (resp[3] as Array<any>).map((e) => {
+          return {id: e[0], title: e[1]};
         });
       }),
       catchError((error) => {console.log('searching for ' + term, error); return of([]); })
     );
   }
-
 
   /**
    * Search CTSS for loinc items, intended for auto complete.
