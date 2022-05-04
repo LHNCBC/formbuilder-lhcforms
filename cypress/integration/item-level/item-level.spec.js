@@ -74,6 +74,46 @@ describe('Home page', () => {
 
     });
 
+    it('should delete items', () => {
+      const nestedItemsFilename = 'nested-items-delete-sample.json';
+      cy.uploadFile(nestedItemsFilename, true);
+      cy.contains('button', 'Edit questions').click();
+      cy.get('#text').should('have.value', 'One (group)');
+
+      // Expand the tree
+      cy.getTreeNode('One (group)').dblclick();
+      cy.getTreeNode('One dot seven (group): last sibling').dblclick();
+      cy.getTreeNode('Two (group): last sibling').dblclick();
+      cy.getTreeNode('Two dot four (group)').dblclick();
+
+      cy.getTreeNode('Two dot four dot two').click(); // Pick a starting somewhere in the middle
+      // Order of nodes loading into the editor after clicking the delete button.
+      [
+        'Two dot four dot two',
+        'Two dot four dot three',
+        'Two dot four dot four: last sibling',
+        'Two dot four dot one',
+        'Two dot four (group)',
+        'Two dot five',
+        'Two dot six',
+        'Two dot seven',
+        'Two dot eight',
+        'Two dot nine (group): last sibling',
+        'Two dot three',
+        'Two dot two',
+        'Two dot one',
+        'Two (group): last sibling',
+        'One (group)',
+      ].forEach((itemText) => {
+        cy.get('#text').should('have.value', itemText);
+        cy.contains('button', 'Delete this item').click();
+      });
+
+      // All nodes are deleted.
+      cy.get('lfb-sf-form-wrapper div.container-fluid p')
+        .should('have.text', 'No items in the form. Add an item to continue.');
+    });
+
     it('should import help text item', () => {
       const helpTextFormFilename = 'help-text-sample.json';
       const helpString = 'testing help text from import';

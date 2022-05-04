@@ -122,7 +122,11 @@ export class BasePageComponent implements OnDestroy {
    */
   formFieldsChanged(event) {
     const itemList = this.formValue.item;
-    Object.assign(this.formValue, Util.convertToQuestionnaireJSON(event));
+    const formChanges = Util.convertToQuestionnaireJSON(event);
+    delete formChanges.item;
+    Object.assign(this.formValue, formChanges);
+    Object.assign(this.questionnaire, formChanges);
+    Object.assign(this.formFields, formChanges);
     this.formValue.item = itemList;
     this.notifyChange(this.formValue);
     this.modelService.questionnaire = this.questionnaire;

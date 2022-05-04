@@ -216,22 +216,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   itemChanged(item) {
     setTimeout(() => {
-      Object.assign(this.itemData, item);
-      this.treeComponent?.treeModel.update();
+      this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
+      this.treeComponent.treeModel.update();
       this.focusNode = this.treeComponent.treeModel.focusedNode;
       this.itemChange.emit(this.itemList);
     });
-  }
-
-  /**
-   * Tree initialization
-   */
-  onTreeInitialized() {
-    const node = this.treeComponent?.treeModel?.getFirstRoot();
-    if(node) {
-      this.treeComponent.treeModel.setFocusedNode(node);
-      this.setNode(node);
-    }
   }
 
 
@@ -242,8 +231,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   onTreeUpdated() {
     if(!this.treeComponent.treeModel.getFocusedNode()) {
       const node = this.treeComponent.treeModel.getFirstRoot();
-      this.treeComponent.treeModel.setFocusedNode(node);
-      this.setNode(node);
+      if(node) {
+        this.treeComponent.treeModel.setFocusedNode(node);
+        this.setNode(node);
+      }
     }
   }
 
@@ -264,7 +255,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   setNode(node: ITreeNode): void {
     // this.item = node && node.data || null;
     this.focusNode = node;
-    this.itemData = this.focusNode.data;
+    this.itemData = this.focusNode ? this.focusNode.data : null;
     // Not sure why new item is having some fields from prev item. Nonetheless reset the form.
     // Resetting has side effects. Revisit -- TODO
     // this.uiItemEditor.resetForm(this.item);
@@ -351,16 +342,21 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   /**
    * Handle delete item button
-   * @param index - Index of the node among its siblings.
    */
-  deleteItem(index?: number) {
-    if (typeof index === 'undefined') {
-      index = this.focusNode.index;
-    }
+  deleteFocussedItem() {
+    const index = this.focusNode.index;
+    let nextFocussedNode = this.focusNode.findNextSibling(true);
+    nextFocussedNode = nextFocussedNode ? nextFocussedNode : this.focusNode.findPreviousSibling(true);
     this.focusNode.parent.data.item.splice(index, 1);
+    nextFocussedNode = nextFocussedNode ? nextFocussedNode : this.focusNode.parent;
+    if(!nextFocussedNode.data.virtual) {
+      this.treeComponent.treeModel.setFocusedNode(nextFocussedNode);
+      this.setNode(nextFocussedNode);
+    }
+    else {
+      this.setNode(null);
+    }
     this.treeComponent.treeModel.update();
-    this.treeComponent.treeModel.focusNextNode();
-    // this.setNode(this.treeComponent.treeModel.getFocusedNode());
   }
 
   /**
