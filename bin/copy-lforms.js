@@ -40,7 +40,8 @@ const filePathMap = {
   'webcomponent/main-es5.js.map'   : 'elements',
   'webcomponent/styles.css'         : 'elements',
   'fhir/lformsFHIRAll.min.js'       : 'fhir',
-  'fhir/lformsFHIRAll.min.js.map'   : 'fhir'
+  'fhir/lformsFHIRAll.min.js.map'   : 'fhir',
+  'webcomponent/assets/lib/zone.min.js': 'elements/assets/lib'
 }
 
 const appFolder = path.dirname(path.dirname(path.dirname(destinationFolder)));

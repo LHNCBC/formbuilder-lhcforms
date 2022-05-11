@@ -13,6 +13,7 @@ module.exports = function (config) {
       require('@angular-devkit/build-angular/plugins/karma')
     ],
     files: [
+      'dist/formbuilder-lhcforms/lforms/lib/elements/assets/lib/zone.min.js',
       'dist/formbuilder-lhcforms/lforms/lib/elements/runtime-es5.js',
       'dist/formbuilder-lhcforms/lforms/lib/elements/polyfills-es5.js',
       'dist/formbuilder-lhcforms/lforms/lib/elements/scripts.js',
