@@ -14,7 +14,7 @@ import {
   OnChanges,
   SimpleChanges, AfterViewChecked, NgZone
 } from '@angular/core';
-import {ITreeOptions, TreeComponent} from '@circlon/angular-tree-component';
+import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
@@ -96,7 +96,38 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   // qItem: any;
   focusNode: ITreeNode;
   itemData: fhir.QuestionnaireItem = null;
-  treeOptions: ITreeOptions;
+  treeOptions: ITreeOptions = {
+    displayField: 'text',
+    childrenField: 'item',
+    actionMapping: {
+      mouse: {
+        dblClick: (tree, node, $event) => {
+          if (node.hasChildren) { TREE_ACTIONS.TOGGLE_EXPANDED(tree, node, $event); }
+        },
+        click: TREE_ACTIONS.FOCUS
+      },
+      keys: {
+        [KEYS.ENTER]: TREE_ACTIONS.EXPAND
+      }
+    },
+    nodeHeight: 23,
+    dropSlotHeight: 5,
+    allowDrag: (node) => {
+      return true;
+    },
+    allowDrop: (node) => {
+      return true;
+    },
+    // allowDragoverStyling: true,
+    levelPadding: 10,
+    useVirtualScroll: true,
+    animateExpand: true,
+    scrollOnActivate: true,
+    animateSpeed: 30,
+    animateAcceleration: 1.2,
+    scrollContainer: document.documentElement // HTML
+  };
+
   @Input()
   questionnaire: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', item: []};
   itemList: any [];
@@ -123,9 +154,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   linkIdCollection = new LinkIdCollection();
   itemLoading$ = new BehaviorSubject<boolean>(false);
-  itemLoading = false;
-
-  treeReloaded$ = new BehaviorSubject<fhir.Questionnaire>(null);
+  spinner$ = new BehaviorSubject<boolean>(false);
 
   subscriptions: Subscription [] = [];
 
@@ -150,7 +179,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
               private treeService: TreeService,
               private formService: FormService,
               private dataSrv: FetchService) {
-    this.treeOptions = this.dataSrv.getTreeOptions();
     const subscription = this.dataSrv.getItemEditorSchema().subscribe((data) => {
       this.itemEditorSchema = data;
     });
@@ -158,34 +186,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   ngOnInit() {
-    /*
-    this.zone.runOutsideAngular(() => {
-      // Check very regularly to see if the pending macrotasks have all cleared
-      interval(10)
-        .pipe(
-          startWith(0), // So that we don't initially wait
-          takeUntil(this.itemLoading$),
-          // Turn the interval number into the current state of the zone
-          map(() => !this.zone.hasPendingMacrotasks),
-          // Don't emit until the zone state actually flips from `false` to `true`
-          distinctUntilChanged(),
-          // Filter out unstable event. Only emit once the state is stable again
-          filter(stateStable => stateStable === true),
-          // Complete the observable after it emits the first result
-          take(1),
-          tap(stateStable => {
-            // FULLY RENDERED!!!!
-            this.itemLoading$.next(false);
-            // Add code here to report Fully Rendered
-          })
-        ).subscribe();
+    this.itemLoading$.asObservable().pipe(debounceTime(200))
+      .subscribe(() => {
+      this.spinner$.next(false);
     });
-*/
-
-    const sub = this.itemLoading$.subscribe((isLoading) => {
-      this.itemLoading = isLoading;
-    });
-    this.subscriptions.push(sub);
   }
 
 
@@ -216,9 +220,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   itemChanged(item) {
     setTimeout(() => {
+      this.itemLoading$.next(true);
       this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
-      this.treeComponent.treeModel.update();
-      this.focusNode = this.treeComponent.treeModel.focusedNode;
       this.itemChange.emit(this.itemList);
     });
   }
@@ -226,7 +229,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   /**
    * Handles tree update event
-   * @param event - Event
    */
   onTreeUpdated() {
     if(!this.treeComponent.treeModel.getFocusedNode()) {
@@ -244,7 +246,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * @param event - Focus event.
    */
   onFocus(event) {
-    // this.itemLoading$.next(true);
     this.setNode(event.node);
   }
 
@@ -253,12 +254,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * @param node - Selected node.
    */
   setNode(node: ITreeNode): void {
-    // this.item = node && node.data || null;
+    this.spinner$.next(true);
     this.focusNode = node;
     this.itemData = this.focusNode ? this.focusNode.data : null;
-    // Not sure why new item is having some fields from prev item. Nonetheless reset the form.
-    // Resetting has side effects. Revisit -- TODO
-    // this.uiItemEditor.resetForm(this.item);
     if(this.focusNode && this.focusNode.data && !this.focusNode.data.linkId) {
       this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
     }
