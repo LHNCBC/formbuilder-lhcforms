@@ -341,15 +341,15 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   /**
    * Handle delete item button
    */
-  deleteFocussedItem() {
+  deleteFocusedItem() {
     const index = this.focusNode.index;
-    let nextFocussedNode = this.focusNode.findNextSibling(true);
-    nextFocussedNode = nextFocussedNode ? nextFocussedNode : this.focusNode.findPreviousSibling(true);
+    let nextFocusedNode = this.focusNode.findNextSibling(true);
+    nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.findPreviousSibling(true);
     this.focusNode.parent.data.item.splice(index, 1);
-    nextFocussedNode = nextFocussedNode ? nextFocussedNode : this.focusNode.parent;
-    if(!nextFocussedNode.data.virtual) {
-      this.treeComponent.treeModel.setFocusedNode(nextFocussedNode);
-      this.setNode(nextFocussedNode);
+    nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.parent;
+    if(!nextFocusedNode.data.virtual) {
+      this.treeComponent.treeModel.setFocusedNode(nextFocusedNode);
+      this.setNode(nextFocusedNode);
     }
     else {
       this.setNode(null);

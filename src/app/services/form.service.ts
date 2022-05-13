@@ -107,9 +107,9 @@ export class FormService {
 
   /**
    * Intended to collect source items for enable when logic
-   * Get sources for focussed item.
+   * Get sources for focused item.
    */
-  getSourcesExcludingFocussedTree(): ITreeNode [] {
+  getSourcesExcludingFocusedTree(): ITreeNode [] {
     let ret = null;
     if (this.treeModel) {
       const fNode = this.treeModel.getFocusedNode();
@@ -121,36 +121,36 @@ export class FormService {
 
   /**
    * Get sources excluding the branch of a given node.
-   * @param focussedNode
+   * @param focusedNode
    * @param treeModel?: Optional tree model to search. Default is this.treeModel.
    */
-  getEnableWhenSources(focussedNode: ITreeNode, treeModel?: TreeModel): ITreeNode [] {
+  getEnableWhenSources(focusedNode: ITreeNode, treeModel?: TreeModel): ITreeNode [] {
     if (!treeModel) {
       treeModel = this.treeModel;
     }
     let ret = null;
     if (treeModel) {
-      ret = this.getEnableWhenSources_(treeModel.roots, focussedNode);
+      ret = this.getEnableWhenSources_(treeModel.roots, focusedNode);
     }
     return ret;
   }
 
 
   /**
-   * Get sources from a given list of nodes excluding the branch of focussed node.
+   * Get sources from a given list of nodes excluding the branch of focused node.
    * @param nodes - List of nodes to search
-   * @param focussedNode - Reference node to exclude the node and its descending branch
+   * @param focusedNode - Reference node to exclude the node and its descending branch
    * @private
    */
-  private getEnableWhenSources_(nodes: ITreeNode [], focussedNode: ITreeNode): ITreeNode [] {
+  private getEnableWhenSources_(nodes: ITreeNode [], focusedNode: ITreeNode): ITreeNode [] {
     const ret: ITreeNode [] = [];
     for (const node of nodes) {
-      if (node !== focussedNode) {
+      if (node !== focusedNode) {
         if (node.data.type !== 'group' && node.data.type !== 'display') {
           ret.push(node);
         }
         if (node.hasChildren) {
-          ret.push.apply(ret, this.getEnableWhenSources_(node.children, focussedNode));
+          ret.push.apply(ret, this.getEnableWhenSources_(node.children, focusedNode));
         }
       }
     }
