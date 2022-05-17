@@ -74,6 +74,24 @@ describe('Home page', () => {
 
     });
 
+    it('should not overwrite previous tree node, when clicked before updating the editor', () => {
+      const {_, $} = Cypress;
+      cy.contains('button', 'Import').click();
+      cy.get('form > input[placeholder="Search LOINC"]').type('vital signs, weight & height panel{downArrow}');
+      cy.contains('ngb-typeahead-window button', /vital signs, weight & height panel/i).click();
+      cy.contains('ngb-modal-window button', 'Continue').click();
+      cy.getTreeNode('Vital Signs Pnl').dblclick();
+      cy.get('#text').should('have.value', 'Vital Signs Pnl');
+      cy.get('tree-root tree-viewport tree-node-collection tree-node span').then(($spans) => {
+        return _.filter($spans.get(), (el) => {
+          return $(el).text().match(/Resp rate|Heart rate/i);
+        });
+      }).click({multiple: true}); // Click the two nodes rapidly
+      cy.get('#text').should('have.value', 'Resp rate'); // Bugfix - Should not be Heart rate
+      cy.getTreeNode('Heart rate').click();
+      cy.get('#text').should('have.value', 'Heart rate'); // This node should still exist.
+    });
+
     it('should delete items', () => {
       const nestedItemsFilename = 'nested-items-delete-sample.json';
       cy.uploadFile(nestedItemsFilename, true);

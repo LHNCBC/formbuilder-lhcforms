@@ -255,6 +255,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   setNode(node: ITreeNode): void {
     this.spinner$.next(true);
+    this.itemLoading$.next(true);
     this.focusNode = node;
     this.itemData = this.focusNode ? this.focusNode.data : null;
     if(this.focusNode && this.focusNode.data && !this.focusNode.data.linkId) {
@@ -342,19 +343,23 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Handle delete item button
    */
   deleteFocusedItem() {
-    const index = this.focusNode.index;
+    const index = this.focusNode.index; // Save the index of the node to delete.
+    // Figure out what should be the next node to focus.
+    // Next sibling if exists
     let nextFocusedNode = this.focusNode.findNextSibling(true);
+    // previous sibling if exists
     nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.findPreviousSibling(true);
-    this.focusNode.parent.data.item.splice(index, 1);
+    // Parent could be a virtual one for root nodes.
     nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.parent;
+    // Change the focus first
     if(!nextFocusedNode.data.virtual) {
       this.treeComponent.treeModel.setFocusedNode(nextFocusedNode);
-      this.setNode(nextFocusedNode);
     }
-    else {
-      this.setNode(null);
-    }
+    // Remove the node and update the tree.
+    this.focusNode.parent.data.item.splice(index, 1);
     this.treeComponent.treeModel.update();
+    // Set the model for item editor.
+    this.setNode(this.treeComponent.treeModel.getFocusedNode());
   }
 
   /**
