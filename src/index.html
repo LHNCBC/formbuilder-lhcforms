@@ -21,53 +21,11 @@
 <body class="bg-light">
   <lfb-root></lfb-root>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script>
-    (function () {
-      'use strict';
-    /**
-     * Script loading
-     * @param url - Url of the script
-     */
-    var loadScript = function (url) {
-      try {
-        var script = document.createElement("script");
-        script.src = url;
-        document.body.appendChild(script);
-      }
-      catch(err) {
-        console.error(err);
-      }
-    };
-
-    /**
-     * Wait until a condition is true to perform an action
-     * @param condition_cb - Call back function for a condition to check.
-     * @param action_cb - Call back function to execute an action.
-     */
-    var waitUntil = function (condition_cb, action_cb){
-      var done = condition_cb();
-      if(done) {
-        action_cb(); // Condition is true, perform the action.
-      }
-      else { // Wait until condition is true.
-        setTimeout(function() {waitUntil(condition_cb, action_cb)}, 100);
-      }
-    };
-
-    window.onload = function() {
-      loadScript('lforms/lib/elements/runtime-es5.js');
-      loadScript('lforms/lib/elements/polyfills-es5.js');
-      loadScript('lforms/lib/elements/scripts.js');
-      loadScript('lforms/lib/elements/main-es5.js');
-      waitUntil(
-        function () {return (typeof LForms !== 'undefined');}, // Wait until lhc-forms is loaded.
-        function() {
-          LForms.Util.loadScript('lforms/lib/fhir/lformsFHIRAll.min.js');
-        }
-      );
-    };
-    })();
-  </script>
-
+  <script src="lforms/lib/elements/assets/lib/zone.min.js"></script>
+  <script src="lforms/lib/elements/runtime-es5.js"></script>
+  <script src="lforms/lib/elements/polyfills-es5.js"></script>
+  <script src="lforms/lib/elements/scripts.js"></script>
+  <script src="lforms/lib/elements/main-es5.js"></script>
+  <script src="lforms/lib/fhir/lformsFHIRAll.min.js"></script>
 </body>
 </html>
