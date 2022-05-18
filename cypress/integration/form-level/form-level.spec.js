@@ -81,6 +81,17 @@ describe('Home page', () => {
       cy.get('[id^="booleanControlled_No"]').find('[type="radio"]').as('codeNo');
     });
 
+    it('should retain title edits', () => {
+      cy.get('#title').should('have.value', 'New Form').clear();
+      cy.get('#title').type('Dummy title');
+      cy.contains('button', 'Create questions').click();
+      cy.questionnaireJSON().should((json) => {
+        expect(json.title).equal('Dummy title');
+      });
+      cy.contains('button', 'Edit form attributes').click();
+      cy.get('#title').should('have.value','Dummy title');
+    });
+
     it('should move to form level fields', () => {
       cy.get('p').should('have.text', 'Enter basic information about the form.');
     })

@@ -216,22 +216,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   itemChanged(item) {
     setTimeout(() => {
-      Object.assign(this.itemData, item);
-      this.treeComponent?.treeModel.update();
+      this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
+      this.treeComponent.treeModel.update();
       this.focusNode = this.treeComponent.treeModel.focusedNode;
       this.itemChange.emit(this.itemList);
     });
-  }
-
-  /**
-   * Tree initialization
-   */
-  onTreeInitialized() {
-    const node = this.treeComponent?.treeModel?.getFirstRoot();
-    if(node) {
-      this.treeComponent.treeModel.setFocusedNode(node);
-      this.setNode(node);
-    }
   }
 
 
@@ -242,8 +231,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   onTreeUpdated() {
     if(!this.treeComponent.treeModel.getFocusedNode()) {
       const node = this.treeComponent.treeModel.getFirstRoot();
-      this.treeComponent.treeModel.setFocusedNode(node);
-      this.setNode(node);
+      if(node) {
+        this.treeComponent.treeModel.setFocusedNode(node);
+        this.setNode(node);
+      }
     }
   }
 
@@ -264,7 +255,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   setNode(node: ITreeNode): void {
     // this.item = node && node.data || null;
     this.focusNode = node;
-    this.itemData = this.focusNode.data;
+    this.itemData = this.focusNode ? this.focusNode.data : null;
     // Not sure why new item is having some fields from prev item. Nonetheless reset the form.
     // Resetting has side effects. Revisit -- TODO
     // this.uiItemEditor.resetForm(this.item);
@@ -351,16 +342,25 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   /**
    * Handle delete item button
-   * @param index - Index of the node among its siblings.
    */
-  deleteItem(index?: number) {
-    if (typeof index === 'undefined') {
-      index = this.focusNode.index;
+  deleteFocusedItem() {
+    const index = this.focusNode.index; // Save the index of the node to delete.
+    // Figure out what should be the next node to focus.
+    // Next sibling if exists
+    let nextFocusedNode = this.focusNode.findNextSibling(true);
+    // previous sibling if exists
+    nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.findPreviousSibling(true);
+    // Parent could be a virtual one for root nodes.
+    nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.parent;
+    // Change the focus first
+    if(!nextFocusedNode.data.virtual) {
+      this.treeComponent.treeModel.setFocusedNode(nextFocusedNode);
     }
+    // Remove the node and update the tree.
     this.focusNode.parent.data.item.splice(index, 1);
     this.treeComponent.treeModel.update();
-    this.treeComponent.treeModel.focusNextNode();
-    // this.setNode(this.treeComponent.treeModel.getFocusedNode());
+    // Set the model for item editor.
+    this.setNode(this.treeComponent.treeModel.getFocusedNode());
   }
 
   /**

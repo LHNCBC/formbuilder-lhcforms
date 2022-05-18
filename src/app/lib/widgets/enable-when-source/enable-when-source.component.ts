@@ -85,7 +85,7 @@ export class EnableWhenSourceComponent extends ControlWidget implements OnInit {
    * Initialize the component
    */
   ngOnInit(): void {
-    this.sources = this.formService.getSourcesExcludingFocussedTree();
+    this.sources = this.formService.getSourcesExcludingFocusedTree();
     const value = this.formProperty.value; // Source is already assigned for this item.
     if (this.sources && this.sources.length > 0 && value) {
       const source = this.sources.find((el) => el.data.linkId === value);

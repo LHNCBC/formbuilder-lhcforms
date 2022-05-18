@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.11]  2022-05-04
+### Fixed
+- Fixed a bug in deleting last item in the tree.
+- Fixed a bug in missing form level field values.
+
 ## [7.0.10]  2022-04-21
 ### Changed
 - Load LOINC forms from CTSS.

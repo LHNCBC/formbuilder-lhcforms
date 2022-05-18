@@ -1,4 +1,7 @@
-<sf-form #itemForm *ngIf="model" [schema]="mySchema"
+<div *ngIf="!model" class="container-fluid">
+  <p>No items in the form. Add an item to continue.</p>
+</div>
+<sf-form #itemForm [schema]="mySchema" [ngClass]="{'d-none': !model}"
          [model]="model" (onChange)="updateValue($event.value)"
 ></sf-form>
 
