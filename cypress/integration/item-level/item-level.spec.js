@@ -79,16 +79,23 @@ describe('Home page', () => {
       cy.contains('button', 'Import').click();
       cy.get('form > input[placeholder="Search LOINC"]').type('vital signs, weight & height panel{downArrow}');
       cy.contains('ngb-typeahead-window button', /vital signs, weight & height panel/i).click();
+      cy.get('div.spinner-border').should('not.exist');
       cy.contains('ngb-modal-window button', 'Continue').click();
-      cy.getTreeNode('Vital Signs Pnl').dblclick();
+      cy.get('div.spinner-border').should('be.visible');
+      cy.get('div.spinner-border').should('not.exist');
+      cy.getTreeNode('Vital Signs Pnl').dblclick(); // Expand node
       cy.get('#text').should('have.value', 'Vital Signs Pnl');
       cy.get('tree-root tree-viewport tree-node-collection tree-node span').then(($spans) => {
         return _.filter($spans.get(), (el) => {
           return $(el).text().match(/Resp rate|Heart rate/i);
         });
       }).click({multiple: true}); // Click the two nodes rapidly
+      // cy.get('div.spinner-border').should('be.visible'); // This works in cy-open but not in cy-run?
+      cy.get('div.spinner-border').should('not.exist');
       cy.get('#text').should('have.value', 'Resp rate'); // Bugfix - Should not be Heart rate
       cy.getTreeNode('Heart rate').click();
+      cy.get('div.spinner-border').should('be.visible');
+      cy.get('div.spinner-border').should('not.exist');
       cy.get('#text').should('have.value', 'Heart rate'); // This node should still exist.
     });
 

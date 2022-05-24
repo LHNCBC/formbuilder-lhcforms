@@ -84,7 +84,7 @@
     "ajv-cli": "^5.0.0",
     "angular-http-server": "^1.10.0",
     "codelyzer": "^6.0.1",
-    "cypress": "^9.5.4",
+    "cypress": "^9.7.0",
     "cypress-fail-on-console-error": "^2.1.2",
     "jasmine-core": "~3.7.1",
     "jasmine-spec-reporter": "~6.0.0",

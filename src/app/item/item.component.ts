@@ -104,14 +104,14 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         dblClick: (tree, node, $event) => {
           if (node.hasChildren) { TREE_ACTIONS.TOGGLE_EXPANDED(tree, node, $event); }
         },
-        click: TREE_ACTIONS.FOCUS
+        click: TREE_ACTIONS.ACTIVATE
       },
       keys: {
         [KEYS.ENTER]: TREE_ACTIONS.EXPAND
       }
     },
     nodeHeight: 23,
-    dropSlotHeight: 5,
+    dropSlotHeight: 23,
     allowDrag: (node) => {
       return true;
     },
@@ -189,6 +189,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.itemLoading$.asObservable().pipe(debounceTime(200))
       .subscribe(() => {
       this.spinner$.next(false);
+      console.log('spinner off');
     });
   }
 
@@ -242,11 +243,36 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
 
   /**
-   * Handle tree's on focus event
-   * @param event - Focus event.
+   * Handle tree events
+   * @param event - The event.
    */
-  onFocus(event) {
-    this.setNode(event.node);
+  onEvent(event) {
+    switch(event.eventName) {
+      case 'activate':
+        this.spinner$.next(true);
+        setTimeout(() => {
+          this.setNode(event.node);
+        });
+        console.log('Spinner on for event: ', event.eventName);
+        break;
+
+      case 'updateData':
+        this.spinner$.next(true);
+        setTimeout(() => {
+          this.onTreeUpdated();
+        });
+        console.log('Spinner on for event: ', event.eventName);
+        break;
+
+      case 'initialized':
+        this.spinner$.next(true);
+        console.log('Spinner on for event: ', event.eventName);
+        break;
+
+      default:
+        console.log('Event name: ', event.eventName);
+        break;
+    }
   }
 
   /**
@@ -254,8 +280,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * @param node - Selected node.
    */
   setNode(node: ITreeNode): void {
-    this.spinner$.next(true);
-    this.itemLoading$.next(true);
     this.focusNode = node;
     this.itemData = this.focusNode ? this.focusNode.data : null;
     if(this.focusNode && this.focusNode.data && !this.focusNode.data.linkId) {
@@ -322,19 +346,21 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   insertAnItem(item, index?: number) {
-    if(this.itemList.length === 0) {
-      this.itemList.push(item);
-    }
-    else {
-      if (typeof index === 'undefined') {
-        index = this.focusNode ? this.focusNode.index + 1 : 0;
-      }
-      this.focusNode.parent.data.item.splice(index, 0, item);
-    }
-
-    this.treeComponent.treeModel.update();
-    this.treeComponent.treeModel.focusNextNode();
+    this.spinner$.next(true);
     setTimeout(() => {
+      if(this.itemList.length === 0) {
+        this.itemList.push(item);
+      }
+      else {
+        if (typeof index === 'undefined') {
+          index = this.focusNode ? this.focusNode.index + 1 : 0;
+        }
+        this.focusNode.parent.data.item.splice(index, 0, item);
+      }
+
+      this.treeComponent.treeModel.update();
+      this.treeComponent.treeModel.focusNextNode();
+      this.setNode(this.treeComponent.treeModel.getFocusedNode());
       document.getElementById('text').focus();
     });
   }
@@ -351,15 +377,18 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.findPreviousSibling(true);
     // Parent could be a virtual one for root nodes.
     nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.parent;
-    // Change the focus first
-    if(!nextFocusedNode.data.virtual) {
-      this.treeComponent.treeModel.setFocusedNode(nextFocusedNode);
-    }
-    // Remove the node and update the tree.
-    this.focusNode.parent.data.item.splice(index, 1);
-    this.treeComponent.treeModel.update();
-    // Set the model for item editor.
-    this.setNode(this.treeComponent.treeModel.getFocusedNode());
+    this.spinner$.next(true);
+    setTimeout(() => {
+      // Change the focus first
+      if(!nextFocusedNode.data.virtual) {
+        this.treeComponent.treeModel.setFocusedNode(nextFocusedNode);
+      }
+      // Remove the node and update the tree.
+      this.focusNode.parent.data.item.splice(index, 1);
+      this.treeComponent.treeModel.update();
+      // Set the model for item editor.
+      this.setNode(this.treeComponent.treeModel.getFocusedNode());
+    });
   }
 
   /**

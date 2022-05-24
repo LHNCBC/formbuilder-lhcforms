@@ -16,7 +16,7 @@
              [attr.maxLength]="schema.maxLength || null"
              [attr.minLength]="schema.minLength || null"
              [attr.required]="schema.isRequired ? '' : null"
-             [attr.disabled]="schema.disabled ? '' : null">
+             [lfbDisableControl]="schema.disabled">
       <div class="input-group-append">
         <div ngbDropdown class="d-inline-block" #myDropdown="ngbDropdown" placement="bottom-right">
           <button class="btn btn-sm btn-outline-primary" [attr.id]="id+'dropdownButton'" ngbDropdownToggle>{{cssButtonLabel()}}</button>
