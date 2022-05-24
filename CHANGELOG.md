@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.12]  2022-05-24
+### Fixed
+- Fixed a bug which overwrites a node when clicking two nodes rapidly.
+### Added
+- Added a spinner to indicate loading of item into the editor.
+
 ## [7.0.11]  2022-05-04
 ### Fixed
 - Fixed a bug in deleting last item in the tree.

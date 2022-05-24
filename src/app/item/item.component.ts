@@ -269,6 +269,12 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         console.log('Spinner on for event: ', event.eventName);
         break;
 
+      case 'moveNode':
+        this.itemLoading$.next(true);
+        this.spinner$.next(true);
+        console.log('Spinner on for event: ', event.eventName);
+        break;
+
       default:
         console.log('Event name: ', event.eventName);
         break;
