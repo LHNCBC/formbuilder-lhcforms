@@ -249,7 +249,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   onEvent(event) {
     switch(event.eventName) {
       case 'activate':
-        this.spinner$.next(true);
+        this.startSpinner();
         setTimeout(() => {
           this.setNode(event.node);
         });
@@ -257,7 +257,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         break;
 
       case 'updateData':
-        this.spinner$.next(true);
+        this.startSpinner();
         setTimeout(() => {
           this.onTreeUpdated();
         });
@@ -265,13 +265,12 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         break;
 
       case 'initialized':
-        this.spinner$.next(true);
+        this.startSpinner();
         console.log('Spinner on for event: ', event.eventName);
         break;
 
       case 'moveNode':
-        this.itemLoading$.next(true);
-        this.spinner$.next(true);
+        this.startSpinner();
         console.log('Spinner on for event: ', event.eventName);
         break;
 
@@ -279,6 +278,20 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         console.log('Event name: ', event.eventName);
         break;
     }
+  }
+
+
+  /**
+   * Trigger loading and spinner observers. Typically, itemLoading is triggered
+   * by update events coming from child components. However, if a spinner is started,
+   * and there are no updates, the itemLoading is never triggered, which leaves spinner
+   * running without stop.
+   *
+   * Call this when not sure if itemLoading is triggered.
+   */
+  startSpinner() {
+    this.itemLoading$.next(true);
+    this.spinner$.next(true);
   }
 
   /**
@@ -352,7 +365,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   insertAnItem(item, index?: number) {
-    this.spinner$.next(true);
+    this.startSpinner();
     setTimeout(() => {
       if(this.itemList.length === 0) {
         this.itemList.push(item);
@@ -383,7 +396,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.findPreviousSibling(true);
     // Parent could be a virtual one for root nodes.
     nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.parent;
-    this.spinner$.next(true);
+    this.startSpinner();
     setTimeout(() => {
       // Change the focus first
       if(!nextFocusedNode.data.virtual) {
