@@ -81,6 +81,7 @@ describe('Home page', () => {
       cy.contains('ngb-typeahead-window button', /vital signs, weight & height panel/i).click();
       cy.get('div.spinner-border').should('not.exist');
       cy.contains('ngb-modal-window button', 'Continue').click();
+      // Loading of item should pop up spinner.
       cy.get('div.spinner-border').should('be.visible');
       cy.get('div.spinner-border').should('not.exist');
       cy.getTreeNode('Vital Signs Pnl').dblclick(); // Expand node
