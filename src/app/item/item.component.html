@@ -31,13 +31,7 @@
           </div>
           <hr/>
           <ng-container *ngIf="editType === 'ui'">
-            <div *ngIf="spinner$ | async" class="overlay">
-              <div class="d-flex justify-content-center">
-                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem; z-index: 20;">
-                  <span class="sr-only">Loading...</span>
-                </div>
-              </div>
-            </div>
+            <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
             <lfb-ngx-schema-form #uiEditor [model]="itemData" (valueChange)="itemChanged($event)"></lfb-ngx-schema-form>
           </ng-container>
           <ng-container *ngIf="editType === 'json'">

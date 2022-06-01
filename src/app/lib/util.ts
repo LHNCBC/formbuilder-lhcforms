@@ -4,7 +4,7 @@
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import {fhir} from '../fhir';
-import {isEqual} from 'lodash';
+import {isEqual} from 'lodash-es';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';

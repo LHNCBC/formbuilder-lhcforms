@@ -99,6 +99,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   treeOptions: ITreeOptions = {
     displayField: 'text',
     childrenField: 'item',
+    idField: 'linkId',
     actionMapping: {
       mouse: {
         dblClick: (tree, node, $event) => {
@@ -186,10 +187,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   ngOnInit() {
-    this.itemLoading$.asObservable().pipe(debounceTime(200))
+    this.itemLoading$.asObservable().pipe(debounceTime(100))
       .subscribe(() => {
+        // No activity of updates, turn off the spinner.
       this.spinner$.next(false);
-      console.log('spinner off');
     });
   }
 
@@ -253,7 +254,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         setTimeout(() => {
           this.setNode(event.node);
         });
-        console.log('Spinner on for event: ', event.eventName);
         break;
 
       case 'updateData':
@@ -261,21 +261,17 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         setTimeout(() => {
           this.onTreeUpdated();
         });
-        console.log('Spinner on for event: ', event.eventName);
         break;
 
       case 'initialized':
         this.startSpinner();
-        console.log('Spinner on for event: ', event.eventName);
         break;
 
       case 'moveNode':
         this.startSpinner();
-        console.log('Spinner on for event: ', event.eventName);
         break;
 
       default:
-        console.log('Event name: ', event.eventName);
         break;
     }
   }
@@ -301,7 +297,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   setNode(node: ITreeNode): void {
     this.focusNode = node;
     this.itemData = this.focusNode ? this.focusNode.data : null;
-    if(this.focusNode && this.focusNode.data && !this.focusNode.data.linkId) {
+    if(this.focusNode && this.focusNode.data
+      && (!this.focusNode.data.linkId || typeof this.focusNode.data.linkId  === 'number')) {
       this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
     }
     this.treeService.nodeFocus.next(node);

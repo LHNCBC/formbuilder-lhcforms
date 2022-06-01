@@ -232,15 +232,15 @@ export class BasePageComponent implements OnDestroy {
       const selectedFile = event.target.files[0];
       event.target.value = null; //
       fileReader.onload = () => {
-        try {
-          this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
-          setTimeout(() => {
-            this.setStep('fl-editor');
-          });
-        }
-        catch (e) {
-          this.showError(e);
-        }
+        setTimeout(() => {
+          this.setStep('fl-editor');
+          try {
+            this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
+          }
+          catch (e) {
+            this.showError(e);
+          }
+        });
       }
       fileReader.onerror = (error) => {
         this.showError('Error occurred reading file: ${selectedFile.name}');

@@ -82,6 +82,7 @@ import { RestrictionsComponent } from './lib/widgets/restrictions/restrictions.c
 import { RestrictionsOperatorComponent } from './lib/widgets/restrictions-operator/restrictions-operator.component';
 import { ObservationLinkPeriodComponent } from './lib/widgets/observation-link-period/observation-link-period.component';
 import { LfbDisableControlDirective } from './lib/directives/lfb-disable-control.directive';
+import { LfbSpinnerComponent } from './lib/widgets/lfb-spinner/lfb-spinner.component';
 
 @NgModule({
   declarations: [
@@ -139,6 +140,7 @@ import { LfbDisableControlDirective } from './lib/directives/lfb-disable-control
     RestrictionsOperatorComponent,
     ObservationLinkPeriodComponent,
     LfbDisableControlDirective,
+    LfbSpinnerComponent,
   ],
   imports: [
     AppRoutingModule,

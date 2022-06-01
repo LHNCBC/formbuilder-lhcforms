@@ -81,22 +81,18 @@ describe('Home page', () => {
       cy.contains('ngb-typeahead-window button', /vital signs, weight & height panel/i).click();
       cy.get('div.spinner-border').should('not.exist');
       cy.contains('ngb-modal-window button', 'Continue').click();
+      cy.toggleTreeNodeExpansion('Vital Signs Pnl'); // Expand node
+      cy.getTreeNode('Vital Signs Pnl').click();
       // Loading of item should pop up spinner.
-      cy.get('div.spinner-border').should('be.visible');
-      cy.get('div.spinner-border').should('not.exist');
-      cy.getTreeNode('Vital Signs Pnl').dblclick(); // Expand node
+      cy.waitForSpinner();
       cy.get('#text').should('have.value', 'Vital Signs Pnl');
       cy.get('tree-root tree-viewport tree-node-collection tree-node span').then(($spans) => {
         return _.filter($spans.get(), (el) => {
           return $(el).text().match(/Resp rate|Heart rate/i);
         });
       }).click({multiple: true}); // Click the two nodes rapidly
-      // cy.get('div.spinner-border').should('be.visible'); // This works in cy-open but not in cy-run?
-      cy.get('div.spinner-border').should('not.exist');
       cy.get('#text').should('have.value', 'Resp rate'); // Bugfix - Should not be Heart rate
       cy.getTreeNode('Heart rate').click();
-      cy.get('div.spinner-border').should('be.visible');
-      cy.get('div.spinner-border').should('not.exist');
       cy.get('#text').should('have.value', 'Heart rate'); // This node should still exist.
     });
 
@@ -107,12 +103,12 @@ describe('Home page', () => {
       cy.get('#text').should('have.value', 'One (group)');
 
       // Expand the tree
-      cy.getTreeNode('One (group)').dblclick();
-      cy.getTreeNode('One dot seven (group): last sibling').dblclick();
-      cy.getTreeNode('Two (group): last sibling').dblclick();
-      cy.getTreeNode('Two dot four (group)').dblclick();
+      cy.toggleTreeNodeExpansion('One (group)');
+      cy.toggleTreeNodeExpansion('One dot seven (group): last sibling');
+      cy.toggleTreeNodeExpansion('Two (group): last sibling');
+      cy.toggleTreeNodeExpansion('Two dot four (group)');
 
-      cy.getTreeNode('Two dot four dot two').click(); // Pick a starting somewhere in the middle
+      cy.getTreeNode('Two dot four dot two').click(); // Pick a starting point somewhere in the middle
       // Order of nodes loading into the editor after clicking the delete button.
       [
         'Two dot four dot two',
@@ -331,12 +327,13 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
 
       cy.contains('button', 'Edit questions').click();
-      cy.getTreeNode('Family member health history').dblclick();
-      cy.getTreeNode('Living?').dblclick();
+      cy.toggleTreeNodeExpansion('Family member health history');
+      cy.toggleTreeNodeExpansion('Living?');
+      cy.getTreeNode('Living?').click();
       cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
       cy.get('#answerOption\\.0\\.valueCoding\\.display').should('have.value', 'Yes');
       cy.get('#answerOption\\.0\\.valueCoding\\.code').should('have.value', 'LA33-6');
-      cy.getTreeNode('Date of Birth').dblclick();
+      cy.getTreeNode('Date of Birth').click();
       cy.get('#enableWhen\\.0\\.question').should('have.value', 'Living?');
       cy.get('#enableWhen\\.0\\.operator')
         .find('option:selected').should('have.text','=');
@@ -489,7 +486,7 @@ describe('Home page', () => {
 
     it('should preserve change of datatype display', () => {
       cy.contains('button', 'Edit questions').click();
-      cy.getTreeNode('My health history').dblclick();
+      cy.toggleTreeNodeExpansion('My health history');
       cy.getTreeNode('Name').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].text).to.equal('Name');
