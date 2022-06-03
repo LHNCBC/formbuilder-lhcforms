@@ -31,38 +31,6 @@ export class FetchService {
   static loincSearchUrl = FetchService.loincBaseUrl + '/api/loinc_items/v3/search';
   static loincFormsUrl = FetchService.loincBaseUrl + '/loinc_form_definitions';
   static fhirUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire';
-  treeOptions: ITreeOptions = {
-    displayField: 'text',
-   // isExpandedField: 'expanded',
-    // idField: 'linkId',
-    childrenField: 'item',
-    actionMapping: {
-      mouse: {
-        dblClick: (tree, node, $event) => {
-          if (node.hasChildren) { TREE_ACTIONS.TOGGLE_EXPANDED(tree, node, $event); }
-        },
-        click: TREE_ACTIONS.FOCUS,
-      },
-      keys: {
-        [KEYS.ENTER]: TREE_ACTIONS.EXPAND
-      }
-    },
-    nodeHeight: 23,
-    allowDrag: (node) => {
-      return true;
-    },
-    allowDrop: (node) => {
-      return true;
-    },
-    // allowDragoverStyling: true,
-    levelPadding: 10,
-    useVirtualScroll: true,
-    animateExpand: true,
-    scrollOnActivate: true,
-    animateSpeed: 30,
-    animateAcceleration: 1.2,
-    scrollContainer: document.documentElement // HTML
-  };
 
   assetsUrl = '/assets';
   constructor(private http: HttpClient) { }
@@ -99,13 +67,6 @@ export class FetchService {
    */
   getItemEditorSchema(): Observable<any> {
     return this.http.get(this.assetsUrl + '/item-editor.schema.json', {responseType: 'json'});
-  }
-
-  /**
-   * Options for sidebar tree
-   */
-  getTreeOptions() {
-    return this.treeOptions;
   }
 
 

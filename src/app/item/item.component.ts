@@ -14,7 +14,7 @@ import {
   OnChanges,
   SimpleChanges, AfterViewChecked, NgZone
 } from '@angular/core';
-import {ITreeOptions, TreeComponent} from '@circlon/angular-tree-component';
+import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
 import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
@@ -96,7 +96,39 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   // qItem: any;
   focusNode: ITreeNode;
   itemData: fhir.QuestionnaireItem = null;
-  treeOptions: ITreeOptions;
+  treeOptions: ITreeOptions = {
+    displayField: 'text',
+    childrenField: 'item',
+    idField: 'linkId',
+    actionMapping: {
+      mouse: {
+        dblClick: (tree, node, $event) => {
+          if (node.hasChildren) { TREE_ACTIONS.TOGGLE_EXPANDED(tree, node, $event); }
+        },
+        click: TREE_ACTIONS.ACTIVATE
+      },
+      keys: {
+        [KEYS.ENTER]: TREE_ACTIONS.EXPAND
+      }
+    },
+    nodeHeight: 23,
+    dropSlotHeight: 23,
+    allowDrag: (node) => {
+      return true;
+    },
+    allowDrop: (node) => {
+      return true;
+    },
+    // allowDragoverStyling: true,
+    levelPadding: 10,
+    useVirtualScroll: true,
+    animateExpand: true,
+    scrollOnActivate: true,
+    animateSpeed: 30,
+    animateAcceleration: 1.2,
+    scrollContainer: document.documentElement // HTML
+  };
+
   @Input()
   questionnaire: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', item: []};
   itemList: any [];
@@ -123,9 +155,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   linkIdCollection = new LinkIdCollection();
   itemLoading$ = new BehaviorSubject<boolean>(false);
-  itemLoading = false;
-
-  treeReloaded$ = new BehaviorSubject<fhir.Questionnaire>(null);
+  spinner$ = new BehaviorSubject<boolean>(false);
 
   subscriptions: Subscription [] = [];
 
@@ -150,7 +180,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
               private treeService: TreeService,
               private formService: FormService,
               private dataSrv: FetchService) {
-    this.treeOptions = this.dataSrv.getTreeOptions();
     const subscription = this.dataSrv.getItemEditorSchema().subscribe((data) => {
       this.itemEditorSchema = data;
     });
@@ -158,34 +187,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   ngOnInit() {
-    /*
-    this.zone.runOutsideAngular(() => {
-      // Check very regularly to see if the pending macrotasks have all cleared
-      interval(10)
-        .pipe(
-          startWith(0), // So that we don't initially wait
-          takeUntil(this.itemLoading$),
-          // Turn the interval number into the current state of the zone
-          map(() => !this.zone.hasPendingMacrotasks),
-          // Don't emit until the zone state actually flips from `false` to `true`
-          distinctUntilChanged(),
-          // Filter out unstable event. Only emit once the state is stable again
-          filter(stateStable => stateStable === true),
-          // Complete the observable after it emits the first result
-          take(1),
-          tap(stateStable => {
-            // FULLY RENDERED!!!!
-            this.itemLoading$.next(false);
-            // Add code here to report Fully Rendered
-          })
-        ).subscribe();
+    this.itemLoading$.asObservable().pipe(debounceTime(100))
+      .subscribe(() => {
+        // No activity of updates, turn off the spinner.
+      this.spinner$.next(false);
     });
-*/
-
-    const sub = this.itemLoading$.subscribe((isLoading) => {
-      this.itemLoading = isLoading;
-    });
-    this.subscriptions.push(sub);
   }
 
 
@@ -216,9 +222,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   itemChanged(item) {
     setTimeout(() => {
+      this.itemLoading$.next(true);
       this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
-      this.treeComponent.treeModel.update();
-      this.focusNode = this.treeComponent.treeModel.focusedNode;
       this.itemChange.emit(this.itemList);
     });
   }
@@ -226,7 +231,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   /**
    * Handles tree update event
-   * @param event - Event
    */
   onTreeUpdated() {
     if(!this.treeComponent.treeModel.getFocusedNode()) {
@@ -240,12 +244,50 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
 
   /**
-   * Handle tree's on focus event
-   * @param event - Focus event.
+   * Handle tree events
+   * @param event - The event.
    */
-  onFocus(event) {
-    // this.itemLoading$.next(true);
-    this.setNode(event.node);
+  onEvent(event) {
+    switch(event.eventName) {
+      case 'activate':
+        this.startSpinner();
+        setTimeout(() => {
+          this.setNode(event.node);
+        });
+        break;
+
+      case 'updateData':
+        this.startSpinner();
+        setTimeout(() => {
+          this.onTreeUpdated();
+        });
+        break;
+
+      case 'initialized':
+        this.startSpinner();
+        break;
+
+      case 'moveNode':
+        this.startSpinner();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+
+  /**
+   * Trigger loading and spinner observers. Typically, itemLoading is triggered
+   * by update events coming from child components. However, if a spinner is started,
+   * and there are no updates, the itemLoading is never triggered, which leaves spinner
+   * running without stop.
+   *
+   * Call this when not sure if itemLoading is triggered.
+   */
+  startSpinner() {
+    this.itemLoading$.next(true);
+    this.spinner$.next(true);
   }
 
   /**
@@ -253,13 +295,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * @param node - Selected node.
    */
   setNode(node: ITreeNode): void {
-    // this.item = node && node.data || null;
     this.focusNode = node;
     this.itemData = this.focusNode ? this.focusNode.data : null;
-    // Not sure why new item is having some fields from prev item. Nonetheless reset the form.
-    // Resetting has side effects. Revisit -- TODO
-    // this.uiItemEditor.resetForm(this.item);
-    if(this.focusNode && this.focusNode.data && !this.focusNode.data.linkId) {
+    if(this.focusNode && this.focusNode.data
+      && (!this.focusNode.data.linkId || typeof this.focusNode.data.linkId  === 'number')) {
       this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
     }
     this.treeService.nodeFocus.next(node);
@@ -323,19 +362,21 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   insertAnItem(item, index?: number) {
-    if(this.itemList.length === 0) {
-      this.itemList.push(item);
-    }
-    else {
-      if (typeof index === 'undefined') {
-        index = this.focusNode ? this.focusNode.index + 1 : 0;
-      }
-      this.focusNode.parent.data.item.splice(index, 0, item);
-    }
-
-    this.treeComponent.treeModel.update();
-    this.treeComponent.treeModel.focusNextNode();
+    this.startSpinner();
     setTimeout(() => {
+      if(this.itemList.length === 0) {
+        this.itemList.push(item);
+      }
+      else {
+        if (typeof index === 'undefined') {
+          index = this.focusNode ? this.focusNode.index + 1 : 0;
+        }
+        this.focusNode.parent.data.item.splice(index, 0, item);
+      }
+
+      this.treeComponent.treeModel.update();
+      this.treeComponent.treeModel.focusNextNode();
+      this.setNode(this.treeComponent.treeModel.getFocusedNode());
       document.getElementById('text').focus();
     });
   }
@@ -352,15 +393,18 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.findPreviousSibling(true);
     // Parent could be a virtual one for root nodes.
     nextFocusedNode = nextFocusedNode ? nextFocusedNode : this.focusNode.parent;
-    // Change the focus first
-    if(!nextFocusedNode.data.virtual) {
-      this.treeComponent.treeModel.setFocusedNode(nextFocusedNode);
-    }
-    // Remove the node and update the tree.
-    this.focusNode.parent.data.item.splice(index, 1);
-    this.treeComponent.treeModel.update();
-    // Set the model for item editor.
-    this.setNode(this.treeComponent.treeModel.getFocusedNode());
+    this.startSpinner();
+    setTimeout(() => {
+      // Change the focus first
+      if(!nextFocusedNode.data.virtual) {
+        this.treeComponent.treeModel.setFocusedNode(nextFocusedNode);
+      }
+      // Remove the node and update the tree.
+      this.focusNode.parent.data.item.splice(index, 1);
+      this.treeComponent.treeModel.update();
+      // Set the model for item editor.
+      this.setNode(this.treeComponent.treeModel.getFocusedNode());
+    });
   }
 
   /**

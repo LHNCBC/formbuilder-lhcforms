@@ -115,6 +115,13 @@ Cypress.Commands.add('getTreeNode', (text) => {
   return cy.contains('tree-root tree-viewport tree-node-collection tree-node span', text, {timeout: 10000}).should('be.visible');
 });
 
+/**
+ * Toggle expansion and collapse of tree node having children.
+ */
+Cypress.Commands.add('toggleTreeNodeExpansion', (text) => {
+  cy.get('tree-root tree-viewport tree-node-collection tree-node tree-node-wrapper div.node-wrapper').filter(':contains("'+text+'")').find('tree-node-expander').click();
+});
+
 
 /**
  * Load LOINC form using a search term. Picks first item from the result list.
@@ -302,4 +309,13 @@ Cypress.Commands.add('resetForm', () => {
   cy.contains('nav.navbar > div > button', 'Close').click();
   cy.get('input[type="radio"][value="scratch"]').click();
   cy.get('button').contains('Continue').click();
+});
+
+
+/**
+ * Wait for spinner.
+ */
+Cypress.Commands.add('waitForSpinner', () => {
+  cy.get('.spinner-border').should('be.visible');
+  cy.get('.spinner-border').should('not.exist');
 });

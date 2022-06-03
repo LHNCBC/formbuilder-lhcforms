@@ -26,5 +26,10 @@
   overflow: auto;
 }
 
+.lfb-spinner .modal-content {
+  background: transparent;
+  border: none;
+}
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
