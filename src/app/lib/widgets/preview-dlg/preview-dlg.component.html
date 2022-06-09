@@ -11,7 +11,9 @@
        </ng-template>
      </mat-tab>
      <mat-tab label="View Questionnaire JSON">
-       <pre class="fix-pre">{{ data?.questionnaire | json }}</pre>
+       <ng-template matTabContent>
+         <pre class="fix-pre">{{ data?.questionnaire | json }}</pre>
+       </ng-template>
      </mat-tab>
    </mat-tab-group>
  </mat-dialog-content>

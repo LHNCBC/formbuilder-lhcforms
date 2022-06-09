@@ -55,13 +55,6 @@ export class FhirService {
       endpoint: 'http://hapi.fhir.org/baseDstu3',
       desc: 'UHN Test Server (STU3 Resources)',
       version: 'STU3'
-    },
-    {
-      id: 1,
-      displayName: 'clinFHIR R3',
-      endpoint:'http://snapp.clinfhir.com:8081/baseDstu3',
-      desc: 'Example Server',
-      version: 'STU3'
     }
   ];
 /*
