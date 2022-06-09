@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.13]  2022-06-09
+### Changed
+- Removed total score calculation.
+
 ## [7.0.12]  2022-05-24
 ### Fixed
 - Fixed a bug which overwrites a node when clicking two nodes rapidly.
