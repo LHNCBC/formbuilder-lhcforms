@@ -125,7 +125,6 @@ export class BasePageComponent implements OnDestroy {
     Object.assign(this.questionnaire, formChanges);
     Object.assign(this.formFields, formChanges);
     this.notifyChange(this.formValue);
-    this.modelService.questionnaire = this.questionnaire;
   }
 
 
@@ -146,6 +145,7 @@ export class BasePageComponent implements OnDestroy {
    */
   setQuestionnaire(questionnaire) {
     this.questionnaire = questionnaire;
+    this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, questionnaire);
     this.formFields = Object.assign({}, questionnaire);
     delete this.formFields.item;

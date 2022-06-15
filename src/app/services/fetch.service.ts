@@ -86,7 +86,6 @@ export class FetchService {
       .set('type', 'form_and_section')
       .set('available', 'true');
     return this.http.get<AutoCompleteResult []>(FetchService.loincSearchUrl, options).pipe(
-      tap((resp) => { console.log(resp); }),
       map((resp: any) => {
         return (resp[3] as Array<any>).map((e) => {
           return {id: e[0], title: e[1]};

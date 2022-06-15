@@ -96,7 +96,7 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit, 
 
     return props.some((p) => {
       return p.value.url === TotalScoreComponent.CALCULATED_EXPRESSION &&
-        p.value.valueExpression.description.toLowerCase().isEqual('total score calculation');
+        p.value.valueExpression.description.toLowerCase() === 'total score calculation';
     });
   }
 
@@ -108,7 +108,7 @@ export class TotalScoreComponent extends ExtensionsComponent implements OnInit, 
     const props = this.extensionsProp.properties as FormProperty[];
     if(props && props.length > 0) {
       const i = props.findIndex((p) => {
-        return p.value.url === TotalScoreComponent.CALCULATED_EXPRESSION && p.value.valueExpression.description.toLowerCase().isEqual('total score calculation')
+        return p.value.url === TotalScoreComponent.CALCULATED_EXPRESSION && p.value.valueExpression.description.toLowerCase() === 'total score calculation';
       })
       if(i >= 0) {
         props.splice(i, 1);

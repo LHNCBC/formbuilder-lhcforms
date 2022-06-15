@@ -12,7 +12,7 @@ import {
   ViewChild,
   EventEmitter,
   OnChanges,
-  SimpleChanges, AfterViewChecked, NgZone
+  SimpleChanges
 } from '@angular/core';
 import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
@@ -174,7 +174,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   };
 
   constructor(
-              private zone: NgZone,
               public dialog: MatDialog,
               private modalService: NgbModal,
               private treeService: TreeService,

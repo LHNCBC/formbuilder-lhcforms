@@ -1726,13 +1726,6 @@
         "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal' || target.value == 'quantity'"]
       }
     },
-    "__$totalScoreItem": {
-      "type": "boolean",
-      "default": "true",
-      "widget": {
-        "id": "hidden"
-      }
-    },
     "__$totalScore": {
       "description": "Makes this as an item with total score, i.e. totaling scores in pre-defined answers of the choice type items.",
       "title": "Make this a total score item",
@@ -1740,13 +1733,10 @@
       "default": "false",
       "type": "boolean",
       "widget": {
-        "id": "totalScore",
+        "id": "hidden",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10"
-      },
-      "visibleIf": {
-        "__$totalScoreItem": ["$EXP$ target.value == 'true'"]
       }
     },
     "__$helpText": {
@@ -5019,7 +5009,7 @@
       ]
     },
     {
-      "fields": ["__$totalScoreItem", "__$totalScore"],
+      "fields": ["__$totalScore"],
       "showFields": [
         {"field": "__$totalScore", "col": 12}
       ]

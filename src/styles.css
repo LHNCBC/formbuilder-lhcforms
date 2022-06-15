@@ -31,5 +31,9 @@
   border: none;
 }
 
+.lfb-spinner.modal-dialog {
+  transform: unset !important;
+}
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
