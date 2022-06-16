@@ -23,7 +23,7 @@ import {SfFormWrapperComponent} from '../sf-form-wrapper/sf-form-wrapper.compone
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-      <ng-container #viewContainer></ng-container>
+      <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)"></lfb-sf-form-wrapper>
     </div>
   `,
   styles: [`
@@ -67,9 +67,9 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
   static ID = 0;
   _id = ++NgxSchemaFormComponent.ID;
   // @ViewChild('itemForm') itemForm: FormComponent;
-  @ViewChild('viewContainer', {read: ViewContainerRef}) containerRef: ViewContainerRef;
+  // @ViewChild('viewContainer', {read: ViewContainerRef}) containerRef: ViewContainerRef;
 
-  mySchema: any = {properties: {}};
+  // mySchema: any = {properties: {}};
   myTestSchema: any;
   @Output()
   setLinkId = new EventEmitter();
@@ -118,14 +118,14 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
 
   constructor(private modelService: SharedObjectService, private formService: FormService,
               private cfr: ComponentFactoryResolver, private cd: ChangeDetectorRef) {
-    this.mySchema = formService.getItemSchema();
+    // this.mySchema = formService.getItemSchema();
   }
 
   /**
    * Merge schema and layout jsons
    */
   ngOnInit() {
-    this.mySchema = this.formService.getItemSchema();
+    // this.mySchema = this.formService.getItemSchema();
   }
 
   ngAfterViewInit() {
@@ -134,7 +134,7 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
 
   ngOnChanges(changes: SimpleChanges) {
     if(changes.model) {
-      this.resetForm(changes.model.currentValue);
+      // this.resetForm(changes.model.currentValue);
     }
   }
 
@@ -152,6 +152,7 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
   /**
    * Reset ngx- form with new model
    */
+  /*
   resetForm(model: any): void {
     if(!this.containerRef) {
       return;
@@ -166,7 +167,7 @@ export class NgxSchemaFormComponent implements OnInit, OnChanges, AfterViewInit,
       this.updateValue(value);
     })
   }
-
+*/
   ngOnDestroy() {
   }
 

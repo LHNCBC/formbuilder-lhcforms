@@ -25,6 +25,7 @@ import {Util} from '../lib/util';
 })
 export class FormService {
 
+  private _loading = false;
   _guidingStep$: Subject<string> = new Subject<string>();
 
   localStorageError: Error = null;
@@ -87,6 +88,13 @@ export class FormService {
     });
   }
 
+  set loading(loading: boolean) {
+    this._loading = loading;
+  }
+
+  get loading(): boolean {
+    return this._loading;
+  }
 
   /**
    * Access guiding step observable.

@@ -81,6 +81,7 @@ describe('Home page', () => {
       cy.contains('ngb-typeahead-window button', /vital signs, weight & height panel/i).click();
       cy.get('div.spinner-border').should('not.exist');
       cy.contains('ngb-modal-window button', 'Continue').click();
+      cy.waitForSpinner();
       cy.toggleTreeNodeExpansion('Vital Signs Pnl'); // Expand node
       cy.getTreeNode('Vital Signs Pnl').click();
       // Loading of item should pop up spinner.
@@ -182,6 +183,7 @@ describe('Home page', () => {
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Answer options form');
+      cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
         expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
@@ -295,6 +297,7 @@ describe('Home page', () => {
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Form with restrictions');
+      cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
       });
@@ -330,6 +333,7 @@ describe('Home page', () => {
       cy.toggleTreeNodeExpansion('Family member health history');
       cy.toggleTreeNodeExpansion('Living?');
       cy.getTreeNode('Living?').click();
+      cy.waitForSpinner();
       cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
       cy.get('#answerOption\\.0\\.valueCoding\\.display').should('have.value', 'Yes');
       cy.get('#answerOption\\.0\\.valueCoding\\.code').should('have.value', 'LA33-6');
@@ -391,6 +395,7 @@ describe('Home page', () => {
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'New Form');
+      cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).to.deep.equal(fixtureJson.item[0].type);
         expect(qJson.item[1].type).to.deep.equal(fixtureJson.item[1].type);
@@ -474,8 +479,10 @@ describe('Home page', () => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.uploadFile(sampleFile, true);
+      cy.resetForm();
+      cy.uploadFile(sampleFile, false);
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+      cy.contains('button', 'Edit questions').click();
     });
 
     it('should preserve descendant item array', () => {
@@ -485,7 +492,6 @@ describe('Home page', () => {
     });
 
     it('should preserve change of datatype display', () => {
-      cy.contains('button', 'Edit questions').click();
       cy.toggleTreeNodeExpansion('My health history');
       cy.getTreeNode('Name').click();
       cy.questionnaireJSON().should((qJson) => {
@@ -496,7 +502,9 @@ describe('Home page', () => {
       cy.get('#type').select('header');
 
       cy.getTreeNode('My health history').click();
+      cy.waitForSpinner();
       cy.getTreeNode('xxx').click();
+      cy.waitForSpinner();
       cy.get('#text').should('have.value', 'xxx');
       cy.get('#type').should('have.value', '12: group');
 

@@ -4,6 +4,8 @@ import {fhir} from '../../../fhir';
 import {ExtensionsComponent} from '../extensions/extensions.component';
 import Def from 'autocomplete-lhc';
 import {Subscription} from 'rxjs';
+import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
+import {ExtensionsService} from '../../../services/extensions.service';
 
 interface UnitExtension {
   url: string,
@@ -40,7 +42,7 @@ interface UnitExtension {
     }
   `]
 })
-export class UnitsComponent extends ExtensionsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
 
   static seqNum = 0;
   static questionUnitExtUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit';
@@ -74,7 +76,7 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
   dataType = 'string';
   subscriptions: Subscription [];
 
-  constructor() {
+  constructor(private extensionsService: ExtensionsService) {
     super();
     this.elementId = 'units'+UnitsComponent.seqNum++;
     this.subscriptions = [];
@@ -87,14 +89,14 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
       .valueChanges.subscribe((changedValue) => {
       if(this.dataType !== changedValue) {
         if(changedValue === 'quantity') {
-          this.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.decimal);
+          this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.decimal);
         }
         else if(changedValue === 'decimal' || changedValue === 'integer') {
-          this.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.quantity);
+          this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.quantity);
         }
         else {
-          this.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.decimal);
-          this.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.quantity);
+          this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.decimal);
+          this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.quantity);
         }
         this.options.maxSelect = changedValue === 'quantity' ? '*' : 1;
 
@@ -108,12 +110,10 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
 
     sub = this.formProperty.valueChanges.subscribe(() => {
       this.resetAutocomplete();
-      const initialUnits = (this.extensionsProp.properties as FormProperty[]).filter((p) => {
-        return p.value.url === UnitsComponent.unitsExtUrl[this.dataType];
-      });
+      const initialUnits = this.extensionsService.getExtensionsByUrl(UnitsComponent.unitsExtUrl[this.dataType]) || [];
 
       for (let i=0, len=initialUnits.length; i<len; ++i) {
-        const dispVal = initialUnits[i].value.valueCoding.code || initialUnits[i].value.valueCoding.display;
+        const dispVal = initialUnits[i].valueCoding.code || initialUnits[i].valueCoding.display;
         this.autoComp.storeSelectedItem(dispVal, dispVal);
         if(this.options.maxSelect === '*') {
           this.autoComp.addToSelectedArea(dispVal);
@@ -125,17 +125,21 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
     // Setup selection handler
     Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
       if(data.removed) {
-        this.removeExt(UnitsComponent.unitsExtUrl[this.dataType], data.final_val); // We are displaying codes for the user.
+        this.extensionsService.removeExtension((ext) => {
+          return ext.value.url === UnitsComponent.unitsExtUrl[this.dataType] &&
+                 ext.value.valueCoding.code === data.final_val;
+        });
+        // this.removeExt(UnitsComponent.unitsExtUrl[this.dataType], data.final_val); // We are displaying codes for the user.
       }
       else if(data.used_list) {
         const selectedUnit = data.list.find((unit) => {
           return unit[0] === data.item_code;
         });
-        this.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+        this.extensionsService.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
           UnitsComponent.ucumSystemUrl, data.item_code, selectedUnit[1]), 'valueCoding');
       }
       else {
-        this.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+        this.extensionsService.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
           null, data.final_val, data.final_val), 'valueCoding');
       }
     });
@@ -168,10 +172,11 @@ export class UnitsComponent extends ExtensionsComponent implements OnInit, After
    * Delete unit extension object from the extension array.
    * @param unit - FHIR extension represented as unit
    */
+  /*
   deleteUnit(unit: fhir.Extension): any {
     this.removeExtension(unit);
   }
-
+*/
 
   /**
    * Create unit extension object

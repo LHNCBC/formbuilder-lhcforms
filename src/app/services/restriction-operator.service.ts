@@ -1,5 +1,6 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {AcceptChange} from '../lib/widgets/restrictions-operator/restrictions-operator.component';
+import {Subscription} from 'rxjs';
 
 @Injectable()
 export class RestrictionOperatorService {
@@ -11,7 +12,7 @@ export class RestrictionOperatorService {
     this.rejectChange.next(reject);
   }
 
-  subscribe(cb: (reject: AcceptChange) => void) {
-    this.rejectChange.subscribe(cb);
+  subscribe(cb: (reject: AcceptChange) => void): Subscription {
+    return this.rejectChange.subscribe(cb);
   }
 }
