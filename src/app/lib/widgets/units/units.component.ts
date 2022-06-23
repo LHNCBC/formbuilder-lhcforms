@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {FormProperty} from 'ngx-schema-form';
 import {fhir} from '../../../fhir';
-import {ExtensionsComponent} from '../extensions/extensions.component';
 import Def from 'autocomplete-lhc';
 import {Subscription} from 'rxjs';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
@@ -129,7 +128,6 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
           return ext.value.url === UnitsComponent.unitsExtUrl[this.dataType] &&
                  ext.value.valueCoding.code === data.final_val;
         });
-        // this.removeExt(UnitsComponent.unitsExtUrl[this.dataType], data.final_val); // We are displaying codes for the user.
       }
       else if(data.used_list) {
         const selectedUnit = data.list.find((unit) => {
@@ -167,16 +165,6 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
     this.destroyAutocomplete();
     this.autoComp = new Def.Autocompleter.Search(this.elementId, this.unitsSearchUrl, this.options);
   }
-
-  /**
-   * Delete unit extension object from the extension array.
-   * @param unit - FHIR extension represented as unit
-   */
-  /*
-  deleteUnit(unit: fhir.Extension): any {
-    this.removeExtension(unit);
-  }
-*/
 
   /**
    * Create unit extension object

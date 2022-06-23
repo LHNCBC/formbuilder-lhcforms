@@ -112,14 +112,19 @@ Cypress.Commands.add('selectDataType', (type) => {
  * Select a node by its text in the sidebar.
  */
 Cypress.Commands.add('getTreeNode', (text) => {
-  return cy.contains('tree-root tree-viewport tree-node-collection tree-node span', text, {timeout: 10000}).should('be.visible');
+  return cy.contains('tree-root tree-viewport tree-node-collection tree-node span', text, {timeout: 10000})
+    .should('be.visible');
 });
 
 /**
  * Toggle expansion and collapse of tree node having children.
  */
 Cypress.Commands.add('toggleTreeNodeExpansion', (text) => {
-  cy.get('tree-root tree-viewport tree-node-collection tree-node tree-node-wrapper div.node-wrapper').filter(':contains("'+text+'")').find('tree-node-expander').click();
+  cy.get('tree-root tree-viewport tree-node-collection tree-node tree-node-wrapper div.node-wrapper')
+    .filter(':contains("'+text+'")').find('tree-node-expander').as('expander');
+  cy.get('@expander').should('be.visible');
+  cy.get('@expander').click();
+  cy.getTreeNode(text).should('be.visible');
 });
 
 
@@ -318,4 +323,12 @@ Cypress.Commands.add('resetForm', () => {
 Cypress.Commands.add('waitForSpinner', () => {
   cy.get('.spinner-border').should('be.visible');
   cy.get('.spinner-border').should('not.exist');
+});
+
+/**
+ * CLick a node on the side bar.
+ */
+Cypress.Commands.add('clickTreeNode', (nodeText) => {
+  cy.getTreeNode(nodeText).click();
+  cy.contains('#itemContent span', nodeText);
 });

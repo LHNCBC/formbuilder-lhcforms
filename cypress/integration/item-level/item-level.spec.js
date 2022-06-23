@@ -81,12 +81,8 @@ describe('Home page', () => {
       cy.contains('ngb-typeahead-window button', /vital signs, weight & height panel/i).click();
       cy.get('div.spinner-border').should('not.exist');
       cy.contains('ngb-modal-window button', 'Continue').click();
-      cy.waitForSpinner();
+      cy.contains('#itemContent span', 'Vital Signs Pnl');
       cy.toggleTreeNodeExpansion('Vital Signs Pnl'); // Expand node
-      cy.getTreeNode('Vital Signs Pnl').click();
-      // Loading of item should pop up spinner.
-      cy.waitForSpinner();
-      cy.get('#text').should('have.value', 'Vital Signs Pnl');
       cy.get('tree-root tree-viewport tree-node-collection tree-node span').then(($spans) => {
         return _.filter($spans.get(), (el) => {
           return $(el).text().match(/Resp rate|Heart rate/i);
@@ -221,6 +217,7 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
+      cy.get('#searchResults').should('be.visible');
       cy.contains('#completionOptions tr', '[in_i]').click();
       cy.get('@units').last().should('have.value','[in_i]');
       cy.questionnaireJSON().should((qJson) => {
@@ -332,12 +329,11 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.toggleTreeNodeExpansion('Family member health history');
       cy.toggleTreeNodeExpansion('Living?');
-      cy.getTreeNode('Living?').click();
-      cy.waitForSpinner();
+      cy.clickTreeNode('Living?');
       cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
       cy.get('#answerOption\\.0\\.valueCoding\\.display').should('have.value', 'Yes');
       cy.get('#answerOption\\.0\\.valueCoding\\.code').should('have.value', 'LA33-6');
-      cy.getTreeNode('Date of Birth').click();
+      cy.clickTreeNode('Date of Birth');
       cy.get('#enableWhen\\.0\\.question').should('have.value', 'Living?');
       cy.get('#enableWhen\\.0\\.operator')
         .find('option:selected').should('have.text','=');
@@ -501,10 +497,8 @@ describe('Home page', () => {
       cy.get('#text').clear().type('xxx');
       cy.get('#type').select('header');
 
-      cy.getTreeNode('My health history').click();
-      cy.waitForSpinner();
-      cy.getTreeNode('xxx').click();
-      cy.waitForSpinner();
+      cy.clickTreeNode('My health history');
+      cy.clickTreeNode('xxx');
       cy.get('#text').should('have.value', 'xxx');
       cy.get('#type').should('have.value', '12: group');
 

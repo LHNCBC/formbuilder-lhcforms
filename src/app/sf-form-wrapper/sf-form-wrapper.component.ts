@@ -1,8 +1,6 @@
 import {
-  AfterViewInit,
   Component,
   EventEmitter, Input,
-  OnDestroy,
   Output,
   ViewChild
 } from '@angular/core';
@@ -21,7 +19,7 @@ import {ExtensionsService} from '../services/extensions.service';
   styleUrls: ['./sf-form-wrapper.component.css'],
   providers: [ExtensionsService]
 })
-export class SfFormWrapperComponent implements AfterViewInit, OnDestroy {
+export class SfFormWrapperComponent {
   @ViewChild('itemForm') itemForm: FormComponent;
 
   validators = {
@@ -70,10 +68,6 @@ export class SfFormWrapperComponent implements AfterViewInit, OnDestroy {
     this.mySchema = formService.getItemSchema();
   }
 
-  ngAfterViewInit() {
-    // this.extensionsService.setExtensions((this.itemForm.rootProperty as PropertyGroup).getProperty('extension'));
-  }
-
 
   /**
    * Handle value change event.
@@ -82,9 +76,5 @@ export class SfFormWrapperComponent implements AfterViewInit, OnDestroy {
   updateValue(value) {
     this.valueChange.emit(value);
     this.modelChange.emit(this.model);
-  }
-
-
-  ngOnDestroy() {
   }
 }
