@@ -48,6 +48,7 @@ export class SfFormWrapperComponent {
       if(value === 'display') {
         formProperty.setValue('group', true);
       }
+      return null;
     }
   };
 
@@ -57,8 +58,6 @@ export class SfFormWrapperComponent {
   setLinkId = new EventEmitter();
   @Input()
   model: any;
-  @Output()
-  modelChange = new EventEmitter<any>();
   @Output()
   valueChange = new EventEmitter<any>();
   @Input()
@@ -74,7 +73,9 @@ export class SfFormWrapperComponent {
    * @param value - Angular event
    */
   updateValue(value) {
-    this.valueChange.emit(value);
-    this.modelChange.emit(this.model);
+    if(!this.formService.loading) { // Avoid emitting the changes while loading.
+      console.log('sf-form.onChange() emitted:');
+      this.valueChange.emit(value);
+    }
   }
 }

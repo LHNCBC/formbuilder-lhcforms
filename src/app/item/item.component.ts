@@ -205,6 +205,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.itemList = this.itemList || [];
     if(this.itemList.length === 0) {
       this.itemList.push({text: 'Item 0', type: 'string'});
+      this.itemData = this.itemList[0];
     }
     if(this.treeComponent?.treeModel) {
       this.treeComponent?.treeModel.update();
@@ -215,10 +216,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Inform the change to host element.
    */
   itemChanged(item) {
-    setTimeout(() => {
-      this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
+    this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
+    if(!this.formService.loading) {
       this.itemChange.emit(this.itemList);
-    });
+    }
   }
 
 
@@ -240,7 +241,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Handle tree events
    * @param event - The event.
    */
-  onEvent(event) {
+  onTreeEvent(event) {
     switch(event.eventName) {
       case 'activate':
         this.startSpinner();

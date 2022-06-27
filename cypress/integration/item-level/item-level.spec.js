@@ -37,7 +37,7 @@ describe('Home page', () => {
       cy.contains('button', 'Create questions').click();
       cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
       cy.get('#type').as('type');
-      cy.contains('.node-content-wrapper', 'Item 0').as('item0').click();
+      cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
       cy.contains('div', 'Use question code?')
@@ -47,7 +47,7 @@ describe('Home page', () => {
       cy.get('#__\\$observationLinkPeriod_No').as('olpNo');
       cy.get('#__\\$observationLinkPeriod_Yes').as('olpYes');
 
-      cy.wait(1000);
+      cy.get('.spinner-border').should('not.exist');
     });
 
     it('should display item editor page', () => {
