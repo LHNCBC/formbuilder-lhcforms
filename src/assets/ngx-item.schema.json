@@ -2,6 +2,14 @@
   "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
   "type": "object",
   "properties": {
+    "__$start": {
+      "description": "An internal field to indicate start of loading item. User should not see this.",
+      "title": "Start - Should be invisible.",
+      "type": "boolean",
+      "widget": {
+        "id": "hidden"
+      }
+    },
     "id": {
       "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
       "title": "Id",
@@ -9,6 +17,109 @@
       "type": "string",
       "widget": {
         "id": "hidden"
+      }
+    },
+    "type": {
+      "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.).",
+      "enum": [
+        "boolean",
+        "decimal",
+        "integer",
+        "date",
+        "dateTime",
+        "time",
+        "string",
+        "text",
+        "url",
+        "choice",
+        "open-choice",
+        "attachment",
+        "reference",
+        "quantity",
+        "group",
+        "display"
+      ],
+      "type": "string",
+      "title": "Data type",
+      "widget": {
+        "id": "type",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2 pr-1",
+        "controlWidthClass": "col-sm-10",
+        "selectOptionsMap": {
+          "remove": ["display", "reference", "attachment"],
+          "map": {
+            "group": "header"
+          }
+        }
+      },
+      "default": "string"
+    },
+    "__$restrictions": {
+      "description": "Choose to add value restrictions to the input.",
+      "title": "Restrictions",
+      "type": "array",
+      "items": {
+        "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
+        "properties": {
+          "operator": {
+            "description": "Comparing operator to restrict the input value",
+            "type": "string",
+            "enum": [
+              "maxLength",
+              "minLength",
+              "regex",
+              "minValue",
+              "maxValue",
+              "mazSize",
+              "mimeType"
+            ],
+            "title": "Restriction",
+            "widget": {"id": "restrictions-operator"}
+          },
+          "value": {
+            "description": "Value to restrict the input",
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
+      },
+      "widget": {
+        "id": "restrictions",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2 pr-1",
+        "controlWidthClass": "col-sm-10",
+        "noTableLabel": true,
+        "noCollapseButton": true,
+        "addButtonLabel": "Add new restriction",
+        "booleanControlled": true,
+        "booleanLabel": "Use restrictions?",
+        "booleanControlledInitial": false,
+        "showFields": [
+          {"field": "operator", "col": 7, "nolabel": true},
+          {"field": "value", "col": 4, "nolabel": true}
+        ]
+
+      }
+    },
+    "maxLength": {
+      "description": "The maximum number of characters that are permitted in the answer to be considered a \"valid\" QuestionnaireResponse.",
+      "title": "Maximum number of char.",
+      "pattern": "^-?([0]|([1-9][0-9]*))$",
+      "type": "number",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'boolean' || target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
+      },
+      "widget": {
+        "id": "hidden",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-1"
       }
     },
     "extension": {
@@ -312,42 +423,6 @@
       "widget": {
         "id": "hidden"
       }
-    },
-    "type": {
-      "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.).",
-      "enum": [
-        "boolean",
-        "decimal",
-        "integer",
-        "date",
-        "dateTime",
-        "time",
-        "string",
-        "text",
-        "url",
-        "choice",
-        "open-choice",
-        "attachment",
-        "reference",
-        "quantity",
-        "group",
-        "display"
-      ],
-      "type": "string",
-      "title": "Data type",
-      "widget": {
-        "id": "type",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
-        "selectOptionsMap": {
-          "remove": ["display", "reference", "attachment"],
-          "map": {
-            "group": "header"
-          }
-        }
-      },
-      "default": "string"
     },
     "enableWhen": {
       "description": "A constraint indicating that this item should only be enabled (displayed/allow answers to be captured) when the specified condition is true.",
@@ -899,21 +974,6 @@
         "id": "boolean-radio",
         "labelWidthClass": "col-sm-2",
         "controlWidthClass": "col-sm-10"
-      }
-    },
-    "maxLength": {
-      "description": "The maximum number of characters that are permitted in the answer to be considered a \"valid\" QuestionnaireResponse.",
-      "title": "Maximum number of char.",
-      "pattern": "^-?([0]|([1-9][0-9]*))$",
-      "type": "number",
-      "visibleIf": {
-        "type": ["$EXP$ target.value == 'boolean' || target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
-      },
-      "widget": {
-        "id": "hidden",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-1"
       }
     },
     "answerValueSet": {
@@ -1750,56 +1810,12 @@
         "controlWidthClass": "col-sm-10"
       }
     },
-    "__$restrictions": {
-      "description": "Choose to add value restrictions to the input.",
-      "title": "Restrictions",
-      "type": "array",
-      "items": {
-        "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
-        "properties": {
-          "operator": {
-            "description": "Comparing operator to restrict the input value",
-            "type": "string",
-            "enum": [
-              "maxLength",
-              "minLength",
-              "regex",
-              "minValue",
-              "maxValue",
-              "mazSize",
-              "mimeType"
-            ],
-            "title": "Restriction",
-            "widget": {"id": "restrictions-operator"}
-          },
-          "value": {
-            "description": "Value to restrict the input",
-            "type": "string",
-            "title": "Value"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object"
-      },
-      "visibleIf": {
-        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
-      },
+    "__$end": {
+      "description": "An internal field to indicate end of loading an item. User should not see this.",
+      "title": "End - Should be invisible",
+      "type": "boolean",
       "widget": {
-        "id": "restrictions",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
-        "noTableLabel": true,
-        "noCollapseButton": true,
-        "addButtonLabel": "Add new restriction",
-        "booleanControlled": true,
-        "booleanLabel": "Use restrictions?",
-        "booleanControlledInitial": false,
-        "showFields": [
-          {"field": "operator", "col": 7, "nolabel": true},
-          {"field": "value", "col": 4, "nolabel": true}
-        ]
-
+        "id": "hidden"
       }
     }
   },
@@ -4955,7 +4971,7 @@
   },
   "fieldsets": [
     {
-      "fields": ["type", "linkId", "maxLength"],
+      "fields": ["type", "linkId", "maxLength", "__$start", "__$end"],
       "showFields": [
         { "field": "linkId", "col": 3 },
         { "field": "type", "col": 3 },

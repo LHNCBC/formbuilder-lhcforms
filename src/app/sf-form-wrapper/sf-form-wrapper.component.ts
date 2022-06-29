@@ -1,16 +1,13 @@
 import {
-  AfterViewInit,
   Component,
   EventEmitter, Input,
-  OnChanges,
-  OnDestroy,
-  OnInit, Output,
-  SimpleChanges, ViewChild
+  Output,
+  ViewChild
 } from '@angular/core';
 import {SharedObjectService} from '../services/shared-object.service';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
-import {FormComponent, PropertyGroup} from 'ngx-schema-form';
+import {FormComponent, FormProperty, PropertyGroup} from 'ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 
 /**
@@ -22,8 +19,38 @@ import {ExtensionsService} from '../services/extensions.service';
   styleUrls: ['./sf-form-wrapper.component.css'],
   providers: [ExtensionsService]
 })
-export class SfFormWrapperComponent implements OnChanges, AfterViewInit, OnDestroy {
+export class SfFormWrapperComponent {
   @ViewChild('itemForm') itemForm: FormComponent;
+
+  validators = {
+    /**
+     * __$start and ++$end are custom internal fields. They are used to identify item loading into the editor.
+     * These fields are hidden type. Their validation runs only once when the item is loaded.
+     */
+    '/__$start': (value, formProperty: FormProperty, rootProperty: PropertyGroup) => {
+      //
+      this.formService.loading = true;
+      return null;
+    },
+    '/__$end': (value, formProperty: FormProperty, rootProperty: PropertyGroup) => {
+      // At the end of loading, setup extensions service.
+      const extensionsProp = rootProperty.getProperty('extension');
+      const formPropertyChanged = extensionsProp !== this.extensionsService.extensionsProp;
+      if(formPropertyChanged) {
+        this.extensionsService.setExtensions(extensionsProp);
+      }
+      this.formService.loading = false;
+      return null;
+    },
+    '/type': (value: string, formProperty: FormProperty, rootProperty: PropertyGroup) => {
+      // Internally represent display type as group. Identifying display/group type is deferred until
+      // the form is converted to json output.
+      if(value === 'display') {
+        formProperty.setValue('group', true);
+      }
+      return null;
+    }
+  };
 
   mySchema: any = {properties: {}};
   myTestSchema: any;
@@ -31,8 +58,6 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit, OnDestr
   setLinkId = new EventEmitter();
   @Input()
   model: any;
-  @Output()
-  modelChange = new EventEmitter<any>();
   @Output()
   valueChange = new EventEmitter<any>();
   @Input()
@@ -42,34 +67,15 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit, OnDestr
     this.mySchema = formService.getItemSchema();
   }
 
-  ngAfterViewInit() {
-    this.extensionsService.setExtensions((this.itemForm.rootProperty as PropertyGroup).getProperty('extension'));
-  }
-
-
-  /**
-   * Handle onChange event.
-   * @param changes - Changes from host component.
-   */
-  ngOnChanges(changes: SimpleChanges) {
-    console.log('sf-form-wrapper.ngOnChanges()');
-    if(changes.model) {
-      console.log('sf-form-wrapper.ngOnChanges(): model changed');
-      this.extensionsService.setExtensions((this.itemForm.rootProperty as PropertyGroup).getProperty('extension'));
-    }
-  }
-
 
   /**
    * Handle value change event.
    * @param value - Angular event
    */
   updateValue(value) {
-    this.valueChange.emit(value);
-    this.modelChange.emit(this.model);
-  }
-
-
-  ngOnDestroy() {
+    if(!this.formService.loading) { // Avoid emitting the changes while loading.
+      console.log('sf-form.onChange() emitted:');
+      this.valueChange.emit(value);
+    }
   }
 }

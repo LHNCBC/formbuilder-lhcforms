@@ -186,11 +186,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   ngOnInit() {
-    this.itemLoading$.asObservable().pipe(debounceTime(100))
-      .subscribe(() => {
-        // No activity of updates, turn off the spinner.
-      this.spinner$.next(false);
-    });
   }
 
 
@@ -210,6 +205,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.itemList = this.itemList || [];
     if(this.itemList.length === 0) {
       this.itemList.push({text: 'Item 0', type: 'string'});
+      this.itemData = this.itemList[0];
     }
     if(this.treeComponent?.treeModel) {
       this.treeComponent?.treeModel.update();
@@ -220,11 +216,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Inform the change to host element.
    */
   itemChanged(item) {
-    setTimeout(() => {
-      this.itemLoading$.next(true);
-      this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
+    this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
+    if(!this.formService.loading) {
       this.itemChange.emit(this.itemList);
-    });
+    }
   }
 
 
@@ -246,12 +241,13 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Handle tree events
    * @param event - The event.
    */
-  onEvent(event) {
+  onTreeEvent(event) {
     switch(event.eventName) {
       case 'activate':
         this.startSpinner();
         setTimeout(() => {
           this.setNode(event.node);
+          this.stopSpinner();
         });
         break;
 
@@ -259,15 +255,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         this.startSpinner();
         setTimeout(() => {
           this.onTreeUpdated();
+          this.stopSpinner();
         });
-        break;
-
-      case 'initialized':
-        this.startSpinner();
-        break;
-
-      case 'moveNode':
-        this.startSpinner();
         break;
 
       default:
@@ -277,16 +266,19 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
 
   /**
-   * Trigger loading and spinner observers. Typically, itemLoading is triggered
-   * by update events coming from child components. However, if a spinner is started,
-   * and there are no updates, the itemLoading is never triggered, which leaves spinner
-   * running without stop.
-   *
-   * Call this when not sure if itemLoading is triggered.
+   * Trigger spinner. It is a modal dialog disabling user actions.
+   * Match this with stopSpinner.
    */
   startSpinner() {
-    this.itemLoading$.next(true);
     this.spinner$.next(true);
+  }
+
+
+  /**
+   * Stop spinner.
+   */
+  stopSpinner() {
+    this.spinner$.next(false);
   }
 
   /**
@@ -377,6 +369,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       this.treeComponent.treeModel.focusNextNode();
       this.setNode(this.treeComponent.treeModel.getFocusedNode());
       document.getElementById('text').focus();
+      this.stopSpinner();
     });
   }
 
@@ -403,6 +396,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       this.treeComponent.treeModel.update();
       // Set the model for item editor.
       this.setNode(this.treeComponent.treeModel.getFocusedNode());
+      this.stopSpinner();
     });
   }
 

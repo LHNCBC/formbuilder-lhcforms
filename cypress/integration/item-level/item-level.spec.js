@@ -37,7 +37,7 @@ describe('Home page', () => {
       cy.contains('button', 'Create questions').click();
       cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
       cy.get('#type').as('type');
-      cy.contains('.node-content-wrapper', 'Item 0').as('item0').click();
+      cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
       cy.contains('div', 'Use question code?')
@@ -47,7 +47,7 @@ describe('Home page', () => {
       cy.get('#__\\$observationLinkPeriod_No').as('olpNo');
       cy.get('#__\\$observationLinkPeriod_Yes').as('olpYes');
 
-      cy.wait(1000);
+      cy.get('.spinner-border').should('not.exist');
     });
 
     it('should display item editor page', () => {
@@ -81,11 +81,8 @@ describe('Home page', () => {
       cy.contains('ngb-typeahead-window button', /vital signs, weight & height panel/i).click();
       cy.get('div.spinner-border').should('not.exist');
       cy.contains('ngb-modal-window button', 'Continue').click();
+      cy.contains('#itemContent span', 'Vital Signs Pnl');
       cy.toggleTreeNodeExpansion('Vital Signs Pnl'); // Expand node
-      cy.getTreeNode('Vital Signs Pnl').click();
-      // Loading of item should pop up spinner.
-      cy.waitForSpinner();
-      cy.get('#text').should('have.value', 'Vital Signs Pnl');
       cy.get('tree-root tree-viewport tree-node-collection tree-node span').then(($spans) => {
         return _.filter($spans.get(), (el) => {
           return $(el).text().match(/Resp rate|Heart rate/i);
@@ -182,6 +179,7 @@ describe('Home page', () => {
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Answer options form');
+      cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
         expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
@@ -219,6 +217,7 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
+      cy.get('#searchResults').should('be.visible');
       cy.contains('#completionOptions tr', '[in_i]').click();
       cy.get('@units').last().should('have.value','[in_i]');
       cy.questionnaireJSON().should((qJson) => {
@@ -295,6 +294,7 @@ describe('Home page', () => {
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Form with restrictions');
+      cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
       });
@@ -329,11 +329,11 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.toggleTreeNodeExpansion('Family member health history');
       cy.toggleTreeNodeExpansion('Living?');
-      cy.getTreeNode('Living?').click();
+      cy.clickTreeNode('Living?');
       cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
       cy.get('#answerOption\\.0\\.valueCoding\\.display').should('have.value', 'Yes');
       cy.get('#answerOption\\.0\\.valueCoding\\.code').should('have.value', 'LA33-6');
-      cy.getTreeNode('Date of Birth').click();
+      cy.clickTreeNode('Date of Birth');
       cy.get('#enableWhen\\.0\\.question').should('have.value', 'Living?');
       cy.get('#enableWhen\\.0\\.operator')
         .find('option:selected').should('have.text','=');
@@ -391,6 +391,7 @@ describe('Home page', () => {
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'New Form');
+      cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).to.deep.equal(fixtureJson.item[0].type);
         expect(qJson.item[1].type).to.deep.equal(fixtureJson.item[1].type);
@@ -474,8 +475,10 @@ describe('Home page', () => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.uploadFile(sampleFile, true);
+      cy.resetForm();
+      cy.uploadFile(sampleFile, false);
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+      cy.contains('button', 'Edit questions').click();
     });
 
     it('should preserve descendant item array', () => {
@@ -485,7 +488,6 @@ describe('Home page', () => {
     });
 
     it('should preserve change of datatype display', () => {
-      cy.contains('button', 'Edit questions').click();
       cy.toggleTreeNodeExpansion('My health history');
       cy.getTreeNode('Name').click();
       cy.questionnaireJSON().should((qJson) => {
@@ -495,8 +497,8 @@ describe('Home page', () => {
       cy.get('#text').clear().type('xxx');
       cy.get('#type').select('header');
 
-      cy.getTreeNode('My health history').click();
-      cy.getTreeNode('xxx').click();
+      cy.clickTreeNode('My health history');
+      cy.clickTreeNode('xxx');
       cy.get('#text').should('have.value', 'xxx');
       cy.get('#type').should('have.value', '12: group');
 

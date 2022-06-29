@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {TableComponent} from '../table/table.component';
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
 import {fhir} from '../../../fhir';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';
+import {ExtensionsService} from '../../../services/extensions.service';
+import {FormService} from '../../../services/form.service';
 
 /**
  * Restrictions are based on table component.
@@ -91,41 +93,48 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     });
   }
 
-  constructor(private restrictionOperatorService: RestrictionOperatorService) {
+  constructor(private restrictionOperatorService: RestrictionOperatorService,
+              private extensionsService: ExtensionsService,
+              private formService: FormService) {
     super();
   }
 
 
   ngOnInit(): void {
     super.ngOnInit();
-    /*
-    let sub = this.formProperty.root.getProperty('maxLength').valueChanges.subscribe((maxLength) => {
-      this.maxLength = (maxLength > 0 || maxLength > 0) ? maxLength : -1;
-    });
-    this.subscriptions.push(sub);
-    */
-    const sub = this.formProperty.root.getProperty('type').valueChanges.subscribe((type) => {
+    let sub = this.formProperty.root.getProperty('type').valueChanges.subscribe((type) => {
       this.dataType = type;
       this.appliedOptions = RestrictionsComponent.typeToOptions[type];
     });
     this.subscriptions.push(sub);
-    const restrictions = this.getRestrictions(this.formProperty.root, this.appliedOptions);
-    this.updateSelectedOptions(restrictions); // Cache the selections.
-
-    this.formProperty.setValue(restrictions, true);
-    this.formProperty.valueChanges.subscribe((restrictionsArray) => {
-      this.updateSelectedOptions(restrictionsArray); // Reset cache.
-      const extensionProperty = this.formProperty.root.getProperty('extension');
-      this.updateRelevantExtensions(extensionProperty.value, restrictionsArray);
-      extensionProperty.setValue(extensionProperty.value, true);
+    sub = this.extensionsService.extensionsObservable.subscribe((extensions) => {
+      if(this.formService.loading) {
+        // Initialization. Set up the widget reading the values from extensions.
+        const restrictions = this.getRestrictions(this.formProperty.root, this.appliedOptions);
+        this.updateSelectedOptions(restrictions); // Cache the selections.
+        this.formProperty.setValue(restrictions, true);
+      }
     });
+    this.subscriptions.push(sub);
+
+    sub = this.formProperty.valueChanges.subscribe((restrictionsArray) => {
+      if(!this.formService.loading) {
+        // formProperty => __$restricions. Read all user actions, but not initialization.
+        this.updateSelectedOptions(restrictionsArray); // Reset cache.
+        const extensionProperty = this.formProperty.root.getProperty('extension');
+        this.updateRelevantExtensions(extensionProperty.value, restrictionsArray);
+        extensionProperty.setValue(extensionProperty.value, true);
+      }
+    });
+    this.subscriptions.push(sub);
 
     // Watch changes in operator to reject unwanted selections.
-    this.restrictionOperatorService.subscribe((change: AcceptChange) => {
+    sub = this.restrictionOperatorService.subscribe((change: AcceptChange) => {
       if(this.selectedOptions.has(change.newValue)) {
         change.reject = true;
       }
     });
+    this.subscriptions.push(sub);
   }
 
   /**
