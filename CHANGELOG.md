@@ -2,6 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.14]  2022-07-07
+### Fixed
+ - In Conditional Display field, fixed missing answerBoolean field
+ when condition is empty or not empty.
+ - In Conditional Display field, fixed missing answer field when the
+ first condition is based on empty or not empty.
+
 ## [7.0.13]  2022-06-09
 ### Changed
 - Removed total score calculation.
