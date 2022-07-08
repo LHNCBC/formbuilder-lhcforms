@@ -179,10 +179,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
               private treeService: TreeService,
               private formService: FormService,
               private dataSrv: FetchService) {
-    const subscription = this.dataSrv.getItemEditorSchema().subscribe((data) => {
-      this.itemEditorSchema = data;
-    });
-    this.subscriptions.push(subscription);
+    this.itemEditorSchema = formService.itemEditorSchema;
   }
 
   ngOnInit() {
@@ -217,6 +214,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   itemChanged(item) {
     this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
+    if (typeof this.itemData?.linkId === 'number') {
+      this.itemData.linkId = ''+this.itemData.linkId;
+    }
+    // console.log('item changed', this.itemData?.linkId);
     if(!this.formService.loading) {
       this.itemChange.emit(this.itemList);
     }

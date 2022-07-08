@@ -32,6 +32,7 @@ import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.
 import {RestrictionsComponent} from './widgets/restrictions/restrictions.component';
 import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/restrictions-operator.component';
 import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
+import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 
 
 @Injectable()
@@ -49,6 +50,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('number', IntegerComponent);
     this.register('radio', RadioComponent);
     this.register('lb-radio', LabelRadioComponent);
+    this.register('enable-when', EnableWhenComponent);
     this.register('enable-when-source', EnableWhenSourceComponent);
     this.register('enable-operator', EnableOperatorComponent);
     this.register('left-label-form-group', LeftLabelFormGroupComponent);

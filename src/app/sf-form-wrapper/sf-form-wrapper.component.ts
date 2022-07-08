@@ -74,7 +74,7 @@ export class SfFormWrapperComponent {
    */
   updateValue(value) {
     if(!this.formService.loading) { // Avoid emitting the changes while loading.
-      console.log('sf-form.onChange() emitted:');
+      // console.log('sf-form.onChange() emitted:');
       this.valueChange.emit(value);
     }
   }

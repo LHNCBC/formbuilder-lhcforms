@@ -534,6 +534,9 @@
               "oneOf": [
                 {
                   "__$answerType": ["boolean"]
+                },
+                {
+                  "operator": ["$EXP$ target.value == 'exists'"]
                 }
               ]
             }
@@ -897,7 +900,7 @@
         "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",
         "addButtonLabel": "Add another condition",
-        "id": "table",
+        "id": "enable-when",
         "showFields": [
           {"field": "question",       "nolabel": true, "col": 5, "title": "Question"},
           {"field": "operator",       "nolabel": true, "col": 2, "title": "Operator"},

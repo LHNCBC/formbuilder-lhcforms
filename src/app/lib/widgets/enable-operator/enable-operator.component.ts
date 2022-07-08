@@ -8,26 +8,26 @@
  * It is updated programmatically in the class.
  */
 
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {SelectComponent} from '../select/select.component';
+import {Component, OnInit} from '@angular/core';
+import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
   selector: 'lfb-enable-operator',
   template: `
     <select #mySelect
             [(ngModel)]="model"
-            (change)="onSelected()"
+            (ngModelChange)="onModelChange($event)"
             [attr.name]="name" [attr.id]="id"
             [disabled]="schema.readOnly" class="form-control">
       <ng-container>
-        <option *ngFor="let option of options[answerType]" [ngValue]="option.option" >{{option.label}}</option>
+        <option *ngFor="let opt of options[answerType]" [ngValue]="opt.option" >{{opt.label}}</option>
       </ng-container>
     </select>
   `,
   styles: [
   ]
 })
-export class EnableOperatorComponent extends SelectComponent implements OnInit {
+export class EnableOperatorComponent extends LfbControlWidgetComponent implements OnInit {
 
   // All operators
   userOptions: any [] = [
@@ -78,13 +78,6 @@ export class EnableOperatorComponent extends SelectComponent implements OnInit {
   ngOnInit(): void {
     // this.formProperty represents operator from schema.
     const answerBool = this.formProperty.searchProperty('answerBoolean');
-    answerBool.valueChanges.subscribe((val) => {
-      if (val === true || val === false) {
-        if (this.model === 'exists' || this.model === 'notexists') {
-          this.formProperty.setValue('exists', true);
-        }
-      }
-    });
 
     this.formProperty.valueChanges.subscribe((val) => {
       if (val === 'exists' && answerBool.value === false) {
@@ -96,25 +89,25 @@ export class EnableOperatorComponent extends SelectComponent implements OnInit {
 
     this.formProperty.searchProperty('__$answerType').valueChanges.subscribe((val) => {
       this.answerType = val;
+      this.model = !this.model ? this.options[this.answerType][0].option : this.model;
+      this.onModelChange(this.model);
     });
   }
-
+/*
+  ngAfterViewInit(): void {
+    super.ngAfterViewInit();
+    console.log('enable-operator: ngAfterViewInit(): this.model:', this.control.value);
+  }
+*/
   /**
    * Update control property and its dependent answerBoolean based on user interaction with this widget.
    */
-  onSelected(): void {
-    if (this.model === 'exists') {
-      // answerBoolean should be set to true.
-      this.formProperty.searchProperty('answerBoolean').setValue(true, true);
-      this.formProperty.setValue(this.model, true);
-    } else if (this.model === 'notexists') {
-      // There is no notexists. It is 'exists' with answerBoolean set to false
-      this.formProperty.searchProperty('answerBoolean').setValue(false, true);
-      this.formProperty.setValue('exists', true);
-    } else {
-      // All others cases
-      this.formProperty.searchProperty('answerBoolean').reset(null, true);
-      this.formProperty.setValue(this.model, true);
+  onModelChange(event): void {
+    const controlVal = event === 'notexists' ? 'exists' : event;
+    const bool = event === 'exists';
+    if(controlVal === 'exists') {
+      this.formProperty.searchProperty('answerBoolean').setValue(bool, true);
     }
+    this.control.setValue(controlVal);
   }
 }

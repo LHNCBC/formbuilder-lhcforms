@@ -62,13 +62,6 @@ export class FetchService {
       );
   }
 
-  /**
-   * This is used to configure widget to edit item in json editor.
-   */
-  getItemEditorSchema(): Observable<any> {
-    return this.http.get(this.assetsUrl + '/item-editor.schema.json', {responseType: 'json'});
-  }
-
 
   /**
    * Search LOINC questionnaires on ctss, intended for auto completion for importing questionnaires.

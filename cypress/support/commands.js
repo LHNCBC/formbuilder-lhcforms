@@ -161,6 +161,18 @@ Cypress.Commands.add('FHIRServerResponse', (menuText) => {
   });
 });
 
+Cypress.Commands.add('enterAnswerOptions', (codings) => {
+  cy.selectDataType('choice');
+  cy.get('[id^="answerOption"]').should('be.visible');
+  codings.forEach((coding, index) => {
+    cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
+    cy.get('[id="answerOption.'+index+'.valueCoding.display"]').type(coding.display);
+    cy.get('[id="answerOption.'+index+'.valueCoding.code"]').type(coding.code);
+    cy.get('[id="answerOption.'+index+'.valueCoding.system"]').type(coding.system);
+    cy.get('[id="answerOption.'+index+'.valueCoding.__$score"]').type(coding.__$score);
+    cy.contains('button', 'Add another answer').click();
+  });
+});
 /**
  * Create a sample answer option list.
  */

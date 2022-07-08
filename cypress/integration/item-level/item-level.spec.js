@@ -319,6 +319,83 @@ describe('Home page', () => {
       });
     });
 
+    it('should show answer column if there is an answer option in any row of conditional display', () => {
+      cy.selectDataType('choice');
+      cy.enterAnswerOptions([
+        {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
+        {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
+      ]);
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').should('have.value', 'New item 1');
+      cy.enterAnswerOptions([
+        {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
+        {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
+        {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
+      ]);
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').should('have.value', 'New item 2');
+
+      cy.get('#enableWhen\\.0\\.question').as('r1Question').type('{enter}');
+      cy.get('#enableWhen\\.0\\.operator').as('r1Operator').select('Not empty');
+      cy.get('#enableWhen\\.0\\.answerCoding').should('not.exist');
+
+      cy.contains('button', 'Add another condition').click();
+
+      cy.get('#enableWhen\\.1\\.question').as('r2Question').type('{downarrow}{enter}');
+      cy.get('#enableWhen\\.1\\.operator').as('r2Operator').select('=');
+      cy.get('#enableWhen\\.1\\.answerCoding').as('r2Answer').select('display 3 (c3)');
+
+      cy.get('#enableWhen\\.0\\.answerCoding').should('not.exist');
+
+      cy.get('@r2Operator').select('Empty');
+      cy.get('@r2Answer').should('not.exist');
+      cy.get('@r1Operator').select('=');
+      cy.get('#enableWhen\\.0\\.answerCoding').as('r1Answer').should('be.visible');
+      cy.get('@r1Answer').select('display 1 (c1)');
+    });
+
+    it('should work with operator exists value conditional display', () => {
+      // cy.selectDataType('choice');
+      cy.enterAnswerOptions([
+        {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
+        {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
+      ]);
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').should('have.value', 'New item 1');
+      cy.enterAnswerOptions([
+        {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
+        {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
+        {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
+      ]);
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').should('have.value', 'New item 2');
+
+      cy.get('#enableWhen\\.0\\.question').as('r1Question').type('{enter}');
+      cy.get('#enableWhen\\.0\\.operator').as('r1Operator').select('Not empty');
+
+      cy.contains('button', 'Add another condition').click();
+
+      cy.get('#enableWhen\\.1\\.question').as('r2Question').type('{downarrow}{enter}');
+      cy.get('#enableWhen\\.1\\.operator').as('r2Operator').select('Empty');
+      cy.get('@r2Operator').should('have.value', '1: notexists');
+
+      cy.questionnaireJSON().should((json) => {
+        expect(json.item[2].enableWhen).to.deep.equal([
+          {
+            question: json.item[0].linkId,
+            operator: 'exists',
+            answerBoolean: true
+          },
+          {
+            question: json.item[1].linkId,
+            operator: 'exists',
+            answerBoolean: false
+          }
+          ]);
+      });
+
+    });
+
     it('should import form with conditional display field', () => {
       const sampleFile = 'enable-when-sample.json';
       let fixtureJson;
