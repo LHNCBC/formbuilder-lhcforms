@@ -12,6 +12,7 @@
                 <span class="node-display-prefix">{{getIndexPath(node).join('.')}}</span> <span [ngClass]="node.nodeClass">{{node.displayField}}</span>
               </div>
             </ng-template>
+            <ng-template #loadingTemplate><span></span></ng-template>
           </tree-root>
         </mat-sidenav>
         <mat-sidenav-content>
