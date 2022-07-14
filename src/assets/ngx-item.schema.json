@@ -1637,14 +1637,18 @@
                   ">=",
                   ">"
                 ],
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "select",
+                  "addEmptyOption": true
+                }
               },
               "unit": {
                 "description": "A human-readable form of the unit.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
                 "type": "string",
                 "widget": {
-                  "id": "units"
+                  "id": "quantity-unit"
                 }
               },
               "system": {
@@ -1753,8 +1757,9 @@
           {"field": "valueCoding.display", "title": "Display", "col": 4, "nolabel": true},
           {"field": "valueCoding.code", "title": "Code", "col": 3, "nolabel": true},
           {"field": "valueCoding.system", "title": "System", "col": 4, "nolabel": true},
-          {"field": "valueQuantity.value","title": "Value", "col": 6, "nolabel": true},
-          {"field": "valueQuantity.unit", "title": "Units", "col": 5, "nolabel": true},
+          {"field": "valueQuantity.value","title": "Value", "col": 4, "nolabel": true},
+          {"field": "valueQuantity.comparator", "title": "Comparator", "col": 2, "nolabel": true},
+          {"field": "valueQuantity.unit", "title": "Unit", "col": 5, "nolabel": true},
           {"field": "valueReference", "noHeader": true, "nolabel": true}
         ]
       }

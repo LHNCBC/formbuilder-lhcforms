@@ -35,6 +35,9 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
     this.allowedOptions = allowedOptions.filter((e) => {
       return this.isIncluded(e.value);
     });
+    if(this.schema.widget.addEmptyOption) {
+      this.allowedOptions.unshift({value: null, label: 'None'});
+    }
   }
 
   /**

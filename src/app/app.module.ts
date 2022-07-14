@@ -84,6 +84,7 @@ import { ObservationLinkPeriodComponent } from './lib/widgets/observation-link-p
 import { LfbDisableControlDirective } from './lib/directives/lfb-disable-control.directive';
 import { LfbSpinnerComponent } from './lib/widgets/lfb-spinner/lfb-spinner.component';
 import { EnableWhenComponent } from './lib/widgets/enable-when/enable-when.component';
+import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit.component';
 
 @NgModule({
   declarations: [
@@ -143,6 +144,7 @@ import { EnableWhenComponent } from './lib/widgets/enable-when/enable-when.compo
     LfbDisableControlDirective,
     LfbSpinnerComponent,
     EnableWhenComponent,
+    QuantityUnitComponent
   ],
   imports: [
     AppRoutingModule,

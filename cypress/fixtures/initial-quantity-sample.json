@@ -1,0 +1,39 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Quantity Sample",
+  "status": "draft",
+  "item": [
+    {
+      "text": "Item 0",
+      "type": "quantity",
+      "linkId": "4979054840554",
+      "repeats": true,
+      "initial": [
+        {
+          "valueQuantity": {
+            "value": 1,
+            "comparator": "<",
+            "unit": "u1",
+            "system": "http://unitsofmeasure.org",
+            "code": "c2"
+          }
+        },
+        {
+          "valueQuantity": {
+            "value": 2,
+            "unit": "u2",
+            "system": "http://example.org",
+            "code": "c2"
+          }
+        },
+        {
+          "valueQuantity": {
+            "value": 3,
+            "unit": "u3",
+            "code": "c2"
+          }
+        }
+      ]
+    }
+  ]
+}
