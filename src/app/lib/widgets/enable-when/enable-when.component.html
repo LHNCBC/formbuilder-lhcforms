@@ -43,7 +43,7 @@
       <tbody [ngbCollapse]="isCollapsed">
       <tr class="d-flex p-0 m-0" *ngFor="let rowProperty of rowProperties; index as ind">
         <td *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 m-0 align-self-center">
-          <lfb-form-element nolabel="true" [formProperty]="getProperty(rowProperty, showField.field)"></lfb-form-element>
+          <lfb-form-element *ngIf="isShow(rowProperty, showField.field)" nolabel="true" [formProperty]="getProperty(rowProperty, showField.field)"></lfb-form-element>
         </td>
         <td class="col-sm-1 align-middle action-column p-0 m-0 align-self-center">
           <button (click)="removeItem(rowProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
