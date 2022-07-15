@@ -15,7 +15,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
   selector: 'lfb-enable-operator',
   template: `
     <select #mySelect
-            [(ngModel)]="model"
+            [(ngModel)]="myModel"
             (ngModelChange)="onModelChange($event)"
             [attr.name]="name" [attr.id]="id"
             [disabled]="schema.readOnly" class="form-control">
@@ -69,7 +69,7 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
     reference: this.userOptions2
   };
 
-  model: string;
+  myModel: string;
   answerType: string;
 
   /**
@@ -81,24 +81,18 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
 
     this.formProperty.valueChanges.subscribe((val) => {
       if (val === 'exists' && answerBool.value === false) {
-        this.model = 'notexists';
+        this.myModel = 'notexists';
       } else {
-        this.model = val;
+        this.myModel = val;
       }
     });
 
     this.formProperty.searchProperty('__$answerType').valueChanges.subscribe((val) => {
       this.answerType = val;
-      this.model = !this.model ? this.options[this.answerType][0].option : this.model;
-      this.onModelChange(this.model);
     });
   }
-/*
-  ngAfterViewInit(): void {
-    super.ngAfterViewInit();
-    console.log('enable-operator: ngAfterViewInit(): this.model:', this.control.value);
-  }
-*/
+
+
   /**
    * Update control property and its dependent answerBoolean based on user interaction with this widget.
    */
