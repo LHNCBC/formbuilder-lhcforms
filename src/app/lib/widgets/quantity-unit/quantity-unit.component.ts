@@ -32,7 +32,7 @@ export class QuantityUnitComponent extends UnitsComponent implements AfterViewIn
         this.formProperty.parent.getProperty('system').setValue(UnitsComponent.ucumSystemUrl, true);
         this.formProperty.setValue(selected[1], false);
       } else {
-        this.formProperty.parent.getProperty('code').setValue(data.final_val, true);
+        this.formProperty.parent.getProperty('code').setValue(null, true);
         this.formProperty.parent.getProperty('system').setValue(null, true);
         this.formProperty.setValue(data.final_val, false);
       }

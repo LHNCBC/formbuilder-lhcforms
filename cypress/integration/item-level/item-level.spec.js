@@ -488,7 +488,6 @@ describe('Home page', () => {
       });
     });
 
-
     it('should create quantity type with initial quantity unit', () => {
       cy.selectDataType('quantity');
       cy.get('@type').contains('quantity');
@@ -520,14 +519,12 @@ describe('Home page', () => {
         expect(qJson.item[0].initial[0]).to.deep.equal({
           valueQuantity: {
             value: 123,
-            unit: 'xxxx',
-            code: 'xxxx'
+            unit: 'xxxx'
           }
         });
       });
 
     });
-
 
     it('should create observation link period', () => {
       // Yes/no option

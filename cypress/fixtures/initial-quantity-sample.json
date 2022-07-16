@@ -32,6 +32,12 @@
             "unit": "u3",
             "code": "c2"
           }
+        },
+        {
+          "valueQuantity": {
+            "value": 4,
+            "unit": "u4"
+          }
         }
       ]
     }
