@@ -492,7 +492,6 @@ describe('Home page', () => {
       cy.selectDataType('quantity');
       cy.get('@type').contains('quantity');
       cy.get('#initial\\.0\\.valueQuantity\\.value').as('value0').type('123');
-      cy.get('#initial\\.0\\.valueQuantity\\.comparator').as('comparator0').select('<');
       cy.get('#initial\\.0\\.valueQuantity\\.unit')
         .as('unit0').type('f');
       cy.get('#searchResults').as('unitSuggestions').should('be.visible', true);
@@ -504,7 +503,6 @@ describe('Home page', () => {
         expect(qJson.item[0].initial[0]).to.deep.equal({
           valueQuantity: {
             value: 123,
-            comparator: '<',
             unit: 'farad',
             code: 'F',
             system: 'http://unitsofmeasure.org'
@@ -512,7 +510,6 @@ describe('Home page', () => {
         });
       });
 
-      cy.get('@comparator0').select('None');
       cy.get('@unit0').clear().type('xxxx').blur().should('have.value', 'xxxx');
 
       cy.questionnaireJSON().should((qJson) => {
