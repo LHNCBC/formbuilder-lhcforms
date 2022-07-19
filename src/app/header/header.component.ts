@@ -14,7 +14,8 @@ import * as appVersion from '../../assets/version.json';
         <a mat-button id="siteName" href="/">NLM Form Builder</a>
       </div>
       <div *ngIf="appVersion" class="float-lg-right version-info align-self-end font-weight-bold"
-        >Version: <a href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
+        >Version: <a target="_blank" rel="noopener noreferrer"
+                     href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
       <div class="float-lg-right" *ngIf="isFirebaseEnabled">
         <div *ngIf="!isUserSignedIn">
           <button mat-button color="primary" (click)="showSignInDialog()">
