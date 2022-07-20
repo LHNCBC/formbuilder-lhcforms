@@ -29,7 +29,7 @@ describe('Home page', () => {
 
   it('should display version info', () => {
     cy.get('.version-info').find('a').should('have.attr', 'href',
-      'https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md').contains(/^\d+\.\d+\.\d+$/);
+      'https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md').contains(/^\d+\.\d+\.\d+/);
   });
 
   describe('Home page import options', () => {
