@@ -1,75 +1,44 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, DoCheck, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {ObjectProperty, PropertyGroup} from 'ngx-schema-form/lib/model';
+import {Observable, of} from 'rxjs';
 
 @Component({
   selector: 'lfb-enable-when',
   templateUrl: './enable-when.component.html',
   styleUrls: ['./enable-when.component.css']
 })
-export class EnableWhenComponent extends TableComponent {
+export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck {
 
-  /**
-   * Get fields to show.
-   */
-  getShowFields(): any [] {
-    let ret: any [] = [];
+  showFieldNames: string[] = ['question', 'operator', 'answerString'];
+  showHeaderFields: any[];
 
-    if (this.formProperty.schema.widget && this.formProperty.schema.widget.showFields) {
-      const showFields = this.formProperty.schema.widget.showFields;
-      let answerIncluded = false;
-      ret = showFields.filter((field) => {
-        // Only one of the answer[x] is shown.
-        const isAnswer = this._isAnswerField(field.field);
-        if(isAnswer && answerIncluded) {
-          return false;
-        }
-        const isVisible = this.isVisible(field.field);
+  ngOnInit() {
+    super.ngOnInit();
+    const definedShowFields = this.formProperty.schema.widget.showFields;
+    this.showHeaderFields = this.showFieldNames.map((fName) => {
 
-        if(isAnswer && isVisible) {
-          answerIncluded = true;
-        }
-        return isVisible;
-      });
-    }
-    return ret;
-  }
-
-  /**
-   * Check visibility i.e. based on visibleIf of ngx-schema-form
-   * @param propertyId - property id
-   */
-  isVisible(propertyId) {
-    let ret = false;
-    if (this.formProperty.properties.length > 0) {
-      // tslint:disable-next-line:prefer-for-of
-      for (let i = 0; !ret && i < this.formProperty.properties.length; i++) {
-        const visible = Util.isVisible(this.formProperty.properties[i], propertyId);
-        if(visible) {
-          if(propertyId === 'answerBoolean') {
-            const answerType = this.formProperty.properties[i].getProperty('__$answerType').value;
-            ret = !(answerType === 'choice' || answerType === 'open-choice');
-          }
-          else {
-            ret = true;
-          }
-        }
-        else {
-          // FormProperty visibility (Util.isVisible()) is also based on operator value.
-          // For enableWhen table, disregard the operator value to show the empty columns. Note that the
-          // display of fields in the column itself will be based on the operator value.
-          // The visibility is still significant in the form property to include/exclude in the json output.
-          const answerType = this.formProperty.properties[i].getProperty('__$answerType').value;
-          ret = this.isAnswerTypeMatch(answerType, propertyId);
-        }
+      const schemaDef = definedShowFields.find((f) => {
+        return f.field === fName;
+      })
+      if(schemaDef) {
+        schemaDef.description = this.formProperty.schema.items.properties[fName].description;
       }
-    }
-    return ret;
+      return schemaDef;
+    });
+
   }
 
-  get rowProperties(): PropertyGroup [] {
-    return this.formProperty.properties as PropertyGroup [];
+  ngDoCheck() {
+    if(this.formProperty.properties.length === 0) {
+      this.addItem();
+    }
+  }
+
+
+  get rowProperties(): ObjectProperty [] {
+    return this.formProperty.properties as ObjectProperty[];
   }
 
 
@@ -81,12 +50,15 @@ export class EnableWhenComponent extends TableComponent {
    * @return boolean
    */
   isShow(singleEnableWhenProperty: PropertyGroup, fieldName: string): boolean {
-    let show = true;
-    if(fieldName === 'operator') {
+    let show = false;
+    if(fieldName === 'question') {
+      show = true;
+    }
+    else if(fieldName === 'operator') {
       const q = singleEnableWhenProperty.getProperty('question').value;
       show = !!q;
     }
-    else if(this._isAnswerField(fieldName)) {
+    else if(Util.isAnswerField(fieldName)) {
       const op = singleEnableWhenProperty.getProperty('operator').value;
       show = !!op && op !== 'exists';
     }
@@ -95,11 +67,30 @@ export class EnableWhenComponent extends TableComponent {
 
 
   /**
-   * Utility to identify answer[x] field.
-   * @param f - Field name
+   * Check validity of enableWhen fields. question, operator and answer[x] are mandatory.
+   * Question implies presence of enableWhen. Highlight other missing fields.
+   * @param rowProperty
+   * @param field
    */
-  _isAnswerField(f): boolean {
-    return f && f.startsWith('answer');
+  isValid(rowProperty: ObjectProperty, field: string): boolean {
+    const prop = rowProperty.getProperty(field);
+    const ret = prop._errors?.some((err) => {
+      return err.code?.startsWith('ENABLEWHEN');
+    });
+    return !ret;
+  }
+
+
+  /**
+   * Get fields to show.
+   */
+  getFields(rowFormProperty: ObjectProperty): any[] {
+    let ret: any[] = [];
+    const answerType = rowFormProperty.getProperty('__$answerType').value;
+    ret = this.formProperty.schema.widget.showFields.filter((f) => {
+      return this.includeField(answerType, f.field);
+    });
+    return ret;
   }
 
 
@@ -109,22 +100,9 @@ export class EnableWhenComponent extends TableComponent {
    * @param answerType - Type of the source item.
    * @param answerField - One of the answer[x].
    */
-  isAnswerTypeMatch(answerType: string, answerField: string): boolean {
-    const answerTypeMap = {
-      boolean: 'answerBoolean',
-      integer: 'answerInteger',
-      decimal: 'answerInteger',
-      date: 'answerDate',
-      dateTime: 'answerDateTime',
-      time: 'answerTime',
-      string: 'answerString',
-      text: 'answerString',
-      choice: 'answerCoding',
-      'open-choice': 'answerCoding',
-      quantity: 'answerQuantity',
-      reference: 'answerReference'
-    };
-
-    return answerTypeMap[answerType] === answerField;
+  includeField(answerType: string, answerField: string): boolean {
+    // Assume answerType empty for answerString field.
+    const ret: boolean = !answerType && answerField === 'answerString';
+    return ret || !Util.isAnswerField(answerField) || Util.getAnswerFieldName(answerType) === answerField;
   }
 }

@@ -354,6 +354,39 @@ describe('Home page', () => {
       cy.get('@r1Answer').select('display 1 (c1)');
     });
 
+    it('should show answer column if there is an answer option in any row of conditional display', () => {
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').should('have.value', 'New item 1');
+
+      const r1Question = '#enableWhen\\.0\\.question';
+      const r1Operator = '#enableWhen\\.0\\.operator';
+      const r1Answer = '[id^="enableWhen\\.0\\.answer"]';
+      const r2Question = '#enableWhen\\.1\\.question';
+      const r2Operator = '#enableWhen\\.1\\.operator';
+      const r2Answer = '[id^="enableWhen\\.1\\.answer"]';
+      // First row operator='exist'
+      cy.get(r1Question).as('r1Question').type('{enter}');
+      cy.get(r1Operator).as('r1Operator').select('Not empty');
+      cy.get(r1Answer).should('not.exist');
+
+      cy.contains('button', 'Add another condition').click();
+
+      // Second row other than 'exist'
+      cy.get(r2Question).type('{downarrow}{enter}');
+      cy.get(r2Operator).select('=');
+      cy.get(r2Answer).type('2');
+      cy.get(r1Answer).should('not.exist');
+
+      // Flip the first and second row operators
+      cy.get(r1Operator).select('=');
+      cy.get(r1Answer).type('1');
+      cy.get(r2Answer).should('have.value','2');
+
+      cy.get(r2Operator).select('Empty');
+      cy.get(r1Answer).should('have.value', '1');
+      cy.get(r2Answer).should('not.exist');
+    });
+
     it('should work with operator exists value conditional display', () => {
       // cy.selectDataType('choice');
       cy.enterAnswerOptions([

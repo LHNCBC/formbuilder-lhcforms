@@ -25,24 +25,18 @@
     <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
       <thead *ngIf="!noHeader" class="thead-light">
       <tr class="d-flex">
-        <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
+        <th *ngFor="let showField of showHeaderFields" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
           <lfb-title
-            [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
-            [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
-          ></lfb-title>
-        </th>
-        <th *ngIf="rowSelectionType === 'radio' || rowSelectionType === 'checkbox'" class="col-sm-2">
-          <lfb-title
-            title="Default"
-            helpMessage="Pick a default item"
+            [title]="showField.title"
+            [helpMessage]="getProperty(formProperty.properties[0], 'answerString').schema.description"
           ></lfb-title>
         </th>
         <th *ngIf="!singleItem" class="col-sm-1"></th>
       </tr>
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
-      <tr class="d-flex p-0 m-0" *ngFor="let rowProperty of rowProperties; index as ind">
-        <td *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 m-0 align-self-center">
+      <tr class="d-flex p-0 m-0" *ngFor="let rowProperty of formProperty.properties">
+        <td *ngFor="let showField of getFields(rowProperty)" class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 m-0 align-self-center"  [ngClass]="{invalid: !isValid(rowProperty, showField.field)}">
           <lfb-form-element *ngIf="isShow(rowProperty, showField.field)" nolabel="true" [formProperty]="getProperty(rowProperty, showField.field)"></lfb-form-element>
         </td>
         <td class="col-sm-1 align-middle action-column p-0 m-0 align-self-center">
