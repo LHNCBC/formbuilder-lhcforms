@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit} from '@angular/core';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {TableComponent} from '../table/table.component';
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
@@ -95,8 +95,9 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
 
   constructor(private restrictionOperatorService: RestrictionOperatorService,
               private extensionsService: ExtensionsService,
-              private formService: FormService) {
-    super();
+              private formService: FormService,
+              private elementRef: ElementRef) {
+    super(elementRef);
   }
 
 
