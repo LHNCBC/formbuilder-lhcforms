@@ -1,7 +1,7 @@
 /**
  * Handles FHIR initial field interaction in the item level form.
  */
-import {AfterViewInit, Component, DoCheck, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, DoCheck, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Subscription} from 'rxjs';
 
@@ -12,8 +12,8 @@ import {Subscription} from 'rxjs';
 })
 export class InitialComponent extends TableComponent implements DoCheck, OnDestroy {
 
-  constructor() {
-    super();
+  constructor(private elementRef: ElementRef) {
+    super(elementRef);
   }
 
   /**

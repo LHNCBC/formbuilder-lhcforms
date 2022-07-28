@@ -71,6 +71,7 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
 
   myModel: string;
   answerType: string;
+  selectOptionList: any [];
 
   /**
    * Initialize
@@ -89,6 +90,16 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
 
     this.formProperty.searchProperty('__$answerType').valueChanges.subscribe((val) => {
       this.answerType = val;
+      if(this.answerType) {
+        this.selectOptionList = this.options[this.answerType];
+        this.myModel = !this.myModel ? this.selectOptionList[0].option : this.myModel;
+        setTimeout(() => {
+          this.onModelChange(this.myModel);
+        });
+      }
+      else {
+        this.selectOptionList = [];
+      }
     });
   }
 
@@ -96,9 +107,9 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
   /**
    * Update control property and its dependent answerBoolean based on user interaction with this widget.
    */
-  onModelChange(event): void {
-    const controlVal = event === 'notexists' ? 'exists' : event;
-    const bool = event === 'exists';
+  onModelChange(value): void {
+    const controlVal = value === 'notexists' ? 'exists' : value;
+    const bool = value === 'exists';
     if(controlVal === 'exists') {
       this.formProperty.searchProperty('answerBoolean').setValue(bool, true);
     }

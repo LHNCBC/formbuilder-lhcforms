@@ -33,7 +33,7 @@ export class FormService {
   treeModel: TreeModel;
   itemSchema: any = {properties: {}};
   flSchema: any = {properties: {}};
-  _itemEditorSchema: any = {properties: {}};
+  private _itemEditorSchema: any = {properties: {}};
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
     ngxItemSchema.definitions.Extension = fhirExtensionSchema as any;

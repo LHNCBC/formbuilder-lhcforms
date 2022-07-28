@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, DoCheck, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, DoCheck, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {fhir} from '../../../fhir';
 import {PropertyGroup} from 'ngx-schema-form/lib/model';
@@ -15,8 +15,8 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
 
   subscriptions: Subscription [] = [];
-  constructor(private treeService: TreeService) {
-    super();
+  constructor(private treeService: TreeService, private elementRef: ElementRef) {
+    super(elementRef);
   }
 
   ngOnInit() {

@@ -52,7 +52,7 @@ describe('Home page', () => {
       cy.get('ngb-typeahead-window button').first().click();
       cy.get('#title').should('have.value', 'Vital signs with method details panel');
       cy.get('[id^="booleanControlled_Yes"]').should('have.class', 'active');
-      cy.get('[id="code.0.code"]').should('have.value', '34566-0');
+      cy.get('[id^="code.0.code"]').should('have.value', '34566-0');
     });
 
     it('should import form from FHIR server', () => {
@@ -64,7 +64,7 @@ describe('Home page', () => {
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
       cy.get('[id^="booleanControlled_Yes"]').should('have.class', 'active');
-      cy.get('[id="code.0.code"]').should('have.value', '88121-9');
+      cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });
 
@@ -98,7 +98,7 @@ describe('Home page', () => {
 
     it('should hide/display code field', () => {
       cy.get('@codeYes').check({force: true});
-      cy.get('#code\\.0\\.code').as('code');
+      cy.get('[id^="code.0.code"]').as('code');
       cy.get('@code').should('be.visible');
       cy.get('@codeNo').check({force: true});
       cy.get('@code').should('not.exist');
@@ -276,7 +276,7 @@ describe('Home page', () => {
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
       cy.get('[id^="booleanControlled_Yes"]').should('have.class', 'active');
-      cy.get('[id="code.0.code"]').should('have.value', '88121-9');
+      cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });
 
