@@ -7,6 +7,7 @@ This project follows [Semantic Versioning](http://semver.org/).
  - Fix units in valueQuantity of initial field.
 ### Added
  - Add app version information to the header.
+ - Add tabindex to active node in side bar tree to improve accessibility.
 
 ## [7.0.14]  2022-07-07
 ### Fixed
