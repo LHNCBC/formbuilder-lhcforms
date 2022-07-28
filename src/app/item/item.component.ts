@@ -12,7 +12,7 @@ import {
   ViewChild,
   EventEmitter,
   OnChanges,
-  SimpleChanges
+  SimpleChanges, Renderer2
 } from '@angular/core';
 import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
@@ -93,6 +93,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
+  @ViewChild('nodeDisplay', { read: ElementRef }) nodeDisplayEl: ElementRef;
   // qItem: any;
   focusNode: ITreeNode;
   itemData: fhir.QuestionnaireItem = null;
@@ -178,7 +179,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
               private modalService: NgbModal,
               private treeService: TreeService,
               private formService: FormService,
-              private dataSrv: FetchService) {
+              private dataSrv: FetchService,
+              private renderer: Renderer2) {
     this.itemEditorSchema = formService.itemEditorSchema;
   }
 
@@ -237,6 +239,25 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     }
   }
 
+  /**
+   * Add tab index on active node for accessibility
+   */
+  setTabIndex(): void {
+    const wrapperEl = this.nodeDisplayEl.nativeElement.closest('.node-content-wrapper');
+    if(wrapperEl) {
+        this.renderer.setAttribute(wrapperEl, 'tabindex', '0');
+    }
+  }
+
+  /**
+   * Remove tab index on active node for accessibility
+   */
+  removeTabIndex(): void {
+    const wrapperEl = this.nodeDisplayEl.nativeElement.closest('.node-content-wrapper');
+    if(wrapperEl) {
+      this.renderer.removeAttribute(wrapperEl, 'tabindex');
+    }
+  }
 
   /**
    * Handle tree events
@@ -258,6 +279,14 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
           this.onTreeUpdated();
           this.stopSpinner();
         });
+        break;
+
+      case 'focus':
+        this.setTabIndex();
+        break;
+      case 'deactivate':
+      case 'blur':
+        this.removeTabIndex();
         break;
 
       default:
