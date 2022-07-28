@@ -9,6 +9,8 @@ import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
 import {FormComponent, FormProperty, PropertyGroup} from 'ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
+import {ObjectProperty} from 'ngx-schema-form/lib/model';
+import {Util} from '../lib/util';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -47,6 +49,37 @@ export class SfFormWrapperComponent {
       // the form is converted to json output.
       if(value === 'display') {
         formProperty.setValue('group', true);
+      }
+      return null;
+    },
+    '/enableWhen/*': (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup) => {
+      const aType = formProperty.getProperty('__$answerType').value;
+      const q = formProperty.getProperty('question');
+      const op = formProperty.getProperty('operator');
+      const aField = Util.getAnswerFieldName(aType || 'string');
+      const answerX = formProperty.getProperty(aField);
+      let invalid = false;
+      if((q?.value?.trim().length > 0) ) {
+        if(!(op?.value?.trim().length > 0)) {
+          const err: any = {};
+          err.code = 'ENABLEWHEN_OP_REQUIRED';
+          err.path = `#${op.canonicalPathNotation}`;
+          err.message = `${op.canonicalPathNotation} is required if you choose to add a condition for (${q.value}) (${q.canonicalPathNotation})`;
+          err.params = [q.value, op.value];
+          op.extendErrors(err);
+          invalid = true;
+        }
+        const aValue = answerX.value;
+        if((Util.isEmpty(aValue)) && op?.value !== 'exists') {
+          const err: any = {};
+          err.code = 'ENABLEWHEN_ANSWER_REQUIRED';
+          err.path = `#${answerX.canonicalPathNotation}`;
+          err.message = `${answerX.canonicalPathNotation} is required if you choose to add a condition for (${q.value}, ${op.value})`;
+          const valStr = JSON.stringify(aValue);
+          err.params = invalid ? [q.value, op.value, valStr] : [q.value, valStr];
+          answerX.extendErrors(err);
+          invalid = true;
+        }
       }
       return null;
     }

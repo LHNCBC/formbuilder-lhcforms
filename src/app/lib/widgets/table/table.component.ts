@@ -10,7 +10,7 @@
  * in an integer variable.
  */
 
-import {AfterViewInit, Component, DoCheck, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
+import {AfterViewInit, Component, DoCheck, ElementRef, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
 import {ArrayWidget, FormProperty} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
@@ -54,6 +54,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   rowSelection = false; // If a row selection column is displayed. Default is no column.
 
   subscriptions: Subscription [] = [];
+  constructor(private elRef: ElementRef) {
+    super();
+  }
   /**
    * Make sure at least one row is present for zero length array?
    */
@@ -226,13 +229,29 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
       this.addItem();
       setTimeout(() => {
         const props = this.formProperty.properties as FormProperty [];
-        document.getElementById(this.getCanonicalPath(props,props.length - 1, 0)).focus();
+        this.getInputElementInTable(props.length - 1, 0).focus();
       });
     }
     else {
       popoverRef.open();
     }
   }
+
+
+  /**
+   * Get input element in the table.
+   * Assumes one input or select element in a single cell.
+   *
+   * @param row - Row index of the cell
+   * @param col - Column index of the cell.
+   */
+  getInputElementInTable(row, col) {
+    return this.elRef.nativeElement.querySelector('tbody')
+      .querySelectorAll('tr')[row]
+      .querySelectorAll('td')[col]
+      .querySelector('input,select');
+  }
+
 
   /**
    * Get canonical path of the control located in a cell in the table.

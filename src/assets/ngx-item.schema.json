@@ -432,7 +432,6 @@
           "__$answerType": {
             "title": "Source question type",
             "type": "string",
-            "default": "string",
             "widget": {"id": "hidden"}
           },
           "id": {

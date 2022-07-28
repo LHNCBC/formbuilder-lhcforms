@@ -95,6 +95,7 @@ ngOnChanges(changes: SimpleChanges): void {
     const parentId = this.formProperty.parent?.canonicalPathNotation;
     if(parentId) {
       let id = parentId + this.formProperty.canonicalPathNotation.replace(/^.*\./, '.');
+      id = `${id}_${AppFormElementComponent.seqNum++}`
       if (this.formProperty.root.rootName) {
         id = `${this.formProperty.root.rootName}:${id}`;
       }

@@ -107,7 +107,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
    */
   onSelect($event): void {
     this.formProperty.setValue($event.item.data.linkId, true);
-    this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, true);
+    this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, false);
   }
 
 
