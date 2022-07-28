@@ -509,6 +509,53 @@ describe('Home page', () => {
       });
     });
 
+    it('should import quantity type', () => {
+      const sampleFile = 'initial-quantity-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Quantity Sample');
+      cy.contains('button', 'Edit questions').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson).to.deep.equal(fixtureJson);
+      });
+    });
+
+    it('should create quantity type with initial quantity unit', () => {
+      cy.selectDataType('quantity');
+      cy.get('@type').contains('quantity');
+      cy.get('#initial\\.0\\.valueQuantity\\.value').as('value0').type('123');
+      cy.get('#initial\\.0\\.valueQuantity\\.unit')
+        .as('unit0').type('f');
+      cy.get('#searchResults').as('unitSuggestions').should('be.visible', true);
+      cy.get('@unitSuggestions').find('table tbody tr:first').click();
+      cy.get('@unitSuggestions').should('not.be.visible');
+      cy.get('@unit0').should('have.value', 'farad');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial[0]).to.deep.equal({
+          valueQuantity: {
+            value: 123,
+            unit: 'farad',
+            code: 'F',
+            system: 'http://unitsofmeasure.org'
+          }
+        });
+      });
+
+      cy.get('@unit0').clear().type('xxxx').blur().should('have.value', 'xxxx');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial[0]).to.deep.equal({
+          valueQuantity: {
+            value: 123,
+            unit: 'xxxx'
+          }
+        });
+      });
+
+    });
+
     it('should create observation link period', () => {
       // Yes/no option
       cy.get('@olpNo').should('be.visible').should('have.class', 'active');

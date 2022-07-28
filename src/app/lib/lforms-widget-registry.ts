@@ -33,6 +33,7 @@ import {RestrictionsComponent} from './widgets/restrictions/restrictions.compone
 import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/restrictions-operator.component';
 import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
 import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
+import {QuantityUnitComponent} from './widgets/quantity-unit/quantity-unit.component';
 
 
 @Injectable()
@@ -68,5 +69,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('restrictions', RestrictionsComponent);
     this.register('restrictions-operator', RestrictionsOperatorComponent);
     this.register('observation-link-period', ObservationLinkPeriodComponent);
+    this.register('quantity-unit', QuantityUnitComponent);
   }
 }

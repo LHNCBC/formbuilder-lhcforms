@@ -2,6 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { LoginService, UserProfile } from '../services/login.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import * as appVersion from '../../assets/version.json';
 
 
 @Component({
@@ -12,6 +13,9 @@ import { DomSanitizer } from '@angular/platform-browser';
       <div id="siteNameBox">
         <a mat-button id="siteName" href="/">NLM Form Builder</a>
       </div>
+      <div *ngIf="appVersion" class="float-lg-right version-info align-self-end font-weight-bold"
+        >Version: <a target="_blank" rel="noopener noreferrer"
+                     href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
       <div class="float-lg-right" *ngIf="isFirebaseEnabled">
         <div *ngIf="!isUserSignedIn">
           <button mat-button color="primary" (click)="showSignInDialog()">
@@ -88,6 +92,14 @@ import { DomSanitizer } from '@angular/platform-browser';
     #siteName {
       font-size: 125%;
     }
+
+    .version-info {
+      font-size: 60%;
+    }
+
+    .version-info a:hover {
+      text-decoration: underline !important;
+    }
   `]
 })
 export class HeaderComponent implements OnInit {
@@ -97,7 +109,7 @@ export class HeaderComponent implements OnInit {
   @Input()
   isFirebaseEnabled = false;
   loginError: any = null;
-
+  appVersion: string;
   constructor(private loginService: LoginService,
               private iconRegistry: MatIconRegistry,
               private sanitizer: DomSanitizer) {
@@ -111,6 +123,9 @@ export class HeaderComponent implements OnInit {
    * Initialize login service
    */
   ngOnInit(): void {
+    if(appVersion?.version) {
+      this.appVersion = appVersion.version;
+    }
     this.loginService.service().subscribe((loginEvent) => {
       if (loginEvent.event === 'signedIn') {
         this.userProfile = loginEvent.userProfile;

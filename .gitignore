@@ -53,3 +53,4 @@ scratch/
 
 # Project specific
 /src/lib/lforms/
+/src/assets/version.json
