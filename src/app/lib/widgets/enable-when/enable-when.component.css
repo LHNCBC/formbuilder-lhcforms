@@ -1,3 +1,5 @@
-.invalid {
-  border: 1px solid red;
+lfb-enable-when td.invalid input,
+lfb-enable-when td.invalid textarea,
+lfb-enable-when td.invalid select {
+  outline: 2px solid red;
 }
