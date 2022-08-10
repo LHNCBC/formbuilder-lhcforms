@@ -49,9 +49,11 @@
                   matTooltip="Remove" aria-label="Remove"
           >
             <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-          <button [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getAnswerErrors(rowProperty)?.length" class="btn border-0 p-0 b-0 answerXErrors" [matTooltip]="getAnswerErrors(rowProperty).join()"
-                  aria-hidden="true"
-          ><fa-icon [icon]="warningIcon" style="color: red"></fa-icon></button>
+          <button [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getAnswerFieldErrors(rowProperty) | async"
+                  class="btn border-0 p-0 b-0 answerXErrors"
+                  [matTooltip]="getAnswerFieldErrors(rowProperty) | async" role="alert"
+                  [attr.aria-label]="'Error in conditional display condition '+rowNum+': '+(getAnswerFieldErrors(rowProperty) | async)"
+          ><fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon></button>
         </td>
       </tr>
       </tbody>

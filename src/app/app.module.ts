@@ -67,7 +67,6 @@ import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-searc
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
 import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
-// import { TotalScoreComponent } from './lib/widgets/total-score/total-score.component';
 import { RuleEditorModule } from 'rule-editor';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
@@ -128,7 +127,6 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
     BooleanRadioComponent,
     UnitsComponent,
     ExtensionsComponent,
-//    TotalScoreComponent,
     AnswerOptionComponent,
     InitialComponent,
     HelpTextComponent,

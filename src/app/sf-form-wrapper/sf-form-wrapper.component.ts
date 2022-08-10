@@ -11,7 +11,6 @@ import {FormComponent, FormProperty, PropertyGroup} from 'ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 import {ObjectProperty} from 'ngx-schema-form/lib/model';
 import {Util} from '../lib/util';
-import Def from 'autocomplete-lhc'
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -59,49 +58,57 @@ export class SfFormWrapperComponent {
       const op = formProperty.getProperty('operator');
       const aField = Util.getAnswerFieldName(aType || 'string');
       const answerX = formProperty.getProperty(aField);
-      let invalid = false;
+      let errors: any[] = [];
       if((q?.value?.trim().length > 0) ) {
         if(!(op?.value?.trim().length > 0)) {
           const errorCode = 'ENABLEWHEN_OP_REQUIRED';
+          const err: any = {};
+          err.code = errorCode;
+          err.path = `#${op.canonicalPathNotation}`;
+          err.message = `Operator is required when you choose to add a condition`;
+          err.params = [q.value, op.value];
+          errors.push(err);
           const i = op._errors?.findIndex((e) => e.code === errorCode);
           if(!(i >= 0)) { // Check if the error is already processed.
-            const err: any = {};
-            err.code = errorCode;
-            err.path = `#${op.canonicalPathNotation}`;
-            err.message = `Operator is required when you choose to add a condition`;
-            err.params = [q.value, op.value];
             op.extendErrors(err);
           }
-          invalid = true;
         }
-        const aValue = answerX.value;
-        if((Util.isEmpty(aValue)) && op?.value !== 'exists') {
+        const aValue = answerX?.value;
+        if(answerX && (Util.isEmpty(aValue)) && op?.value !== 'exists') {
           const errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
+          const err: any = {};
+          err.code = errorCode;
+          err.path = `#${answerX.canonicalPathNotation}`;
+          err.message = `Answer field is required when you choose an operator other than 'Not empty' or 'Empty'`;
+          const valStr = JSON.stringify(aValue);
+          err.params = [q.value, op.value, valStr];
+          errors.push(err);
           const i = answerX._errors?.findIndex((e) => e.code === errorCode);
           if(!(i >= 0)) { // Check if the error is already processed.
-            const err: any = {};
-            err.code = errorCode;
-            err.path = `#${answerX.canonicalPathNotation}`;
-            err.message = `Answer field is required when you choose an operator other than 'Not empty' or 'Empty'`;
-            const valStr = JSON.stringify(aValue);
-            err.params = invalid ? [q.value, op.value, valStr] : [q.value, valStr];
             answerX.extendErrors(err);
-            Def.ScreenReaderLog.add(err.message);
           }
         }
       }
-      return null;
+      if(errors.length) {
+        formProperty.extendErrors(errors);
+      }
+      else {
+        errors = null;
+      }
+      this.errorsChanged.next(errors);
+      return errors;
     }
   };
 
   mySchema: any = {properties: {}};
-  myTestSchema: any;
   @Output()
   setLinkId = new EventEmitter();
   @Input()
   model: any;
   @Output()
   valueChange = new EventEmitter<any>();
+  @Output()
+  errorsChanged = new EventEmitter<any []>();
   @Input()
   linkIdCollection = new LinkIdCollection();
 

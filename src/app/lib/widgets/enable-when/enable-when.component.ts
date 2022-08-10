@@ -4,6 +4,7 @@ import {Util} from '../../util';
 import {ObjectProperty, PropertyGroup} from 'ngx-schema-form/lib/model';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {FormProperty} from 'ngx-schema-form';
+import {Observable, of } from 'rxjs';
 
 @Component({
   selector: 'lfb-enable-when',
@@ -90,23 +91,32 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   /**
    * Get errors from answer[x] form property.
    * @param rowProperty - Object property representing an enableWhen condition.
+   * @return - Observable<string>
    */
-  getAnswerErrors(rowProperty: ObjectProperty): string [] {
-    let ret = null;
+  getAnswerFieldErrors(rowProperty: ObjectProperty): Observable<string> {
+    let errorMessages: string [] = null;
     const answerType = rowProperty.getProperty('__$answerType').value;
     if(answerType) {
       const formProperty = rowProperty.getProperty((Util.getAnswerFieldName(answerType)));
-      ret = formProperty?._errors?.reduce((acc, error) => {
-        if(error.code?.startsWith('ENABLEWHEN')) {
-          acc.push(error.message);
-        }
-        return acc;
-      }, []);
-      ret = ret?.length ? ret : null;
+      errorMessages = this.getFieldErrors(formProperty);
     }
-    return ret;
+    return of(errorMessages?.join());
   }
 
+
+  /**
+   * Collect enablewhen related errors from the field.
+   * @param fieldProperty - FormProperty representing the field.
+   */
+  getFieldErrors(fieldProperty: FormProperty): string [] {
+    const messages = fieldProperty?._errors?.reduce((acc, error) => {
+      if(error.code?.startsWith('ENABLEWHEN')) {
+        acc.push(error.message);
+      }
+      return acc;
+    }, []);
+    return messages?.length ? messages : null;
+  }
 
   /**
    * Get fields to show.
@@ -139,18 +149,12 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    * @param colIndex - td index of tr
    * @param formProperty - Form property of the identified field.
    */
-  onError(rowIndex: number, colIndex: number, formProperty: FormProperty) {
-    let ret = formProperty?._errors?.reduce((acc, error) => {
-      if(error.code?.startsWith('ENABLEWHEN')) {
-        acc.push(error.message);
-      }
-      return acc;
-    }, []);
-    ret = ret?.length ? ret : null;
+  onError(rowIndex: number, colIndex: number, fieldProperty: FormProperty) {
+    const errorMessages = this.getFieldErrors(fieldProperty);
 
     // Set dom attributes after the UI is updated.
     setTimeout(() => {
-      this.setErrorState(!!ret, rowIndex, colIndex);
+      this.setErrorState(!!errorMessages, rowIndex, colIndex);
     });
   }
 
