@@ -22,22 +22,15 @@ import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {BehaviorSubject, interval, Observable, of, Subject, Subscription} from 'rxjs';
+import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {
   debounceTime,
   distinctUntilChanged,
-  filter,
-  map,
-  startWith,
   switchMap,
-  take,
-  takeUntil,
-  tap
 } from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
-import {Util} from '../lib/util';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -109,7 +102,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         click: TREE_ACTIONS.ACTIVATE
       },
       keys: {
-        [KEYS.ENTER]: TREE_ACTIONS.EXPAND
+        [KEYS.SPACE]: TREE_ACTIONS.TOGGLE_EXPANDED,
+        [KEYS.ENTER]: TREE_ACTIONS.ACTIVATE
       }
     },
     nodeHeight: 23,
@@ -234,28 +228,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       const node = this.treeComponent.treeModel.getFirstRoot();
       if(node) {
         this.treeComponent.treeModel.setFocusedNode(node);
+        this.treeComponent.treeModel.setActiveNode(node, true);
         this.setNode(node);
       }
-    }
-  }
-
-  /**
-   * Add tab index on active node for accessibility
-   */
-  setTabIndex(): void {
-    const wrapperEl = this.nodeDisplayEl.nativeElement.closest('.node-content-wrapper');
-    if(wrapperEl) {
-        this.renderer.setAttribute(wrapperEl, 'tabindex', '0');
-    }
-  }
-
-  /**
-   * Remove tab index on active node for accessibility
-   */
-  removeTabIndex(): void {
-    const wrapperEl = this.nodeDisplayEl.nativeElement.closest('.node-content-wrapper');
-    if(wrapperEl) {
-      this.renderer.removeAttribute(wrapperEl, 'tabindex');
     }
   }
 
@@ -282,11 +257,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         break;
 
       case 'focus':
-        this.setTabIndex();
-        break;
-      case 'deactivate':
-      case 'blur':
-        this.removeTabIndex();
+        this.treeComponent.treeModel.setFocus(true);
         break;
 
       default:

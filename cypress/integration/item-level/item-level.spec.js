@@ -524,8 +524,8 @@ describe('Home page', () => {
     it('should create quantity type with initial quantity unit', () => {
       cy.selectDataType('quantity');
       cy.get('@type').contains('quantity');
-      cy.get('#initial\\.0\\.valueQuantity\\.value').as('value0').type('123');
-      cy.get('#initial\\.0\\.valueQuantity\\.unit')
+      cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('123');
+      cy.get('[id^="initial.0.valueQuantity.unit"]')
         .as('unit0').type('f');
       cy.get('#searchResults').as('unitSuggestions').should('be.visible', true);
       cy.get('@unitSuggestions').find('table tbody tr:first').click();
