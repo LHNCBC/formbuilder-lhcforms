@@ -35,8 +35,12 @@
       </tr>
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
-      <tr class="d-flex p-0 m-0" *ngFor="let rowProperty of formProperty.properties">
-        <td *ngFor="let showField of getFields(rowProperty)" class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 m-0 align-self-center"  [ngClass]="{invalid: !isValid(rowProperty, showField.field)}">
+      <tr class="d-flex p-0 m-0" *ngFor="let rowProperty of rowProperties; let rowNum = index">
+        <td *ngFor="let showField of getFields(rowProperty); let colNum = index"
+            class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 m-0 align-self-center"
+            [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"
+            lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)" (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
+        >
           <lfb-form-element *ngIf="isShow(rowProperty, showField.field)" nolabel="true" [formProperty]="getProperty(rowProperty, showField.field)"></lfb-form-element>
         </td>
         <td class="col-sm-1 align-middle action-column p-0 m-0 align-self-center">
@@ -45,6 +49,11 @@
                   matTooltip="Remove" aria-label="Remove"
           >
             <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
+          <button [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getAnswerFieldErrors(rowProperty) | async"
+                  class="btn border-0 p-0 b-0 answerXErrors"
+                  [matTooltip]="getAnswerFieldErrors(rowProperty) | async" role="alert"
+                  [attr.aria-label]="'Error in conditional display condition '+rowNum+': '+(getAnswerFieldErrors(rowProperty) | async)"
+          ><fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon></button>
         </td>
       </tr>
       </tbody>

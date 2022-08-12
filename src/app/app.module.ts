@@ -67,7 +67,6 @@ import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-searc
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
 import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
-// import { TotalScoreComponent } from './lib/widgets/total-score/total-score.component';
 import { RuleEditorModule } from 'rule-editor';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
@@ -85,6 +84,7 @@ import { LfbDisableControlDirective } from './lib/directives/lfb-disable-control
 import { LfbSpinnerComponent } from './lib/widgets/lfb-spinner/lfb-spinner.component';
 import { EnableWhenComponent } from './lib/widgets/enable-when/enable-when.component';
 import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit.component';
+import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 
 @NgModule({
   declarations: [
@@ -128,7 +128,6 @@ import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit
     BooleanRadioComponent,
     UnitsComponent,
     ExtensionsComponent,
-//    TotalScoreComponent,
     AnswerOptionComponent,
     InitialComponent,
     HelpTextComponent,
@@ -144,7 +143,8 @@ import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit
     LfbDisableControlDirective,
     LfbSpinnerComponent,
     EnableWhenComponent,
-    QuantityUnitComponent
+    QuantityUnitComponent,
+    EwValidateDirective,
   ],
   imports: [
     AppRoutingModule,
