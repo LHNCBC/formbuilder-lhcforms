@@ -319,6 +319,25 @@ describe('Home page', () => {
       });
     });
 
+    it('should display error message for invalid answer in conditional display', () => {
+      cy.contains('Add new item').scrollIntoView().click();
+
+      const errorIconEl = '[id^="enableWhen.0_err"]';
+      const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
+      const operatorEl = '[id^="enableWhen.0.operator"]';
+
+      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
+      cy.get(errorIconEl).should('not.exist');
+      cy.get(errorMessageEl).should('not.exist');
+
+      cy.get(operatorEl).select('=');
+      cy.get(errorIconEl).should('be.visible');
+      cy.get(errorMessageEl).should('have.length', 2);
+      cy.get(operatorEl).select('Empty');
+      cy.get(errorIconEl).should('not.exist');
+      cy.get(errorMessageEl).should('not.exist');
+    });
+
     it('should show answer column if there is an answer option in any row of conditional display', () => {
       cy.selectDataType('choice');
       cy.enterAnswerOptions([
@@ -524,8 +543,8 @@ describe('Home page', () => {
     it('should create quantity type with initial quantity unit', () => {
       cy.selectDataType('quantity');
       cy.get('@type').contains('quantity');
-      cy.get('#initial\\.0\\.valueQuantity\\.value').as('value0').type('123');
-      cy.get('#initial\\.0\\.valueQuantity\\.unit')
+      cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('123');
+      cy.get('[id^="initial.0.valueQuantity.unit"]')
         .as('unit0').type('f');
       cy.get('#searchResults').as('unitSuggestions').should('be.visible', true);
       cy.get('@unitSuggestions').find('table tbody tr:first').click();
