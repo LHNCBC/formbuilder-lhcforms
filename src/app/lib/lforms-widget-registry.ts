@@ -23,7 +23,6 @@ import {LabelRadioComponent} from './widgets/label-radio/label-radio.component';
 import {EnableBehaviorComponent} from './widgets/enable-behavior/enable-behavior.component';
 import {BooleanRadioComponent} from './widgets/boolean-radio/boolean-radio.component';
 import {UnitsComponent} from './widgets/units/units.component';
-// import {TotalScoreComponent} from './widgets/total-score/total-score.component';
 import {AnswerOptionComponent} from './widgets/answer-option/answer-option.component';
 import {InitialComponent} from './widgets/initial/initial.component';
 import {HelpTextComponent} from './widgets/help-text/help-text.component';
@@ -60,7 +59,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('enable-behavior', EnableBehaviorComponent);
     this.register('boolean-radio', BooleanRadioComponent);
     this.register('units', UnitsComponent);
-//    this.register('totalScore', TotalScoreComponent);
     this.register('type', TypeComponent);
     this.register('answer-option', AnswerOptionComponent);
     this.register('initial', InitialComponent);

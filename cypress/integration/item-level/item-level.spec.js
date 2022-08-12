@@ -319,6 +319,25 @@ describe('Home page', () => {
       });
     });
 
+    it('should display error message for invalid answer in conditional display', () => {
+      cy.contains('Add new item').scrollIntoView().click();
+
+      const errorIconEl = '[id^="enableWhen.0_err"]';
+      const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
+      const operatorEl = '[id^="enableWhen.0.operator"]';
+
+      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
+      cy.get(errorIconEl).should('not.exist');
+      cy.get(errorMessageEl).should('not.exist');
+
+      cy.get(operatorEl).select('=');
+      cy.get(errorIconEl).should('be.visible');
+      cy.get(errorMessageEl).should('have.length', 2);
+      cy.get(operatorEl).select('Empty');
+      cy.get(errorIconEl).should('not.exist');
+      cy.get(errorMessageEl).should('not.exist');
+    });
+
     it('should show answer column if there is an answer option in any row of conditional display', () => {
       cy.selectDataType('choice');
       cy.enterAnswerOptions([

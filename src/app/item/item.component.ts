@@ -31,6 +31,7 @@ import {
 } from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
+import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -80,6 +81,7 @@ export class LinkIdCollection {
   styleUrls: ['./item.component.css']
 })
 export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+  errorIcon = faExclamationTriangle;
   id = 1;
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
@@ -123,7 +125,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     animateAcceleration: 1.2,
     scrollContainer: document.documentElement // HTML
   };
-
+  errorMessage = 'Error(s) exist in this item. The resultant form may not render properly.';
   @Input()
   questionnaire: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', item: []};
   itemList: any [];
@@ -134,6 +136,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   itemEditorSchema: any;
   editor = 'ngx';
   loincType = LoincItemType.PANEL;
+  errors$ = new EventEmitter<any []>(true); // Use async emitter.
 
   loincTypeOpts = [
     {
@@ -461,6 +464,15 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   formatter(acResult: any) {
     return acResult.code[0].code + ': ' + acResult.text;
+  }
+
+
+  /**
+   * Handle errorsChanged event from <lfb-ngx-schema-form>
+   * @param errors - Event object from <lfb-ngx-schema-form>
+   */
+  onErrorsChanged(errors: any []) {
+    this.errors$.next(errors);
   }
 
 

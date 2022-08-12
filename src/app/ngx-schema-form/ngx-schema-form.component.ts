@@ -13,7 +13,7 @@ import {SharedObjectService} from '../services/shared-object.service';
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-      <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)"></lfb-sf-form-wrapper>
+      <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)"></lfb-sf-form-wrapper>
     </div>
   `,
   styles: [`
@@ -64,6 +64,8 @@ export class NgxSchemaFormComponent {
   model: any;
   @Output()
   valueChange = new EventEmitter<any>();
+  @Output()
+  errorsChanged = new EventEmitter<any[]>();
 
   constructor(private modelService: SharedObjectService) {
   }
@@ -76,5 +78,14 @@ export class NgxSchemaFormComponent {
   updateValue(value: any) {
     this.valueChange.emit(value);
     this.modelService.currentItem = value;
+  }
+
+
+  /**
+   * Handle errorsChanged event from <lfb-sf-form-wrapper>
+   * @param errors - Event object from <lfb-sf-form-wrapper>
+   */
+  onErrorsChange(errors) {
+    this.errorsChanged.next(errors);
   }
 }
