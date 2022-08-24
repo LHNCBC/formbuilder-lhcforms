@@ -322,20 +322,45 @@ describe('Home page', () => {
     it('should display error message for invalid answer in conditional display', () => {
       cy.contains('Add new item').scrollIntoView().click();
 
-      const errorIconEl = '[id^="enableWhen.0_err"]';
       const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
-      const operatorEl = '[id^="enableWhen.0.operator"]';
+      const question1El = '[id^="enableWhen.0.question"]';
+      const operator1El = '[id^="enableWhen.0.operator"]';
+      const answer1El = '[id^="enableWhen.0.answer"]';
+      const errorIcon1El = '[id^="enableWhen.0_err"]';
+      const question2El = '[id^="enableWhen.1.question"]';
+      const operator2El = '[id^="enableWhen.1.operator"]';
+      const answer2El = '[id^="enableWhen.1.answer"]';
+      const errorIcon2El = '[id^="enableWhen.1_err"]';
 
-      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
-      cy.get(errorIconEl).should('not.exist');
+      cy.get(question1El).type('{downarrow}{enter}');
+      cy.get(errorIcon1El).should('not.exist');
       cy.get(errorMessageEl).should('not.exist');
 
-      cy.get(operatorEl).select('=');
-      cy.get(errorIconEl).should('be.visible');
+      cy.get(operator1El).select('=');
+      cy.get(errorIcon1El).should('be.visible');
       cy.get(errorMessageEl).should('have.length', 2);
-      cy.get(operatorEl).select('Empty');
-      cy.get(errorIconEl).should('not.exist');
+      cy.get(operator1El).select('Empty');
+      cy.get(errorIcon1El).should('not.exist');
       cy.get(errorMessageEl).should('not.exist');
+
+      cy.get(operator1El).select('>');
+      cy.get(errorIcon1El).should('be.visible');
+      cy.get(errorMessageEl).should('have.length', 2);
+      cy.get(answer1El).type('1');
+      cy.get(errorIcon1El).should('not.exist');
+      cy.get(errorMessageEl).should('not.exist');
+
+      cy.contains('button', 'Add another condition').click();
+
+      cy.get(question2El).type('{downarrow}{enter}');
+      cy.get(errorIcon2El).should('not.exist');
+      cy.get(errorMessageEl).should('not.exist');
+      cy.get(operator2El).select('<');
+      cy.get(errorIcon2El).should('be.visible');
+      cy.get(errorMessageEl).should('have.length', 2);
+      cy.get('[id^="enableWhen.1_remove"]').click();
+      cy.get(errorMessageEl).should('not.exist');
+
     });
 
     it('should show answer column if there is an answer option in any row of conditional display', () => {
