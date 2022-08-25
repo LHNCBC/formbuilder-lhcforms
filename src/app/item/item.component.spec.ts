@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ItemComponent } from './item.component';
 import {CommonTestingModule} from '../testing/common-testing.module';
+import {runOnPushChangeDetection} from '../testing/common-testing.module';
 
 
 describe('ItemComponent', () => {
@@ -20,9 +21,9 @@ describe('ItemComponent', () => {
     expect(component.uiItemEditor).toBeDefined();
   });
 
-  it('should compile json item editor', () => {
+  it('should compile json item editor', async () => {
     component.toggleEditType({});
-    fixture.detectChanges();
+    await runOnPushChangeDetection(fixture);
     expect(component.jsonItemEditor).toBeDefined();
   });
 });

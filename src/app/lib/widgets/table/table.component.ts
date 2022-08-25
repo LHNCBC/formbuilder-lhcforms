@@ -10,7 +10,18 @@
  * in an integer variable.
  */
 
-import {AfterViewInit, Component, DoCheck, ElementRef, OnChanges, OnDestroy, OnInit, Output, SimpleChanges} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  DoCheck,
+  ElementRef,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges
+} from '@angular/core';
 import {ArrayWidget, FormProperty} from 'ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
@@ -54,7 +65,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   rowSelection = false; // If a row selection column is displayed. Default is no column.
 
   subscriptions: Subscription [] = [];
-  constructor(private elRef: ElementRef) {
+  constructor(private elRef: ElementRef, private cdRef: ChangeDetectorRef) {
     super();
   }
   /**
@@ -131,6 +142,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
         if(this.rowSelection) {
           this.rowSelectionType = this.singleItem ? 'radio' : 'checkbox';
         }
+        this.cdRef.markForCheck();
       });
       this.subscriptions.push(subsciption);
     }
@@ -149,6 +161,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
         if(newValue === false && this.rowSelection && this.formProperty.properties.length === 1) {
           this.rowSelectionType = 'checkbox';
         }
+        this.cdRef.markForCheck();
       });
       this.subscriptions.push(subsciption);
     }
@@ -161,6 +174,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
     subsciption = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
       const showFields = this.getShowFields();
       this.noHeader = showFields.some((f) => f.noHeader);
+      this.cdRef.markForCheck();
     });
 
     this.subscriptions.push(subsciption);

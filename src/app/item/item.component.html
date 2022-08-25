@@ -23,13 +23,12 @@
                      [treeDragEnabled]="node.allowDrag()"
                      [attr.tabindex]="node.isActive ? '0' : null"
                 >
-
                   <tree-node-content [node]="node" [index]="index" [template]="treeNodeTemplate"></tree-node-content>
                 </div>
               </div>
             </ng-template>
             <ng-template #treeNodeTemplate let-node let-index="index">
-              <div #nodeDisplay [ngClass]="node.nodeClass">
+              <div [ngClass]="node.nodeClass">
                 <span class="node-display-prefix">{{getIndexPath(node).join('.')}}</span> <span [ngClass]="node.nodeClass">{{node.displayField}}</span>
               </div>
             </ng-template>
@@ -41,6 +40,7 @@
           <div class="mt-1">
             <div>
               <span>Edit item (question or header)</span>
+              <small *ngIf="devMode" class="float-right font-italic">{{loadingTime}} seconds</small>
               <!--
               <button type="button" class="btn btn-sm btn-outline-primary float-right" (click)="toggleEditType($event)">{{ editType === 'ui' ? "View/Edit item's JSON" : "Edit item in GUI" }}</button>
               -->

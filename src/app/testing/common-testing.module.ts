@@ -1,5 +1,5 @@
-import {Component, Injectable, Input, NgModule, OnInit} from '@angular/core';
-import {TestBed, waitForAsync} from '@angular/core/testing';
+import {ChangeDetectorRef, Component, Injectable, Input, NgModule, OnInit} from '@angular/core';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {TreeModule} from '@circlon/angular-tree-component';
 import {
   DefaultWidgetRegistry, FormProperty,
@@ -92,4 +92,14 @@ export class CommonTestingModule {
   static setupTestBedWithTestForm = () => {
     CommonTestingModule.setUpTestBedConfig({declarations: [TestComponent]});
   }
+}
+
+/**
+ * Changes in components using OnPush strategy are only applied once when calling .detectChanges(),
+ * This function solves this issue.
+ */
+export async function runOnPushChangeDetection(fixture: ComponentFixture<any>): Promise<void> {
+  const changeDetectorRef = fixture.debugElement.injector.get<ChangeDetectorRef>(ChangeDetectorRef);
+  changeDetectorRef.detectChanges();
+  return fixture.whenStable();
 }
