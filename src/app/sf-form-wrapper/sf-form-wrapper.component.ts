@@ -117,20 +117,7 @@ export class SfFormWrapperComponent {
     const aField = Util.getAnswerFieldName(aType || 'string');
     const answerX = formProperty.getProperty(aField);
     let errors: any[] = [];
-    if((q?.value?.trim().length > 0) ) {
-      if(!(op?.value?.trim().length > 0)) {
-        const errorCode = 'ENABLEWHEN_OP_REQUIRED';
-        const err: any = {};
-        err.code = errorCode;
-        err.path = `#${op.canonicalPathNotation}`;
-        err.message = `Operator is required when you choose to add a condition`;
-        err.params = [q.value, op.value];
-        errors.push(err);
-        const i = op._errors?.findIndex((e) => e.code === errorCode);
-        if(!(i >= 0)) { // Check if the error is already processed.
-          op.extendErrors(err);
-        }
-      }
+    if((q?.value?.trim().length > 0) && op?.value.length > 0) {
       const aValue = answerX?.value;
       if(answerX && (Util.isEmpty(aValue)) && op?.value !== 'exists') {
         const errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
