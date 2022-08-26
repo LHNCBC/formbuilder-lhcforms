@@ -173,6 +173,8 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
     cy.contains('button', 'Add another answer').click();
   });
 });
+
+
 /**
  * Create a sample answer option list.
  */
