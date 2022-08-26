@@ -27,6 +27,11 @@ describe('Home page', () => {
     cy.get('.lead').first().should('have.text', 'How do you want to create your form?')
   });
 
+  it('should display version info', () => {
+    cy.get('.version-info').find('a').should('have.attr', 'href',
+      'https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md').contains(/^\d+\.\d+\.\d+/);
+  });
+
   describe('Home page import options', () => {
     beforeEach(() => {
       cy.loadHomePage();
