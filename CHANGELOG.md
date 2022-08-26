@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.15]  2022-07-14
+### Fixed
+ - Fix units in valueQuantity of initial field.
+
 ## [7.0.14]  2022-07-07
 ### Fixed
  - In Conditional Display field, fixed missing answerBoolean field
