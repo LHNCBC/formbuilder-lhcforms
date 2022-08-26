@@ -23,7 +23,6 @@ import {LabelRadioComponent} from './widgets/label-radio/label-radio.component';
 import {EnableBehaviorComponent} from './widgets/enable-behavior/enable-behavior.component';
 import {BooleanRadioComponent} from './widgets/boolean-radio/boolean-radio.component';
 import {UnitsComponent} from './widgets/units/units.component';
-// import {TotalScoreComponent} from './widgets/total-score/total-score.component';
 import {AnswerOptionComponent} from './widgets/answer-option/answer-option.component';
 import {InitialComponent} from './widgets/initial/initial.component';
 import {HelpTextComponent} from './widgets/help-text/help-text.component';
@@ -32,6 +31,7 @@ import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.
 import {RestrictionsComponent} from './widgets/restrictions/restrictions.component';
 import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/restrictions-operator.component';
 import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
+import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 
 
 @Injectable()
@@ -49,6 +49,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('number', IntegerComponent);
     this.register('radio', RadioComponent);
     this.register('lb-radio', LabelRadioComponent);
+    this.register('enable-when', EnableWhenComponent);
     this.register('enable-when-source', EnableWhenSourceComponent);
     this.register('enable-operator', EnableOperatorComponent);
     this.register('left-label-form-group', LeftLabelFormGroupComponent);
@@ -57,7 +58,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('enable-behavior', EnableBehaviorComponent);
     this.register('boolean-radio', BooleanRadioComponent);
     this.register('units', UnitsComponent);
-//    this.register('totalScore', TotalScoreComponent);
     this.register('type', TypeComponent);
     this.register('answer-option', AnswerOptionComponent);
     this.register('initial', InitialComponent);

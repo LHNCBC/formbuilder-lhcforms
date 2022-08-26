@@ -7,8 +7,10 @@ import {
 import {SharedObjectService} from '../services/shared-object.service';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
-import {FormComponent, FormProperty, PropertyGroup} from 'ngx-schema-form';
+import {ArrayProperty, FormComponent, FormProperty, PropertyGroup} from 'ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
+import {ObjectProperty} from 'ngx-schema-form/lib/model';
+import {Util} from '../lib/util';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -49,17 +51,20 @@ export class SfFormWrapperComponent {
         formProperty.setValue('group', true);
       }
       return null;
-    }
+    },
+    '/enableWhen': this.validateEnableWhenAll.bind(this),
+    '/enableWhen/*': this.validateEnableWhenSingle.bind(this)
   };
 
   mySchema: any = {properties: {}};
-  myTestSchema: any;
   @Output()
   setLinkId = new EventEmitter();
   @Input()
   model: any;
   @Output()
   valueChange = new EventEmitter<any>();
+  @Output()
+  errorsChanged = new EventEmitter<any []>();
   @Input()
   linkIdCollection = new LinkIdCollection();
 
@@ -74,8 +79,67 @@ export class SfFormWrapperComponent {
    */
   updateValue(value) {
     if(!this.formService.loading) { // Avoid emitting the changes while loading.
-      console.log('sf-form.onChange() emitted:');
+      // console.log('sf-form.onChange() emitted:');
       this.valueChange.emit(value);
     }
+  }
+
+  /**
+   * Custom validator for enableWhen (Array of conditions).
+   * @param value -  Value of the field.
+   * @param arrayProperty - Array form property of the field.
+   * @param rootProperty - Root form property
+   */
+  validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup) {
+    let errors = null;
+    // iterate all properties
+    arrayProperty.forEachChild((property: ObjectProperty) => {
+      const error = this.validateEnableWhenSingle(property.value, property, rootProperty)
+      if (error) {
+        errors = errors || []
+        errors.push(error)
+      }
+    });
+    this.errorsChanged.next(errors);
+    return errors;
+  }
+
+  /**
+   * Custom validator for single condition in enableWhen
+   * @param value - Value of single enableWhen condition
+   * @param formProperty - Object form property of the condition
+   * @param rootProperty - Root form property
+   */
+  validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup) {
+    const aType = formProperty.getProperty('__$answerType').value;
+    const q = formProperty.getProperty('question');
+    const op = formProperty.getProperty('operator');
+    const aField = Util.getAnswerFieldName(aType || 'string');
+    const answerX = formProperty.getProperty(aField);
+    let errors: any[] = [];
+    if((q?.value?.trim().length > 0) && op?.value.length > 0) {
+      const aValue = answerX?.value;
+      if(answerX && (Util.isEmpty(aValue)) && op?.value !== 'exists') {
+        const errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
+        const err: any = {};
+        err.code = errorCode;
+        err.path = `#${answerX.canonicalPathNotation}`;
+        err.message = `Answer field is required when you choose an operator other than 'Not empty' or 'Empty'`;
+        const valStr = JSON.stringify(aValue);
+        err.params = [q.value, op.value, valStr];
+        errors.push(err);
+        const i = answerX._errors?.findIndex((e) => e.code === errorCode);
+        if(!(i >= 0)) { // Check if the error is already processed.
+          answerX.extendErrors(err);
+        }
+      }
+    }
+    if(errors.length) {
+      formProperty.extendErrors(errors);
+    }
+    else {
+      errors = null;
+    }
+    return errors;
   }
 }

@@ -9,6 +9,7 @@ import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {ControlWidget} from 'ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
+import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
   selector: 'lfb-choice',
@@ -16,6 +17,7 @@ import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
     <ng-template #rt let-r="result" let-t="term">
       <ngb-highlight [result]="r.name" [term]="t"></ngb-highlight>
     </ng-template>
+    <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
 
       <lfb-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
       <input *ngIf="schema.type!='array'"
@@ -37,11 +39,12 @@ import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
       >
 
       <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">
+    </div>
   `,
   styles: [
   ]
 })
-export class EnableWhenSourceComponent extends ControlWidget implements OnInit {
+export class EnableWhenSourceComponent extends LfbControlWidgetComponent implements OnInit {
   // Info icon.
   faInfo = faInfoCircle;
   nolabel = false;
@@ -104,13 +107,13 @@ export class EnableWhenSourceComponent extends ControlWidget implements OnInit {
    */
   onSelect($event): void {
     this.formProperty.setValue($event.item.data.linkId, true);
-    this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, true);
+    this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, false);
   }
 
 
   /**
    * Format the input after selection
-   * @param item
+   * @param item - TreeNode object of the item.
    */
   inputFormatter(item: ITreeNode): string {
     let ret: string;
@@ -123,7 +126,7 @@ export class EnableWhenSourceComponent extends ControlWidget implements OnInit {
 
   /**
    * Format item in the results popup.
-   * @param item
+   * @param item - TreeNode object of the item.
    */
   resultListItemFormatter(item: ITreeNode): string {
     let indent = '';

@@ -34,6 +34,20 @@ export class Util {
     item: []
   };
 
+  private static _answerTypeMap = {
+    boolean: 'answerBoolean',
+    integer: 'answerInteger',
+    decimal: 'answerInteger',
+    date: 'answerDate',
+    dateTime: 'answerDateTime',
+    time: 'answerTime',
+    string: 'answerString',
+    text: 'answerString',
+    choice: 'answerCoding',
+    'open-choice': 'answerCoding',
+    quantity: 'answerQuantity',
+    reference: 'answerReference'
+  };
 
   // Capitalize the camel case strings.
   static capitalize(str): string {
@@ -349,5 +363,23 @@ export class Util {
       });
     }
     return ret;
+  }
+
+
+  /**
+   * Utility to identify answer[x] field.
+   * @param f - Field name
+   */
+  static isAnswerField(f): boolean {
+    return f && f.startsWith('answer');
+  }
+
+
+  /**
+   * Map type to answer[x] field.
+   * @param type - question type
+   */
+  static getAnswerFieldName(type: string): string {
+    return Util._answerTypeMap[type];
   }
 }

@@ -10,7 +10,7 @@ import {fhir} from '../../../fhir';
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
   template: `
-    <div class="widget form-group form-group-sm">
+    <div class="widget form-group form-group-sm m-0 p-0">
       <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
               [attr.name]="name" [attr.id]="id"
               class="form-control"
@@ -62,7 +62,11 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
         this.answerOptions =
           (sourceNode && sourceNode.data && sourceNode.data.answerOption)
             ? sourceNode.data.answerOption : [];
+        this.answerOptions = this.answerOptions.filter((opt) => {
+          return !!opt?.valueCoding?.code || !!opt?.valueCoding?.display;
+        });
       }
+      this.model = !this.model && this.answerOptions?.length > 0 ? this.answerOptions[0] : this.model;
     });
   }
 

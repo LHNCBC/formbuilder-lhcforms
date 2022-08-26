@@ -17,6 +17,7 @@ import fhirExtensionSchema from '../../assets/fhir-extension-schema.json';
 import itemLayout from '../../assets/items-layout.json';
 import ngxFlSchema from '../../assets/ngx-fl.schema.json';
 import flLayout from '../../assets/fl-fields-layout.json';
+import itemEditorSchema from '../../assets/item-editor.schema.json';
 import {Util} from '../lib/util';
 
 
@@ -32,6 +33,7 @@ export class FormService {
   treeModel: TreeModel;
   itemSchema: any = {properties: {}};
   flSchema: any = {properties: {}};
+  private _itemEditorSchema: any = {properties: {}};
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
     ngxItemSchema.definitions.Extension = fhirExtensionSchema as any;
@@ -41,8 +43,12 @@ export class FormService {
 
     this.flSchema = ngxFlSchema;
     this.flSchema.layout = flLayout;
+    this._itemEditorSchema = itemEditorSchema;
   }
 
+  public get itemEditorSchema() {
+    return this._itemEditorSchema;
+  }
 
   /**
    * Get item level schema

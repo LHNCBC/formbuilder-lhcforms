@@ -432,7 +432,6 @@
           "__$answerType": {
             "title": "Source question type",
             "type": "string",
-            "default": "string",
             "widget": {"id": "hidden"}
           },
           "id": {
@@ -534,6 +533,9 @@
               "oneOf": [
                 {
                   "__$answerType": ["boolean"]
+                },
+                {
+                  "operator": ["$EXP$ target.value == 'exists'"]
                 }
               ]
             }
@@ -897,7 +899,7 @@
         "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10",
         "addButtonLabel": "Add another condition",
-        "id": "table",
+        "id": "enable-when",
         "showFields": [
           {"field": "question",       "nolabel": true, "col": 5, "title": "Question"},
           {"field": "operator",       "nolabel": true, "col": 2, "title": "Operator"},
@@ -1784,19 +1786,6 @@
       },
       "visibleIf": {
         "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal' || target.value == 'quantity'"]
-      }
-    },
-    "__$totalScore": {
-      "description": "Makes this as an item with total score, i.e. totaling scores in pre-defined answers of the choice type items.",
-      "title": "Make this a total score item",
-      "pattern": "^true|false$",
-      "default": "false",
-      "type": "boolean",
-      "widget": {
-        "id": "hidden",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10"
       }
     },
     "__$helpText": {
@@ -5022,12 +5011,6 @@
       "fields": ["__$units"],
       "showFields": [
         { "field": "__$units", "col": 12 }
-      ]
-    },
-    {
-      "fields": ["__$totalScore"],
-      "showFields": [
-        {"field": "__$totalScore", "col": 12}
       ]
     },
     {
