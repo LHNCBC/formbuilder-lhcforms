@@ -1,5 +1,5 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
-import {FormProperty, ISchema} from 'ngx-schema-form';
+import {FormProperty, ISchema} from '@lhncbc/ngx-schema-form';
 
 import {RadioComponent} from './radio.component';
 import {CommonTestingModule, TestComponent} from '../../../testing/common-testing.module';

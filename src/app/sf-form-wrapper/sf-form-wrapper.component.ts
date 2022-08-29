@@ -7,9 +7,9 @@ import {
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
-import {ArrayProperty, FormComponent, FormProperty, PropertyGroup} from 'ngx-schema-form';
+import {ArrayProperty, FormComponent, FormProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
-import {ObjectProperty} from 'ngx-schema-form/lib/model';
+import {ObjectProperty} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../lib/util';
 
 /**

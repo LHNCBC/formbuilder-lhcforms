@@ -1,7 +1,7 @@
 /**
  * A utility class
  */
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import {fhir} from '../fhir';
 import {isEqual} from 'lodash-es';

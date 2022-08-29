@@ -6,9 +6,9 @@ import {
   FormPropertyFactory, LogService, SchemaFormModule,
   SchemaValidatorFactory,
   ValidatorRegistry
-} from 'ngx-schema-form';
+} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../services/form.service';
-// import {PropertyBindings} from 'ngx-schema-form/lib/property-binding-registry';
+// import {PropertyBindings} from '@lhncbc/ngx-schema-form/lib/property-binding-registry';
 
 xdescribe('TestingService', () => {
   let service: TestingService;

@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {fhir} from '../../../fhir';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';

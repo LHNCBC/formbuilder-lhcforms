@@ -22,12 +22,12 @@ import {
   Output,
   SimpleChanges
 } from '@angular/core';
-import {ArrayWidget, FormProperty} from 'ngx-schema-form';
+import {ArrayWidget, FormProperty} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
 import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Subscription} from 'rxjs';

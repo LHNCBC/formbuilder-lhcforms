@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {UnitsComponent} from '../units/units.component';
 import Def from 'autocomplete-lhc';

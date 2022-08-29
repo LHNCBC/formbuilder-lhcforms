@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {ObjectWidget} from 'ngx-schema-form';
+import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
 
 

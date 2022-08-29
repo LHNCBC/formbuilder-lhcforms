@@ -5,7 +5,7 @@ import {
   Component,
   Input,
   Output,
-  EventEmitter
+  EventEmitter, OnChanges, SimpleChanges
 } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {FetchService} from '../services/fetch.service';
@@ -27,6 +27,7 @@ import {Util} from '../lib/util';
           <sf-form [schema]="qlSchema"
                    [model]="questionnaire"
                    (onChange)="valueChanged($event)"
+                   (modelReset)="onFormFieldsLoaded()"
           ></sf-form>
         </div>
         <hr/>
@@ -43,7 +44,7 @@ import {Util} from '../lib/util';
     }
   `]
 })
-export class FormFieldsComponent {
+export class FormFieldsComponent implements OnChanges {
 
   @Input()
   questionsButtonLabel = 'Create questions';
@@ -59,7 +60,7 @@ export class FormFieldsComponent {
   state = new EventEmitter<string>();
   @Output()
   questionnaireChange = new EventEmitter<fhir.Questionnaire>();
-
+  loading = false;
   constructor(
     private http: HttpClient,
     private dataSrv: FetchService,
@@ -69,6 +70,16 @@ export class FormFieldsComponent {
     this.qlSchema = this.formService.getFormLevelSchema();
   }
 
+
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes.questionnaire) {
+      this.loading = true;
+    }
+  }
+
+  onFormFieldsLoaded() {
+    this.loading = false;
+  }
   /**
    * Send message to base page to switch the view.
    */
@@ -81,7 +92,9 @@ export class FormFieldsComponent {
    * Emit the change event.
    */
   valueChanged(event) {
-    this.questionnaireChange.emit(Util.convertToQuestionnaireJSON(event.value));
+    if(!this.loading) {
+      this.questionnaireChange.emit(Util.convertToQuestionnaireJSON(event.value));
+    }
   }
 
 
