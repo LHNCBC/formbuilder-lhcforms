@@ -32,6 +32,7 @@ import {
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+declare var LForms: any;
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -261,6 +262,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
       case 'focus':
         this.treeComponent.treeModel.setFocus(true);
+        if (event.node?.data) {
+          LForms.Def.ScreenReaderLog.add(`${this.getIndexPath(event.node).join('.')} ${event.node.data.text}`);
+        }
         break;
 
       default:
