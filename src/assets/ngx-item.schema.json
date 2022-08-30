@@ -20,7 +20,7 @@
       }
     },
     "type": {
-      "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.).",
+      "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.). Header implies group if it has children. No children implies display type",
       "enum": [
         "boolean",
         "decimal",
@@ -49,7 +49,7 @@
         "selectOptionsMap": {
           "remove": ["display", "reference", "attachment"],
           "map": {
-            "group": "header"
+            "group": "header (group/display)"
           }
         }
       },

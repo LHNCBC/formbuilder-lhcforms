@@ -30,6 +30,7 @@ import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {environment} from '../../environments/environment';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -81,6 +82,7 @@ export class LinkIdCollection {
 })
 export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   errorIcon = faExclamationTriangle;
+  helpIcon = faInfoCircle;
   id = 1;
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
@@ -135,6 +137,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   editor = 'ngx';
   loincType = LoincItemType.PANEL;
   errors$ = new EventEmitter<any []>(true); // Use async emitter.
+  treeHelpMessage = 'You can drag and drop items in the tree to move them around in the hierarchy';
 
   loincTypeOpts = [
     {
