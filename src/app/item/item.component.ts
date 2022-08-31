@@ -31,6 +31,7 @@ import {TreeService} from '../services/tree.service';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {environment} from '../../environments/environment';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+declare var LForms: any;
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -253,6 +254,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         setTimeout(() => {
           this.setNode(event.node);
           this.stopSpinner();
+          LForms.Def.ScreenReaderLog.add(`Use up and down arrow keys to navigate the tree nodes and use enter key to select the node.`);
         });
         break;
 
@@ -266,6 +268,12 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
       case 'focus':
         this.treeComponent.treeModel.setFocus(true);
+        if (event.node?.data) {
+          LForms.Def.ScreenReaderLog.add(`${this.getIndexPath(event.node).join('.')} ${event.node.data.text}`);
+          if (event.node.hasChildren) {
+            LForms.Def.ScreenReaderLog.add(`Use space key to toggle collapse or expansion of children.`);
+          }
+        }
         break;
 
       default:
