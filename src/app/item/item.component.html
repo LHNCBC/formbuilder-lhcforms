@@ -22,6 +22,7 @@
                      [treeDrag]="node"
                      [treeDragEnabled]="node.allowDrag()"
                      [attr.tabindex]="node.isActive ? '0' : null"
+                     role="treeitem"
                 >
 
                   <tree-node-content [node]="node" [index]="index" [template]="treeNodeTemplate"></tree-node-content>
