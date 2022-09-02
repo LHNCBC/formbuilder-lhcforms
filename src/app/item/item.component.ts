@@ -12,7 +12,7 @@ import {
   ViewChild,
   EventEmitter,
   OnChanges,
-  SimpleChanges
+  SimpleChanges, Renderer2
 } from '@angular/core';
 import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
@@ -31,7 +31,8 @@ import {
 } from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
-import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons'
+import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+declare var LForms: any;
 
 export class LinkIdCollection {
   linkIdHash = {};
@@ -88,6 +89,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
+  @ViewChild('nodeDisplay', { read: ElementRef }) nodeDisplayEl: ElementRef;
   // qItem: any;
   focusNode: ITreeNode;
   itemData: fhir.QuestionnaireItem = null;
@@ -103,7 +105,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         click: TREE_ACTIONS.ACTIVATE
       },
       keys: {
-        [KEYS.ENTER]: TREE_ACTIONS.EXPAND
+        [KEYS.SPACE]: TREE_ACTIONS.TOGGLE_EXPANDED,
+        [KEYS.ENTER]: TREE_ACTIONS.ACTIVATE
       }
     },
     nodeHeight: 23,
@@ -174,7 +177,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
               private modalService: NgbModal,
               private treeService: TreeService,
               private formService: FormService,
-              private dataSrv: FetchService) {
+              private dataSrv: FetchService,
+              private renderer: Renderer2) {
     this.itemEditorSchema = formService.itemEditorSchema;
   }
 
@@ -228,11 +232,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       const node = this.treeComponent.treeModel.getFirstRoot();
       if(node) {
         this.treeComponent.treeModel.setFocusedNode(node);
+        this.treeComponent.treeModel.setActiveNode(node, true);
         this.setNode(node);
       }
     }
   }
-
 
   /**
    * Handle tree events
@@ -245,6 +249,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         setTimeout(() => {
           this.setNode(event.node);
           this.stopSpinner();
+          setTimeout(() => {
+            LForms.Def.ScreenReaderLog.add(`Use up and down arrow keys to navigate the tree nodes and use enter key to select the node.`);
+          });
         });
         break;
 
@@ -254,6 +261,16 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
           this.onTreeUpdated();
           this.stopSpinner();
         });
+        break;
+
+      case 'focus':
+        this.treeComponent.treeModel.setFocus(true);
+        if (event.node?.data) {
+          LForms.Def.ScreenReaderLog.add(`${this.getIndexPath(event.node).join('.')} ${event.node.data.text}`);
+          if (event.node.hasChildren) {
+            LForms.Def.ScreenReaderLog.add(`Use left arrow key to collapse and right arrow key to expand child nodes.`);
+          }
+        }
         break;
 
       default:

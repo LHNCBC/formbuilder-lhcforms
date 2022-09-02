@@ -1,5 +1,22 @@
 @import '~@circlon/angular-tree-component/css/angular-tree-component.css';
 
+.node-content-wrapper {
+  width: 100%;
+  background-color: whitesmoke;
+}
+
+.node-content-wrapper-active,
+.node-content-wrapper.node-content-wrapper-active:hover,
+.node-content-wrapper-active.node-content-wrapper-focused {
+  background-color: lightgrey;
+}
+.node-content-wrapper-focused {
+  background-color: lightgoldenrodyellow;
+}
+.node-content-wrapper:hover {
+  background-color: lightgoldenrodyellow;
+}
+
 .overlay {
   position: fixed;
   width: 100%;

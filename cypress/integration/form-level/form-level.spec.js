@@ -98,7 +98,7 @@ describe('Home page', () => {
     });
 
     it('should move to form level fields', () => {
-      cy.get('p').should('have.text', 'Enter basic information about the form.');
+      cy.get('lfb-form-fields div div p').should('have.text', 'Enter basic information about the form.');
     })
 
     it('should hide/display code field', () => {

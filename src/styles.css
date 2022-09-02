@@ -4,19 +4,6 @@
 @import '~bootstrap/dist/css/bootstrap.min.css';
 @import '~autocomplete-lhc/source/auto_completion.css';
 
-.node-content-wrapper {
-  width: 100%;
-  background-color: whitesmoke;
-}
-
-.node-content-wrapper.node-content-wrapper-focused {
-  /* background-color: #b3d4fc; */
-  background-color: lightgrey;
-}
-.node-content-wrapper:hover {
-  /* background-color: #d3e4fc; */
-  background-color: lightgoldenrodyellow;
-}
 .form-control > p {
   display:none !important;
 }
