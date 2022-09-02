@@ -251,7 +251,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         setTimeout(() => {
           this.setNode(event.node);
           this.stopSpinner();
-          LForms.Def.ScreenReaderLog.add(`Use up and down arrow keys to navigate the tree nodes and use enter key to select the node.`);
+          setTimeout(() => {
+            LForms.Def.ScreenReaderLog.add(`Use up and down arrow keys to navigate the tree nodes and use enter key to select the node.`);
+          });
         });
         break;
 
@@ -268,7 +270,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         if (event.node?.data) {
           LForms.Def.ScreenReaderLog.add(`${this.getIndexPath(event.node).join('.')} ${event.node.data.text}`);
           if (event.node.hasChildren) {
-            LForms.Def.ScreenReaderLog.add(`Use space key to toggle collapse or expansion of children.`);
+            LForms.Def.ScreenReaderLog.add(`Use left arrow key to collapse and right arrow key to expand child nodes.`);
           }
         }
         break;
