@@ -502,7 +502,7 @@ describe('Home page', () => {
 
     xit('should create display type', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header');
+      cy.selectDataType('header (group/display)');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
@@ -525,14 +525,14 @@ describe('Home page', () => {
 
     it('should retain header type after switching to another item and switching back', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header');
+      cy.selectDataType('header (group/display)');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
       cy.get('@addNewItem').click();
       cy.get('@type').contains('string');
       cy.get('@item0').click();
-      cy.get('@type').contains('header');
+      cy.get('@type').contains('header (group/display)');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
         expect(qJson.item[1].type).equal('string');
@@ -696,7 +696,7 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].type).to.equal('string');
       });
       cy.get('#text').clear().type('xxx');
-      cy.get('#type').select('header');
+      cy.get('#type').select('header (group/display)');
 
       cy.clickTreeNode('My health history');
       cy.clickTreeNode('xxx');

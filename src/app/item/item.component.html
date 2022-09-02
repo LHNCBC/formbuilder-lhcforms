@@ -1,6 +1,9 @@
 <mat-sidenav-container>
         <mat-sidenav #drawer mode="side" opened class="p-1 bg-light">
-          <div class="sidenav-header p-1">Questions Tree</div>
+          <div class="sidenav-header p-1">Questions Tree&nbsp;<button class="btn border-0 p-0 b-0" [matTooltip]="treeHelpMessage"
+                                                                      [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage" aria-hidden="true"
+          ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></button
+          ></div>
           <tree-root
             #tree
             [nodes]="itemList"
