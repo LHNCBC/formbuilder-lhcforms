@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {ArrayProperty, FormProperty} from 'ngx-schema-form';
+import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import {fhir} from '../fhir';
 import {BehaviorSubject, Observable, Observer, Subject, Subscription} from 'rxjs';
 

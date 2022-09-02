@@ -3,7 +3,7 @@
  * selecting codes to satisfy a condition.
  */
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {ObjectWidget} from 'ngx-schema-form';
+import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import {fhir} from '../../../fhir';
 

@@ -1,5 +1,5 @@
 import {Directive, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges} from '@angular/core';
-import {FormProperty} from 'ngx-schema-form';
+import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {Subscription} from 'rxjs';
 
 /**

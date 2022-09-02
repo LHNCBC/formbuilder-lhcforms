@@ -2,7 +2,7 @@
  * Customized pull down box.
  */
 import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
-import {SelectWidget} from 'ngx-schema-form';
+import {SelectWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 

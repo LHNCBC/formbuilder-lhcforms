@@ -4,7 +4,7 @@
  * The widget is identified by its id. The id is associated
  * with the field in the schema.json.
  */
-import { DefaultWidgetRegistry } from 'ngx-schema-form';
+import { DefaultWidgetRegistry } from '@lhncbc/ngx-schema-form';
 import {RowLayoutComponent} from './widgets/row-layout/row-layout.component';
 import {GridComponent} from './widgets/grid.component/grid.component';
 import {TableComponent} from './widgets/table/table.component';

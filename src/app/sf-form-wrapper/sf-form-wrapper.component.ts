@@ -1,15 +1,15 @@
 import {
+  ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
-  EventEmitter, Input,
-  Output,
+  EventEmitter, Input, OnChanges,
+  Output, SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {SharedObjectService} from '../services/shared-object.service';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
-import {ArrayProperty, FormComponent, FormProperty, PropertyGroup} from 'ngx-schema-form';
+import {ArrayProperty, FormComponent, FormProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
-import {ObjectProperty} from 'ngx-schema-form/lib/model';
+import {ObjectProperty} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../lib/util';
 
 /**
@@ -19,9 +19,10 @@ import {Util} from '../lib/util';
   selector: 'lfb-sf-form-wrapper',
   templateUrl: './sf-form-wrapper.component.html',
   styleUrls: ['./sf-form-wrapper.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ExtensionsService]
 })
-export class SfFormWrapperComponent {
+export class SfFormWrapperComponent implements OnChanges {
   @ViewChild('itemForm') itemForm: FormComponent;
 
   validators = {
@@ -67,9 +68,17 @@ export class SfFormWrapperComponent {
   errorsChanged = new EventEmitter<any []>();
   @Input()
   linkIdCollection = new LinkIdCollection();
+  loading = false;
 
-  constructor(private extensionsService: ExtensionsService, private modelService: SharedObjectService, private formService: FormService) {
+  constructor(private extensionsService: ExtensionsService, private formService: FormService, private cdr: ChangeDetectorRef) {
     this.mySchema = formService.getItemSchema();
+  }
+
+
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes.model) {
+      this.loading = true;
+    }
   }
 
 
@@ -78,11 +87,18 @@ export class SfFormWrapperComponent {
    * @param value - Angular event
    */
   updateValue(value) {
-    if(!this.formService.loading) { // Avoid emitting the changes while loading.
+    if(!this.loading) { // Avoid emitting the changes while loading.
       // console.log('sf-form.onChange() emitted:');
       this.valueChange.emit(value);
     }
   }
+
+  onModelReset(value) {
+    this.loading = false;
+    // console.log('sf-form.onModelReset() emitted:');
+    this.valueChange.emit(value);
+  }
+
 
   /**
    * Custom validator for enableWhen (Array of conditions).

@@ -1,19 +1,19 @@
 /**
  * Handles FHIR initial field interaction in the item level form.
  */
-import {AfterViewInit, Component, DoCheck, ElementRef, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, ElementRef, OnDestroy} from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'lfb-initial',
   templateUrl: './../table/table.component.html',
-  styleUrls: ['./../table/table.component.css']
+  styleUrls: ['./../table/table.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InitialComponent extends TableComponent implements DoCheck, OnDestroy {
 
-  constructor(private elementRef: ElementRef) {
-    super(elementRef);
+  constructor(private elementRef: ElementRef, private cdr: ChangeDetectorRef) {
+    super(elementRef, cdr);
   }
 
   /**

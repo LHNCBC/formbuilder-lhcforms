@@ -62,15 +62,13 @@ export class ObservationLinkPeriodComponent extends StringComponent implements A
   ngAfterViewInit() {
     super.ngAfterViewInit();
     this.extensionsService.extensionsObservable.subscribe(() => {
-      setTimeout(() => {
-        const ext = this.getExtension();
-        if(ext) {
-          this.showOlp = true;
-          this.adjustVAlignClass = '';
-          this.setUnitIndex(ext);
-          this.value = ''+ext.valueDuration.value;
-        }
-      });
+      const ext = this.getExtension();
+      if(ext) {
+        this.showOlp = true;
+        this.adjustVAlignClass = '';
+        this.setUnitIndex(ext);
+        this.value = ''+ext.valueDuration.value;
+      }
     });
   }
 

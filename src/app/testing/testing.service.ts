@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {FormService} from '../services/form.service';
-import {FormProperty, FormPropertyFactory, SchemaPreprocessor} from 'ngx-schema-form';
+import {FormProperty, FormPropertyFactory, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
 import {CommonTestingModule} from './common-testing.module';
 
 @Injectable({

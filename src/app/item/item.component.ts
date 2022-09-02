@@ -3,16 +3,17 @@
  */
 import {
   AfterViewInit,
+  ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
-  ViewChild,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges, Renderer2
+  SimpleChanges,
+  ViewChild
 } from '@angular/core';
 import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@circlon/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
@@ -24,14 +25,12 @@ import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  switchMap,
-} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, switchMap,} from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import {environment} from '../../environments/environment';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 declare var LForms: any;
 
 export class LinkIdCollection {
@@ -79,17 +78,18 @@ export class LinkIdCollection {
 @Component({
   selector: 'lfb-item-component',
   templateUrl: './item.component.html',
-  styleUrls: ['./item.component.css']
+  styleUrls: ['./item.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   errorIcon = faExclamationTriangle;
+  helpIcon = faInfoCircle;
   id = 1;
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
-  @ViewChild('nodeDisplay', { read: ElementRef }) nodeDisplayEl: ElementRef;
   // qItem: any;
   focusNode: ITreeNode;
   itemData: fhir.QuestionnaireItem = null;
@@ -138,6 +138,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   editor = 'ngx';
   loincType = LoincItemType.PANEL;
   errors$ = new EventEmitter<any []>(true); // Use async emitter.
+  treeHelpMessage = 'You can drag and drop items in the tree to move them around in the hierarchy';
 
   loincTypeOpts = [
     {
@@ -157,6 +158,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   spinner$ = new BehaviorSubject<boolean>(false);
 
   subscriptions: Subscription [] = [];
+  loadingTime = 0.0;
+  startTime = Date.now();
+  devMode = !environment.production;
 
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
@@ -178,7 +182,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
               private treeService: TreeService,
               private formService: FormService,
               private dataSrv: FetchService,
-              private renderer: Renderer2) {
+              private cdr: ChangeDetectorRef) {
     this.itemEditorSchema = formService.itemEditorSchema;
   }
 
@@ -217,6 +221,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     if (typeof this.itemData?.linkId === 'number') {
       this.itemData.linkId = ''+this.itemData.linkId;
     }
+    this.loadingTime = (Date.now() - this.startTime)/1000;
     // console.log('item changed', this.itemData?.linkId);
     if(!this.formService.loading) {
       this.itemChange.emit(this.itemList);
@@ -300,6 +305,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * @param node - Selected node.
    */
   setNode(node: ITreeNode): void {
+    this.startTime = Date.now();
     this.focusNode = node;
     this.itemData = this.focusNode ? this.focusNode.data : null;
     if(this.focusNode && this.focusNode.data

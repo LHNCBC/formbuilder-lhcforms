@@ -1,9 +1,9 @@
-import {AfterViewInit, Component, DoCheck, ElementRef, OnInit, Renderer2, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, DoCheck, ElementRef, OnInit, Renderer2, ViewEncapsulation} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
-import {ObjectProperty, PropertyGroup} from 'ngx-schema-form/lib/model';
+import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
-import {FormProperty} from 'ngx-schema-form';
+import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {Observable, of } from 'rxjs';
 
 @Component({
@@ -18,8 +18,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   showHeaderFields: any[];
   warningIcon = faExclamationTriangle;
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef) {
-    super(elementRef);
+  constructor(private renderer: Renderer2, private elementRef: ElementRef, private cdr: ChangeDetectorRef) {
+    super(elementRef, cdr);
   }
 
   ngOnInit() {

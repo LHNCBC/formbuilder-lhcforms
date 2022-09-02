@@ -1,29 +1,33 @@
-import {AfterViewInit, Component, DoCheck, ElementRef, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {fhir} from '../../../fhir';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {TreeService} from '../../../services/tree.service';
 import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'lfb-answer-option',
   templateUrl: '../table/table.component.html',
-  styleUrls: ['../table/table.component.css', './answer-option.component.css']
+  styleUrls: ['../table/table.component.css', './answer-option.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
 
   subscriptions: Subscription [] = [];
-  constructor(private treeService: TreeService, private elementRef: ElementRef) {
-    super(elementRef);
+  constructor(private treeService: TreeService, private elementRef: ElementRef, private cdr: ChangeDetectorRef) {
+    super(elementRef, cdr);
   }
 
   ngOnInit() {
     super.ngOnInit();
     const repeatProp = this.formProperty.findRoot().getProperty('repeats');
     this.setSelectionType(repeatProp.value);
-    const sub = repeatProp.valueChanges.subscribe((isRepeating) => {this.setSelectionType(isRepeating);});
+    const sub = repeatProp.valueChanges.subscribe((isRepeating) => {
+      this.setSelectionType(isRepeating);
+      this.cdr.markForCheck();
+    });
     this.subscriptions.push(sub);
   }
 
@@ -50,13 +54,11 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
     const repeatProp = this.formProperty.findRoot().getProperty('repeats');
     this.setSelectionType(repeatProp.value);
-    let sub = repeatProp.valueChanges.subscribe((isRepeating) => {this.setSelectionType(isRepeating);});
-    this.subscriptions.push(sub);
     const aOptions = this.formProperty.value;
     const initials = this.formProperty.findRoot().getProperty('initial').value;
     this.setDefaultSelections(initials || [], aOptions || []);
     this.setAnswerOptions(aOptions);
-    sub = this.formProperty.valueChanges.subscribe((newValue) => {
+    const sub = this.formProperty.valueChanges.subscribe((newValue) => {
       this.updateScoreExtensions(newValue);
     });
     this.subscriptions.push(sub);
@@ -75,9 +77,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
         }
       }
     });
-    if(answerOptions) {
-      this.formProperty.setValue(answerOptions, true);
-    }
   }
 
 

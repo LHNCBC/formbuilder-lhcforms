@@ -3,7 +3,7 @@
  */
 import { Component } from '@angular/core';
 
-import {IntegerWidget} from 'ngx-schema-form';
+import {IntegerWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 

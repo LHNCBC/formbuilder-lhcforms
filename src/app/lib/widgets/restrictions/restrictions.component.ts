@@ -1,7 +1,6 @@
-import {AfterViewInit, Component, ElementRef, OnInit} from '@angular/core';
-import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import {PropertyGroup} from 'ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {fhir} from '../../../fhir';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';
@@ -16,6 +15,7 @@ import {FormService} from '../../../services/form.service';
   selector: 'lfb-restrictions',
   templateUrl: '../table/table.component.html',
   styleUrls: ['../table/table.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [RestrictionOperatorService] // A service for this instance of component.
 })
 export class RestrictionsComponent extends TableComponent implements OnInit {
@@ -96,8 +96,9 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   constructor(private restrictionOperatorService: RestrictionOperatorService,
               private extensionsService: ExtensionsService,
               private formService: FormService,
-              private elementRef: ElementRef) {
-    super(elementRef);
+              private elementRef: ElementRef,
+              private cdr: ChangeDetectorRef) {
+    super(elementRef, cdr);
   }
 
 
@@ -108,23 +109,29 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
       this.appliedOptions = RestrictionsComponent.typeToOptions[type];
     });
     this.subscriptions.push(sub);
+    let initializing = false;
+    let updating = false;
     sub = this.extensionsService.extensionsObservable.subscribe((extensions) => {
-      if(this.formService.loading) {
+      if(!updating) {
         // Initialization. Set up the widget reading the values from extensions.
         const restrictions = this.getRestrictions(this.formProperty.root, this.appliedOptions);
         this.updateSelectedOptions(restrictions); // Cache the selections.
+        initializing = true;
         this.formProperty.setValue(restrictions, true);
+        initializing = false;
       }
     });
     this.subscriptions.push(sub);
 
     sub = this.formProperty.valueChanges.subscribe((restrictionsArray) => {
-      if(!this.formService.loading) {
+      if(!initializing) {
         // formProperty => __$restricions. Read all user actions, but not initialization.
         this.updateSelectedOptions(restrictionsArray); // Reset cache.
         const extensionProperty = this.formProperty.root.getProperty('extension');
         this.updateRelevantExtensions(extensionProperty.value, restrictionsArray);
+        updating = true;
         extensionProperty.setValue(extensionProperty.value, true);
+        updating = false;
       }
     });
     this.subscriptions.push(sub);

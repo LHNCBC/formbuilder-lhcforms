@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import {Subscription} from 'rxjs';
-import {ArrayProperty} from 'ngx-schema-form';
+import {ArrayProperty} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
 
 @Component({
