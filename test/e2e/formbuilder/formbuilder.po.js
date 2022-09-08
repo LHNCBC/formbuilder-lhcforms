@@ -309,15 +309,20 @@ var FormBuilder = function () {
    * Utility to simulate data entry into an input element.
    * @param {Object} elem - Such as textarea, or text input element
    * @param {String} stringOfKeys - String of input
-   * @param {Integer} repetitions - Number of repetitions of stringOfKeys
+   * @param {Boolean} focus - true (default) if the field should be focused to make the
+   * list show up, or false if the list is already showing.
    */
-  this.autoCompSelect = function(autoCompElem, orderInTheList) {
+  this.autoCompSelect = function(autoCompElem, orderInTheList, focus) {
     if (!orderInTheList || orderInTheList <= 0) {
       orderInTheList = 1;
     }
+    if (focus === undefined)
+      focus = true;
 
-    this.scrollIntoView(autoCompElem);
-    autoCompElem.click();
+    if (focus) {
+      this.scrollIntoView(autoCompElem);
+      autoCompElem.click();
+    }
     this.waitForElementDisplayed(element(by.id('searchResults')));
     for (var i = 0; i < orderInTheList; i++) {
       autoCompElem.sendKeys(protractor.Key.DOWN);
@@ -437,8 +442,8 @@ var FormBuilder = function () {
     this.importLOINCRadio.click();
     this.typePanelRadio.click();
     this.searchBox.click();
-    this.searchBox.sendKeys(searchTerm);
-    this.autoCompSelect(this.searchBox, orderInAutoCompResults);
+    this.sendString(this.searchBox, searchTerm);
+    this.autoCompSelect(this.searchBox, orderInAutoCompResults, false);
   };
 
 
