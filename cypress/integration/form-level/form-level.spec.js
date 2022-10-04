@@ -52,7 +52,7 @@ describe('Home page', () => {
     it('should import LOINC form', () => {
       cy.get('input[type="radio"][value="loinc"]').should('be.visible').click();
       cy.contains('button', 'Continue').click();
-      cy.get('#loincSearch').type('vital');
+      cy.get('#loincSearch').type('vital signs with');
       cy.get('ngb-typeahead-window').should('be.visible');
       cy.get('ngb-typeahead-window button').first().click();
       cy.get('#title').should('have.value', 'Vital signs with method details panel');

@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "7.0.15",
+  "version": "7.0.16",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -18,7 +18,7 @@
     "clean-build": "source ./bashrc.formbuilder && npm ci && source ./bashrc.formbuilder && npm run build",
     "copy-lforms": "rm -rf ./src/lib/lforms && node ./bin/copy-lforms.js",
     "create-version-file": "echo {\\\"version\\\": \\\"${npm_package_version}\\\"} > ./src/assets/version.json",
-    "build": "npm run create-version-file && npm run copy-lforms && ng build",
+    "build": "npm run create-version-file && npm run copy-lforms && ng build --prod",
     "test": "source ./bashrc.formbuilder && npm run unit-test && npm run ci:cy-run",
     "unit-test": "ng test --watch=false --browsers ChromeHeadless",
     "lint": "ng lint",
@@ -27,7 +27,7 @@
     "cy:run": "source ./bashrc.formbuilder && cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_scripts_testPort}",
     "ci:cy-run": "start-server-and-test ci:start-server http://localhost:${npm_package_scripts_testPort} cy:run",
     "ci:cy-open": "start-server-and-test ci:start-server http://localhost:${npm_package_scripts_testPort} cy:open",
-    "ci:start-server": "angular-http-server --path ./dist/formbuilder-lhcforms -p ${npm_package_scripts_testPort}",
+    "ci:start-server": "angular-http-server --silent --path ./dist/formbuilder-lhcforms -p ${npm_package_scripts_testPort}",
     "postinstall": "ngcc"
   },
   "files": [

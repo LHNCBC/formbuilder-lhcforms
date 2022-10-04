@@ -34,10 +34,10 @@
 }
 .node-display-prefix {
   font-weight: bold;
-  margin-right: 1rem;
+  margin-right: 1ch;
 }
 .mat-sidenav {
-  width: 20%;
+  width: 25%;
   padding: 10px;
 }
 
@@ -72,4 +72,12 @@
 
 ::ng-deep .mat-tooltip {
   font-size: 12px;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.dropdown-toggle:hover {
+  background-color: white;
 }

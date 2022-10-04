@@ -59,9 +59,10 @@ describe('Home page', () => {
       cy.get('@code').should('not.exist');
 
       cy.contains('Add new item').scrollIntoView().click();
-      cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'New item 1');
+      cy.get('tree-root tree-viewport tree-node-collection tree-node').last().find('tree-node-content div span').eq(1).should('have.text', 'New item 1');
       cy.contains('Delete this item').scrollIntoView().click();
-      cy.get('tree-root tree-viewport tree-node-collection tree-node span').last().should('have.text', 'Item 0');
+      cy.contains('button', 'Yes').click();
+      cy.get('tree-root tree-viewport tree-node-collection tree-node').last().find('tree-node-content div span').eq(1).should('have.text', 'Item 0');
 
       const helpString = 'Test help text!';
       cy.get('@helpText').click();
@@ -126,11 +127,102 @@ describe('Home page', () => {
       ].forEach((itemText) => {
         cy.get('#text').should('have.value', itemText);
         cy.contains('button', 'Delete this item').click();
+        cy.contains('button', 'Yes').click();
       });
 
       // All nodes are deleted.
       cy.get('lfb-sf-form-wrapper div.container-fluid p')
         .should('have.text', 'No items in the form. Add an item to continue.');
+    });
+
+    describe('Insert new item using sidebar tree node context menu', () => {
+      beforeEach(() => {
+        cy.getTreeNode('Item 0').as('contextNode');
+        cy.get('@contextNode').find('span.node-display-prefix').should('have.text', '1');
+        cy.get('@contextNode').find('button.dropdown-toggle').click();
+      });
+
+      afterEach(() => {
+        cy.getTreeNode('New item 1').as('contextNode');
+        cy.get('@contextNode').find('button.dropdown-toggle').click();
+        cy.get('div.dropdown-menu.show').should('be.visible');
+        cy.contains('button.dropdown-item', 'Remove this item').click({force: true});
+        cy.contains('button', 'Yes').click();
+      });
+
+      it('should insert before context node using sidebar tree node context menu', () => {
+        cy.contains('button.dropdown-item', 'Insert a new item before').click();
+        cy.get('#text').should('have.value', 'New item 1');
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
+      });
+
+      it('should insert after context node using sidebar tree node context menu', () => {
+        cy.contains('button.dropdown-item', 'Insert a new item after').click();
+        cy.get('#text').should('have.value', 'New item 1');
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+      });
+
+      it('should insert a child of context node using sidebar tree node context menu', () => {
+        cy.contains('button.dropdown-item', 'Insert a new child item').click();
+        cy.get('#text').should('have.value', 'New item 1');
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1.1');
+      });
+    });
+
+    describe('Move context node using sidebar tree node context menu', () => {
+      beforeEach(() => {
+        cy.contains('button', 'Add new item').click();
+        cy.contains('button', 'Add new item').click();
+        cy.contains('button', 'Add new item').click();
+        cy.getTreeNode('New item 1').as('node1');
+        cy.getTreeNode('New item 2').as('node2');
+        cy.getTreeNode('New item 3').as('node3');
+        cy.getTreeNode('Item 0').click();
+
+        cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '1');
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
+
+        cy.getTreeNode('Item 0').find('button.dropdown-toggle').click();
+        cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+        cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+        cy.get('@moveBtn').should('be.disabled');
+        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{downarrow}{enter}');
+
+      });
+
+      afterEach(() => {
+        cy.resetForm();
+        cy.contains('button', 'Create questions').click();
+      });
+
+      it('should move before a target node', () => {
+        cy.get('input[type="radio"][value="AFTER"]').parent().should('have.class', 'active');
+        cy.get('@moveBtn').should('not.be.disabled').click();
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
+      });
+
+      it('should move after a target node', () => {
+        cy.get('input[type="radio"][value="BEFORE"]').click();
+        cy.get('@moveBtn').should('not.be.disabled').click();
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
+        cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
+      });
+
+      it('should move as a child of a target', () => {
+        cy.get('input[type="radio"][value="CHILD"]').click();
+        cy.get('@moveBtn').should('not.be.disabled').click();
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '2.1');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '3');
+      });
     });
 
     it('should import help text item', () => {

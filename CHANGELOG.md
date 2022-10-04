@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [7.0.16]  2022-10-04
+### Added
+ - Added context menu for nodes on the sidebar tree
+
 ## [7.0.15]  2022-07-14
 ### Fixed
  - Fix units in valueQuantity of initial field.

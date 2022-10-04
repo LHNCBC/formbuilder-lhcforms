@@ -3,7 +3,8 @@
  */
 import {
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -22,15 +23,18 @@ import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NgbActiveModal, NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {debounceTime, distinctUntilChanged, switchMap,} from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
-import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import {faEllipsisH, faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {environment} from '../../environments/environment';
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import {NodeDialogComponent} from './node-dialog.component';
+import {Util} from '../lib/util';
+import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+
 declare var LForms: any;
 
 export class LinkIdCollection {
@@ -76,6 +80,34 @@ export class LinkIdCollection {
 }
 
 @Component({
+  selector: 'lfb-confirm-dlg',
+  template: `
+    <div class="modal-header">
+      <h4 class="modal-title">{{title}}</h4>
+      <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>{{message}}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-dark" (click)="activeModal.dismiss('Cancel click')">No</button>
+      <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Delete click')">Yes</button>
+    </div>
+  `
+})
+export class ConfirmDlgComponent {
+  @Input()
+  title: string;
+  @Input()
+  message: string;
+
+  constructor(public activeModal: NgbActiveModal) {
+  }
+}
+
+@Component({
   selector: 'lfb-item-component',
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css'],
@@ -85,6 +117,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   errorIcon = faExclamationTriangle;
   helpIcon = faInfoCircle;
   id = 1;
+  nodeMenuIcon = faEllipsisH;
+
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
@@ -278,6 +312,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         }
         break;
 
+      case 'move':
+        this.treeComponent.treeModel.setFocusedNode(event.node);
+        break;
+
       default:
         break;
     }
@@ -352,16 +390,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * @param node - Target node of computation
    */
   getIndexPath(node: ITreeNode): number[] {
-    const ret: number [] = [];
-    if (node) {
-      ret.push(node.index + 1);
-      while (node?.level > 1) {
-        node = node.parent;
-        const index = node ? node.index : 0;
-        ret.push(index + 1);
-      }
-    }
-    return ret.reverse();
+    return Util.getIndexPath(node);
   }
 
 
@@ -392,6 +421,112 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       this.stopSpinner();
     });
   }
+
+  /**
+   * Update the data structure based on context node and position.
+   * @param contextNode - Context node
+   * @param position - Insertion point.
+   */
+  onInsertItem(contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
+    const newItem = {text: 'New item ' + this.id++};
+    const nodeData = contextNode.data;
+    switch(position) {
+      case 'CHILD':
+        if (!nodeData.item) {
+          nodeData.item = [];
+        }
+        nodeData.item.push(newItem);
+        break;
+
+      case 'BEFORE':
+        contextNode.parent.data.item.splice(contextNode.index, 0, newItem);
+        break;
+
+      case 'AFTER':
+        contextNode.parent.data.item.splice(contextNode.index + 1, 0, newItem);
+        break;
+    }
+    this.treeComponent.treeModel.update();
+    this.setFocusedNode(position);
+  }
+
+  /**
+   * Set focus on the next node based on position.
+   * @param position - Position around the target node.
+   */
+  setFocusedNode(position: string) {
+    setTimeout(() => {
+      const contextNode = this.treeComponent.treeModel.getFocusedNode();
+      switch (position) {
+        case 'CHILD':
+          contextNode.getLastChild(false).setActiveAndVisible(false);
+          break;
+        case 'BEFORE':
+          contextNode.findPreviousSibling(false).setActiveAndVisible(false);
+          break;
+        case 'AFTER':
+          contextNode.findNextSibling(false).setActiveAndVisible(false);
+          break;
+      }
+      document.getElementById('text').focus();
+    });
+  }
+
+  /**
+   * Move the item in the data structure.
+   * @param contextNode - The node to move
+   * @param targetNode - Destination node
+   * @param position - ('AFTER'|'BEFORE'|'CHILD')
+   */
+  moveItem(contextNode: ITreeNode, targetNode: ITreeNode, position: ('AFTER'|'BEFORE'|'CHILD') = 'AFTER') {
+    this.treeComponent.treeModel.moveNode(contextNode, {
+        dropOnNode: position === 'CHILD',
+        parent: position === 'CHILD' ? targetNode : targetNode.parent,
+        index: targetNode.index + (position === 'AFTER' ? 1 : 0)
+      });
+    this.treeComponent.treeModel.setFocusedNode(contextNode);
+    this.treeComponent.treeModel.getFocusedNode().setActiveAndVisible(false);
+  }
+
+  /**
+   * Menu item handler for move tasks.
+   * @param contextNode - Context node.
+   */
+  onMoveDlg(contextNode: ITreeNode) {
+    const modalRef = this.openNodeDlg(contextNode, 'Move');
+    modalRef.result.then((result) => {
+      this.moveItem(contextNode, result.target, result.location);
+    }, (reason) => {
+    });
+  }
+
+  /**
+   * Dialog box to interact with target node searching.
+   * @param contextNode - Context node
+   * @param mode - Move or insert.
+   */
+  openNodeDlg(contextNode: ITreeNode, mode: ('Move'|'Insert')): NgbModalRef {
+    const modalRef = this.modalService.open(NodeDialogComponent, {ariaLabelledBy: 'modal-move-title'});
+    modalRef.componentInstance.node = contextNode;
+    modalRef.componentInstance.item = this;
+    modalRef.componentInstance.mode = mode;
+    return modalRef;
+  }
+
+  /**
+   * Delete sidebar item with confirmation dialog.
+   */
+
+  confirmItemDelete(): Promise<any> {
+    const modalRef = this.modalService.open(ConfirmDlgComponent);
+    modalRef.componentInstance.title = 'Confirm deletion';
+    modalRef.componentInstance.message = 'Are you sure you want to delete this item?';
+    modalRef.componentInstance.type = MessageType.WARNING;
+    return modalRef.result.then(() => {
+      this.deleteFocusedItem();
+    }, () => {});
+  }
+
 
   /**
    * Handle delete item button
@@ -482,6 +617,14 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     return acResult.code[0].code + ': ' + acResult.text;
   }
 
+  /**
+   * Truncate a long string to display in the sidebar node tree.
+   * @param text - Text of the string
+   * @param limit - Limit the length to truncate.
+   */
+  truncate(text, limit: number = 15): string {
+    return Util.truncateString(text, limit);
+  }
 
   /**
    * Handle errorsChanged event from <lfb-ngx-schema-form>
