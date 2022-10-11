@@ -424,10 +424,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   /**
    * Update the data structure based on context node and position.
+   * @param domEvent: DOM event object
    * @param contextNode - Context node
    * @param position - Insertion point.
    */
-  onInsertItem(contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
+  onInsertItem(domEvent: Event, contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
     const newItem = {text: 'New item ' + this.id++};
     const nodeData = contextNode.data;
     switch(position) {
@@ -448,6 +449,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     }
     this.treeComponent.treeModel.update();
     this.setFocusedNode(position);
+    domEvent.stopPropagation();
   }
 
   /**
@@ -490,14 +492,16 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   /**
    * Menu item handler for move tasks.
+   * @param domEvent - DOM event.
    * @param contextNode - Context node.
    */
-  onMoveDlg(contextNode: ITreeNode) {
+  onMoveDlg(domEvent: Event, contextNode: ITreeNode) {
     const modalRef = this.openNodeDlg(contextNode, 'Move');
     modalRef.result.then((result) => {
       this.moveItem(contextNode, result.target, result.location);
     }, (reason) => {
     });
+    domEvent.stopPropagation();
   }
 
   /**

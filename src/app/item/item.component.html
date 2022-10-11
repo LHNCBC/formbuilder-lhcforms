@@ -138,24 +138,25 @@
             class="btn btn-sm p-0 border"
             matTooltip="More options"
             aria-label="More options"
+            [attr.tabindex]="node.isActive ? null : '-1'"
     ><fa-icon [icon]="nodeMenuIcon"></fa-icon></button
     ><div class="dropdown-menu" ngbDropdownMenu>
       <button ngbDropdownItem
-              (keyup.enter)="onInsertItem(node, 'BEFORE')"
-              (click)="onInsertItem(node, 'BEFORE')"
+              (keyup.enter)="onInsertItem($event, node, 'BEFORE')"
+              (click)="onInsertItem($event, node, 'BEFORE')"
       >Insert a new item <b>before</b> this</button>
       <button ngbDropdownItem
-              (keyup.enter)="onInsertItem(node, 'AFTER')"
-              (click)="onInsertItem(node, 'AFTER')"
+              (keyup.enter)="onInsertItem($event, node, 'AFTER')"
+              (click)="onInsertItem($event, node, 'AFTER')"
       >Insert a new item <b>after</b> this</button>
       <button ngbDropdownItem
-              (keyup.enter)="onInsertItem(node, 'CHILD')"
-              (click)="onInsertItem(node, 'CHILD')"
+              (keyup.enter)="onInsertItem($event, node, 'CHILD')"
+              (click)="onInsertItem($event, node, 'CHILD')"
       >Insert a new <b>child</b> item</button>
       <div class="dropdown-divider"></div>
       <button ngbDropdownItem
-              (keyup.enter)="onMoveDlg(node)"
-              (click)="onMoveDlg(node)"
+              (keyup.enter)="onMoveDlg($event, node)"
+              (click)="onMoveDlg($event, node)"
       >Move this item ...</button>
       <div class="dropdown-divider"></div>
       <button ngbDropdownItem
