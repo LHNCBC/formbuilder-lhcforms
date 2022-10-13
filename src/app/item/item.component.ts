@@ -23,7 +23,7 @@ import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
-import {NgbActiveModal, NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
+import {NgbActiveModal, NgbDropdown, NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {debounceTime, distinctUntilChanged, switchMap,} from 'rxjs/operators';
@@ -124,6 +124,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
+  @ViewChild('firstItem', {read: ElementRef}) firstMenuItem: ElementRef;
   // qItem: any;
   focusNode: ITreeNode;
   itemData: fhir.QuestionnaireItem = null;
@@ -424,11 +425,12 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
   /**
    * Update the data structure based on context node and position.
-   * @param domEvent: DOM event object
+   * @param dropdown - NgbDropdown object.
+   * @param domEvent - DOM event object.
    * @param contextNode - Context node
    * @param position - Insertion point.
    */
-  onInsertItem(domEvent: Event, contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
+  onInsertItem(dropdown: NgbDropdown, domEvent: Event, contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
     const newItem = {text: 'New item ' + this.id++};
     const nodeData = contextNode.data;
     switch(position) {
@@ -450,6 +452,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.treeComponent.treeModel.update();
     this.setFocusedNode(position);
     domEvent.stopPropagation();
+    dropdown.close();
   }
 
   /**
@@ -554,7 +557,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       this.focusNode.parent.data.item.splice(index, 1);
       this.treeComponent.treeModel.update();
       // Set the model for item editor.
-      this.setNode(this.treeComponent.treeModel.getFocusedNode());
+      nextFocusedNode = this.treeComponent.treeModel.getFocusedNode();
+      this.setNode(nextFocusedNode);
+      if(nextFocusedNode) {
+        this.treeComponent.treeModel.getFocusedNode().setActiveAndVisible(false);
+      }
       this.stopSpinner();
     });
   }
@@ -638,6 +645,29 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.errors$.next(errors);
   }
 
+
+  /**
+   * Handles moreOptions button action
+   *
+   * @param dropdown - NgbDropdown object
+   * @param domEvent - Native DOM event object
+   */
+  moreOptions(dropdown: NgbDropdown, domEvent: Event) {
+    dropdown.open();
+    domEvent.stopPropagation();
+  }
+
+
+  /**
+   * Handles context menu open event. Grab the DOM focus
+   * to dropdown menu to avoid event propagation to parent tree component.
+   * @param open - Angular event.
+   */
+  handleDropdownOpen(open: boolean) {
+    if(open) {
+      this.firstMenuItem.nativeElement.focus();
+    }
+  }
 
   /**
    * Unsubscribe any subscriptions.

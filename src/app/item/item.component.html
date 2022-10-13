@@ -133,25 +133,31 @@
 
 
 <ng-template #nodeMenu let-node="node" let-parentTooltip="tooltip">
-  <div class="btn-group-sm" ngbDropdown container="body" role="group" aria-label="More options" (mouseenter)="parentTooltip.hide()" (mouseleave)="parentTooltip.show()">
+  <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown" container="body"
+       role="group" aria-label="More options"
+       (openChange)="handleDropdownOpen($event)"
+       (mouseenter)="parentTooltip.hide()"
+       (mouseleave)="parentTooltip.show()">
     <button ngbDropdownToggle
             class="btn btn-sm p-0 border"
             matTooltip="More options"
             aria-label="More options"
             [attr.tabindex]="node.isActive ? null : '-1'"
+            (keyup.enter)="moreOptions(myDrop, $event)"
+            (click)="moreOptions(myDrop, $event)"
     ><fa-icon [icon]="nodeMenuIcon"></fa-icon></button
     ><div class="dropdown-menu" ngbDropdownMenu>
-      <button ngbDropdownItem
-              (keyup.enter)="onInsertItem($event, node, 'BEFORE')"
-              (click)="onInsertItem($event, node, 'BEFORE')"
+      <button ngbDropdownItem #firstItem
+              (keyup.enter)="onInsertItem(myDrop, $event, node, 'BEFORE')"
+              (click)="onInsertItem(myDrop, $event, node, 'BEFORE')"
       >Insert a new item <b>before</b> this</button>
       <button ngbDropdownItem
-              (keyup.enter)="onInsertItem($event, node, 'AFTER')"
-              (click)="onInsertItem($event, node, 'AFTER')"
+              (keyup.enter)="onInsertItem(myDrop, $event, node, 'AFTER')"
+              (click)="onInsertItem(myDrop, $event, node, 'AFTER')"
       >Insert a new item <b>after</b> this</button>
       <button ngbDropdownItem
-              (keyup.enter)="onInsertItem($event, node, 'CHILD')"
-              (click)="onInsertItem($event, node, 'CHILD')"
+              (keyup.enter)="onInsertItem(myDrop, $event, node, 'CHILD')"
+              (click)="onInsertItem(myDrop, $event, node, 'CHILD')"
       >Insert a new <b>child</b> item</button>
       <div class="dropdown-divider"></div>
       <button ngbDropdownItem
