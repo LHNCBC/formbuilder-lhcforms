@@ -33,7 +33,7 @@ import {faEllipsisH, faExclamationTriangle, faInfoCircle} from '@fortawesome/fre
 import {environment} from '../../environments/environment';
 import {NodeDialogComponent} from './node-dialog.component';
 import {Util} from '../lib/util';
-import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 
 declare var LForms: any;
 
@@ -84,7 +84,10 @@ export class LinkIdCollection {
   template: `
     <div class="modal-header">
       <h4 class="modal-title">{{title}}</h4>
-      <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+      <button type="button" class="close" aria-label="Close"
+              (click)="activeModal.dismiss(false)"
+              (keydown.enter)="activeModal.dismiss(false)"
+      >
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
@@ -92,8 +95,14 @@ export class LinkIdCollection {
       <p>{{message}}</p>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-outline-dark" (click)="activeModal.dismiss('Cancel click')">No</button>
-      <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Delete click')">Yes</button>
+      <button type="button" class="btn btn-outline-dark"
+              (keydown.enter)="activeModal.dismiss(false)"
+              (click)="activeModal.dismiss(false)"
+      >No</button>
+      <button type="button" class="btn btn-outline-dark"
+              (keydown.enter)="activeModal.close(true)"
+              (click)="activeModal.close(true)"
+      >Yes</button>
     </div>
   `
 })
@@ -124,7 +133,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
-  @ViewChild('firstItem', {read: ElementRef}) firstMenuItem: ElementRef;
   // qItem: any;
   focusNode: ITreeNode;
   itemData: fhir.QuestionnaireItem = null;
@@ -646,27 +654,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
 
-  /**
-   * Handles moreOptions button action
-   *
-   * @param dropdown - NgbDropdown object
-   * @param domEvent - Native DOM event object
-   */
-  moreOptions(dropdown: NgbDropdown, domEvent: Event) {
-    dropdown.open();
+  preventEventPropagation(domEvent: Event) {
     domEvent.stopPropagation();
-  }
-
-
-  /**
-   * Handles context menu open event. Grab the DOM focus
-   * to dropdown menu to avoid event propagation to parent tree component.
-   * @param open - Angular event.
-   */
-  handleDropdownOpen(open: boolean) {
-    if(open) {
-      this.firstMenuItem.nativeElement.focus();
-    }
+    return false;
   }
 
   /**

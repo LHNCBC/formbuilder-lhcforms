@@ -11,7 +11,10 @@ import {Util} from '../lib/util';
   template: `
     <div class="modal-header btn-primary">
       <h4 class="modal-title text-white" id="modal-move-title">{{title}}</h4>
-      <button type="button" class="close btn-primary text-white" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+      <button type="button" class="close btn-primary text-white" aria-label="Close"
+              (click)="activeModal.dismiss(false)"
+              (keydown.enter)="activeModal.dismiss(false)"
+      >
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
@@ -60,9 +63,14 @@ import {Util} from '../lib/util';
       </form>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary" (click)="activeModal.dismiss(false)">Cancel</button>
+      <button type="button" class="btn btn-primary"
+              (keydown.enter)="activeModal.dismiss(false)"
+              (click)="activeModal.dismiss(false)"
+      >Cancel</button>
       <button type="button" class="btn btn-primary" [disabled]="!targetNode ? 'disabled' : null"
-              (click)="activeModal.close({target: targetNode, location: targetLocation})">{{mode}}
+              (click)="activeModal.close({target: targetNode, location: targetLocation})"
+              (keydown.enter)="activeModal.close({target: targetNode, location: targetLocation})"
+      >{{mode}}
       </button>
     </div>
   `,

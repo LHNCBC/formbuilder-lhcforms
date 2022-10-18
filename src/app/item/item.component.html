@@ -134,20 +134,22 @@
 
 <ng-template #nodeMenu let-node="node" let-parentTooltip="tooltip">
   <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown" container="body"
-       role="group" aria-label="More options"
-       (openChange)="handleDropdownOpen($event)"
+       role="group"
        (mouseenter)="parentTooltip.hide()"
        (mouseleave)="parentTooltip.show()">
     <button ngbDropdownToggle
             class="btn btn-sm p-0 border"
             matTooltip="More options"
-            aria-label="More options"
             [attr.tabindex]="node.isActive ? null : '-1'"
-            (keyup.enter)="moreOptions(myDrop, $event)"
-            (click)="moreOptions(myDrop, $event)"
+            (keydown.arrowDown)="preventEventPropagation($event)"
+            (keydown.arrowUp)="preventEventPropagation($event)"
+            (keydown.enter)="myDrop.open()"
     ><fa-icon [icon]="nodeMenuIcon"></fa-icon></button
-    ><div class="dropdown-menu" ngbDropdownMenu>
-      <button ngbDropdownItem #firstItem
+    ><div class="dropdown-menu" ngbDropdownMenu tabindex="0"
+          (keydown.arrowDown)="preventEventPropagation($event)"
+          (keydown.arrowUp)="preventEventPropagation($event)"
+  >
+      <button ngbDropdownItem
               (keyup.enter)="onInsertItem(myDrop, $event, node, 'BEFORE')"
               (click)="onInsertItem(myDrop, $event, node, 'BEFORE')"
       >Insert a new item <b>before</b> this</button>
@@ -161,12 +163,12 @@
       >Insert a new <b>child</b> item</button>
       <div class="dropdown-divider"></div>
       <button ngbDropdownItem
-              (keyup.enter)="onMoveDlg($event, node)"
+              (keyup.enter)="onMoveDlg($event, node); myDrop.close()"
               (click)="onMoveDlg($event, node)"
       >Move this item ...</button>
       <div class="dropdown-divider"></div>
       <button ngbDropdownItem
-              (keyup.enter)="confirmItemDelete()"
+              (keyup.enter)="confirmItemDelete();myDrop.close()"
               (click)="confirmItemDelete()"
       >Remove this item</button>
     </div>
