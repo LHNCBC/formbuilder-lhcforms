@@ -204,6 +204,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   loadingTime = 0.0;
   startTime = Date.now();
   devMode = !environment.production;
+  contextMenuActive = false;
 
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
@@ -297,9 +298,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         setTimeout(() => {
           this.setNode(event.node);
           this.stopSpinner();
-          setTimeout(() => {
-            LForms.Def.ScreenReaderLog.add(`Use up and down arrow keys to navigate the tree nodes and use enter key to select the node.`);
-          });
         });
         break;
 
@@ -313,12 +311,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
       case 'focus':
         this.treeComponent.treeModel.setFocus(true);
-        if (event.node?.data) {
-          LForms.Def.ScreenReaderLog.add(`${this.getIndexPath(event.node).join('.')} ${event.node.data.text}`);
-          if (event.node.hasChildren) {
-            LForms.Def.ScreenReaderLog.add(`Use left arrow key to collapse and right arrow key to expand child nodes.`);
-          }
-        }
         break;
 
       case 'move':
@@ -511,6 +503,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     modalRef.result.then((result) => {
       this.moveItem(contextNode, result.target, result.location);
     }, (reason) => {
+    })
+      .finally(() => {
+        setTimeout(() => {
+          this.focusActiveNode();
+        });
     });
     domEvent.stopPropagation();
   }
@@ -539,7 +536,12 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     modalRef.componentInstance.type = MessageType.WARNING;
     return modalRef.result.then(() => {
       this.deleteFocusedItem();
-    }, () => {});
+    })
+      .finally(() => {
+        setTimeout(() => {
+          this.focusActiveNode();
+        });
+    });
   }
 
 
@@ -654,9 +656,46 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
 
+  /**
+   * Stop the event propagation
+   * @param domEvent - Event object
+   */
   preventEventPropagation(domEvent: Event) {
     domEvent.stopPropagation();
     return false;
+  }
+
+  /**
+   * Stop the propagation of the event, when context menu is open.
+   * @param domEvent - DOM keyboard event object
+   */
+  checkEvent(domEvent: KeyboardEvent) {
+    let ret = true;
+    if(this.contextMenuActive && domEvent.key !== 'Escape') {
+      domEvent.stopImmediatePropagation();
+      ret = false;
+    }
+    return ret;
+  }
+
+  /**
+   * Keep track of context menu open status.
+   * @param open - True is opened, false is closed
+   */
+  handleContextMenuOpen(open: boolean) {
+    this.contextMenuActive = open;
+  }
+
+  /**
+   * Put the focus on the active node. Intended for use after clicking context menu items.
+   */
+  focusActiveNode() {
+    setTimeout(() => {
+      const activeNode = document.querySelector('.node-content-wrapper-active') as HTMLElement;
+      if(activeNode) {
+        activeNode.focus();
+      }
+    });
   }
 
   /**

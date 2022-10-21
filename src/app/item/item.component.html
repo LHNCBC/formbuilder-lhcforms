@@ -1,8 +1,8 @@
 <mat-sidenav-container>
         <mat-sidenav #drawer mode="side" opened class="p-1 bg-light" disableClose>
-          <div class="sidenav-header p-1">Questions Tree&nbsp;<button class="btn border-0 p-0 b-0" [matTooltip]="treeHelpMessage"
-                                                                      [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage" aria-hidden="true"
-          ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></button
+          <div class="sidenav-header p-1">Questions Tree&nbsp;<div tabindex="0" class="btn border-0 p-0 b-0" [matTooltip]="treeHelpMessage"
+                                                                      [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage"
+          ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></div
           ></div>
           <tree-root
             #tree
@@ -26,6 +26,7 @@
                      [treeDragEnabled]="node.allowDrag()"
                      [attr.tabindex]="node.isActive ? '0' : null"
                      role="treeitem"
+                     (keydown)="checkEvent($event)"
                 >
                   <tree-node-content [node]="node" [index]="index" [template]="treeNodeTemplate"></tree-node-content>
                 </div>
@@ -135,6 +136,7 @@
 <ng-template #nodeMenu let-node="node" let-parentTooltip="tooltip">
   <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown" container="body"
        role="group"
+       (openChange)="handleContextMenuOpen($event)"
        (mouseenter)="parentTooltip.hide()"
        (mouseleave)="parentTooltip.show()">
     <button ngbDropdownToggle
@@ -143,31 +145,32 @@
             [attr.tabindex]="node.isActive ? null : '-1'"
             (keydown.arrowDown)="preventEventPropagation($event)"
             (keydown.arrowUp)="preventEventPropagation($event)"
-            (keydown.enter)="myDrop.open()"
+            (keydown.enter)="myDrop.toggle()"
+            (keydown)="checkEvent($event)"
     ><fa-icon [icon]="nodeMenuIcon"></fa-icon></button
-    ><div class="dropdown-menu" ngbDropdownMenu tabindex="0"
+    ><div class="dropdown-menu" ngbDropdownMenu tabindex="0" role="menu" aria-label="Use tab key to navigate the menu items"
           (keydown.arrowDown)="preventEventPropagation($event)"
           (keydown.arrowUp)="preventEventPropagation($event)"
   >
-      <button ngbDropdownItem
+      <button ngbDropdownItem role="menuitem"
               (keyup.enter)="onInsertItem(myDrop, $event, node, 'BEFORE')"
               (click)="onInsertItem(myDrop, $event, node, 'BEFORE')"
       >Insert a new item <b>before</b> this</button>
-      <button ngbDropdownItem
+      <button ngbDropdownItem role="menuitem"
               (keyup.enter)="onInsertItem(myDrop, $event, node, 'AFTER')"
               (click)="onInsertItem(myDrop, $event, node, 'AFTER')"
       >Insert a new item <b>after</b> this</button>
-      <button ngbDropdownItem
+      <button ngbDropdownItem role="menuitem"
               (keyup.enter)="onInsertItem(myDrop, $event, node, 'CHILD')"
               (click)="onInsertItem(myDrop, $event, node, 'CHILD')"
       >Insert a new <b>child</b> item</button>
-      <div class="dropdown-divider"></div>
-      <button ngbDropdownItem
+      <div class="dropdown-divider" role="separator"></div>
+      <button ngbDropdownItem role="menuitem"
               (keyup.enter)="onMoveDlg($event, node); myDrop.close()"
               (click)="onMoveDlg($event, node)"
       >Move this item ...</button>
-      <div class="dropdown-divider"></div>
-      <button ngbDropdownItem
+      <div class="dropdown-divider" role="separator"></div>
+      <button ngbDropdownItem role="menuitem"
               (keyup.enter)="confirmItemDelete();myDrop.close()"
               (click)="confirmItemDelete()"
       >Remove this item</button>
