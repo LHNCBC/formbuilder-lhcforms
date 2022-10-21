@@ -149,7 +149,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       },
       keys: {
         [KEYS.SPACE]: TREE_ACTIONS.TOGGLE_EXPANDED,
-        [KEYS.ENTER]: TREE_ACTIONS.ACTIVATE
+        [KEYS.ENTER]: (tree, node, $event) => {
+          TREE_ACTIONS.ACTIVATE(tree, node, $event);
+          this.focusActiveNode();
+        }
       }
     },
     nodeHeight: 23,
