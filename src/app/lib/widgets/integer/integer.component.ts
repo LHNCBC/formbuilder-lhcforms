@@ -30,7 +30,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
       </div>
     </ng-template>
   `,
-  styles: [``]
+  styles: []
 })
 export class IntegerComponent extends LfbControlWidgetComponent {
 }

@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input, OnInit, ViewChild} from '@angular/core';
-import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
+import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {merge, Observable, Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, filter, map, switchMap, tap} from 'rxjs/operators';
 import {NgbActiveModal, NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
