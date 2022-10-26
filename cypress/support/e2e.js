@@ -14,11 +14,18 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
-import failOnConsoleError, { consoleType } from 'cypress-fail-on-console-error';
+import './commands';
+import failOnConsoleError from 'cypress-fail-on-console-error';
 
 const config = {
-  excludeMessages: ['Http failure response for http://localhost/metadata:']
+  consoleMessages: [
+    // Ignore the simulated console error to test non-existent FHIR server.
+    'Http failure response for http://localhost/metadata:',
+    // TODO -
+    //  The following is a result of bug in lforms while processing answerValueSet field. Remove it
+    // after the bug is fixed in lforms.
+    /Access to XMLHttpRequest at 'https:\/\/lforms-fhir.nlm.nih.gov\/baseR4\/ValueSet%2F%24expand\?/
+  ]
 };
 
 failOnConsoleError(config);

@@ -194,7 +194,7 @@ describe('Home page', () => {
       cy.get('@add').should('have.attr', 'disabled');
 
       cy.get('@inputUrl').clear();
-      cy.get('@inputUrl').type('http://localhost'); // Valid format, but a FHIR server.
+      cy.get('@inputUrl').type('http://localhost'); // Valid format, but not a FHIR server.
       cy.get('@validate').click();
       cy.contains('p.text-danger', 'Unable to confirm that that URL is a FHIR server.').should('be.visible', true);
       cy.get('@add').should('have.attr', 'disabled');
