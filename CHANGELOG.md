@@ -4,9 +4,9 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [8.0.0]  2022-10-04
 ### Changed
- - Update angular version to 13.xx
+ - Update angular version to 14.x.x
  - Update angular-tree-component to @bugsplat/angular-tree-component@13.0.1
- - Update ngx-schema-form to @lhncbc/ngx-schema-form@2.7.2-forked
+ - Update ngx-schema-form to @lhncbc/ngx-schema-form@2.8.4-forked
 
 ## [7.0.16]  2022-10-04
 ### Added

@@ -132,6 +132,7 @@ describe('Home page', () => {
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
       cy.get('@ethnicity').scrollIntoView().type('latin');
+      cy.wait(2000);
       cy.get('#completionOptions').should('be.visible', true);
       cy.get('@ethnicity').type('{downarrow}');
       cy.get('@ethnicity').type('{enter}');
