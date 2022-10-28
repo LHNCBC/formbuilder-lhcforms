@@ -51,7 +51,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.35",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fullcalendar/core": "^5.7.0",
-    "@lhncbc/ngx-schema-form": "file:../lhncbc-ngx-schema-form/dist/schema-form/lhncbc-ngx-schema-form-2.8.4-forked.tgz",
+    "@lhncbc/ngx-schema-form": "2.8.4-forked",
     "@ng-bootstrap/ng-bootstrap": "^11.0.1",
     "ace-builds": "^1.5.1",
     "autocomplete-lhc": "^18.1.3",
