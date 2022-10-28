@@ -296,11 +296,33 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   onTreeEvent(event) {
     switch(event.eventName) {
+      case 'initialized':
+        setTimeout(() => {
+          console.log('tree node initialized');
+          LForms.Def.ScreenReaderLog.add(`Use up and down arrow keys to navigate the tree nodes and use enter key to select the node.`);
+        });
+        break;
+
+      case 'toggleExpanded':
+        if(event.isExpanded) {
+          console.log('tree node expanded');
+          LForms.Def.ScreenReaderLog.add(`Tree node "${Util.formatNodeForDisplay(event.node)}" is expanded`);
+        }
+        else {
+          console.log('tree node collapsed');
+          LForms.Def.ScreenReaderLog.add(`Tree node "${Util.formatNodeForDisplay(event.node)}" is collapsed`);
+        }
+        break;
+
       case 'activate':
         this.startSpinner();
         setTimeout(() => {
           this.setNode(event.node);
           this.stopSpinner();
+          setTimeout(() => {
+            console.log('tree node collapsed');
+            LForms.Def.ScreenReaderLog.add(`Tree node "${Util.formatNodeForDisplay(event.node)}" is selected`);
+          });
         });
         break;
 
@@ -314,10 +336,14 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
       case 'focus':
         this.treeComponent.treeModel.setFocus(true);
-        break;
-
-      case 'move':
-        this.treeComponent.treeModel.setFocusedNode(event.node);
+        if (event.node?.data && event.node.id !== event.treeModel.getActiveNode()?.id) {
+          console.log(`${Util.formatNodeForDisplay(event.node)} is focussed`);
+          LForms.Def.ScreenReaderLog.add(`${Util.formatNodeForDisplay(event.node)}`);
+          if (event.node.hasChildren) {
+            console.log('tree node focus event with children');
+            LForms.Def.ScreenReaderLog.add(`Use left arrow key to collapse and right arrow key to expand child nodes.`);
+          }
+        }
         break;
 
       default:
@@ -687,6 +713,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   handleContextMenuOpen(open: boolean) {
     this.contextMenuActive = open;
+    if(open) {
+      LForms.Def.ScreenReaderLog.add(`Use tab key to navigate the menu items`);
+    }
   }
 
   /**
