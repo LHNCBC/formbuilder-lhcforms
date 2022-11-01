@@ -34,6 +34,7 @@ import {environment} from '../../environments/environment';
 import {NodeDialogComponent} from './node-dialog.component';
 import {Util} from '../lib/util';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
 
 declare var LForms: any;
 
@@ -208,7 +209,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   startTime = Date.now();
   devMode = !environment.production;
   contextMenuActive = false;
-
+  treeFirstFocus = false;
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
    * Wait at least for two characters, 200 millis of inactivity and not the
@@ -224,6 +225,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   };
 
   constructor(
+              public liveAnnouncer: LiveAnnouncer,
               public dialog: MatDialog,
               private modalService: NgbModal,
               private treeService: TreeService,
@@ -296,21 +298,12 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   onTreeEvent(event) {
     switch(event.eventName) {
-      case 'initialized':
-        setTimeout(() => {
-          console.log('tree node initialized');
-          LForms.Def.ScreenReaderLog.add(`Use up and down arrow keys to navigate the tree nodes and use enter key to select the node.`);
-        });
-        break;
-
       case 'toggleExpanded':
         if(event.isExpanded) {
-          console.log('tree node expanded');
-          LForms.Def.ScreenReaderLog.add(`Tree node "${Util.formatNodeForDisplay(event.node)}" is expanded`);
+          this.liveAnnouncer.announce(`"${Util.formatNodeForDisplay(event.node)}" is expanded.`);
         }
         else {
-          console.log('tree node collapsed');
-          LForms.Def.ScreenReaderLog.add(`Tree node "${Util.formatNodeForDisplay(event.node)}" is collapsed`);
+          this.liveAnnouncer.announce(`"${Util.formatNodeForDisplay(event.node)}" is collapsed.`);
         }
         break;
 
@@ -319,10 +312,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
         setTimeout(() => {
           this.setNode(event.node);
           this.stopSpinner();
-          setTimeout(() => {
-            console.log('tree node collapsed');
-            LForms.Def.ScreenReaderLog.add(`Tree node "${Util.formatNodeForDisplay(event.node)}" is selected`);
-          });
+          this.liveAnnouncer.announce(`"${Util.formatNodeForDisplay(event.node)}" is selected`);
         });
         break;
 
@@ -336,14 +326,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
       case 'focus':
         this.treeComponent.treeModel.setFocus(true);
-        if (event.node?.data && event.node.id !== event.treeModel.getActiveNode()?.id) {
-          console.log(`${Util.formatNodeForDisplay(event.node)} is focussed`);
-          LForms.Def.ScreenReaderLog.add(`${Util.formatNodeForDisplay(event.node)}`);
-          if (event.node.hasChildren) {
-            console.log('tree node focus event with children');
-            LForms.Def.ScreenReaderLog.add(`Use left arrow key to collapse and right arrow key to expand child nodes.`);
-          }
-        }
+        this.treeNodeFocusAnnounce(event.node);
         break;
 
       default:
@@ -502,7 +485,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
           contextNode.findNextSibling(false).setActiveAndVisible(false);
           break;
       }
-      document.getElementById('text').focus();
+      setTimeout(() => {
+        this.focusActiveNode();
+      });
     });
   }
 
@@ -701,7 +686,9 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   checkEvent(domEvent: KeyboardEvent) {
     let ret = true;
     if(this.contextMenuActive && domEvent.key !== 'Escape') {
-      domEvent.stopImmediatePropagation();
+      // console.log('checkEvent(): this.contextMenuActive =',
+      //  this.contextMenuActive, domEvent.type, (domEvent.target as HTMLElement)?.className);
+      domEvent.stopPropagation();
       ret = false;
     }
     return ret;
@@ -714,7 +701,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   handleContextMenuOpen(open: boolean) {
     this.contextMenuActive = open;
     if(open) {
-      LForms.Def.ScreenReaderLog.add(`Use tab key to navigate the menu items`);
+      this.liveAnnouncer.announce(`Use tab key to navigate the menu items`);
     }
   }
 
@@ -725,10 +712,65 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     setTimeout(() => {
       const activeNode = document.querySelector('.node-content-wrapper-active') as HTMLElement;
       if(activeNode) {
+        this.treeComponent.treeModel.setFocus(true);
         activeNode.focus();
       }
     });
   }
+
+
+  /**
+   * Handle focus event on tree wrapper element
+   * @param domEvent - DOM event object.
+   */
+  treeInitialFocus(domEvent: Event) {
+    if(!this.treeFirstFocus) {
+      this.treeFirstFocus = true;
+      this.liveAnnouncer.announce(
+        `You can use up and down arrow keys to move the focus on the tree nodes. ` +
+        `You may use enter key to select the focussed node for editing. ` +
+        `The Right or left arrow keys to will expand or collapse a selected node if it has children. ` +
+        `Space bar will toggle expansion and collapse of tree node. `
+      );
+    }
+  }
+
+  /**
+   * Read out for screen reader when the tree node is focused.
+   * @param node - Focused node.
+   */
+  treeNodeFocusAnnounce(node: ITreeNode) {
+    const promises = [];
+    if (node?.data && node.id !== this.treeComponent.treeModel.getActiveNode()?.id) {
+      // console.log(`${Util.formatNodeForDisplay(node)} is focussed`);
+      const messageList = [];
+      messageList.push(`${Util.formatNodeForDisplay(node)}`);
+      if (node.hasChildren) {
+        if(node.isExpanded) {
+          messageList.push(`has children and is expanded.`);
+        }
+        else {
+          messageList.push(`has children and is collapsed.`);
+        }
+      }
+      this.liveAnnouncer.announce(messageList.join(' '));
+    }
+  }
+
+
+  /**
+   * Debug dom event.
+   * @param domEvent - DOM event object.
+   */
+  logEvent(domEvent: Event) {
+    console.log(domEvent.type,
+      domEvent.target instanceof HTMLElement ? '"'+domEvent.target.nodeName+':'+domEvent.target.className+'"' : null,
+      domEvent.currentTarget instanceof HTMLElement ? '"'+domEvent.currentTarget.nodeName+':'+domEvent.currentTarget.className+'"' : null,
+      domEvent instanceof FocusEvent ?
+        domEvent.relatedTarget instanceof HTMLElement ? '"'+domEvent.relatedTarget.nodeName+':'+domEvent.relatedTarget.className+'"' : null
+        : null);
+  }
+
 
   /**
    * Unsubscribe any subscriptions.

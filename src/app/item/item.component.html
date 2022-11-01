@@ -4,41 +4,45 @@
                                                                       [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage"
           ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></div
           ></div>
-          <tree-root
-            #tree
-            [nodes]="itemList"
-            [options]="treeOptions"
-            (event)="onTreeEvent($event)"
-          >
-            <ng-template #treeNodeWrapperTemplate let-node let-index="index">
-              <div class="node-wrapper" [style.padding-left]="node.getNodePadding()">
-                <tree-node-expander [node]="node"></tree-node-expander>
-                <div class="node-content-wrapper"
-                     [class.node-content-wrapper-active]="node.isActive"
-                     [class.node-content-wrapper-focused]="node.isFocused"
-                     (click)="node.mouseAction('click', $event)"
-                     (dblclick)="node.mouseAction('dblClick', $event)"
-                     (contextmenu)="node.mouseAction('contextMenu', $event)"
-                     (treeDrop)="node.onDrop($event)"
-                     [treeAllowDrop]="node.allowDrop"
-                     [treeDrag]="node"
-                     [treeDragEnabled]="node.allowDrag()"
-                     [attr.tabindex]="node.isActive ? '0' : null"
-                     role="treeitem"
-                     (keydown)="checkEvent($event)"
-                >
-                  <tree-node-content [node]="node" [index]="index" [template]="treeNodeTemplate"></tree-node-content>
+          <span (focusin)="treeInitialFocus($event)">
+            <tree-root
+              #tree
+              [nodes]="itemList"
+              [options]="treeOptions"
+              (event)="onTreeEvent($event)"
+              role="tree"
+            >
+              <ng-template #treeNodeWrapperTemplate let-node let-index="index">
+                <div class="node-wrapper" [style.padding-left]="node.getNodePadding()" role="group">
+                  <tree-node-expander [node]="node"></tree-node-expander>
+                  <div class="node-content-wrapper"
+                       [class.node-content-wrapper-active]="node.isActive"
+                       [class.node-content-wrapper-focused]="node.isFocused"
+                       (click)="node.mouseAction('click', $event)"
+                       (dblclick)="node.mouseAction('dblClick', $event)"
+                       (contextmenu)="node.mouseAction('contextMenu', $event)"
+                       (treeDrop)="node.onDrop($event)"
+                       [treeAllowDrop]="node.allowDrop"
+                       [treeDrag]="node"
+                       [treeDragEnabled]="node.allowDrag()"
+                       [attr.tabindex]="node.isActive ? '0' : null"
+                       role="treeitem"
+                       [attr.aria-selected]="node.isActive"
+                       (keydown)="checkEvent($event)"
+                  >
+                    <tree-node-content [node]="node" [index]="index" [template]="treeNodeTemplate"></tree-node-content>
+                  </div>
                 </div>
-              </div>
-            </ng-template>
-            <ng-template #treeNodeTemplate let-node let-index="index">
-              <div [ngClass]="node.nodeClass" #tooltip="matTooltip" [matTooltip]="node.displayField" aria-hidden="true">
-                <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span><span aria-hidden="true" [ngClass]="node.nodeClass">{{truncate(node.displayField)}}</span>
-                <span class="float-right"><ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container></span>
-              </div>
-            </ng-template>
-            <ng-template #loadingTemplate><span></span></ng-template>
-          </tree-root>
+              </ng-template>
+              <ng-template #treeNodeTemplate let-node let-index="index">
+                <div [ngClass]="node.nodeClass" #tooltip="matTooltip" [matTooltip]="node.displayField">
+                  <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span><span aria-hidden="true" [ngClass]="node.nodeClass">{{truncate(node.displayField)}}</span>
+                  <span class="float-right"><ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container></span>
+                </div>
+              </ng-template>
+              <ng-template #loadingTemplate><span></span></ng-template>
+            </tree-root>
+          </span>
         </mat-sidenav>
         <mat-sidenav-content>
           <div class="sidenav-header p-1" aria-live="polite" aria-atomic="true" id="itemContent">Current Item <span *ngIf="focusNode?.data?.text">({{focusNode.data.text}})</span></div>
