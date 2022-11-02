@@ -151,7 +151,7 @@
             (keydown.enter)="myDrop.toggle()"
             (keydown)="checkEvent($event)"
     ><fa-icon [icon]="nodeMenuIcon"></fa-icon></button
-    ><div class="dropdown-menu" ngbDropdownMenu tabindex="0" role="menu" aria-label="Use tab key to navigate the menu items"
+    ><div class="dropdown-menu" ngbDropdownMenu role="menu"
           (keydown.arrowDown)="preventEventPropagation($event)"
           (keydown.arrowUp)="preventEventPropagation($event)"
   >

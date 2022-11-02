@@ -701,7 +701,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   handleContextMenuOpen(open: boolean) {
     this.contextMenuActive = open;
     if(open) {
-      this.liveAnnouncer.announce(`Use tab key to navigate the menu items`);
+      this.liveAnnouncer.announce(`Use up or down arrow keys to navigate the menu items`);
     }
   }
 
@@ -728,7 +728,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       this.treeFirstFocus = true;
       this.liveAnnouncer.announce(
         `You can use up and down arrow keys to move the focus on the tree nodes. ` +
-        `You may use enter key to select the focussed node for editing. ` +
+        `You may use enter key to select the focused node for editing. ` +
         `The Right or left arrow keys to will expand or collapse a selected node if it has children. ` +
         `Space bar will toggle expansion and collapse of tree node. `
       );
@@ -742,7 +742,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   treeNodeFocusAnnounce(node: ITreeNode) {
     const promises = [];
     if (node?.data && node.id !== this.treeComponent.treeModel.getActiveNode()?.id) {
-      // console.log(`${Util.formatNodeForDisplay(node)} is focussed`);
+      // console.log(`${Util.formatNodeForDisplay(node)} is focused`);
       const messageList = [];
       messageList.push(`${Util.formatNodeForDisplay(node)}`);
       if (node.hasChildren) {
