@@ -16,10 +16,10 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@circlon/angular-tree-component';
+import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@bugsplat/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
-import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
+import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';

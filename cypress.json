@@ -1,7 +1,0 @@
-{
-  "video": false,
-  "viewportWidth": 1000,
-  "viewportHeight": 660,
-  "integrationFolder": "cypress/integration",
-  "watchForFileChanges": false
-}

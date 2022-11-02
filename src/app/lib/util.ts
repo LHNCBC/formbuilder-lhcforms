@@ -5,7 +5,7 @@ import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import {fhir} from '../fhir';
 import {isEqual} from 'lodash-es';
-import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
+import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';

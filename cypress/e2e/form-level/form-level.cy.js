@@ -131,7 +131,7 @@ describe('Home page', () => {
       cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
-      cy.get('@ethnicity').scrollIntoView().type('latin');
+      cy.get('@ethnicity').scrollIntoView().type('lat');
       cy.get('#completionOptions').should('be.visible', true);
       cy.get('@ethnicity').type('{downarrow}');
       cy.get('@ethnicity').type('{enter}');
@@ -194,7 +194,7 @@ describe('Home page', () => {
       cy.get('@add').should('have.attr', 'disabled');
 
       cy.get('@inputUrl').clear();
-      cy.get('@inputUrl').type('http://localhost'); // Valid format, but a FHIR server.
+      cy.get('@inputUrl').type('http://localhost'); // Valid format, but not a FHIR server.
       cy.get('@validate').click();
       cy.contains('p.text-danger', 'Unable to confirm that that URL is a FHIR server.').should('be.visible', true);
       cy.get('@add').should('have.attr', 'disabled');
