@@ -166,7 +166,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     },
     // allowDragoverStyling: true,
     levelPadding: 10,
-    useVirtualScroll: true,
+    useVirtualScroll: false,
     animateExpand: true,
     scrollOnActivate: true,
     animateSpeed: 30,
@@ -677,21 +677,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   preventEventPropagation(domEvent: Event) {
     domEvent.stopPropagation();
     return false;
-  }
-
-  /**
-   * Stop the propagation of the event, when context menu is open.
-   * @param domEvent - DOM keyboard event object
-   */
-  checkEvent(domEvent: KeyboardEvent) {
-    let ret = true;
-    if(this.contextMenuActive && domEvent.key !== 'Escape') {
-      // console.log('checkEvent(): this.contextMenuActive =',
-      //  this.contextMenuActive, domEvent.type, (domEvent.target as HTMLElement)?.className);
-      domEvent.stopPropagation();
-      ret = false;
-    }
-    return ret;
   }
 
   /**

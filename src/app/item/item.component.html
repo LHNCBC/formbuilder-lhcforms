@@ -28,7 +28,6 @@
                        [attr.tabindex]="node.isActive ? '0' : null"
                        role="treeitem"
                        [attr.aria-selected]="node.isActive"
-                       (keydown)="checkEvent($event)"
                   >
                     <tree-node-content [node]="node" [index]="index" [template]="treeNodeTemplate"></tree-node-content>
                   </div>
@@ -149,7 +148,6 @@
             (keydown.arrowDown)="preventEventPropagation($event)"
             (keydown.arrowUp)="preventEventPropagation($event)"
             (keydown.enter)="myDrop.toggle()"
-            (keydown)="checkEvent($event)"
     ><fa-icon [icon]="nodeMenuIcon"></fa-icon></button
     ><div class="dropdown-menu" ngbDropdownMenu role="menu"
           (keydown.arrowDown)="preventEventPropagation($event)"
