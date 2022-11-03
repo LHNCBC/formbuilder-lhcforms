@@ -12,7 +12,7 @@
     "testPort": "9031",
     "devPort": "9030",
     "ng": "ng",
-    "start": "ng serve --port ${npm_package_scripts_devPort}",
+    "start": "ng serve --port ${npm_package_scripts_devPort} -c development",
     "start-public": "node ./bin/start-public.js",
     "install-and-build": "source ./bashrc.formbuilder && npm install && npm run clean-build",
     "clean-build": "source ./bashrc.formbuilder && npm ci && source ./bashrc.formbuilder && npm run build",
