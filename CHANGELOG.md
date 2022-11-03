@@ -7,8 +7,6 @@ This project follows [Semantic Versioning](http://semver.org/).
  - Update angular version to 14.x.x
  - Update angular-tree-component to @bugsplat/angular-tree-component@13.0.1
  - Update ngx-schema-form to @lhncbc/ngx-schema-form@2.8.4-forked
-
-## [7.0.16]  2022-10-04
 ### Added
  - Added context menu for nodes on the sidebar tree
 
