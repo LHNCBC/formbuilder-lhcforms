@@ -14,6 +14,9 @@ if (process.argv[2] && process.argv[2] === '--dist') {
   ngArgs.push('--configuration');
   ngArgs.push('production');
 }
+else {
+  ngArgs.push('-c development');
+}
 spawn('ng', ngArgs, {
   stdio: 'inherit'
 });

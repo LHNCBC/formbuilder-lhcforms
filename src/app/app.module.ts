@@ -8,7 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { LayoutModule } from '@angular/cdk/layout';
-import { ItemComponent } from './item/item.component';
+import { ItemComponent, ConfirmDlgComponent } from './item/item.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule} from '@angular/material/card';
@@ -27,7 +27,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
-import { TreeModule } from '@circlon/angular-tree-component';
+import { TreeModule } from '@bugsplat/angular-tree-component';
 import { ItemJsonEditorComponent } from './lib/widgets/item-json-editor/item-json-editor.component';
 import { GridComponent } from './lib/widgets/grid.component/grid.component';
 import { TableComponent } from './lib/widgets/table/table.component';
@@ -85,12 +85,14 @@ import { LfbSpinnerComponent } from './lib/widgets/lfb-spinner/lfb-spinner.compo
 import { EnableWhenComponent } from './lib/widgets/enable-when/enable-when.component';
 import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit.component';
 import { EwValidateDirective } from './lib/directives/ew-validate.directive';
+import {NodeDialogComponent} from './item/node-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NgxSchemaFormComponent,
     ItemComponent,
+    ConfirmDlgComponent,
     ItemJsonEditorComponent,
     GridComponent,
     TableComponent,
@@ -145,6 +147,7 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
     EnableWhenComponent,
     QuantityUnitComponent,
     EwValidateDirective,
+    NodeDialogComponent
   ],
   imports: [
     AppRoutingModule,

@@ -2,6 +2,14 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.0]  2022-10-04
+### Changed
+ - Update angular version to 14.x.x
+ - Update angular-tree-component to @bugsplat/angular-tree-component@13.0.1
+ - Update ngx-schema-form to @lhncbc/ngx-schema-form@2.8.4-forked
+### Added
+ - Added context menu for nodes on the sidebar tree
+
 ## [7.0.15]  2022-07-14
 ### Fixed
  - Fix units in valueQuantity of initial field.

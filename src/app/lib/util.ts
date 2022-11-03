@@ -5,6 +5,7 @@ import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import {fhir} from '../fhir';
 import {isEqual} from 'lodash-es';
+import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -382,4 +383,46 @@ export class Util {
   static getAnswerFieldName(type: string): string {
     return Util._answerTypeMap[type];
   }
+
+  /**
+   * Compute tree hierarchy sequence numbering.
+   * @param node - Target node of computation
+   */
+  static getIndexPath(node: ITreeNode): number[] {
+    const ret: number [] = [];
+    if (node) {
+      ret.push(node.index + 1);
+      while (node?.level > 1) {
+        node = node.parent;
+        const index = node ? node.index : 0;
+        ret.push(index + 1);
+      }
+    }
+    return ret.reverse();
+  }
+
+
+  /**
+   * Format Node item for some display cases, for example search results of node items.
+   * @param node - Input node to format the display.
+   */
+  static formatNodeForDisplay(node: ITreeNode) {
+    let ret: string;
+    if (node && node.data) {
+      ret = `${Util.getIndexPath(node).join('.')}: ${node.data.text}`;
+    }
+    return ret;
+  }
+
+
+  /**
+   * Truncate string to display node text on the sidebar.
+   * @param text - String to truncate.
+   * @param limit - Length to limit the truncation.
+   */
+  static truncateString(text: string, limit: number = 15): string {
+    return text.length > limit ? (text.substring(0, limit).trim() + '...') : text;
+  }
+
+
 }

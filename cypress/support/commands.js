@@ -109,22 +109,25 @@ Cypress.Commands.add('selectDataType', (type) => {
 });
 
 /**
- * Select a node by its text in the sidebar.
+ * Select a node by its text in the sidebar. The text is read from tooltip.
  */
 Cypress.Commands.add('getTreeNode', (text) => {
-  return cy.contains('tree-root tree-viewport tree-node-collection tree-node span', text, {timeout: 10000})
-    .should('be.visible');
+  return cy.get('div[role="tooltip"]:contains("'+text+'")').invoke('attr', 'id').then((tooltipId) => {
+    return cy.get('div[aria-describedby="' + tooltipId + '"]').should('be.visible');
+  });
 });
 
 /**
  * Toggle expansion and collapse of tree node having children.
  */
 Cypress.Commands.add('toggleTreeNodeExpansion', (text) => {
-  cy.get('tree-root tree-viewport tree-node-collection tree-node tree-node-wrapper div.node-wrapper')
-    .filter(':contains("'+text+'")').find('tree-node-expander').as('expander');
-  cy.get('@expander').should('be.visible');
-  cy.get('@expander').click();
-  cy.getTreeNode(text).should('be.visible');
+  const tooltipId = cy.get('div[role="tooltip"]:contains("'+text+'")').invoke('attr', 'id').then((tooltipId) => {
+    cy.get('tree-root tree-viewport tree-node-collection tree-node tree-node-wrapper div.node-wrapper div tree-node-content div')
+      .filter('div[aria-describedby="'+tooltipId+'"]').parents('div.node-wrapper').find('tree-node-expander').as('expander');
+    cy.get('@expander').should('be.visible');
+    cy.get('@expander').click();
+    cy.getTreeNode(text).should('be.visible');
+  }, (err)=> {console.error(err)});
 });
 
 
@@ -205,7 +208,7 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.1.valueCoding.system"]').type('s2');
   cy.get('[id^="answerOption.1.valueCoding.__$score"]').type('3');
   // Select a default a.k.a initial
-  cy.get('input[type="radio"][ng-reflect-value="0"]').click();
+  cy.get('lfb-answer-option table tbody tr').eq(0).find('input[type="radio"]').click();
 
   cy.questionnaireJSON().should((qJson) => {
     expect(qJson.item[0].type).equal('choice');

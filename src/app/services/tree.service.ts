@@ -1,5 +1,5 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import {ITreeModel} from '@circlon/angular-tree-component/lib/defs/api';
+import {ITreeModel} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {Subject} from 'rxjs';
 
 @Injectable({

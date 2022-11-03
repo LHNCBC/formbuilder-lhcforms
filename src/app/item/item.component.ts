@@ -3,7 +3,8 @@
  */
 import {
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -15,22 +16,26 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@circlon/angular-tree-component';
+import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@bugsplat/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
-import {ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
+import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NgbActiveModal, NgbDropdown, NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {debounceTime, distinctUntilChanged, switchMap,} from 'rxjs/operators';
 import {fhir} from '../fhir';
 import {TreeService} from '../services/tree.service';
-import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import {faEllipsisH, faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {environment} from '../../environments/environment';
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import {NodeDialogComponent} from './node-dialog.component';
+import {Util} from '../lib/util';
+import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
+
 declare var LForms: any;
 
 export class LinkIdCollection {
@@ -76,6 +81,43 @@ export class LinkIdCollection {
 }
 
 @Component({
+  selector: 'lfb-confirm-dlg',
+  template: `
+    <div class="modal-header">
+      <h4 class="modal-title">{{title}}</h4>
+      <button type="button" class="close" aria-label="Close"
+              (click)="activeModal.dismiss(false)"
+              (keydown.enter)="activeModal.dismiss(false)"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>{{message}}</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline-dark"
+              (keydown.enter)="activeModal.dismiss(false)"
+              (click)="activeModal.dismiss(false)"
+      >No</button>
+      <button type="button" class="btn btn-outline-dark"
+              (keydown.enter)="activeModal.close(true)"
+              (click)="activeModal.close(true)"
+      >Yes</button>
+    </div>
+  `
+})
+export class ConfirmDlgComponent {
+  @Input()
+  title: string;
+  @Input()
+  message: string;
+
+  constructor(public activeModal: NgbActiveModal) {
+  }
+}
+
+@Component({
   selector: 'lfb-item-component',
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css'],
@@ -85,6 +127,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   errorIcon = faExclamationTriangle;
   helpIcon = faInfoCircle;
   id = 1;
+  nodeMenuIcon = faEllipsisH;
+
   @ViewChild('tree') treeComponent: TreeComponent;
   @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
@@ -106,7 +150,10 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       },
       keys: {
         [KEYS.SPACE]: TREE_ACTIONS.TOGGLE_EXPANDED,
-        [KEYS.ENTER]: TREE_ACTIONS.ACTIVATE
+        [KEYS.ENTER]: (tree, node, $event) => {
+          TREE_ACTIONS.ACTIVATE(tree, node, $event);
+          this.focusActiveNode();
+        }
       }
     },
     nodeHeight: 23,
@@ -119,7 +166,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     },
     // allowDragoverStyling: true,
     levelPadding: 10,
-    useVirtualScroll: true,
+    useVirtualScroll: false,
     animateExpand: true,
     scrollOnActivate: true,
     animateSpeed: 30,
@@ -161,7 +208,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   loadingTime = 0.0;
   startTime = Date.now();
   devMode = !environment.production;
-
+  contextMenuActive = false;
+  treeFirstFocus = false;
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
    * Wait at least for two characters, 200 millis of inactivity and not the
@@ -177,6 +225,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   };
 
   constructor(
+              public liveAnnouncer: LiveAnnouncer,
               public dialog: MatDialog,
               private modalService: NgbModal,
               private treeService: TreeService,
@@ -249,14 +298,21 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   onTreeEvent(event) {
     switch(event.eventName) {
+      case 'toggleExpanded':
+        if(event.isExpanded) {
+          this.liveAnnouncer.announce(`"${Util.formatNodeForDisplay(event.node)}" is expanded.`);
+        }
+        else {
+          this.liveAnnouncer.announce(`"${Util.formatNodeForDisplay(event.node)}" is collapsed.`);
+        }
+        break;
+
       case 'activate':
         this.startSpinner();
         setTimeout(() => {
           this.setNode(event.node);
           this.stopSpinner();
-          setTimeout(() => {
-            LForms.Def.ScreenReaderLog.add(`Use up and down arrow keys to navigate the tree nodes and use enter key to select the node.`);
-          });
+          this.liveAnnouncer.announce(`"${Util.formatNodeForDisplay(event.node)}" is selected`);
         });
         break;
 
@@ -270,12 +326,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
 
       case 'focus':
         this.treeComponent.treeModel.setFocus(true);
-        if (event.node?.data) {
-          LForms.Def.ScreenReaderLog.add(`${this.getIndexPath(event.node).join('.')} ${event.node.data.text}`);
-          if (event.node.hasChildren) {
-            LForms.Def.ScreenReaderLog.add(`Use left arrow key to collapse and right arrow key to expand child nodes.`);
-          }
-        }
+        this.treeNodeFocusAnnounce(event.node);
         break;
 
       default:
@@ -352,16 +403,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * @param node - Target node of computation
    */
   getIndexPath(node: ITreeNode): number[] {
-    const ret: number [] = [];
-    if (node) {
-      ret.push(node.index + 1);
-      while (node?.level > 1) {
-        node = node.parent;
-        const index = node ? node.index : 0;
-        ret.push(index + 1);
-      }
-    }
-    return ret.reverse();
+    return Util.getIndexPath(node);
   }
 
 
@@ -394,6 +436,130 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
   }
 
   /**
+   * Update the data structure based on context node and position.
+   * @param dropdown - NgbDropdown object.
+   * @param domEvent - DOM event object.
+   * @param contextNode - Context node
+   * @param position - Insertion point.
+   */
+  onInsertItem(dropdown: NgbDropdown, domEvent: Event, contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
+    const newItem = {text: 'New item ' + this.id++};
+    const nodeData = contextNode.data;
+    switch(position) {
+      case 'CHILD':
+        if (!nodeData.item) {
+          nodeData.item = [];
+        }
+        nodeData.item.push(newItem);
+        break;
+
+      case 'BEFORE':
+        contextNode.parent.data.item.splice(contextNode.index, 0, newItem);
+        break;
+
+      case 'AFTER':
+        contextNode.parent.data.item.splice(contextNode.index + 1, 0, newItem);
+        break;
+    }
+    this.treeComponent.treeModel.update();
+    this.setFocusedNode(position);
+    domEvent.stopPropagation();
+    dropdown.close();
+  }
+
+  /**
+   * Set focus on the next node based on position.
+   * @param position - Position around the target node.
+   */
+  setFocusedNode(position: string) {
+    setTimeout(() => {
+      const contextNode = this.treeComponent.treeModel.getFocusedNode();
+      switch (position) {
+        case 'CHILD':
+          contextNode.getLastChild(false).setActiveAndVisible(false);
+          break;
+        case 'BEFORE':
+          contextNode.findPreviousSibling(false).setActiveAndVisible(false);
+          break;
+        case 'AFTER':
+          contextNode.findNextSibling(false).setActiveAndVisible(false);
+          break;
+      }
+      setTimeout(() => {
+        this.focusActiveNode();
+      });
+    });
+  }
+
+  /**
+   * Move the item in the data structure.
+   * @param contextNode - The node to move
+   * @param targetNode - Destination node
+   * @param position - ('AFTER'|'BEFORE'|'CHILD')
+   */
+  moveItem(contextNode: ITreeNode, targetNode: ITreeNode, position: ('AFTER'|'BEFORE'|'CHILD') = 'AFTER') {
+    this.treeComponent.treeModel.moveNode(contextNode, {
+        dropOnNode: position === 'CHILD',
+        parent: position === 'CHILD' ? targetNode : targetNode.parent,
+        index: targetNode.index + (position === 'AFTER' ? 1 : 0)
+      });
+    this.treeComponent.treeModel.setFocusedNode(contextNode);
+    this.treeComponent.treeModel.getFocusedNode().setActiveAndVisible(false);
+  }
+
+  /**
+   * Menu item handler for move tasks.
+   * @param domEvent - DOM event.
+   * @param contextNode - Context node.
+   */
+  onMoveDlg(domEvent: Event, contextNode: ITreeNode) {
+    const modalRef = this.openNodeDlg(contextNode, 'Move');
+    modalRef.result.then((result) => {
+      this.moveItem(contextNode, result.target, result.location);
+    }, (reason) => {
+    })
+      .finally(() => {
+        setTimeout(() => {
+          this.focusActiveNode();
+        });
+    });
+    domEvent.stopPropagation();
+  }
+
+  /**
+   * Dialog box to interact with target node searching.
+   * @param contextNode - Context node
+   * @param mode - Move or insert.
+   */
+  openNodeDlg(contextNode: ITreeNode, mode: ('Move'|'Insert')): NgbModalRef {
+    const modalRef = this.modalService.open(NodeDialogComponent, {ariaLabelledBy: 'modal-move-title'});
+    modalRef.componentInstance.node = contextNode;
+    modalRef.componentInstance.item = this;
+    modalRef.componentInstance.mode = mode;
+    return modalRef;
+  }
+
+  /**
+   * Delete sidebar item with confirmation dialog.
+   */
+
+  confirmItemDelete(): Promise<any> {
+    const modalRef = this.modalService.open(ConfirmDlgComponent);
+    modalRef.componentInstance.title = 'Confirm deletion';
+    modalRef.componentInstance.message = 'Are you sure you want to delete this item?';
+    modalRef.componentInstance.type = MessageType.WARNING;
+    return modalRef.result.then(() => {
+      this.deleteFocusedItem();
+    })
+      .finally(() => {
+        setTimeout(() => {
+          this.focusActiveNode();
+        });
+    });
+  }
+
+
+  /**
    * Handle delete item button
    */
   deleteFocusedItem() {
@@ -415,7 +581,11 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       this.focusNode.parent.data.item.splice(index, 1);
       this.treeComponent.treeModel.update();
       // Set the model for item editor.
-      this.setNode(this.treeComponent.treeModel.getFocusedNode());
+      nextFocusedNode = this.treeComponent.treeModel.getFocusedNode();
+      this.setNode(nextFocusedNode);
+      if(nextFocusedNode) {
+        this.treeComponent.treeModel.getFocusedNode().setActiveAndVisible(false);
+      }
       this.stopSpinner();
     });
   }
@@ -482,6 +652,14 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     return acResult.code[0].code + ': ' + acResult.text;
   }
 
+  /**
+   * Truncate a long string to display in the sidebar node tree.
+   * @param text - Text of the string
+   * @param limit - Limit the length to truncate.
+   */
+  truncate(text, limit: number = 15): string {
+    return Util.truncateString(text, limit);
+  }
 
   /**
    * Handle errorsChanged event from <lfb-ngx-schema-form>
@@ -489,6 +667,93 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    */
   onErrorsChanged(errors: any []) {
     this.errors$.next(errors);
+  }
+
+
+  /**
+   * Stop the event propagation
+   * @param domEvent - Event object
+   */
+  preventEventPropagation(domEvent: Event) {
+    domEvent.stopPropagation();
+    return false;
+  }
+
+  /**
+   * Keep track of context menu open status.
+   * @param open - True is opened, false is closed
+   */
+  handleContextMenuOpen(open: boolean) {
+    this.contextMenuActive = open;
+    if(open) {
+      this.liveAnnouncer.announce(`Use up or down arrow keys to navigate the menu items`);
+    }
+  }
+
+  /**
+   * Put the focus on the active node. Intended for use after clicking context menu items.
+   */
+  focusActiveNode() {
+    setTimeout(() => {
+      const activeNode = document.querySelector('.node-content-wrapper-active') as HTMLElement;
+      if(activeNode) {
+        this.treeComponent.treeModel.setFocus(true);
+        activeNode.focus();
+      }
+    });
+  }
+
+
+  /**
+   * Handle focus event on tree wrapper element
+   * @param domEvent - DOM event object.
+   */
+  treeInitialFocus(domEvent: Event) {
+    if(!this.treeFirstFocus) {
+      this.treeFirstFocus = true;
+      this.liveAnnouncer.announce(
+        `You can use up and down arrow keys to move the focus on the tree nodes. ` +
+        `You may use enter key to select the focused node for editing. ` +
+        `The Right or left arrow keys to will expand or collapse a selected node if it has children. ` +
+        `Space bar will toggle expansion and collapse of tree node. `
+      );
+    }
+  }
+
+  /**
+   * Read out for screen reader when the tree node is focused.
+   * @param node - Focused node.
+   */
+  treeNodeFocusAnnounce(node: ITreeNode) {
+    const promises = [];
+    if (node?.data && node.id !== this.treeComponent.treeModel.getActiveNode()?.id) {
+      // console.log(`${Util.formatNodeForDisplay(node)} is focused`);
+      const messageList = [];
+      messageList.push(`${Util.formatNodeForDisplay(node)}`);
+      if (node.hasChildren) {
+        if(node.isExpanded) {
+          messageList.push(`has children and is expanded.`);
+        }
+        else {
+          messageList.push(`has children and is collapsed.`);
+        }
+      }
+      this.liveAnnouncer.announce(messageList.join(' '));
+    }
+  }
+
+
+  /**
+   * Debug dom event.
+   * @param domEvent - DOM event object.
+   */
+  logEvent(domEvent: Event) {
+    console.log(domEvent.type,
+      domEvent.target instanceof HTMLElement ? '"'+domEvent.target.nodeName+':'+domEvent.target.className+'"' : null,
+      domEvent.currentTarget instanceof HTMLElement ? '"'+domEvent.currentTarget.nodeName+':'+domEvent.currentTarget.className+'"' : null,
+      domEvent instanceof FocusEvent ?
+        domEvent.relatedTarget instanceof HTMLElement ? '"'+domEvent.relatedTarget.nodeName+':'+domEvent.relatedTarget.className+'"' : null
+        : null);
   }
 
 

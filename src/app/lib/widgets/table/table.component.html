@@ -46,7 +46,8 @@
           <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
         </td>
         <td *ngIf="rowSelectionType === 'radio'" class="col-sm-2 text-center align-self-center">
-          <input type="radio" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind">
+          <input type="radio" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
+                 [ngModelOptions]="{standalone: true}">
         </td>
         <td *ngIf="rowSelectionType === 'checkbox'" class="col-sm-2 text-center align-self-center">
           <input type="checkbox" [(ngModel)]="selectionCheckbox[ind]" (ngModelChange)="checkboxSelection($event)">

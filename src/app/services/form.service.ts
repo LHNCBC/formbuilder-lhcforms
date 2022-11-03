@@ -2,8 +2,8 @@
  * Form related helper functions.
  */
 import {Injectable} from '@angular/core';
-import {IDType, ITreeNode} from '@circlon/angular-tree-component/lib/defs/api';
-import {TreeModel} from '@circlon/angular-tree-component';
+import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import {TreeModel} from '@bugsplat/angular-tree-component';
 import {fhir} from '../fhir';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';

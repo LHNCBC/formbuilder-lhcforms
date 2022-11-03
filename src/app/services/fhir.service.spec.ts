@@ -106,7 +106,7 @@ describe('FhirService', () => {
         url: 'Questionnaire',
         method: 'POST',
         body: JSON.stringify(dummyQ),
-        headers: {'Content-Type': 'application/json'}
+        headers: {'content-type': 'application/json'}
       })
       .and.returnValue(Promise.reject({status: 400, statusText: 'Bad Request'}));
     service.create(JSON.stringify(dummyQ), null).subscribe((q) => {
@@ -124,7 +124,7 @@ describe('FhirService', () => {
         url: 'Questionnaire',
         method: 'POST',
         body: JSON.stringify(dummyQ),
-        headers: {'Content-Type': 'application/json'}
+        headers: {'content-type': 'application/json'}
       })
       .and.returnValue(Promise.resolve(dummyQ));
 
@@ -143,7 +143,7 @@ describe('FhirService', () => {
         url: 'Questionnaire/12345-6',
         method: 'PUT',
         body: JSON.stringify(dummyQ),
-        headers: {'Content-Type': 'application/json'}
+        headers: {'content-type': 'application/json'}
       })
       .and.returnValue(Promise.reject({status: 400, statusText: 'Bad Request'})); // Test rejection
 
@@ -163,7 +163,7 @@ describe('FhirService', () => {
         url: 'Questionnaire/12345-6',
         method: 'PUT',
         body: JSON.stringify(dummyQ),
-        headers: {'Content-Type': 'application/json'}
+        headers: {'content-type': 'application/json'}
       })
       .and.returnValue(Promise.resolve(dummyQ));
 
