@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.1]  2022-11-18
+### Fixed
+ - Fix number type fields to accept decimal numbers.
+
 ## [8.0.0]  2022-10-04
 ### Changed
  - Update angular version to 14.x.x

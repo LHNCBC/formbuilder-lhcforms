@@ -9,6 +9,7 @@
 # Only exists if Bazel was run
 /bazel-out
 /client
+/.angular
 
 # dependencies
 /node_modules

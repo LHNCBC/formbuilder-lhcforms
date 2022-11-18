@@ -33,6 +33,7 @@ import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/res
 import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
 import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 import {QuantityUnitComponent} from './widgets/quantity-unit/quantity-unit.component';
+import {NumberComponent} from './widgets/number/number.component';
 
 
 @Injectable()
@@ -47,7 +48,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('checkbox', CheckboxComponent);
     this.register('boolean', CheckboxComponent);
     this.register('integer', IntegerComponent);
-    this.register('number', IntegerComponent);
+    this.register('number', NumberComponent);
     this.register('radio', RadioComponent);
     this.register('lb-radio', LabelRadioComponent);
     this.register('enable-when', EnableWhenComponent);
