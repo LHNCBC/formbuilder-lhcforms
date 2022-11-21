@@ -927,7 +927,7 @@
         "id": "enable-behavior",
         "layout": "row",
         "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-6"
+        "controlWidthClass": "col-sm-7"
       }
     },
     "required": {
