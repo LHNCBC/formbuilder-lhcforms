@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.0.0] 2022-11-21
+### Changed
+- Updateed lforms to 33.0.0, which removed support for IE 11.
+
 ## [8.0.0]  2022-10-04
 ### Changed
  - Update angular version to 14.x.x

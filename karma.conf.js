@@ -14,10 +14,10 @@ module.exports = function (config) {
     ],
     files: [
       'dist/formbuilder-lhcforms/lforms/lib/elements/assets/lib/zone.min.js',
-      'dist/formbuilder-lhcforms/lforms/lib/elements/runtime-es5.js',
-      'dist/formbuilder-lhcforms/lforms/lib/elements/polyfills-es5.js',
+      'dist/formbuilder-lhcforms/lforms/lib/elements/runtime.js',
+      'dist/formbuilder-lhcforms/lforms/lib/elements/polyfills.js',
       'dist/formbuilder-lhcforms/lforms/lib/elements/scripts.js',
-      'dist/formbuilder-lhcforms/lforms/lib/elements/main-es5.js',
+      'dist/formbuilder-lhcforms/lforms/lib/elements/main.js',
       'dist/formbuilder-lhcforms/lforms/lib/fhir/lformsFHIRAll.min.js',
     ],
     client: {
