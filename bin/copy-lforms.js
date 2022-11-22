@@ -17,7 +17,7 @@ const path = require('path');
 let downloadUrl = 'https://clinicaltables.nlm.nih.gov/lforms-versions';
 
 // Change version here to update LForms package.
-const version = '32.2.2';
+const version = '33.0.0';
 
 // External scripts could change version?
 if(version?.length) {
@@ -31,13 +31,13 @@ if(process.argv.length > 2) {
 
 const destinationFolder = path.join(__dirname, '../src/lib/lforms/lib');
 const filePathMap = {
-  'webcomponent/runtime-es5.js'   : 'elements',
-  'webcomponent/runtime-es5.js.map'   : 'elements',
-  'webcomponent/polyfills-es5.js'   : 'elements',
-  'webcomponent/polyfills-es5.js.map'   : 'elements',
+  'webcomponent/runtime.js'   : 'elements',
+  'webcomponent/runtime.js.map'   : 'elements',
+  'webcomponent/polyfills.js'   : 'elements',
+  'webcomponent/polyfills.js.map'   : 'elements',
   'webcomponent/scripts.js'   : 'elements',
-  'webcomponent/main-es5.js'   : 'elements',
-  'webcomponent/main-es5.js.map'   : 'elements',
+  'webcomponent/main.js'   : 'elements',
+  'webcomponent/main.js.map'   : 'elements',
   'webcomponent/styles.css'         : 'elements',
   'fhir/lformsFHIRAll.min.js'       : 'fhir',
   'fhir/lformsFHIRAll.min.js.map'   : 'fhir',
