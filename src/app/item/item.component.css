@@ -41,7 +41,7 @@
   padding: 10px;
 }
 
-::ng-deep .mat-drawer-inner-container {
+:host ::ng-deep .mat-drawer-inner-container {
   overflow: hidden !important;
 }
 
@@ -72,10 +72,6 @@
   font-size: small;
   width: 100%;
   align-items: end;
-}
-
-::ng-deep .mat-tooltip {
-  font-size: 12px;
 }
 
 .dropdown-toggle::after {

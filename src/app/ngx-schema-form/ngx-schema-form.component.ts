@@ -24,13 +24,7 @@ import {SharedObjectService} from '../services/shared-object.service';
       background: #eee;
     }
 
-    /* label */
-    :host /deep/ .formHelp {
-      display: block;
-      font-size: 0.7em;
-    }
-
-    :host /deep/ sf-form-element > div {
+    :host ::ng-deep sf-form-element > div {
       margin-top: 1em;
       margin-bottom: 1em;
     }
@@ -40,7 +34,7 @@ import {SharedObjectService} from '../services/shared-object.service';
       padding: 0 3px 0 3px;
     }
 
-    :host /deep/ fieldset {
+    :host ::ng-deep fieldset {
       border: 0;
     }
 

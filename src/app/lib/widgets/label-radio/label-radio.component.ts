@@ -17,23 +17,6 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
                    [helpMessage]="schema.description"
                    [ngClass]="labelWidthClass + ' pl-0 pr-1'"
         ></lfb-label>
-        <!-- <span *ngIf="schema.description" class="formHelp">{{schema.description}}</span> -->
-        <!--
-        <div class="{{controlWidthClass}} form-check form-check-inline m-0" >
-          <div *ngFor="let option of schema.oneOf" class="radio">
-            <label class="horizontal control-label">
-              <input [formControl]="control" [attr.name]="name" [attr.id]="id + '.' + option.enum[0]"
-                     value="{{option.enum[0]}}" type="radio" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null">
-              {{option.description}}
-            </label>
-          </div>
-          <div *ngFor="let option of schema.enum" class="radio">
-            <label class="m-0">
-              <input [formControl]="control" [attr.name]="name" [attr.id]="id + '.' + option"
-                     value="{{option}}" type="radio" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null"><span class="ml-1 mr-3">{{option}}</span></label>
-          </div>
-        </div>
-        -->
         <div ngbRadioGroup [formControl]="control" class="form-check-inline btn-group btn-group-sm btn-group-toggle" >
             <label *ngFor="let option of schema.oneOf" ngbButtonLabel class="btn-outline-success">
               <input ngbButton [attr.id]="id + '.' + option.enum[0]"
