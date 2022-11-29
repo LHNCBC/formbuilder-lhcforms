@@ -599,8 +599,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
       const subscription = this.getLoincItem(autoCompResult, this.loincType).subscribe((item) => {
         this.insertAnItem(item);
         this.loincItem = null;
-        subscription.unsubscribe();
       });
+      this.subscriptions.push(subscription);
     }, (reason) => {
       this.loincItem = null;
     });

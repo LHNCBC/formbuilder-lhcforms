@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.2] 2022-11-28
+### Fixed
+- Fixed item type and missing answer display strings when importing a LOINC question from CTSS.
+
 ## [8.0.1] 2022-11-21
 ### Changed
 - Updateed lforms to 33.0.0, which removed support for IE 11.
