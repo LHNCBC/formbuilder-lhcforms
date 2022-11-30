@@ -558,7 +558,7 @@
           "answerInteger": {
             "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
             "pattern": "^-?([0]|([1-9][0-9]*))$",
-            "type": "number",
+            "type": "integer",
             "visibleIf": {
               "allOf": [
                 {
@@ -1063,7 +1063,7 @@
           "valueInteger": {
             "description": "A potential answer that's allowed as the answer to this question.",
             "pattern": "^-?([0]|([1-9][0-9]*))$",
-            "type": "number",
+            "type": "integer",
             "title": "Value integer",
             "visibleIf": {
               "/type": ["integer"]
@@ -1370,7 +1370,7 @@
           "valueInteger": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^-?([0]|([1-9][0-9]*))$",
-            "type": "number",
+            "type": "integer",
             "title": "Value integer",
             "visibleIf": {
               "/type": ["integer"]
@@ -2435,7 +2435,8 @@
     },
     "positiveInt": {
       "pattern": "^[1-9][0-9]*$",
-      "type": "number",
+      "type": "integer",
+      "minimum": 0,
       "description": "An integer with a value that is positive (e.g. >0)"
     },
     "Count": {
@@ -3518,7 +3519,7 @@
     },
     "integer": {
       "pattern": "^-?([0]|([1-9][0-9]*))$",
-      "type": "number"
+      "type": "integer"
     },
     "RelatedArtifact": {
       "description": "Related artifacts such as additional documentation, justification, or bibliographic references.",
@@ -3998,7 +3999,7 @@
         "answerInteger": {
           "description": "A value that the referenced question is tested using the specified operator in order for the item to be enabled.",
           "pattern": "^-?([0]|([1-9][0-9]*))$",
-          "type": "number",
+          "type": "integer",
           "title": "Answer integer"
         },
         "answerDate": {
@@ -4336,7 +4337,7 @@
         "valueInteger": {
           "description": "A potential answer that's allowed as the answer to this question.",
           "pattern": "^-?([0]|([1-9][0-9]*))$",
-          "type": "number",
+          "type": "integer",
           "title": "Value integer"
         },
         "valueDate": {
@@ -4614,7 +4615,7 @@
         "valueInteger": {
           "description": "The actual value to for an initial answer.",
           "pattern": "^-?([0]|([1-9][0-9]*))$",
-          "type": "number",
+          "type": "integer",
           "title": "Value integer"
         },
         "valueDate": {
