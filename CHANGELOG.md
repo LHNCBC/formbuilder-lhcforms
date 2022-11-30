@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.2]  2022-11-22
+### Fixed
+ - Fix number type fields to accept decimal numbers.
+
 ## [8.0.1] 2022-11-21
 ### Changed
 - Updateed lforms to 33.0.0, which removed support for IE 11.
