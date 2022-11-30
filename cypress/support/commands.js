@@ -188,14 +188,14 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
   cy.get('[id^="answerOption.0.valueCoding.code"]').type('c1');
   cy.get('[id^="answerOption.0.valueCoding.system"]').type('s1');
-  cy.get('[id^="answerOption.0.valueCoding.__$score"]').type('2');
+  cy.get('[id^="answerOption.0.valueCoding.__$score"]').type('2.1');
 
   cy.questionnaireJSON().should((qJson) => {
     expect(qJson.item[0].type).equal('choice');
     expect(qJson.item[0].answerOption[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
     expect(qJson.item[0].answerOption[0].extension).to.deep.equal([{
       url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
-      valueDecimal: 2
+      valueDecimal: 2.1
     }]);
     expect(qJson.item[0].initial).to.be.undefined; // No default selected
   });

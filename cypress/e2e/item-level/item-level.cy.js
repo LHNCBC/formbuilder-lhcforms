@@ -276,10 +276,31 @@ describe('Home page', () => {
         expect(qJson.item[0].initial[0].valueString).equal('initial string');
       });
       cy.selectDataType('decimal');
-      cy.get('[id^="initial.0.valueDecimal"]').type('100');
+      cy.get('[id^="initial.0.valueDecimal"]').type('100.1');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('decimal');
-        expect(qJson.item[0].initial[0].valueDecimal).equal(100);
+        expect(qJson.item[0].initial[0].valueDecimal).equal(100.1);
+      });
+
+      cy.selectDataType('integer');
+      cy.get('[id^="initial.0.valueInteger"]').as('initialInteger');
+      cy.get('@initialInteger').type('100');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('integer');
+        expect(qJson.item[0].initial[0].valueDecimal).undefined;
+        expect(qJson.item[0].initial[0].valueInteger).equal(100);
+      });
+
+      cy.get('@initialInteger').clear().type('1.1');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('integer');
+        expect(qJson.item[0].initial[0].valueDecimal).undefined;
+        expect(qJson.item[0].initial[0].valueInteger).not.undefined;
+        // TODO -
+        //  There is a bug in IntegerComponent, which moves the cursor to starting position
+        // when '.' is entered, although
+        // Refer to issue LF-2485.
+        expect(qJson.item[0].initial[0].valueInteger).not.undefined;
       });
 
       cy.selectDataType('choice');

@@ -86,6 +86,7 @@ import { EnableWhenComponent } from './lib/widgets/enable-when/enable-when.compo
 import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit.component';
 import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
+import { NumberComponent } from './lib/widgets/number/number.component';
 
 @NgModule({
   declarations: [
@@ -147,7 +148,8 @@ import {NodeDialogComponent} from './item/node-dialog.component';
     EnableWhenComponent,
     QuantityUnitComponent,
     EwValidateDirective,
-    NodeDialogComponent
+    NodeDialogComponent,
+    NumberComponent
   ],
   imports: [
     AppRoutingModule,
