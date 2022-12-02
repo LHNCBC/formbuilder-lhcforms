@@ -83,6 +83,13 @@ describe('Home page', () => {
       cy.contains('ngb-modal-window div.modal-dialog button', 'Add').click();
       cy.get('#type option:selected').should('have.text', 'choice');
 
+      cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Within Defined Limits');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA25085-4');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
+      cy.get('[id^="answerOption.1.valueCoding.display"]').should('have.value', 'Other');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').should('have.value', 'LA46-8');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').should('have.value', 'http://loinc.org');
+
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[1].answerOption).to.deep.equal([
           {

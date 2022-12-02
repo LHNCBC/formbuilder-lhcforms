@@ -188,7 +188,7 @@ export class Util {
       case 'CNE':
         ret = 'choice';
         break;
-        case 'CWE':
+      case 'CWE':
         ret = 'open-choice';
         break;
     }
