@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.4] 2022-11-28
+### Fixed
+- Fix placing cursor position in integer input when invalid character is typed.
+
 ## [8.0.3] 2022-11-28
 ### Fixed
 - Fixed item type and missing answer display strings when importing a LOINC question from CTSS.
