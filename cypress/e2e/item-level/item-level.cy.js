@@ -278,9 +278,12 @@ describe('Home page', () => {
       cy.get('@initIntField').clear().type('12abc').should('have.value', '12');
       cy.get('@initIntField').clear().type('3.4').should('have.value', '34');
       cy.get('@initIntField').clear().type('-5.6').should('have.value', '-56');
+      cy.get('@initIntField').clear().type('-2-4-').should('have.value', '-24');
+      cy.get('@initIntField').clear().type('24e1').should('have.value', '241');
+      cy.get('@initIntField').clear().type('-24E1').should('have.value', '-241');
     });
 
-    it('should restrict to integer input in integer field', () => {
+    it('should restrict to decimal input in integer field', () => {
       cy.selectDataType('decimal');
       cy.get('[id^="initial.0.valueDecimal"]').as('initNumberField');
       cy.get('@initNumberField').clear().type('abc').should('have.value', '');

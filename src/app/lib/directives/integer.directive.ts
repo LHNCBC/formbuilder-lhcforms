@@ -11,8 +11,8 @@ export class IntegerDirective {
   }
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
-    if (event.key === '.') {
-      this.liveAnnouncer.announce('Dot is not accepted for integer input');
+    if (event.key === '.' || event.key.toLowerCase() === 'e' || (event.key === '-' && this.el.nativeElement.value.startsWith('-')) ) {
+      this.liveAnnouncer.announce(event.key + ' is not accepted for integer input');
       event.preventDefault();
     }
   }
