@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.3] 2022-11-28
+### Fixed
+- Fixed item type and missing answer display strings when importing a LOINC question from CTSS.
+
 ## [8.0.2]  2022-11-22
 ### Fixed
  - Fix number type fields to accept decimal numbers.

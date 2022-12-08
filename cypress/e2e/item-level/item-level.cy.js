@@ -75,6 +75,39 @@ describe('Home page', () => {
 
     });
 
+    it('should import item from CTSS with answer option', () => {
+      cy.contains('Add new item from LOINC').scrollIntoView().click();
+      cy.contains('ngb-modal-window label', 'Question').click();
+      cy.get('#acSearchBoxId').type('vital signs assess');
+      cy.get('ngb-typeahead-window button').first().click();
+      cy.contains('ngb-modal-window div.modal-dialog button', 'Add').click();
+      cy.get('#type option:selected').should('have.text', 'choice');
+
+      cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Within Defined Limits');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA25085-4');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
+      cy.get('[id^="answerOption.1.valueCoding.display"]').should('have.value', 'Other');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').should('have.value', 'LA46-8');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').should('have.value', 'http://loinc.org');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[1].answerOption).to.deep.equal([
+          {
+            valueCoding: {
+              system: 'http://loinc.org',
+              code: 'LA25085-4',
+              display: 'Within Defined Limits'
+            }
+          },{
+            valueCoding: {
+              system: 'http://loinc.org',
+              code: 'LA46-8',
+              display: 'Other'
+            }
+          }]);
+      });
+    });
+
     it('should not overwrite previous tree node, when clicked before updating the editor', () => {
       const {_, $} = Cypress;
       cy.contains('button', 'Import').click();

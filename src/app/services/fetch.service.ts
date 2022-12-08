@@ -188,7 +188,7 @@ export class FetchService {
           valueCoding: {
             code: answer.AnswerStringID,
             system: 'http://loinc.org',
-            display: answer.displayText
+            display: answer.DisplayText
           }
         }
         answerOption.push(option);
