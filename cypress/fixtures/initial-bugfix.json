@@ -1,0 +1,33 @@
+{
+  "title": "Sample to test initial component error",
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "item": [
+    {
+      "type": "group",
+      "linkId": "/lid-1",
+      "text": "Group item 1",
+      "item": [
+        {
+          "type": "choice",
+          "linkId": "lid-1.1",
+          "text": "Choice item 1.1",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "a1",
+                "display": "Answer 1"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "a2",
+                "display": "Answer 2"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
