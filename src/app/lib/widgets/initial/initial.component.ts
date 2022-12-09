@@ -19,7 +19,7 @@ export class InitialComponent extends TableComponent implements AfterViewInit, D
   }
 
   /**
-   * Set d-none class to host element when the flag is set.
+   * Set d-none class to the host element when the flag is set.
    */
   @HostBinding('class.d-none') get dNone() {
     return this.hideHostElement;
