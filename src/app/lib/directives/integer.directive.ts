@@ -60,11 +60,23 @@ export class IntegerDirective {
   @HostListener('paste', ['$event'])
   onPaste(event: ClipboardEvent) {
     const val = event.clipboardData.getData('text/plain');
-    const parsedVal = String(parseInt(val, 10));
-    if (val !== parsedVal) {
-      if (parsedVal !== 'NaN') {
-        this.hostEl.nativeElement.value += parsedVal;
+    let ignorePaste = true; // Ignore paste when current input state is invalid.
+    if ((event.target as HTMLInputElement).validity.valid) {
+      const currentValue = (event.target as HTMLInputElement).value;
+      if(currentValue.length > 0) {
+        // Current value is valid. Accept only positive integer from clipboard.
+        if(val.match(/^\d+$/)) {
+          ignorePaste = false;
+        }
       }
+      else if (currentValue === '') {
+        // Current value is empty. Accept positive or negative integer from clipboard.
+        if (val.match(/^-?\d+$/)) {
+          ignorePaste = false;
+        }
+      }
+    }
+    if(ignorePaste) {
       event.preventDefault();
     }
   }
