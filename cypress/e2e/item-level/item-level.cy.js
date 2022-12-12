@@ -333,7 +333,7 @@ describe('Home page', () => {
     });
 
     it('should fix initial input box when switched data type from choice to decimal', () => {
-      const sampleFile = 'initial-bugfix.json';
+      const sampleFile = 'initial-component-bugfix.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
