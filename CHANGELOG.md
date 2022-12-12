@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.5] 2022-11-28
+### Fixed
+- Fix display of decimal answer field in conditional display when source item is decimal type.
+
 ## [8.0.4] 2022-11-28
 ### Fixed
 - Fix placing cursor position in integer input when invalid character is typed.

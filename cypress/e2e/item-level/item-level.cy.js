@@ -568,7 +568,7 @@ describe('Home page', () => {
       cy.get('@r1Answer').select('display 1 (c1)');
     });
 
-    it('should show answer column if there is an answer option in any row of conditional display', () => {
+    it('should show answer column if there is an answer in any row of conditional display', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.get('#text').should('have.value', 'New item 1');
 
@@ -641,6 +641,29 @@ describe('Home page', () => {
           ]);
       });
 
+    });
+
+    it('should fix a bug showing answer field when source item is decimal and operator is other than exists', () => {
+      cy.selectDataType('decimal');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').should('have.value', 'New item 1');
+
+      const r1Question = '[id^="enableWhen.0.question"]';
+      const r1Operator = '[id^="enableWhen.0.operator"]';
+      const r1Answer = '[id^="enableWhen.0.answer"]';
+      const r1DecimalAnswer = '[id^="enableWhen.0.answerDecimal"]';
+      const errorIcon1El = '[id^="enableWhen.0_err"]';
+      // First row operator='exist'
+      cy.get(r1Question).type('{enter}');
+      cy.get(r1Operator).should('be.visible');
+      cy.get(r1Answer).should('not.exist');
+      cy.get(errorIcon1El).should('not.exist');
+
+      cy.get(r1Operator).select('>');
+      cy.get(r1DecimalAnswer).should('be.visible');
+      cy.get(errorIcon1El).should('be.visible');
+      cy.get(r1DecimalAnswer).type('2.3');
+      cy.get(errorIcon1El).should('not.exist');
     });
 
     it('should import form with conditional display field', () => {
