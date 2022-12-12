@@ -271,6 +271,30 @@ describe('Home page', () => {
       });
     });
 
+    it('should restrict to integer input in integer field', () => {
+      cy.selectDataType('integer');
+      cy.get('[id^="initial.0.valueInteger"]').as('initIntField');
+      cy.get('@initIntField').clear().type('abc').should('have.value', '');
+      cy.get('@initIntField').clear().type('12abc').should('have.value', '12');
+      cy.get('@initIntField').clear().type('3.4').should('have.value', '34');
+      cy.get('@initIntField').clear().type('-5.6').should('have.value', '-56');
+      cy.get('@initIntField').clear().type('-0').should('have.value', '-0');
+      cy.get('@initIntField').clear().type('-2-4-').should('have.value', '-24');
+      cy.get('@initIntField').clear().type('24e1').should('have.value', '241');
+      cy.get('@initIntField').clear().type('-24E1').should('have.value', '-241');
+    });
+
+    it('should restrict to decimal input in number field', () => {
+      cy.selectDataType('decimal');
+      cy.get('[id^="initial.0.valueDecimal"]').as('initNumberField');
+      cy.get('@initNumberField').clear().type('abc').should('have.value', '');
+      cy.get('@initNumberField').clear().type('12abc').should('have.value', '12');
+      cy.get('@initNumberField').clear().type('3.4').should('have.value', '3.4');
+      cy.get('@initNumberField').clear().type('-5.6').should('have.value', '-5.6');
+      cy.get('@initNumberField').clear().type('-7.8ab').should('have.value', '-7.8');
+      cy.get('@initNumberField').clear().type('-xy0.9ab').should('have.value', '-0.9');
+    });
+
     it('should add answer-option', () => {
       cy.addAnswerOptions();
     });

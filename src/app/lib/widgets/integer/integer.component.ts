@@ -3,8 +3,6 @@
  */
 import { Component } from '@angular/core';
 
-import {IntegerWidget} from '@lhncbc/ngx-schema-form';
-import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
@@ -20,10 +18,10 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
                    [helpMessage]="schema.description"
                    [ngClass]="labelWidthClass + ' pl-0 pr-1'"
         ></lfb-label>
-	      <input [attr.readonly]="schema.readOnly?true:null" [attr.name]="name"
+	      <input lfbInteger [attr.readonly]="schema.readOnly?true:null" [attr.name]="name"
 	        [attr.id]="id"
 	        class="text-widget integer-widget form-control {{controlWidthClass}}" [formControl]="control"
-	        [attr.type]="'number'" [attr.min]="schema.minimum" [attr.max]="schema.maximum"
+	        type="number" [attr.min]="schema.minimum" [attr.max]="schema.maximum"
 	        [attr.placeholder]="schema.placeholder"
 	        [attr.maxLength]="schema.maxLength || null"
           [attr.minLength]="schema.minLength || null">
