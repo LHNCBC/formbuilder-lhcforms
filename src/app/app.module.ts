@@ -86,6 +86,7 @@ import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit
 import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
+import { IntegerDirective } from './lib/directives/integer.directive';
 
 @NgModule({
   declarations: [
@@ -147,7 +148,8 @@ import { NumberComponent } from './lib/widgets/number/number.component';
     QuantityUnitComponent,
     EwValidateDirective,
     NodeDialogComponent,
-    NumberComponent
+    NumberComponent,
+    IntegerDirective
   ],
   imports: [
     AppRoutingModule,

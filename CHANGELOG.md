@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [8.0.4]  2022-12-05
+## [8.0.5]  2022-12-05
 ### Fixed
 - Fix loading initial component when switched type from choice to decimal.
+
+## [8.0.4] 2022-11-28
+### Fixed
+- Fix placing cursor position in integer input when invalid character is typed.
 
 ## [8.0.3] 2022-11-28
 ### Fixed
@@ -16,7 +20,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [8.0.1] 2022-11-21
 ### Changed
-- Updateed lforms to 33.0.0, which removed support for IE 11.
+- Updated lforms to 33.0.0, which removed support for IE 11.
 
 ## [8.0.0]  2022-10-04
 ### Changed
