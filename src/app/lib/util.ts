@@ -156,8 +156,13 @@ export class Util {
         ret = 'decimal';
         break;
       case 'DT':
+      case 'DAY':
+      case 'MONTH':
       case 'YEAR':
         ret = 'date';
+        break;
+      case 'DTM':
+        ret = 'dateTime';
         break;
       case 'ST':
       case 'EMAIL':
@@ -179,6 +184,12 @@ export class Util {
         break;
       case 'QTY':
         ret = 'quantity';
+        break;
+      case 'CNE':
+        ret = 'choice';
+        break;
+      case 'CWE':
+        ret = 'open-choice';
         break;
     }
     return ret;

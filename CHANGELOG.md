@@ -2,13 +2,21 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.4] 2022-11-28
+### Fixed
+- Fix placing cursor position in integer input when invalid character is typed.
+
+## [8.0.3] 2022-11-28
+### Fixed
+- Fixed item type and missing answer display strings when importing a LOINC question from CTSS.
+
 ## [8.0.2]  2022-11-22
 ### Fixed
  - Fix number type fields to accept decimal numbers.
 
 ## [8.0.1] 2022-11-21
 ### Changed
-- Updateed lforms to 33.0.0, which removed support for IE 11.
+- Updated lforms to 33.0.0, which removed support for IE 11.
 
 ## [8.0.0]  2022-10-04
 ### Changed

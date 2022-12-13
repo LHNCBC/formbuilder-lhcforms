@@ -75,6 +75,39 @@ describe('Home page', () => {
 
     });
 
+    it('should import item from CTSS with answer option', () => {
+      cy.contains('Add new item from LOINC').scrollIntoView().click();
+      cy.contains('ngb-modal-window label', 'Question').click();
+      cy.get('#acSearchBoxId').type('vital signs assess');
+      cy.get('ngb-typeahead-window button').first().click();
+      cy.contains('ngb-modal-window div.modal-dialog button', 'Add').click();
+      cy.get('#type option:selected').should('have.text', 'choice');
+
+      cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Within Defined Limits');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA25085-4');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
+      cy.get('[id^="answerOption.1.valueCoding.display"]').should('have.value', 'Other');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').should('have.value', 'LA46-8');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').should('have.value', 'http://loinc.org');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[1].answerOption).to.deep.equal([
+          {
+            valueCoding: {
+              system: 'http://loinc.org',
+              code: 'LA25085-4',
+              display: 'Within Defined Limits'
+            }
+          },{
+            valueCoding: {
+              system: 'http://loinc.org',
+              code: 'LA46-8',
+              display: 'Other'
+            }
+          }]);
+      });
+    });
+
     it('should not overwrite previous tree node, when clicked before updating the editor', () => {
       const {_, $} = Cypress;
       cy.contains('button', 'Import').click();
@@ -236,6 +269,30 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].type).equal('display');
         expect(qJson.item[0].item[0].extension).to.deep.equal(helpTextExtension);
       });
+    });
+
+    it('should restrict to integer input in integer field', () => {
+      cy.selectDataType('integer');
+      cy.get('[id^="initial.0.valueInteger"]').as('initIntField');
+      cy.get('@initIntField').clear().type('abc').should('have.value', '');
+      cy.get('@initIntField').clear().type('12abc').should('have.value', '12');
+      cy.get('@initIntField').clear().type('3.4').should('have.value', '34');
+      cy.get('@initIntField').clear().type('-5.6').should('have.value', '-56');
+      cy.get('@initIntField').clear().type('-0').should('have.value', '-0');
+      cy.get('@initIntField').clear().type('-2-4-').should('have.value', '-24');
+      cy.get('@initIntField').clear().type('24e1').should('have.value', '241');
+      cy.get('@initIntField').clear().type('-24E1').should('have.value', '-241');
+    });
+
+    it('should restrict to decimal input in number field', () => {
+      cy.selectDataType('decimal');
+      cy.get('[id^="initial.0.valueDecimal"]').as('initNumberField');
+      cy.get('@initNumberField').clear().type('abc').should('have.value', '');
+      cy.get('@initNumberField').clear().type('12abc').should('have.value', '12');
+      cy.get('@initNumberField').clear().type('3.4').should('have.value', '3.4');
+      cy.get('@initNumberField').clear().type('-5.6').should('have.value', '-5.6');
+      cy.get('@initNumberField').clear().type('-7.8ab').should('have.value', '-7.8');
+      cy.get('@initNumberField').clear().type('-xy0.9ab').should('have.value', '-0.9');
     });
 
     it('should add answer-option', () => {
