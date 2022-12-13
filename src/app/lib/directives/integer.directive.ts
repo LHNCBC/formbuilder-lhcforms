@@ -71,7 +71,7 @@ export class IntegerDirective {
       }
       else if (currentValue === '') {
         // Current value is empty. Accept positive or negative integer from clipboard.
-        if (val.match(/^-?\d+$/)) {
+        if (val.match(/^[-+]?\d+$/)) {
           ignorePaste = false;
         }
       }
