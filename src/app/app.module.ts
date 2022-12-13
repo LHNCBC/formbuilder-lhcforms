@@ -72,7 +72,6 @@ import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option
 import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
 import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.component';
-import { TypeComponent } from './lib/widgets/type/type.component';
 import { PreviewDlgComponent } from './lib/widgets/preview-dlg/preview-dlg.component';
 import { FhirExportDlgComponent } from './lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import { LoincNoticeComponent } from './lib/widgets/loinc-notice/loinc-notice.component';
@@ -136,7 +135,6 @@ import { IntegerDirective } from './lib/directives/integer.directive';
     InitialComponent,
     HelpTextComponent,
     SfFormWrapperComponent,
-    TypeComponent,
     PreviewDlgComponent,
     FhirExportDlgComponent,
     LoincNoticeComponent,
