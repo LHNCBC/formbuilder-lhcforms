@@ -356,6 +356,31 @@ describe('Home page', () => {
       });
     });
 
+    it('should fix initial input box when switched data type from choice to decimal', () => {
+      const sampleFile = 'initial-component-bugfix.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Sample to test initial component error');
+      cy.contains('button', 'Edit questions').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
+        expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
+      });
+
+      cy.toggleTreeNodeExpansion('Group item 1');
+      cy.getTreeNode('Choice item 1.1').click();
+      cy.get('@type').find(':selected').should('have.text', 'choice');
+      cy.get('[id^="answerOption."]').should('be.visible');
+      cy.get('[id^="initial"]').should('not.be.visible');
+      cy.selectDataType('decimal');
+      cy.get('[id^="answerOption."]').should('not.exist');
+      cy.get('[id^="initial.0.valueDecimal"]').should('be.visible').type('1.2');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].initial[0].valueDecimal).equal(1.2);
+      });
+    });
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
