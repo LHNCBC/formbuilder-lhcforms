@@ -19,7 +19,7 @@ import ngxFlSchema from '../../assets/ngx-fl.schema.json';
 import flLayout from '../../assets/fl-fields-layout.json';
 import itemEditorSchema from '../../assets/item-editor.schema.json';
 import {Util} from '../lib/util';
-
+declare var LForms: any;
 
 @Injectable({
   providedIn: 'root'
@@ -244,7 +244,27 @@ export class FormService {
    * @param text
    */
   parseQuestionnaire(text: string): fhir.Questionnaire {
-    return this.validateFhirQuestionnaire(JSON.parse(text));
+    let jsonObj = null;
+    try {
+      jsonObj = JSON.parse(text);
+    }
+    catch(e) {
+      throw new Error('Not a valid JSON');
+    }
+
+    let ret = null;
+    if(jsonObj.resourceType === 'Questionnaire') {
+    }
+    else if (!!jsonObj.name) {
+      jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R4', jsonObj);
+    }
+    else {
+      throw new Error('Not a valid questionnaire');
+    }
+    if (jsonObj) {
+      ret = this.validateFhirQuestionnaire(jsonObj);
+    }
+    return ret;
   }
 
 

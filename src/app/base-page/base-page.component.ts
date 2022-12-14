@@ -238,7 +238,7 @@ export class BasePageComponent implements OnDestroy {
             this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
           }
           catch (e) {
-            this.showError(e);
+            this.showError(`${e.message}: ${selectedFile.name}`);
           }
         });
       }

@@ -1,0 +1,861 @@
+{
+  "type": "LOINC",
+  "code": "34565-2",
+  "name": "Vital signs, weight and height panel",
+  "codingInstructions": null,
+  "copyrightNotice": null,
+  "items": [
+    {
+      "questionCode": "34566-0",
+      "localQuestionCode": null,
+      "dataType": "SECTION",
+      "header": true,
+      "units": null,
+      "codingInstructions": null,
+      "copyrightNotice": null,
+      "question": "Vital Signs Pnl",
+      "answers": null,
+      "skipLogic": null,
+      "restrictions": null,
+      "defaultAnswer": null,
+      "formatting": null,
+      "calculationMethod": null,
+      "items": [
+        {
+          "questionCode": "8867-4",
+          "localQuestionCode": null,
+          "dataType": "REAL",
+          "header": false,
+          "units": [
+            {
+              "name": "{beats}/min",
+              "code": "{beats}/min",
+              "system": "http://unitsofmeasure.org",
+              "default": false
+            },
+            {
+              "name": "{counts/min}",
+              "code": "{counts/min}",
+              "system": "http://unitsofmeasure.org",
+              "default": false
+            }
+          ],
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "Heart rate",
+          "answers": null,
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": null,
+          "linkId": "/34566-0/8867-4",
+          "questionCodeSystem": "http://loinc.org"
+        },
+        {
+          "questionCode": "9279-1",
+          "localQuestionCode": null,
+          "dataType": "REAL",
+          "header": false,
+          "units": [
+            {
+              "name": "{breaths}/min",
+              "code": "{breaths}/min",
+              "system": "http://unitsofmeasure.org",
+              "default": false
+            },
+            {
+              "name": "{counts/min}",
+              "code": "{counts/min}",
+              "system": "http://unitsofmeasure.org",
+              "default": false
+            }
+          ],
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "Resp rate",
+          "answers": null,
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": null,
+          "linkId": "/34566-0/9279-1",
+          "questionCodeSystem": "http://loinc.org"
+        },
+        {
+          "questionCode": "35094-2",
+          "localQuestionCode": null,
+          "dataType": "SECTION",
+          "header": true,
+          "units": null,
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "BP Pnl",
+          "answers": null,
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": [
+            {
+              "questionCode": "8480-6",
+              "localQuestionCode": null,
+              "dataType": "REAL",
+              "header": false,
+              "units": [
+                {
+                  "name": "mm[Hg]",
+                  "code": "mm[Hg]",
+                  "system": "http://unitsofmeasure.org",
+                  "default": false
+                }
+              ],
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "BP sys",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/8480-6",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "8462-4",
+              "localQuestionCode": null,
+              "dataType": "REAL",
+              "header": false,
+              "units": [
+                {
+                  "name": "mm[Hg]",
+                  "code": "mm[Hg]",
+                  "system": "http://unitsofmeasure.org",
+                  "default": false
+                }
+              ],
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "BP dias",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/8462-4",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "8478-0",
+              "localQuestionCode": null,
+              "dataType": "REAL",
+              "header": false,
+              "units": [
+                {
+                  "name": "mm[Hg]",
+                  "code": "mm[Hg]",
+                  "system": "http://unitsofmeasure.org",
+                  "default": false
+                }
+              ],
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "BP mean",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/8478-0",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "8357-6",
+              "localQuestionCode": null,
+              "dataType": "CNE",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "BP method",
+              "answers": [
+                {
+                  "label": null,
+                  "code": "LA24013-7",
+                  "text": "Auscultation - automatic",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24012-9",
+                  "text": "Auscultation - manual",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24014-5",
+                  "text": "Oscillometry",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24016-0",
+                  "text": "Continuous noninvasive arterial pressure (CNAP)",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24015-2",
+                  "text": "Invasive (intravascular transducer)",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": "3308001",
+                  "code": "LA25780-0",
+                  "text": "Arterial line",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": "3308003",
+                  "code": "LA19771-7",
+                  "text": "Doppler",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": "3308009",
+                  "code": "LA25782-6",
+                  "text": "Cuff-manual palpated only",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": "3308011",
+                  "code": "LA25783-4",
+                  "text": "Venous line",
+                  "other": null,
+                  "system": "http://loinc.org"
+                }
+              ],
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/8357-6",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "8358-4",
+              "localQuestionCode": null,
+              "dataType": "CNE",
+              "header": false,
+              "units": [
+                {
+                  "name": "cm",
+                  "code": "cm",
+                  "system": "http://unitsofmeasure.org",
+                  "default": false
+                }
+              ],
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "BP device Cuff size",
+              "answers": [
+                {
+                  "label": null,
+                  "code": "LA11162-7",
+                  "text": "Adult standard",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA11163-5",
+                  "text": "Adult large",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA11164-3",
+                  "text": "Thigh extra large",
+                  "other": null,
+                  "system": "http://loinc.org"
+                }
+              ],
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/8358-4",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "8359-2",
+              "localQuestionCode": null,
+              "dataType": "ST",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "Periph a measurement site",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/8359-2",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "9856-6",
+              "localQuestionCode": null,
+              "dataType": "ST",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "BP device Inventory #",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/9856-6",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "9857-4",
+              "localQuestionCode": null,
+              "dataType": "ST",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "BP device Model #",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/9857-4",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "9858-2",
+              "localQuestionCode": null,
+              "dataType": "ST",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "BP device Serial #",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35094-2/9858-2",
+              "questionCodeSystem": "http://loinc.org"
+            }
+          ],
+          "linkId": "/34566-0/35094-2",
+          "questionCodeSystem": "http://loinc.org"
+        },
+        {
+          "questionCode": "35095-9",
+          "localQuestionCode": null,
+          "dataType": "SECTION",
+          "header": true,
+          "units": null,
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "Bdy temp Pnl",
+          "answers": null,
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": [
+            {
+              "questionCode": "8310-5",
+              "localQuestionCode": null,
+              "dataType": "REAL",
+              "header": false,
+              "units": [
+                {
+                  "name": "Cel",
+                  "code": "Cel",
+                  "system": "http://unitsofmeasure.org",
+                  "default": false
+                }
+              ],
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "Body temperature",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35095-9/8310-5",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "8326-1",
+              "localQuestionCode": null,
+              "dataType": "CNE",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "Bdy Temp Device Class",
+              "answers": [
+                {
+                  "label": null,
+                  "code": "LA24040-0",
+                  "text": "Digital thermometer",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24043-4",
+                  "text": "Liquid-crystal temperature-sensitive strip",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24038-4",
+                  "text": "Mercury thermometer",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24037-6",
+                  "text": "Non-contact infrared thermometer (NCIT)",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24042-6",
+                  "text": "Temporal artery infrared thermometer",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24039-2",
+                  "text": "Thermal scanner camera",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA24041-8",
+                  "text": "Tympanic infrared thermometer",
+                  "other": null,
+                  "system": "http://loinc.org"
+                }
+              ],
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35095-9/8326-1",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "8327-9",
+              "localQuestionCode": null,
+              "dataType": "CNE",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "Bdy temp measurement site",
+              "answers": [
+                {
+                  "label": null,
+                  "code": "LA9370-3",
+                  "text": "Axillary",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA9367-9",
+                  "text": "Oral",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA21929-7",
+                  "text": "Ear",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA9368-7",
+                  "text": "Tympanic membrane",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA21928-9",
+                  "text": "Temporal artery (forehead)",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA9369-5",
+                  "text": "Rectal",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA9371-1",
+                  "text": "Urinary bladder",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA9263-0",
+                  "text": "Nasal",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA18005-1",
+                  "text": "Nasopharyngeal",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA11862-2",
+                  "text": "Finger",
+                  "other": null,
+                  "system": "http://loinc.org"
+                },
+                {
+                  "label": null,
+                  "code": "LA21930-5",
+                  "text": "Toe",
+                  "other": null,
+                  "system": "http://loinc.org"
+                }
+              ],
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35095-9/8327-9",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "9849-1",
+              "localQuestionCode": null,
+              "dataType": "ST",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "Bdy Temp Device Inventory #",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35095-9/9849-1",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "9850-9",
+              "localQuestionCode": null,
+              "dataType": "ST",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "Bdy Temp Device Model #",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35095-9/9850-9",
+              "questionCodeSystem": "http://loinc.org"
+            },
+            {
+              "questionCode": "9851-7",
+              "localQuestionCode": null,
+              "dataType": "ST",
+              "header": false,
+              "units": null,
+              "codingInstructions": null,
+              "copyrightNotice": null,
+              "question": "Bdy Temp Device Serial #",
+              "answers": null,
+              "skipLogic": null,
+              "restrictions": null,
+              "defaultAnswer": null,
+              "formatting": null,
+              "calculationMethod": null,
+              "items": null,
+              "linkId": "/34566-0/35095-9/9851-7",
+              "questionCodeSystem": "http://loinc.org"
+            }
+          ],
+          "linkId": "/34566-0/35095-9",
+          "questionCodeSystem": "http://loinc.org"
+        },
+        {
+          "questionCode": "8302-2",
+          "localQuestionCode": null,
+          "dataType": "REAL",
+          "header": false,
+          "units": [
+            {
+              "name": "centimeters",
+              "code": null,
+              "system": null,
+              "default": false
+            },
+            {
+              "name": "feet",
+              "code": null,
+              "system": null,
+              "default": false
+            },
+            {
+              "name": "inches",
+              "code": null,
+              "system": null,
+              "default": false
+            },
+            {
+              "name": "meters",
+              "code": null,
+              "system": null,
+              "default": false
+            }
+          ],
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "Body height",
+          "answers": null,
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": null,
+          "linkId": "/34566-0/8302-2",
+          "questionCodeSystem": "http://loinc.org"
+        },
+        {
+          "questionCode": "3141-9",
+          "localQuestionCode": null,
+          "dataType": "REAL",
+          "header": false,
+          "units": [
+            {
+              "name": "[lb_av]",
+              "code": "[lb_av]",
+              "system": "http://unitsofmeasure.org",
+              "default": false
+            },
+            {
+              "name": "kg",
+              "code": "kg",
+              "system": "http://unitsofmeasure.org",
+              "default": false
+            }
+          ],
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "Weight Measured",
+          "answers": null,
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": null,
+          "linkId": "/34566-0/3141-9",
+          "questionCodeSystem": "http://loinc.org"
+        },
+        {
+          "questionCode": "8361-8",
+          "localQuestionCode": null,
+          "dataType": "CNE",
+          "header": false,
+          "units": null,
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "Bdy position with respect to gravity",
+          "answers": [
+            {
+              "label": null,
+              "code": "LA11868-9",
+              "text": "Sitting",
+              "other": null,
+              "system": "http://loinc.org"
+            },
+            {
+              "label": null,
+              "code": "LA11869-7",
+              "text": "Lying",
+              "other": null,
+              "system": "http://loinc.org"
+            },
+            {
+              "label": null,
+              "code": "LA11870-5",
+              "text": "Standing",
+              "other": null,
+              "system": "http://loinc.org"
+            }
+          ],
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": null,
+          "linkId": "/34566-0/8361-8",
+          "questionCodeSystem": "http://loinc.org"
+        },
+        {
+          "questionCode": "8352-7",
+          "localQuestionCode": null,
+          "dataType": "CNE",
+          "header": false,
+          "units": null,
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "Clothing worn during measure",
+          "answers": [
+            {
+              "label": null,
+              "code": "LA11871-3",
+              "text": "Underwear or less",
+              "other": null,
+              "system": "http://loinc.org"
+            },
+            {
+              "label": null,
+              "code": "LA11872-1",
+              "text": "Street clothes, no shoes",
+              "other": null,
+              "system": "http://loinc.org"
+            },
+            {
+              "label": null,
+              "code": "LA11873-9",
+              "text": "Street clothes & shoes",
+              "other": null,
+              "system": "http://loinc.org"
+            }
+          ],
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": null,
+          "linkId": "/34566-0/8352-7",
+          "questionCodeSystem": "http://loinc.org"
+        },
+        {
+          "questionCode": "80339-5",
+          "localQuestionCode": null,
+          "dataType": "CNE",
+          "header": false,
+          "units": null,
+          "codingInstructions": null,
+          "copyrightNotice": null,
+          "question": "Vital signs assessment Imp",
+          "answers": [
+            {
+              "label": null,
+              "code": "LA25085-4",
+              "text": "Within Defined Limits",
+              "other": null,
+              "system": "http://loinc.org"
+            },
+            {
+              "label": null,
+              "code": "LA46-8",
+              "text": "Other",
+              "other": "Nursing judgment:",
+              "system": "http://loinc.org"
+            }
+          ],
+          "skipLogic": null,
+          "restrictions": null,
+          "defaultAnswer": null,
+          "formatting": null,
+          "calculationMethod": null,
+          "items": null,
+          "linkId": "/34566-0/80339-5",
+          "questionCodeSystem": "http://loinc.org"
+        }
+      ],
+      "linkId": "/34566-0",
+      "questionCodeSystem": "http://loinc.org"
+    }
+  ],
+  "lformsVersion": "29.0.0",
+  "codeSystem": "http://loinc.org"
+}

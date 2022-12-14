@@ -495,6 +495,27 @@ describe('Home page', () => {
       });
     });
 
+    it('should import form in LForms format', () => {
+      const sampleFile = 'vitals.lforms.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Vital signs, weight and height panel');
+      cy.contains('button', 'Edit questions').click();
+      cy.questionnaireJSON().should((qJson) => {
+        // Make some key assertions.
+        expect(qJson.item.length).equal(fixtureJson.items.length);
+        expect(qJson.item[0].text).equal('Vital Signs Pnl');
+        expect(qJson.item[0].type).equal('group');
+        expect(qJson.item[0].code[0].code).equal('34566-0');
+        expect(qJson.item[0].item.length).equal(fixtureJson.items[0].items.length);
+        expect(qJson.item[0].item[2].item[0].text).equal('BP sys');
+        expect(qJson.item[0].item[2].item[0].type).equal('decimal');
+        expect(qJson.item[0].item[2].item[0].code[0].code).equal('8480-6');
+        expect(qJson.item[0].item[3].item.length).equal(fixtureJson.items[0].items[3].items.length);
+      });
+    });
+
     it('should work conditional display with answer coding source', () => {
       cy.addAnswerOptions();
       cy.contains('Add new item').scrollIntoView().click();
