@@ -38,7 +38,7 @@ export class Util {
   private static _answerTypeMap = {
     boolean: 'answerBoolean',
     integer: 'answerInteger',
-    decimal: 'answerInteger',
+    decimal: 'answerDecimal',
     date: 'answerDate',
     dateTime: 'answerDateTime',
     time: 'answerTime',
