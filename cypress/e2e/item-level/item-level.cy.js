@@ -356,6 +356,31 @@ describe('Home page', () => {
       });
     });
 
+    it('should fix initial input box when switched data type from choice to decimal', () => {
+      const sampleFile = 'initial-component-bugfix.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Sample to test initial component error');
+      cy.contains('button', 'Edit questions').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
+        expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
+      });
+
+      cy.toggleTreeNodeExpansion('Group item 1');
+      cy.getTreeNode('Choice item 1.1').click();
+      cy.get('@type').find(':selected').should('have.text', 'choice');
+      cy.get('[id^="answerOption."]').should('be.visible');
+      cy.get('[id^="initial"]').should('not.be.visible');
+      cy.selectDataType('decimal');
+      cy.get('[id^="answerOption."]').should('not.exist');
+      cy.get('[id^="initial.0.valueDecimal"]').should('be.visible').type('1.2');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].item[0].initial[0].valueDecimal).equal(1.2);
+      });
+    });
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
@@ -470,6 +495,30 @@ describe('Home page', () => {
       });
     });
 
+    it('should import form in LForms format', () => {
+      const sampleFile = 'sample.lforms.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Dummy Form');
+      cy.contains('button', 'Edit questions').click();
+      cy.questionnaireJSON().should((qJson) => {
+        // Make some key assertions.
+        expect(qJson.item.length).equal(1);
+        expect(qJson.item[0].text).equal('Section 0');
+        expect(qJson.item[0].type).equal('group');
+        expect(qJson.item[0].code[0].code).equal('c0');
+        expect(qJson.item[0].item.length).equal(1);
+        expect(qJson.item[0].item[0].text).equal('Section 00');
+        expect(qJson.item[0].item[0].type).equal('group');
+        expect(qJson.item[0].item[0].code[0].code).equal('c00');
+
+        expect(qJson.item[0].item[0].item[0].text).equal('Decimal question 000');
+        expect(qJson.item[0].item[0].item[0].type).equal('decimal');
+        expect(qJson.item[0].item[0].item[0].code[0].code).equal('c000');
+      });
+    });
+
     it('should work conditional display with answer coding source', () => {
       cy.addAnswerOptions();
       cy.contains('Add new item').scrollIntoView().click();
@@ -568,7 +617,7 @@ describe('Home page', () => {
       cy.get('@r1Answer').select('display 1 (c1)');
     });
 
-    it('should show answer column if there is an answer option in any row of conditional display', () => {
+    it('should show answer column if there is an answer in any row of conditional display', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.get('#text').should('have.value', 'New item 1');
 
@@ -641,6 +690,29 @@ describe('Home page', () => {
           ]);
       });
 
+    });
+
+    it('should fix a bug showing answer field when source item is decimal and operator is other than exists', () => {
+      cy.selectDataType('decimal');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').should('have.value', 'New item 1');
+
+      const r1Question = '[id^="enableWhen.0.question"]';
+      const r1Operator = '[id^="enableWhen.0.operator"]';
+      const r1Answer = '[id^="enableWhen.0.answer"]';
+      const r1DecimalAnswer = '[id^="enableWhen.0.answerDecimal"]';
+      const errorIcon1El = '[id^="enableWhen.0_err"]';
+      // First row operator='exist'
+      cy.get(r1Question).type('{enter}');
+      cy.get(r1Operator).should('be.visible');
+      cy.get(r1Answer).should('not.exist');
+      cy.get(errorIcon1El).should('not.exist');
+
+      cy.get(r1Operator).select('>');
+      cy.get(r1DecimalAnswer).should('be.visible');
+      cy.get(errorIcon1El).should('be.visible');
+      cy.get(r1DecimalAnswer).type('2.3');
+      cy.get(errorIcon1El).should('not.exist');
     });
 
     it('should import form with conditional display field', () => {
