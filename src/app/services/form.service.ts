@@ -241,7 +241,7 @@ export class FormService {
 
   /**
    * Parse input string to questionnaire.
-   * @param text
+   * @param text - Text content of input form, either FHIR questionnaire or LForms format.
    */
   parseQuestionnaire(text: string): fhir.Questionnaire {
     const invalidError = new Error('Not a valid JSON');
