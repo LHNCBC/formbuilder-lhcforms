@@ -254,6 +254,7 @@ export class FormService {
 
     let ret = null;
     if(jsonObj.resourceType === 'Questionnaire') {
+      // Do nothing.
     }
     else if (!!jsonObj.name) {
       jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R4', jsonObj);
