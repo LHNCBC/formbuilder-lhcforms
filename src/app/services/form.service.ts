@@ -244,28 +244,29 @@ export class FormService {
    * @param text
    */
   parseQuestionnaire(text: string): fhir.Questionnaire {
+    const invalidError = new Error('Not a valid JSON');
+    if(!text) {
+      throw invalidError;
+    }
+
     let jsonObj = null;
     try {
       jsonObj = JSON.parse(text);
     }
     catch(e) {
-      throw new Error('Not a valid JSON');
+      throw invalidError;
     }
 
-    let ret = null;
-    if(jsonObj.resourceType === 'Questionnaire') {
-      // Do nothing.
+    if(jsonObj.resourceType !== 'Questionnaire') {
+      if (!!jsonObj.name) {
+        jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R4', jsonObj);
+      }
+      else {
+        throw new Error('Not a valid questionnaire');
+      }
     }
-    else if (!!jsonObj.name) {
-      jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R4', jsonObj);
-    }
-    else {
-      throw new Error('Not a valid questionnaire');
-    }
-    if (jsonObj) {
-      ret = this.validateFhirQuestionnaire(jsonObj);
-    }
-    return ret;
+
+    return this.validateFhirQuestionnaire(jsonObj);
   }
 
 

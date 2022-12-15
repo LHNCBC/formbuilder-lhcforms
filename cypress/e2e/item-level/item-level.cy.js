@@ -495,7 +495,7 @@ describe('Home page', () => {
       });
     });
 
-    it.only('should import form in LForms format', () => {
+    it('should import form in LForms format', () => {
       const sampleFile = 'sample.lforms.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
