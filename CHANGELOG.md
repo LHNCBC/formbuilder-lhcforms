@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.7] 2022-12-14
+### Added
+- Support import of forms that are in LForms format.
+
 ## [8.0.6] 2022-12-13
 ### Fixed
 - Fix display of decimal answer field in conditional display when source item is decimal type.

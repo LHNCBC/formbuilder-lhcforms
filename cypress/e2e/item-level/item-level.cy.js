@@ -495,6 +495,30 @@ describe('Home page', () => {
       });
     });
 
+    it('should import form in LForms format', () => {
+      const sampleFile = 'sample.lforms.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Dummy Form');
+      cy.contains('button', 'Edit questions').click();
+      cy.questionnaireJSON().should((qJson) => {
+        // Make some key assertions.
+        expect(qJson.item.length).equal(1);
+        expect(qJson.item[0].text).equal('Section 0');
+        expect(qJson.item[0].type).equal('group');
+        expect(qJson.item[0].code[0].code).equal('c0');
+        expect(qJson.item[0].item.length).equal(1);
+        expect(qJson.item[0].item[0].text).equal('Section 00');
+        expect(qJson.item[0].item[0].type).equal('group');
+        expect(qJson.item[0].item[0].code[0].code).equal('c00');
+
+        expect(qJson.item[0].item[0].item[0].text).equal('Decimal question 000');
+        expect(qJson.item[0].item[0].item[0].type).equal('decimal');
+        expect(qJson.item[0].item[0].item[0].code[0].code).equal('c000');
+      });
+    });
+
     it('should work conditional display with answer coding source', () => {
       cy.addAnswerOptions();
       cy.contains('Add new item').scrollIntoView().click();
