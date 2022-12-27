@@ -1,5 +1,4 @@
-<div class="page-defaults container bg-white">
-  <div *ngIf="acceptTermsOfUse === true">
+<div *ngIf="acceptTermsOfUse === true" class="page-defaults container bg-white shadow">
     <lfb-header id="fixedTop" [isFirebaseEnabled]="false"></lfb-header>
     <div id="resizableMiddle">
 
@@ -68,7 +67,6 @@
       </ng-container>
     </div>
     <lfb-footer id="fixedBottom"></lfb-footer>
-  </div>
 </div>
 
 <ng-template #home>

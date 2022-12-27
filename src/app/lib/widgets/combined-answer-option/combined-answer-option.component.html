@@ -1,0 +1,5 @@
+<lfb-radio-widget [(ngModel)]="isValueSet"></lfb-radio-widget>
+<lfb-form-element #answerValueSet *ngIf="isValueSet; else answerOption" [formProperty]="answerValueSetProperty"></lfb-form-element>
+<ng-template #answerOption>
+  <lfb-form-element [formProperty]="answerOptionProperty"></lfb-form-element>
+</ng-template>

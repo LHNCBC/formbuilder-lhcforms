@@ -978,14 +978,37 @@
         "controlWidthClass": "col-sm-10"
       }
     },
-    "answerValueSet": {
-      "description": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question.",
-      "title": "Answer value set",
-      "pattern": "^\\S*$",
+    "__$answerOptionMethods": {
+      "description": "Define predefined answers for the user to choose.",
+      "title": "Predefined answers",
+      "enum": [
+        "answer-option",
+        "value-set"
+      ],
       "type": "string",
-      "widget": {"id": "hidden"},
       "visibleIf": {
         "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+      },
+      "widget": {
+        "id": "lb-radio",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
+      }
+    },
+    "answerValueSet": {
+      "description": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question.",
+      "title": "Answer Valueset",
+      "pattern": "^\\S*$",
+      "type": "string",
+      "visibleIf": {
+        "/__$answerOptionMethods": ["value-set"]
+      },
+      "widget": {
+        "id": "url",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
       }
     },
     "answerOption": {
@@ -1250,7 +1273,7 @@
       "type": "array",
       "title": "Answer choices",
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+        "/__$answerOptionMethods": ["answer-option"]
       },
       "widget": {
         "id": "answer-option",
@@ -1579,7 +1602,7 @@
             "additionalProperties": false,
             "type": "object",
             "visibleIf": {
-              "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+              "/__$answerOptionMethods": ["answer-option"]
             },
             "widget": {
               "id": "hidden"
@@ -1734,7 +1757,7 @@
       "type": "array",
       "title": "Initial value",
       "visibleIf": {
-        "type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
+        "/type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
       },
       "widget": {
         "id": "initial",
@@ -4997,6 +5020,12 @@
       "fields": ["__$helpText"],
       "showFields": [
         { "field": "__$units", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["__$answerOptionMethods"],
+      "showFields": [
+        { "field": "__$answerOptionMethods", "col": 12 }
       ]
     },
     {

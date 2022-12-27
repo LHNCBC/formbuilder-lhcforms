@@ -87,6 +87,7 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
+import { CombinedAnswerOptionComponent } from './lib/widgets/combined-answer-option/combined-answer-option.component';
 
 @NgModule({
   declarations: [
@@ -149,7 +150,8 @@ import { IntegerDirective } from './lib/directives/integer.directive';
     EwValidateDirective,
     NodeDialogComponent,
     NumberComponent,
-    IntegerDirective
+    IntegerDirective,
+    CombinedAnswerOptionComponent
   ],
   imports: [
     AppRoutingModule,

@@ -43,6 +43,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('grid', GridComponent);
     this.register('table', TableComponent);
     this.register('string', StringComponent);
+    this.register('url', StringComponent);
     this.register('select', SelectComponent);
     this.register('checkbox', CheckboxComponent);
     this.register('boolean', CheckboxComponent);
