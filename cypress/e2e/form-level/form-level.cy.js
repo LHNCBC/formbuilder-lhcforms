@@ -56,7 +56,7 @@ describe('Home page', () => {
       cy.get('ngb-typeahead-window').should('be.visible');
       cy.get('ngb-typeahead-window button').first().click();
       cy.get('#title').should('have.value', 'Vital signs with method details panel');
-      cy.get('[id^="booleanControlled_Yes"]').should('have.class', 'active');
+      cy.get('[id^="booleanControlled_Yes"]:checked').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '34566-0');
     });
 
@@ -68,7 +68,7 @@ describe('Home page', () => {
       cy.fhirSearch(titleSearchTerm);
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
-      cy.get('[id^="booleanControlled_Yes"]').should('have.class', 'active');
+      cy.get('[id^="booleanControlled_Yes"]:checked').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });
@@ -82,8 +82,8 @@ describe('Home page', () => {
 
     beforeEach(() => {
       cy.resetForm();
-      cy.get('[id^="booleanControlled_Yes"]').find('[type="radio"]').as('codeYes');
-      cy.get('[id^="booleanControlled_No"]').find('[type="radio"]').as('codeNo');
+      cy.get('[id^="booleanControlled_Yes"]').as('codeYes');
+      cy.get('[id^="booleanControlled_No"]').as('codeNo');
     });
 
     it('should retain title edits', () => {
@@ -114,21 +114,21 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Answer options form', {timeout: 10000});
 
       cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
-      cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
+      cy.contains('.mat-mdc-tab', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('be.visible', true);
       cy.get('#1\\/1').should('have.value', 'd2 - 2');
       cy.get('#1\\/1').click();
       cy.get('#completionOptionsScroller ul > li').should('have.length', 2);
       cy.get('#completionOptionsScroller ul > li').first().click();
       cy.get('#1\\/1').should('have.value', 'd1 - 1');
-      cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
+      cy.contains('mat-dialog-actions > button', 'Close').click();
     });
 
     it('should work with ethnicity ValueSet in preview', () => {
       cy.uploadFile('USSG-family-portrait.json');
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait', {timeout: 10000});
       cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
-      cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
+      cy.contains('.mat-mdc-tab', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
       cy.get('@ethnicity').scrollIntoView().type('lat');
@@ -136,7 +136,7 @@ describe('Home page', () => {
       cy.get('@ethnicity').type('{downarrow}');
       cy.get('@ethnicity').type('{enter}');
       cy.get('span.autocomp_selected').contains('Latin American');
-      cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
+      cy.contains('mat-dialog-actions > button', 'Close').click();
     });
 
     it('should create questionnaire on the fhir server', () => {
@@ -280,7 +280,7 @@ describe('Home page', () => {
       cy.contains('div.modal-footer button', 'Continue').click();
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
-      cy.get('[id^="booleanControlled_Yes"]').should('have.class', 'active');
+      cy.get('[id^="booleanControlled_Yes"]').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });

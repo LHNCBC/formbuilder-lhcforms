@@ -39,6 +39,7 @@
               }
             ],
             "styles": [
+              "./node_modules/@bugsplat/angular-tree-component/css/angular-tree-component.css",
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.css",
               "./node_modules/autocomplete-lhc/source/auto_completion.css"
@@ -118,6 +119,7 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/@bugsplat/angular-tree-component/css/angular-tree-component.css",
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.css"
             ],

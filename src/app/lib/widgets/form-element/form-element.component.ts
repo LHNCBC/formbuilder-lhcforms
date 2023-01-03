@@ -26,7 +26,7 @@ import { Widget } from '@lhncbc/ngx-schema-form';
   `,
   styles: []
 })
-export class AppFormElementComponent extends FormElementComponent {
+export class AppFormElementComponent extends FormElementComponent implements OnChanges {
   static seqNum = 0;
   // Input properties, typically read from layout schema json.
   @Input()
@@ -42,14 +42,15 @@ export class AppFormElementComponent extends FormElementComponent {
   @Input()
   booleanLabel: string;
 
-  /*
-  --- Used for debugging ----
+  /**
+   * --- Used for debugging ----
+   */
 ngOnChanges(changes: SimpleChanges): void {
   for (const prop in changes) {
       if (prop === 'formProperty') {
         console.log(
-`${prop}: ${changes[prop].previousValue ? changes[prop].previousValue.path : ''} /
- ${changes[prop].currentValue ? changes[prop].currentValue.path : ''} / ${changes[prop].firstChange}`);
+`${prop}: ${changes[prop].previousValue ? changes[prop].previousValue.path +'(visible:'+changes[prop].previousValue.visible+')' : ''} /
+ ${changes[prop].currentValue ? changes[prop].currentValue.path +'(visible:'+changes[prop].currentValue.visible+')' : ''} / ${changes[prop].firstChange}`);
       } else if (prop === 'control') {
         console.log(
 `${prop}: ${changes[prop].previousValue ? changes[prop].previousValue.valid : ''} /
@@ -60,7 +61,7 @@ ngOnChanges(changes: SimpleChanges): void {
       }
     }
   }
-
+/*
   ngDoCheck(): void {
     console.log('Control of ' + this.formProperty.path + ': ');
     console.dir(this.control);

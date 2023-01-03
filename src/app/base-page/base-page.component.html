@@ -72,41 +72,41 @@
 <ng-template #home>
   <div class="card-body container">
     <div>
-      <p class="lead">How do you want to create your form?</p>
-      <ul class="list-unstyled ml-5" ngbRadioGroup [(ngModel)]="startOption" >
+      <p class="lead" id="starting_header">How do you want to create your form?</p>
+      <ul class="list-unstyled ml-5" role="radiogroup" aria-labelledby="starting_header">
         <li *ngIf="isAutoSaved() && !isDefaultForm()">
-          <label ngbButtonLabel>
-            <input ngbButton value="from_autosave" type="radio">
+          <label class="btn">
+            <input value="from_autosave" type="radio" [(ngModel)]="startOption">
             Would you like to start from where you left off before?
           </label>
         </li>
         <li>
-          <label ngbButtonLabel>
-            <input ngbButton value="scratch" type="radio">
+          <label class="btn">
+            <input class="btn" value="scratch" type="radio" [(ngModel)]="startOption">
             Start from scratch
           </label>
         </li>
         <li>
-          <label ngbButtonLabel>
-            <input ngbButton value="existing" type="radio">
+          <label class="btn" id="start_option_existing_label">
+            <input value="existing" type="radio" [(ngModel)]="startOption" >
             Start with existing form
           </label>
-          <ul *ngIf="startOption === 'existing'" class="list-unstyled ml-5"  ngbRadioGroup [(ngModel)]="importOption" >
+          <ul *ngIf="startOption === 'existing'" class="list-unstyled ml-5" role="radiogroup" aria-labelledby="start_option_existing_label">
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="local" type="radio">
+              <label class="btn">
+                <input value="local" type="radio" [(ngModel)]="importOption">
                 Import from local file
               </label>
             </li>
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="fhirServer" type="radio">
+              <label class="btn">
+                <input value="fhirServer" type="radio" [(ngModel)]="importOption">
                 Import from FHIR server
               </label>
             </li>
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="loinc" type="radio">
+              <label class="btn">
+                <input value="loinc" type="radio" [(ngModel)]="importOption">
                 Import from LOINC
               </label>
             </li>

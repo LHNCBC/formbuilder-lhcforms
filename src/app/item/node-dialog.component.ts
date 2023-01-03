@@ -39,22 +39,22 @@ import {Util} from '../lib/util';
           >
 
           <p class="mt-4">Specify drop location:</p>
-          <ul class="list-unstyled ml-5" ngbRadioGroup [(ngModel)]="targetLocation" [ngModelOptions]="{standalone: true}">
+          <ul class="list-unstyled ml-5">
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="AFTER" type="radio">
+              <label class="btn">
+                <input value="AFTER" type="radio" [(ngModel)]="targetLocation">
                 After the target item.
               </label>
             </li>
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="BEFORE" type="radio">
+              <label class="btn">
+                <input value="BEFORE" type="radio" [(ngModel)]="targetLocation">
                 Before the target item.
               </label>
             </li>
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="CHILD" type="radio">
+              <label class="btn">
+                <input value="CHILD" type="radio" [(ngModel)]="targetLocation">
                 As a child of target item.
               </label>
             </li>

@@ -94,8 +94,8 @@ Cypress.Commands.add('uploadFile',(fileName, handleWarning) => {
  */
 Cypress.Commands.add('questionnaireJSON', () => {
   cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
-  cy.contains('.mat-tab-label-content', 'View Questionnaire JSON').scrollIntoView().click();
-  return cy.get('mat-tab-body div.mat-tab-body-content pre').invoke('text').then((text) => {
+  cy.contains('.mat-mdc-tab', 'View Questionnaire JSON').scrollIntoView().click();
+  return cy.get('mat-tab-body div.mat-mdc-tab-body-content pre').invoke('text').then((text) => {
     cy.get('mat-dialog-actions > button').scrollIntoView().click();
     return cy.wrap(JSON.parse(text));
   });

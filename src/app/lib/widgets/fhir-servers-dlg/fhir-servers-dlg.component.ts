@@ -27,10 +27,12 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
             <th scope="col">Description</th>
           </tr>
           </thead>
-          <tbody ngbRadioGroup name="fhirServer" [(ngModel)]="selectedServer">
+          <tbody>
           <tr *ngFor="let fhirServer of fhirServerList; index as i">
             <th scope="row" class="align-middle">
-              <label ngbButtonLabel class="m-0 p-0"><input [attr.id]="fhirServer.endpoint" ngbButton type="radio" [value]="fhirServer"></label>
+              <label class="m-0 p-0">
+                <input [attr.id]="fhirServer.endpoint" type="radio" [value]="fhirServer" name="fhirServer" [(ngModel)]="selectedServer">
+              </label>
             </th>
             <td class="align-middle"><label [attr.for]="fhirServer.endpoint">{{fhirServer.endpoint}}</label></td>
             <td class="align-middle">{{ fhirServer.version}}</td>

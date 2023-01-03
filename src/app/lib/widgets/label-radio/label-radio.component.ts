@@ -17,15 +17,17 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
                    [helpMessage]="schema.description"
                    [ngClass]="labelWidthClass + ' pl-0 pr-1'"
         ></lfb-label>
-        <div ngbRadioGroup [formControl]="control" class="form-check-inline btn-group btn-group-sm btn-group-toggle" >
-            <label *ngFor="let option of schema.oneOf" ngbButtonLabel class="btn-outline-success">
-              <input ngbButton [attr.id]="id + '.' + option.enum[0]"
+        <div class="form-check-inline btn-group btn-group-sm btn-group-toggle" >
+            <label *ngFor="let option of schema.oneOf" class="btn btn-outline-success">
+              <input [attr.id]="id + '.' + option.enum[0]" [formControl]="control" class="btn-check"
                      type="radio" [value]="option" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null">
               {{option.description}}
             </label>
-            <label *ngFor="let option of schema.enum" ngbButtonLabel class="btn-outline-success">
-              <input ngbButton [attr.id]="id + '.' + option"
-                     type="radio" [value]="option" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null"><span class="ml-1 mr-3">{{option}}</span></label>
+            <label *ngFor="let option of schema.enum" class="btn btn-outline-success">
+              <input [attr.id]="id + '.' + option" [formControl]="control" class="btn-check"
+                     type="radio" [value]="option" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null">
+              <span class="ml-1 mr-3">{{option}}</span>
+            </label>
         </div>
       </div>
     </ng-template>

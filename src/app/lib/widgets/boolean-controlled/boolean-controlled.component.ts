@@ -13,16 +13,16 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
                    [ngClass]="labelWidthClass + ' pl-0 pr-1'"
         ></lfb-label>
 
-        <div ngbRadioGroup class="form-check-inline btn-group btn-group-sm btn-group-toggle"
-             [ngModel]="bool"
-             (ngModelChange)="boolChange.emit($event)"
-             [ngModelOptions]="{standalone: true}">
-          <ng-container *ngFor="let option of ['No', 'Yes']">
-            <label ngbButtonLabel class="btn-outline-success" [attr.id]="'booleanControlled_'+option+_id">
-              <input ngbButton
-                     [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
-              {{option}}
-            </label>
+        <div class="btn-group btn-group-sm" role="radiogroup" [attr.aria-label]="label">
+          <ng-container *ngFor="let option of ['No', 'Yes']" >
+            <input
+              autocomplete="off"
+              [attr.id]="'booleanControlled_'+option+_id"
+              class="btn-check"
+              [ngModel]="bool"
+              (ngModelChange)="boolChange.emit($event)"
+              [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
+            <label class="btn btn-outline-success" [attr.for]="'booleanControlled_'+option+_id">{{option}}</label>
           </ng-container>
         </div>
       </div>

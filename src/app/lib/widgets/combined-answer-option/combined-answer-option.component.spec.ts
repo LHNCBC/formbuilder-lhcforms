@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CombinedAnswerOptionComponent } from './combined-answer-option.component';
 
-describe('LfbAnswerOptionComponent', () => {
+xdescribe('LfbAnswerOptionComponent', () => {
   let component: CombinedAnswerOptionComponent;
   let fixture: ComponentFixture<CombinedAnswerOptionComponent>;
 

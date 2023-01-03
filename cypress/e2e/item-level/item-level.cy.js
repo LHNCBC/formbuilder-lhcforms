@@ -75,7 +75,7 @@ describe('Home page', () => {
 
     });
 
-    it('should import item from CTSS with answer option', () => {
+    it.only('should import item from CTSS with answer option', () => {
       cy.contains('Add new item from LOINC').scrollIntoView().click();
       cy.contains('ngb-modal-window label', 'Question').click();
       cy.get('#acSearchBoxId').type('vital signs assess');

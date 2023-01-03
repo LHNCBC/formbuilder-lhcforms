@@ -8,12 +8,14 @@
 
   <div class="{{controlWidthClass}} p-0 {{adjustVAlignClass}}">
 
-    <div ngbRadioGroup
-         [attr.name]="name"
-         class="btn-group form-check-inline btn-group-sm btn-group-toggle" [ngModel]="showOlp" (ngModelChange)="onBooleanChange($event)">
+    <div
+         class="btn-group form-check-inline btn-group-sm btn-group-toggle">
       <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
-        <label ngbButtonLabel class="btn-outline-success m-auto" [attr.id]="name+'_'+option">
-          <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null"  [attr.aria-controls]="'timeWindowGroup_'+elementId" >
+        <label  class="btn btn-outline-success m-auto" [attr.id]="name+'_'+option">
+          <input
+            [attr.name]="name"
+            [ngModel]="showOlp" (ngModelChange)="onBooleanChange($event)" class="btn-check"
+            [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null"  [attr.aria-controls]="'timeWindowGroup_'+elementId" >
           {{option}}
         </label>
       </ng-container>
