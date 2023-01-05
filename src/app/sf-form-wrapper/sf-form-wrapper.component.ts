@@ -63,6 +63,8 @@ export class SfFormWrapperComponent implements OnChanges {
   @Input()
   model: any;
   @Output()
+  modelChange = new EventEmitter<any>();
+  @Output()
   valueChange = new EventEmitter<any>();
   @Output()
   errorsChanged = new EventEmitter<any []>();

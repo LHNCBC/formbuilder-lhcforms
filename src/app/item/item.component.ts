@@ -277,6 +277,13 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     }
   }
 
+  onModelChange(model) {
+    if (typeof this.itemData?.linkId === 'number') {
+      this.itemData.linkId = ''+this.itemData.linkId;
+    }
+    this.loadingTime = (Date.now() - this.startTime)/1000;
+    this.itemChange.emit(this.itemList);
+  }
 
   /**
    * Handles tree update event

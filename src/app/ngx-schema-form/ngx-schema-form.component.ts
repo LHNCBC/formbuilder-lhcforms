@@ -13,7 +13,7 @@ import {SharedObjectService} from '../services/shared-object.service';
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-      <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)"></lfb-sf-form-wrapper>
+      <lfb-sf-form-wrapper [(model)]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)"></lfb-sf-form-wrapper>
     </div>
   `,
   styles: [`
@@ -62,6 +62,8 @@ export class NgxSchemaFormComponent {
   setLinkId = new EventEmitter();
   @Input()
   model: any;
+  @Output()
+  modelChange = new EventEmitter<any>();
   @Output()
   valueChange = new EventEmitter<any>();
   @Output()
