@@ -3,6 +3,7 @@
 import {Util} from '../../../src/app/lib/util';
 
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
+const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
 const ucumUrl = 'http://unitsofmeasure.org';
 describe('Home page', () => {
   before(() => {
@@ -910,6 +911,74 @@ describe('Home page', () => {
         expect(extExists).to.equal(false);
       });
 
+    });
+
+    describe('Use FHIR Observation extraction?', () => {
+
+      it('should create observation link period', () => {
+        // Yes/no option
+        cy.get('[id="__$observationExtract_Yes"]').as('oeYes');
+        cy.get('[id="__$observationExtract_No"]').as('oeNo');
+        cy.get('@oeYes').click();
+        // Code missing message.
+        cy.get('lfb-observation-extract p').as('warningMsg')
+          .should('contain.text', 'Extracting using FHIR Observation based');
+        cy.get('@oeNo').click();
+        cy.get('@warningMsg').should('not.exist');
+        cy.get('@oeYes').click();
+        cy.get('@warningMsg').should('be.visible');
+        cy.get('@codeYes').click();
+        cy.get('[id^="code.0.code"]').type('C1');
+        cy.get('@warningMsg').should('not.exist');
+        cy.get('[id^="code.0.code"]').clear();
+        cy.get('@warningMsg').should('be.visible');
+        cy.get('[id^="code.0.code"]').type('C1');
+        cy.get('@warningMsg').should('not.exist');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].code[0].code).to.equal('C1');
+          expect(qJson.item[0].extension[0]).to.deep.equal({
+            url: observationExtractExtUrl,
+            valueBoolean: true
+          });
+        });
+
+        cy.get('@oeNo').click();
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].code[0].code).to.equal('C1');
+          expect(qJson.item[0].extension).to.be.undefined;
+        });
+      });
+
+      it('should import item with observation-extract extension', () => {
+        const sampleFile = 'observation-extract.json';
+        let fixtureJson, originalExtension;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {
+          fixtureJson = json;
+          originalExtension = JSON.parse(JSON.stringify(json.item[0].extension));
+        });
+        cy.uploadFile(sampleFile, true);
+        cy.get('#title').should('have.value', 'Form with observation extract');
+        cy.contains('button', 'Edit questions').click();
+        cy.get('@codeYes').should('have.class', 'active');
+        cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
+
+        cy.get('[id="__$observationExtract_Yes"] input').should('be.checked');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson).to.deep.equal(fixtureJson);
+        });
+
+        // Remove
+        cy.get('[id="__$observationExtract_No"]').click();
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension.length).to.equal(2); // Other than olp extension.
+          const extExists = qJson.item[0].extension.some((ext) => {
+            return ext.url === observationExtractExtUrl;
+          });
+          expect(extExists).to.equal(false);
+        });
+      });
     });
   });
 
