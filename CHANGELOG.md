@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.9] 2023-01-09
+### Fixed
+- Fix screen reader announcing blank on tooltip icons.
+
 ## [8.0.8] 2023-01-06
 ### Added
 - Support extension for observation extract.
