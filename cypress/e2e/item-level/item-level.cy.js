@@ -922,7 +922,7 @@ describe('Home page', () => {
         cy.get('@oeYes').click();
         // Code missing message.
         cy.get('lfb-observation-extract p').as('warningMsg')
-          .should('contain.text', 'Extracting using FHIR Observation based');
+          .should('contain.text', 'Extraction to FHIR Observations requires');
         cy.get('@oeNo').click();
         cy.get('@warningMsg').should('not.exist');
         cy.get('@oeYes').click();
