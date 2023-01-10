@@ -972,7 +972,7 @@ describe('Home page', () => {
         // Remove
         cy.get('[id="__$observationExtract_No"]').click();
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[0].extension.length).to.equal(2); // Other than olp extension.
+          expect(qJson.item[0].extension.length).to.equal(2); // Other than oe extension.
           const extExists = qJson.item[0].extension.some((ext) => {
             return ext.url === observationExtractExtUrl;
           });

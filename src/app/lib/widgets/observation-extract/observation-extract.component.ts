@@ -28,7 +28,7 @@ import {BooleanRadioComponent} from '../boolean-radio/boolean-radio.component';
         </div>
         <div *ngIf="value">
           <div *ngIf="!codePresent" class="row mt-1 ml-auto mr-auto">
-            <p class="alert alert-warning mt-1" role="alert">To extract using FHIR Observation based approach requires a code assigned to this item. Please enter a code before setting this field.</p>
+            <p class="alert alert-warning mt-1" role="alert">Extraction to FHIR Observations requires a code assigned to this item. Please enter a code before setting this field.</p>
           </div>
         </div>
       </div>
