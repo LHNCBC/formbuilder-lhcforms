@@ -1776,6 +1776,21 @@
         "type": ["$EXP$ target.value != 'display'"]
       }
     },
+    "__$observationExtract": {
+      "description": "If true, indicates that the observation-based approach should be used to extract the particular item.",
+      "title": "Use FHIR Observation extraction?",
+      "pattern": "^true|false$",
+      "type": "boolean",
+      "widget": {
+        "id": "observation-extract",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2 pr-1",
+        "controlWidthClass": "col-sm-10"
+      },
+      "visibleIf": {
+        "type": ["$EXP$ target.value != 'display'"]
+      }
+    },
     "__$units": {
       "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
       "title": "Units",
@@ -5042,6 +5057,10 @@
     {
       "fields": ["__$observationLinkPeriod"],
       "showFields": [{"field": "__$observationLinkPeriod", "col": 10}]
+    },
+    {
+      "fields": ["__$observationExtract"],
+      "showFields": [{"field": "__$observationExtract", "col": 10}]
     },
     {
       "fields": ["id", "extension", "modifierExtension", "definition"]

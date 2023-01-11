@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.8] 2023-01-06
+### Added
+- Support extension for observation extract.
+
 ## [8.0.7] 2022-12-14
 ### Added
 - Support import of forms that are in LForms format.
