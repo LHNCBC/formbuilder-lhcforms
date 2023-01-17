@@ -2,6 +2,6 @@
   <p>No items in the form. Add an item to continue.</p>
 </div>
 <sf-form #itemForm [schema]="mySchema" [ngClass]="{'d-none': !model}"
-         [(model)]="model" (onChange)="updateValue($event.value)" [validators]="validators" (modelReset)="onModelReset($event.value)"
+         [model]="model" (onChange)="updateValue($event.value)" [validators]="validators" (modelReset)="onModelReset($event.value)"
 ></sf-form>
 

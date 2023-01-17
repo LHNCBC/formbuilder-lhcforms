@@ -107,6 +107,9 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     let sub = this.formProperty.root.getProperty('type').valueChanges.subscribe((type) => {
       this.dataType = type;
       this.appliedOptions = RestrictionsComponent.typeToOptions[type];
+      const restrictions = this.getRestrictions(this.formProperty.root, this.appliedOptions);
+      this.updateSelectedOptions(restrictions);
+      this.formProperty.setValue(restrictions, true);
     });
     this.subscriptions.push(sub);
     let initializing = false;
@@ -154,6 +157,13 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     restrictions?.forEach((res) => {
       this.selectedOptions.add(res.operator);
     });
+  }
+
+  onBooleanControlledChange(event: boolean) {
+    super.onBooleanControlledChange(event);
+    if(this.booleanControlledOption) {
+      this.formProperty.reset(null, false);
+    }
   }
 
   /**

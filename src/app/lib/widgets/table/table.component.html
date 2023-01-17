@@ -1,6 +1,7 @@
 <ng-container *ngIf="booleanControlled">
   <lfb-boolean-controlled
-    [(bool)]="booleanControlledOption"
+    [bool]="booleanControlledOption"
+    (boolChange)="onBooleanControlledChange($event)"
     [controlWidthClass]="controlWidthClass"
     [labelWidthClass]="labelWidthClass"
     [label]="booleanLabel"

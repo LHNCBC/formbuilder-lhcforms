@@ -432,7 +432,7 @@ export class Util {
    * @param limit - Length to limit the truncation.
    */
   static truncateString(text: string, limit: number = 15): string {
-    return text.length > limit ? (text.substring(0, limit).trim() + '...') : text;
+    return text?.length > limit ? (text.substring(0, limit).trim() + '...') : text;
   }
 
 
