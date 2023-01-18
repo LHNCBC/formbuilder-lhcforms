@@ -9,9 +9,9 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
   template: `
     <span *ngIf="title" class="horizontal control-label">
       {{title}}
-      <button *ngIf="helpMessage" [attr.aria-label]="'Tooltip for '+title+': '+helpMessage" class="btn border-0 m-0 p-0" [matTooltip]="helpMessage">
-        <fa-icon [icon]="helpIcon"></fa-icon>
-      </button>
+      <div *ngIf="helpMessage" tabindex="0" [attr.aria-label]="'Tooltip for '+title+': '+helpMessage" class="btn border-0 m-0 p-0" [matTooltip]="helpMessage">
+        <fa-icon [icon]="helpIcon" aria-hidden="true"></fa-icon>
+      </div>
     </span>
   `
 })
