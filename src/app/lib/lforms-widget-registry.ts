@@ -24,6 +24,7 @@ import {EnableBehaviorComponent} from './widgets/enable-behavior/enable-behavior
 import {BooleanRadioComponent} from './widgets/boolean-radio/boolean-radio.component';
 import {UnitsComponent} from './widgets/units/units.component';
 import {AnswerOptionComponent} from './widgets/answer-option/answer-option.component';
+import {AnswerOptionMethodsComponent} from './widgets/answer-option-methods/answer-option-methods.component';
 import {InitialComponent} from './widgets/initial/initial.component';
 import {HelpTextComponent} from './widgets/help-text/help-text.component';
 import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.component';
@@ -61,6 +62,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('boolean-radio', BooleanRadioComponent);
     this.register('units', UnitsComponent);
     this.register('answer-option', AnswerOptionComponent);
+    this.register('answer-option-methods', AnswerOptionMethodsComponent);
     this.register('initial', InitialComponent);
     this.register('help-text', HelpTextComponent);
     this.register('string-with-css', StringWithCssComponent);

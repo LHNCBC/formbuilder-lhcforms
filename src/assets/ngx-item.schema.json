@@ -985,12 +985,13 @@
         "answer-option",
         "value-set"
       ],
+      "default": "answer-option",
       "type": "string",
       "visibleIf": {
         "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
       },
       "widget": {
-        "id": "lb-radio",
+        "id": "answer-option-methods",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2",
         "controlWidthClass": "col-sm-10"

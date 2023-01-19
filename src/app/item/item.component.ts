@@ -233,6 +233,7 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
               private dataSrv: FetchService,
               private cdr: ChangeDetectorRef) {
     this.itemEditorSchema = formService.itemEditorSchema;
+    console.log('ItemComponent.constructor()');
   }
 
   ngOnInit() {
@@ -764,5 +765,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });
+    console.log('ItemComponent.ngOnDestroy()');
   }
 }

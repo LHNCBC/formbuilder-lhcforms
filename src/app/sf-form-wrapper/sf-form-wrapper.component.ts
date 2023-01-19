@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
-  EventEmitter, Input, OnChanges,
+  EventEmitter, Input, OnChanges, OnDestroy,
   Output, SimpleChanges,
   ViewChild
 } from '@angular/core';
@@ -22,7 +22,7 @@ import {Util} from '../lib/util';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ExtensionsService]
 })
-export class SfFormWrapperComponent implements OnChanges {
+export class SfFormWrapperComponent implements OnChanges, OnDestroy {
   @ViewChild('itemForm') itemForm: FormComponent;
 
   validators = {
@@ -72,6 +72,7 @@ export class SfFormWrapperComponent implements OnChanges {
 
   constructor(private extensionsService: ExtensionsService, private formService: FormService, private cdr: ChangeDetectorRef) {
     this.mySchema = formService.getItemSchema();
+    console.log('SfFormWrapperComponent.constructor()');
   }
 
 
@@ -157,5 +158,9 @@ export class SfFormWrapperComponent implements OnChanges {
       errors = null;
     }
     return errors;
+  }
+
+  ngOnDestroy() {
+    console.log('SfFormWrapperComponent.ngOnDestroy()');
   }
 }
