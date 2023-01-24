@@ -3,6 +3,7 @@
 import {Util} from '../../../src/app/lib/util';
 
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
+const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
 const ucumUrl = 'http://unitsofmeasure.org';
 describe('Home page', () => {
   before(() => {
@@ -40,10 +41,9 @@ describe('Home page', () => {
       cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
-      cy.contains('div', 'Use question code?')
-        .find('[id^="booleanControlled_Yes"]').as('codeYes');
-      cy.contains('div', 'Use question code?')
-        .find('[id^="booleanControlled_No"]').as('codeNo');
+      cy.contains('div', 'Use question code?').should('be.visible').as('codeOption');
+      cy.get('@codeOption').find('[id^="booleanRadio_Yes"]').as('codeYes');
+      cy.get('@codeOption').find('[id^="booleanRadio_No"]').as('codeNo');
       cy.get('#__\\$observationLinkPeriod_No').as('olpNo');
       cy.get('#__\\$observationLinkPeriod_Yes').as('olpYes');
 
@@ -73,6 +73,10 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].extension).to.deep.equal(helpTextExtension);
       });
 
+    });
+
+    it('should include code only when use question code is yes', () => {
+      cy.get('@codeOption').includeExcludeCodeField();
     });
 
     it('should import item from CTSS with answer option', () => {
@@ -364,8 +368,8 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Sample to test initial component error');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
-        expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
+        expect(qJson.item[0].item[0].answerOption).to.deep.equal(fixtureJson.item[0].item[0].answerOption);
+        expect(qJson.item[0].item[0].initial).to.deep.equal(fixtureJson.item[0].item[0].initial);
       });
 
       cy.toggleTreeNodeExpansion('Group item 1');
@@ -373,11 +377,59 @@ describe('Home page', () => {
       cy.get('@type').find(':selected').should('have.text', 'choice');
       cy.get('[id^="answerOption."]').should('be.visible');
       cy.get('[id^="initial"]').should('not.be.visible');
+      cy.get('[id^="radio_answerOption.1"]').should('be.checked', true);
       cy.selectDataType('decimal');
       cy.get('[id^="answerOption."]').should('not.exist');
       cy.get('[id^="initial.0.valueDecimal"]').should('be.visible').type('1.2');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].initial[0].valueDecimal).equal(1.2);
+      });
+    });
+
+    it('should create answerValueSet', () => {
+      cy.selectDataType('choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').as('aoRadio');
+      cy.get('@aoRadio').should('have.class', 'active');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').as('vsRadio').should('not.have.class', 'active');
+      cy.get('#answerValueSet').should('not.exist');
+      cy.get('lfb-answer-option').should('be.visible');
+
+      cy.get('@vsRadio').click();
+      cy.get('#answerValueSet').should('be.visible').as('vsInput');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('@vsInput').type('http://example.org');
+      cy.questionnaireJSON().should((q) => {
+        expect(q.item[0].answerValueSet).equal('http://example.org');
+        expect(q.item[0].answerOption).to.be.undefined;
+      });
+
+      cy.get('@aoRadio').click();
+      cy.get('#answerValueSet').should('not.exist');
+      cy.get('lfb-answer-option').should('be.visible');
+      const aOptions = [
+        {display: 'display 1', code: 'c1', system: 's1'},
+        {display: 'display 2', code: 'c2', system: 's2'}
+      ];
+      cy.enterAnswerOptions(aOptions);
+      cy.questionnaireJSON().should((q) => {
+        expect(q.item[0].answerValueSet).to.be.undefined;
+        expect(q.item[0].answerOption[0].valueCoding).to.deep.equal(aOptions[0]);
+        expect(q.item[0].answerOption[1].valueCoding).to.deep.equal(aOptions[1]);
+      });
+    });
+
+    it('should import a form with an item having answerValueSet', () => {
+      cy.uploadFile('answer-value-set-sample.json', true);
+      cy.get('#title').should('have.value', 'Answer value set form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('#type option:selected').should('have.text', 'choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.have.class', 'active');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('have.class', 'active');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet').should('have.value','http://example.org');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerValueSet).to.equal('http://example.org');
       });
     });
 
@@ -910,6 +962,74 @@ describe('Home page', () => {
         expect(extExists).to.equal(false);
       });
 
+    });
+
+    describe('Use FHIR Observation extraction?', () => {
+
+      it('should create observation link period', () => {
+        // Yes/no option
+        cy.get('[id="__$observationExtract_Yes"]').as('oeYes');
+        cy.get('[id="__$observationExtract_No"]').as('oeNo');
+        cy.get('@oeYes').click();
+        // Code missing message.
+        cy.get('lfb-observation-extract p').as('warningMsg')
+          .should('contain.text', 'Extraction to FHIR Observations requires');
+        cy.get('@oeNo').click();
+        cy.get('@warningMsg').should('not.exist');
+        cy.get('@oeYes').click();
+        cy.get('@warningMsg').should('be.visible');
+        cy.get('@codeYes').click();
+        cy.get('[id^="code.0.code"]').type('C1');
+        cy.get('@warningMsg').should('not.exist');
+        cy.get('[id^="code.0.code"]').clear();
+        cy.get('@warningMsg').should('be.visible');
+        cy.get('[id^="code.0.code"]').type('C1');
+        cy.get('@warningMsg').should('not.exist');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].code[0].code).to.equal('C1');
+          expect(qJson.item[0].extension[0]).to.deep.equal({
+            url: observationExtractExtUrl,
+            valueBoolean: true
+          });
+        });
+
+        cy.get('@oeNo').click();
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].code[0].code).to.equal('C1');
+          expect(qJson.item[0].extension).to.be.undefined;
+        });
+      });
+
+      it('should import item with observation-extract extension', () => {
+        const sampleFile = 'observation-extract.json';
+        let fixtureJson, originalExtension;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {
+          fixtureJson = json;
+          originalExtension = JSON.parse(JSON.stringify(json.item[0].extension));
+        });
+        cy.uploadFile(sampleFile, true);
+        cy.get('#title').should('have.value', 'Form with observation extract');
+        cy.contains('button', 'Edit questions').click();
+        cy.get('@codeYes').should('have.class', 'active');
+        cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
+
+        cy.get('[id="__$observationExtract_Yes"] input').should('be.checked');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson).to.deep.equal(fixtureJson);
+        });
+
+        // Remove
+        cy.get('[id="__$observationExtract_No"]').click();
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension.length).to.equal(2); // Other than oe extension.
+          const extExists = qJson.item[0].extension.some((ext) => {
+            return ext.url === observationExtractExtUrl;
+          });
+          expect(extExists).to.equal(false);
+        });
+      });
     });
   });
 

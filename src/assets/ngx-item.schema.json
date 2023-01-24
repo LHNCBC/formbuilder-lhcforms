@@ -200,19 +200,13 @@
     },
     "__$codeYesNo": {
       "description": "",
-      "enum": [
-        "No",
-        "Yes"
-      ],
-      "default": "Yes",
-      "type": "string",
-      "title": "Use code(s)?",
+      "default": false,
+      "type": "boolean",
+      "title": "Use question code?",
       "widget": {
-        "id": "hidden",
-        "layout": "row",
-        "labelPosition": "left",
+        "id": "boolean-radio",
         "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-3"
+        "controlWidthClass": "col-sm-10"
       }
     },
     "code": {
@@ -292,9 +286,7 @@
       "type": "array",
       "title": "Code",
       "visibleIf": {
-        "allOf": [
-          {"type": ["$EXP$ target.value != 'display'"]}
-        ]
+        "__$codeYesNo": [true]
       },
       "widget": {
         "id": "table",
@@ -305,12 +297,10 @@
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
-        "booleanControlled": true,
-        "booleanLabel": "Use question code?",
-        "booleanControlledInitial": false,
         "showFields": [
-          {"field": "code", "col": 4, "nolabel": true},
-          {"field": "system", "col": 7, "nolabel": true}
+          {"field": "code", "col": 3, "nolabel": true},
+          {"field": "system", "col": 4, "nolabel": true},
+          {"field": "display", "col": 4, "nolabel": true}
         ]
       }
     },
@@ -1792,6 +1782,21 @@
       "type": "string",
       "widget": {
         "id": "observation-link-period",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2 pr-1",
+        "controlWidthClass": "col-sm-10"
+      },
+      "visibleIf": {
+        "type": ["$EXP$ target.value != 'display'"]
+      }
+    },
+    "__$observationExtract": {
+      "description": "If true, indicates that the observation-based approach should be used to extract the particular item.",
+      "title": "Use FHIR Observation extraction?",
+      "pattern": "^true|false$",
+      "type": "boolean",
+      "widget": {
+        "id": "observation-extract",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2 pr-1",
         "controlWidthClass": "col-sm-10"
@@ -5072,6 +5077,10 @@
     {
       "fields": ["__$observationLinkPeriod"],
       "showFields": [{"field": "__$observationLinkPeriod", "col": 10}]
+    },
+    {
+      "fields": ["__$observationExtract"],
+      "showFields": [{"field": "__$observationExtract", "col": 10}]
     },
     {
       "fields": ["id", "extension", "modifierExtension", "definition"]

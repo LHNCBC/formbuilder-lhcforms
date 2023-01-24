@@ -169,10 +169,9 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
-    cy.get('[id^="answerOption.'+index+'.valueCoding.display"]').type(coding.display);
-    cy.get('[id^="answerOption.'+index+'.valueCoding.code"]').type(coding.code);
-    cy.get('[id^="answerOption.'+index+'.valueCoding.system"]').type(coding.system);
-    cy.get('[id^="answerOption.'+index+'.valueCoding.__$score"]').type(coding.__$score);
+    Object.keys(coding).forEach((key) => {
+      cy.get('[id^="answerOption.'+index+'.valueCoding.'+key+'"]').type(coding[key]);
+    });
     cy.contains('button', 'Add another answer').click();
   });
 });
@@ -221,6 +220,42 @@ Cypress.Commands.add('addAnswerOptions', () => {
     expect(qJson.item[0].initial[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
   });
 
+});
+
+/**
+ * Test code yes no options
+ */
+Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOptionElement, formOrItem) => {
+  const formTesting = formOrItem === 'form' ? true : false;
+  cy.wrap(codeOptionElement).find('[id^="booleanRadio_Yes"]').as('codeYes');
+  cy.wrap(codeOptionElement).find('[id^="booleanRadio_No"]').as('codeNo');
+  cy.get('@codeNo').should('have.class', 'active');
+  cy.questionnaireJSON().should((q) => {
+    const jsonCode = formTesting ? q.code : q.item[0].code;
+    expect(jsonCode).to.be.undefined;
+  });
+
+  const coding = {code: 'c1', system: 's1', display: 'd1'}
+  cy.get('@codeYes').click();
+  cy.get('[id^="code.0.code_"]').type(coding.code);
+  cy.get('[id^="code.0.system_"]').type(coding.system);
+  cy.get('[id^="code.0.display_"]').type(coding.display);
+  cy.questionnaireJSON().should((q) => {
+    const code = formTesting ? q.code : q.item[0].code;
+    expect(code).to.deep.equal([coding]);
+  });
+
+  cy.get('@codeNo').click();
+  cy.questionnaireJSON().should((q) => {
+    const code = formTesting ? q.code : q.item[0].code;
+    expect(code).to.be.undefined;
+  });
+
+  cy.get('@codeYes').click();
+  cy.questionnaireJSON().should((q) => {
+    const code = formTesting ? q.code : q.item[0].code;
+    expect(code).to.deep.equal([coding]);
+  });
 });
 
 //For Cypress drag and drop custom command

@@ -31,6 +31,7 @@ import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.
 import {RestrictionsComponent} from './widgets/restrictions/restrictions.component';
 import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/restrictions-operator.component';
 import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
+import {ObservationExtractComponent} from './widgets/observation-extract/observation-extract.component';
 import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 import {QuantityUnitComponent} from './widgets/quantity-unit/quantity-unit.component';
 import {NumberComponent} from './widgets/number/number.component';
@@ -69,6 +70,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('restrictions', RestrictionsComponent);
     this.register('restrictions-operator', RestrictionsOperatorComponent);
     this.register('observation-link-period', ObservationLinkPeriodComponent);
+    this.register('observation-extract', ObservationExtractComponent);
     this.register('quantity-unit', QuantityUnitComponent);
   }
 }

@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
   EventEmitter, Input, OnChanges, OnDestroy,
@@ -22,7 +23,7 @@ import {Util} from '../lib/util';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ExtensionsService]
 })
-export class SfFormWrapperComponent implements OnChanges, OnDestroy {
+export class SfFormWrapperComponent implements OnChanges, AfterViewInit, OnDestroy {
   @ViewChild('itemForm') itemForm: FormComponent;
 
   validators = {
@@ -83,6 +84,10 @@ export class SfFormWrapperComponent implements OnChanges, OnDestroy {
   }
 
 
+  ngAfterViewInit() {
+    this.adjustRootFormProperty();
+  }
+
   /**
    * Handle value change event.
    * @param value - Angular event
@@ -97,7 +102,24 @@ export class SfFormWrapperComponent implements OnChanges, OnDestroy {
   onModelReset(value) {
     this.loading = false;
     // console.log('sf-form.onModelReset() emitted:');
-    this.valueChange.emit(value);
+    if(!this.adjustRootFormProperty()) {
+      this.valueChange.emit(value);
+    }
+  }
+
+  adjustRootFormProperty(): boolean {
+    let ret = false;
+    console.log('FormFieldsComponent.adjustRootFormProperty(): this.ngxForm:', this.itemForm);
+    const rootProperty = this.itemForm?.rootProperty;
+    // Emit the value after any adjustments.
+    // Set '__$codeYesNo' to true, when 'code' is present. The default is false.
+    if(!Util.isEmpty(rootProperty?.searchProperty('/code').value)) {
+      // Loading is done. Change of value should emit the value in valueChanged().
+      console.log('FormFieldsComponent.adjustRootFormProperty(): setValue() for __$codYesNo:');
+      rootProperty?.searchProperty('/__$codeYesNo').setValue(true, false);
+      ret = true;
+    }
+    return ret;
   }
 
 

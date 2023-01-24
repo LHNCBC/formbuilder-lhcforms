@@ -88,6 +88,7 @@ import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
+import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 
 @NgModule({
   declarations: [
@@ -151,7 +152,8 @@ import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-method
     NodeDialogComponent,
     NumberComponent,
     IntegerDirective,
-    AnswerOptionMethodsComponent
+    AnswerOptionMethodsComponent,
+    ObservationExtractComponent
   ],
   imports: [
     AppRoutingModule,

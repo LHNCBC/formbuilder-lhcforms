@@ -34,7 +34,8 @@
       },
       {
         "showFields": [
-          { "field": "__$observationLinkPeriod", "col": 12}
+          { "field": "__$observationLinkPeriod", "col": 12},
+          { "field": "__$observationExtract", "col": 12}
         ]
       }
     ]

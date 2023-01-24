@@ -4,6 +4,7 @@
       {
         "showFields": [
           { "field": "title", "col": 12 },
+          { "field": "__$codeYesNo", "col": 12 },
           { "field": "code", "col": 12 },
           { "field": "status", "col": 12},
           { "field": "description", "col": 12},

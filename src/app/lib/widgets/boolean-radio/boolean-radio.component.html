@@ -3,12 +3,11 @@
     <lfb-label *ngIf="!nolabel" [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelWidthClass + ' pl-0 pr-1'"></lfb-label>
 
     <div ngbRadioGroup
-         [attr.name]="name"
          [formControl]="control"
          class="btn-group form-check-inline btn-group-sm btn-group-toggle">
       <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
-        <label ngbButtonLabel class="btn-outline-success m-0">
-          <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
+        <label ngbButtonLabel class="btn-outline-success m-0" [attr.id]="'booleanRadio_'+option+_id">
+          <input ngbButton [attr.id]="" [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
           {{option}}
         </label>
       </ng-container>

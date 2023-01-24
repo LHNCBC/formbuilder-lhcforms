@@ -1722,6 +1722,17 @@
       "additionalProperties": false,
       "type": "object"
     },
+    "__$codeYesNo": {
+      "description": "",
+      "default": false,
+      "type": "boolean",
+      "title": "Use code?",
+      "widget": {
+        "id": "boolean-radio",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
+      }
+    },
     "code": {
       "description": "An identifier for this question or group of questions in a particular terminology such as LOINC.",
       "items": {
@@ -1797,6 +1808,9 @@
       },
       "type": "array",
       "title": "Code",
+      "visibleIf": {
+        "__$codeYesNo": [true]
+      },
       "widget": {
         "id": "table",
         "noTableLabel": true,
@@ -1806,12 +1820,10 @@
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
-        "booleanControlled": true,
-        "booleanLabel": "Use code?",
-        "booleanControlledInitial": false,
         "showFields": [
-          {"field": "code", "col": 4, "nolabel": true},
-          {"field": "system", "col": 7, "nolabel": true}
+          {"field": "code", "col": 3, "nolabel": true},
+          {"field": "system", "col": 4, "nolabel": true},
+          {"field": "display", "col": 4, "nolabel": true}
         ]
       }
     }
@@ -1843,6 +1855,7 @@
         "resourceType",
         "title",
         "name",
+        "__$codeYesNo",
         "code",
         "status",
         "description",

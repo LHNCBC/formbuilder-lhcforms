@@ -1,0 +1,32 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Form with observation extract",
+  "status": "draft",
+  "item": [
+    {
+      "id": 1,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 20.1
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 15.2
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "l1",
+      "text": "Item with observation extract",
+      "type": "decimal",
+      "code": [
+        {
+          "code": "Code1"
+        }
+      ]
+    }
+  ]
+}

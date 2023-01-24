@@ -124,9 +124,14 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
    * @param event - Emits questionnaire (Form level copy)
    */
   formFieldsChanged(formChanges) {
-    Object.assign(this.formValue, formChanges);
-    Object.assign(this.questionnaire, formChanges);
-    Object.assign(this.formFields, formChanges);
+    [this.formValue, this.questionnaire, this.formFields].forEach((obj) => {
+      for (const key of Object.keys(obj)) {
+        if(key !== 'item') {
+          delete obj[key];
+        }
+      }
+      Object.assign(obj, formChanges);
+    });
     this.notifyChange(this.formValue);
   }
 

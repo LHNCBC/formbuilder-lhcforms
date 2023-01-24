@@ -9,9 +9,9 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
   selector: 'lfb-label',
   template: `
     <label *ngIf="title" [attr.for]="for" class="col-form-label align-self-center p-0"
-    >{{title}}&nbsp;<button *ngIf="helpMessage" class="btn border-0 p-0 b-0" [matTooltip]="helpMessage" matTooltipClass="lfb-mat-tooltip"
-                            [attr.aria-label]="'Tooltip for '+title+': '+helpMessage" aria-hidden="true"
-    ><fa-icon [icon]="helpIcon"></fa-icon></button
+    >{{title}}&nbsp;<div *ngIf="helpMessage" tabindex="0" class="btn border-0 p-0 b-0" [matTooltip]="helpMessage"
+                            [attr.aria-label]="'Tooltip for '+title+': '+helpMessage"
+    ><fa-icon [icon]="helpIcon" aria-hidden="true"></fa-icon></div
     ></label>
   `,
   styles: [`
