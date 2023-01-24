@@ -66,7 +66,9 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
     });
   }
 
-
+  /**
+   * Setup Observation link period
+   */
   setOlp() {
     const ext = this.getExtension();
     if(ext) {

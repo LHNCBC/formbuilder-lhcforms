@@ -14,7 +14,6 @@ export class BooleanRadioComponent  extends LfbControlWidgetComponent implements
   static ID = 0;
   _id = BooleanRadioComponent.ID++;
   ngAfterViewInit() {
-    console.log(this.formProperty.canonicalPathNotation, '=', this.formProperty.value);
     this.labelPosition = 'left';
     super.ngAfterViewInit();
   }

@@ -67,6 +67,9 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
     });
   }
 
+  /**
+   * Set value based on extension.
+   */
   setValue() {
     const oeExt = this.getExtension();
     this.value = oeExt ? oeExt.valueBoolean : false;

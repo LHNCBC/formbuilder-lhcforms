@@ -7,7 +7,7 @@
          class="btn-group form-check-inline btn-group-sm btn-group-toggle">
       <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
         <label ngbButtonLabel class="btn-outline-success m-0" [attr.id]="'booleanRadio_'+option+_id">
-          <input ngbButton [attr.id]="" [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
+          <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
           {{option}}
         </label>
       </ng-container>

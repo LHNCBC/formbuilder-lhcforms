@@ -2,7 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy, ChangeDetectorRef,
   Component,
-  EventEmitter, Input, OnChanges, OnDestroy,
+  EventEmitter, Input, OnChanges,
   Output, SimpleChanges,
   ViewChild
 } from '@angular/core';
@@ -23,7 +23,7 @@ import {Util} from '../lib/util';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ExtensionsService]
 })
-export class SfFormWrapperComponent implements OnChanges, AfterViewInit, OnDestroy {
+export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
   @ViewChild('itemForm') itemForm: FormComponent;
 
   validators = {
@@ -73,7 +73,6 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit, OnDestr
 
   constructor(private extensionsService: ExtensionsService, private formService: FormService, private cdr: ChangeDetectorRef) {
     this.mySchema = formService.getItemSchema();
-    console.log('SfFormWrapperComponent.constructor()');
   }
 
 
@@ -107,15 +106,17 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit, OnDestr
     }
   }
 
+  /**
+   * Make any custom adjustments to root form property of the <sf-form>.
+   * Typically, these changes may be done on '__$*' fields after the form is loaded with new model.
+   */
   adjustRootFormProperty(): boolean {
     let ret = false;
-    console.log('FormFieldsComponent.adjustRootFormProperty(): this.ngxForm:', this.itemForm);
     const rootProperty = this.itemForm?.rootProperty;
     // Emit the value after any adjustments.
     // Set '__$codeYesNo' to true, when 'code' is present. The default is false.
     if(!Util.isEmpty(rootProperty?.searchProperty('/code').value)) {
       // Loading is done. Change of value should emit the value in valueChanged().
-      console.log('FormFieldsComponent.adjustRootFormProperty(): setValue() for __$codYesNo:');
       rootProperty?.searchProperty('/__$codeYesNo').setValue(true, false);
       ret = true;
     }
@@ -180,9 +181,5 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit, OnDestr
       errors = null;
     }
     return errors;
-  }
-
-  ngOnDestroy() {
-    console.log('SfFormWrapperComponent.ngOnDestroy()');
   }
 }

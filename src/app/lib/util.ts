@@ -271,6 +271,7 @@ export class Util {
     traverse(value).forEach(function (node) {
       this.before(function () {
         if(node && Array.isArray(node) && node.includes(undefined)) {
+          // Remove empty elements from array. They do not trigger callbacks.
           this.update(node.filter(()=>{return true}));
         }
         else if (node?.__$helpText?.trim().length > 0) {

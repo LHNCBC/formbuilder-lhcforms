@@ -177,6 +177,11 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
     });
   }
 
+  /**
+   * Handle booleanControlled event.
+   * @param event - Angular event emitted value.
+   */
+
   onBooleanControlledChange(event: boolean) {
     this.booleanControlledOption = event;
   }

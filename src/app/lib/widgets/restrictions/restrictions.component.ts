@@ -159,6 +159,10 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     });
   }
 
+  /**
+   * Handle booleanControlled change event.
+   * @param event - Angular event emitted value.
+   */
   onBooleanControlledChange(event: boolean) {
     super.onBooleanControlledChange(event);
     if(this.booleanControlledOption) {
