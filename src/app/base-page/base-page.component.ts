@@ -5,7 +5,7 @@ import {
   EventEmitter,
   Input,
   OnDestroy,
-  OnInit,
+  AfterViewInit,
   Output, TemplateRef,
   ViewChild
 } from '@angular/core';
@@ -38,7 +38,7 @@ type ExportType = 'CREATE' | 'UPDATE';
   styleUrls: ['./base-page.component.css'],
   providers: [NgbActiveModal]
 })
-export class BasePageComponent implements OnDestroy {
+export class BasePageComponent implements AfterViewInit, OnDestroy {
 
   private unsubscribe = new Subject<void>();
   @Input()
@@ -79,19 +79,6 @@ export class BasePageComponent implements OnDestroy {
     }
 
     this.acceptTermsOfUse = sessionStorage.acceptTermsOfUse === 'true';
-    if(!this.acceptTermsOfUse) {
-      this.modalService.open(
-        LoincNoticeComponent,{size: 'lg', centered: true, keyboard: false, backdrop: 'static'}
-      ).result
-        .then(
-          (result) => {
-            this.acceptTermsOfUse = result;
-            sessionStorage.acceptTermsOfUse = result;
-          },
-          (reason) => {
-            console.error(reason);
-          });
-    }
 
     this.formSubject.asObservable().pipe(
       debounceTime(500),
@@ -105,6 +92,22 @@ export class BasePageComponent implements OnDestroy {
     });
 
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
+  }
+
+  ngAfterViewInit() {
+    if(!this.acceptTermsOfUse) {
+      this.modalService.open(
+        LoincNoticeComponent,{size: 'lg', container: 'body > lfb-root', keyboard: false, backdrop: 'static'}
+      ).result
+        .then(
+          (result) => {
+            this.acceptTermsOfUse = result;
+            sessionStorage.acceptTermsOfUse = result;
+          },
+          (reason) => {
+            console.error(reason);
+          });
+    }
   }
 
   /**
