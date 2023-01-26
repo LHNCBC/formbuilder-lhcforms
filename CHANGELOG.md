@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.10] 2023-01-25
+### Changed
+- Display LOINC terms of use acceptance dialog after displaying home page.
+
 ## [8.0.9] 2023-01-09
 ### Fixed
 - Fix screen reader announcing blank on tooltip icons.
