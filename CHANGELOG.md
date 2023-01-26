@@ -2,16 +2,17 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [8.0.10] 2023-01-19
+## [8.0.11] 2023-01-26
 ### Added
 - Added support for answerValueSet field.
 - Added display column to code field.
 
-### Changed
-- Moved display of LOINC terms of use dialog to home page.
-
 ### Fixed
 - Fixed visibleIf issue with answerOption and code when visibility is false.
+
+## [8.0.10] 2023-01-25
+### Changed
+- Display LOINC terms of use acceptance dialog after displaying home page.
 
 ## [8.0.9] 2023-01-09
 ### Fixed
