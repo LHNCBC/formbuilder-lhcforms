@@ -35,6 +35,7 @@ import {ObservationExtractComponent} from './widgets/observation-extract/observa
 import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 import {QuantityUnitComponent} from './widgets/quantity-unit/quantity-unit.component';
 import {NumberComponent} from './widgets/number/number.component';
+import {TerminologyServerComponent} from './widgets/terminology-server/terminology-server.component';
 
 
 @Injectable()
@@ -72,5 +73,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('observation-link-period', ObservationLinkPeriodComponent);
     this.register('observation-extract', ObservationExtractComponent);
     this.register('quantity-unit', QuantityUnitComponent);
+    this.register('terminology-server', TerminologyServerComponent);
   }
 }

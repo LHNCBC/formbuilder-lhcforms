@@ -1,0 +1,21 @@
+<ng-container>
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label *ngIf="!nolabel"
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelWidthClass + ' pl-0 pr-1'"
+    ></lfb-label>
+    <div class="col-sm-10 row m-0 p-0">
+      <div ngbRadioGroup [ngModel]="yesNo" (ngModelChange)="onBooleanChange($event)" class="form-check-inline btn-group btn-group-sm btn-group-toggle" >
+        <label *ngFor="let option of ['Yes', 'No']" ngbButtonLabel class="btn-outline-success"
+               [attr.id]="id + '_' + option"><input ngbButton type="radio" [value]="option === 'Yes'">{{option}}</label>
+      </div>
+      <input *ngIf="yesNo" [name]="name" [attr.readonly]="schema.readOnly ? true : null"
+             class="text-widget.id textline-widget form-control"
+             [attr.type]="url"
+             [attr.id]="id" [formControl]="control" [attr.placeholder]="schema.placeholder"
+             [disableControl]="schema.readOnly ? true : null">
+    </div>
+  </div>
+</ng-container>

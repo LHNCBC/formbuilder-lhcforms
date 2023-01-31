@@ -89,6 +89,7 @@ import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
+import { TerminologyServerComponent } from './lib/widgets/terminology-server/terminology-server.component';
 
 @NgModule({
   declarations: [
@@ -153,7 +154,8 @@ import { ObservationExtractComponent } from './lib/widgets/observation-extract/o
     NumberComponent,
     IntegerDirective,
     AnswerOptionMethodsComponent,
-    ObservationExtractComponent
+    ObservationExtractComponent,
+    TerminologyServerComponent
   ],
   imports: [
     AppRoutingModule,

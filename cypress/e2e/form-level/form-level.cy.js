@@ -135,11 +135,11 @@ describe('Home page', () => {
       cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
-      cy.get('@ethnicity').scrollIntoView().type('lat');
+      cy.get('@ethnicity').scrollIntoView().type('l');
       cy.get('#completionOptions').should('be.visible', true);
       cy.get('@ethnicity').type('{downarrow}');
       cy.get('@ethnicity').type('{enter}');
-      cy.get('span.autocomp_selected').contains('Latin American');
+      cy.get('span.autocomp_selected').contains('La Raza');
       cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
     });
 
