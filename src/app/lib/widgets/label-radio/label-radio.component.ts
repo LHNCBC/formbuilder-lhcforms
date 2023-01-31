@@ -6,7 +6,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 
 @Component({
   selector: 'lfb-label-radio',
-  templateUrl: '../label-radio/label-radio.component.html'
+  templateUrl: './label-radio.component.html'
 })
 export class LabelRadioComponent extends LfbControlWidgetComponent {
 

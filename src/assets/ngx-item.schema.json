@@ -971,9 +971,17 @@
     "__$answerOptionMethods": {
       "description": "Define predefined answers for the user to choose.",
       "title": "Predefined answers",
-      "enum": [
-        "answer-option",
-        "value-set"
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["answer-option"],
+          "title": "Answer options"
+        },
+        {
+          "type": "string",
+          "enum": ["value-set"],
+          "title": "Answer value set uri"
+        }
       ],
       "default": "answer-option",
       "type": "string",
@@ -989,7 +997,7 @@
     },
     "answerValueSet": {
       "description": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question.",
-      "title": "Answer Valueset",
+      "title": "Answer value set",
       "pattern": "^\\S*$",
       "type": "string",
       "visibleIf": {
