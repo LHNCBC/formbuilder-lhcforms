@@ -7,7 +7,7 @@ import {Observable, of} from 'rxjs';
 import {catchError, map, tap} from 'rxjs/operators';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 import {Util} from '../lib/util';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 declare var LForms: any;
 
 enum JsonFormatType {

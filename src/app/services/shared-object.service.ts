@@ -3,7 +3,7 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 
 @Injectable({
   providedIn: 'root'

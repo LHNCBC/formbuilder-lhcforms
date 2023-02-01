@@ -1,6 +1,6 @@
 import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {TreeService} from '../../../services/tree.service';
 import {Subscription} from 'rxjs';

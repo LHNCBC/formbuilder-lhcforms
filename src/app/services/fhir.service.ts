@@ -2,16 +2,17 @@ import {Injectable, Type} from '@angular/core';
 import Client from 'fhirclient/lib/Client';
 import * as FHIR from 'fhirclient';
 import {defer, from, Observable} from 'rxjs';
-import { fhir } from '../fhir';
+import fhir from 'fhir/r4';
 import {fhirclient} from 'fhirclient/lib/types';
 import Resource = fhirclient.FHIR.Resource;
+import {fhirPrimitives} from '../fhir';
 
 export interface FHIRServer {
   // resultsOffset: number;
   // pageSize: number;
   id?: number;
   displayName?: string;
-  endpoint: fhir.uri;
+  endpoint: fhirPrimitives.url;
   desc?: string;
   version?: string;
 }
@@ -157,7 +158,7 @@ export class FhirService {
      * @param url - The URL referring to the resource bundle on the FHIR server.
      * @returns - FHIR resource bundle
      */
-    getBundleByUrl(url: fhir.uri): Observable<fhir.Bundle> {
+    getBundleByUrl(url: fhirPrimitives.url): Observable<fhir.Bundle> {
       return this.promiseToObservable(this.smartClient.request(url));
     };
 
@@ -250,7 +251,7 @@ export class FhirService {
    * Find out if a fhir server object exists for a base url.
    * @param endpoint - Base url to search.
    */
-  hasFhirServer(endpoint: fhir.uri): boolean {
+  hasFhirServer(endpoint: fhirPrimitives.url): boolean {
     return this.fhirServerList.some((server) => {
       return server.endpoint === endpoint;
     });

@@ -27,7 +27,7 @@ import {NgbActiveModal, NgbDropdown, NgbModal, NgbModalRef} from '@ng-bootstrap/
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {debounceTime, distinctUntilChanged, switchMap,} from 'rxjs/operators';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {TreeService} from '../services/tree.service';
 import {faEllipsisH, faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {environment} from '../../environments/environment';

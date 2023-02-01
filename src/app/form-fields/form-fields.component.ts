@@ -12,7 +12,7 @@ import {FetchService} from '../services/fetch.service';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
-import { fhir } from '../fhir';
+import fhir from 'fhir/r4';
 import {Util} from '../lib/util';
 import {FormComponent, FormProperty} from '@lhncbc/ngx-schema-form';
 

@@ -4,7 +4,7 @@
 import {Injectable} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@bugsplat/angular-tree-component';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {Observable, Subject} from 'rxjs';

@@ -7,14 +7,14 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {UnitsComponent} from '../units/units.component';
 import {Subscription} from 'rxjs';
-import {fhir} from '../../../fhir';
-import integer = fhir.integer;
+import fhir from 'fhir/r4';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {StringComponent} from '../string/string.component';
+import {fhirPrimitives} from '../../../fhir';
 
 
 interface ObservationLinkPeriodExtension {
-  url: fhir.uri,
+  url: fhirPrimitives.url,
   valueDuration: {
     value: number,
     system?: string,
@@ -30,11 +30,11 @@ interface ObservationLinkPeriodExtension {
   styleUrls: ['./observation-link-period.component.css']
 })
 export class ObservationLinkPeriodComponent extends StringComponent implements OnInit {
-  static extUrl: fhir.uri = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
+  static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
   static seqNum = 0;
   elementId: string;
   subscriptions: Subscription [];
-  unitIndex: integer = 0;
+  unitIndex: fhirPrimitives.integer = 0;
   value: string;
   adjustVAlignClass = 'd-flex';
 

@@ -10,7 +10,7 @@ import {
   ViewChild
 } from '@angular/core';
 import {FormService} from '../services/form.service';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {BehaviorSubject, from, Observable, of, Subject} from 'rxjs';
 import {catchError, debounceTime, distinctUntilChanged, finalize, mergeMap, switchMap, takeUntil} from 'rxjs/operators';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';

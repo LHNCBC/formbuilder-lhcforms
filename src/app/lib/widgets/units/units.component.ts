@@ -1,10 +1,11 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import Def from 'autocomplete-lhc';
 import {Subscription} from 'rxjs';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
+import {fhirPrimitives} from '../../../fhir';
 
 interface UnitExtension {
   url: string,
@@ -174,7 +175,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param code - Code of the coding.
    * @param display - Display text of the coding.
    */
-  createUnitExt(unitsExtUrl: fhir.uri, system: fhir.uri, code: string, display: string): fhir.Extension {
+  createUnitExt(unitsExtUrl: fhirPrimitives.url, system: fhirPrimitives.url, code: string, display: string): fhir.Extension {
     const ret: UnitExtension =
       {
         url: unitsExtUrl,
