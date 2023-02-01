@@ -3,7 +3,7 @@
  */
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import traverse from 'traverse';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 

@@ -5,7 +5,7 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',

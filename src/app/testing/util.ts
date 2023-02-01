@@ -1,6 +1,7 @@
 import {ENTER} from '@angular/cdk/keycodes';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {DebugElement} from '@angular/core';
+import {fhirPrimitives} from '../fhir';
 
 /**
  * Define bundle options
@@ -9,8 +10,8 @@ export interface BundleOptions {
   total: number;
   offset?: number;
   pageSize?: number;
-  baseUrl?: fhir.uri;
-  linkRelationUrl?: fhir.uri; // If present, implies create bundle based on the link url, such as next or prev relation.
+  baseUrl?: fhirPrimitives.url;
+  linkRelationUrl?: fhirPrimitives.url; // If present, implies create bundle based on the link url, such as next or prev relation.
 }
 
 /**
@@ -52,10 +53,11 @@ export class TestUtil {
    *   create appropriate results bundle.
    */
   static createDummySearchBundle(
-    // {total: number, offset: number = 0, pageSize: number = 20, baseUrl: fhir.uri = 'https://lforms-fhir.nlm.nih.gov/baseR4'}
+    // {total: number, offset: number = 0, pageSize: number = 20, baseUrl: fhirPrimitives.url = 'https://lforms-fhir.nlm.nih.gov/baseR4'}
     options: BundleOptions
     ): fhir.Bundle {
     const ret: fhir.Bundle = {
+      resourceType: 'Bundle',
       type: 'searchset',
       total: options.total,
       entry: [],
@@ -65,7 +67,7 @@ export class TestUtil {
     let total: number;
     let pageSize: number;
     let offset: number;
-    let baseUrl: fhir.uri;
+    let baseUrl: fhirPrimitives.url;
 
     const urlObj = options.linkRelationUrl ? new URL(options.linkRelationUrl) : null;
     if(urlObj) {

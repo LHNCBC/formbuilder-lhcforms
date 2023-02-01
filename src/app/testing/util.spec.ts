@@ -1,5 +1,5 @@
 import {TestUtil, BundleOptions} from './util';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 
 describe('Test util', () => {
   let dummyBundle: fhir.Bundle;

@@ -66,7 +66,6 @@ import { UserSpecifiedServerDlgComponent } from './lib/widgets/user-specified-se
 import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
-import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
 import { RuleEditorModule } from 'rule-editor';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
@@ -132,7 +131,6 @@ import { ObservationExtractComponent } from './lib/widgets/observation-extract/o
     FhirSearchDlgComponent,
     BooleanRadioComponent,
     UnitsComponent,
-    ExtensionsComponent,
     AnswerOptionComponent,
     InitialComponent,
     HelpTextComponent,
