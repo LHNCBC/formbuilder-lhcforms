@@ -9,7 +9,7 @@ environment. You can make a similar rc file to suit your shell. Please make sure
 path for the rest of the installation. 
 
         $ cd formbuilder-lhcforms
-        $ npm i && npm run create-version-file
+        $ npm ci && npm run create-version-file
         $ source bashrc.formbuilder
         
 1. Start formbuilder server for development.
