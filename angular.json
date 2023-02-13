@@ -154,5 +154,8 @@
       }
     }
   },
-  "defaultProject": "formbuilder-lhcforms"
+  "defaultProject": "formbuilder-lhcforms",
+  "cli": {
+    "analytics": false
+  }
 }
