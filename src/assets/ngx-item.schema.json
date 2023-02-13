@@ -1297,10 +1297,12 @@
     },
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
-      "title": "Preferred terminology server",
+      "title": "Terminology server",
       "type": "string",
       "widget": {
         "id": "terminology-server",
+        "placeholder": "Enter url for preferred terminology server",
+        "note": "You may wish to set this if you have set an answer value set for either this item or its children.",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2",
         "controlWidthClass": "col-sm-10"

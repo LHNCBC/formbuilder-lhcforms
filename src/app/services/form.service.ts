@@ -36,13 +36,16 @@ export class FormService {
   private _itemEditorSchema: any = {properties: {}};
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
-    ngxItemSchema.definitions.Extension = fhirExtensionSchema as any;
-    this._updateExtension(ngxItemSchema);
+    [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
+      if(!obj.schema.definitions) {
+        obj.schema.definitions = {};
+      }
+      obj.schema.definitions.Extension = fhirExtensionSchema as any;
+      this._updateExtension(obj.schema);
+      obj.schema.layout = obj.layout;
+    });
     this.itemSchema = ngxItemSchema;
-    this.itemSchema.layout = itemLayout;
-
     this.flSchema = ngxFlSchema;
-    this.flSchema.layout = flLayout;
     this._itemEditorSchema = itemEditorSchema;
   }
 

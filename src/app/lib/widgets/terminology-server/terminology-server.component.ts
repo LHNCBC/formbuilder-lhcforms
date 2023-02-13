@@ -1,56 +1,66 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
-import {fhir} from '../../../fhir';
+import {Subscription} from 'rxjs';
+import fhir from '../../../fhir';
 
 @Component({
   selector: 'lfb-terminology-server',
   templateUrl: './terminology-server.component.html',
   styleUrls: ['./terminology-server.component.css']
 })
-export class TerminologyServerComponent extends LfbControlWidgetComponent implements OnInit {
+export class TerminologyServerComponent extends LfbControlWidgetComponent implements OnInit, OnDestroy {
 
   static PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
-  yesNo = false;
-  url: fhir.uri = null;
-  extension: fhir.Extension = {
-    url: TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
-  };
-  constructor(private extensionService: ExtensionsService) {
+  subscriptions: Subscription[] = [];
+  tsExtension: fhir4.Extension = {
+    url: TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
+    valueUrl: ''
+  }
+
+  constructor(private extensionService: ExtensionsService, private cdr: ChangeDetectorRef) {
     super();
   }
 
-  ngOnInit(): void {
-    const url = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
-    this.formProperty.setValue(url, true);
-    this.yesNo = !!this.formProperty.value;
-    this.formProperty.valueChanges.subscribe((val) => {
-      this.updateExtension();
-    });
-    this.extensionService.extensionsObservable.subscribe((extensions) => {
+  ngOnInit() {
+    const ext = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
+    if(ext?.valueUrl) {
+      this.tsExtension.valueUrl = ext.valueUrl;
+    }
+    const subscription = this.extensionService.extensionsObservable.subscribe((extensions) => {
       const tsExt = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
-      if(tsExt && tsExt.valueUri !== this.formProperty.value) {
-        this.formProperty.setValue(tsExt.valueUri, true);
+      if(tsExt?.valueUrl) {
+        this.tsExtension.valueUrl = tsExt.valueUrl;
+      }
+      else {
+        this.tsExtension.valueUrl = '';
       }
     });
+    this.subscriptions.push(subscription);
   }
 
+  urlChanged(url) {
+    this.tsExtension.valueUrl = url.trim();
+    this.updateExtension();
+  }
   updateExtension() {
-    const url = this.formProperty.value;
-    if(!!url && this.yesNo) {
-      this.extension.valueUri = url;
+    const url = this.tsExtension.valueUrl.trim();
+    if(!!url) {
+      this.tsExtension.valueUrl = url;
       this.extensionService.resetExtension(
-        TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
-        this.extension,
-        'url',
+        this.tsExtension.url,
+        this.tsExtension,
+        'valueUrl',
         false);
     }
     else {
-      this.extensionService.removeExtensionsByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
+      this.extensionService.removeExtensionsByUrl(this.tsExtension.url);
     }
   }
-  onBooleanChange(event: boolean) {
-    this.yesNo = event;
-    this.updateExtension();
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
+    });
   }
 }

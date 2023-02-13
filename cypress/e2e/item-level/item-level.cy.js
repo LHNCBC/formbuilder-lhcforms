@@ -433,6 +433,14 @@ describe('Home page', () => {
       });
     });
 
+    it('should create terminology server extension', () => {
+      cy.assertTerminologyServerField('item');
+    });
+
+    it('should import a form with terminology server extension', () => {
+      cy.assertImportOfTerminologyServerSample('item');
+    });
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');

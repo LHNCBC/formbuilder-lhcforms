@@ -29,6 +29,8 @@ import * as fhirServerMocks from "./mocks/fhir-server-mocks";
 /**
  * Load home page and wait until LForms is loaded.
  */
+const terminologyServerExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
+
 Cypress.Commands.add('loadHomePage',() => {
   cy.goToHomePage();
   cy.loincAccepted().then((flag) => {
@@ -384,3 +386,81 @@ Cypress.Commands.add('clickTreeNode', (nodeText) => {
   cy.getTreeNode(nodeText).click();
   cy.contains('#itemContent span', nodeText);
 });
+
+/**
+Look for extension field and return all that match the url.
+ @param extensionsArray: Array of extensions.
+ @param url: URL of the desired extensions.
+
+ */
+Cypress.Commands.add('getExtensions', (extensionsArray, url) => {
+  return extensionsArray?.filter((ext) => ext.url === url);
+});
+
+/**
+ * Test terminology server field. This is used in both form level and item level forms.
+ * @param formOrItem: 'form' | 'item'. Helps to make assertions on form level extension or item level extension.
+ */
+Cypress.Commands.add('assertTerminologyServerField', (formOrItem) => {
+  cy.get('[id="__$terminologyServer"]').as('tsUrl').should('be.visible');
+  cy.get('@tsUrl').type('http://example.org/fhir');
+  cy.questionnaireJSON().should((q) => {
+    const extensionsArray = formOrItem === 'item' ? q.item[0].extension : q.extension;
+    expect(extensionsArray[0]).to.deep.equal({url: terminologyServerExtUrl, valueUrl: 'http://example.org/fhir'});
+  });
+  cy.get('@tsUrl').clear();
+  cy.questionnaireJSON().should((q) => {
+    const extensionsArray = formOrItem === 'item' ? q.item[0].extension : q.extension;
+    expect(extensionsArray).to.be.undefined;
+  });
+  cy.get('@tsUrl').type('http://example.com/r4');
+  cy.questionnaireJSON().should((q) => {
+    const extensionsArray = formOrItem === 'item' ? q.item[0].extension : q.extension;
+    expect(extensionsArray[0]).to.deep.equal({url: terminologyServerExtUrl, valueUrl: 'http://example.com/r4'});
+  });
+});
+
+/**
+ * Test terminology server field with an imported form having the extensions.
+ * @param formOrItem: 'form' | 'item'. Helps to make assertions on form level extension or item level extension.
+ */
+Cypress.Commands.add('assertImportOfTerminologyServerSample', (formOrItem) => {
+  const sampleFile = 'terminology-server-sample.json';
+  const itemUrl = 'http://example.com/r4';
+  const formUrl = 'https://example.org/fhir'
+  const assertOriginalExtension = (extensionArray, valueUrl) => {
+    expect(extensionArray.length).to.equal(3); // One of three is terminology server.
+    const extensions = extensionArray.filter((e) => e.url === terminologyServerExtUrl);
+    expect(extensions.length).to.equal(1);
+    expect(extensions[0].valueUrl).to.equal(valueUrl);
+  };
+
+  cy.uploadFile(sampleFile, formOrItem !== 'form'); // Avoid warning form loading based on item or form
+  cy.get('#title').should('have.value', 'Terminology server sample form');
+  if(formOrItem === 'item') {
+    cy.contains('button', 'Edit questions').click();
+  }
+  cy.get('[id="__$terminologyServer"]').as('tsUrl').should('be.visible');
+  cy.get('@tsUrl').should('have.value', formOrItem === 'item' ? itemUrl : formUrl);
+  cy.questionnaireJSON().should((q) => {
+    const extensionArray = formOrItem === 'item' ? q.item[0].extension : q.extension;
+    const url = formOrItem === 'item' ? itemUrl : formUrl;
+    assertOriginalExtension(extensionArray, url);
+  });
+
+  cy.get('@tsUrl').clear();
+  cy.questionnaireJSON().should((q) => {
+    const extensionArray = formOrItem === 'item' ? q.item[0].extension : q.extension;
+    expect(extensionArray.length).to.equal(2); // Other extensions should be untouched.
+    const extensions = extensionArray.filter((e) => e.url === terminologyServerExtUrl);
+    expect(extensions.length).to.equal(0);
+  });
+
+  cy.get('@tsUrl').type('http://a.b');
+  cy.questionnaireJSON().should((q) => {
+    const extensionArray = formOrItem === 'item' ? q.item[0].extension : q.extension;
+    assertOriginalExtension(extensionArray, 'http://a.b');
+  });
+
+});
+

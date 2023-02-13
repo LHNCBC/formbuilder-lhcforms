@@ -14,7 +14,9 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
 import {Util} from '../lib/util';
-import {FormComponent, FormProperty} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormComponent, FormProperty} from '@lhncbc/ngx-schema-form';
+import {ExtensionsService} from '../services/extensions.service';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 
 @Component({
   selector: 'lfb-form-fields',
@@ -29,6 +31,7 @@ import {FormComponent, FormProperty} from '@lhncbc/ngx-schema-form';
                    [model]="questionnaire"
                    (onChange)="valueChanged($event)"
                    (modelReset)="onFormFieldsLoaded($event)"
+                   [validators]="validators"
           ></sf-form>
         </div>
         <hr/>
@@ -39,6 +42,7 @@ import {FormComponent, FormProperty} from '@lhncbc/ngx-schema-form';
       </div>
     </div>
   `,
+  providers: [ExtensionsService],
   styles: [`
     .content {
       padding: 0.5rem;
@@ -58,6 +62,19 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
 
   objectUrl: any;
 
+  /**
+   * Use validators to set up extensions service.
+   */
+  validators = {
+    '/extension': (value, arrayProperty: ArrayProperty, rootProperty: PropertyGroup) => {
+      const formPropertyChanged = arrayProperty !== this.extensionsService.extensionsProp;
+      if(formPropertyChanged) {
+        this.extensionsService.setExtensions(arrayProperty);
+      }
+      return null;
+    }
+  };
+
   @Output()
   state = new EventEmitter<string>();
   @Output()
@@ -68,7 +85,8 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
     private http: HttpClient,
     private dataSrv: FetchService,
     private modal: NgbModal,
-    private formService: FormService
+    private formService: FormService,
+    private extensionsService: ExtensionsService
   ) {
     this.qlSchema = this.formService.getFormLevelSchema();
   }

@@ -102,7 +102,7 @@ describe('Home page', () => {
     });
 
     it('should move to form level fields', () => {
-      cy.get('lfb-form-fields div div p').should('have.text', 'Enter basic information about the form.');
+      cy.get('lfb-form-fields > div > div > p').should('have.text', 'Enter basic information about the form.');
     })
 
     it('should hide/display code field', () => {
@@ -164,6 +164,14 @@ describe('Home page', () => {
       cy.FHIRServerResponse('Update').should((json) => {
         expect(json.title).equal('Modified title');
       });
+    });
+
+    it('should create terminology server extension', () => {
+      cy.assertTerminologyServerField('form');
+    });
+
+    it('should import form with terminology server extension at form level', () => {
+      cy.assertImportOfTerminologyServerSample('form');
     });
   });
 
