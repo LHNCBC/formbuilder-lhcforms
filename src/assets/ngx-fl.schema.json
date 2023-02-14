@@ -1723,12 +1723,13 @@
       "type": "object"
     },
     "__$codeYesNo": {
-      "description": "",
+      "description": "An identifier for this question or group of questions in a particular terminology such as LOINC.",
       "default": false,
       "type": "boolean",
-      "title": "Use code?",
+      "title": "Code",
       "widget": {
         "id": "boolean-radio",
+        "optionLabels": [[false, "No code"], [true, "Include code"]],
         "labelWidthClass": "col-sm-2",
         "controlWidthClass": "col-sm-10"
       }

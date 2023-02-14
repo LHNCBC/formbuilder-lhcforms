@@ -56,7 +56,7 @@ describe('Home page', () => {
       cy.get('ngb-typeahead-window').should('be.visible');
       cy.get('ngb-typeahead-window button').first().click();
       cy.get('#title').should('have.value', 'Vital signs with method details panel');
-      cy.get('[id^="booleanRadio_Yes"]').should('have.class', 'active');
+      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
       cy.get('[id^="code.0.code"]').should('have.value', '34566-0');
     });
 
@@ -68,7 +68,7 @@ describe('Home page', () => {
       cy.fhirSearch(titleSearchTerm);
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
-      cy.get('[id^="booleanRadio_Yes"]').should('have.class', 'active');
+      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
       cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });
@@ -82,12 +82,12 @@ describe('Home page', () => {
 
     beforeEach(() => {
       cy.resetForm();
-      cy.get('[id^="booleanRadio_Yes"]').find('[type="radio"]').as('codeYes');
-      cy.get('[id^="booleanRadio_No"]').find('[type="radio"]').as('codeNo');
+      cy.get('[id^="booleanRadio_true"]').find('[type="radio"]').as('codeYes');
+      cy.get('[id^="booleanRadio_false"]').find('[type="radio"]').as('codeNo');
     });
 
     it('should include code only when use question code is yes (form level)', () => {
-      cy.contains('div', 'Use code?').should('be.visible').includeExcludeCodeField('form');
+      cy.contains('div', 'Code').should('be.visible').includeExcludeCodeField('form');
     });
 
     it('should retain title edits', () => {
@@ -292,7 +292,7 @@ describe('Home page', () => {
       cy.contains('div.modal-footer button', 'Continue').click();
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
-      cy.get('[id^="booleanRadio_Yes"]').should('have.class', 'active');
+      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
       cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });

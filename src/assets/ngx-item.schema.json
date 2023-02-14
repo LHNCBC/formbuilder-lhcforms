@@ -199,12 +199,13 @@
       }
     },
     "__$codeYesNo": {
-      "description": "",
+      "description": "A terminology code that corresponds to this group or question (e.g. a code from LOINC, which defines many questions and answers).",
       "default": false,
       "type": "boolean",
-      "title": "Use question code?",
+      "title": "Question code",
       "widget": {
         "id": "boolean-radio",
+        "optionLabels": [[false, "No code"], [true, "Include code"]],
         "labelWidthClass": "col-sm-2",
         "controlWidthClass": "col-sm-10"
       }
