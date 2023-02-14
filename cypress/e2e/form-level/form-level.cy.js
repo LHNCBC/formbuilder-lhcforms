@@ -185,7 +185,7 @@ describe('Home page', () => {
 
     beforeEach(() => {
       cy.contains('div.modal-footer button', 'Add your FHIR server').click();
-      cy.get('input[type="url"]').as('inputUrl');
+      cy.get('#urlInput').as('inputUrl');
       cy.contains('button', 'Validate').as('validate');
       cy.contains('lfb-user-server-dlg button', 'Add').as('add');
       cy.contains('lfb-user-server-dlg button', 'Cancel').as('cancel');
