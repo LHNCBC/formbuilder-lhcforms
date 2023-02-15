@@ -229,8 +229,8 @@ Cypress.Commands.add('addAnswerOptions', () => {
  */
 Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOptionElement, formOrItem) => {
   const formTesting = formOrItem === 'form' ? true : false;
-  cy.wrap(codeOptionElement).find('[id^="booleanRadio_Yes"]').as('codeYes');
-  cy.wrap(codeOptionElement).find('[id^="booleanRadio_No"]').as('codeNo');
+  cy.wrap(codeOptionElement).find('[id^="booleanRadio_true"]').as('codeYes');
+  cy.wrap(codeOptionElement).find('[id^="booleanRadio_false"]').as('codeNo');
   cy.get('@codeNo').should('have.class', 'active');
   cy.questionnaireJSON().should((q) => {
     const jsonCode = formTesting ? q.code : q.item[0].code;
@@ -388,10 +388,10 @@ Cypress.Commands.add('clickTreeNode', (nodeText) => {
 });
 
 /**
-Look for extension field and return all that match the url.
- @param extensionsArray: Array of extensions.
- @param url: URL of the desired extensions.
-
+ * Look for extension field and return all that match the url.
+ *
+ * @param extensionsArray: Array of extensions.
+ * @param url: URL of the desired extensions.
  */
 Cypress.Commands.add('getExtensions', (extensionsArray, url) => {
   return extensionsArray?.filter((ext) => ext.url === url);
