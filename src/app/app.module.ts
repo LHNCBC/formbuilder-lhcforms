@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
+import {ApplicationRef, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, NgModule} from '@angular/core';
 import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
 
 import { AppComponent } from './app.component';
@@ -187,7 +187,17 @@ import { TerminologyServerComponent } from './lib/widgets/terminology-server/ter
     MatDialogModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe],
-  bootstrap: [AppComponent]
+  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe]
 })
-export class AppModule { }
+export class AppModule implements DoBootstrap {
+  ngDoBootstrap(appRef: ApplicationRef) {
+    // bootstrap AppComponent ourselves
+    appRef.bootstrap(AppComponent)
+    // @ts-ignore
+    if (window.Cypress) {
+      // and save the application reference!
+      // @ts-ignore
+      window.appRef = appRef
+    }
+  }
+}

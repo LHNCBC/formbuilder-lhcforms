@@ -1,5 +1,8 @@
 /// <reference types="cypress" />
-import * as fhirServerMocks from '../../support/mocks/fhir-server-mocks';
+
+import {CypressUtil} from '../../support/cypress-util'
+import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
+
 describe('Home page accept LOINC notice', () => {
   before(() => {
     cy.clearSession();
@@ -167,11 +170,51 @@ describe('Home page', () => {
     });
 
     it('should create terminology server extension', () => {
-      cy.assertTerminologyServerField('form');
+      cy.get('[id="__$terminologyServer"]').as('tsUrl').should('be.visible');
+      cy.get('@tsUrl').type('http://example.org/fhir');
+      CypressUtil.assertValueInQuestionnaire('/extension',
+        [{
+          valueUrl: 'http://example.org/fhir',
+          url: ExtensionDefs.preferredTerminologyServer.url
+        }]);
+      cy.get('@tsUrl').clear();
+      CypressUtil.assertValueInQuestionnaire('/extension', undefined);
+      cy.get('@tsUrl').type('http://example.com/r4');
+      CypressUtil.assertValueInQuestionnaire('/extension',
+        [{
+          url: ExtensionDefs.preferredTerminologyServer.url,
+          valueUrl: 'http://example.com/r4'
+        }]);
     });
 
     it('should import form with terminology server extension at form level', () => {
-      cy.assertImportOfTerminologyServerSample('form');
+      const sampleFile = 'terminology-server-sample.json';
+      cy.uploadFile(sampleFile, false); // Avoid warning form loading based on item or form
+      cy.get('#title').should('have.value', 'Terminology server sample form');
+      cy.get('[id="__$terminologyServer"]').as('tsUrl').should('be.visible');
+      cy.get('@tsUrl').should('have.value', 'https://example.org/fhir');
+      CypressUtil.assertExtensionsInQuestionnaire(
+        '/extension',
+        ExtensionDefs.preferredTerminologyServer.url,
+        [{
+          url: ExtensionDefs.preferredTerminologyServer.url,
+          valueUrl: 'https://example.org/fhir'
+        }]
+      );
+
+      cy.get('@tsUrl').clear();
+      CypressUtil.assertExtensionsInQuestionnaire(
+        '/extension', ExtensionDefs.preferredTerminologyServer.url,[]);
+
+      cy.get('@tsUrl').type('http://a.b');
+      CypressUtil.assertExtensionsInQuestionnaire(
+        '/extension',
+        ExtensionDefs.preferredTerminologyServer.url,
+        [{
+          url: ExtensionDefs.preferredTerminologyServer.url,
+          valueUrl: 'http://a.b'
+        }]
+      );
     });
   });
 

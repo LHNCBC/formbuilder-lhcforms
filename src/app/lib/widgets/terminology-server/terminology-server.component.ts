@@ -39,13 +39,21 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
     this.subscriptions.push(subscription);
   }
 
+  /**
+   * Angular event handler for the url input.
+   * @param url - The value emitted.
+   */
   urlChanged(url) {
     this.tsExtension.valueUrl = url.trim();
     this.updateExtension();
   }
+
+  /**
+   * Update the extension with changes in the url value.
+   */
   updateExtension() {
     const url = this.tsExtension.valueUrl.trim();
-    if(!!url) {
+    if(url) {
       this.tsExtension.valueUrl = url;
       this.extensionService.resetExtension(
         this.tsExtension.url,
