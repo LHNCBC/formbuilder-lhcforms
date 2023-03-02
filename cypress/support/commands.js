@@ -391,3 +391,11 @@ Cypress.Commands.add('getExtensions', (extensionsArray, url) => {
   return extensionsArray?.filter((ext) => ext.url === url);
 });
 
+Cypress.Commands.add('advancedFields', () => {
+  return cy.contains('button', 'Advanced fields');
+});
+
+Cypress.Commands.add('tsUrl', () => {
+  return cy.get('[id="__$terminologyServer"]');
+});
+
