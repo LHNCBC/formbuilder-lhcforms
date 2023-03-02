@@ -54,7 +54,6 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
   state = new EventEmitter<string>();
   objectUrl: any;
   acResult: AutoCompleteResult = null;
-  @ViewChild('lhcFormPreview') previewEl: ElementRef;
   @ViewChild('fileInput') fileInputEl: ElementRef;
   @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
@@ -95,6 +94,11 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
+    // @ts-ignore
+    if(window.Cypress) {
+      // @ts-ignore
+      window.basePageComponent = this;
+    }
     if(!this.acceptTermsOfUse) {
       this.modalService.open(
         LoincNoticeComponent,{size: 'lg', container: 'body > lfb-root', keyboard: false, backdrop: 'static'}
