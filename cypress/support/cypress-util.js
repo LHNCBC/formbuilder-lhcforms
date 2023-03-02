@@ -40,7 +40,7 @@ export class CypressUtil {
   }
 
   /**
-   * Assert expected value in with value obtained in questionnaire json pointed by ptrInQuestionnaire.
+   * Assert expected value is equal to the value obtained in questionnaire json pointed by ptrInQuestionnaire.
    * @param ptrInQuestionnaire - JSON Pointer (as defined in RFC 6901) into questionnaire json.
    * @param expectedValue - Expected value to assert.
    */
