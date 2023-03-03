@@ -40,7 +40,7 @@ export class CypressUtil {
   }
 
   /**
-   * Assert expected value in with value obtained in questionnaire json pointed by ptrInQuestionnaire.
+   * Assert expected value is equal to the value obtained in questionnaire json pointed by ptrInQuestionnaire.
    * @param ptrInQuestionnaire - JSON Pointer (as defined in RFC 6901) into questionnaire json.
    * @param expectedValue - Expected value to assert.
    */
@@ -55,7 +55,7 @@ export class CypressUtil {
    *
    * @param extensionPtrInQuestionnaire - json pointer pointing to an extension field in questionnaire json.
    * @param matchingExtUrl - URI of the extension to assert. This should point to extension field in the questionnaire.
-   * @param expectedValue - Matching value to assert the selected extension array.
+   * @param expectedValue - Matching value to assert equal to the selected extension array.
    */
   static assertExtensionsInQuestionnaire(extensionPtrInQuestionnaire, matchingExtUrl, expectedValue) {
     cy.questionnaireJSON().should((q) => {
