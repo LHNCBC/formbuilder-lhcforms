@@ -1,8 +1,9 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {Subscription} from 'rxjs';
 import fhir from '../../../fhir';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
 
 @Component({
   selector: 'lfb-terminology-server',
@@ -18,8 +19,17 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
     valueUrl: ''
   }
 
-  constructor(private extensionService: ExtensionsService, private cdr: ChangeDetectorRef) {
+  @ViewChild('hint', {read: ElementRef}) hintEl: ElementRef;
+
+  constructor(private extensionService: ExtensionsService, private liveAnnouncer: LiveAnnouncer) {
     super();
+  }
+
+  /**
+   * Announce hint text. Used on focus event of input element.
+   */
+  announceHint() {
+    this.liveAnnouncer.announce(this.hintEl.nativeElement.textContent);
   }
 
   ngOnInit() {
