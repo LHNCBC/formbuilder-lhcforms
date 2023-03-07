@@ -54,7 +54,7 @@ export class CypressUtil {
    * Assert extensions (array of extensions) which match a given extension uri.
    *
    * @param extensionPtrInQuestionnaire - json pointer pointing to an extension field in questionnaire json.
-   * @param matchingExtUrl - URI of the extension to assert. This should point to extension field in the questionnaire.
+   * @param matchingExtUrl - URI of the extension to assert. This should represent the extension(s) field in the questionnaire.
    * @param expectedValue - Matching value to assert equal to the selected extension array.
    */
   static assertExtensionsInQuestionnaire(extensionPtrInQuestionnaire, matchingExtUrl, expectedValue) {
