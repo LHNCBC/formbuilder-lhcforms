@@ -679,7 +679,7 @@ describe('Home page', () => {
         cy.advancedFields().click();
         cy.tsUrl().should('be.visible'); // Proof of advanced panel expansion
       });
-      it('should work conditional display with answer coding source', () => {
+      it('should support conditional display with answer coding source', () => {
         cy.addAnswerOptions();
         cy.contains('Add new item').scrollIntoView().click();
         cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
