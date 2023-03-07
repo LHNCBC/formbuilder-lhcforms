@@ -17,10 +17,12 @@ import {faAngleUp} from '@fortawesome/free-solid-svg-icons';
     </div>
     <div class="d-flex pt-3">
       <button class="btn btn-link text-decoration-none pl-0 font-weight-bold" (click)="collapse.toggle()"
+              [attr.aria-expanded]="!collapseAdvanced"
+              aria-controls="collapseExample"
         >Advanced fields <fa-icon [icon]="collapseAdvanced ? faDown : faUp" aria-hidden="true"></fa-icon>
       </button>
     </div>
-    <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced">
+    <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced" id="advancedFields">
       <hr>
       <div *ngFor="let row of advancedRows">
         <div [class]="gridClass(field)" class="lfb-row" [ngClass]="{hideRow: isHidden(field)}" *ngFor="let field of getShowFields(row)">
