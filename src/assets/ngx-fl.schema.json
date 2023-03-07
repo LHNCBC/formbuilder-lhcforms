@@ -1834,7 +1834,7 @@
       "widget": {
         "id": "terminology-server",
         "placeholder": "Enter url for preferred terminology server",
-        "note": "You may wish to set this if you want to use an answer value set for any item in this questionnaire.",
+        "note": "You may wish to set this if you want to provide an answer value set for any item in this questionnaire.",
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2",
         "controlWidthClass": "col-sm-10"
