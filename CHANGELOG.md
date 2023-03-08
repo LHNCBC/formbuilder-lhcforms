@@ -2,13 +2,16 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [8.0.11] 2023-01-26
+## [8.0.11] 2023-03-08
 ### Added
 - Added support for answerValueSet field.
 - Added display column to code field.
+- Added terminology server field to form level fields and item level fields.
+- Added collapse/expand panel for advanced fields.
 
 ### Changed
 - Changed code field labels.
+- Moved conditional display, observation link period, and observation extract fields to advanced panel.
 
 ### Fixed
 - Fixed visibleIf issue with answerOption and code when visibility is false.
