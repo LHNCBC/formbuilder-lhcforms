@@ -2,14 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [8.0.12] 2023-02-14
-### Changed
-- Changed code field labels.
-
 ## [8.0.11] 2023-01-26
 ### Added
 - Added support for answerValueSet field.
 - Added display column to code field.
+
+### Changed
+- Changed code field labels.
 
 ### Fixed
 - Fixed visibleIf issue with answerOption and code when visibility is false.
