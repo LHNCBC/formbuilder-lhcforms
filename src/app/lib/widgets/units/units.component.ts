@@ -31,12 +31,12 @@ interface UnitExtension {
     </div>
   `,
   styles: [`
-    ::ng-deep .autocomp_selected {
+    :host ::ng-deep .autocomp_selected {
       width: 100%;
       border: 0;
       padding: 0;
     }
-    ::ng-deep .autocomp_selected ul {
+    :host ::ng-deep .autocomp_selected ul {
       margin: 0;
     }
   `]

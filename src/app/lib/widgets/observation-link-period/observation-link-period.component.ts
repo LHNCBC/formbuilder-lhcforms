@@ -29,7 +29,7 @@ interface ObservationLinkPeriodExtension {
   templateUrl: './observation-link-period.component.html',
   styleUrls: ['./observation-link-period.component.css']
 })
-export class ObservationLinkPeriodComponent extends StringComponent implements AfterViewInit {
+export class ObservationLinkPeriodComponent extends StringComponent implements OnInit {
   static extUrl: fhir.uri = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
   static seqNum = 0;
   elementId: string;
@@ -59,17 +59,24 @@ export class ObservationLinkPeriodComponent extends StringComponent implements A
   /**
    * Read extension and initialize properties.
    */
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
+  ngOnInit() {
+    this.setOlp();
     this.extensionsService.extensionsObservable.subscribe(() => {
-      const ext = this.getExtension();
-      if(ext) {
-        this.showOlp = true;
-        this.adjustVAlignClass = '';
-        this.setUnitIndex(ext);
-        this.value = ''+ext.valueDuration.value;
-      }
+      this.setOlp();
     });
+  }
+
+  /**
+   * Setup Observation link period
+   */
+  setOlp() {
+    const ext = this.getExtension();
+    if(ext) {
+      this.showOlp = true;
+      this.adjustVAlignClass = '';
+      this.setUnitIndex(ext);
+      this.value = ''+ext.valueDuration.value;
+    }
   }
 
 

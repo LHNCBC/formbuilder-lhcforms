@@ -200,19 +200,13 @@
     },
     "__$codeYesNo": {
       "description": "",
-      "enum": [
-        "No",
-        "Yes"
-      ],
-      "default": "Yes",
-      "type": "string",
-      "title": "Use code(s)?",
+      "default": false,
+      "type": "boolean",
+      "title": "Use question code?",
       "widget": {
-        "id": "hidden",
-        "layout": "row",
-        "labelPosition": "left",
+        "id": "boolean-radio",
         "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-3"
+        "controlWidthClass": "col-sm-10"
       }
     },
     "code": {
@@ -292,9 +286,7 @@
       "type": "array",
       "title": "Code",
       "visibleIf": {
-        "allOf": [
-          {"type": ["$EXP$ target.value != 'display'"]}
-        ]
+        "__$codeYesNo": [true]
       },
       "widget": {
         "id": "table",
@@ -305,12 +297,10 @@
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
-        "booleanControlled": true,
-        "booleanLabel": "Use question code?",
-        "booleanControlledInitial": false,
         "showFields": [
-          {"field": "code", "col": 4, "nolabel": true},
-          {"field": "system", "col": 7, "nolabel": true}
+          {"field": "code", "col": 3, "nolabel": true},
+          {"field": "system", "col": 4, "nolabel": true},
+          {"field": "display", "col": 4, "nolabel": true}
         ]
       }
     },
@@ -978,14 +968,46 @@
         "controlWidthClass": "col-sm-10"
       }
     },
+    "__$answerOptionMethods": {
+      "description": "Define predefined answers for the user to choose.",
+      "title": "Predefined answers",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["answer-option"],
+          "title": "Answer options"
+        },
+        {
+          "type": "string",
+          "enum": ["value-set"],
+          "title": "Answer value set uri"
+        }
+      ],
+      "default": "answer-option",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+      },
+      "widget": {
+        "id": "answer-option-methods",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
+      }
+    },
     "answerValueSet": {
       "description": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question.",
       "title": "Answer value set",
       "pattern": "^\\S*$",
       "type": "string",
-      "widget": {"id": "hidden"},
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+        "/__$answerOptionMethods": ["value-set"]
+      },
+      "widget": {
+        "id": "url",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
       }
     },
     "answerOption": {
@@ -1250,7 +1272,7 @@
       "type": "array",
       "title": "Answer choices",
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+        "/__$answerOptionMethods": ["answer-option"]
       },
       "widget": {
         "id": "answer-option",
@@ -1579,7 +1601,7 @@
             "additionalProperties": false,
             "type": "object",
             "visibleIf": {
-              "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+              "/__$answerOptionMethods": ["answer-option"]
             },
             "widget": {
               "id": "hidden"
@@ -1734,7 +1756,7 @@
       "type": "array",
       "title": "Initial value",
       "visibleIf": {
-        "type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
+        "/type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
       },
       "widget": {
         "id": "initial",
@@ -5012,6 +5034,12 @@
       "fields": ["__$helpText"],
       "showFields": [
         { "field": "__$units", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["__$answerOptionMethods"],
+      "showFields": [
+        { "field": "__$answerOptionMethods", "col": 12 }
       ]
     },
     {

@@ -1,4 +1,4 @@
-<div class="page-defaults container bg-white">
+<div class="page-defaults container bg-white shadow">
     <lfb-header id="fixedTop" [isFirebaseEnabled]="false"></lfb-header>
     <div id="resizableMiddle">
 
@@ -140,37 +140,6 @@
                       (itemChange)="itemComponentChanged($event)"
   ></lfb-item-component>
 </ng-template>
-
-<ng-template #previewDlg  let-modal>
-  <div class="modal-header btn-primary">
-    <h4 class="modal-title" id="modal-basic-title">Preview of Questionnaire</h4>
-    <button type="button" class="close btn-primary text-white" aria-label="Close" (click)="modal.close('Cross click')">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-    <div *ngTemplateOutlet="previewDlgBody" class="mt-2"></div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="modal.close('Close click')">Close</button>
-  </div>
-</ng-template>
-
-<ng-template #previewDlgBody>
-  <mat-tab-group [(selectedIndex)]="selectedPreviewTab">
-    <mat-tab label="View Rendered Form">
-      <ng-template matTabContent>
-        <wc-lhc-form [questionnaire]="formValue"></wc-lhc-form>
-      </ng-template>
-    </mat-tab>
-    <mat-tab label="View Questionnaire JSON">
-      <ng-template matTabContent>
-        <pre class="fix-pre">{{ formValue | json }}</pre>
-      </ng-template>
-    </mat-tab>
-  </mat-tab-group>
-</ng-template>
-
 <ng-template #loincSearchDlg let-modal>
   <div class="modal-header btn-primary">
     <h4 class="modal-title" id="loinc-search-dlg-title">Import a LOINC Form</h4>

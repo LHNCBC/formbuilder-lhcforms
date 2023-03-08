@@ -41,10 +41,9 @@ describe('Home page', () => {
       cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
-      cy.contains('div', 'Use question code?')
-        .find('[id^="booleanControlled_Yes"]').as('codeYes');
-      cy.contains('div', 'Use question code?')
-        .find('[id^="booleanControlled_No"]').as('codeNo');
+      cy.contains('div', 'Use question code?').should('be.visible').as('codeOption');
+      cy.get('@codeOption').find('[id^="booleanRadio_Yes"]').as('codeYes');
+      cy.get('@codeOption').find('[id^="booleanRadio_No"]').as('codeNo');
       cy.get('#__\\$observationLinkPeriod_No').as('olpNo');
       cy.get('#__\\$observationLinkPeriod_Yes').as('olpYes');
 
@@ -74,6 +73,10 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].extension).to.deep.equal(helpTextExtension);
       });
 
+    });
+
+    it('should include code only when use question code is yes', () => {
+      cy.get('@codeOption').includeExcludeCodeField();
     });
 
     it('should import item from CTSS with answer option', () => {
@@ -365,8 +368,8 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Sample to test initial component error');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
-        expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
+        expect(qJson.item[0].item[0].answerOption).to.deep.equal(fixtureJson.item[0].item[0].answerOption);
+        expect(qJson.item[0].item[0].initial).to.deep.equal(fixtureJson.item[0].item[0].initial);
       });
 
       cy.toggleTreeNodeExpansion('Group item 1');
@@ -374,11 +377,59 @@ describe('Home page', () => {
       cy.get('@type').find(':selected').should('have.text', 'choice');
       cy.get('[id^="answerOption."]').should('be.visible');
       cy.get('[id^="initial"]').should('not.be.visible');
+      cy.get('[id^="radio_answerOption.1"]').should('be.checked', true);
       cy.selectDataType('decimal');
       cy.get('[id^="answerOption."]').should('not.exist');
       cy.get('[id^="initial.0.valueDecimal"]').should('be.visible').type('1.2');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].initial[0].valueDecimal).equal(1.2);
+      });
+    });
+
+    it('should create answerValueSet', () => {
+      cy.selectDataType('choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').as('aoRadio');
+      cy.get('@aoRadio').should('have.class', 'active');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').as('vsRadio').should('not.have.class', 'active');
+      cy.get('#answerValueSet').should('not.exist');
+      cy.get('lfb-answer-option').should('be.visible');
+
+      cy.get('@vsRadio').click();
+      cy.get('#answerValueSet').should('be.visible').as('vsInput');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('@vsInput').type('http://example.org');
+      cy.questionnaireJSON().should((q) => {
+        expect(q.item[0].answerValueSet).equal('http://example.org');
+        expect(q.item[0].answerOption).to.be.undefined;
+      });
+
+      cy.get('@aoRadio').click();
+      cy.get('#answerValueSet').should('not.exist');
+      cy.get('lfb-answer-option').should('be.visible');
+      const aOptions = [
+        {display: 'display 1', code: 'c1', system: 's1'},
+        {display: 'display 2', code: 'c2', system: 's2'}
+      ];
+      cy.enterAnswerOptions(aOptions);
+      cy.questionnaireJSON().should((q) => {
+        expect(q.item[0].answerValueSet).to.be.undefined;
+        expect(q.item[0].answerOption[0].valueCoding).to.deep.equal(aOptions[0]);
+        expect(q.item[0].answerOption[1].valueCoding).to.deep.equal(aOptions[1]);
+      });
+    });
+
+    it('should import a form with an item having answerValueSet', () => {
+      cy.uploadFile('answer-value-set-sample.json', true);
+      cy.get('#title').should('have.value', 'Answer value set form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('#type option:selected').should('have.text', 'choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.have.class', 'active');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('have.class', 'active');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet').should('have.value','http://example.org');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerValueSet).to.equal('http://example.org');
       });
     });
 

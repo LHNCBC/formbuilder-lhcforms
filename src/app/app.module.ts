@@ -87,6 +87,7 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
+import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 
 @NgModule({
@@ -151,6 +152,7 @@ import { ObservationExtractComponent } from './lib/widgets/observation-extract/o
     NodeDialogComponent,
     NumberComponent,
     IntegerDirective,
+    AnswerOptionMethodsComponent,
     ObservationExtractComponent
   ],
   imports: [

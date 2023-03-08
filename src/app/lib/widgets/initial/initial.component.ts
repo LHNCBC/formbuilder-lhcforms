@@ -1,7 +1,7 @@
 /**
  * Handles FHIR initial field interaction in the item level form.
  */
-import {HostBinding, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, DoCheck, ElementRef, OnDestroy} from '@angular/core';
+import {HostBinding, AfterViewInit, ChangeDetectionStrategy, Component, DoCheck} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 
 @Component({
@@ -10,14 +10,10 @@ import {TableComponent} from '../table/table.component';
   styleUrls: ['./../table/table.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InitialComponent extends TableComponent implements AfterViewInit, DoCheck, OnDestroy {
+export class InitialComponent extends TableComponent implements AfterViewInit, DoCheck {
 
   // Flag to hide host element
   hideHostElement = false;
-  constructor(private elementRef: ElementRef, private cdr: ChangeDetectorRef) {
-    super(elementRef, cdr);
-  }
-
   /**
    * Set d-none class to the host element when the flag is set.
    */

@@ -8,7 +8,7 @@ import appVersion from '../../assets/version.json';
 @Component({
   selector: 'lfb-header',
   template: `
-    <mat-toolbar id="header">
+    <mat-toolbar id="header" class="pl-0 pr-0">
       <mat-icon id="logo" svgIcon="home" aria-label="Home"></mat-icon>
       <div id="siteNameBox">
         <a mat-button id="siteName" href="/">NLM Form Builder</a>
@@ -57,7 +57,6 @@ import appVersion from '../../assets/version.json';
       float: left;
       width: 72px;
       height: 72px;
-      margin: 0 20px 0 20px;
     }
 
     #logo {
@@ -115,7 +114,7 @@ export class HeaderComponent implements OnInit {
               private sanitizer: DomSanitizer) {
     // Register our icon(s)
     this.iconRegistry.addSvgIcon('home',
-      this.sanitizer.bypassSecurityTrustResourceUrl('../../assets/images/lhncbc.svg'));
+      this.sanitizer.bypassSecurityTrustResourceUrl('../../assets/images/projectLogo.svg'));
   }
 
 

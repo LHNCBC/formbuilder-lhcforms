@@ -37,7 +37,7 @@ import {Subscription} from 'rxjs';
   templateUrl: './table.component.html', // Use separate files for possible reuse from a derived class
   styleUrls: ['./table.component.css']
 })
-export class TableComponent extends LfbArrayWidgetComponent implements AfterViewInit, DoCheck, OnDestroy {
+export class TableComponent extends LfbArrayWidgetComponent implements AfterViewInit, DoCheck, OnChanges, OnDestroy {
 
   static seqNum = 0;
   // Icons for buttons.
@@ -72,22 +72,15 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
    * Make sure at least one row is present for zero length array?
    */
   ngDoCheck(): void {
-    if(this.booleanControlled) {
-      this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
-    }
     if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
-    /*
-    // If a single radio item, change it checkbox.
-    if (this.rowSelection && this.rowSelectionType === 'radio' && this.formProperty.value.length === 1) {
-      this.rowSelectionType = 'checkbox';
-      // If single radio was selected, transfer the selection to checkbox.
-      if(this.selectionRadio === 0) {
-        this.selectionCheckbox[0] = true;
-      }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if(this.booleanControlled) {
+      this.booleanControlledOption = !Util.isEmpty(this.formProperty.value);
     }
-    */
   }
 
 
@@ -178,6 +171,18 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
     });
 
     this.subscriptions.push(subsciption);
+
+    subsciption = this.formProperty.valueChanges.subscribe((newValue) => {
+      this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(newValue);
+    });
+  }
+
+  /**
+   * Handle booleanControlled event.
+   * @param event - Angular event emitted value.
+   */
+  onBooleanControlledChange(event: boolean) {
+    this.booleanControlledOption = event;
   }
 
   /**

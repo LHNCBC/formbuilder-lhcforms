@@ -11,6 +11,8 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
   `]
 })
 export class BooleanRadioComponent  extends LfbControlWidgetComponent implements AfterViewInit {
+  static ID = 0;
+  _id = BooleanRadioComponent.ID++;
   ngAfterViewInit() {
     this.labelPosition = 'left';
     super.ngAfterViewInit();

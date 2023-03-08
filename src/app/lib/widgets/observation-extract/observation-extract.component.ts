@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {fhir} from '../../../fhir';
 import {Subscription} from 'rxjs';
 import {ExtensionsService} from '../../../services/extensions.service';
@@ -36,7 +36,7 @@ import {BooleanRadioComponent} from '../boolean-radio/boolean-radio.component';
   `,
   styleUrls: []
 })
-export class ObservationExtractComponent extends BooleanRadioComponent implements AfterViewInit {
+export class ObservationExtractComponent extends BooleanRadioComponent implements OnInit {
   static extUrl: fhir.uri = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
   static seqNum = 0;
   elementId: string;
@@ -54,16 +54,10 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
   /**
    * Read extension and initialize properties.
    */
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
+  ngOnInit() {
+    this.setValue();
     this.extensionsService.extensionsObservable.subscribe(() => {
-      const ext = this.getExtension(ObservationExtractComponent.extUrl);
-      if(ext) {
-        this.value = ext.valueBoolean;
-      }
-      else {
-        this.value = false;
-      }
+      this.setValue();
     });
     // Watch code for warning.
     this.formProperty.root.getProperty('code').valueChanges.subscribe((code) => {
@@ -74,10 +68,17 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
   }
 
   /**
+   * Set value based on extension.
+   */
+  setValue() {
+    const oeExt = this.getExtension();
+    this.value = oeExt ? oeExt.valueBoolean : false;
+  }
+  /**
    * Get extension object.
    */
-  getExtension(extUrl: fhir.uri): fhir.Extension {
-    const ext = this.extensionsService.getExtensionsByUrl(extUrl);
+  getExtension(): fhir.Extension {
+    const ext = this.extensionsService.getExtensionsByUrl(ObservationExtractComponent.extUrl);
     return ext && ext.length > 0 ? ext[0] : null;
   }
 
