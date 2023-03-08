@@ -7,6 +7,9 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Added support for answerValueSet field.
 - Added display column to code field.
 
+### Changed
+- Changed code field labels.
+
 ### Fixed
 - Fixed visibleIf issue with answerOption and code when visibility is false.
 

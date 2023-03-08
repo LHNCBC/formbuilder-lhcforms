@@ -44,9 +44,9 @@ describe('Home page', () => {
       cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
-      cy.contains('div', 'Use question code?').should('be.visible').as('codeOption');
-      cy.get('@codeOption').find('[id^="booleanRadio_Yes"]').as('codeYes');
-      cy.get('@codeOption').find('[id^="booleanRadio_No"]').as('codeNo');
+      cy.contains('div', 'Question code').should('be.visible').as('codeOption');
+      cy.get('@codeOption').find('[id^="booleanRadio_true"]').as('codeYes');
+      cy.get('@codeOption').find('[id^="booleanRadio_false"]').as('codeNo');
       cy.get('#__\\$observationLinkPeriod_No').as('olpNo');
       cy.get('#__\\$observationLinkPeriod_Yes').as('olpYes');
 

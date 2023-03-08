@@ -5,10 +5,10 @@
     <div ngbRadioGroup
          [formControl]="control"
          class="btn-group form-check-inline btn-group-sm btn-group-toggle">
-      <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
-        <label ngbButtonLabel class="btn-outline-success m-0" [attr.id]="'booleanRadio_'+option+_id">
-          <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
-          {{option}}
+      <ng-container *ngFor="let key of optionsKeys" class="radio">
+        <label ngbButtonLabel class="btn-outline-success m-0" [attr.id]="'booleanRadio_'+key+_id">
+          <input ngbButton [value]="key" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
+          {{options.get(key)}}
         </label>
       </ng-container>
     </div>
