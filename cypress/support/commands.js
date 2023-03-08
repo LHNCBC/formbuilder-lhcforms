@@ -10,7 +10,8 @@
 //
 //
 import {isEqual} from 'lodash';
-import * as fhirServerMocks from "./mocks/fhir-server-mocks";
+import {searchFHIRServer} from "./mocks/fhir-server-mocks";
+import {CypressUtil} from "./cypress-util";
 // -- This is a parent command --
 // Cypress.Commands.add('login', (email, password) => { ... })
 //
@@ -93,12 +94,7 @@ Cypress.Commands.add('uploadFile',(fileName, handleWarning) => {
  * Command to get json from 'Preview'
  */
 Cypress.Commands.add('questionnaireJSON', () => {
-  cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
-  cy.contains('.mat-tab-label-content', 'View Questionnaire JSON').scrollIntoView().click();
-  return cy.get('mat-tab-body div.mat-tab-body-content pre').invoke('text').then((text) => {
-    cy.get('mat-dialog-actions > button').scrollIntoView().click();
-    return cy.wrap(JSON.parse(text));
-  });
+  return CypressUtil.getQuestionnaireJSON();
 });
 
 /**
@@ -299,7 +295,7 @@ Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
  * Make sure to create mock response based on titleSearchTerm.
  */
 Cypress.Commands.add('fhirSearch', (titleSearchTerm) => {
-  fhirServerMocks.searchFHIRServer(titleSearchTerm,
+  searchFHIRServer(titleSearchTerm,
     `fhir-server-mock-response-${titleSearchTerm}.json`);
   cy.get('input[type="radio"][name="fhirServer"]').first().click();
   cy.contains('div.modal-footer button', 'Continue').click();
@@ -378,9 +374,20 @@ Cypress.Commands.add('waitForSpinner', () => {
 });
 
 /**
- * CLick a node on the side bar.
+ * CLick a node on the sidebar.
  */
 Cypress.Commands.add('clickTreeNode', (nodeText) => {
   cy.getTreeNode(nodeText).click();
   cy.contains('#itemContent span', nodeText);
 });
+
+/**
+ * Look for extension field and return all that match the url.
+ *
+ * @param extensionsArray: Array of extensions.
+ * @param url: URL of the desired extensions.
+ */
+Cypress.Commands.add('getExtensions', (extensionsArray, url) => {
+  return extensionsArray?.filter((ext) => ext.url === url);
+});
+

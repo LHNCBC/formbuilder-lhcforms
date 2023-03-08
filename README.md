@@ -9,16 +9,16 @@ environment. You can make a similar rc file to suit your shell. Please make sure
 path for the rest of the installation. 
 
         $ cd formbuilder-lhcforms
-        $ npm ci
+        $ npm ci && npm run create-version-file
         $ source bashrc.formbuilder
         
 1. Start formbuilder server for development.
 
-        $ ng serve
+        $ npm start
         
 1. Build the package for production.
 
-        $ ng build
+        $ npm run build
         $ cp dist/formbuilder-lhcforms {webserver docs location}
         
 

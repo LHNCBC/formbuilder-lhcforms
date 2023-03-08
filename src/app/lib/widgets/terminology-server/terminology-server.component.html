@@ -1,0 +1,19 @@
+<ng-container>
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label *ngIf="!nolabel"
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelWidthClass + ' pl-0 pr-1'"
+    ></lfb-label>
+    <div class="col-sm-10 row m-0 p-0">
+      <p #hint [attr.id]="'hint_'+id" class="mb-1"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
+      <input [attr.readonly]="schema.readOnly ? true : null"
+               class="text-widget.id textline-widget form-control"
+               type="url"
+               (focus)="announceHint()"
+               [attr.id]="id" [ngModel]="tsExtension.valueUrl" (ngModelChange)="urlChanged($event)" [attr.placeholder]="schema.widget?.placeholder"
+      >
+    </div>
+  </div>
+</ng-container>

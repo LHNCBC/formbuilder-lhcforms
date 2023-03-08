@@ -1295,6 +1295,20 @@
         ]
       }
     },
+    "__$terminologyServer": {
+      "description": "Enter url for preferred terminology server.",
+      "title": "Terminology server",
+      "type": "string",
+      "widget": {
+        "id": "terminology-server",
+        "placeholder": "Enter url for preferred terminology server",
+        "note": "You may wish to set this if you are providing an answer value set for either this item or its children.",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
+      }
+    },
+
     "initial": {
       "description": "One or more values that should be pre-populated in the answer when initially rendering the questionnaire for user input.",
       "items": {
@@ -5052,6 +5066,12 @@
       "fields": ["answerOption"],
       "showFields": [
         { "field": "answerOption", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["__$terminologyServer"],
+      "showFields": [
+        { "field": "__$terminologyServer", "col": 12 }
       ]
     },
     {

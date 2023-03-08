@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import {CUSTOM_ELEMENTS_SCHEMA, NgModule} from '@angular/core';
+import {ApplicationRef, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, NgModule} from '@angular/core';
 import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
 
 import { AppComponent } from './app.component';
@@ -66,7 +66,6 @@ import { UserSpecifiedServerDlgComponent } from './lib/widgets/user-specified-se
 import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
-import { ExtensionsComponent } from './lib/widgets/extensions/extensions.component';
 import { RuleEditorModule } from 'rule-editor';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
@@ -89,6 +88,7 @@ import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
+import { TerminologyServerComponent } from './lib/widgets/terminology-server/terminology-server.component';
 
 @NgModule({
   declarations: [
@@ -132,7 +132,6 @@ import { ObservationExtractComponent } from './lib/widgets/observation-extract/o
     FhirSearchDlgComponent,
     BooleanRadioComponent,
     UnitsComponent,
-    ExtensionsComponent,
     AnswerOptionComponent,
     InitialComponent,
     HelpTextComponent,
@@ -153,7 +152,8 @@ import { ObservationExtractComponent } from './lib/widgets/observation-extract/o
     NumberComponent,
     IntegerDirective,
     AnswerOptionMethodsComponent,
-    ObservationExtractComponent
+    ObservationExtractComponent,
+    TerminologyServerComponent
   ],
   imports: [
     AppRoutingModule,
@@ -187,7 +187,17 @@ import { ObservationExtractComponent } from './lib/widgets/observation-extract/o
     MatDialogModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe],
-  bootstrap: [AppComponent]
+  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe]
 })
-export class AppModule { }
+export class AppModule implements DoBootstrap {
+  ngDoBootstrap(appRef: ApplicationRef) {
+    // bootstrap AppComponent ourselves
+    appRef.bootstrap(AppComponent)
+    // @ts-ignore
+    if (window.Cypress) {
+      // and save the application reference!
+      // @ts-ignore
+      window.appRef = appRef
+    }
+  }
+}

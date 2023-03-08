@@ -8,7 +8,8 @@
           { "field": "code", "col": 12 },
           { "field": "status", "col": 12},
           { "field": "description", "col": 12},
-          { "field": "purpose", "col": 12}
+          { "field": "purpose", "col": 12},
+          { "field": "__$terminologyServer", "col": 12}
         ]
       }
     ]

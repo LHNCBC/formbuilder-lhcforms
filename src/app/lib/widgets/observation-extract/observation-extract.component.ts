@@ -1,8 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import {Subscription} from 'rxjs';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {BooleanRadioComponent} from '../boolean-radio/boolean-radio.component';
+import {fhirPrimitives} from '../../../fhir';
 
 @Component({
   selector: 'lfb-observation-extract',
@@ -37,7 +38,7 @@ import {BooleanRadioComponent} from '../boolean-radio/boolean-radio.component';
   styleUrls: []
 })
 export class ObservationExtractComponent extends BooleanRadioComponent implements OnInit {
-  static extUrl: fhir.uri = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
+  static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
   static seqNum = 0;
   elementId: string;
   subscriptions: Subscription [];

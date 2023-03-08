@@ -1,10 +1,13 @@
 /// <reference types="cypress" />
 
 import {Util} from '../../../src/app/lib/util';
+import {CypressUtil} from '../../support/cypress-util';
+import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
 const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
 const ucumUrl = 'http://unitsofmeasure.org';
+
 describe('Home page', () => {
   before(() => {
     // Cypress starts out with a blank slate for each test
@@ -431,6 +434,55 @@ describe('Home page', () => {
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerValueSet).to.equal('http://example.org');
       });
+    });
+
+    it('should create terminology server extension', () => {
+      cy.get('[id="__$terminologyServer"]').as('tsUrl').should('be.visible');
+      cy.get('@tsUrl').type('http://example.org/fhir');
+      CypressUtil.assertValueInQuestionnaire('/item/0/extension',
+        [{
+          valueUrl: 'http://example.org/fhir',
+          url: ExtensionDefs.preferredTerminologyServer.url
+        }]);
+      cy.get('@tsUrl').clear();
+      CypressUtil.assertValueInQuestionnaire('/item/0/extension', undefined);
+      cy.get('@tsUrl').type('http://example.com/r4');
+      CypressUtil.assertValueInQuestionnaire('/item/0/extension',
+        [{
+          url: ExtensionDefs.preferredTerminologyServer.url,
+          valueUrl: 'http://example.com/r4'
+        }]);
+    });
+
+    it('should import a form with terminology server extension', () => {
+      const sampleFile = 'terminology-server-sample.json';
+      cy.uploadFile(sampleFile, true); // Avoid warning form loading based on item or form
+      cy.get('#title').should('have.value', 'Terminology server sample form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('[id="__$terminologyServer"]').as('tsUrl').should('be.visible');
+      cy.get('@tsUrl').should('have.value', 'http://example.com/r4');
+      CypressUtil.assertExtensionsInQuestionnaire(
+        '/item/0/extension',
+        ExtensionDefs.preferredTerminologyServer.url,
+        [{
+          url: ExtensionDefs.preferredTerminologyServer.url,
+          valueUrl: 'http://example.com/r4'
+        }]
+      );
+
+      cy.get('@tsUrl').clear();
+      CypressUtil.assertExtensionsInQuestionnaire(
+        '/item/0/extension',ExtensionDefs.preferredTerminologyServer.url,[]);
+
+      cy.get('@tsUrl').type('http://a.b');
+      CypressUtil.assertExtensionsInQuestionnaire(
+        '/item/0/extension',
+        ExtensionDefs.preferredTerminologyServer.url,
+        [{
+          url: ExtensionDefs.preferredTerminologyServer.url,
+          valueUrl: 'http://a.b'
+        }]
+      );
     });
 
     it('should display quantity units', () => {
@@ -953,7 +1005,7 @@ describe('Home page', () => {
       });
 
       // Remove
-      cy.get('@timeWindow').clear();
+      cy.get('@timeWindow').clear().blur();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension.length).to.equal(2); // Other than olp extension.
         const extExists = qJson.item[0].extension.some((ext) => {

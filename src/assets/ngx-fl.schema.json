@@ -1826,6 +1826,19 @@
           {"field": "display", "col": 4, "nolabel": true}
         ]
       }
+    },
+    "__$terminologyServer": {
+      "description": "Enter url for preferred terminology server.",
+      "title": "Terminology server",
+      "type": "string",
+      "widget": {
+        "id": "terminology-server",
+        "placeholder": "Enter url for preferred terminology server",
+        "note": "You may wish to set this if you want to provide an answer value set for any item in this questionnaire.",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
+      }
     }
   },
   "additionalProperties": false,
@@ -1859,7 +1872,8 @@
         "code",
         "status",
         "description",
-        "purpose"
+        "purpose",
+        "__$terminologyServer"
       ]
     },
     {

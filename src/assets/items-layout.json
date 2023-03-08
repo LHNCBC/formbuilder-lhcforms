@@ -14,6 +14,7 @@
           { "field": "__$answerOptionMethods", "col": 12 },
           { "field": "answerValueSet", "col": 12 },
           { "field": "answerOption", "title": "Answer choices", "col": 12 },
+          { "field": "__$terminologyServer", "col": 12 },
           { "field": "__$units", "col": 12 }
         ]
       },

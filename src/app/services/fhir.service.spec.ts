@@ -1,7 +1,7 @@
 import {TestBed} from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {HttpResponse, HttpRequest} from '@angular/common/http';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 
 import { FhirService } from './fhir.service';
 import {Observable} from 'rxjs';
@@ -11,9 +11,10 @@ import {TestUtil} from '../testing/util';
 
 describe('FhirService', () => {
   let service: FhirService;
-  const dummyQ: fhir.Resource = {resourceType: 'Questionnaire', status: 'draft', id: '12345-6'};
+  const dummyQ: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', id: '12345-6'};
 
   const testResource: fhir.Questionnaire = {
+    resourceType: 'Questionnaire',
     status: 'draft',
     id: '12345',
     title: 'Mock questionnaire',
