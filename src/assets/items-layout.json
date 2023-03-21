@@ -1,6 +1,6 @@
 {
   "formLayout": {
-    "rows": [
+    "basic": [
       {
         "showFields": [
           { "field": "text", "col": 12 },
@@ -28,13 +28,21 @@
       },
       {
         "showFields": [
-          { "field": "enableWhen", "col": 12 },
-          { "field": "enableBehavior", "col": 12 }
         ]
       },
       {
         "showFields": [
-          { "field": "__$observationLinkPeriod", "col": 12}
+        ]
+      }
+    ],
+    "advanced": [
+      {
+        "showFields": [
+          { "field": "enableWhen", "col": 12 },
+          { "field": "enableBehavior", "col": 12 },
+          { "field": "__$terminologyServer", "col": 12 },
+          { "field": "__$observationLinkPeriod", "col": 12},
+          { "field": "__$observationExtract", "col": 12}
         ]
       }
     ]

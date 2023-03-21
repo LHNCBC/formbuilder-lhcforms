@@ -5,12 +5,12 @@ import {
   EventEmitter,
   Input,
   OnDestroy,
-  OnInit,
+  AfterViewInit,
   Output, TemplateRef,
   ViewChild
 } from '@angular/core';
 import {FormService} from '../services/form.service';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {BehaviorSubject, from, Observable, of, Subject} from 'rxjs';
 import {catchError, debounceTime, distinctUntilChanged, finalize, mergeMap, switchMap, takeUntil} from 'rxjs/operators';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
@@ -38,7 +38,7 @@ type ExportType = 'CREATE' | 'UPDATE';
   styleUrls: ['./base-page.component.css'],
   providers: [NgbActiveModal]
 })
-export class BasePageComponent implements OnDestroy {
+export class BasePageComponent implements AfterViewInit, OnDestroy {
 
   private unsubscribe = new Subject<void>();
   @Input()
@@ -54,7 +54,6 @@ export class BasePageComponent implements OnDestroy {
   state = new EventEmitter<string>();
   objectUrl: any;
   acResult: AutoCompleteResult = null;
-  @ViewChild('lhcFormPreview') previewEl: ElementRef;
   @ViewChild('fileInput') fileInputEl: ElementRef;
   @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
@@ -79,19 +78,6 @@ export class BasePageComponent implements OnDestroy {
     }
 
     this.acceptTermsOfUse = sessionStorage.acceptTermsOfUse === 'true';
-    if(!this.acceptTermsOfUse) {
-      this.modalService.open(
-        LoincNoticeComponent,{size: 'lg', centered: true, keyboard: false, backdrop: 'static'}
-      ).result
-        .then(
-          (result) => {
-            this.acceptTermsOfUse = result;
-            sessionStorage.acceptTermsOfUse = result;
-          },
-          (reason) => {
-            console.error(reason);
-          });
-    }
 
     this.formSubject.asObservable().pipe(
       debounceTime(500),
@@ -105,6 +91,27 @@ export class BasePageComponent implements OnDestroy {
     });
 
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
+  }
+
+  ngAfterViewInit() {
+    // @ts-ignore
+    if(window.Cypress) {
+      // @ts-ignore
+      window.basePageComponent = this;
+    }
+    if(!this.acceptTermsOfUse) {
+      this.modalService.open(
+        LoincNoticeComponent,{size: 'lg', container: 'body > lfb-root', keyboard: false, backdrop: 'static'}
+      ).result
+        .then(
+          (result) => {
+            this.acceptTermsOfUse = result;
+            sessionStorage.acceptTermsOfUse = result;
+          },
+          (reason) => {
+            console.error(reason);
+          });
+    }
   }
 
   /**
@@ -121,9 +128,14 @@ export class BasePageComponent implements OnDestroy {
    * @param event - Emits questionnaire (Form level copy)
    */
   formFieldsChanged(formChanges) {
-    Object.assign(this.formValue, formChanges);
-    Object.assign(this.questionnaire, formChanges);
-    Object.assign(this.formFields, formChanges);
+    [this.formValue, this.questionnaire, this.formFields].forEach((obj) => {
+      for (const key of Object.keys(obj)) {
+        if(key !== 'item') {
+          delete obj[key];
+        }
+      }
+      Object.assign(obj, formChanges);
+    });
     this.notifyChange(this.formValue);
   }
 

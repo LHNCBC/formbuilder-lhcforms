@@ -8,7 +8,7 @@ import {GridComponent} from '../grid.component/grid.component';
   selector: 'lfb-left-label-form-group',
   template: `
       <div class="form-group row" *ngFor="let field of getShowFields()">
-        <div [ngClass]="labelWidthClass + ' pl-0 pr-1'">
+        <div [ngClass]="labelWidthClass + ' ps-0 pe-1'">
           <lfb-label
             [for]="getShowFieldProperty(field).id"
             [title]="getSchema(field).title"

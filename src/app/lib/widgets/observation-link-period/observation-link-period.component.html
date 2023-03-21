@@ -3,34 +3,32 @@
              [for]="elementId"
              [title]="schema.title"
              [helpMessage]="schema.description"
-             [ngClass]="labelWidthClass+' pl-0 pr-1'"
+             [ngClass]="labelClasses"
   ></lfb-label>
 
-  <div class="{{controlWidthClass}} p-0 {{adjustVAlignClass}}">
+  <div [ngClass]="controlClasses">
 
-    <div
-         class="btn-group form-check-inline btn-group-sm btn-group-toggle">
-      <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
-        <label  class="btn btn-outline-success m-auto" [attr.id]="name+'_'+option">
-          <input
-            [attr.name]="name"
-            [ngModel]="showOlp" (ngModelChange)="onBooleanChange($event)" class="btn-check"
-            [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null"  [attr.aria-controls]="'timeWindowGroup_'+elementId" >
-          {{option}}
-        </label>
+    <div class="btn-group btn-group-sm">
+      <ng-container *ngFor="let option of ['No', 'Yes']">
+        <input type="radio" class="btn-check" name="showOlp"
+               [attr.id]="'radio_'+elementId+'_'+option"
+               [ngModelOptions]="{standalone: true}"
+               [ngModel]="showOlp" (ngModelChange)="onBooleanChange($event)"
+               [value]="option === 'Yes'"
+               [attr.disabled]="schema.readOnly ? '' : null"
+               [attr.aria-controls]="'timeWindowGroup_'+elementId" >
+        <label class="btn btn-outline-success m-auto" [attr.for]="'radio_'+elementId+'_'+option">{{option}}</label>
       </ng-container>
     </div>
 
     <div *ngIf="showOlp">
-      <div *ngIf="isCodePresent() else warning" class="row mt-1 ml-auto mr-auto">
-        <div class="input-group input-group-sm" [attr.id]="'timeWindowGroup_'+elementId" role="region" aria-live="polite">
-          <div class="input-group-prepend">
-            <span [attr.id]="'timeWindow_' + elementId" class="input-group-text">Time window</span>
-          </div>
+      <ng-container *ngIf="isCodePresent() else warning">
+        <div class="input-group input-group-sm mt-1" [attr.id]="'timeWindowGroup_'+elementId" role="region" aria-live="polite">
+          <span [attr.id]="'timeWindow_' + elementId" class="input-group-text py-0">Time window</span>
           <input autocomplete="off" type="number" [ngModel]="value" (change)="onValueChange($event)" [attr.id]="elementId" [attr.aria-labelledby]="'timeWindow_' + elementId" placeholder="" class="form-control" />
-          <div class="input-group-append">
+          <div class="btn-group btn-group-sm">
             <select [ngModel]="unitIndex" (ngModelChange)="onUnitChange($event)" aria-label="Time window units"
-                    class="form-control lfb-select-append" [attr.id]="'select_'+elementId">
+                    class="form-control form-select form-select-sm rounded-0 rounded-end" [attr.id]="'select_'+elementId">
               <ng-container>
                 <option *ngFor="let option of unitOptions; index as i"
                         [ngValue]="i">{{option.unit}}</option>
@@ -38,7 +36,7 @@
             </select>
           </div>
         </div>
-      </div>
+      </ng-container>
     </div>
 
     <ng-template #warning>

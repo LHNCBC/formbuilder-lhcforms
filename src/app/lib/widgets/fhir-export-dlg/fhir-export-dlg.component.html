@@ -1,12 +1,11 @@
 <div role="dialog" aria-labelledby="replyTitle">
   <div class="modal-header bg-primary">
     <h4 id="replyTitle" class="modal-title text-white" role="document">FHIR Server Reply</h4>
-    <button type="button" class="close text-white btn-sm" aria-label="Close" (click)="close(true)">
-      <span aria-hidden="true">&times;</span>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close(true)">
     </button>
   </div>
   <div class="modal-body bg-light" aria-live="polite" *ngIf="serverResponse">
-    <span class="sr-only" role="alert">The questionnaire is successfully created on the server.</span>
+    <span class="visually-hidden" role="alert">The questionnaire is successfully created on the server.</span>
     <pre class="fhir-response">{{serverResponse | json }}</pre>
   </div>
   <div class="modal-body bg-light" *ngIf="error"><pre class="fhir-response" role="alert">{{error.message}}</pre></div>

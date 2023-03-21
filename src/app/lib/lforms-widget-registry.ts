@@ -24,15 +24,18 @@ import {EnableBehaviorComponent} from './widgets/enable-behavior/enable-behavior
 import {BooleanRadioComponent} from './widgets/boolean-radio/boolean-radio.component';
 import {UnitsComponent} from './widgets/units/units.component';
 import {AnswerOptionComponent} from './widgets/answer-option/answer-option.component';
+import {AnswerOptionMethodsComponent} from './widgets/answer-option-methods/answer-option-methods.component';
 import {InitialComponent} from './widgets/initial/initial.component';
 import {HelpTextComponent} from './widgets/help-text/help-text.component';
 import {StringWithCssComponent} from './widgets/string-with-css/string-with-css.component';
 import {RestrictionsComponent} from './widgets/restrictions/restrictions.component';
 import {RestrictionsOperatorComponent} from './widgets/restrictions-operator/restrictions-operator.component';
 import {ObservationLinkPeriodComponent} from './widgets/observation-link-period/observation-link-period.component';
+import {ObservationExtractComponent} from './widgets/observation-extract/observation-extract.component';
 import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 import {QuantityUnitComponent} from './widgets/quantity-unit/quantity-unit.component';
 import {NumberComponent} from './widgets/number/number.component';
+import {TerminologyServerComponent} from './widgets/terminology-server/terminology-server.component';
 
 
 @Injectable()
@@ -61,12 +64,15 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('boolean-radio', BooleanRadioComponent);
     this.register('units', UnitsComponent);
     this.register('answer-option', AnswerOptionComponent);
+    this.register('answer-option-methods', AnswerOptionMethodsComponent);
     this.register('initial', InitialComponent);
     this.register('help-text', HelpTextComponent);
     this.register('string-with-css', StringWithCssComponent);
     this.register('restrictions', RestrictionsComponent);
     this.register('restrictions-operator', RestrictionsOperatorComponent);
     this.register('observation-link-period', ObservationLinkPeriodComponent);
+    this.register('observation-extract', ObservationExtractComponent);
     this.register('quantity-unit', QuantityUnitComponent);
+    this.register('terminology-server', TerminologyServerComponent);
   }
 }

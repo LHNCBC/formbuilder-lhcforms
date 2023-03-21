@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import {FhirService} from '../../../services/fhir.service';
 declare var LForms: any;
 

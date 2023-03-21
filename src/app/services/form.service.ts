@@ -4,7 +4,7 @@
 import {Injectable} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@bugsplat/angular-tree-component';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {Observable, Subject} from 'rxjs';
@@ -36,13 +36,16 @@ export class FormService {
   private _itemEditorSchema: any = {properties: {}};
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
-    ngxItemSchema.definitions.Extension = fhirExtensionSchema as any;
-    this._updateExtension(ngxItemSchema);
+    [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
+      if(!obj.schema.definitions) {
+        obj.schema.definitions = {};
+      }
+      obj.schema.definitions.Extension = fhirExtensionSchema as any;
+      this._updateExtension(obj.schema);
+      obj.schema.layout = obj.layout;
+    });
     this.itemSchema = ngxItemSchema;
-    this.itemSchema.layout = itemLayout;
-
     this.flSchema = ngxFlSchema;
-    this.flSchema.layout = flLayout;
     this._itemEditorSchema = itemEditorSchema;
   }
 
@@ -232,7 +235,7 @@ export class FormService {
    */
   showMessage(title: string, message: string, type: MessageType = MessageType.INFO) {
 
-    const modalRef = this.modalService.open(MessageDlgComponent);
+    const modalRef = this.modalService.open(MessageDlgComponent, {scrollable: true});
     modalRef.componentInstance.title = title;
     modalRef.componentInstance.message = message;
     modalRef.componentInstance.type = type;

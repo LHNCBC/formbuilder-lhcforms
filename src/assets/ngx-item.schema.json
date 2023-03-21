@@ -44,8 +44,8 @@
       "widget": {
         "id": "select",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 p-0",
         "selectOptionsMap": {
           "remove": ["display", "reference", "attachment"],
           "map": {
@@ -92,8 +92,8 @@
       "widget": {
         "id": "restrictions",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 mt-1",
         "noTableLabel": true,
         "noCollapseButton": true,
         "addButtonLabel": "Add new restriction",
@@ -199,20 +199,15 @@
       }
     },
     "__$codeYesNo": {
-      "description": "",
-      "enum": [
-        "No",
-        "Yes"
-      ],
-      "default": "Yes",
-      "type": "string",
-      "title": "Use code(s)?",
+      "description": "A terminology code that corresponds to this group or question (e.g. a code from LOINC, which defines many questions and answers).",
+      "default": false,
+      "type": "boolean",
+      "title": "Question code",
       "widget": {
-        "id": "hidden",
-        "layout": "row",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-3"
+        "id": "boolean-radio",
+        "optionLabels": [[false, "No code"], [true, "Include code"]],
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "code": {
@@ -292,25 +287,21 @@
       "type": "array",
       "title": "Code",
       "visibleIf": {
-        "allOf": [
-          {"type": ["$EXP$ target.value != 'display'"]}
-        ]
+        "__$codeYesNo": [true]
       },
       "widget": {
         "id": "table",
         "noTableLabel": true,
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-sm-2",
+        "controlClasses": "col-sm-10",
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
-        "booleanControlled": true,
-        "booleanLabel": "Use question code?",
-        "booleanControlledInitial": false,
         "showFields": [
-          {"field": "code", "col": 4, "nolabel": true},
-          {"field": "system", "col": 7, "nolabel": true}
+          {"field": "code", "col": 3, "nolabel": true},
+          {"field": "system", "col": 4, "nolabel": true},
+          {"field": "display", "col": 4, "nolabel": true}
         ]
       }
     },
@@ -322,8 +313,8 @@
       "widget": {
         "id": "string-with-css",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-3"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-3 p-0"
       }
     },
     "_prefix": {
@@ -377,8 +368,8 @@
       "widget": {
         "id": "string-with-css",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0"
       }
     },
     "_text": {
@@ -896,7 +887,7 @@
       "widget": {
         "noCollapseButton": true,
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
+        "labelWidthClass": "col-sm-2 pe-1",
         "controlWidthClass": "col-sm-10",
         "addButtonLabel": "Add another condition",
         "id": "enable-when",
@@ -942,8 +933,8 @@
       },
       "widget": {
         "id": "boolean-radio",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "repeats": {
@@ -958,8 +949,8 @@
       },
       "widget": {
         "id": "boolean-radio",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "readOnly": {
@@ -974,31 +965,40 @@
       },
       "widget": {
         "id": "boolean-radio",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "__$answerOptionMethods": {
       "description": "Define predefined answers for the user to choose.",
       "title": "Predefined answers",
-      "enum": [
-        "answer-option",
-        "value-set"
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["answer-option"],
+          "title": "Answer options"
+        },
+        {
+          "type": "string",
+          "enum": ["value-set"],
+          "title": "Answer value set uri"
+        }
       ],
+      "default": "answer-option",
       "type": "string",
       "visibleIf": {
         "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
       },
       "widget": {
-        "id": "lb-radio",
+        "id": "answer-option-methods",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0"
       }
     },
     "answerValueSet": {
       "description": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question.",
-      "title": "Answer Valueset",
+      "title": "Answer value set",
       "pattern": "^\\S*$",
       "type": "string",
       "visibleIf": {
@@ -1007,8 +1007,8 @@
       "widget": {
         "id": "url",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "answerOption": {
@@ -1278,8 +1278,8 @@
       "widget": {
         "id": "answer-option",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 ",
         "addButtonLabel": "Add another answer",
         "rowSelection": true,
         "multipleSelectionEnableSource": "repeats",
@@ -1296,6 +1296,20 @@
         ]
       }
     },
+    "__$terminologyServer": {
+      "description": "Enter url for preferred terminology server.",
+      "title": "Terminology server",
+      "type": "string",
+      "widget": {
+        "id": "terminology-server",
+        "placeholder": "Enter url for preferred terminology server",
+        "note": "You may wish to set this if you are providing an answer value set for either this item or its children.",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0"
+      }
+    },
+
     "initial": {
       "description": "One or more values that should be pre-populated in the answer when initially rendering the questionnaire for user input.",
       "items": {
@@ -1378,7 +1392,8 @@
             },
             "widget": {
               "id": "boolean-radio",
-              "nolabel": true
+              "nolabel": true,
+              "controlClasses": "btn-group btn-group-sm col-auto p-0"
             }
           },
           "valueDecimal": {
@@ -1762,8 +1777,8 @@
       "widget": {
         "id": "initial",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0",
         "addButtonLabel": "Add another value",
         "singleItemEnableSource": "repeats",
         "showFields": [
@@ -1792,8 +1807,23 @@
       "widget": {
         "id": "observation-link-period",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0 m-auto ms-0"
+      },
+      "visibleIf": {
+        "type": ["$EXP$ target.value != 'display'"]
+      }
+    },
+    "__$observationExtract": {
+      "description": "If true, indicates that the observation-based approach should be used to extract the particular item.",
+      "title": "Use FHIR Observation extraction?",
+      "pattern": "^true|false$",
+      "type": "boolean",
+      "widget": {
+        "id": "observation-extract",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0 m-auto ms-0"
       },
       "visibleIf": {
         "type": ["$EXP$ target.value != 'display'"]
@@ -1807,7 +1837,7 @@
       "widget": {
         "id": "units",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
+        "labelWidthClass": "col-sm-2 pe-1",
         "controlWidthClass": "col-sm-10"
       },
       "visibleIf": {
@@ -1821,8 +1851,8 @@
       "widget": {
         "id": "help-text",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-sm-2 p-0 pe-1",
+        "controlClasses": "col-sm form-control form-control-sm p-1"
       }
     },
     "__$end": {
@@ -5041,6 +5071,12 @@
       ]
     },
     {
+      "fields": ["__$terminologyServer"],
+      "showFields": [
+        { "field": "__$terminologyServer", "col": 12 }
+      ]
+    },
+    {
       "fields": ["__$units"],
       "showFields": [
         { "field": "__$units", "col": 12 }
@@ -5071,6 +5107,10 @@
     {
       "fields": ["__$observationLinkPeriod"],
       "showFields": [{"field": "__$observationLinkPeriod", "col": 10}]
+    },
+    {
+      "fields": ["__$observationExtract"],
+      "showFields": [{"field": "__$observationExtract", "col": 10}]
     },
     {
       "fields": ["id", "extension", "modifierExtension", "definition"]

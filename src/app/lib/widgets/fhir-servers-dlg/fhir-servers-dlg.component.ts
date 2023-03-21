@@ -12,9 +12,7 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
     <div role="dialog" aria-labelledby="serverDlgTitle" aria-describedby="ServerListCaption">
       <div class="modal-header bg-primary">
         <h4 id="serverDlgTitle" class="modal-title text-white">Choose a FHIR server</h4>
-        <button type="button" class="close" aria-label="Close" (click)="dismiss()">
-          <span class="text-white" aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="dismiss()"></button>
       </div>
       <div class="modal-body">
         <table class="table table-sm table-striped table-bordered">
@@ -31,7 +29,7 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
           <tr *ngFor="let fhirServer of fhirServerList; index as i">
             <th scope="row" class="align-middle">
               <label class="m-0 p-0">
-                <input [attr.id]="fhirServer.endpoint" type="radio" [value]="fhirServer" name="fhirServer" [(ngModel)]="selectedServer">
+                <input [attr.id]="fhirServer.endpoint" type="radio" [value]="fhirServer" name="fhirServer" [(ngModel)]="selectedServer" [ngModelOptions]="{standalone: true}">
               </label>
             </th>
             <td class="align-middle"><label [attr.for]="fhirServer.endpoint">{{fhirServer.endpoint}}</label></td>

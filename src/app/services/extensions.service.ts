@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {BehaviorSubject, Observable, Observer, Subject, Subscription} from 'rxjs';
+import {fhirPrimitives} from '../fhir';
 
 /**
  * This class is intended for components which needs to interact with extension field.
@@ -14,8 +15,8 @@ import {BehaviorSubject, Observable, Observer, Subject, Subscription} from 'rxjs
 // @ts-ignore
 export class ExtensionsService {
   extensionsProp: ArrayProperty;
-  _propertyMap: Map<fhir.uri, FormProperty []> = new Map();
-  _extMap: Map<fhir.uri, fhir.Extension []> = new Map();
+  _propertyMap: Map<fhirPrimitives.url, FormProperty []> = new Map();
+  _extMap: Map<fhirPrimitives.url, fhir.Extension []> = new Map();
   subscriptions: Subscription [] = [];
   extensionsChange$: Subject<fhir.Extension []> = new Subject<fhir.Extension []>();
 
@@ -57,7 +58,7 @@ export class ExtensionsService {
     this._extMap.clear();
     this._propertyMap.clear();
     this._propertyMap = (this.extensionsProp.properties as FormProperty [])
-      .reduce((acc: Map<fhir.uri, FormProperty[]>, property: FormProperty, index: number) => {
+      .reduce((acc: Map<fhirPrimitives.url, FormProperty[]>, property: FormProperty, index: number) => {
       let properties: FormProperty [] = acc.get(property.value.url);
       let values = this._extMap.get(property.value.url);
       if(!properties) {
@@ -77,7 +78,7 @@ export class ExtensionsService {
    * Get an array of all extension objects identified by the url.
    * @param extUrl - Url to identify the extensions.
    */
-  public getExtensionsByUrl(extUrl: fhir.uri): fhir.Extension [] {
+  public getExtensionsByUrl(extUrl: fhirPrimitives.url): fhir.Extension [] {
     return this._extMap.get(extUrl);
   }
 
@@ -86,7 +87,7 @@ export class ExtensionsService {
    * Get first extension object identified by the url.
    * @param extUrl - Url to identify the extension.
    */
-  public getFirstExtensionByUrl(extUrl: fhir.uri): fhir.Extension {
+  public getFirstExtensionByUrl(extUrl: fhirPrimitives.url): fhir.Extension {
     const extensions = this._extMap.get(extUrl);
     return extensions?.length > 0 ? extensions[0] : null;
   }
@@ -96,7 +97,7 @@ export class ExtensionsService {
    * Get an array of all extension form properties for a given extension url.
    * @param extUrl - Url to identify the extension.
    */
-  getExtensionFormPropertiesByUrl(extUrl: fhir.uri): FormProperty [] {
+  getExtensionFormPropertiesByUrl(extUrl: fhirPrimitives.url): FormProperty [] {
     return this._propertyMap.get(extUrl);
   }
 
@@ -105,7 +106,7 @@ export class ExtensionsService {
    * Get a single extension form property.
    * @param extUrl - Url to identify the extension.
    */
-  getFirstExtensionFormPropertyByUrl(extUrl: fhir.uri): FormProperty {
+  getFirstExtensionFormPropertyByUrl(extUrl: fhirPrimitives.url): FormProperty {
     const props = this._propertyMap.get(extUrl);
     return props?.length > 0 ? props[0] : null;
   }
@@ -196,7 +197,7 @@ export class ExtensionsService {
    * @param selfOnly - Emit change event to only self. False, emits the event to parent.
    *   Refer angular's reactive form documentation for more information.
    */
-  resetExtension(extUrl: fhir.uri, value: fhir.Extension, valueType: string, selfOnly) {
+  resetExtension(extUrl: fhirPrimitives.url, value: fhir.Extension, valueType: string, selfOnly) {
     const extProp: FormProperty = this.getFirstExtensionFormPropertyByUrl(extUrl);
     if(extProp) {
       extProp.reset(value, selfOnly);

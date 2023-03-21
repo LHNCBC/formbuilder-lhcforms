@@ -1,7 +1,6 @@
 <div class="modal-header bg-primary" role="dialog">
   <h4 class="modal-title text-white">Import a questionnaire</h4>
-  <button type="button btn-sm" class="close" aria-label="Close" (click)="close(false)">
-    <span class="text-white" aria-hidden="true">&times;</span>
+  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close(false)">
   </button>
 </div>
 <!--
@@ -14,41 +13,45 @@ It helps to keep the search visible while results are scrolling
 <!-- Search template -->
 <ng-template #search>
   <form class="container" role="search" aria-label="Search selected FHIR server">
-    <div class="row">
+    <div class="row align-items-center mb-2">
       <div class="col">
-        <div class="input-group input-group-sm">
-          <input type="text" class="form-control"
-                 [(ngModel)]="inputTerm"
-                 [ngModelOptions]="{standalone: true}"
-                 [placeholder]="searchField.searchFieldPlaceholder"
-                 aria-label="Search term"
-                 aria-describedby="filterHelp">
-          <button
-            class="align-self-baseline btn btn-sm btn-primary input-group-append"
-            type="button"
-            id="button-addon2"
-            (click)="searchInput()"
-            [disabled]="loading$ | async">
-            <span *ngIf="loading$ | async" class="spinner-border spinner-border-sm mr-2" aria-hidden="true" role="status"></span>
-            <span *ngIf="loading$ | async">Loading...</span>
-            <span *ngIf="(loading$ | async) === false">Search</span>
-          </button>
-          <span class="ml-1 align-self-end" ngbTooltip="Choose a search field and enter the search term. Choosing 'Any text field' implies searching '_content'. Please refer to FHIR REST API for details.">
-            <fa-icon [icon]="infoIcon"></fa-icon>
-          </span>
+        <div class="align-items-center d-inline-flex">
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control"
+                   [(ngModel)]="inputTerm"
+                   [ngModelOptions]="{standalone: true}"
+                   [placeholder]="searchField.searchFieldPlaceholder"
+                   aria-label="Search term"
+                   aria-describedby="filterHelp">
+            <button
+              class="align-self-baseline btn btn-sm btn-primary input-group-append"
+              type="button"
+              id="button-addon2"
+              (click)="searchInput()"
+              [disabled]="loading$ | async">
+              <span *ngIf="loading$ | async" class="spinner-border spinner-border-sm me-2" aria-hidden="true" role="status"></span>
+              <span *ngIf="loading$ | async">Loading...</span>
+              <span *ngIf="(loading$ | async) === false">Search</span>
+            </button>
+          </div>
+          <div class="ms-1" ngbTooltip="Choose a search field and enter the search term. Choosing 'Any text field' implies searching '_content'. Please refer to FHIR REST API for details.">
+          <fa-icon [icon]="infoIcon"></fa-icon>
+        </div>
         </div>
         <!-- <small id="filterHelp" class="form-text text-muted">Enter a term to narrow down the result set.</small> -->
       </div>
-      <div class="col form-group d-sm-inline-flex">
-          <label for="SelectFHIRServer1" class="align-self-center mb-0 text-nowrap">FHIR Server:&nbsp;</label>
-          <select class="form-control form-control-sm" id="SelectFHIRServer1" [(ngModel)]="selectedFHIRServer" [ngModelOptions]="{standalone: true}">
+      <div class="col">
+        <div class="row float-end">
+          <label for="SelectFHIRServer1" class="align-self-center col-auto col-form-label col-form-label-sm me-2 p-0 text-nowrap">FHIR Server:&nbsp;</label>
+          <select class="col-auto form-select form-select-sm w-auto" id="SelectFHIRServer1" [(ngModel)]="selectedFHIRServer" [ngModelOptions]="{standalone: true}">
             <option *ngFor="let server of getServerList()" [ngValue]="server">{{server.endpoint}}</option>
           </select>
+        </div>
       </div>
     </div>
-    <div class="m-0 mb-2 row">
-      <label for="searchField1" class="align-self-center mb-0 mr-2 text-nowrap">Search by term occurring in: </label>
-      <select class="form-control form-control-sm w-auto" id="searchField1" [(ngModel)]="searchField" [ngModelOptions]="{standalone: true}">
+    <div class="m-0 mb-2 row align-items-center">
+      <label for="searchField1" class="p-0 me-2  col-auto col-form-label text-nowrap">Search by term occurring in: </label>
+      <select class="form-select form-select-sm col-auto w-auto" id="searchField1" [(ngModel)]="searchField" [ngModelOptions]="{standalone: true}">
         <option *ngFor="let field of searchFieldList" [ngValue]="field">{{field.display}}</option>
       </select>
     </div>
@@ -59,7 +62,7 @@ It helps to keep the search visible while results are scrolling
         <h4 *ngIf="total === 0" role="alert">No resources were found.</h4>
         <h4 *ngIf="total === undefined" role="alert">The following resources were found.</h4>
       </div>
-      <div class="col-auto btn-group btn-group-sm btn-sm float-right" role="group" aria-label="Navigation">
+      <div class="col-auto btn-group btn-group-sm btn-sm float-end m-auto p-0" role="group" aria-label="Navigation">
         <button type="button" class="btn btn-outline-primary" [disabled]="!prevUrl" (click)="prevPage()">Previous</button>
         <button type="button" class="btn btn-outline-primary" [disabled]="!nextUrl" (click)="nextPage()">Next</button>
       </div>

@@ -1,8 +1,9 @@
 import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {SelectComponent} from '../select/select.component';
 import {RestrictionsComponent} from '../restrictions/restrictions.component';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
+import {fhirPrimitives} from '../../../fhir';
 
 /**
  * Used to get acceptance from parent component. The parent should subscribe to service
@@ -73,7 +74,7 @@ export class RestrictionsOperatorComponent extends SelectComponent implements On
    * Return option based on uri.
    * @param extUrl - FHIR extension uri.
    */
-  getOption(extUrl: fhir.uri) {
+  getOption(extUrl: fhirPrimitives.url) {
     return RestrictionsComponent.extUrlToOptionsMap[extUrl];
   }
 }

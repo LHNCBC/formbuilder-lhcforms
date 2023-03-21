@@ -26,6 +26,10 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
   @Input()
   controlWidthClass: string;
   @Input()
+  controlClasses: string;
+  @Input()
+  labelClasses: string;
+  @Input()
   booleanControlled = false;
   @Input()
   booleanLabel: string;
@@ -40,6 +44,9 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
     if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0) {
       this.formProperty.addItem();
     }
+    const widget = this.formProperty.schema.widget;
+    this.labelClasses = this.labelClasses || widget.labelClasses || '';
+    this.controlClasses = this.controlClasses || widget.controlClasses || '';
   }
 
 

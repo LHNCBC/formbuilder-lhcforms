@@ -1,0 +1,39 @@
+<input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
+       name="{{name}}" type="hidden" [formControl]="control">
+<ng-template #notHiddenFieldBlock>
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label *ngIf="!nolabel"
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelClasses"
+    ></lfb-label>
+    <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+      <ng-container *ngFor="let option of schema.oneOf">
+        <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" name="{{id}}"
+                 type="radio" [value]="option.enum[0]" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null" autocomplete="off">
+        <label class="btn btn-sm btn-outline-success" [attr.for]="id + '_' + option.enum[0]">{{option.title || option.description}}</label>
+      </ng-container>
+      <ng-container *ngFor="let option of schema.enum">
+        <input [attr.id]="id + '_' + option" [formControl]="control" class="btn-check" name="{{id}}"
+                 type="radio" [value]="option" [attr.disabled]="(schema.readOnly) ? '' : null" autocomplete="off">
+        <label class="btn btn-outline-success" [attr.for]="id + '_' + option"><span class="ms-1 me-3">{{option}}</span></label>
+      </ng-container>
+    </div>
+
+<!--
+    <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+      <ng-container *ngFor="let option of schema.oneOf">
+        <input id="label_radio_{{option.enum[0]}}" [formControl]="control" class="btn-check" name="{{id}}"
+               type="radio" [value]="option.enum[0]" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null" autocomplete="off">
+        <label class="btn btn-sm btn-outline-success" for="label_radio_{{option.enum[0]}}">{{option.title || option.description}}</label>
+      </ng-container>
+      <ng-container *ngFor="let option of schema.enum">
+        <input id="label_radio_{{option}}" [formControl]="control" class="btn-check" name="{{id}}"
+               type="radio" [value]="option" [attr.disabled]="(schema.readOnly) ? '' : null" autocomplete="off">
+        <label class="btn btn-outline-success" for="label_radio_{{option}}"><span class="ms-1 me-3">{{option}}</span></label>
+      </ng-container>
+    </div>
+-->
+  </div>
+</ng-template>

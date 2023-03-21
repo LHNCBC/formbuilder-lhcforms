@@ -1,20 +1,20 @@
 <ng-template #controller>
   <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0' : true}">
-    <lfb-label *ngIf="!nolabel" [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelWidthClass + ' pl-0 pr-1'"></lfb-label>
+    <lfb-label *ngIf="!nolabel" [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelClasses"></lfb-label>
 
-    <div
-         class="btn-group form-check-inline btn-group-sm btn-group-toggle">
-      <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
-        <label class="btn btn-outline-success m-0">
-          <input
-            class="btn-check"
-            [attr.name]="name"
-            [formControl]="control"
-            [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
-          {{option}}
-        </label>
-      </ng-container>
-    </div>
+      <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+        <ng-container *ngFor="let option of ['No', 'Yes']">
+          <input type="radio" class="btn-check"
+                 name="{{_id}}"
+                 [formControl]="control"
+                 [attr.id]="_id+option"
+                 [value]="option === 'Yes'"
+                 [attr.disabled]="schema.readOnly ? '' : null">
+          <label class="btn btn-outline-success m-0" [attr.for]="_id+option">
+            {{option}}
+          </label>
+        </ng-container>
+      </div>
   </div>
 </ng-template>
 

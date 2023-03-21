@@ -1,10 +1,11 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import Def from 'autocomplete-lhc';
 import {Subscription} from 'rxjs';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
+import {fhirPrimitives} from '../../../fhir';
 
 interface UnitExtension {
   url: string,
@@ -23,7 +24,7 @@ interface UnitExtension {
                  [for]="id"
                  [title]="schema.title"
                  [helpMessage]="schema.description"
-                 [ngClass]="labelWidthClass+' pl-0 pr-1'"
+                 [ngClass]="labelWidthClass+' ps-0 pe-1'"
       ></lfb-label>
       <div class="{{controlWidthClass}} p-0">
         <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control" />
@@ -174,7 +175,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param code - Code of the coding.
    * @param display - Display text of the coding.
    */
-  createUnitExt(unitsExtUrl: fhir.uri, system: fhir.uri, code: string, display: string): fhir.Extension {
+  createUnitExt(unitsExtUrl: fhirPrimitives.url, system: fhirPrimitives.url, code: string, display: string): fhir.Extension {
     const ret: UnitExtension =
       {
         url: unitsExtUrl,

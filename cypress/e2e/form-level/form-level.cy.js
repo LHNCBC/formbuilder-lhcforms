@@ -1,5 +1,8 @@
 /// <reference types="cypress" />
-import * as fhirServerMocks from '../../support/mocks/fhir-server-mocks';
+
+import {CypressUtil} from '../../support/cypress-util'
+import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
+
 describe('Home page accept LOINC notice', () => {
   before(() => {
     cy.clearSession();
@@ -56,7 +59,7 @@ describe('Home page', () => {
       cy.get('ngb-typeahead-window').should('be.visible');
       cy.get('ngb-typeahead-window button').first().click();
       cy.get('#title').should('have.value', 'Vital signs with method details panel');
-      cy.get('[id^="booleanControlled_Yes"]:checked').should('be.checked');
+      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
       cy.get('[id^="code.0.code"]').should('have.value', '34566-0');
     });
 
@@ -68,7 +71,7 @@ describe('Home page', () => {
       cy.fhirSearch(titleSearchTerm);
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
-      cy.get('[id^="booleanControlled_Yes"]:checked').should('be.checked');
+      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
       cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });
@@ -82,8 +85,12 @@ describe('Home page', () => {
 
     beforeEach(() => {
       cy.resetForm();
-      cy.get('[id^="booleanControlled_Yes"]').as('codeYes');
-      cy.get('[id^="booleanControlled_No"]').as('codeNo');
+      cy.get('[id^="booleanRadio_true"]').find('[type="radio"]').as('codeYes');
+      cy.get('[id^="booleanRadio_false"]').find('[type="radio"]').as('codeNo');
+    });
+
+    it('should include code only when use question code is yes (form level)', () => {
+      cy.contains('div', 'Code').should('be.visible').includeExcludeCodeField('form');
     });
 
     it('should retain title edits', () => {
@@ -98,7 +105,7 @@ describe('Home page', () => {
     });
 
     it('should move to form level fields', () => {
-      cy.get('lfb-form-fields div div p').should('have.text', 'Enter basic information about the form.');
+      cy.get('lfb-form-fields > div > div > p').should('have.text', 'Enter basic information about the form.');
     })
 
     it('should hide/display code field', () => {
@@ -131,12 +138,12 @@ describe('Home page', () => {
       cy.contains('.mat-mdc-tab', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
-      cy.get('@ethnicity').scrollIntoView().type('lat');
+      cy.get('@ethnicity').scrollIntoView().type('l');
       cy.get('#completionOptions').should('be.visible', true);
       cy.get('@ethnicity').type('{downarrow}');
       cy.get('@ethnicity').type('{enter}');
-      cy.get('span.autocomp_selected').contains('Latin American');
-      cy.contains('mat-dialog-actions > button', 'Close').click();
+      cy.get('span.autocomp_selected').contains('La Raza');
+      cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
     });
 
     it('should create questionnaire on the fhir server', () => {
@@ -161,6 +168,69 @@ describe('Home page', () => {
         expect(json.title).equal('Modified title');
       });
     });
+
+
+    it('should expand/collapse advanced fields panel', () => {
+      cy.tsUrl().should('not.be.visible');
+      cy.advancedFields().click();
+      cy.tsUrl().should('be.visible');
+      cy.advancedFields().click();
+      cy.tsUrl().should('not.be.visible');
+    });
+
+    describe('Form level fields: Advanced', () => {
+      beforeEach(() => {
+        cy.advancedFields().click();
+        cy.tsUrl().should('be.visible');
+      });
+
+      it('should create terminology server extension', () => {
+        cy.tsUrl().type('http://example.org/fhir');
+        CypressUtil.assertValueInQuestionnaire('/extension',
+          [{
+            valueUrl: 'http://example.org/fhir',
+            url: ExtensionDefs.preferredTerminologyServer.url
+          }]);
+        cy.tsUrl().clear();
+        CypressUtil.assertValueInQuestionnaire('/extension', undefined);
+        cy.tsUrl().type('http://example.com/r4');
+        CypressUtil.assertValueInQuestionnaire('/extension',
+          [{
+            url: ExtensionDefs.preferredTerminologyServer.url,
+            valueUrl: 'http://example.com/r4'
+          }]);
+      });
+
+      it('should import form with terminology server extension at form level', () => {
+        const sampleFile = 'terminology-server-sample.json';
+        cy.uploadFile(sampleFile, false); // Avoid warning form loading based on item or form
+        cy.get('#title').should('have.value', 'Terminology server sample form');
+        cy.tsUrl().should('be.visible');
+        cy.tsUrl().should('have.value', 'https://example.org/fhir');
+        CypressUtil.assertExtensionsInQuestionnaire(
+          '/extension',
+          ExtensionDefs.preferredTerminologyServer.url,
+          [{
+            url: ExtensionDefs.preferredTerminologyServer.url,
+            valueUrl: 'https://example.org/fhir'
+          }]
+        );
+
+        cy.tsUrl().clear();
+        CypressUtil.assertExtensionsInQuestionnaire(
+          '/extension', ExtensionDefs.preferredTerminologyServer.url,[]);
+
+        cy.tsUrl().type('http://a.b');
+        CypressUtil.assertExtensionsInQuestionnaire(
+          '/extension',
+          ExtensionDefs.preferredTerminologyServer.url,
+          [{
+            url: ExtensionDefs.preferredTerminologyServer.url,
+            valueUrl: 'http://a.b'
+          }]
+        );
+      });
+    });
   });
 
   describe('User specified FHIR server dialog', () => {
@@ -173,7 +243,7 @@ describe('Home page', () => {
 
     beforeEach(() => {
       cy.contains('div.modal-footer button', 'Add your FHIR server').click();
-      cy.get('input[type="url"]').as('inputUrl');
+      cy.get('#urlInput').as('inputUrl');
       cy.contains('button', 'Validate').as('validate');
       cy.contains('lfb-user-server-dlg button', 'Add').as('add');
       cy.contains('lfb-user-server-dlg button', 'Cancel').as('cancel');
@@ -280,7 +350,7 @@ describe('Home page', () => {
       cy.contains('div.modal-footer button', 'Continue').click();
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
-      cy.get('[id^="booleanControlled_Yes"]').should('be.checked');
+      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
       cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });

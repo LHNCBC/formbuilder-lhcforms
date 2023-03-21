@@ -15,7 +15,6 @@ import {CommonTestingModule} from '../../../testing/common-testing.module';
 import {TestUtil} from '../../../testing/util';
 import {BasePageComponent} from '../../../base-page/base-page.component';
 import {of} from 'rxjs';
-import {fhir} from '../../../fhir';
 import {ChangeDetectionStrategy} from '@angular/core';
 
 describe('FhirSearchDlgComponent', () => {

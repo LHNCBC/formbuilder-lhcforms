@@ -2,6 +2,32 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [8.0.11] 2023-03-08
+### Added
+- Added support for answerValueSet field.
+- Added display column to code field.
+- Added terminology server field to form level fields and item level fields.
+- Added collapse/expand panel for advanced fields.
+
+### Changed
+- Changed code field labels.
+- Moved conditional display, observation link period, and observation extract fields to advanced panel.
+
+### Fixed
+- Fixed visibleIf issue with answerOption and code when visibility is false.
+
+## [8.0.10] 2023-01-25
+### Changed
+- Display LOINC terms of use acceptance dialog after displaying home page.
+
+## [8.0.9] 2023-01-09
+### Fixed
+- Fix screen reader announcing blank on tooltip icons.
+
+## [8.0.8] 2023-01-06
+### Added
+- Support extension for observation extract.
+
 ## [8.0.7] 2022-12-14
 ### Added
 - Support import of forms that are in LForms format.

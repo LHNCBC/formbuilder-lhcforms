@@ -1,13 +1,21 @@
 {
   "formLayout": {
-    "rows": [
+    "basic": [
       {
         "showFields": [
           { "field": "title", "col": 12 },
+          { "field": "__$codeYesNo", "col": 12 },
           { "field": "code", "col": 12 },
           { "field": "status", "col": 12},
           { "field": "description", "col": 12},
           { "field": "purpose", "col": 12}
+        ]
+      }
+    ],
+    "advanced": [
+      {
+        "showFields": [
+          { "field": "__$terminologyServer", "col": 12}
         ]
       }
     ]

@@ -27,7 +27,7 @@ import {NgbActiveModal, NgbDropdown, NgbModal, NgbModalRef} from '@ng-bootstrap/
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {debounceTime, distinctUntilChanged, switchMap,} from 'rxjs/operators';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {TreeService} from '../services/tree.service';
 import {faEllipsisH, faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {environment} from '../../environments/environment';
@@ -83,24 +83,22 @@ export class LinkIdCollection {
 @Component({
   selector: 'lfb-confirm-dlg',
   template: `
-    <div class="modal-header">
-      <h4 class="modal-title">{{title}}</h4>
-      <button type="button" class="close" aria-label="Close"
+    <div class="modal-header bg-primary">
+      <h4 class="modal-title text-white">{{title}}</h4>
+      <button type="button" class="btn-close btn-close-white" aria-label="Close"
               (click)="activeModal.dismiss(false)"
               (keydown.enter)="activeModal.dismiss(false)"
-      >
-        <span aria-hidden="true">&times;</span>
-      </button>
+      ></button>
     </div>
     <div class="modal-body">
       <p>{{message}}</p>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-outline-dark"
+      <button type="button" class="btn btn-primary"
               (keydown.enter)="activeModal.dismiss(false)"
               (click)="activeModal.dismiss(false)"
       >No</button>
-      <button type="button" class="btn btn-outline-dark"
+      <button type="button" class="btn btn-primary"
               (keydown.enter)="activeModal.close(true)"
               (click)="activeModal.close(true)"
       >Yes</button>
@@ -255,8 +253,8 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
     this.itemList = this.itemList || [];
     if(this.itemList.length === 0) {
       this.itemList.push({text: 'Item 0', type: 'string'});
-      this.itemData = this.itemList[0];
     }
+    this.itemData = this.itemList[0];
     if(this.treeComponent?.treeModel) {
       this.treeComponent?.treeModel.update();
     }
@@ -266,7 +264,15 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
    * Inform the change to host element.
    */
   itemChanged(item) {
-    this.itemData = this.itemData ? Object.assign(this.itemData, item) : null;
+    if(this.itemData) {
+      for (const key of Object.keys(this.itemData)) {
+        if(key !== 'item') {
+          delete this.itemData[key];
+        }
+      }
+      Object.assign(this.itemData, item);
+    }
+
     if (typeof this.itemData?.linkId === 'number') {
       this.itemData.linkId = ''+this.itemData.linkId;
     }

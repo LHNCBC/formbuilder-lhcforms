@@ -21,7 +21,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 
       <lfb-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
       <input *ngIf="schema.type!='array'"
-             [attr.name]="name"
+             name="{{name}}"
              [attr.id]="id"
              [attr.disabled]="schema.readOnly ? '' : null"
              type="text"
@@ -38,7 +38,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
              popupClass="add-scrolling"
       >
 
-      <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">
+      <input *ngIf="schema.readOnly" name="{{name}}" type="hidden" [formControl]="control">
     </div>
   `,
   styles: [

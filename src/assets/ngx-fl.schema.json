@@ -709,8 +709,8 @@
       "widget": {
         "id": "string",
         "labelPosition": "left",
-        "labelWidthClass": "col-2",
-        "controlWidthClass": "col-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "derivedFrom": {
@@ -737,8 +737,8 @@
         "id": "lb-radio",
         "layout": "row",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-6"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto ps-0 btn-group btn-group-sm"
       }
     },
     "experimental": {
@@ -957,8 +957,8 @@
       "widget": {
         "id": "string",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "useContext": {
@@ -1648,8 +1648,8 @@
       "widget": {
         "id": "string",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "copyright": {
@@ -1721,6 +1721,18 @@
       },
       "additionalProperties": false,
       "type": "object"
+    },
+    "__$codeYesNo": {
+      "description": "An identifier for this question or group of questions in a particular terminology such as LOINC.",
+      "default": false,
+      "type": "boolean",
+      "title": "Code",
+      "widget": {
+        "id": "boolean-radio",
+        "optionLabels": [[false, "No code"], [true, "Include code"]],
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
+      }
     },
     "code": {
       "description": "An identifier for this question or group of questions in a particular terminology such as LOINC.",
@@ -1797,22 +1809,36 @@
       },
       "type": "array",
       "title": "Code",
+      "visibleIf": {
+        "__$codeYesNo": [true]
+      },
       "widget": {
         "id": "table",
         "noTableLabel": true,
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-sm-2",
+        "controlClasses": "col-sm-10",
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
-        "booleanControlled": true,
-        "booleanLabel": "Use code?",
-        "booleanControlledInitial": false,
         "showFields": [
-          {"field": "code", "col": 4, "nolabel": true},
-          {"field": "system", "col": 7, "nolabel": true}
+          {"field": "code", "col": 3, "nolabel": true},
+          {"field": "system", "col": 4, "nolabel": true},
+          {"field": "display", "col": 4, "nolabel": true}
         ]
+      }
+    },
+    "__$terminologyServer": {
+      "description": "Enter url for preferred terminology server.",
+      "title": "Terminology server",
+      "type": "string",
+      "widget": {
+        "id": "terminology-server",
+        "placeholder": "Enter url for preferred terminology server",
+        "note": "You may wish to set this if you want to provide an answer value set for any item in this questionnaire.",
+        "labelPosition": "left",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-10"
       }
     }
   },
@@ -1843,10 +1869,12 @@
         "resourceType",
         "title",
         "name",
+        "__$codeYesNo",
         "code",
         "status",
         "description",
-        "purpose"
+        "purpose",
+        "__$terminologyServer"
       ]
     },
     {

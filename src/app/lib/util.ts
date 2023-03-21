@@ -3,7 +3,7 @@
  */
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import traverse from 'traverse';
-import {fhir} from '../fhir';
+import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 
@@ -270,7 +270,11 @@ export class Util {
   static convertToQuestionnaireJSON(value) {
     traverse(value).forEach(function (node) {
       this.before(function () {
-        if (node?.__$helpText?.trim().length > 0) {
+        if(node && Array.isArray(node) && node.includes(undefined)) {
+          // Remove empty elements from array. They do not trigger callbacks.
+          this.update(node.filter(()=>{return true}));
+        }
+        else if (node?.__$helpText?.trim().length > 0) {
           const index = Util.findItemIndexWithHelpText(node.item);
           let helpTextItem;
           if (index < 0) {
@@ -432,7 +436,7 @@ export class Util {
    * @param limit - Length to limit the truncation.
    */
   static truncateString(text: string, limit: number = 15): string {
-    return text.length > limit ? (text.substring(0, limit).trim() + '...') : text;
+    return text?.length > limit ? (text.substring(0, limit).trim() + '...') : text;
   }
 
 

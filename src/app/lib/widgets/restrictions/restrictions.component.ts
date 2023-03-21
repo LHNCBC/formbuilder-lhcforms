@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';
 import {ExtensionsService} from '../../../services/extensions.service';
@@ -107,6 +107,9 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     let sub = this.formProperty.root.getProperty('type').valueChanges.subscribe((type) => {
       this.dataType = type;
       this.appliedOptions = RestrictionsComponent.typeToOptions[type];
+      const restrictions = this.getRestrictions(this.formProperty.root, this.appliedOptions);
+      this.updateSelectedOptions(restrictions);
+      this.formProperty.setValue(restrictions, true);
     });
     this.subscriptions.push(sub);
     let initializing = false;
@@ -154,6 +157,17 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     restrictions?.forEach((res) => {
       this.selectedOptions.add(res.operator);
     });
+  }
+
+  /**
+   * Handle booleanControlled change event.
+   * @param event - Angular event emitted value.
+   */
+  onBooleanControlledChange(event: boolean) {
+    super.onBooleanControlledChange(event);
+    if(this.booleanControlledOption) {
+      this.formProperty.reset(null, false);
+    }
   }
 
   /**

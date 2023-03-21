@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import {FhirService, FHIRServer} from '../../../services/fhir.service';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
-import { fhir } from 'src/app/fhir';
+import fhir from 'fhir/r4';
+import {fhirPrimitives} from '../../../fhir';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {delay, map, switchMap, tap} from 'rxjs/operators';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
-
 // Search related inputs on the page.
 interface State {
   searchTerm: string;
@@ -45,8 +45,8 @@ export class FhirSearchDlgComponent implements OnInit {
   inputTerm = '';
   resultsOffset = 0; // To calculate serial number of the results across pages
   pageSize = 20;
-  nextUrl: fhir.uri = null;
-  prevUrl: fhir.uri = null;
+  nextUrl: fhirPrimitives.url = null;
+  prevUrl: fhirPrimitives.url = null;
   total: number = undefined;
   questionnaires: fhir.Questionnaire [];
 
@@ -191,7 +191,7 @@ export class FhirSearchDlgComponent implements OnInit {
    * Get resource bundle using url, typically by navigation links.
    * @param url
    */
-  getBundleByUrl(url: fhir.uri): void {
+  getBundleByUrl(url: fhirPrimitives.url): void {
     this.fhirService.getBundleByUrl(url).subscribe((bundle) => {
       this._bundle$.next(bundle);
     });
@@ -201,7 +201,7 @@ export class FhirSearchDlgComponent implements OnInit {
    * Get offset of results page. Used to calculate serial numbers on the page.
    * @param url
    */
-  _getOffset(url: fhir.uri): number {
+  _getOffset(url: fhirPrimitives.url): number {
     let ret = '';
     if(url) {
       ret = new URL(url).searchParams.get('_getpagesoffset');

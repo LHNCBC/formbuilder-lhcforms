@@ -10,7 +10,8 @@
 //
 //
 import {isEqual} from 'lodash';
-import * as fhirServerMocks from "./mocks/fhir-server-mocks";
+import {searchFHIRServer} from "./mocks/fhir-server-mocks";
+import {CypressUtil} from "./cypress-util";
 // -- This is a parent command --
 // Cypress.Commands.add('login', (email, password) => { ... })
 //
@@ -93,12 +94,7 @@ Cypress.Commands.add('uploadFile',(fileName, handleWarning) => {
  * Command to get json from 'Preview'
  */
 Cypress.Commands.add('questionnaireJSON', () => {
-  cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
-  cy.contains('.mat-mdc-tab', 'View Questionnaire JSON').scrollIntoView().click();
-  return cy.get('mat-tab-body div.mat-mdc-tab-body-content pre').invoke('text').then((text) => {
-    cy.get('mat-dialog-actions > button').scrollIntoView().click();
-    return cy.wrap(JSON.parse(text));
-  });
+  return CypressUtil.getQuestionnaireJSON();
 });
 
 /**
@@ -169,10 +165,9 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
-    cy.get('[id^="answerOption.'+index+'.valueCoding.display"]').type(coding.display);
-    cy.get('[id^="answerOption.'+index+'.valueCoding.code"]').type(coding.code);
-    cy.get('[id^="answerOption.'+index+'.valueCoding.system"]').type(coding.system);
-    cy.get('[id^="answerOption.'+index+'.valueCoding.__$score"]').type(coding.__$score);
+    Object.keys(coding).forEach((key) => {
+      cy.get('[id^="answerOption.'+index+'.valueCoding.'+key+'"]').type(coding[key]);
+    });
     cy.contains('button', 'Add another answer').click();
   });
 });
@@ -223,6 +218,42 @@ Cypress.Commands.add('addAnswerOptions', () => {
 
 });
 
+/**
+ * Test code yes no options
+ */
+Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOptionElement, formOrItem) => {
+  const formTesting = formOrItem === 'form' ? true : false;
+  cy.wrap(codeOptionElement).find('[id^="booleanRadio_true"]').as('codeYes');
+  cy.wrap(codeOptionElement).find('[id^="booleanRadio_false"]').as('codeNo');
+  cy.get('@codeNo').should('have.class', 'active');
+  cy.questionnaireJSON().should((q) => {
+    const jsonCode = formTesting ? q.code : q.item[0].code;
+    expect(jsonCode).to.be.undefined;
+  });
+
+  const coding = {code: 'c1', system: 's1', display: 'd1'}
+  cy.get('@codeYes').click();
+  cy.get('[id^="code.0.code_"]').type(coding.code);
+  cy.get('[id^="code.0.system_"]').type(coding.system);
+  cy.get('[id^="code.0.display_"]').type(coding.display);
+  cy.questionnaireJSON().should((q) => {
+    const code = formTesting ? q.code : q.item[0].code;
+    expect(code).to.deep.equal([coding]);
+  });
+
+  cy.get('@codeNo').click();
+  cy.questionnaireJSON().should((q) => {
+    const code = formTesting ? q.code : q.item[0].code;
+    expect(code).to.be.undefined;
+  });
+
+  cy.get('@codeYes').click();
+  cy.questionnaireJSON().should((q) => {
+    const code = formTesting ? q.code : q.item[0].code;
+    expect(code).to.deep.equal([coding]);
+  });
+});
+
 //For Cypress drag and drop custom command
 /**
  * TODO - Not working, revisit.
@@ -264,7 +295,7 @@ Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
  * Make sure to create mock response based on titleSearchTerm.
  */
 Cypress.Commands.add('fhirSearch', (titleSearchTerm) => {
-  fhirServerMocks.searchFHIRServer(titleSearchTerm,
+  searchFHIRServer(titleSearchTerm,
     `fhir-server-mock-response-${titleSearchTerm}.json`);
   cy.get('input[type="radio"][name="fhirServer"]').first().click();
   cy.contains('div.modal-footer button', 'Continue').click();
@@ -343,9 +374,28 @@ Cypress.Commands.add('waitForSpinner', () => {
 });
 
 /**
- * CLick a node on the side bar.
+ * CLick a node on the sidebar.
  */
 Cypress.Commands.add('clickTreeNode', (nodeText) => {
   cy.getTreeNode(nodeText).click();
   cy.contains('#itemContent span', nodeText);
 });
+
+/**
+ * Look for extension field and return all that match the url.
+ *
+ * @param extensionsArray: Array of extensions.
+ * @param url: URL of the desired extensions.
+ */
+Cypress.Commands.add('getExtensions', (extensionsArray, url) => {
+  return extensionsArray?.filter((ext) => ext.url === url);
+});
+
+Cypress.Commands.add('advancedFields', () => {
+  return cy.contains('button', 'Advanced fields');
+});
+
+Cypress.Commands.add('tsUrl', () => {
+  return cy.get('[id="__$terminologyServer"]');
+});
+

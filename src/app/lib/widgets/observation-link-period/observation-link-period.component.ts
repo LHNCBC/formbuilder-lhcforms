@@ -7,14 +7,14 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {UnitsComponent} from '../units/units.component';
 import {Subscription} from 'rxjs';
-import {fhir} from '../../../fhir';
-import integer = fhir.integer;
+import fhir from 'fhir/r4';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {StringComponent} from '../string/string.component';
+import {fhirPrimitives} from '../../../fhir';
 
 
 interface ObservationLinkPeriodExtension {
-  url: fhir.uri,
+  url: fhirPrimitives.url,
   valueDuration: {
     value: number,
     system?: string,
@@ -26,15 +26,14 @@ interface ObservationLinkPeriodExtension {
 
 @Component({
   selector: 'lfb-observation-link-period',
-  templateUrl: './observation-link-period.component.html',
-  styleUrls: ['./observation-link-period.component.css']
+  templateUrl: './observation-link-period.component.html'
 })
-export class ObservationLinkPeriodComponent extends StringComponent implements AfterViewInit {
-  static extUrl: fhir.uri = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
+export class ObservationLinkPeriodComponent extends StringComponent implements OnInit {
+  static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
   static seqNum = 0;
   elementId: string;
   subscriptions: Subscription [];
-  unitIndex: integer = 0;
+  unitIndex: fhirPrimitives.integer = 0;
   value: string;
   adjustVAlignClass = 'd-flex';
 
@@ -59,17 +58,24 @@ export class ObservationLinkPeriodComponent extends StringComponent implements A
   /**
    * Read extension and initialize properties.
    */
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
+  ngOnInit() {
+    this.setOlp();
     this.extensionsService.extensionsObservable.subscribe(() => {
-      const ext = this.getExtension();
-      if(ext) {
-        this.showOlp = true;
-        this.adjustVAlignClass = '';
-        this.setUnitIndex(ext);
-        this.value = ''+ext.valueDuration.value;
-      }
+      this.setOlp();
     });
+  }
+
+  /**
+   * Setup Observation link period
+   */
+  setOlp() {
+    const ext = this.getExtension();
+    if(ext) {
+      this.showOlp = true;
+      this.adjustVAlignClass = '';
+      this.setUnitIndex(ext);
+      this.value = ''+ext.valueDuration.value;
+    }
   }
 
 

@@ -5,14 +5,14 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
       <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
-              [attr.name]="name" [attr.id]="id"
+              name="{{name}}" [attr.id]="id"
               class="form-control"
       >
         <ng-container>

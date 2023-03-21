@@ -12,7 +12,7 @@
 <div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group m-0"
      [ngClass]=
        "{'row': labelPosition === 'left'}">
-  <div [ngClass]="labelWidthClass + ' pl-0 pr-1'">
+  <div [ngClass]="labelWidthClass + ' ps-0 pe-1'">
     <button *ngIf="!noCollapseButton" href="#" type="button"
             [ngClass]="{'float-sm-right': labelPosition === 'left'}"
             class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
@@ -23,7 +23,7 @@
   </div>
   <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
     <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
-      <thead *ngIf="!noHeader" class="thead-light">
+      <thead *ngIf="!noHeader" class="table-active">
       <tr class="d-flex">
         <th *ngFor="let showField of showHeaderFields" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
           <lfb-title
@@ -49,16 +49,16 @@
                   matTooltip="Remove" aria-label="Remove"
           >
             <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-          <button [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getAnswerFieldErrors(rowProperty) | async"
+          <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getAnswerFieldErrors(rowProperty) | async"
                   class="btn border-0 p-0 b-0 answerXErrors"
-                  [matTooltip]="getAnswerFieldErrors(rowProperty) | async" role="alert"
+                  [matTooltip]="getAnswerFieldErrors(rowProperty) | async"
                   [attr.aria-label]="'Error in conditional display condition '+rowNum+': '+(getAnswerFieldErrors(rowProperty) | async)"
-          ><fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon></button>
+          ><fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon></div>
         </td>
       </tr>
       </tbody>
     </table>
-    <button (click)="addItemWithAlert(alertPopover)" class="btn-sm btn-light btn-link array-add-button"
+    <button (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
             [attr.disabled]="isAddButtonDisabled() ? '' : null"
             *ngIf="!singleItem &&
                 (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"

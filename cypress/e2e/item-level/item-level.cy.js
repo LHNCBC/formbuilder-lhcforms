@@ -1,9 +1,13 @@
 /// <reference types="cypress" />
 
 import {Util} from '../../../src/app/lib/util';
+import {CypressUtil} from '../../support/cypress-util';
+import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
+const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
 const ucumUrl = 'http://unitsofmeasure.org';
+
 describe('Home page', () => {
   before(() => {
     // Cypress starts out with a blank slate for each test
@@ -40,10 +44,9 @@ describe('Home page', () => {
       cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
-      cy.contains('div', 'Use question code?')
-        .find('[id^="booleanControlled_Yes"]').as('codeYes');
-      cy.contains('div', 'Use question code?')
-        .find('[id^="booleanControlled_No"]').as('codeNo');
+      cy.contains('div', 'Question code').should('be.visible').as('codeOption');
+      cy.get('@codeOption').find('[id^="booleanRadio_true"]').as('codeYes');
+      cy.get('@codeOption').find('[id^="booleanRadio_false"]').as('codeNo');
       cy.get('#__\\$observationLinkPeriod_No').as('olpNo');
       cy.get('#__\\$observationLinkPeriod_Yes').as('olpYes');
 
@@ -75,7 +78,11 @@ describe('Home page', () => {
 
     });
 
-    it.only('should import item from CTSS with answer option', () => {
+    it('should include code only when use question code is yes', () => {
+      cy.get('@codeOption').includeExcludeCodeField();
+    });
+
+    it('should import item from CTSS with answer option', () => {
       cy.contains('Add new item from LOINC').scrollIntoView().click();
       cy.contains('ngb-modal-window label', 'Question').click();
       cy.get('#acSearchBoxId').type('vital signs assess');
@@ -364,8 +371,8 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Sample to test initial component error');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
-        expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
+        expect(qJson.item[0].item[0].answerOption).to.deep.equal(fixtureJson.item[0].item[0].answerOption);
+        expect(qJson.item[0].item[0].initial).to.deep.equal(fixtureJson.item[0].item[0].initial);
       });
 
       cy.toggleTreeNodeExpansion('Group item 1');
@@ -373,11 +380,59 @@ describe('Home page', () => {
       cy.get('@type').find(':selected').should('have.text', 'choice');
       cy.get('[id^="answerOption."]').should('be.visible');
       cy.get('[id^="initial"]').should('not.be.visible');
+      cy.get('[id^="radio_answerOption.1"]').should('be.checked', true);
       cy.selectDataType('decimal');
       cy.get('[id^="answerOption."]').should('not.exist');
       cy.get('[id^="initial.0.valueDecimal"]').should('be.visible').type('1.2');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].initial[0].valueDecimal).equal(1.2);
+      });
+    });
+
+    it('should create answerValueSet', () => {
+      cy.selectDataType('choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').as('aoRadio');
+      cy.get('@aoRadio').should('have.class', 'active');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').as('vsRadio').should('not.have.class', 'active');
+      cy.get('#answerValueSet').should('not.exist');
+      cy.get('lfb-answer-option').should('be.visible');
+
+      cy.get('@vsRadio').click();
+      cy.get('#answerValueSet').should('be.visible').as('vsInput');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('@vsInput').type('http://example.org');
+      cy.questionnaireJSON().should((q) => {
+        expect(q.item[0].answerValueSet).equal('http://example.org');
+        expect(q.item[0].answerOption).to.be.undefined;
+      });
+
+      cy.get('@aoRadio').click();
+      cy.get('#answerValueSet').should('not.exist');
+      cy.get('lfb-answer-option').should('be.visible');
+      const aOptions = [
+        {display: 'display 1', code: 'c1', system: 's1'},
+        {display: 'display 2', code: 'c2', system: 's2'}
+      ];
+      cy.enterAnswerOptions(aOptions);
+      cy.questionnaireJSON().should((q) => {
+        expect(q.item[0].answerValueSet).to.be.undefined;
+        expect(q.item[0].answerOption[0].valueCoding).to.deep.equal(aOptions[0]);
+        expect(q.item[0].answerOption[1].valueCoding).to.deep.equal(aOptions[1]);
+      });
+    });
+
+    it('should import a form with an item having answerValueSet', () => {
+      cy.uploadFile('answer-value-set-sample.json', true);
+      cy.get('#title').should('have.value', 'Answer value set form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('#type option:selected').should('have.text', 'choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.have.class', 'active');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('have.class', 'active');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet').should('have.value','http://example.org');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerValueSet).to.equal('http://example.org');
       });
     });
 
@@ -519,229 +574,6 @@ describe('Home page', () => {
       });
     });
 
-    it('should work conditional display with answer coding source', () => {
-      cy.addAnswerOptions();
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
-      cy.get('[id^="enableWhen.0.operator"]').select('=');
-      cy.get('[id^="enableWhen.0.answerCoding"]').select('d1 (c1)');
-
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item.length).equal(2);
-        // Verify enableWhen construct.
-        expect(qJson.item[1].enableWhen.length).equal(1);
-        expect(qJson.item[1].enableWhen[0].question).equal(qJson.item[0].linkId);
-        expect(qJson.item[1].enableWhen[0].operator).equal('=');
-        expect(qJson.item[1].enableWhen[0].answerCoding.display).equal(qJson.item[0].answerOption[0].valueCoding.display);
-        expect(qJson.item[1].enableWhen[0].answerCoding.code).equal(qJson.item[0].answerOption[0].valueCoding.code);
-        expect(qJson.item[1].enableWhen[0].answerCoding.system).equal(qJson.item[0].answerOption[0].valueCoding.system);
-      });
-    });
-
-    it('should display error message for invalid answer in conditional display', () => {
-      cy.contains('Add new item').scrollIntoView().click();
-
-      const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
-      const question1El = '[id^="enableWhen.0.question"]';
-      const operator1El = '[id^="enableWhen.0.operator"]';
-      const answer1El = '[id^="enableWhen.0.answer"]';
-      const errorIcon1El = '[id^="enableWhen.0_err"]';
-      const question2El = '[id^="enableWhen.1.question"]';
-      const operator2El = '[id^="enableWhen.1.operator"]';
-      const answer2El = '[id^="enableWhen.1.answer"]';
-      const errorIcon2El = '[id^="enableWhen.1_err"]';
-
-      cy.get(question1El).type('{downarrow}{enter}');
-      cy.get(errorIcon1El).should('not.exist');
-      cy.get(errorMessageEl).should('not.exist');
-
-      cy.get(operator1El).select('=');
-      cy.get(errorIcon1El).should('be.visible');
-      cy.get(errorMessageEl).should('have.length', 2);
-      cy.get(operator1El).select('Empty');
-      cy.get(errorIcon1El).should('not.exist');
-      cy.get(errorMessageEl).should('not.exist');
-
-      cy.get(operator1El).select('>');
-      cy.get(errorIcon1El).should('be.visible');
-      cy.get(errorMessageEl).should('have.length', 2);
-      cy.get(answer1El).type('1');
-      cy.get(errorIcon1El).should('not.exist');
-      cy.get(errorMessageEl).should('not.exist');
-
-      cy.contains('button', 'Add another condition').click();
-
-      cy.get(question2El).type('{downarrow}{enter}');
-      cy.get(errorIcon2El).should('not.exist');
-      cy.get(errorMessageEl).should('not.exist');
-      cy.get(operator2El).select('<');
-      cy.get(errorIcon2El).should('be.visible');
-      cy.get(errorMessageEl).should('have.length', 2);
-      cy.get('[id^="enableWhen.1_remove"]').click();
-      cy.get(errorMessageEl).should('not.exist');
-
-    });
-
-    it('should show answer column if there is an answer option in any row of conditional display', () => {
-      cy.selectDataType('choice');
-      cy.enterAnswerOptions([
-        {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
-        {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
-      ]);
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.get('#text').should('have.value', 'New item 1');
-      cy.enterAnswerOptions([
-        {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
-        {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
-        {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
-      ]);
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.get('#text').should('have.value', 'New item 2');
-
-      cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
-      cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
-      cy.get('[id^="enableWhen.0.answerCoding"]').should('not.exist');
-
-      cy.contains('button', 'Add another condition').click();
-
-      cy.get('[id^="enableWhen.1.question"]').as('r2Question').type('{downarrow}{enter}');
-      cy.get('[id^="enableWhen.1.operator"]').as('r2Operator').select('=');
-      cy.get('[id^="enableWhen.1.answerCoding"]').as('r2Answer').select('display 3 (c3)');
-
-      cy.get('[id^="enableWhen.0.answerCoding"]').should('not.exist');
-
-      cy.get('@r2Operator').select('Empty');
-      cy.get('@r2Answer').should('not.exist');
-      cy.get('@r1Operator').select('=');
-      cy.get('[id^="enableWhen.0.answerCoding"]').as('r1Answer').should('be.visible');
-      cy.get('@r1Answer').select('display 1 (c1)');
-    });
-
-    it('should show answer column if there is an answer in any row of conditional display', () => {
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.get('#text').should('have.value', 'New item 1');
-
-      const r1Question = '[id^="enableWhen.0.question"]';
-      const r1Operator = '[id^="enableWhen.0.operator"]';
-      const r1Answer = '[id^="enableWhen.0.answer"]';
-      const r2Question = '[id^="enableWhen.1.question"]';
-      const r2Operator = '[id^="enableWhen.1.operator"]';
-      const r2Answer = '[id^="enableWhen.1.answer"]';
-      // First row operator='exist'
-      cy.get(r1Question).as('r1Question').type('{enter}');
-      cy.get(r1Operator).as('r1Operator').select('Not empty');
-      cy.get(r1Answer).should('not.exist');
-
-      cy.contains('button', 'Add another condition').click();
-
-      // Second row other than 'exist'
-      cy.get(r2Question).type('{downarrow}{enter}');
-      cy.get(r2Operator).select('=');
-      cy.get(r2Answer).type('2');
-      cy.get(r1Answer).should('not.exist');
-
-      // Flip the first and second row operators
-      cy.get(r1Operator).select('=');
-      cy.get(r1Answer).type('1');
-      cy.get(r2Answer).should('have.value','2');
-
-      cy.get(r2Operator).select('Empty');
-      cy.get(r1Answer).should('have.value', '1');
-      cy.get(r2Answer).should('not.exist');
-    });
-
-    it('should work with operator exists value conditional display', () => {
-      // cy.selectDataType('choice');
-      cy.enterAnswerOptions([
-        {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
-        {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
-      ]);
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.get('#text').should('have.value', 'New item 1');
-      cy.enterAnswerOptions([
-        {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
-        {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
-        {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
-      ]);
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.get('#text').should('have.value', 'New item 2');
-
-      cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
-      cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
-
-      cy.contains('button', 'Add another condition').click();
-
-      cy.get('[id^="enableWhen.1.question"]').as('r2Question').type('{downarrow}{enter}');
-      cy.get('[id^="enableWhen.1.operator"]').as('r2Operator').select('Empty');
-      cy.get('@r2Operator').should('have.value', '1: notexists');
-
-      cy.questionnaireJSON().should((json) => {
-        expect(json.item[2].enableWhen).to.deep.equal([
-          {
-            question: json.item[0].linkId,
-            operator: 'exists',
-            answerBoolean: true
-          },
-          {
-            question: json.item[1].linkId,
-            operator: 'exists',
-            answerBoolean: false
-          }
-          ]);
-      });
-
-    });
-
-    it('should fix a bug showing answer field when source item is decimal and operator is other than exists', () => {
-      cy.selectDataType('decimal');
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.get('#text').should('have.value', 'New item 1');
-
-      const r1Question = '[id^="enableWhen.0.question"]';
-      const r1Operator = '[id^="enableWhen.0.operator"]';
-      const r1Answer = '[id^="enableWhen.0.answer"]';
-      const r1DecimalAnswer = '[id^="enableWhen.0.answerDecimal"]';
-      const errorIcon1El = '[id^="enableWhen.0_err"]';
-      // First row operator='exist'
-      cy.get(r1Question).type('{enter}');
-      cy.get(r1Operator).should('be.visible');
-      cy.get(r1Answer).should('not.exist');
-      cy.get(errorIcon1El).should('not.exist');
-
-      cy.get(r1Operator).select('>');
-      cy.get(r1DecimalAnswer).should('be.visible');
-      cy.get(errorIcon1El).should('be.visible');
-      cy.get(r1DecimalAnswer).type('2.3');
-      cy.get(errorIcon1El).should('not.exist');
-    });
-
-    it('should import form with conditional display field', () => {
-      const sampleFile = 'enable-when-sample.json';
-      let fixtureJson;
-      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
-
-      cy.contains('button', 'Edit questions').click();
-      cy.toggleTreeNodeExpansion('Family member health history');
-      cy.toggleTreeNodeExpansion('Living?');
-      cy.clickTreeNode('Living?');
-      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
-      cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Yes');
-      cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA33-6');
-      cy.clickTreeNode('Date of Birth');
-      cy.get('[id^="enableWhen.0.question"]').should('have.value', 'Living?');
-      cy.get('[id^="enableWhen.0.operator"]')
-        .find('option:selected').should('have.text','=');
-      cy.get('[id^="enableWhen.0.answerCoding"]')
-        .find('option:selected').should('have.text','Yes (LA33-6)');
-
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].item[0].item[0].enableWhen)
-          .to.deep.equal(fixtureJson.item[0].item[0].item[0].enableWhen);
-      });
-    });
-
     xit('should create display type', () => {
       cy.get('@type').contains('string');
       cy.selectDataType('header (group/display)');
@@ -842,29 +674,306 @@ describe('Home page', () => {
 
     });
 
-    it('should create observation link period', () => {
-      // Yes/no option
-      cy.get('@olpNo').should('be.visible').should('have.class', 'active');
-      cy.get('@olpYes').should('be.visible').should('not.have.class', 'active');
-      cy.get('@olpYes').click();
-      // Code missing message.
-      cy.get('lfb-observation-link-period > div > div > div > p').as('olpMsg')
-        .should('contain.text', 'Linking to FHIR Observation');
-      cy.get('[id^="observationLinkPeriod"]').should('not.exist');
-      cy.get('@codeYes').click();
-      cy.get('[id^="code.0.code"]').type('C1');
-      cy.get('@olpMsg').should('not.exist');
-      cy.get('[id^="observationLinkPeriod"]').as('timeWindow')
-        .should('exist').should('be.visible');
-      // Time window input.
-      cy.get('@timeWindow').type('2');
-      // Unit selection.
-      cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'years');
-      cy.get('[id^="select_observationLinkPeriod"]').select('months');
+    describe('Item level fields: advanced', () => {
+      beforeEach(() => {
+        cy.advancedFields().click();
+        cy.tsUrl().should('be.visible'); // Proof of advanced panel expansion
+      });
+      it('should support conditional display with answer coding source', () => {
+        cy.addAnswerOptions();
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
+        cy.get('[id^="enableWhen.0.operator"]').select('=');
+        cy.get('[id^="enableWhen.0.answerCoding"]').select('d1 (c1)');
 
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].code[0].code).to.equal('C1');
-        expect(qJson.item[0].extension[0]).to.deep.equal({
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item.length).equal(2);
+          // Verify enableWhen construct.
+          expect(qJson.item[1].enableWhen.length).equal(1);
+          expect(qJson.item[1].enableWhen[0].question).equal(qJson.item[0].linkId);
+          expect(qJson.item[1].enableWhen[0].operator).equal('=');
+          expect(qJson.item[1].enableWhen[0].answerCoding.display).equal(qJson.item[0].answerOption[0].valueCoding.display);
+          expect(qJson.item[1].enableWhen[0].answerCoding.code).equal(qJson.item[0].answerOption[0].valueCoding.code);
+          expect(qJson.item[1].enableWhen[0].answerCoding.system).equal(qJson.item[0].answerOption[0].valueCoding.system);
+        });
+      });
+
+      it('should display error message for invalid answer in conditional display', () => {
+        cy.contains('Add new item').scrollIntoView().click();
+
+        const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
+        const question1El = '[id^="enableWhen.0.question"]';
+        const operator1El = '[id^="enableWhen.0.operator"]';
+        const answer1El = '[id^="enableWhen.0.answer"]';
+        const errorIcon1El = '[id^="enableWhen.0_err"]';
+        const question2El = '[id^="enableWhen.1.question"]';
+        const operator2El = '[id^="enableWhen.1.operator"]';
+        const answer2El = '[id^="enableWhen.1.answer"]';
+        const errorIcon2El = '[id^="enableWhen.1_err"]';
+
+        cy.get(question1El).type('{downarrow}{enter}');
+        cy.get(errorIcon1El).should('not.exist');
+        cy.get(errorMessageEl).should('not.exist');
+
+        cy.get(operator1El).select('=');
+        cy.get(errorIcon1El).should('be.visible');
+        cy.get(errorMessageEl).should('have.length', 2);
+        cy.get(operator1El).select('Empty');
+        cy.get(errorIcon1El).should('not.exist');
+        cy.get(errorMessageEl).should('not.exist');
+
+        cy.get(operator1El).select('>');
+        cy.get(errorIcon1El).should('be.visible');
+        cy.get(errorMessageEl).should('have.length', 2);
+        cy.get(answer1El).type('1');
+        cy.get(errorIcon1El).should('not.exist');
+        cy.get(errorMessageEl).should('not.exist');
+
+        cy.contains('button', 'Add another condition').click();
+
+        cy.get(question2El).type('{downarrow}{enter}');
+        cy.get(errorIcon2El).should('not.exist');
+        cy.get(errorMessageEl).should('not.exist');
+        cy.get(operator2El).select('<');
+        cy.get(errorIcon2El).should('be.visible');
+        cy.get(errorMessageEl).should('have.length', 2);
+        cy.get('[id^="enableWhen.1_remove"]').click();
+        cy.get(errorMessageEl).should('not.exist');
+
+      });
+
+      it('should show answer column if there is an answer option in any row of conditional display', () => {
+        cy.selectDataType('choice');
+        cy.enterAnswerOptions([
+          {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
+          {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
+        ]);
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 1');
+        cy.enterAnswerOptions([
+          {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
+          {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
+          {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
+        ]);
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 2');
+
+        cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
+        cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
+        cy.get('[id^="enableWhen.0.answerCoding"]').should('not.exist');
+
+        cy.contains('button', 'Add another condition').click();
+
+        cy.get('[id^="enableWhen.1.question"]').as('r2Question').type('{downarrow}{enter}');
+        cy.get('[id^="enableWhen.1.operator"]').as('r2Operator').select('=');
+        cy.get('[id^="enableWhen.1.answerCoding"]').as('r2Answer').select('display 3 (c3)');
+
+        cy.get('[id^="enableWhen.0.answerCoding"]').should('not.exist');
+
+        cy.get('@r2Operator').select('Empty');
+        cy.get('@r2Answer').should('not.exist');
+        cy.get('@r1Operator').select('=');
+        cy.get('[id^="enableWhen.0.answerCoding"]').as('r1Answer').should('be.visible');
+        cy.get('@r1Answer').select('display 1 (c1)');
+      });
+
+      it('should show answer column if there is an answer in any row of conditional display', () => {
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 1');
+
+        const r1Question = '[id^="enableWhen.0.question"]';
+        const r1Operator = '[id^="enableWhen.0.operator"]';
+        const r1Answer = '[id^="enableWhen.0.answer"]';
+        const r2Question = '[id^="enableWhen.1.question"]';
+        const r2Operator = '[id^="enableWhen.1.operator"]';
+        const r2Answer = '[id^="enableWhen.1.answer"]';
+        // First row operator='exist'
+        cy.get(r1Question).as('r1Question').type('{enter}');
+        cy.get(r1Operator).as('r1Operator').select('Not empty');
+        cy.get(r1Answer).should('not.exist');
+
+        cy.contains('button', 'Add another condition').click();
+
+        // Second row other than 'exist'
+        cy.get(r2Question).type('{downarrow}{enter}');
+        cy.get(r2Operator).select('=');
+        cy.get(r2Answer).type('2');
+        cy.get(r1Answer).should('not.exist');
+
+        // Flip the first and second row operators
+        cy.get(r1Operator).select('=');
+        cy.get(r1Answer).type('1');
+        cy.get(r2Answer).should('have.value','2');
+
+        cy.get(r2Operator).select('Empty');
+        cy.get(r1Answer).should('have.value', '1');
+        cy.get(r2Answer).should('not.exist');
+      });
+
+      it('should work with operator exists value conditional display', () => {
+        // cy.selectDataType('choice');
+        cy.enterAnswerOptions([
+          {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
+          {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
+        ]);
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 1');
+        cy.enterAnswerOptions([
+          {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
+          {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
+          {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
+        ]);
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 2');
+
+        cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
+        cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
+
+        cy.contains('button', 'Add another condition').click();
+
+        cy.get('[id^="enableWhen.1.question"]').as('r2Question').type('{downarrow}{enter}');
+        cy.get('[id^="enableWhen.1.operator"]').as('r2Operator').select('Empty');
+        cy.get('@r2Operator').should('have.value', '1: notexists');
+
+        cy.questionnaireJSON().should((json) => {
+          expect(json.item[2].enableWhen).to.deep.equal([
+            {
+              question: json.item[0].linkId,
+              operator: 'exists',
+              answerBoolean: true
+            },
+            {
+              question: json.item[1].linkId,
+              operator: 'exists',
+              answerBoolean: false
+            }
+          ]);
+        });
+
+      });
+
+      it('should fix a bug showing answer field when source item is decimal and operator is other than exists', () => {
+        cy.selectDataType('decimal');
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 1');
+
+        const r1Question = '[id^="enableWhen.0.question"]';
+        const r1Operator = '[id^="enableWhen.0.operator"]';
+        const r1Answer = '[id^="enableWhen.0.answer"]';
+        const r1DecimalAnswer = '[id^="enableWhen.0.answerDecimal"]';
+        const errorIcon1El = '[id^="enableWhen.0_err"]';
+        // First row operator='exist'
+        cy.get(r1Question).type('{enter}');
+        cy.get(r1Operator).should('be.visible');
+        cy.get(r1Answer).should('not.exist');
+        cy.get(errorIcon1El).should('not.exist');
+
+        cy.get(r1Operator).select('>');
+        cy.get(r1DecimalAnswer).should('be.visible');
+        cy.get(errorIcon1El).should('be.visible');
+        cy.get(r1DecimalAnswer).type('2.3');
+        cy.get(errorIcon1El).should('not.exist');
+      });
+
+      it('should import form with conditional display field', () => {
+        const sampleFile = 'enable-when-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+
+        cy.contains('button', 'Edit questions').click();
+        cy.advancedFields().click();
+        cy.toggleTreeNodeExpansion('Family member health history');
+        cy.toggleTreeNodeExpansion('Living?');
+        cy.clickTreeNode('Living?');
+        cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
+        cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Yes');
+        cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA33-6');
+        cy.clickTreeNode('Date of Birth');
+        cy.get('[id^="enableWhen.0.question"]').should('have.value', 'Living?');
+        cy.get('[id^="enableWhen.0.operator"]')
+          .find('option:selected').should('have.text','=');
+        cy.get('[id^="enableWhen.0.answerCoding"]')
+          .find('option:selected').should('have.text','Yes (LA33-6)');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].item[0].item[0].enableWhen)
+            .to.deep.equal(fixtureJson.item[0].item[0].item[0].enableWhen);
+        });
+      });
+
+      it('should create terminology server extension', () => {
+        cy.tsUrl().should('be.visible').type('http://example.org/fhir');
+        CypressUtil.assertValueInQuestionnaire('/item/0/extension',
+          [{
+            valueUrl: 'http://example.org/fhir',
+            url: ExtensionDefs.preferredTerminologyServer.url
+          }]);
+        cy.tsUrl().clear();
+        CypressUtil.assertValueInQuestionnaire('/item/0/extension', undefined);
+        cy.tsUrl().type('http://example.com/r4');
+        CypressUtil.assertValueInQuestionnaire('/item/0/extension',
+          [{
+            url: ExtensionDefs.preferredTerminologyServer.url,
+            valueUrl: 'http://example.com/r4'
+          }]);
+      });
+
+      it('should import a form with terminology server extension', () => {
+        const sampleFile = 'terminology-server-sample.json';
+        cy.uploadFile(sampleFile, true); // Avoid warning form loading based on item or form
+        cy.get('#title').should('have.value', 'Terminology server sample form');
+        cy.contains('button', 'Edit questions').click();
+        cy.advancedFields().click();
+        cy.tsUrl().should('be.visible').should('have.value', 'http://example.com/r4');
+        CypressUtil.assertExtensionsInQuestionnaire(
+          '/item/0/extension',
+          ExtensionDefs.preferredTerminologyServer.url,
+          [{
+            url: ExtensionDefs.preferredTerminologyServer.url,
+            valueUrl: 'http://example.com/r4'
+          }]
+        );
+
+        cy.tsUrl().clear();
+        CypressUtil.assertExtensionsInQuestionnaire(
+          '/item/0/extension',ExtensionDefs.preferredTerminologyServer.url,[]);
+
+        cy.tsUrl().type('http://a.b');
+        CypressUtil.assertExtensionsInQuestionnaire(
+          '/item/0/extension',
+          ExtensionDefs.preferredTerminologyServer.url,
+          [{
+            url: ExtensionDefs.preferredTerminologyServer.url,
+            valueUrl: 'http://a.b'
+          }]
+        );
+      });
+
+      it('should create observation link period', () => {
+        // Yes/no option
+        cy.get('@olpNo').should('be.visible').should('have.class', 'active');
+        cy.get('@olpYes').should('be.visible').should('not.have.class', 'active');
+        cy.get('@olpYes').click();
+        // Code missing message.
+        cy.get('lfb-observation-link-period > div > div > div > p').as('olpMsg')
+          .should('contain.text', 'Linking to FHIR Observation');
+        cy.get('[id^="observationLinkPeriod"]').should('not.exist');
+        cy.get('@codeYes').click();
+        cy.get('[id^="code.0.code"]').type('C1');
+        cy.get('@olpMsg').should('not.exist');
+        cy.get('[id^="observationLinkPeriod"]').as('timeWindow')
+          .should('exist').should('be.visible');
+        // Time window input.
+        cy.get('@timeWindow').type('2');
+        // Unit selection.
+        cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'years');
+        cy.get('[id^="select_observationLinkPeriod"]').select('months');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].code[0].code).to.equal('C1');
+          expect(qJson.item[0].extension[0]).to.deep.equal({
             url: olpExtUrl,
             valueDuration: {
               value: 2,
@@ -873,43 +982,114 @@ describe('Home page', () => {
               code: 'mo'
             }
           });
-      });
-    });
-
-    it('should import item with observation link period extension', () => {
-      // Display of time window when item with extension is imported.
-      const sampleFile = 'olp-sample.json';
-      let fixtureJson, originalExtension;
-      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {
-        fixtureJson = json;
-        originalExtension = JSON.parse(JSON.stringify(json.item[0].extension));
-      });
-      cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'Form with observation link period');
-      cy.contains('button', 'Edit questions').click();
-      cy.get('@codeYes').should('have.class', 'active');
-      cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
-      cy.get('[id^="observationLinkPeriod"]').as('timeWindow')
-        .should('exist')
-        .should('be.visible')
-        .should('have.value', '200');
-      // Unit selection.
-      cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'days');
-
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson).to.deep.equal(fixtureJson);
-      });
-
-      // Remove
-      cy.get('@timeWindow').clear();
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].extension.length).to.equal(2); // Other than olp extension.
-        const extExists = qJson.item[0].extension.some((ext) => {
-          return ext.url === olpExtUrl;
         });
-        expect(extExists).to.equal(false);
       });
 
+      it('should import item with observation link period extension', () => {
+        // Display of time window when item with extension is imported.
+        const sampleFile = 'olp-sample.json';
+        let fixtureJson, originalExtension;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {
+          fixtureJson = json;
+          originalExtension = JSON.parse(JSON.stringify(json.item[0].extension));
+        });
+        cy.uploadFile(sampleFile, true);
+        cy.get('#title').should('have.value', 'Form with observation link period');
+        cy.contains('button', 'Edit questions').click();
+        cy.advancedFields().click();
+        cy.get('@codeYes').should('have.class', 'active');
+        cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
+        cy.get('[id^="observationLinkPeriod"]').as('timeWindow')
+          .should('exist')
+          .should('be.visible')
+          .should('have.value', '200');
+        // Unit selection.
+        cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'days');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson).to.deep.equal(fixtureJson);
+        });
+
+        // Remove
+        cy.get('@timeWindow').clear().blur();
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension.length).to.equal(2); // Other than olp extension.
+          const extExists = qJson.item[0].extension.some((ext) => {
+            return ext.url === olpExtUrl;
+          });
+          expect(extExists).to.equal(false);
+        });
+
+      });
+
+      describe('Use FHIR Observation extraction?', () => {
+
+        it('should create observation extraction', () => {
+          // Yes/no option
+          cy.get('[id="__$observationExtract_Yes"]').as('oeYes');
+          cy.get('[id="__$observationExtract_No"]').as('oeNo');
+          cy.get('@oeYes').click();
+          // Code missing message.
+          cy.get('lfb-observation-extract p').as('warningMsg')
+            .should('contain.text', 'Extraction to FHIR Observations requires');
+          cy.get('@oeNo').click();
+          cy.get('@warningMsg').should('not.exist');
+          cy.get('@oeYes').click();
+          cy.get('@warningMsg').should('be.visible');
+          cy.get('@codeYes').click();
+          cy.get('[id^="code.0.code"]').type('C1');
+          cy.get('@warningMsg').should('not.exist');
+          cy.get('[id^="code.0.code"]').clear();
+          cy.get('@warningMsg').should('be.visible');
+          cy.get('[id^="code.0.code"]').type('C1');
+          cy.get('@warningMsg').should('not.exist');
+
+          cy.questionnaireJSON().should((qJson) => {
+            expect(qJson.item[0].code[0].code).to.equal('C1');
+            expect(qJson.item[0].extension[0]).to.deep.equal({
+              url: observationExtractExtUrl,
+              valueBoolean: true
+            });
+          });
+
+          cy.get('@oeNo').click();
+          cy.questionnaireJSON().should((qJson) => {
+            expect(qJson.item[0].code[0].code).to.equal('C1');
+            expect(qJson.item[0].extension).to.be.undefined;
+          });
+        });
+
+        it('should import item with observation-extract extension', () => {
+          const sampleFile = 'observation-extract.json';
+          let fixtureJson, originalExtension;
+          cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {
+            fixtureJson = json;
+            originalExtension = JSON.parse(JSON.stringify(json.item[0].extension));
+          });
+          cy.uploadFile(sampleFile, true);
+          cy.get('#title').should('have.value', 'Form with observation extract');
+          cy.contains('button', 'Edit questions').click();
+          cy.advancedFields().click();
+          cy.get('@codeYes').should('have.class', 'active');
+          cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
+
+          cy.get('[id="__$observationExtract_Yes"] input').should('be.checked');
+
+          cy.questionnaireJSON().should((qJson) => {
+            expect(qJson).to.deep.equal(fixtureJson);
+          });
+
+          // Remove
+          cy.get('[id="__$observationExtract_No"]').click();
+          cy.questionnaireJSON().should((qJson) => {
+            expect(qJson.item[0].extension.length).to.equal(2); // Other than oe extension.
+            const extExists = qJson.item[0].extension.some((ext) => {
+              return ext.url === observationExtractExtUrl;
+            });
+            expect(extExists).to.equal(false);
+          });
+        });
+      });
     });
   });
 

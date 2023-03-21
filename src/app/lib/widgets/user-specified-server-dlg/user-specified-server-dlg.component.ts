@@ -1,11 +1,12 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import {FHIRServer, FhirService} from '../../../services/fhir.service';
 import {catchError, map, tap} from 'rxjs/operators';
 import {AutoCompleteResult} from '../auto-complete/auto-complete.component';
 import {Observable, of} from 'rxjs';
+import {fhirPrimitives} from '../../../fhir';
 declare var LForms: any;
 
 @Component({
@@ -14,7 +15,7 @@ declare var LForms: any;
 })
 
 export class UserSpecifiedServerDlgComponent implements OnInit {
-  inputUrl: fhir.uri;
+  inputUrl: fhirPrimitives.url;
   message: string;
   errorMessage: string;
   @ViewChild('inputEl', {read: ElementRef}) inputElRef: ElementRef;

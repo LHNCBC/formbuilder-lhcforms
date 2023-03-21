@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
-import {fhir} from '../../../fhir';
+import fhir from 'fhir/r4';
 import {Util} from '../../util';
 
 @Component({
