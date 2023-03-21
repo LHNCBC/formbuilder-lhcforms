@@ -47,11 +47,11 @@
           <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
         </td>
         <td *ngIf="rowSelectionType === 'radio'" class="col-sm-2 text-center align-self-center">
-          <input type="radio" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
+          <input type="radio" [id]="'radio_'+itemProperty.canonicalPathNotation" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
                  [ngModelOptions]="{standalone: true}" name="selectionRadio">
         </td>
         <td *ngIf="rowSelectionType === 'checkbox'" class="col-sm-2 text-center align-self-center">
-          <input type="checkbox" [(ngModel)]="selectionCheckbox[ind]" (ngModelChange)="checkboxSelection($event)">
+          <input type="checkbox" [id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]" (ngModelChange)="checkboxSelection($event)">
         </td>
         <td [ngClass]="{'d-none': formProperty.properties.length === 1}" class="col-sm-1 align-middle action-column">
           <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
