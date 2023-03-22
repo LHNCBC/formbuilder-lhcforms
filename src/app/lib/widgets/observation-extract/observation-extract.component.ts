@@ -22,13 +22,13 @@ import {fhirPrimitives} from '../../../fhir';
           <ng-container *ngFor="let option of ['No', 'Yes']">
             <input type="radio" class="btn-check"
                    name="value"
-                   [attr.id]="elementId+'_'+option"
+                   [attr.id]="'radio_'+option+'_'+elementId"
                    [value]="option === 'Yes'"
                    [ngModelOptions]="{standalone: true}"
                    [ngModel]="value"
                    (ngModelChange)="onBooleanChange($event)"
                    [attr.disabled]="schema.readOnly ? '' : null">
-            <label class="btn btn-sm btn-outline-success m-auto" [attr.for]="elementId+'_'+option">
+            <label class="btn btn-sm btn-outline-success m-auto" [attr.for]="'radio_'+option+'_'+elementId">
               {{option}}
             </label>
           </ng-container>
@@ -54,7 +54,7 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
 
   constructor(private extensionsService: ExtensionsService) {
     super();
-    this.elementId = 'observationLinkPeriod'+ObservationExtractComponent.seqNum++;
+    this.elementId = 'observationExtract_'+ObservationExtractComponent.seqNum++;
     this.subscriptions = [];
   }
 

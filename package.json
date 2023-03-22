@@ -65,7 +65,6 @@
     "json-schema-traverse": "^1.0.0",
     "lodash-es": "^4.17.21",
     "math-to-fhirpath": "NLMLHC/math-to-fhirpath",
-    "popper.js": "^1.16.1",
     "rxjs": "~7.4.0",
     "traverse": "^0.6.6",
     "tslib": "^2.1.0",

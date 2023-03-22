@@ -223,9 +223,9 @@ Cypress.Commands.add('addAnswerOptions', () => {
  */
 Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOptionElement, formOrItem) => {
   const formTesting = formOrItem === 'form' ? true : false;
-  cy.wrap(codeOptionElement).find('[id^="booleanRadio_true"]').as('codeYes');
-  cy.wrap(codeOptionElement).find('[id^="booleanRadio_false"]').as('codeNo');
-  cy.get('@codeNo').should('have.class', 'active');
+  cy.wrap(codeOptionElement).find('[for^="booleanRadio_true"]').as('codeYes');
+  cy.wrap(codeOptionElement).find('[for^="booleanRadio_false"]').as('codeNo');
+  cy.get('[id^="booleanRadio_false"]').should('be.checked');
   cy.questionnaireJSON().should((q) => {
     const jsonCode = formTesting ? q.code : q.item[0].code;
     expect(jsonCode).to.be.undefined;

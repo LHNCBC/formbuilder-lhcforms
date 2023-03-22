@@ -3,16 +3,14 @@
     <lfb-label *ngIf="!nolabel" [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelClasses"></lfb-label>
 
       <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
-        <ng-container *ngFor="let option of ['No', 'Yes']">
+        <ng-container *ngFor="let key of optionsKeys">
           <input type="radio" class="btn-check"
                  name="{{_id}}"
                  [formControl]="control"
-                 [attr.id]="_id+option"
-                 [value]="option === 'Yes'"
+                 [attr.id]="'booleanRadio_'+key+_id"
+                 [value]="key"
                  [attr.disabled]="schema.readOnly ? '' : null">
-          <label class="btn btn-outline-success m-0" [attr.for]="_id+option">
-            {{option}}
-          </label>
+          <label class="btn btn-outline-success m-0" [attr.for]="'booleanRadio_'+key+_id">{{options.get(key)}}</label>
         </ng-container>
       </div>
   </div>

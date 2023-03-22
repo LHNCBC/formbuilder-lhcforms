@@ -51,7 +51,7 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
 
   constructor(private extensionsService: ExtensionsService) {
     super();
-    this.elementId = 'observationLinkPeriod'+ObservationLinkPeriodComponent.seqNum++;
+    this.elementId = 'observationLinkPeriod_'+ObservationLinkPeriodComponent.seqNum++;
     this.subscriptions = [];
   }
 

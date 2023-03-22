@@ -31,7 +31,7 @@ const schema: ISchema = {
 
 const model: any = {fieldA: 'two'};
 
-fdescribe('formProperty: lb-radio', () => {
+describe('formProperty: lb-radio', () => {
   let fixture: ComponentFixture<TestComponent>;
 
   CommonTestingModule.setUpTestBed(TestComponent);

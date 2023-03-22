@@ -2,7 +2,6 @@
  * A boolean control typically to trigger hide and show of a sibling component.
  */
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
   selector: 'lfb-boolean-controlled',
@@ -21,7 +20,8 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
               [attr.id]="'booleanControlled_'+option+_id"
               name="booleanControlled_{{_id}}"
               class="btn-check"
-              [(ngModel)]="bool"
+              [ngModel]="bool"
+              (ngModelChange)="bool=$event; boolChange.emit($event)"
               [ngModelOptions]="{standalone: true}"
               [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
             <label class="btn btn-outline-success" [attr.for]="'booleanControlled_'+option+_id">{{option}}</label>

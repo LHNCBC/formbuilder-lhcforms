@@ -45,10 +45,10 @@ describe('Home page', () => {
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
       cy.contains('div', 'Question code').should('be.visible').as('codeOption');
-      cy.get('@codeOption').find('[id^="booleanRadio_true"]').as('codeYes');
-      cy.get('@codeOption').find('[id^="booleanRadio_false"]').as('codeNo');
-      cy.get('#__\\$observationLinkPeriod_No').as('olpNo');
-      cy.get('#__\\$observationLinkPeriod_Yes').as('olpYes');
+      cy.get('@codeOption').find('[for^="booleanRadio_true"]').as('codeYes'); // Radio label for clicking
+      cy.get('@codeOption').find('[for^="booleanRadio_false"]').as('codeNo'); // Radio label for clicking
+      cy.get('@codeOption').find('[id^="booleanRadio_true"]').as('codeYesRadio'); // Radio input for assertions
+      cy.get('@codeOption').find('[id^="booleanRadio_false"]').as('codeNoRadio'); // Radio input for assertions
 
       cy.get('.spinner-border').should('not.exist');
     });
@@ -128,7 +128,9 @@ describe('Home page', () => {
         return _.filter($spans.get(), (el) => {
           return $(el).text().match(/Resp rate|Heart rate/i);
         });
-      }).click({multiple: true}); // Click the two nodes rapidly
+      }).click({multiple: true, force: true});
+      // Click the two nodes rapidly. Sometimes tooltip lingers, force through it.
+
       cy.get('#text').should('have.value', 'Resp rate'); // Bugfix - Should not be Heart rate
       cy.getTreeNode('Heart rate').click();
       cy.get('#text').should('have.value', 'Heart rate'); // This node should still exist.
@@ -238,7 +240,7 @@ describe('Home page', () => {
       });
 
       it('should move before a target node', () => {
-        cy.get('input[type="radio"][value="AFTER"]').parent().should('have.class', 'active');
+        cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
         cy.get('@moveBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
         cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '2');
@@ -391,13 +393,12 @@ describe('Home page', () => {
 
     it('should create answerValueSet', () => {
       cy.selectDataType('choice');
-      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').as('aoRadio');
-      cy.get('@aoRadio').should('have.class', 'active');
-      cy.get('[id^="__\\$answerOptionMethods_value-set"]').as('vsRadio').should('not.have.class', 'active');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
       cy.get('#answerValueSet').should('not.exist');
       cy.get('lfb-answer-option').should('be.visible');
 
-      cy.get('@vsRadio').click();
+      cy.get('[for^="__\\$answerOptionMethods_value-set"]').click();
       cy.get('#answerValueSet').should('be.visible').as('vsInput');
       cy.get('lfb-answer-option').should('not.exist');
       cy.get('@vsInput').type('http://example.org');
@@ -406,7 +407,7 @@ describe('Home page', () => {
         expect(q.item[0].answerOption).to.be.undefined;
       });
 
-      cy.get('@aoRadio').click();
+      cy.get('[for^="__\\$answerOptionMethods_answer-option"]').click();
       cy.get('#answerValueSet').should('not.exist');
       cy.get('lfb-answer-option').should('be.visible');
       const aOptions = [
@@ -426,8 +427,8 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Answer value set form');
       cy.contains('button', 'Edit questions').click();
       cy.get('#type option:selected').should('have.text', 'choice');
-      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.have.class', 'active');
-      cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('have.class', 'active');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
       cy.get('lfb-answer-option').should('not.exist');
       cy.get('#answerValueSet').should('have.value','http://example.org');
 
@@ -517,7 +518,7 @@ describe('Home page', () => {
     });
 
     it('should add restrictions', () => {
-      cy.get('lfb-restrictions [id^="booleanControlled_Yes"]').click();
+      cy.get('lfb-restrictions [for^="booleanControlled_Yes"]').click();
 
       cy.get('[id^="__$restrictions.0.operator"]').select('Maximum length');
       cy.get('[id^="__$restrictions.0.value"]').type('10');
@@ -953,9 +954,11 @@ describe('Home page', () => {
 
       it('should create observation link period', () => {
         // Yes/no option
-        cy.get('@olpNo').should('be.visible').should('have.class', 'active');
-        cy.get('@olpYes').should('be.visible').should('not.have.class', 'active');
-        cy.get('@olpYes').click();
+        cy.get('[id^="radio_No_observationLinkPeriod"]').as('olpNo');
+        cy.get('[id^="radio_Yes_observationLinkPeriod"]').as('olpYes');
+        cy.get('@olpNo').should('be.visible').should('be.checked');
+        cy.get('@olpYes').should('be.visible').should('not.be.checked');
+        cy.get('[for^="radio_Yes_observationLinkPeriod"]').click();
         // Code missing message.
         cy.get('lfb-observation-link-period > div > div > div > p').as('olpMsg')
           .should('contain.text', 'Linking to FHIR Observation');
@@ -997,7 +1000,7 @@ describe('Home page', () => {
         cy.get('#title').should('have.value', 'Form with observation link period');
         cy.contains('button', 'Edit questions').click();
         cy.advancedFields().click();
-        cy.get('@codeYes').should('have.class', 'active');
+        cy.get('@codeYesRadio').should('be.checked');
         cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
         cy.get('[id^="observationLinkPeriod"]').as('timeWindow')
           .should('exist')
@@ -1026,15 +1029,14 @@ describe('Home page', () => {
 
         it('should create observation extraction', () => {
           // Yes/no option
-          cy.get('[id="__$observationExtract_Yes"]').as('oeYes');
-          cy.get('[id="__$observationExtract_No"]').as('oeNo');
-          cy.get('@oeYes').click();
+          cy.get('[for^="radio_No_observationExtract"]').as('oeNoLabel');
+          cy.get('[for^="radio_Yes_observationExtract"]').as('oeYesLabel').click();
           // Code missing message.
           cy.get('lfb-observation-extract p').as('warningMsg')
             .should('contain.text', 'Extraction to FHIR Observations requires');
-          cy.get('@oeNo').click();
+          cy.get('@oeNoLabel').click();
           cy.get('@warningMsg').should('not.exist');
-          cy.get('@oeYes').click();
+          cy.get('@oeYesLabel').click();
           cy.get('@warningMsg').should('be.visible');
           cy.get('@codeYes').click();
           cy.get('[id^="code.0.code"]').type('C1');
@@ -1052,7 +1054,7 @@ describe('Home page', () => {
             });
           });
 
-          cy.get('@oeNo').click();
+          cy.get('@oeNoLabel').click();
           cy.questionnaireJSON().should((qJson) => {
             expect(qJson.item[0].code[0].code).to.equal('C1');
             expect(qJson.item[0].extension).to.be.undefined;
@@ -1070,17 +1072,17 @@ describe('Home page', () => {
           cy.get('#title').should('have.value', 'Form with observation extract');
           cy.contains('button', 'Edit questions').click();
           cy.advancedFields().click();
-          cy.get('@codeYes').should('have.class', 'active');
+          cy.get('@codeYesRadio').should('be.checked');
           cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
 
-          cy.get('[id="__$observationExtract_Yes"] input').should('be.checked');
+          cy.get('[id^="radio_Yes_observationExtract"]').should('be.checked');
 
           cy.questionnaireJSON().should((qJson) => {
             expect(qJson).to.deep.equal(fixtureJson);
           });
 
           // Remove
-          cy.get('[id="__$observationExtract_No"]').click();
+          cy.get('[for^="radio_No_observationExtract"]').click();
           cy.questionnaireJSON().should((qJson) => {
             expect(qJson.item[0].extension.length).to.equal(2); // Other than oe extension.
             const extExists = qJson.item[0].extension.some((ext) => {
@@ -1121,7 +1123,7 @@ describe('Home page', () => {
       cy.get('#type').select('header (group/display)');
 
       cy.clickTreeNode('My health history');
-      cy.clickTreeNode('xxx');
+      cy.getTreeNode('xxx').click({force: true}); // Force through tooltip.
       cy.get('#text').should('have.value', 'xxx');
       cy.get('#type').should('have.value', '12: group');
 
