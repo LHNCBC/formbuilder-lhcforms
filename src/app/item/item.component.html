@@ -35,7 +35,8 @@
               </ng-template>
               <ng-template #treeNodeTemplate let-node let-index="index">
                 <div [ngClass]="node.nodeClass" #tooltip="matTooltip" [matTooltip]="node.displayField">
-                  <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span><span aria-hidden="true" [ngClass]="node.nodeClass">{{truncate(node.displayField)}}</span>
+                  <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span>
+                  <span aria-hidden="true" [ngClass]="node.nodeClass">{{truncate(node.displayField, 25)}}</span>
                   <span class="float-end"><ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container></span>
                 </div>
               </ng-template>
