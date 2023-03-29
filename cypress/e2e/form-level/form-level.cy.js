@@ -124,7 +124,7 @@ describe('Home page', () => {
       cy.contains('div[role="tab"]', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('be.visible', true);
       cy.get('#1\\/1').as('acInput').should('have.value', 'd2 - 2');
-      cy.get('@acInput').click();
+      cy.get('@acInput').focus();
       cy.get('#completionOptionsScroller').as('acResults').should('be.visible');
       cy.get('@acResults').find('ul > li').as('acListItems').should('have.length', 2);
       cy.get('@acListItems').first().click();

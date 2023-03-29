@@ -26,7 +26,7 @@ import { Widget } from '@lhncbc/ngx-schema-form';
   `,
   styles: []
 })
-export class AppFormElementComponent extends FormElementComponent implements OnChanges {
+export class AppFormElementComponent extends FormElementComponent {
   static seqNum = 0;
   // Input properties, typically read from layout schema json.
   @Input()
@@ -45,26 +45,24 @@ export class AppFormElementComponent extends FormElementComponent implements OnC
   /**
    * --- Used for debugging ----
    */
-ngOnChanges(changes: SimpleChanges): void {
-  for (const prop in changes) {
+  /*
+  ngOnChanges(changes: SimpleChanges): void {
+    for (const prop in changes) {
       if (prop === 'formProperty') {
         console.log(
-`${prop}: ${changes[prop].previousValue ? changes[prop].previousValue.path +'(visible:'+changes[prop].previousValue.visible+')' : ''} /
- ${changes[prop].currentValue ? changes[prop].currentValue.path +'(visible:'+changes[prop].currentValue.visible+')' : ''} / ${changes[prop].firstChange}`);
+          `${prop}: ${changes[prop].previousValue ?
+            changes[prop].previousValue.path +'(visible:'+changes[prop].previousValue.visible+')' : ''} /
+            ${changes[prop].currentValue ? changes[prop].currentValue.path +'(visible:'+changes[prop].currentValue.visible+')' : ''} /
+            ${changes[prop].firstChange}`);
       } else if (prop === 'control') {
         console.log(
-`${prop}: ${changes[prop].previousValue ? changes[prop].previousValue.valid : ''} /
- ${changes[prop].currentValue ? changes[prop].currentValue.valid : ''} / ${changes[prop].firstChange}`);
+          `${prop}: ${changes[prop].previousValue ? changes[prop].previousValue.valid : ''} /
+          ${changes[prop].currentValue ? changes[prop].currentValue.valid : ''} / ${changes[prop].firstChange}`);
       } else {
         console.log(
-`${prop}: ${changes[prop].previousValue} / ${changes[prop].currentValue} / ${changes[prop].firstChange}`);
+          `${prop}: ${changes[prop].previousValue} / ${changes[prop].currentValue} / ${changes[prop].firstChange}`);
       }
     }
-  }
-/*
-  ngDoCheck(): void {
-    console.log('Control of ' + this.formProperty.path + ': ');
-    console.dir(this.control);
   }
   */
 
