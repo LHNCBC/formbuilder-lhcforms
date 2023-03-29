@@ -377,7 +377,7 @@ Cypress.Commands.add('waitForSpinner', () => {
  * CLick a node on the sidebar.
  */
 Cypress.Commands.add('clickTreeNode', (nodeText) => {
-  cy.getTreeNode(nodeText).click();
+  cy.getTreeNode(nodeText).click({force: true}); // Force through tooltip
   cy.contains('#itemContent span', nodeText);
 });
 
