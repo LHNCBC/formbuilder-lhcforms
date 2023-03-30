@@ -8,12 +8,12 @@ import appVersion from '../../assets/version.json';
 @Component({
   selector: 'lfb-header',
   template: `
-    <mat-toolbar id="header" class="pl-0 pr-0">
+    <mat-toolbar id="header" class="ps-0 pe-0">
       <mat-icon id="logo" svgIcon="home" aria-label="Home"></mat-icon>
       <div id="siteNameBox">
         <a mat-button id="siteName" href="/">NLM Form Builder</a>
       </div>
-      <div *ngIf="appVersion" class="float-lg-right version-info align-self-end font-weight-bold"
+      <div *ngIf="appVersion" class="float-lg-right version-info align-self-end fw-bold"
         >Version: <a target="_blank" rel="noopener noreferrer"
                      href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
       <div class="float-lg-right" *ngIf="isFirebaseEnabled">

@@ -1,7 +1,7 @@
 /**
  * Component for general input box
  */
-import {Component, Input, OnInit} from '@angular/core';
+import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
 import {ControlWidget, StringWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
@@ -10,5 +10,10 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
   selector: 'lfb-string',
   templateUrl: './string.component.html'
 })
-export class StringComponent extends LfbControlWidgetComponent {
+export class StringComponent extends LfbControlWidgetComponent implements AfterViewInit {
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    this.controlClasses = this.controlClasses || 'form-control form-control-sm';
+  }
 }

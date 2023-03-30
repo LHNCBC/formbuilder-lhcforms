@@ -15,7 +15,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
           <fa-icon [icon]="faInfo"></fa-icon>
         </div>
       </label>
-      <input [formControl]="control" [attr.name]="name"
+      <input [formControl]="control" name="{{name}}"
              [attr.id]="id" [indeterminate]="control.value !== false && control.value !== true ? true :null"
              type="checkbox" [attr.disabled]="schema.readOnly ? '' : null">
   </div>`,

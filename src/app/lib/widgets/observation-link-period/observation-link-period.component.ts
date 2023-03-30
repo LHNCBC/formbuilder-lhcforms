@@ -26,8 +26,7 @@ interface ObservationLinkPeriodExtension {
 
 @Component({
   selector: 'lfb-observation-link-period',
-  templateUrl: './observation-link-period.component.html',
-  styleUrls: ['./observation-link-period.component.css']
+  templateUrl: './observation-link-period.component.html'
 })
 export class ObservationLinkPeriodComponent extends StringComponent implements OnInit {
   static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
@@ -52,7 +51,7 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
 
   constructor(private extensionsService: ExtensionsService) {
     super();
-    this.elementId = 'observationLinkPeriod'+ObservationLinkPeriodComponent.seqNum++;
+    this.elementId = 'observationLinkPeriod_'+ObservationLinkPeriodComponent.seqNum++;
     this.subscriptions = [];
   }
 

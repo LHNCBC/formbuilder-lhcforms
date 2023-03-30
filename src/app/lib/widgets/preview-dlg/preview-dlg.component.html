@@ -1,4 +1,4 @@
- <h2 mat-dialog-title class="bg-primary text-white pb-3 pt-3 pl-2 pr-2 rounded">Preview of Questionnaire
+ <h2 mat-dialog-title class="bg-primary text-white rounded ps-3 pt-3 pe-3 pb-3">Preview of Questionnaire
    <button mat-icon-button class="close-button" [mat-dialog-close]="true">
      <mat-icon class="close-icon">close</mat-icon>
    </button>
@@ -17,7 +17,7 @@
      </mat-tab>
    </mat-tab-group>
  </mat-dialog-content>
- <mat-dialog-actions align="end">
-   <button mat-button class="btn-primary" [mat-dialog-close]="true">Close</button>
+ <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
+   <button class="btn btn-sm btn-primary" (click)="close()">Close</button>
  </mat-dialog-actions>
 

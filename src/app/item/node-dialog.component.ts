@@ -9,14 +9,12 @@ import {Util} from '../lib/util';
 @Component({
   selector: 'lfb-node-dialog',
   template: `
-    <div class="modal-header btn-primary">
+    <div class="modal-header bg-primary">
       <h4 class="modal-title text-white" id="modal-move-title">{{title}}</h4>
-      <button type="button" class="close btn-primary text-white" aria-label="Close"
+      <button type="button" class="btn-close btn-close-white" aria-label="Close"
               (click)="activeModal.dismiss(false)"
               (keydown.enter)="activeModal.dismiss(false)"
-      >
-        <span aria-hidden="true">&times;</span>
-      </button>
+      ></button>
     </div>
     <div class="modal-body">
       <form>
@@ -39,22 +37,22 @@ import {Util} from '../lib/util';
           >
 
           <p class="mt-4">Specify drop location:</p>
-          <ul class="list-unstyled ml-5" ngbRadioGroup [(ngModel)]="targetLocation" [ngModelOptions]="{standalone: true}">
+          <ul class="list-unstyled ms-5">
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="AFTER" type="radio">
+              <label class="btn">
+                <input value="AFTER" type="radio" [(ngModel)]="targetLocation" name="targetLocation" [ngModelOptions]="{standalone: true}">
                 After the target item.
               </label>
             </li>
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="BEFORE" type="radio">
+              <label class="btn">
+                <input value="BEFORE" type="radio" [(ngModel)]="targetLocation" name="targetLocation" [ngModelOptions]="{standalone: true}">
                 Before the target item.
               </label>
             </li>
             <li>
-              <label ngbButtonLabel>
-                <input ngbButton value="CHILD" type="radio">
+              <label class="btn">
+                <input value="CHILD" type="radio" [(ngModel)]="targetLocation" name="targetLocation" [ngModelOptions]="{standalone: true}">
                 As a child of target item.
               </label>
             </li>

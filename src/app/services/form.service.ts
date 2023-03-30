@@ -235,7 +235,7 @@ export class FormService {
    */
   showMessage(title: string, message: string, type: MessageType = MessageType.INFO) {
 
-    const modalRef = this.modalService.open(MessageDlgComponent);
+    const modalRef = this.modalService.open(MessageDlgComponent, {scrollable: true});
     modalRef.componentInstance.title = title;
     modalRef.componentInstance.message = message;
     modalRef.componentInstance.type = type;

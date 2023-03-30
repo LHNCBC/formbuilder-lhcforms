@@ -10,25 +10,31 @@ import {fhirPrimitives} from '../../../fhir';
   template: `
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
       <lfb-label *ngIf="!nolabel"
-                 [for]="elementId"
+                 [attr.for]="elementId"
                  [title]="schema.title"
                  [helpMessage]="schema.description"
-                 [ngClass]="labelWidthClass+' pl-0 pr-1'"
+                 [ngClass]="labelClasses"
       ></lfb-label>
 
-      <div class="{{controlWidthClass}} p-0 {{adjustVAlignClass}}">
+      <div class="{{controlClasses}}">
 
-        <div ngbRadioGroup
-             class="btn-group form-check-inline btn-group-sm btn-group-toggle" [ngModel]="value" (ngModelChange)="onBooleanChange($event)">
-          <ng-container *ngFor="let option of ['No', 'Yes']" class="radio">
-            <label ngbButtonLabel class="btn-outline-success m-auto" [attr.id]="name+'_'+option">
-              <input ngbButton [value]="option === 'Yes'" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
+        <div class="btn-group btn-group-sm" role="group">
+          <ng-container *ngFor="let option of ['No', 'Yes']">
+            <input type="radio" class="btn-check"
+                   name="value"
+                   [attr.id]="'radio_'+option+'_'+elementId"
+                   [value]="option === 'Yes'"
+                   [ngModelOptions]="{standalone: true}"
+                   [ngModel]="value"
+                   (ngModelChange)="onBooleanChange($event)"
+                   [attr.disabled]="schema.readOnly ? '' : null">
+            <label class="btn btn-sm btn-outline-success m-auto" [attr.for]="'radio_'+option+'_'+elementId">
               {{option}}
             </label>
           </ng-container>
         </div>
         <div *ngIf="value">
-          <div *ngIf="!codePresent" class="row mt-1 ml-auto mr-auto">
+          <div *ngIf="!codePresent" class="row mt-1 ms-auto me-auto">
             <p class="alert alert-warning mt-1" role="alert">Extraction to FHIR Observations requires a code assigned to this item. Please enter a code before setting this field.</p>
           </div>
         </div>
@@ -48,7 +54,7 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
 
   constructor(private extensionsService: ExtensionsService) {
     super();
-    this.elementId = 'observationLinkPeriod'+ObservationExtractComponent.seqNum++;
+    this.elementId = 'observationExtract_'+ObservationExtractComponent.seqNum++;
     this.subscriptions = [];
   }
 

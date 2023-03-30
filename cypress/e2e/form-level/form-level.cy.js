@@ -59,7 +59,7 @@ describe('Home page', () => {
       cy.get('ngb-typeahead-window').should('be.visible');
       cy.get('ngb-typeahead-window button').first().click();
       cy.get('#title').should('have.value', 'Vital signs with method details panel');
-      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
+      cy.get('[id^="booleanRadio_true"]').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '34566-0');
     });
 
@@ -71,7 +71,7 @@ describe('Home page', () => {
       cy.fhirSearch(titleSearchTerm);
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
-      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
+      cy.get('[id^="booleanRadio_true"]').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });
@@ -85,8 +85,8 @@ describe('Home page', () => {
 
     beforeEach(() => {
       cy.resetForm();
-      cy.get('[id^="booleanRadio_true"]').find('[type="radio"]').as('codeYes');
-      cy.get('[id^="booleanRadio_false"]').find('[type="radio"]').as('codeNo');
+      cy.get('[id^="booleanRadio_true"]').as('codeYes');
+      cy.get('[id^="booleanRadio_false"]').as('codeNo');
     });
 
     it('should include code only when use question code is yes (form level)', () => {
@@ -123,12 +123,13 @@ describe('Home page', () => {
       cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
       cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('be.visible', true);
-      cy.get('#1\\/1').should('have.value', 'd2 - 2');
-      cy.get('#1\\/1').click();
-      cy.get('#completionOptionsScroller ul > li').should('have.length', 2);
-      cy.get('#completionOptionsScroller ul > li').first().click();
-      cy.get('#1\\/1').should('have.value', 'd1 - 1');
-      cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
+      cy.get('#1\\/1').as('acInput').should('have.value', 'd2 - 2');
+      cy.get('@acInput').focus();
+      cy.get('#completionOptionsScroller').as('acResults').should('be.visible');
+      cy.get('@acResults').find('ul > li').as('acListItems').should('have.length', 2);
+      cy.get('@acListItems').first().click();
+      cy.get('@acInput').should('have.value', 'd1 - 1');
+      cy.contains('mat-dialog-actions > button', 'Close').click();
     });
 
     it('should work with ethnicity ValueSet in preview', () => {
@@ -143,7 +144,7 @@ describe('Home page', () => {
       cy.get('@ethnicity').type('{downarrow}');
       cy.get('@ethnicity').type('{enter}');
       cy.get('span.autocomp_selected').contains('La Raza');
-      cy.contains('.mat-dialog-actions > .mat-focus-indicator', 'Close').click();
+      cy.contains('mat-dialog-actions > button', 'Close').click();
     });
 
     it('should create questionnaire on the fhir server', () => {
@@ -350,7 +351,7 @@ describe('Home page', () => {
       cy.contains('div.modal-footer button', 'Continue').click();
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
-      cy.get('[id^="booleanRadio_true"]').should('have.class', 'active');
+      cy.get('[id^="booleanRadio_true"]').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
     });
   });

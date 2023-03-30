@@ -1,17 +1,18 @@
 <ng-template #controller>
   <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0' : true}">
-    <lfb-label *ngIf="!nolabel" [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelWidthClass + ' pl-0 pr-1'"></lfb-label>
+    <lfb-label *ngIf="!nolabel" [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelClasses"></lfb-label>
 
-    <div ngbRadioGroup
-         [formControl]="control"
-         class="btn-group form-check-inline btn-group-sm btn-group-toggle">
-      <ng-container *ngFor="let key of optionsKeys" class="radio">
-        <label ngbButtonLabel class="btn-outline-success m-0" [attr.id]="'booleanRadio_'+key+_id">
-          <input ngbButton [value]="key" type="radio" [attr.disabled]="schema.readOnly ? '' : null">
-          {{options.get(key)}}
-        </label>
-      </ng-container>
-    </div>
+      <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+        <ng-container *ngFor="let key of optionsKeys">
+          <input type="radio" class="btn-check"
+                 name="{{_id}}"
+                 [formControl]="control"
+                 [attr.id]="'booleanRadio_'+key+_id"
+                 [value]="key"
+                 [attr.disabled]="schema.readOnly ? '' : null">
+          <label class="btn btn-outline-success m-0" [attr.for]="'booleanRadio_'+key+_id">{{options.get(key)}}</label>
+        </ng-container>
+      </div>
   </div>
 </ng-template>
 

@@ -28,4 +28,8 @@ export class PreviewDlgComponent {
   ) {
     LForms.Util.setFHIRContext(this.fhirService.getSmartClient());
   }
+
+  close() {
+    this.dialogRef.close();
+  }
 }

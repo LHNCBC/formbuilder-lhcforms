@@ -2,8 +2,8 @@
   <lfb-boolean-controlled
     [bool]="booleanControlledOption"
     (boolChange)="onBooleanControlledChange($event)"
-    [controlWidthClass]="controlWidthClass"
-    [labelWidthClass]="labelWidthClass"
+    [controlClasses]="'btn-group btn-group-sm col-auto m-auto ms-0 ps-0'"
+    [labelClasses]="labelClasses"
     [label]="booleanLabel"
     [labelPosition]="labelPosition"
     [helpMessage]="schema.description"
@@ -13,18 +13,18 @@
 <div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group m-0"
      [ngClass]=
        "{'row': labelPosition === 'left'}">
-  <div [ngClass]="labelWidthClass + ' pl-0 pr-1'">
+  <div [ngClass]="labelClasses">
     <button *ngIf="!noCollapseButton" href="#" type="button"
-            [ngClass]="{'float-sm-right': labelPosition === 'left'}"
+            [ngClass]="{'float-sm-end': labelPosition === 'left'}"
             class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
             [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
       <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
     </button>
     <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
   </div>
-  <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
+  <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
     <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
-      <thead *ngIf="!noHeader" class="thead-light">
+      <thead *ngIf="!noHeader" class="table-active">
       <tr class="d-flex">
         <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
           <lfb-title
@@ -48,7 +48,7 @@
         </td>
         <td *ngIf="rowSelectionType === 'radio'" class="col-sm-2 text-center align-self-center">
           <input type="radio" [id]="'radio_'+itemProperty.canonicalPathNotation" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
-                 [ngModelOptions]="{standalone: true}">
+                 [ngModelOptions]="{standalone: true}" name="selectionRadio">
         </td>
         <td *ngIf="rowSelectionType === 'checkbox'" class="col-sm-2 text-center align-self-center">
           <input type="checkbox" [id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]" (ngModelChange)="checkboxSelection($event)">
@@ -66,7 +66,7 @@
       </tr>
       </tbody>
     </table>
-    <button (click)="addItemWithAlert(alertPopover)" class="btn-sm btn-light btn-link array-add-button"
+    <button (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
             [attr.disabled]="isAddButtonDisabled() ? '' : null"
             *ngIf="!singleItem &&
                 (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"

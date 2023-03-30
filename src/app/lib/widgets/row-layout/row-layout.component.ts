@@ -16,7 +16,7 @@ import {faAngleUp} from '@fortawesome/free-solid-svg-icons';
       </div>
     </div>
     <div class="d-flex pt-3">
-      <button class="btn btn-link text-decoration-none pl-0 font-weight-bold" (click)="collapse.toggle()"
+      <button class="btn btn-link text-decoration-none ps-0 fw-bold" (click)="collapse.toggle()"
               [attr.aria-expanded]="!collapseAdvanced"
               aria-controls="advancedFields"
         >Advanced fields <fa-icon [icon]="collapseAdvanced ? faDown : faUp" aria-hidden="true"></fa-icon>

@@ -23,8 +23,8 @@ import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
   template: `
     <div class="card-body content">
       <div>
-        <h4 class="ml-2">Form level attributes</h4>
-        <p class="ml-4">Enter basic information about the form.</p>
+        <h4 class="ms-2">Form level attributes</h4>
+        <p class="ms-4">Enter basic information about the form.</p>
         <hr/>
         <div class="container">
           <sf-form #ngxForm [schema]="qlSchema"
@@ -36,8 +36,7 @@ import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
         </div>
         <hr/>
         <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-            <!-- <button type="button" class="btn btn-sm btn-primary mt-4 mr-2" (click)="allFields()">Show advanced form fields</button> -->
-            <button type="button" class="btn btn-sm btn-primary mt-4 mr-2 ml-auto" (click)="goToItemEditor()">{{ questionsButtonLabel }}</button>
+            <button type="button" class="btn btn-sm btn-primary mt-4 me-2 ms-auto" (click)="goToItemEditor()">{{ questionsButtonLabel }}</button>
         </div>
       </div>
     </div>

@@ -66,7 +66,6 @@ import { UserSpecifiedServerDlgComponent } from './lib/widgets/user-specified-se
 import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
-import { RuleEditorModule } from 'rule-editor';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
@@ -178,7 +177,6 @@ import { TerminologyServerComponent } from './lib/widgets/terminology-server/ter
     MatToolbarModule,
     MatTooltipModule,
     NgbModule,
-    RuleEditorModule,
     SchemaFormModule.forRoot(),
     TreeModule,
     ReactiveFormsModule,

@@ -10,37 +10,28 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
       <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
         <lfb-label [title]="label"
                    [helpMessage]="helpMessage"
-                   [ngClass]="labelWidthClass + ' pl-0 pr-1'"
+                   [ngClass]="labelClasses"
         ></lfb-label>
 
-        <div ngbRadioGroup class="form-check-inline btn-group btn-group-sm btn-group-toggle"
-             [ngModel]="bool"
-             (ngModelChange)="boolChange.emit($event)"
-             [ngModelOptions]="{standalone: true}">
-          <ng-container *ngFor="let option of ['No', 'Yes']">
-            <label ngbButtonLabel class="btn-outline-success" [attr.id]="'booleanControlled_'+option+_id">
-              <input ngbButton
-                     [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
-              {{option}}
-            </label>
+        <div [ngClass]="controlClasses" role="radiogroup" [attr.aria-label]="label">
+          <ng-container *ngFor="let option of ['No', 'Yes']" >
+            <input
+              autocomplete="off"
+              [attr.id]="'booleanControlled_'+option+_id"
+              name="booleanControlled_{{_id}}"
+              class="btn-check"
+              [ngModel]="bool"
+              (ngModelChange)="bool=$event; boolChange.emit($event)"
+              [ngModelOptions]="{standalone: true}"
+              [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
+            <label class="btn btn-outline-success" [attr.for]="'booleanControlled_'+option+_id">{{option}}</label>
           </ng-container>
         </div>
       </div>
     </ng-template>
 
     <ng-container *ngTemplateOutlet="controller"></ng-container>
-    `,
-  styles: [`
-    .radio ~ .radio {
-      margin-left: 16px;
-    }
-    .radio {
-      font-size: 0.875rem
-    }
-    label:hover {
-      opacity: 0.5;
-    }
-  `]
+    `
 })
 export class BooleanControlledComponent  {
   static ID = 0;
@@ -55,9 +46,9 @@ export class BooleanControlledComponent  {
   @Input()
   helpMessage: string;
   @Input()
-  labelWidthClass: string;
+  labelClasses: string;
   @Input()
-  controlWidthClass: string;
+  controlClasses: string;
   @Input()
   disabled = false;
 

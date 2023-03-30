@@ -44,8 +44,8 @@
       "widget": {
         "id": "select",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 p-0",
         "selectOptionsMap": {
           "remove": ["display", "reference", "attachment"],
           "map": {
@@ -92,8 +92,8 @@
       "widget": {
         "id": "restrictions",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 mt-1",
         "noTableLabel": true,
         "noCollapseButton": true,
         "addButtonLabel": "Add new restriction",
@@ -206,8 +206,8 @@
       "widget": {
         "id": "boolean-radio",
         "optionLabels": [[false, "No code"], [true, "Include code"]],
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "code": {
@@ -293,8 +293,8 @@
         "id": "table",
         "noTableLabel": true,
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-sm-2",
+        "controlClasses": "col-sm-10",
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
@@ -313,8 +313,8 @@
       "widget": {
         "id": "string-with-css",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-3"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-3 p-0"
       }
     },
     "_prefix": {
@@ -368,8 +368,8 @@
       "widget": {
         "id": "string-with-css",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0"
       }
     },
     "_text": {
@@ -887,7 +887,7 @@
       "widget": {
         "noCollapseButton": true,
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
+        "labelWidthClass": "col-sm-2 pe-1",
         "controlWidthClass": "col-sm-10",
         "addButtonLabel": "Add another condition",
         "id": "enable-when",
@@ -933,8 +933,8 @@
       },
       "widget": {
         "id": "boolean-radio",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "repeats": {
@@ -949,8 +949,8 @@
       },
       "widget": {
         "id": "boolean-radio",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "readOnly": {
@@ -965,8 +965,8 @@
       },
       "widget": {
         "id": "boolean-radio",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "__$answerOptionMethods": {
@@ -992,8 +992,8 @@
       "widget": {
         "id": "answer-option-methods",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0"
       }
     },
     "answerValueSet": {
@@ -1007,8 +1007,8 @@
       "widget": {
         "id": "url",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "answerOption": {
@@ -1278,8 +1278,8 @@
       "widget": {
         "id": "answer-option",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 ",
         "addButtonLabel": "Add another answer",
         "rowSelection": true,
         "multipleSelectionEnableSource": "repeats",
@@ -1305,8 +1305,8 @@
         "placeholder": "Enter url for preferred terminology server",
         "note": "You may wish to set this if you are providing an answer value set for either this item or its children.",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0"
       }
     },
 
@@ -1392,7 +1392,8 @@
             },
             "widget": {
               "id": "boolean-radio",
-              "nolabel": true
+              "nolabel": true,
+              "controlClasses": "btn-group btn-group-sm col-auto p-0"
             }
           },
           "valueDecimal": {
@@ -1776,8 +1777,8 @@
       "widget": {
         "id": "initial",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0",
         "addButtonLabel": "Add another value",
         "singleItemEnableSource": "repeats",
         "showFields": [
@@ -1806,8 +1807,8 @@
       "widget": {
         "id": "observation-link-period",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0 m-auto ms-0"
       },
       "visibleIf": {
         "type": ["$EXP$ target.value != 'display'"]
@@ -1821,8 +1822,8 @@
       "widget": {
         "id": "observation-extract",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0 m-auto ms-0"
       },
       "visibleIf": {
         "type": ["$EXP$ target.value != 'display'"]
@@ -1836,7 +1837,7 @@
       "widget": {
         "id": "units",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
+        "labelWidthClass": "col-sm-2 pe-1",
         "controlWidthClass": "col-sm-10"
       },
       "visibleIf": {
@@ -1850,8 +1851,8 @@
       "widget": {
         "id": "help-text",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pr-1",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-sm-2 p-0 pe-1",
+        "controlClasses": "col-sm form-control form-control-sm p-1"
       }
     },
     "__$end": {

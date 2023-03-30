@@ -4,14 +4,15 @@
                 [for]="id"
                 [title]="schema.title"
                 [helpMessage]="schema.description"
-                [ngClass]="labelWidthClass+' pl-0 pr-1'"
+                [ngClass]="labelClasses"
     ></lfb-label>
+    <div [ngClass]="controlClasses">
     <select *ngIf="schema.type!='array'"
             [formControl]="control"
-            [attr.name]="name"
+            name="{{name}}"
             [attr.id]="id"
             [attr.disabled]="schema.readOnly ? '' : null"
-            class="form-control {{controlWidthClass}}">
+            class="form-select form-select-sm">
       <ng-container *ngIf="schema.oneOf; else use_enum">
         <option *ngFor="let option of schema.oneOf"
                 [ngValue]="option.enum[0]" >{{option.description}}</option>
@@ -24,16 +25,15 @@
 
     <select *ngIf="schema.type==='array'" multiple
             [formControl]="control"
-            [attr.name]="name"
+            name="{{name}}"
             [attr.id]="id"
-            [attr.disabled]="schema.readOnly ? '' : null"
-            class="form-control {{controlWidthClass}}">
+            [attr.disabled]="schema.readOnly ? '' : null">
       <option *ngFor="let option of schema.items.oneOf"
               [ngValue]="option.enum[0]"
               [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
     </select>
-
-    <input *ngIf="schema.readOnly" [attr.name]="name" type="hidden" [formControl]="control">
+    </div>
+    <input *ngIf="schema.readOnly" name="{{name}}" type="hidden" [formControl]="control">
   </div>
 </ng-template>
 

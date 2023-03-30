@@ -24,7 +24,7 @@ interface UnitExtension {
                  [for]="id"
                  [title]="schema.title"
                  [helpMessage]="schema.description"
-                 [ngClass]="labelWidthClass+' pl-0 pr-1'"
+                 [ngClass]="labelWidthClass+' ps-0 pe-1'"
       ></lfb-label>
       <div class="{{controlWidthClass}} p-0">
         <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control" />

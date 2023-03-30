@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.0.0] 2023-03-28
+### Changed (Breaking changes)
+- Updated bootstrap version to 5.x.x
+- Updated ngBootstrap version to 13.x.x
+- Refactored radio button groups.
+
 ## [8.0.11] 2023-03-08
 ### Added
 - Added support for answerValueSet field.

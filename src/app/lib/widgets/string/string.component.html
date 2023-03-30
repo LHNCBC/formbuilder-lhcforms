@@ -1,15 +1,15 @@
 <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
-       [attr.name]="name" type="hidden" [formControl]="control">
+       name="{{name}}" type="hidden" [formControl]="control">
 <ng-template #notHiddenFieldBlock>
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
     <lfb-label *ngIf="!nolabel"
                [for]="id"
                [title]="schema.title"
                [helpMessage]="schema.description"
-               [ngClass]="labelWidthClass+' pl-0 pr-1'"
+               [ngClass]="labelClasses"
     ></lfb-label>
     <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
-           class="textline-widget form-control {{controlWidthClass}}"
+           [ngClass]="controlClasses"
            [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
            [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
            [attr.maxLength]="schema.maxLength || null"

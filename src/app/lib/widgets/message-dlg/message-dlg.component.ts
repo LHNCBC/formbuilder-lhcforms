@@ -13,17 +13,16 @@ export enum MessageType {
 @Component({
   selector: 'lfb-message-dlg',
   template: `
-      <div class="modal-header">
-        <h4 class="modal-title">{{title}}</h4>
-        <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
-          <span aria-hidden="true">&times;</span>
+      <div class="modal-header bg-primary">
+        <h4 class="modal-title text-white">{{title}}</h4>
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
         </button>
       </div>
       <div class="modal-body">
         <p>{{message}}</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>
+        <button type="button" class="btn btn-primary" (click)="activeModal.close('Close click')">Close</button>
       </div>
   `,
   styles: [

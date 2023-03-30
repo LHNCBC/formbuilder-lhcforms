@@ -83,24 +83,22 @@ export class LinkIdCollection {
 @Component({
   selector: 'lfb-confirm-dlg',
   template: `
-    <div class="modal-header">
-      <h4 class="modal-title">{{title}}</h4>
-      <button type="button" class="close" aria-label="Close"
+    <div class="modal-header bg-primary">
+      <h4 class="modal-title text-white">{{title}}</h4>
+      <button type="button" class="btn-close btn-close-white" aria-label="Close"
               (click)="activeModal.dismiss(false)"
               (keydown.enter)="activeModal.dismiss(false)"
-      >
-        <span aria-hidden="true">&times;</span>
-      </button>
+      ></button>
     </div>
     <div class="modal-body">
       <p>{{message}}</p>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-outline-dark"
+      <button type="button" class="btn btn-primary"
               (keydown.enter)="activeModal.dismiss(false)"
               (click)="activeModal.dismiss(false)"
       >No</button>
-      <button type="button" class="btn btn-outline-dark"
+      <button type="button" class="btn btn-primary"
               (keydown.enter)="activeModal.close(true)"
               (click)="activeModal.close(true)"
       >Yes</button>

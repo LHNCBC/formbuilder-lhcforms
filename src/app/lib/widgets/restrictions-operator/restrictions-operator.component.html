@@ -1,7 +1,7 @@
 <select #mySelect
         [ngModel]="model"
         (ngModelChange)="modelChanged($event, alertSelected)"
-        [attr.name]="name" [attr.id]="id"
+        name="{{name}}" [attr.id]="id"
         [disabled]="schema.readOnly" class="form-control"
         [ngbPopover]="'That restriction is already selected.'"
         #alertSelected="ngbPopover" triggers="manual" placement="bottom top"

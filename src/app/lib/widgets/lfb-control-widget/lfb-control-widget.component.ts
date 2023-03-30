@@ -26,6 +26,10 @@ export class LfbControlWidgetComponent extends ControlWidget implements AfterVie
   @Input()
   controlWidthClass: string;
   @Input()
+  controlClasses: string;
+  @Input()
+  labelClasses: string;
+  @Input()
   booleanControlled = false;
   @Input()
   booleanLabel: string;
@@ -59,6 +63,8 @@ export class LfbControlWidgetComponent extends ControlWidget implements AfterVie
           ? widget.controlWidthClass
           : 'col-sm'))
         : '';
+    this.labelClasses = this.labelClasses || widget.labelClasses || '';
+    this.controlClasses = this.controlClasses || widget.controlClasses || '';
     this.booleanControlled = this.booleanControlled ? this.booleanControlled : !!widget.booleanControlled;
 
     this.booleanControlledInitial = widget.booleanControlledInitial !== undefined ?

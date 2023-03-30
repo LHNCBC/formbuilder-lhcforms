@@ -17,7 +17,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
     <select #mySelect
             [(ngModel)]="myModel"
             (ngModelChange)="onModelChange($event)"
-            [attr.name]="name" [attr.id]="id"
+            name="{{name}}" [attr.id]="id"
             [disabled]="schema.readOnly" class="form-control">
       <ng-container>
         <option *ngFor="let opt of options[answerType]" [ngValue]="opt.option" >{{opt.label}}</option>

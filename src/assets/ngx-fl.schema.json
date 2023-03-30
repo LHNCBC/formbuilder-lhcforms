@@ -709,8 +709,8 @@
       "widget": {
         "id": "string",
         "labelPosition": "left",
-        "labelWidthClass": "col-2",
-        "controlWidthClass": "col-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "derivedFrom": {
@@ -737,8 +737,8 @@
         "id": "lb-radio",
         "layout": "row",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-6"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto ps-0 btn-group btn-group-sm"
       }
     },
     "experimental": {
@@ -957,8 +957,8 @@
       "widget": {
         "id": "string",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "useContext": {
@@ -1648,8 +1648,8 @@
       "widget": {
         "id": "string",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "copyright": {
@@ -1730,8 +1730,8 @@
       "widget": {
         "id": "boolean-radio",
         "optionLabels": [[false, "No code"], [true, "Include code"]],
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
     "code": {
@@ -1816,8 +1816,8 @@
         "id": "table",
         "noTableLabel": true,
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10",
+        "labelClasses": "col-sm-2",
+        "controlClasses": "col-sm-10",
         "noCollapseButton": true,
         "addButtonLabel": "Add new code",
         "singleItem": true,
