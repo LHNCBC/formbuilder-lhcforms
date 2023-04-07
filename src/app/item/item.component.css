@@ -4,6 +4,14 @@
   background-color: whitesmoke;
 }
 
+/*
+  For some reason, display truncation pushes the width beyond its borders.
+  Providing some random fixed width somehow fixes the problem.
+ */
+.node-display-field {
+  width: 100px;
+}
+
 .node-content-wrapper-active,
 .node-content-wrapper.node-content-wrapper-active:hover,
 .node-content-wrapper-active.node-content-wrapper-focused {
