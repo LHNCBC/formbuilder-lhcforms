@@ -121,7 +121,7 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Answer options form', {timeout: 10000});
 
       cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
-      cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
+      cy.contains('div[role="tab"]', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('be.visible', true);
       cy.get('#1\\/1').as('acInput').should('have.value', 'd2 - 2');
       cy.get('@acInput').focus();
@@ -136,7 +136,7 @@ describe('Home page', () => {
       cy.uploadFile('USSG-family-portrait.json');
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait', {timeout: 10000});
       cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
-      cy.contains('.mat-tab-label-content', 'View Rendered Form').scrollIntoView().click();
+      cy.contains('div[role="tab"]', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
       cy.get('@ethnicity').scrollIntoView().type('l');
