@@ -9,7 +9,7 @@
   Providing some random fixed width somehow fixes the problem.
  */
 .node-display-field {
-  width: 100px;
+  width: 0;
 }
 
 .node-content-wrapper-active,
