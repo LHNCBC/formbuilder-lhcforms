@@ -34,10 +34,10 @@
                 </div>
               </ng-template>
               <ng-template #treeNodeTemplate let-node let-index="index">
-                <div [ngClass]="node.nodeClass" #tooltip="matTooltip" [matTooltip]="node.displayField">
+                <div [ngClass]="node.nodeClass" class="d-flex" #tooltip="matTooltip" [matTooltip]="node.displayField">
                   <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span>
-                  <span aria-hidden="true" [ngClass]="node.nodeClass">{{truncate(node.displayField, 25)}}</span>
-                  <span class="float-end"><ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container></span>
+                  <span aria-hidden="true" class="text-truncate flex-fill node-display-field" [ngClass]="node.nodeClass">{{node.displayField}}</span>
+                  <ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container>
                 </div>
               </ng-template>
               <ng-template #loadingTemplate><span></span></ng-template>
