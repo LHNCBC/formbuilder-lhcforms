@@ -16,10 +16,14 @@ export class CypressUtil {
    * Get output json of questionnaire from application model.
    * @returns {Cypress.Chainable<JQuery<E>>}
    */
-  static getQuestionnaireJSON() {
+  static getQuestionnaireJSON(format = 'R4') {
     // @ts-ignore
-    return CypressUtil.getBasePageComponent().its('formValue').then((formValue) => {
-      return cy.wrap(Util.convertToQuestionnaireJSON(formValue));
+    let formService;
+    return CypressUtil.getBasePageComponent().its('formService').then((service) => {
+      formService = service;
+      return CypressUtil.getBasePageComponent().its('formValue');
+    }).then((form) => {
+      return cy.wrap(formService.convertR4(Util.convertToQuestionnaireJSON(form), format));
     });
   }
 
@@ -65,4 +69,26 @@ export class CypressUtil {
   };
 
 
+  /**
+   * Delete cypress downloads folder.
+   *
+   * @param ignoreIfNotExist - A flag to ignore file not found error. Default is true.
+   *   All other errors are thrown.
+   */
+  static deleteDownloadsFolder(ignoreIfNotExist = true) {
+    const downloadsFolder = Cypress.config('downloadsFolder');
+    cy.task('deleteFolder', {folder: downloadsFolder, ignoreIfNotExist});
+  }
+
+  /**
+   * Delete a file in cypress downloads folder.
+   *
+   * @param filename - File name relative to cypress downloads folder.
+   * @param ignoreIfNotExist -  A flag to ignore file not found error. Default is true.
+   *   All other errors are thrown.
+   */
+  static deleteDownloadFile(filename, ignoreIfNotExist = true) {
+    const downloadsFolder = Cypress.config('downloadsFolder');
+    cy.task('deleteFile', {filename, folder: downloadsFolder, ignoreIfNotExist});
+  }
 }

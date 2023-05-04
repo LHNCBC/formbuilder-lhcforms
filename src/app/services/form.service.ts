@@ -269,9 +269,36 @@ export class FormService {
       }
     }
 
+    jsonObj = this.convertToR4(jsonObj);
     return this.validateFhirQuestionnaire(jsonObj);
   }
 
+
+  /**
+   * Convert a given questionniare to R4 version. R4 is also internal format.
+   * Other formats are converted to internal format using LForms library when loading an external form.
+   *
+   * @param fhirQ - A given questionnaire. Could be STU3, R4 etc.
+   */
+  convertToR4(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
+    return LForms.Util.getFormFHIRData(fhirQ.resourceType, 'R4',
+      LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
+  }
+
+  /**
+   * Convert R4, which is default internal format, to other formats such as STU3.
+   *
+   * @param fhirQ - Given questionnaire.
+   * @param version -  desired format, such as STU3
+   */
+  convertR4(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
+    let ret = fhirQ;
+    if(version !== 'R4') {
+      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, version,
+        LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
+    }
+    return ret;
+  }
 
   /**
    * Possible validation checks.

@@ -37,7 +37,7 @@ import {Subscription} from 'rxjs';
   templateUrl: './table.component.html', // Use separate files for possible reuse from a derived class
   styleUrls: ['./table.component.css']
 })
-export class TableComponent extends LfbArrayWidgetComponent implements AfterViewInit, DoCheck, OnChanges, OnDestroy {
+export class TableComponent extends LfbArrayWidgetComponent implements OnInit, DoCheck, OnChanges, OnDestroy {
 
   static seqNum = 0;
   // Icons for buttons.
@@ -87,8 +87,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
   /**
    * Initialize
    */
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
+  ngOnInit() {
+    super.ngOnInit();
     const widget = this.formProperty.schema.widget;
     this.addButtonLabel = widget && widget.addButtonLabel
       ? widget.addButtonLabel : 'Add';
@@ -107,8 +107,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
       this.rowSelection = widget.rowSelection;
       this.rowSelectionType = widget.rowSelectionType || 'radio'; // Defaults to radio buttons.
     }
-    this.selectionRadio = -1;
-    this.selectionCheckbox = [];
     const singleItemEnableSource = this.formProperty.schema.widget ?
       this.formProperty.schema.widget.singleItemEnableSource : null;
     const multipleSelectionEnableSource = this.formProperty.schema.widget ?
@@ -145,13 +143,10 @@ export class TableComponent extends LfbArrayWidgetComponent implements AfterView
       subsciption = prop.valueChanges.subscribe((newValue) => {
         this.selectionRadio = -1;
         this.selectionCheckbox = [];
-        if (newValue === false && this.rowSelection) {
+        if (!newValue && this.rowSelection) {
           this.rowSelectionType = 'radio';
         }
         else if(newValue && this.rowSelection) {
-          this.rowSelectionType = 'checkbox';
-        }
-        if(newValue === false && this.rowSelection && this.formProperty.properties.length === 1) {
           this.rowSelectionType = 'checkbox';
         }
         this.cdRef.markForCheck();

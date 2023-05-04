@@ -1,6 +1,8 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { BooleanControlledComponent } from './boolean-controlled.component';
+import {FormsModule} from '@angular/forms';
+import {AppModule} from '../../../app.module';
 
 describe('BooleanControlledComponent', () => {
   let component: BooleanControlledComponent;
@@ -8,6 +10,7 @@ describe('BooleanControlledComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      imports: [FormsModule, AppModule],
       declarations: [ BooleanControlledComponent ]
     })
     .compileComponents();

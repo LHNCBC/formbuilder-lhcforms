@@ -4,20 +4,20 @@
   "status": "draft",
   "item": [
     {
-      "id": 4860818021468,
       "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-          "valueDecimal": 20.1
-        },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/minValue",
           "valueDecimal": 15.2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 20.1
         }
       ],
       "linkId": "4860818021468",
       "text": "Item with restrictions",
-      "type": "decimal"
+      "type": "decimal",
+      "required": false
     }
   ]
 }

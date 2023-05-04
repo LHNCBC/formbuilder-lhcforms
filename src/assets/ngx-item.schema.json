@@ -1772,10 +1772,10 @@
       "type": "array",
       "title": "Initial value",
       "visibleIf": {
-        "/type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
+        "/type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'choice' && target.value != 'open-choice'"]
       },
       "widget": {
-        "id": "initial",
+        "id": "table",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col p-0",

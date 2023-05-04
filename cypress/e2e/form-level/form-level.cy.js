@@ -76,6 +76,50 @@ describe('Home page', () => {
     });
   });
 
+  describe('Home page export options', () => {
+    beforeEach(() => {
+      cy.loadHomePage();
+      cy.get('input[type="radio"][value="existing"]').click();
+      CypressUtil.deleteDownloadsFolder();
+    });
+
+    it('should export to local file in R4 format', () => {
+      cy.uploadFile('sample.STU3.json');
+      cy.get('#title').should('have.value', 'Sample STU3 form');
+      cy.contains('button.dropdown-toggle', 'Export').click();
+      cy.contains('button.dropdown-item', 'Export to file in R4 format').click();
+      cy.readFile('cypress/downloads/Sample-STU3-form.R4.json').then((json) => {
+        cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
+        cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
+        cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'R4').scrollIntoView().click();
+        cy.get('.preview-json-tabs mat-tab-body.mat-mdc-tab-body-active pre.R4').invoke('text').then((text) => {
+          const form = JSON.parse(text);
+          expect(form.item[0].answerOption.length).to.be.equal(3);
+          expect(form).to.be.deep.equal(json);
+        });
+        cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
+      });
+    });
+
+    it('should export to local file in STU3 format', () => {
+      cy.uploadFile('sample.R4.json');
+      cy.get('#title').should('have.value', 'Sample R4 form');
+      cy.contains('button.dropdown-toggle', 'Export').click();
+      cy.contains('button.dropdown-item', 'Export to file in STU3 format').click();
+      cy.readFile('cypress/downloads/Sample-R4-form.STU3.json').then((json) => {
+        cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
+        cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
+        cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'STU3').scrollIntoView().click();
+        cy.get('.preview-json-tabs mat-tab-body.mat-mdc-tab-body-active pre.STU3').invoke('text').then((text) => {
+          const form = JSON.parse(text);
+          expect(form.item[0].option.length).to.be.equal(3);
+          expect(form).to.be.deep.equal(json);
+          cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
+        });
+      });
+    });
+  });
+
   describe('Form level fields', () => {
     before(() => {
       cy.loadHomePage();
@@ -135,14 +179,13 @@ describe('Home page', () => {
     it('should work with ethnicity ValueSet in preview', () => {
       cy.uploadFile('USSG-family-portrait.json');
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait', {timeout: 10000});
-      cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
-      cy.contains('div[role="tab"]', 'View Rendered Form').scrollIntoView().click();
+      cy.contains('nav.navbar button', 'Preview').click();
+      cy.contains('div[role="tab"]', 'View Rendered Form').click();
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
-      cy.get('@ethnicity').scrollIntoView().type('l');
+      cy.get('@ethnicity').type('l');
       cy.get('#completionOptions').should('be.visible', true);
-      cy.get('@ethnicity').type('{downarrow}');
-      cy.get('@ethnicity').type('{enter}');
+      cy.get('@ethnicity').type('{downarrow}{enter}', {force: true});
       cy.get('span.autocomp_selected').contains('La Raza');
       cy.contains('mat-dialog-actions > button', 'Close').click();
     });

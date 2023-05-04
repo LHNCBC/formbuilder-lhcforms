@@ -178,8 +178,6 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
  */
 Cypress.Commands.add('addAnswerOptions', () => {
   cy.selectDataType('choice');
-  // No widget for choice. User selects default radio in answer option table.
-  cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
   cy.get('[id^="answerOption.0.valueCoding.code"]').type('c1');
   cy.get('[id^="answerOption.0.valueCoding.system"]').type('s1');
@@ -213,7 +211,8 @@ Cypress.Commands.add('addAnswerOptions', () => {
       valueDecimal: 3
     }]);
     // Default/initial value coding.
-    expect(qJson.item[0].initial[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
+    expect(qJson.item[0].answerOption[0].initialSelected).to.equal(true);
+    expect(qJson.item[0].answerOption[1].initialSelected).to.be.undefined;
   });
 
 });

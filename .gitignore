@@ -55,5 +55,6 @@ scratch/
 /cypress/screenshots/*
 
 # Project specific
-/src/lib/lforms/
+/src/lib/lforms
 /src/assets/version.json
+/cypress/downloads

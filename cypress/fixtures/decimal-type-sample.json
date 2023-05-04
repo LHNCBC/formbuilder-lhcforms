@@ -7,7 +7,9 @@
       "text": "Item with decimal data type",
       "linkId": "1",
       "type": "decimal",
-      "initial": 1.1
+      "initial": [{
+        "valueDecimal": 1.1
+      }]
     }
   ]
 }

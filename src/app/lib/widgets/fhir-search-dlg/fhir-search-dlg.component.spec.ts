@@ -3,10 +3,7 @@ import {
   ComponentFixture,
   fakeAsync,
   flush,
-  TestBed,
-  waitForAsync,
-  ComponentFixtureAutoDetect,
-  tick
+  TestBed
 } from '@angular/core/testing';
 
 import { FhirSearchDlgComponent } from './fhir-search-dlg.component';
@@ -50,7 +47,7 @@ describe('FhirSearchDlgComponent', () => {
     inputEl = fixture.debugElement.nativeElement.querySelector('.input-group input.form-control[type="text"]');
   });
 
-  it('should create', async() => {
+  it('should create', () => {
     expect(component).toBeTruthy();
   });
 

@@ -296,13 +296,18 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
 
   /**
    * Save form to local file, mostly copied from current form builder.
+   * @exportVersion - One of the defined version types: 'STU3' || 'R4' || 'R5'
+   * 'R4' is assumed if not specified.
    */
-  saveToFile() {
-    const content = this.toString(this.questionnaire);
+  saveToFile(exportVersion = 'R4') {
+    const questionnaire = this.formService.convertR4(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
+    const content = this.toString(questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
-    const formName = this.questionnaire.title;
-    const formShortName = this.questionnaire.name;
-    const exportFileName = formShortName ?  formShortName.replace(/\s/g, '-') : (formName ? formName.replace(/\s/g, '-') : 'form');
+    const formName = questionnaire.title;
+    const formShortName = questionnaire.name;
+    const exportFileName = formShortName ?
+      formShortName.replace(/\s/g, '-') :
+      (formName ? formName.replace(/\s/g, '-') : 'form');
 
     // Use hidden anchor to do file download.
     // const downloadLink: HTMLAnchorElement = document.createElement('a');
@@ -315,7 +320,7 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
     }
     this.objectUrl = urlFactory.createObjectURL(blob);
     downloadLink.setAttribute('href', this.objectUrl);
-    downloadLink.setAttribute('download', exportFileName + '.R4.json');
+    downloadLink.setAttribute('download', exportFileName + '.'+exportVersion+'.json');
     // Avoid using downloadLink.click(), which will display down content in the browser.
     downloadLink.dispatchEvent(new MouseEvent('click'));
   }

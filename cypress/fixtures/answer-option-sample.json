@@ -24,15 +24,6 @@
       },
       "linkId": "1",
       "type": "choice",
-      "initial": [
-        {
-          "valueCoding": {
-            "system": "s",
-            "code": "b",
-            "display": "d2"
-          }
-        }
-      ],
       "answerOption": [
         {
           "extension": [
@@ -58,7 +49,8 @@
             "system": "s",
             "code": "b",
             "display": "d2"
-          }
+          },
+          "initialSelected": true
         }
       ]
     }

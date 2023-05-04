@@ -3,6 +3,12 @@
 @import '~bootstrap/dist/css/bootstrap.min.css';
 @import '~autocomplete-lhc/source/auto_completion.css';
 
+/* Set the height and line-height of the tab header */
+mat-tab-group.preview-json-tabs mat-tab-header {
+  border-top: lightgrey solid 1px;
+  border-bottom: lightgrey solid 1px;
+}
+
 .form-control > p {
   display:none !important;
 }
