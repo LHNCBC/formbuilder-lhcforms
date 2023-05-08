@@ -93,6 +93,13 @@ describe('Home page', () => {
       cy.contains('div', 'Code').should('be.visible').includeExcludeCodeField('form');
     });
 
+    it('should display Questionnaire.url', () => {
+      cy.get('#url').type('http://example.com/1');
+      cy.questionnaireJSON().should((json) => {
+        expect(json.url).equal('http://example.com/1');
+      });
+    });
+
     it('should retain title edits', () => {
       cy.get('#title').should('have.value', 'New Form').clear();
       cy.get('#title').type('Dummy title');
