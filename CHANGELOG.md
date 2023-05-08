@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.0.1] 2023-05-08
+### Added
+- Added support for Questionnaire.url.
+
 ## [9.0.0] 2023-03-28
 ### Changed (Breaking changes)
 - Updated angular to version 15.x.x

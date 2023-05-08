@@ -381,10 +381,10 @@
       "pattern": "^\\S*$",
       "type": "string",
       "widget": {
-        "id": "string",
+        "id": "url",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-sm-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "identifier": {
