@@ -1,7 +1,7 @@
 /**
  * Customize array-widget from ngx-schema-form.
  */
-import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
@@ -12,7 +12,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
   styles: [
   ]
 })
-export class LfbControlWidgetComponent extends ControlWidget implements AfterViewInit {
+export class LfbControlWidgetComponent extends ControlWidget implements OnInit {
   // Info icon
   faInfo = faInfoCircle;
 
@@ -36,8 +36,7 @@ export class LfbControlWidgetComponent extends ControlWidget implements AfterVie
   @Input()
   booleanControlledInitial = true;
 
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
+  ngOnInit() {
     const widget = this.formProperty.schema.widget;
     // Input is priority followed by widget definition and default
     this.labelPosition =

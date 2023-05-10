@@ -33,6 +33,7 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
   }
 
   ngOnInit() {
+    super.ngOnInit();
     const ext = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
     if(ext?.valueUrl) {
       this.tsExtension.valueUrl = ext.valueUrl;

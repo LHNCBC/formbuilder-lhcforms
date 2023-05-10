@@ -94,10 +94,16 @@ describe('Home page', () => {
     });
 
     it('should display Questionnaire.url', () => {
-      cy.get('#url').type('http://example.com/1');
+      cy.get('#url').as('url').type('http://example.com/1');
       cy.questionnaireJSON().should((json) => {
         expect(json.url).equal('http://example.com/1');
       });
+      cy.get('@url').clear().type('a a');
+      cy.get('@url').next('small')
+        .should('be.visible')
+        .contains('String does not match pattern');
+      cy.get('@url').clear();
+      cy.get('@url').siblings('small').should('not.exist');
     });
 
     it('should retain title edits', () => {

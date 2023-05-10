@@ -38,6 +38,7 @@ export class RestrictionsOperatorComponent extends SelectComponent implements On
   }
 
   ngOnInit() {
+    super.ngOnInit();
     // Set model based on the property value.
     this.formProperty.valueChanges.subscribe((opt) => {
       this.model = opt;
