@@ -15,7 +15,7 @@
                #urlInput
                [attr.id]="id" [ngModel]="tsExtension.valueUrl" (ngModelChange)="urlChanged($event)" [attr.placeholder]="schema.widget?.placeholder"
       >
-      <small  *ngIf="!urlValid" class="ps-0 text-danger form-text">Please enter a valid URL.</small>
+      <small  *ngIf="!urlValid" class="ps-0 text-danger form-text" role="alert">Please enter a valid URL.</small>
     </div>
   </div>
 </ng-container>
