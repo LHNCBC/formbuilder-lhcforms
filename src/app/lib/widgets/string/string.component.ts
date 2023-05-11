@@ -11,11 +11,14 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
 
   modifiedMessages = {
-    PATTERN: null,
+    PATTERN: {
+      '^\\S*$': 'Spaces and other whitespace characters are not allowed in this field.', // uri
+      '^[^\\s]+(\\s[^\\s]+)*$': 'Spaces are not allowed at the beginning or end.',       // code
+    },
     MIN_LENGTH: null,
     MAX_LENGTH: null
   }
-  errors: [{code: string, originalMessage: string, modifiedMessage: string}] = null;
+  errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
 
   ngOnInit() {
     super.ngOnInit();
@@ -28,10 +31,21 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   ngAfterViewInit() {
     super.ngAfterViewInit();
     this.formProperty.errorsChanges.subscribe((errors) => {
-      // For some reason, errors have duplicates. Remove them.
-      this.errors = errors ? errors.filter((error, ind) => {
-        return errors.findIndex((e, i) => {return e.code === error.code}) === ind;
-      }).map((e) => {return {code: e.code, originalMessage: e.message, modifiedMessage: this.modifiedMessages[e.code]}}) : null;
+      this.errors = null;
+      if(errors?.length) {
+        // For some reason, errors have duplicates. Remove them.
+        const errorsObj = {};
+        errors.reduce((acc, error) => {
+          if(!acc[error.code]) {
+            acc[error.code] = error;
+          }
+          return acc;
+        }, errorsObj);
+        this.errors = Object.values(errorsObj).map((e: any) => {
+          const modifiedMessage = e.code === 'PATTERN' ? this.modifiedMessages.PATTERN[e.params[0]] : this.modifiedMessages[e.code];
+          return {code: e.code, originalMessage: e.message, modifiedMessage};
+        });
+      }
     });
   }
 }

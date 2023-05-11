@@ -12,8 +12,10 @@
                class="text-widget.id textline-widget form-control form-control-sm"
                type="url"
                (focus)="announceHint()"
+               #urlInput
                [attr.id]="id" [ngModel]="tsExtension.valueUrl" (ngModelChange)="urlChanged($event)" [attr.placeholder]="schema.widget?.placeholder"
       >
+      <small  *ngIf="!urlValid" class="ps-0 text-danger form-text">Please enter a valid URL.</small>
     </div>
   </div>
 </ng-container>

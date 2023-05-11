@@ -101,7 +101,7 @@ describe('Home page', () => {
       cy.get('@url').clear().type('a a');
       cy.get('@url').next('small')
         .should('be.visible')
-        .contains('String does not match pattern');
+        .contains('Spaces and other whitespace characters are not allowed in this field.');
       cy.get('@url').clear();
       cy.get('@url').siblings('small').should('not.exist');
     });
@@ -199,6 +199,11 @@ describe('Home page', () => {
       });
 
       it('should create terminology server extension', () => {
+        cy.tsUrl().next('small.text-danger').should('not.exist');
+        cy.tsUrl().type('ab');
+        cy.tsUrl().next('small.text-danger').should('have.text', 'Please enter a valid URL.');
+        cy.tsUrl().clear();
+        cy.tsUrl().next('small.text-danger').should('not.exist');
         cy.tsUrl().type('http://example.org/fhir');
         CypressUtil.assertValueInQuestionnaire('/extension',
           [{
