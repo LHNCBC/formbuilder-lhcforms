@@ -59,6 +59,7 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
    * Read extension and initialize properties.
    */
   ngOnInit() {
+    super.ngOnInit();
     this.setOlp();
     this.extensionsService.extensionsObservable.subscribe(() => {
       this.setOlp();

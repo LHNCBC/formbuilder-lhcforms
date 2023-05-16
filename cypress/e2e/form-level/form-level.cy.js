@@ -94,10 +94,16 @@ describe('Home page', () => {
     });
 
     it('should display Questionnaire.url', () => {
-      cy.get('#url').type('http://example.com/1');
+      cy.get('#url').as('url').type('http://example.com/1');
       cy.questionnaireJSON().should((json) => {
         expect(json.url).equal('http://example.com/1');
       });
+      cy.get('@url').clear().type('a a');
+      cy.get('@url').next('small')
+        .should('be.visible')
+        .contains('Spaces and other whitespace characters are not allowed in this field.');
+      cy.get('@url').clear();
+      cy.get('@url').siblings('small').should('not.exist');
     });
 
     it('should retain title edits', () => {
@@ -193,6 +199,11 @@ describe('Home page', () => {
       });
 
       it('should create terminology server extension', () => {
+        cy.tsUrl().next('small.text-danger').should('not.exist');
+        cy.tsUrl().type('ab');
+        cy.tsUrl().next('small.text-danger').should('have.text', 'Please enter a valid URL.');
+        cy.tsUrl().clear();
+        cy.tsUrl().next('small.text-danger').should('not.exist');
         cy.tsUrl().type('http://example.org/fhir');
         CypressUtil.assertValueInQuestionnaire('/extension',
           [{

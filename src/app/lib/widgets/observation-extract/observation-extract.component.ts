@@ -62,6 +62,7 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
    * Read extension and initialize properties.
    */
   ngOnInit() {
+    super.ngOnInit();
     this.setValue();
     this.extensionsService.extensionsObservable.subscribe(() => {
       this.setValue();

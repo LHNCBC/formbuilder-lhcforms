@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.0.2] 2023-05-10
+### Fix
+- Fix display of validation errors for string component.
+- Change Questionnaire.url validation to FHIR specified pattern.
+
 ## [9.0.1] 2023-05-08
 ### Added
 - Added support for Questionnaire.url.

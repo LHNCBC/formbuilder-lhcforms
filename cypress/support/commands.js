@@ -233,7 +233,13 @@ Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOption
 
   const coding = {code: 'c1', system: 's1', display: 'd1'}
   cy.get('@codeYes').click();
-  cy.get('[id^="code.0.code_"]').type(coding.code);
+  cy.get('[id^="code.0.code_').as('code');
+  cy.get('@code').type('ab ');
+  cy.get('@code').next('small')
+    .should('be.visible')
+    .contains('Spaces are not allowed at the beginning or end.');
+  cy.get('@code').clear();
+  cy.get('@code').type(coding.code);
   cy.get('[id^="code.0.system_"]').type(coding.system);
   cy.get('[id^="code.0.display_"]').type(coding.display);
   cy.questionnaireJSON().should((q) => {
