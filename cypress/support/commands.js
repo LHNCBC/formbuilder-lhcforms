@@ -34,7 +34,7 @@ Cypress.Commands.add('loadHomePage',() => {
   cy.goToHomePage();
   cy.loincAccepted().then((flag) => {
     if (flag !== 'true') {
-      cy.acceptLoinc();
+      cy.acceptAllTermsOfUse();
     }
   });
 });
@@ -52,7 +52,15 @@ Cypress.Commands.add('goToHomePage', () => {
 /**
  * Accept LOINC notice dialog.
  */
-Cypress.Commands.add('acceptLoinc', () => {
+Cypress.Commands.add('acceptAllTermsOfUse', (snomed = true) => {
+  cy.get('#acceptLoinc').click();
+  cy.get('#useSnomed').click();
+  cy.get('#acceptSnomed').click();
+  cy.contains('lfb-loinc-notice button', 'Accept').click();
+});
+
+Cypress.Commands.add('acceptLoincOnly', (snomed = true) => {
+  cy.get('#acceptLoinc').click();
   cy.contains('lfb-loinc-notice button', 'Accept').click();
 });
 
@@ -74,7 +82,14 @@ Cypress.Commands.add('clearSession',() => {
 Cypress.Commands.add('loincAccepted',() => {
   return cy.window()
     .its('sessionStorage')
-    .invoke('getItem', 'acceptTermsOfUse');
+    .invoke('getItem', 'acceptLoinc');
+});
+
+
+Cypress.Commands.add('snomedAccepted',() => {
+  return cy.window()
+    .its('sessionStorage')
+    .invoke('getItem', 'acceptSnomed');
 });
 
 

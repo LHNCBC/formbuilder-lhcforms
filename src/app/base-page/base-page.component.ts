@@ -5,14 +5,13 @@ import {
   EventEmitter,
   Input,
   OnDestroy,
-  AfterViewInit,
   Output, TemplateRef,
-  ViewChild
+  ViewChild, OnInit
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
-import {BehaviorSubject, from, Observable, of, Subject} from 'rxjs';
-import {catchError, debounceTime, distinctUntilChanged, finalize, mergeMap, switchMap, takeUntil} from 'rxjs/operators';
+import {from, Observable, of, Subject} from 'rxjs';
+import {catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil} from 'rxjs/operators';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
@@ -23,7 +22,6 @@ import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search
 import { PreviewDlgComponent } from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
 import {Util} from '../lib/util';
-import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
@@ -38,7 +36,7 @@ type ExportType = 'CREATE' | 'UPDATE';
   styleUrls: ['./base-page.component.css'],
   providers: [NgbActiveModal]
 })
-export class BasePageComponent implements AfterViewInit, OnDestroy {
+export class BasePageComponent implements OnInit, OnDestroy {
 
   private unsubscribe = new Subject<void>();
   @Input()
@@ -59,6 +57,7 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
   selectedPreviewTab = 0;
   acceptTermsOfUse = false;
+  acceptSnomed = true;
 
 
   constructor(private formService: FormService,
@@ -77,7 +76,9 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
       this.startOption = 'from_autosave';
     }
 
-    this.acceptTermsOfUse = sessionStorage.acceptTermsOfUse === 'true';
+    this.acceptTermsOfUse = sessionStorage.acceptLoinc === 'true';
+    this.acceptSnomed = sessionStorage.acceptSnomed === 'true';
+    this.formService.setSnomedUser(this.acceptSnomed);
 
     this.formSubject.asObservable().pipe(
       debounceTime(500),
@@ -93,7 +94,7 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
   }
 
-  ngAfterViewInit() {
+  ngOnInit() {
     // @ts-ignore
     if(window.Cypress) {
       // @ts-ignore
@@ -105,8 +106,10 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
       ).result
         .then(
           (result) => {
-            this.acceptTermsOfUse = result;
-            sessionStorage.acceptTermsOfUse = result;
+            this.acceptTermsOfUse = result.acceptLoinc;
+            sessionStorage.acceptLoinc = result.acceptLoinc;
+            sessionStorage.acceptSnomed = result.acceptSnomed;
+            this.formService.setSnomedUser(result.acceptSnomed);
           },
           (reason) => {
             console.error(reason);

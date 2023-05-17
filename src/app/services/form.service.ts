@@ -35,6 +35,8 @@ export class FormService {
   flSchema: any = {properties: {}};
   private _itemEditorSchema: any = {properties: {}};
 
+  snomedUser = false;
+
   constructor(private modalService: NgbModal, private http: HttpClient) {
     [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
       if(!obj.schema.definitions) {
@@ -415,5 +417,20 @@ export class FormService {
    */
   isAutoSaved(): boolean {
     return !!localStorage.getItem('fhirQuestionnaire');
+  }
+
+  /**
+   * Get snomed user flag.
+   */
+  isSnomedUser(): boolean {
+    return this.snomedUser;
+  }
+
+  /**
+   * Set snomed user flag.
+   * @param accepted -boolean
+   */
+  setSnomedUser(accepted: boolean) {
+    this.snomedUser = accepted;
   }
 }

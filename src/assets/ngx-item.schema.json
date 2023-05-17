@@ -980,8 +980,13 @@
         },
         {
           "type": "string",
+          "enum": ["snomed-value-set"],
+          "title": "SNOMED answer value set"
+        },
+        {
+          "type": "string",
           "enum": ["value-set"],
-          "title": "Answer value set uri"
+          "title": "Answer value set URI"
         }
       ],
       "default": "answer-option",
@@ -1002,10 +1007,10 @@
       "pattern": "^\\S*$",
       "type": "string",
       "visibleIf": {
-        "/__$answerOptionMethods": ["value-set"]
+        "/__$answerOptionMethods": ["value-set", "snomed-value-set"]
       },
       "widget": {
-        "id": "url",
+        "id": "answer-value-set",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col textline-widget form-control form-control-sm"

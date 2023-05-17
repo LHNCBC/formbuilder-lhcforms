@@ -36,12 +36,14 @@ import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 import {QuantityUnitComponent} from './widgets/quantity-unit/quantity-unit.component';
 import {NumberComponent} from './widgets/number/number.component';
 import {TerminologyServerComponent} from './widgets/terminology-server/terminology-server.component';
+import {AnswerValueSetComponent} from './widgets/answer-value-set/answer-value-set.component';
 
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
   constructor() {
     super();
+    this.register('answer-value-set', AnswerValueSetComponent);
     this.register('row-layout',  RowLayoutComponent);
     this.register('grid', GridComponent);
     this.register('table', TableComponent);

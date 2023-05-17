@@ -65,4 +65,7 @@ export class CypressUtil {
   };
 
 
+  static getSnomedAcceptance() {
+    return CypressUtil.getBasePageComponent.its('formService').then((service) => service.isSnomedUser());
+  }
 }

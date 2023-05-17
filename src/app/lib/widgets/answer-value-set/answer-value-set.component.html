@@ -1,0 +1,36 @@
+
+<input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
+       [name]="name" type="hidden" [formControl]="control">
+<ng-template #notHiddenFieldBlock>
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label *ngIf="!nolabel"
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelClasses"
+    ></lfb-label>
+    <ng-container *ngTemplateOutlet="valueSetType === 'snomed-value-set' ? snomed : vsInput"></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #snomed>
+  <div class="col-10 p-0">
+    <div class="row m-0 align-items-center">
+      <label [for]="id+'_ecl'" class="col-auto ps-0 col-form-label">Enter SNOMED ECL</label>
+      <input type="text" [name]="name+'_ecl'" [ngModel]="ecl" (ngModelChange)="updateUrl($event)" class="col textline-widget form-control form-control-sm"
+             [attr.id]="id+'_ecl'" [attr.placeholder]="'SNOMED ECL'">
+    </div>
+    <ng-container *ngIf="formProperty.value">
+      <div class="fst-italic text-decoration-underline">Formatted SNOMED answerValueSet url:</div>
+      <span class="text-break">{{formProperty.value}}</span>
+    </ng-container>
+  </div>
+</ng-template>
+
+<ng-template #vsInput>
+  <input [name]="name" [readonly]="schema.readOnly"
+         [ngClass]="controlClasses"
+         type="url"
+         [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+         [lfbDisableControl]="valueSetType === 'snomed-value-set' || schema.disabled">
+</ng-template>

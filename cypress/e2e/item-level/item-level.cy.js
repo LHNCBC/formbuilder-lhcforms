@@ -437,6 +437,44 @@ describe('Home page', () => {
       });
     });
 
+    it('should create SNOMED CT answerValueSet', () => {
+      cy.selectDataType('choice');
+      cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
+
+      cy.get('#answerValueSet_ecl').should('be.visible').as('ecl');
+      cy.get('@ecl').parent().parent().as('controlDiv');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('@controlDiv').find('span').should('not.exist');
+      cy.get('@ecl').type('123');
+      cy.get('@controlDiv').find('span').should('contain.text', '&ecl=123');
+      cy.questionnaireJSON().should((q) => {
+        expect(q.item[0].answerValueSet).contain('&ecl=123');
+        expect(q.item[0].answerOption).to.be.undefined;
+      });
+      cy.get('@ecl').clear();
+      cy.get('@controlDiv').find('span').should('not.exist');
+      cy.questionnaireJSON().should((q) => {
+        expect(q.item[0].answerValueSet).to.be.undefined;
+        expect(q.item[0].answerOption).to.be.undefined;
+      });
+    });
+
+    it('should import a form with an item having SNOMED CT answerValueSet', () => {
+      cy.uploadFile('snomed-answer-value-set-sample.json', true);
+      cy.get('#title').should('have.value', 'SNOMED answer value set form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('#type option:selected').should('have.text', 'choice');
+      cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet_ecl').should('have.value','1234').as('ecl');
+      cy.get('@ecl').parent().parent().as('controlDiv');
+      cy.get('@controlDiv').find('span').should('contain.text', '&ecl=1234');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerValueSet).contain('&ecl=1234');
+      });
+    });
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');

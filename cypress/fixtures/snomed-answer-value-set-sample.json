@@ -1,0 +1,13 @@
+{
+  "item": [
+    {
+      "type": "choice",
+      "linkId": "1",
+      "text": "Item with SNOMED answer value set",
+      "answerValueSet": "https://snowstorm.ihtsdotools.org/fhir/ValueSet/$expand?url=http%3A%2F%2Fsnomed.info%2Fsct%2F900000000000207008%2Fversion%2F20221231%3Ffhir_vs%3Decl%2F%3C+404684003+%7CClinical+finding+%28finding%29%7C&count=20&offset=0&filter=&language=en&ecl=1234"
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "title": "SNOMED answer value set form",
+  "status": "draft"
+}
