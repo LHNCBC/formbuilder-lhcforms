@@ -981,7 +981,7 @@
         {
           "type": "string",
           "enum": ["value-set"],
-          "title": "Answer value set uri"
+          "title": "Answer value set URI"
         }
       ],
       "default": "answer-option",
