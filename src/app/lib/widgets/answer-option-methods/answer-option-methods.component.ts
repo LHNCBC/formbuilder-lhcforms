@@ -18,6 +18,7 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   answerValueSetProperty: FormProperty;
 
   ngOnInit(): void {
+    super.ngOnInit();
     const valueSetUrl = this.formProperty.searchProperty('answerValueSet').value;
     if(valueSetUrl?.length > 0) {
       this.formProperty.setValue('value-set', false);

@@ -971,7 +971,7 @@
     },
     "__$answerOptionMethods": {
       "description": "Define predefined answers for the user to choose.",
-      "title": "Predefined answers",
+      "title": "Answer list source",
       "oneOf": [
         {
           "type": "string",
@@ -981,7 +981,7 @@
         {
           "type": "string",
           "enum": ["value-set"],
-          "title": "Answer value set uri"
+          "title": "Answer value set URI"
         }
       ],
       "default": "answer-option",
