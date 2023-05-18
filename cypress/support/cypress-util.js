@@ -63,9 +63,4 @@ export class CypressUtil {
       expect(extensions).to.deep.equal(expectedValue);
     });
   };
-
-
-  static getSnomedAcceptance() {
-    return CypressUtil.getBasePageComponent.its('formService').then((service) => service.isSnomedUser());
-  }
 }

@@ -3,7 +3,7 @@
 import {CypressUtil} from '../../support/cypress-util'
 import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 
-describe('Home page accept LOINC notice', () => {
+describe('Home page accept Terms of Use notices', () => {
   before(() => {
     cy.clearSession();
   });
@@ -11,7 +11,7 @@ describe('Home page accept LOINC notice', () => {
     cy.clearSession();
   });
 
-  it('should accept LOINC and SNOMED notice', () => {
+  it('should make SNOMED CT available after accepting SNOMED notice', () => {
     cy.goToHomePage();
     cy.contains('lfb-loinc-notice button', 'Accept').as('accept').should('not.be.enabled');
     cy.get('#acceptLoinc').as('loinc').click();

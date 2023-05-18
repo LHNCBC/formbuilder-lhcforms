@@ -11,7 +11,7 @@ describe('BasePageComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(BasePageComponent);
     component = fixture.componentInstance;
-    component.acceptTermsOfUse = true;
+    component.acceptedTermsOfUse = true;
     fixture.detectChanges();
   });
 

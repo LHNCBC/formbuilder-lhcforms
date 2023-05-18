@@ -8,9 +8,9 @@ import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 })
 export class LoincNoticeComponent implements OnInit {
 
-  acceptedTerms: {acceptLoinc: boolean, acceptSnomed: boolean} = {
-    acceptLoinc: false,
-    acceptSnomed: false
+  acceptedTerms: {acceptedLoinc: boolean, acceptedSnomed: boolean} = {
+    acceptedLoinc: false,
+    acceptedSnomed: false
   };
   useSnomed: false;
   constructor(private activeModal: NgbActiveModal) { }

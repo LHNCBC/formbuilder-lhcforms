@@ -4,19 +4,19 @@
   </div>
   <div class="modal-body bg-light alert m-0">
     <ng-container *ngTemplateOutlet="loincTermsContent"></ng-container>
-    <input id="acceptLoinc" type="checkbox" class="form-check-inline" [(ngModel)]="acceptedTerms.acceptLoinc" required>
+    <input id="acceptLoinc" type="checkbox" class="form-check-inline" [(ngModel)]="acceptedTerms.acceptedLoinc" required>
     <label for="acceptLoinc" class="form-check-label">I accept LOINC Terms of Use.</label>
     <hr>
     <input id="useSnomed" type="checkbox" class="form-check-inline" [(ngModel)]="useSnomed">
     <label for="useSnomed" class="form-check-label pb-3">Enable SNOMED CT terminology support.</label>
     <ng-container *ngIf="useSnomed">
       <ng-container *ngTemplateOutlet="snomedTermsContent"></ng-container>
-      <input id="acceptSnomed" type="checkbox" class="form-check-inline" [(ngModel)]="acceptedTerms.acceptSnomed">
+      <input id="acceptSnomed" type="checkbox" class="form-check-inline" [(ngModel)]="acceptedTerms.acceptedSnomed">
       <label class="form-check-label pb-2" for="acceptSnomed">I accept SNOMED International SNOMED CT Browser License Agreement.</label>
     </ng-container>
   </div>
   <div class="modal-footer btn-group">
-    <button [disabled]="!acceptedTerms.acceptLoinc || (useSnomed && !acceptedTerms.acceptSnomed)" type="button" class="btn btn-primary" (click)="close(true)">Accept</button>
+    <button [disabled]="!acceptedTerms.acceptedLoinc || (useSnomed && !acceptedTerms.acceptedSnomed)" type="button" class="btn btn-primary" (click)="close(true)">Accept</button>
   </div>
 </div>
 

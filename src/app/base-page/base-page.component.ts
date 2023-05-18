@@ -56,8 +56,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
   @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
   selectedPreviewTab = 0;
-  acceptTermsOfUse = false;
-  acceptSnomed = true;
+  acceptedTermsOfUse = false;
+  acceptedSnomed = false;
 
 
   constructor(private formService: FormService,
@@ -76,9 +76,9 @@ export class BasePageComponent implements OnInit, OnDestroy {
       this.startOption = 'from_autosave';
     }
 
-    this.acceptTermsOfUse = sessionStorage.acceptLoinc === 'true';
-    this.acceptSnomed = sessionStorage.acceptSnomed === 'true';
-    this.formService.setSnomedUser(this.acceptSnomed);
+    this.acceptedTermsOfUse = sessionStorage.acceptedLoinc === 'true';
+    this.acceptedSnomed = sessionStorage.acceptedSnomed === 'true';
+    this.formService.setSnomedUser(this.acceptedSnomed);
 
     this.formSubject.asObservable().pipe(
       debounceTime(500),
@@ -100,16 +100,16 @@ export class BasePageComponent implements OnInit, OnDestroy {
       // @ts-ignore
       window.basePageComponent = this;
     }
-    if(!this.acceptTermsOfUse) {
+    if(!this.acceptedTermsOfUse) {
       this.modalService.open(
         LoincNoticeComponent,{size: 'lg', container: 'body > lfb-root', keyboard: false, backdrop: 'static'}
       ).result
         .then(
           (result) => {
-            this.acceptTermsOfUse = result.acceptLoinc;
-            sessionStorage.acceptLoinc = result.acceptLoinc;
-            sessionStorage.acceptSnomed = result.acceptSnomed;
-            this.formService.setSnomedUser(result.acceptSnomed);
+            this.acceptedTermsOfUse = result.acceptedLoinc;
+            sessionStorage.acceptedLoinc = result.acceptedLoinc;
+            sessionStorage.acceptedSnomed = result.acceptedSnomed;
+            this.formService.setSnomedUser(result.acceptedSnomed);
           },
           (reason) => {
             console.error(reason);

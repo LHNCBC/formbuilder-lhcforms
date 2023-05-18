@@ -82,14 +82,14 @@ Cypress.Commands.add('clearSession',() => {
 Cypress.Commands.add('loincAccepted',() => {
   return cy.window()
     .its('sessionStorage')
-    .invoke('getItem', 'acceptLoinc');
+    .invoke('getItem', 'acceptedLoinc');
 });
 
 
 Cypress.Commands.add('snomedAccepted',() => {
   return cy.window()
     .its('sessionStorage')
-    .invoke('getItem', 'acceptSnomed');
+    .invoke('getItem', 'acceptedSnomed');
 });
 
 
