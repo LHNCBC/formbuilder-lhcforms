@@ -971,7 +971,7 @@
     },
     "__$answerOptionMethods": {
       "description": "Define predefined answers for the user to choose.",
-      "title": "Predefined answers",
+      "title": "Answer list source",
       "oneOf": [
         {
           "type": "string",

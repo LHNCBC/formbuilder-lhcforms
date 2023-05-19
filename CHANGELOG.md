@@ -6,6 +6,11 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Added
 - Support for SNOMED value set URI.
 
+## [9.0.3] 2023-05-17
+### Fix
+- Fix layout issues in answer-option-methods component.
+- Upper case 'uri' in a label.
+
 ## [9.0.2] 2023-05-10
 ### Fix
 - Fix display of validation errors for string component.
