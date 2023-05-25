@@ -442,17 +442,17 @@ describe('Home page', () => {
       cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
 
       cy.get('#answerValueSet_ecl').should('be.visible').as('ecl');
-      cy.get('@ecl').parent().parent().as('controlDiv');
+      cy.get('@ecl').parent().parent().parent().as('controlDiv');
       cy.get('lfb-answer-option').should('not.exist');
-      cy.get('@controlDiv').find('span').should('not.exist');
+      cy.get('@controlDiv').find('span.text-break').should('not.exist');
       cy.get('@ecl').type('123');
-      cy.get('@controlDiv').find('span').should('contain.text', '&ecl=123');
+      cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
       cy.questionnaireJSON().should((q) => {
-        expect(q.item[0].answerValueSet).contain('&ecl=123');
+        expect(q.item[0].answerValueSet).contain('fhir_vs=ecl%2F123');
         expect(q.item[0].answerOption).to.be.undefined;
       });
       cy.get('@ecl').clear();
-      cy.get('@controlDiv').find('span').should('not.exist');
+      cy.get('@controlDiv').find('span.text-break').should('not.exist');
       cy.questionnaireJSON().should((q) => {
         expect(q.item[0].answerValueSet).to.be.undefined;
         expect(q.item[0].answerOption).to.be.undefined;
@@ -460,19 +460,31 @@ describe('Home page', () => {
     });
 
     it('should import a form with an item having SNOMED CT answerValueSet', () => {
+      const decodedValueTextPart = '< 429019009 |Finding related to biological sex';
+      const encodedUriPart = 'fhir_vs='+encodeURIComponent('ecl/' + decodedValueTextPart);
+
       cy.uploadFile('snomed-answer-value-set-sample.json', true);
       cy.get('#title').should('have.value', 'SNOMED answer value set form');
       cy.contains('button', 'Edit questions').click();
       cy.get('#type option:selected').should('have.text', 'choice');
       cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
       cy.get('lfb-answer-option').should('not.exist');
-      cy.get('#answerValueSet_ecl').should('have.value','1234').as('ecl');
-      cy.get('@ecl').parent().parent().as('controlDiv');
-      cy.get('@controlDiv').find('span').should('contain.text', '&ecl=1234');
+      cy.get('#answerValueSet_ecl').should('contain.value',decodedValueTextPart).as('ecl');
+      cy.get('@ecl').parent().parent().parent().as('controlDiv');
+      cy.get('@controlDiv').find('span').should('contain.text', encodedUriPart);
 
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].answerValueSet).contain('&ecl=1234');
+        expect(qJson.item[0].answerValueSet).contain(encodedUriPart);
       });
+
+      cy.contains('button', 'Preview').click();
+      cy.contains('.mdc-tab.mat-mdc-tab', 'View Rendered Form').click();
+      cy.get('input.ac_multiple.ansList').as('inputBox').click();
+      cy.get('#searchResults').should('be.visible');
+      cy.get('@inputBox').type('{downarrow}{enter}', {force: true});
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@inputBox').should('have.value', 'Intersex');
+      cy.contains('mat-dialog-actions button', 'Close').click();
     });
 
     it('should display quantity units', () => {

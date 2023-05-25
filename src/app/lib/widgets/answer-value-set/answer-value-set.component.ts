@@ -9,20 +9,22 @@ import {Subscription} from 'rxjs';
 })
 export class AnswerValueSetComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  static snomedBaseUrl = 'https://snowstorm.ihtsdotools.org/fhir/ValueSet/';
+  static snomedBaseUri = 'http://snomed.info';
+  static snomedPath = 'sct/900000000000207008/version/20221231';
   snomedUrl = '';
   nonSnomedUrl = '';
   valueSetType = 'snomed-value-set';
-  ecl = '';
-  searchParams = new URLSearchParams('url=http://snomed.info/sct/900000000000207008/version/20221231?fhir_vs=ecl/%3C%20404684003%20%7CClinical%20finding%20(finding)%7C&count=20&offset=0&filter=&language=en');
+  snomedFhirVS = '';
+  url = new URL(AnswerValueSetComponent.snomedPath, AnswerValueSetComponent.snomedBaseUri);
   subscriptions: Subscription[] = [];
+  eclPrefixRE = /^ecl\s*\//i;
 
   ngOnInit() {
     super.ngOnInit();
     const val = this.formProperty.value;
-    if(val && val.startsWith(AnswerValueSetComponent.snomedBaseUrl)) {
+    if(val && val.startsWith(AnswerValueSetComponent.snomedBaseUri)) {
       this.snomedUrl = val;
-      this.ecl = this.parseECL(val);
+      this.snomedFhirVS = this.parseECL(val);
     }
     else {
       this.snomedUrl = '';
@@ -38,16 +40,16 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
       this.valueSetType = newVal;
       const val = this.formProperty.value;
       if(newVal === 'snomed-value-set') {
-        if(val && val.startsWith(AnswerValueSetComponent.snomedBaseUrl)) {
+        if(val && val.startsWith(AnswerValueSetComponent.snomedBaseUri)) {
           this.snomedUrl = val;
-          this.ecl = this.parseECL(val);
+          this.snomedFhirVS = this.parseECL(val);
         }
         else {
           this.snomedUrl = '';
         }
       }
       else if(newVal === 'value-set') {
-        if(val && !val.startsWith(AnswerValueSetComponent.snomedBaseUrl)) {
+        if(val && !val.startsWith(AnswerValueSetComponent.snomedBaseUri)) {
           this.nonSnomedUrl = val;
         }
       }
@@ -55,22 +57,31 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     this.subscriptions.push(sub);
   }
 
+  /**
+   * ECL input handler
+   *
+   * @param ecl - ECL value from input box.
+   */
   updateUrl(ecl: string) {
     let snomedUrl = '';
-    this.ecl = ecl;
+    this.snomedFhirVS = ecl;
     if(ecl) {
-      this.searchParams.set('ecl', ecl);
-      const searchParams = this.searchParams.toString();
-      snomedUrl = new URL('$expand?'+searchParams, AnswerValueSetComponent.snomedBaseUrl).toString();
+      ecl = this.eclPrefixRE.test(ecl) ? ecl : 'ecl/' + ecl;
+      this.url.searchParams.set('fhir_vs', ecl);
+      snomedUrl = this.url.toString();
     }
     this.snomedUrl = snomedUrl;
     this.formProperty.setValue(snomedUrl, false);
   }
 
+  /**
+   * Extract ECL from the url.
+   */
   parseECL(url: string): string {
     let ret = '';
     if(url) {
-      ret = new URL(url).searchParams.get('ecl') || '';
+      ret = new URL(url).searchParams.get('fhir_vs') || '';
+      ret = ret.replace(this.eclPrefixRE, '');
     }
     return ret;
   }

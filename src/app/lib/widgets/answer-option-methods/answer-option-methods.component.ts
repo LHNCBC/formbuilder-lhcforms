@@ -28,7 +28,8 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
     const valueSetUrl = this.formProperty.searchProperty('answerValueSet').value;
     if(valueSetUrl?.length > 0) {
       let valueSetType = 'value-set';
-      if(this.isSnomedUser && valueSetUrl.startsWith(AnswerValueSetComponent.snomedBaseUrl)) {
+      if(this.isSnomedUser &&
+        (valueSetUrl.startsWith(AnswerValueSetComponent.snomedBaseUri))) {
         valueSetType = 'snomed-value-set';
       }
       this.formProperty.setValue(valueSetType, false);

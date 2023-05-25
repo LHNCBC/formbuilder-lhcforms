@@ -18,6 +18,10 @@ export class LoincNoticeComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  /**
+   * Close the dialog after accepting the terms.
+   *
+   */
   close(accept: boolean) {
     if(accept) {
       this.activeModal.close(this.acceptedTerms);

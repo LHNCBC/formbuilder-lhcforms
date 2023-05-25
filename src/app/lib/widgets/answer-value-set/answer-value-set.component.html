@@ -16,13 +16,16 @@
 <ng-template #snomed>
   <div class="col-10 p-0">
     <div class="row m-0 align-items-center">
-      <label [for]="id+'_ecl'" class="col-auto ps-0 col-form-label">Enter SNOMED ECL</label>
-      <input type="text" [name]="name+'_ecl'" [ngModel]="ecl" (ngModelChange)="updateUrl($event)" class="col textline-widget form-control form-control-sm"
-             [attr.id]="id+'_ecl'" [attr.placeholder]="'SNOMED ECL'">
+      <label [for]="id+'_ecl'" class="col-auto ps-0 col-form-label">Enter SNOMED ECL:</label>
+      <div class="col input-group input-group-sm px-0">
+        <span class="input-group-text">ecl/</span>
+        <input type="text" [name]="name+'_ecl'" [ngModel]="snomedFhirVS" (ngModelChange)="updateUrl($event)" class="col textline-widget form-control form-control-sm"
+               [attr.id]="id+'_ecl'" [attr.placeholder]="'SNOMED ECL'">
+      </div>
     </div>
     <ng-container *ngIf="formProperty.value">
-      <div class="fst-italic text-decoration-underline">Formatted SNOMED answerValueSet url:</div>
-      <span class="text-break">{{formProperty.value}}</span>
+      <div class="fst-italic text-decoration-underline text-black-50">Formatted SNOMED answerValueSet URI:</div>
+      <span class="text-break text-black-50">{{formProperty.value}}</span>
     </ng-container>
   </div>
 </ng-template>
