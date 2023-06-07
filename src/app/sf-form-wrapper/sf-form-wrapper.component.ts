@@ -79,6 +79,10 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
   ngOnChanges(changes: SimpleChanges) {
     if(changes.model) {
       this.loading = true;
+      // The new form properties may not be updated at the time of this invocation. Wait for next tick to notify.
+      setTimeout(() => {
+        this.formService.resetForm();
+      });
     }
   }
 

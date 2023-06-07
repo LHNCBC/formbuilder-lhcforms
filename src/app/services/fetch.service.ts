@@ -2,18 +2,29 @@
  * A service to fetch data from clinical tables search service and lforms-fhir servers.
  */
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
-import {Observable, of} from 'rxjs';
+import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
+import {Observable, of, retry, throwError} from 'rxjs';
 import {catchError, map, tap} from 'rxjs/operators';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 import {Util} from '../lib/util';
-import fhir from 'fhir/r4';
+import fhir, {BundleEntry} from 'fhir/r4';
+import SNOMED_CT_Editions from '../../assets/SNOMED_CT_Editions.json';
 declare var LForms: any;
 
 enum JsonFormatType {
   R4 = 'R4',
   STU3 = 'STU3',
   LFORMS = 'lforms'
+}
+
+/**
+ * A map with edition id as key and SNOMEDEdition as value.
+ */
+export interface SNOMEDEditions  extends Map<string, SNOMEDEdition> {
+}
+export interface SNOMEDEdition {
+  title?: string,
+  versions?: string [];
 }
 
 export enum LoincItemType {
@@ -29,9 +40,18 @@ export class FetchService {
   static loincSearchUrl = FetchService.loincBaseUrl + '/api/loinc_items/v3/search';
   static loincFormsUrl = FetchService.loincBaseUrl + '/loinc_form_definitions';
   static fhirUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire';
+  static snomedCodeSystemsUrl = 'https://snowstorm.ihtsdotools.org/fhir/CodeSystem';
+  _snomedEditions: SNOMEDEditions = null;
 
   assetsUrl = '/assets';
   constructor(private http: HttpClient) { }
+
+  /**
+   * Getter for _snomedEditions
+   */
+  get snomedEditions(): SNOMEDEditions {
+    return this._snomedEditions;
+  }
 
   /**
    * Get questionnaire by id from FHIR server.
@@ -200,5 +220,76 @@ export class FetchService {
       ret.extension = Util.convertUnitsToExtensions(units);
     }
     return ret;
+  }
+
+  /**
+   * Fetch and store SNOMED editions and versions data from SNOMED site.
+   *
+   * Uses SNOMED CT API call to get code systems from snomed site.
+   */
+  fetchSnomedEditions() {
+    if(this._snomedEditions) {
+      return;
+    }
+
+    this.http.get<fhir.Bundle>(FetchService.snomedCodeSystemsUrl).pipe(
+      retry(3),
+      catchError(this.handleSNOMEDError),
+      // tap((resp: any) => {console.log(resp);}),
+      map(this.parseSNOMEDEditions)
+    ).subscribe({next: (editions: SNOMEDEditions) => {
+      console.log('Fetched SNOMED editions.');
+      this._snomedEditions = editions;
+    }, error: (error) => {
+      console.log('Using packaged SNOMED editions.');
+      this._snomedEditions = this.parseSNOMEDEditions(SNOMED_CT_Editions as fhir.Bundle);
+    }});
+  }
+
+
+  /**
+   * It parses SNOMED CodeSystem bundle. Stores the editions
+   * in a map with its id as key and preserves the order input array.
+   *
+   * @param snomedCSBundle - Response from SNOMED CodeSystem API.
+   */
+  parseSNOMEDEditions(snomedCSBundle: fhir.Bundle): SNOMEDEditions {
+    const editionVersionRE = /^http:\/\/snomed.info\/sct\/([^\/]+)\/version\/(.+)?$/;
+    const results = new Map<string, SNOMEDEdition>(); // Iterates with insertion order
+    snomedCSBundle.entry.forEach((res: BundleEntry<fhir.CodeSystem>) => {
+      const versionUri = res.resource.version;
+      const matches = versionUri.match(editionVersionRE);
+      if (matches) {
+        const id = matches[1];
+        const version = matches[2];
+        let edition: SNOMEDEdition = results.get(id);
+        if (edition) {
+          edition.versions.push(version);
+        } else {
+          edition = {title: res.resource.title, versions: [version]};
+          results.set(id, edition);
+        }
+      }
+    });
+    return results;
+  }
+
+  /**
+   * Handle errors with SNOMED Code System API
+   * @param error
+   * @private
+   */
+  private handleSNOMEDError(error: HttpErrorResponse) {
+    if (error.status === 0) {
+      // A client-side or network error occurred. Handle it accordingly.
+      console.error('An error occurred:', error.error);
+    } else {
+      // The backend returned an unsuccessful response code.
+      // The response body may contain clues as to what went wrong.
+      console.error(
+        `${FetchService.snomedCodeSystemsUrl} returned code ${error.status}, body was: `, error.error);
+    }
+    // Return an observable with a user-facing error message.
+    return throwError(() => error.error);
   }
 }

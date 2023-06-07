@@ -9,19 +9,49 @@
                [helpMessage]="schema.description"
                [ngClass]="labelClasses"
     ></lfb-label>
-    <ng-container *ngTemplateOutlet="valueSetType === 'snomed-value-set' ? snomed : vsInput"></ng-container>
+    <div class="col p-0 m-0">
+      <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
+      <ng-container *ngTemplateOutlet="valueSetType === 'snomed-value-set' ? snomed : vsInput"></ng-container>
+    </div>
   </div>
 </ng-template>
 
 <ng-template #snomed>
-  <div class="col-10 p-0">
+  <div class="p-0">
     <div class="row m-0 align-items-center">
-      <label [for]="id+'_ecl'" class="col-auto ps-0 col-form-label">Enter SNOMED ECL:</label>
+      <label [for]="id+'_ecl'" class="col-3 ps-0 col-form-label">Enter SNOMED ECL:</label>
       <div class="col input-group input-group-sm px-0">
         <span class="input-group-text">ecl/</span>
-        <input type="text" [name]="name+'_ecl'" [ngModel]="snomedFhirVS" (ngModelChange)="updateUrl($event)" class="col textline-widget form-control form-control-sm"
-               [attr.id]="id+'_ecl'" [attr.placeholder]="'SNOMED ECL'">
+        <input type="text"
+             [name]="name+'_ecl'"
+             [ngModel]="snomedFhirVS"
+             (ngModelChange)="onEclUpdate($event)"
+             class="col textline-widget form-control form-control-sm"
+             [attr.id]="id+'_ecl'"
+             placeholder="SNOMED ECL">
       </div>
+    </div>
+    <div class="row m-0 align-items-center">
+      <label [for]="id+'_edition'" class="col-3 ps-0 col-form-label">Select SNOMED edition:</label>
+      <select [attr.id]="id+'_edition'" class="col form-select form-select-sm"
+              [ngModel]="snomedEdition"
+              (ngModelChange)="onEditionUpdate($event)"
+              [ngModelOptions]="{standalone: true}"
+      >
+        <option *ngFor="let eid of snomedEditions.keys()" [value]="eid">{{snomedEditions.get(eid).title + ' ('+eid+')'}}</option>
+      </select>
+    </div>
+    <div *ngIf="snomedEdition" class="row m-0 align-items-center">
+      <label [for]="id+'_version'" class="col-3 ps-0 col-form-label">Select SNOMED version:</label>
+      <select [attr.id]="id+'_version'" class="col form-select form-select-sm"
+              [ngModel]="snomedVersion"
+              (ngModelChange)="onVersionUpdate($event)"
+              [ngModelOptions]="{standalone: true}"
+      >
+        <option value="">Any version</option>
+        <option *ngFor="let ver of snomedEditions?.get(snomedEdition)?.versions" [value]="ver">{{ver}}</option>
+      </select>
+
     </div>
     <ng-container *ngIf="formProperty.value">
       <div class="fst-italic text-decoration-underline text-black-50">Formatted SNOMED answerValueSet URI:</div>
@@ -34,6 +64,6 @@
   <input [name]="name" [readonly]="schema.readOnly"
          [ngClass]="controlClasses"
          type="url"
-         [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+         [attr.id]="id+'_non-snomed'"  [formControl]="control" [attr.placeholder]="schema.placeholder"
          [lfbDisableControl]="valueSetType === 'snomed-value-set' || schema.disabled">
 </ng-template>

@@ -395,20 +395,20 @@ describe('Home page', () => {
       cy.selectDataType('choice');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
-      cy.get('#answerValueSet').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').should('not.exist');
       cy.get('lfb-answer-option').should('be.visible');
 
       cy.get('[for^="__\\$answerOptionMethods_value-set"]').click();
-      cy.get('#answerValueSet').should('be.visible').as('vsInput');
+      cy.get('#answerValueSet_non-snomed').should('be.visible');
       cy.get('lfb-answer-option').should('not.exist');
-      cy.get('@vsInput').type('http://example.org');
+      cy.get('#answerValueSet_non-snomed').type('http://example.org');
       cy.questionnaireJSON().should((q) => {
         expect(q.item[0].answerValueSet).equal('http://example.org');
         expect(q.item[0].answerOption).to.be.undefined;
       });
 
       cy.get('[for^="__\\$answerOptionMethods_answer-option"]').click();
-      cy.get('#answerValueSet').should('not.exist');
+      cy.get('answerValueSet_non-snomed').should('not.exist');
       cy.get('lfb-answer-option').should('be.visible');
       const aOptions = [
         {display: 'display 1', code: 'c1', system: 's1'},
@@ -430,7 +430,7 @@ describe('Home page', () => {
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
       cy.get('lfb-answer-option').should('not.exist');
-      cy.get('#answerValueSet').should('have.value','http://example.org');
+      cy.get('#answerValueSet_non-snomed').should('have.value','http://example.org');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerValueSet).to.equal('http://example.org');
@@ -466,24 +466,74 @@ describe('Home page', () => {
       cy.uploadFile('snomed-answer-value-set-sample.json', true);
       cy.get('#title').should('have.value', 'SNOMED answer value set form');
       cy.contains('button', 'Edit questions').click();
-      cy.get('#type option:selected').should('have.text', 'choice');
+
+      // First item is with SNOMED CT URI.
       cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
-      cy.get('lfb-answer-option').should('not.exist');
-      cy.get('#answerValueSet_ecl').should('contain.value',decodedValueTextPart).as('ecl');
+      cy.get('lfb-answer-option').as('answerOption').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').as('nonSnomedUrl').should('not.exist');
+
+      cy.get('#answerValueSet_ecl').as('ecl').should('contain.value',decodedValueTextPart);
+      cy.get('#answerValueSet_edition').as('edition')
+        .find('option:selected').should('have.text', 'International Edition (900000000000207008)');
+      cy.get('#answerValueSet_version').as('version')
+        .find('option:selected').should('have.text', '20221231');
       cy.get('@ecl').parent().parent().parent().as('controlDiv');
       cy.get('@controlDiv').find('span').should('contain.text', encodedUriPart);
 
+      // non-snomed answerValueSet
+      cy.clickTreeNode('Item with non-snomed');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
+      cy.get('#answerValueSet_non-snomed').should('be.visible')
+        .should('have.value', 'http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
+      cy.get('@ecl').should('not.exist');
+      cy.get('@edition').should('not.exist');
+      cy.get('@version').should('not.exist');
+      cy.get('@answerOption').should('not.exist');
+
+      cy.clickTreeNode('Item with answer option');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option').should('be.visible');
+      cy.get('@ecl').should('not.exist');
+      cy.get('@edition').should('not.exist');
+      cy.get('@version').should('not.exist');
+      cy.get('@nonSnomedUrl').should('not.exist');
+
+
+      cy.clickTreeNode('Item with SNOMED');
+      cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
+      cy.clickTreeNode('Item with answer option');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option').should('be.visible');
+      cy.clickTreeNode('Item with non-snomed');
+      cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
+
+      cy.clickTreeNode('Item with SNOMED');
+      cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
+
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerValueSet).contain(encodedUriPart);
+        expect(qJson.item[1].answerValueSet).contain('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
+        expect(qJson.item[2].answerValueSet).to.be.undefined;
       });
 
+      // Assertions in preview.
       cy.contains('button', 'Preview').click();
+
+      // SNOMED CT answers
       cy.contains('.mdc-tab.mat-mdc-tab', 'View Rendered Form').click();
-      cy.get('input.ac_multiple.ansList').as('inputBox').click();
+      cy.get('#1\\/1').as('inputBox1').click();
       cy.get('#searchResults').should('be.visible');
-      cy.get('@inputBox').type('{downarrow}{enter}', {force: true});
+      cy.get('@inputBox1').type('{downarrow}{enter}', {force: true});
       cy.get('#searchResults').should('not.be.visible');
-      cy.get('@inputBox').should('have.value', 'Intersex');
+      cy.get('@inputBox1').should('have.value', 'Intersex');
+
+      // Non SNOMED CT answers
+      cy.get('#2\\/1').as('inputBox2').click();
+      cy.get('#searchResults').should('be.visible');
+      cy.get('@inputBox2').type('{downarrow}{enter}', {force: true});
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@inputBox2').should('have.value', 'Back pain');
+
       cy.contains('mat-dialog-actions button', 'Close').click();
     });
 

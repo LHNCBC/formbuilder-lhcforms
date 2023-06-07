@@ -1013,7 +1013,8 @@
         "id": "answer-value-set",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col textline-widget form-control form-control-sm"
+        "controlClasses": "col textline-widget form-control form-control-sm",
+        "note": "Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields)."
       }
     },
     "answerOption": {
