@@ -3,6 +3,8 @@ import {StringComponent} from '../string/string.component';
 import {Subscription} from 'rxjs';
 import {FetchService, SNOMEDEditions} from '../../../services/fetch.service';
 import {FormService} from '../../../services/form.service';
+import {ExtensionsService} from '../../../services/extensions.service';
+import {TerminologyServerComponent} from '../terminology-server/terminology-server.component';
 
 
 @Component({
@@ -13,6 +15,9 @@ import {FormService} from '../../../services/form.service';
 export class AnswerValueSetComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
 
   static snomedBaseUri = 'http://snomed.info/sct';
+  static snomedTerminologyServer = 'https://snowstorm.ihtsdotools.org/fhir';
+  static snomedTSHint = 'Note that this option also sets the terminology server option below (under "Advanced fields").';
+  static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields).';
   snomedEditions: SNOMEDEditions = null;
   snomedEdition = '900000000000207008'; // Default international edition.
   snomedVersion = '' // Empty implies latest version.
@@ -27,12 +32,15 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
 
   fetchService = inject(FetchService);
   formService = inject(FormService);
+  extensionService = inject(ExtensionsService);
+  tsHint = AnswerValueSetComponent.snomedTSHint;
 
   ngOnInit() {
     super.ngOnInit();
     this.snomedEditions = this.fetchService.snomedEditions;
     this.updateUI(this.formProperty.value);
     const sub = this.formService.formReset$.subscribe(() => {
+      this.tsHint = this.formProperty.schema.widget.note;
       this.updateUI(this.formProperty.value);
     });
     this.subscriptions.push(sub);
@@ -42,6 +50,13 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     const asMethodsProp = this.formProperty.searchProperty('__$answerOptionMethods');
     const sub = asMethodsProp.valueChanges.subscribe((newVal) => {
       this.valueSetType = newVal;
+      switch (this.valueSetType) {
+        case 'snomed-value-set':
+          this.tsHint = AnswerValueSetComponent.snomedTSHint;
+          break;
+        case 'value-set':
+          this.tsHint = AnswerValueSetComponent.nonSnomedTSHint;
+      }
     });
     this.subscriptions.push(sub);
   }
@@ -85,6 +100,37 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     }
     this.snomedUrl = snomedUrl;
     this.formProperty.setValue(snomedUrl, false);
+  }
+
+  /**
+   * Handle onBlur event.
+   * @param event - DOM event object
+   */
+  onEclBlur(event: Event) {
+    if(this.snomedUrl) {
+      this.setSNOMEDTerminologyServer(true);
+    }
+  }
+
+  /**
+   * Set SNOMED terminology server if the user enter ECL.
+   *
+   * @param isAdd - True is add, false is remove
+   */
+  setSNOMEDTerminologyServer(isAdd: boolean) {
+    if(isAdd) {
+      if(!this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI)) {
+        this.extensionService.addExtension({
+          url: TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
+          valueUrl: AnswerValueSetComponent.snomedTerminologyServer
+        }, 'valueUrl')
+      }
+    } else {
+      this.extensionService.removeExtension((ext) => {
+        return ext.value.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
+                 && ext.value.valueUrl === AnswerValueSetComponent.snomedTerminologyServer;
+      });
+    }
   }
 
   /**

@@ -162,7 +162,7 @@ export class ExtensionsService {
    *                    all other value[x] will be deleted from the property value.
    *
    */
-  addExtension(ext: fhir.Extension, valueType): FormProperty {
+  addExtension(ext: fhir.Extension, valueType: string): FormProperty {
     const extProp = this.extensionsProp.addItem(ext);
     if(valueType) {
       this.pruneUnusedValues(extProp, valueType);
@@ -177,7 +177,7 @@ export class ExtensionsService {
    * @param extProperty - Extension form property
    * @param keepValueType - value[x] to keep.
    */
-  pruneUnusedValues(extProperty: FormProperty, keepValueType) {
+  pruneUnusedValues(extProperty: FormProperty, keepValueType: string) {
     const value = extProperty.value;
     const keys = Object.keys(value);
     for (const key of keys) {

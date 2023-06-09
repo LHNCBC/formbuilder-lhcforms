@@ -248,8 +248,8 @@ export class FetchService {
 
 
   /**
-   * It parses SNOMED CodeSystem bundle. Stores the editions
-   * in a map with its id as key and preserves the order input array.
+   * It parses a SNOMED CodeSystem bundle. Stores the editions
+   * in a map with its id as key and the iterator preserves the order of input array.
    *
    * @param snomedCSBundle - Response from SNOMED CodeSystem API.
    */

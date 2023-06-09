@@ -10,7 +10,7 @@
                [ngClass]="labelClasses"
     ></lfb-label>
     <div class="col p-0 m-0">
-      <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
+      <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em>{{tsHint}}</em></small></p>
       <ng-container *ngTemplateOutlet="valueSetType === 'snomed-value-set' ? snomed : vsInput"></ng-container>
     </div>
   </div>
@@ -26,6 +26,7 @@
              [name]="name+'_ecl'"
              [ngModel]="snomedFhirVS"
              (ngModelChange)="onEclUpdate($event)"
+             (blur)="onEclBlur($event)"
              class="col textline-widget form-control form-control-sm"
              [attr.id]="id+'_ecl'"
              placeholder="SNOMED ECL">

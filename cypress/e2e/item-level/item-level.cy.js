@@ -446,10 +446,15 @@ describe('Home page', () => {
       cy.get('lfb-answer-option').should('not.exist');
       cy.get('@controlDiv').find('span.text-break').should('not.exist');
       cy.get('@ecl').type('123');
+      cy.get('@controlDiv').click() // Blur on @ecl
       cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
       cy.questionnaireJSON().should((q) => {
         expect(q.item[0].answerValueSet).contain('fhir_vs=ecl%2F123');
         expect(q.item[0].answerOption).to.be.undefined;
+        expect(q.item[0].extension[0]).to.deep.equal({
+          url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer',
+          valueUrl: 'https://snowstorm.ihtsdotools.org/fhir'
+        });
       });
       cy.get('@ecl').clear();
       cy.get('@controlDiv').find('span.text-break').should('not.exist');
