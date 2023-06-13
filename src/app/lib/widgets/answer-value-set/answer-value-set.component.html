@@ -19,7 +19,11 @@
 <ng-template #snomed>
   <div class="p-0">
     <div class="row m-0 align-items-center">
-      <label [for]="id+'_ecl'" class="col-3 ps-0 col-form-label">Enter SNOMED ECL:</label>
+      <label [for]="id+'_ecl'" class="col-3 ps-0 col-form-label">Enter SNOMED ECL
+        <div tabindex="0" class="btn border-0 p-0 b-0" [ngbTooltip]="eclHelp" triggers="manual" [attr.aria-label]="'Tooltip for ECL'"
+             #eclTooltip
+             (click)="eclTooltipOpen()"
+      ><fa-icon [icon]="faInfo" aria-hidden="true"></fa-icon></div>:</label>
       <div class="col input-group input-group-sm px-0">
         <span class="input-group-text">ecl/</span>
         <input type="text"
@@ -67,4 +71,11 @@
          type="url"
          [attr.id]="id+'_non-snomed'"  [formControl]="control" [attr.placeholder]="schema.placeholder"
          [lfbDisableControl]="valueSetType === 'snomed-value-set' || schema.disabled">
+</ng-template>
+
+<ng-template #eclHelp>
+  You may use <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose()"
+                 href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information.
+  To build ECL you may use <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose()"
+                 href="https://browser.ihtsdotools.org/?perspective=full&languages=en">SNOMED CT Browser</a>
 </ng-template>

@@ -1,10 +1,12 @@
-import {AfterViewInit, Component, inject, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import {Subscription} from 'rxjs';
 import {FetchService, SNOMEDEditions} from '../../../services/fetch.service';
 import {FormService} from '../../../services/form.service';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {TerminologyServerComponent} from '../terminology-server/terminology-server.component';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
 
 
 @Component({
@@ -18,6 +20,8 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   static snomedTerminologyServer = 'https://snowstorm.ihtsdotools.org/fhir';
   static snomedTSHint = 'Note that this option also sets the terminology server option below (under "Advanced fields").';
   static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields).';
+  faInfo = faInfoCircle;
+  @ViewChild('eclTooltip', {read: NgbTooltip}) eclTooltip: NgbTooltip;
   snomedEditions: SNOMEDEditions = null;
   snomedEdition = '900000000000207008'; // Default international edition.
   snomedVersion = '' // Empty implies latest version.
@@ -33,7 +37,8 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   fetchService = inject(FetchService);
   formService = inject(FormService);
   extensionService = inject(ExtensionsService);
-  tsHint = AnswerValueSetComponent.snomedTSHint;
+  tsHint = AnswerValueSetComponent.snomedTSHint
+  eclHelp = '';
 
   ngOnInit() {
     super.ngOnInit();
@@ -178,6 +183,20 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     }
   }
 
+  eclTooltipClose() {
+    this.eclTooltip.close();
+  }
+
+  /**
+   * Open ecl tooltip manually
+   */
+  eclTooltipOpen() {
+    this.eclTooltip.open();
+  }
+
+  /**
+   * Close ecl tooltip manually
+   */
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => {
       if(sub) {
