@@ -46,13 +46,13 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
     let message = '';
     switch(this.formProperty.value) {
       case 'answer-option':
-        message = `Answer Option field is displayed`;
+        message = `Fields for answer options are displayed below.`;
         break;
       case 'snomed-value-set':
-        message = `Answer value set with SNOMED CT input fields is displayed.`;
+        message = `Fields for a SNOMED CT answer value set are displayed below.`;
         break;
       case 'value-set':
-        message = `Answer value set field is displayed`;
+        message = `A field for an answer value set URI is displayed below.`;
         break;
     }
     this.liveAnnouncer.announce(message).then(r => {});

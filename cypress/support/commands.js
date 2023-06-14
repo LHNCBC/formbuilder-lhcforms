@@ -31,12 +31,18 @@ import {CypressUtil} from "./cypress-util";
  * Load home page and wait until LForms is loaded.
  */
 Cypress.Commands.add('loadHomePage',() => {
+  cy.clearSession();
   cy.goToHomePage();
-  cy.loincAccepted().then((flag) => {
-    if (flag !== 'true') {
-      cy.acceptAllTermsOfUse();
-    }
-  });
+  cy.acceptAllTermsOfUse();
+});
+
+/**
+ * Load the page without accepting SNOMED license.
+ */
+Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
+  cy.clearSession();
+  cy.goToHomePage();
+  cy.acceptLoincOnly();
 });
 
 
@@ -52,14 +58,14 @@ Cypress.Commands.add('goToHomePage', () => {
 /**
  * Accept LOINC notice dialog.
  */
-Cypress.Commands.add('acceptAllTermsOfUse', (snomed = true) => {
+Cypress.Commands.add('acceptAllTermsOfUse', () => {
   cy.get('#acceptLoinc').click();
   cy.get('#useSnomed').click();
   cy.get('#acceptSnomed').click();
   cy.contains('lfb-loinc-notice button', 'Accept').click();
 });
 
-Cypress.Commands.add('acceptLoincOnly', (snomed = true) => {
+Cypress.Commands.add('acceptLoincOnly', () => {
   cy.get('#acceptLoinc').click();
   cy.contains('lfb-loinc-notice button', 'Accept').click();
 });
@@ -80,16 +86,20 @@ Cypress.Commands.add('clearSession',() => {
  * element locator when restarting stopped tests in cy-open.
  */
 Cypress.Commands.add('loincAccepted',() => {
+  return cy.getSessionStorageItem('acceptedLoinc');
+});
+
+/**
+ * Get an item from session storage.
+ */
+Cypress.Commands.add('getSessionStorageItem',(item) => {
   return cy.window()
-    .its('sessionStorage')
-    .invoke('getItem', 'acceptedLoinc');
+    .its('sessionStorage').invoke('getItem', item);
 });
 
 
 Cypress.Commands.add('snomedAccepted',() => {
-  return cy.window()
-    .its('sessionStorage')
-    .invoke('getItem', 'acceptedSnomed');
+  return cy.getSessionStorageItem('acceptedSnomed');
 });
 
 

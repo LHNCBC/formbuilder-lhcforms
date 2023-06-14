@@ -27,7 +27,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   snomedVersion = '' // Empty implies latest version.
   snomedUrl = '';
   nonSnomedUrl = '';
-  valueSetType = 'snomed-value-set';
+  valueSetType = 'value-set';
   snomedFhirVS = '';
   url = new URL(AnswerValueSetComponent.snomedBaseUri);
   subscriptions: Subscription[] = [];

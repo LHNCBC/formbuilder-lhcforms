@@ -1239,3 +1239,33 @@ describe('Home page', () => {
     });
   });
 });
+
+
+describe('Accepting only LOINC terms of use', () => {
+  before(() => {
+    cy.loadHomePageWithLoincOnly();
+    cy.get('input[type="radio"][value="scratch"]').click();
+    cy.get('button').contains('Continue').click();
+    cy.get('button').contains('Create questions').click();
+  });
+  beforeEach(() => {
+    cy.resetForm()
+    cy.get('button').contains('Create questions').click();
+  });
+  it('should not display SNOMED option in answerValueSet', () => {
+    cy.selectDataType('choice');
+    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
+    // SNOMED radio should not exist
+    cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').should('not.exist');
+    cy.get('#answerValueSet_non-snomed').should('not.exist');
+    cy.get('#answerValueSet_ecl').should('not.exist');
+    cy.get('#answerValueSet_edition').should('not.exist');
+    cy.get('#answerValueSet_version').should('not.exist');
+    cy.get('lfb-answer-option').should('be.visible');
+
+    cy.get('[for^="__\\$answerOptionMethods_value-set"]').click();
+    cy.get('#answerValueSet_non-snomed').should('be.visible');
+    cy.get('lfb-answer-option').should('not.exist');
+  });
+});
