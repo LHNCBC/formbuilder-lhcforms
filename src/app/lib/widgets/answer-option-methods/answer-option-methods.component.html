@@ -10,7 +10,7 @@
     <ng-container *ngFor="let option of schema.oneOf">
       <ng-container *ngIf="isSnomedUser || option.enum[0] !== 'snomed-value-set'">
         <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" [attr.name]="id"
-               type="radio" [value]="option.enum[0]" autocomplete="off">
+               type="radio" [value]="option.enum[0]" autocomplete="off" (change)="handleChange()">
         <label class="btn btn-sm btn-outline-success" [attr.for]="id + '_' + option.enum[0]">{{option.title || option.description}}</label>
       </ng-container>
     </ng-container>

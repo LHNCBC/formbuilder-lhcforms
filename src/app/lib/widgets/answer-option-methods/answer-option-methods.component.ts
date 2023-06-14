@@ -4,6 +4,8 @@ import {StringComponent} from '../string/string.component';
 import {LabelRadioComponent} from '../label-radio/label-radio.component';
 import {AnswerValueSetComponent} from '../answer-value-set/answer-value-set.component';
 import {FormService} from '../../../services/form.service';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'lfb-answer-option-methods',
@@ -11,11 +13,12 @@ import {FormService} from '../../../services/form.service';
 })
 export class AnswerOptionMethodsComponent extends LabelRadioComponent implements OnInit, AfterViewInit {
 
+  subscriptions: Subscription [] = [];
   @ViewChild('answerOption', {static: true, read: AnswerOptionComponent}) answerOption: AnswerOptionComponent;
   @ViewChild('answerValueSet', {static: true, read: StringComponent}) answerValueSet: StringComponent;
   isSnomedUser = false;
 
-  constructor(private formService: FormService) {
+  constructor(private formService: FormService, private liveAnnouncer: LiveAnnouncer) {
     super();
   }
 
@@ -30,10 +33,31 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.formService.formReset$.subscribe(() => {
+    const sub = this.formService.formReset$.subscribe(() => {
       this.updateUI();
     });
+    this.subscriptions.push(sub);
   }
+
+  /**
+   * Change handler.
+   */
+  handleChange() {
+    let message = '';
+    switch(this.formProperty.value) {
+      case 'answer-option':
+        message = `Answer Option field is displayed`;
+        break;
+      case 'snomed-value-set':
+        message = `Answer value set with SNOMED CT input fields is displayed.`;
+        break;
+      case 'value-set':
+        message = `Answer value set field is displayed`;
+        break;
+    }
+    this.liveAnnouncer.announce(message).then(r => {});
+  }
+
 
   /**
    * Update UI widgets with initial value. The widget(s) is directly controlled by form property of __$answerOptionMethods. This
