@@ -81,8 +81,6 @@
     "@types/jasminewd2": "~2.0.10",
     "@types/node": "^18.15.5",
     "@webcomponents/webcomponentsjs": "^2.7.0",
-    "ajv": "^6.12.6",
-    "ajv-cli": "^5.0.0",
     "angular-http-server": "^1.11.1",
     "codelyzer": "^6.0.2",
     "cypress": "^10.11.0",
