@@ -87,7 +87,7 @@
         "type": "object"
       },
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
+        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url'"]
       },
       "widget": {
         "id": "restrictions",
@@ -1013,8 +1013,7 @@
         "id": "answer-value-set",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col textline-widget form-control form-control-sm",
-        "note": "Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields)."
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "answerOption": {

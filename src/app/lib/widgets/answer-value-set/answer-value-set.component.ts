@@ -27,7 +27,6 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   snomedVersion = '' // Empty implies latest version.
   snomedUrl = '';
   nonSnomedUrl = '';
-  valueSetType = 'value-set';
   snomedFhirVS = '';
   url = new URL(AnswerValueSetComponent.snomedBaseUri);
   subscriptions: Subscription[] = [];
@@ -37,15 +36,19 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   fetchService = inject(FetchService);
   formService = inject(FormService);
   extensionService = inject(ExtensionsService);
-  tsHint = AnswerValueSetComponent.snomedTSHint
+  valueSetType = 'value-set';
+  tsHint = AnswerValueSetComponent.nonSnomedTSHint;
   eclHelp = '';
 
   ngOnInit() {
     super.ngOnInit();
     this.snomedEditions = this.fetchService.snomedEditions;
+    const asMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
+    this.valueSetType = asMethod ? asMethod : this.valueSetType;
     this.updateUI(this.formProperty.value);
     const sub = this.formService.formReset$.subscribe(() => {
-      this.tsHint = this.formProperty.schema.widget.note;
+      const asmValue = this.formProperty.searchProperty('__$answerOptionMethods').value;
+      this.valueSetType = asmValue ? asmValue : this.valueSetType;
       this.updateUI(this.formProperty.value);
     });
     this.subscriptions.push(sub);
@@ -62,6 +65,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
         case 'value-set':
           this.tsHint = AnswerValueSetComponent.nonSnomedTSHint;
       }
+      this.updateUI(this.formProperty.value);
     });
     this.subscriptions.push(sub);
   }

@@ -438,25 +438,43 @@ describe('Home page', () => {
     });
 
     it('should create SNOMED CT answerValueSet', () => {
+      const eclSel = '#answerValueSet_ecl';
       cy.selectDataType('choice');
-      cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
+      cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
+      cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
+      cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod').click();
 
-      cy.get('#answerValueSet_ecl').should('be.visible').as('ecl');
-      cy.get('@ecl').parent().parent().parent().as('controlDiv');
+      cy.get(eclSel).should('be.visible');
+      cy.get(eclSel).parent().parent().parent().as('controlDiv');
       cy.get('lfb-answer-option').should('not.exist');
       cy.get('@controlDiv').find('span.text-break').should('not.exist');
-      cy.get('@ecl').type('123');
-      cy.get('@controlDiv').click() // Blur on @ecl
+      cy.get(eclSel).type('123');
+      cy.get('@controlDiv').click() // Blur on eclSel
       cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
+      // Preserve ecl edited in non-snomed input box
+      cy.get('@nonSnomedMethod').click();
+      cy.get('#answerValueSet_ecl').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').as('asInput').should('be.visible').should('contain.value', 'fhir_vs=ecl%2F123');
+      cy.get('@asInput').type('_extra_chars');
+      cy.get('@snomedMethod').click();
+      cy.get(eclSel).should('have.value', '123_extra_chars');
+
+      // Preserve ECL after going to answerOption and coming back to snomed value set.
+      cy.get('@answerOptionMethod').click();
+      cy.get(eclSel).should('not.exist');
+      cy.get('@snomedMethod').click();
+      cy.get(eclSel).should('have.value', '123_extra_chars');
+
       cy.questionnaireJSON().should((q) => {
-        expect(q.item[0].answerValueSet).contain('fhir_vs=ecl%2F123');
+        expect(q.item[0].answerValueSet).contain('fhir_vs=ecl%2F123_extra_chars');
         expect(q.item[0].answerOption).to.be.undefined;
         expect(q.item[0].extension[0]).to.deep.equal({
           url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer',
           valueUrl: 'https://snowstorm.ihtsdotools.org/fhir'
         });
       });
-      cy.get('@ecl').clear();
+
+      cy.get(eclSel).clear();
       cy.get('@controlDiv').find('span.text-break').should('not.exist');
       cy.questionnaireJSON().should((q) => {
         expect(q.item[0].answerValueSet).to.be.undefined;
