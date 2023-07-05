@@ -3,15 +3,56 @@
 import {CypressUtil} from '../../support/cypress-util'
 import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 
-describe('Home page accept LOINC notice', () => {
+describe('Home page accept Terms of Use notices', () => {
   before(() => {
     cy.clearSession();
   });
+  afterEach(() => {
+    cy.clearSession();
+  });
 
-  it('should accept LOINC notice', () => {
+  it('should make SNOMED CT available after accepting SNOMED notice', () => {
     cy.goToHomePage();
-    cy.acceptLoinc();
+    cy.contains('lfb-loinc-notice button', 'Accept').as('accept').should('not.be.enabled');
+    cy.get('#acceptLoinc').as('loinc').click();
+    cy.get('@loinc').should('be.checked');
+    cy.get('@accept').should('be.enabled');
+    cy.get('#useSnomed').click();
+    cy.get('@accept').should('not.be.enabled');
+    cy.get('#acceptSnomed').as('snomed').click();
+    cy.get('@snomed').should('be.checked');
+    cy.get('@accept').should('be.enabled');
+    cy.get('@loinc').click();
+    cy.get('@accept').should('not.be.enabled');
+    cy.get('@loinc').click();
+    cy.get('@accept').should('be.enabled').click();
+
     cy.loincAccepted().should('equal', 'true');
+    cy.snomedAccepted().should('equal', 'true');
+
+    cy.get('input[type="radio"][value="scratch"]').click();
+    cy.get('button').contains('Continue').click();
+    cy.get('button').contains('Create questions').click();
+    cy.selectDataType('choice');
+    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_value-set"]')
+      .should('be.visible').and('not.be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]')
+      .should('be.visible').and('not.be.checked');
+  });
+
+  it('should not find SNOMED CT functionality after accepting only LOINC terms of use.', () => {
+    cy.goToHomePage();
+    cy.acceptLoincOnly();
+    cy.loincAccepted().should('equal', 'true');
+    cy.snomedAccepted().should('equal', 'false');
+    cy.get('input[type="radio"][value="scratch"]').click();
+    cy.get('button').contains('Continue').click();
+    cy.get('button').contains('Create questions').click();
+    cy.selectDataType('choice');
+    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.visible').and('not.be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('not.exist');
   });
 });
 

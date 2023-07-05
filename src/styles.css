@@ -25,5 +25,14 @@
   font-size: 12px;
 }
 
+.lfb-ngb-tooltip-link {
+  color: whitesmoke;
+}
+
+.lfb-ngb-tooltip-link:hover {
+  color: lightblue;
+}
+
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

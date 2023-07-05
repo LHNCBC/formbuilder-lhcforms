@@ -1,14 +1,13 @@
 /**
  * Form related helper functions.
  */
-import {Injectable} from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {Observable, Subject} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import traverse from 'json-schema-traverse';
 import jsonTraverse from 'traverse';
@@ -19,6 +18,7 @@ import ngxFlSchema from '../../assets/ngx-fl.schema.json';
 import flLayout from '../../assets/fl-fields-layout.json';
 import itemEditorSchema from '../../assets/item-editor.schema.json';
 import {Util} from '../lib/util';
+import {FetchService} from './fetch.service';
 declare var LForms: any;
 
 @Injectable({
@@ -28,6 +28,7 @@ export class FormService {
 
   private _loading = false;
   _guidingStep$: Subject<string> = new Subject<string>();
+  _formReset$: BehaviorSubject<void> = new BehaviorSubject<void>(null);
 
   localStorageError: Error = null;
   treeModel: TreeModel;
@@ -35,6 +36,9 @@ export class FormService {
   flSchema: any = {properties: {}};
   private _itemEditorSchema: any = {properties: {}};
 
+  snomedUser = false;
+
+  fetchService = inject(FetchService);
   constructor(private modalService: NgbModal, private http: HttpClient) {
     [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
       if(!obj.schema.definitions) {
@@ -113,6 +117,19 @@ export class FormService {
   }
 
 
+  /**
+   * Getter for form reset Observable
+   */
+  get formReset$(): Observable<void> {
+    return this._formReset$.asObservable();
+  }
+
+  /**
+   * Notify form reset event.
+   */
+  resetForm(): void {
+    this._formReset$.next(null);
+  }
   /**
    * Inform the listeners of change in step.
    * @param step
@@ -415,5 +432,23 @@ export class FormService {
    */
   isAutoSaved(): boolean {
     return !!localStorage.getItem('fhirQuestionnaire');
+  }
+
+  /**
+   * Get snomed user flag.
+   */
+  isSnomedUser(): boolean {
+    return this.snomedUser;
+  }
+
+  /**
+   * Set snomed user flag.
+   * @param accepted -boolean
+   */
+  setSnomedUser(accepted: boolean) {
+    this.snomedUser = accepted;
+    if(this.snomedUser) {
+      this.fetchService.fetchSnomedEditions();
+    }
   }
 }

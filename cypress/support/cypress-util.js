@@ -63,6 +63,4 @@ export class CypressUtil {
       expect(extensions).to.deep.equal(expectedValue);
     });
   };
-
-
 }
