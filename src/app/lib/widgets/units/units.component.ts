@@ -1,11 +1,12 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
-import Def from 'autocomplete-lhc';
+// import Def from 'autocomplete-lhc';
 import {Subscription} from 'rxjs';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {fhirPrimitives} from '../../../fhir';
+declare var LForms: any;
 
 interface UnitExtension {
   url: string,
@@ -60,7 +61,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
   options: any = {
     matchListValue: false,
     maxSelect: 1,
-    suggestionMode: Def.Autocompleter.USE_STATISTICS,
+    suggestionMode: LForms.Def.Autocompleter.USE_STATISTICS,
     autocomp: true,
     tableFormat: true,
     colHeaders: [
@@ -71,7 +72,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
     valueCols: [0]
   }
 
-  autoComp: Def.Autocompleter;
+  autoComp: any;
 
   dataType = 'string';
   subscriptions: Subscription [];
@@ -123,7 +124,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
     this.subscriptions.push(sub);
 
     // Setup selection handler
-    Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
+    LForms.Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
       if(data.removed) {
         this.extensionsService.removeExtension((ext) => {
           return ext.value.url === UnitsComponent.unitsExtUrl[this.dataType] &&
@@ -164,7 +165,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   resetAutocomplete() {
     this.destroyAutocomplete();
-    this.autoComp = new Def.Autocompleter.Search(this.elementId, this.unitsSearchUrl, this.options);
+    this.autoComp = new LForms.Def.Autocompleter.Search(this.elementId, this.unitsSearchUrl, this.options);
   }
 
   /**

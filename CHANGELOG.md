@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.1.1] 2023-07-07
+### Fixed
+- Fix z-index of autocomplete #searchResults window.
+
 ## [9.1.0] 2023-05-17
 ### Added
 - Support for SNOMED value set URI.

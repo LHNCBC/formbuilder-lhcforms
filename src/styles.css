@@ -33,6 +33,14 @@
   color: lightblue;
 }
 
+/**
+ * Autocomplete-lhc is using z-index: 1000 for its results window, which occassionally
+ * causes that window to pop up behind the preview dialog.
+ * Override z-index of dialog to keep it behind autocomplete results window.
+ */
+#searchResults {
+  z-index: 1010 !important;
+}
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
