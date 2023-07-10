@@ -36,6 +36,7 @@
     "dist/formbuilder-lhcforms"
   ],
   "dependencies": {
+    "@angular-builders/custom-webpack": "^15.0.0",
     "@angular/animations": "~15.2.4",
     "@angular/cdk": "~15.2.3",
     "@angular/common": "~15.2.4",
@@ -60,9 +61,12 @@
     "bootstrap": "^5.2.3",
     "fast-copy": "^2.1.1",
     "fhirclient": "^2.5.2",
+    "iso-639-1": "^2.1.15",
     "jexl": "^2.3.0",
     "jquery": "^3.6.3",
+    "json-ptr": "^3.1.1",
     "json-schema-traverse": "^1.0.0",
+    "json5": "^2.2.3",
     "lodash-es": "^4.17.21",
     "math-to-fhirpath": "NLMLHC/math-to-fhirpath",
     "rxjs": "~7.4.0",
@@ -72,7 +76,6 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~15.2.4",
     "@angular/cli": "~15.2.4",
     "@angular/compiler-cli": "~15.2.4",
     "@angular/language-service": "~15.2.4",

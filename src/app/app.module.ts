@@ -89,6 +89,9 @@ import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-method
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 import { TerminologyServerComponent } from './lib/widgets/terminology-server/terminology-server.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
+import { DateComponent } from './lib/widgets/date/date.component';
+import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
+import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
 
 @NgModule({
   declarations: [
@@ -154,7 +157,10 @@ import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-v
     AnswerOptionMethodsComponent,
     ObservationExtractComponent,
     TerminologyServerComponent,
-    AnswerValueSetComponent
+    AnswerValueSetComponent,
+    DateComponent,
+    TextAreaComponent,
+    DatetimeComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -187,7 +193,8 @@ import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-v
     MatDialogModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe]
+  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry},
+    AppJsonPipe]
 })
 export class AppModule implements DoBootstrap {
   ngDoBootstrap(appRef: ApplicationRef) {

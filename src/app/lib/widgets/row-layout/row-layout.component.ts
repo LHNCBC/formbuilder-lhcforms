@@ -60,8 +60,8 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
    */
   ngOnInit() {
     // Read rows from schema layout
-    this.basicRows = this.formProperty.schema.layout.formLayout.basic;
-    this.advancedRows = this.formProperty.schema.layout.formLayout.advanced;
+    this.basicRows = this.formProperty.schema.formLayout.basic;
+    this.advancedRows = this.formProperty.schema.formLayout.advanced;
   }
 
   /**
