@@ -1,0 +1,39 @@
+
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label *ngIf="!nolabel"
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelClasses"
+               class="form-label"
+    ></lfb-label>
+    <div class="position-relative input-group-sm px-0" [ngClass]="controlClasses">
+      <div class="input-group input-group-sm">
+        <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
+               class="form-control textline-widget"
+               [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
+               [required]="schema.widget.required"
+               [lfbDisableControl]="schema.disabled"
+               [footerTemplate]="timeTemplate"
+               ngbDatepicker
+               #d="ngbDatepicker"
+        >
+        <button class="btn btn-outline-secondary py-0" (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
+      </div>
+
+      <ng-container *ngFor="let error of errors">
+        <small *ngIf="formProperty.value && error"
+               class="text-danger form-text" role="alert"
+        >{{error.modifiedMessage || error.originalMessage}}</small>
+      </ng-container>
+    </div>
+  </div>
+
+
+<ng-template #timeTemplate>
+  <hr class="my-0" />
+  <div class="m-2">
+    <div><span class="mx-auto">Time</span></div>
+    <ngb-timepicker class="form-control-sm p-0" [(ngModel)]="dateTime.date" (ngModelChange)="updateValue($event)" [seconds]="true" [meridian]="true" [size]="'small'"></ngb-timepicker>
+  </div>
+</ng-template>
