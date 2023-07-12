@@ -1301,6 +1301,20 @@
         ]
       }
     },
+    "__$itemControl": {
+      "description": "Choose the type of control for answer list. Default is drop-down list. You can choose to make it auto-complete.",
+      "title": "Choice type",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+      },
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0 m-0"
+      }
+    },
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
       "title": "Terminology server",
@@ -5073,6 +5087,12 @@
       "fields": ["answerOption"],
       "showFields": [
         { "field": "answerOption", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["__$itemControl"],
+      "showFields": [
+        { "field": "__$itemControl", "col": 12 }
       ]
     },
     {
