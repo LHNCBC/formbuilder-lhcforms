@@ -560,6 +560,73 @@ describe('Home page', () => {
       cy.contains('mat-dialog-actions button', 'Close').click();
     });
 
+    it('should create item-control extension with autocomplete option', () => {
+      const icId = '#item_control___\\$itemControl';
+      cy.get(icId).should('not.exist'); // Datatype is other than choice, open-choice
+      cy.selectDataType('open-choice');
+      cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
+      cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
+      cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod').click();
+      cy.get(icId).should('be.visible'); // open-choice type with snomed answerValueSet
+      cy.get('@answerOptionMethod').click();
+      cy.get(icId).should('not.exist'); // open-choice type with answer-option
+      cy.selectDataType('choice');
+      cy.get('@nonSnomedMethod').click();
+      cy.get(icId).should('be.visible'); // choice type with answerValueSet
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].extension).undefined;
+      });
+
+      cy.get(icId).click(); // Checked
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl');
+        expect(qJson.item[0].extension[0].valueCodeableConcept.coding[0].code).equal('autocomplete');
+        expect(qJson.item[0].extension[0].valueCodeableConcept.coding[0].display).equal('Auto-complete');
+        expect(qJson.item[0].extension[0].valueCodeableConcept.coding[0].system).equal('http://hl7.org/fhir/questionnaire-item-control');
+      });
+
+      cy.get(icId).click(); // Unchecked
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].extension).undefined;
+      });
+    });
+
+    it('should import with item having item-control extension', () => {
+      const icId = '#item_control___\\$itemControl';
+      cy.uploadFile('item-control-sample.json', true);
+      cy.get('#title').should('have.value', 'Item control sample form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get(icId).should('be.visible');
+      cy.get(icId).should('be.checked');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].extension.length).equal(2);
+        expect(qJson.item[0].extension[1].url)
+          .equal('http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl');
+        expect(qJson.item[0].extension[1].valueCodeableConcept.coding[0].code).equal('autocomplete');
+        expect(qJson.item[0].extension[1].valueCodeableConcept.coding[0].display).equal('Auto-complete');
+        expect(qJson.item[0].extension[1].valueCodeableConcept.coding[0].system)
+          .equal('http://hl7.org/fhir/questionnaire-item-control');
+      });
+
+      cy.get(icId).click(); // Unchecked
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].extension.length).equal(1);
+        expect(qJson.item[0].extension[0].url)
+          .equal('http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer');
+        expect(qJson.item[0].extension[0].valueUrl).equal('https://snowstorm.ihtsdotools.org/fhir');
+      });
+    });
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');

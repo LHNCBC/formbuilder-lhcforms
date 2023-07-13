@@ -1301,6 +1301,28 @@
         ]
       }
     },
+    "__$itemControl": {
+      "description": "Choose the type of control for the answer list. The default is a drop-down list, which works well for lists that aren't too large. For large lists, you can make it an autocomplete list, in which matching items will show up when the user starts typing, though some FHIR servers (e.g., the SNOMED server) might not return results until the user types a few characters.",
+      "title": "Choice type",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"],
+        "allOf": [
+          {
+            "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+          },
+          {
+            "__$answerOptionMethods": ["$EXP$ target.value != 'answer-option'"]
+          }
+        ]
+      },
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0 m-0"
+      }
+    },
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
       "title": "Terminology server",
@@ -5073,6 +5095,12 @@
       "fields": ["answerOption"],
       "showFields": [
         { "field": "answerOption", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["__$itemControl"],
+      "showFields": [
+        { "field": "__$itemControl", "col": 12 }
       ]
     },
     {

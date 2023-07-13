@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.1.2] 2023-07-11
+### Added
+- Add item control extension. For now, the support restricted to autocomplete in ValueSet fields.
+
 ## [9.1.1] 2023-07-07
 ### Fixed
 - Fix z-index of autocomplete #searchResults window.
