@@ -1302,7 +1302,7 @@
       }
     },
     "__$itemControl": {
-      "description": "Choose the type of control for the answer list. The default is a drop-down list, which works well for small lists. For larger lists, you can make it an autocomplete list, in which matching items will show up when the user starts typing.",
+      "description": "Choose the type of control for the answer list. The default is a drop-down list, which works well for lists that aren't too large. For large lists, you can make it an autocomplete list, in which matching items will show up when the user starts typing, though some FHIR servers (e.g., the SNOMED server) might not return results until the user types a few characters.",
       "title": "Choice type",
       "type": "string",
       "visibleIf": {
