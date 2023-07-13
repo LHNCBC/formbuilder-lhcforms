@@ -1302,7 +1302,7 @@
       }
     },
     "__$itemControl": {
-      "description": "Choose the type of control for answer list. Default is drop-down list. You can choose to make it auto-complete for the answer list. The default is a drop-down list, which works well for small lists. For larger lists, you can make it an autocomplete list, in which matching items will show up when the user starts typing.",
+      "description": "Choose the type of control for the answer list. The default is a drop-down list, which works well for small lists. For larger lists, you can make it an autocomplete list, in which matching items will show up when the user starts typing.",
       "title": "Choice type",
       "type": "string",
       "visibleIf": {
