@@ -1,14 +1,15 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {FormService} from '../../../services/form.service';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'lfb-item-control',
   templateUrl: './item-control.component.html',
   styleUrls: ['./item-control.component.css']
 })
-export class ItemControlComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
+export class ItemControlComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   static itemControlUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
 
   static autoCompleteCoding = {
@@ -20,13 +21,15 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   static itemControlExtension = {
     url: ItemControlComponent.itemControlUrl,
     valueCodeableConcept: {
-      coding: [ItemControlComponent.autoCompleteCoding],
-      text: 'Questionnaire Item UI Control Codes' // TODO - Revisit the text
+      coding: [ItemControlComponent.autoCompleteCoding]
     }
   }
+
+  subscriptions: Subscription [] = [];
   autoComplete = false;
+  readonly = false;
   // TODO - Revisit the text
-  hintMessage = 'Selecting the checkbox makes the answer list an auto-complete input control.';
+  label = 'Make the answer list an autocomplete input control.';
 
   constructor(private extensionsService: ExtensionsService, private formService: FormService) {
     super();
@@ -39,9 +42,10 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.formService.formReset$.subscribe(() => {
+    const sub = this.formService.formReset$.subscribe(() => {
       this.autoComplete = this.hasAutoCompleteExt();
     });
+    this.subscriptions.push(sub);
   }
 
 
@@ -89,13 +93,11 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
         return coding.code === 'autocomplete';
       });
 
-      if(!exist) {
-        codings.push(ItemControlComponent.autoCompleteCoding);
+      if(!exist) { // Not autocomplete, remove the extension.
+        this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
       }
     }
-    else {
-      this.extensionsService.addExtension(ItemControlComponent.itemControlExtension, 'valueCodeableConcept');
-    }
+    this.extensionsService.addExtension(ItemControlComponent.itemControlExtension, 'valueCodeableConcept');
   }
 
   /**
@@ -110,13 +112,16 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
         const i = codings.findIndex((coding) => {
           return coding.code === 'autocomplete';
         });
-        if(i >= 0) {
-          codings.splice(i, 1);
+        if(i >= 0) { // Remove the extension.
+          this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
         }
       }
-      if(codings?.length === 0) { // If no other codings exist, remove the extension
-        this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
-      }
     }
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
+    })
   }
 }

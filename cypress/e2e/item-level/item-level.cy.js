@@ -562,11 +562,17 @@ describe('Home page', () => {
 
     it('should create item-control extension with autocomplete option', () => {
       const icId = '#item_control___\\$itemControl';
-      cy.get(icId).should('not.exist');
+      cy.get(icId).should('not.exist'); // Datatype is other than choice, open-choice
       cy.selectDataType('open-choice');
-      cy.get(icId).should('be.visible');
+      cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
+      cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
+      cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod').click();
+      cy.get(icId).should('be.visible'); // open-choice type with snomed answerValueSet
+      cy.get('@answerOptionMethod').click();
+      cy.get(icId).should('not.exist'); // open-choice type with answer-option
       cy.selectDataType('choice');
-      cy.get(icId).should('be.visible');
+      cy.get('@nonSnomedMethod').click();
+      cy.get(icId).should('be.visible'); // choice type with answerValueSet
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('choice');
