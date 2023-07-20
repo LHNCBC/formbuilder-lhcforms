@@ -6,6 +6,7 @@ import traverse from 'traverse';
 import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import copy from 'fast-copy';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -265,9 +266,10 @@ export class Util {
    * . Converts __$helpText to appropriate FHIR help text item.
    * . Converts converts enableWhen[x].question object to linkId.
    *
-   * @param value - Questionnaire object used in the form builder.
+   * @param fhirQInternal - Questionnaire object used in the form builder.
    */
-  static convertToQuestionnaireJSON(value) {
+  static convertToQuestionnaireJSON(fhirQInternal) {
+    const value = copy(fhirQInternal); // Deep copy. Leave the internal model untouched.
     traverse(value).forEach(function (node) {
       this.before(function () {
         if(node && Array.isArray(node) && node.includes(undefined)) {

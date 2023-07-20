@@ -2,10 +2,11 @@
  * Answer coding component for enableWhen. The component is used for answer type choice for
  * selecting codes to satisfy a condition.
  */
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
@@ -25,8 +26,9 @@ import fhir from 'fhir/r4';
   styles: [
   ]
 })
-export class EnablewhenAnswerCodingComponent extends ObjectWidget implements AfterViewInit {
+export class EnablewhenAnswerCodingComponent extends ObjectWidget implements AfterViewInit, OnDestroy {
 
+  subscriptions: Subscription [] = [];
   answerOptions: any[] = [];
   model: fhir.Coding;
 
@@ -96,4 +98,9 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
       : c1 === c2;
   }
 
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => {
+      sub?.unsubscribe();
+    })
+  }
 }

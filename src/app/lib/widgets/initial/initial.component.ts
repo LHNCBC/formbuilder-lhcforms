@@ -23,12 +23,13 @@ export class InitialComponent extends TableComponent implements AfterViewInit, D
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.formProperty.searchProperty('/type').valueChanges.subscribe((type) => {
+    const sub = this.formProperty.searchProperty('/type').valueChanges.subscribe((type) => {
       // The UI of the component is hidden from the user, but not from the output result.
       // formProperty.visible should be true to keep it part of the result. That flag is generally
       // set based on visibleIf condition in the schema definition.
       this.hideHostElement = (type === 'choice' || type === 'open-choice');
     });
+    this.subscriptions.push(sub);
   }
 
   /**

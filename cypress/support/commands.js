@@ -217,7 +217,6 @@ Cypress.Commands.add('addAnswerOptions', () => {
       url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
       valueDecimal: 2.1
     }]);
-    expect(qJson.item[0].initial).to.be.undefined; // No default selected
   });
 
   // Add a second answerOption.
@@ -232,15 +231,24 @@ Cypress.Commands.add('addAnswerOptions', () => {
 
   cy.questionnaireJSON().should((qJson) => {
     expect(qJson.item[0].type).equal('choice');
-    expect(qJson.item[0].answerOption[1].valueCoding).to.deep.equal({display: 'd2', code: 'c2', system: 's2'});
-    expect(qJson.item[0].answerOption[1].extension).to.deep.equal([{
-      url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
-      valueDecimal: 3
-    }]);
-    // Default/initial value coding.
-    expect(qJson.item[0].initial[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
+    expect(qJson.item[0].answerOption).to.deep.equal([
+      {
+        initialSelected: true,
+        valueCoding: {display: 'd1', code: 'c1', system: 's1'},
+        extension: [{
+          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          valueDecimal: 2.1
+        }]
+      },
+      {
+        valueCoding: {display: 'd2', code: 'c2', system: 's2'},
+        extension: [{
+          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          valueDecimal: 3
+        }]
+      },
+    ]);
   });
-
 });
 
 /**
