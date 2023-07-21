@@ -28,6 +28,7 @@ if(version?.length) {
 if(process.argv.length > 2) {
   downloadUrl = process.argv[2];
 }
+console.log(`Downloading from ${downloadUrl}`);
 
 const destinationFolder = path.join(__dirname, '../src/lib/lforms/lib');
 const filePathMap = {

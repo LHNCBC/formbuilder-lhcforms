@@ -2,11 +2,14 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.1.3] 2023-07-20
+## [9.1.4] 2023-07-21
 ### Fixed
 - Fixed a bug which was missing scores in answerOption field.
 - Replaced initial[x] objects with answerOption[x].initialSelected flag to indicate
   default answers in choice/open-choice type items.
+
+## [9.1.3] 2023-07-21
+### Fixed
 - Updated lforms to 33.4.1 to fix a bug with list positioning of autocomplete input box
   in preview dialog.
 
