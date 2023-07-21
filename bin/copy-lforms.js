@@ -17,7 +17,7 @@ const path = require('path');
 let downloadUrl = 'https://clinicaltables.nlm.nih.gov/lforms-versions';
 
 // Change version here to update LForms package.
-const version = '33.0.0';
+const version = '33.4.1';
 
 // External scripts could change version?
 if(version?.length) {
@@ -28,6 +28,7 @@ if(version?.length) {
 if(process.argv.length > 2) {
   downloadUrl = process.argv[2];
 }
+console.log(`Downloading from ${downloadUrl}`);
 
 const destinationFolder = path.join(__dirname, '../src/lib/lforms/lib');
 const filePathMap = {
