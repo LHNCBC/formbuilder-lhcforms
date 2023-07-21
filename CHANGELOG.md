@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.1.3] 2023-07-21
+### Fixed
+- Updated lforms to 33.4.1 to fix a bug with list positioning of autocomplete input box
+  in preview dialog.
+
 ## [9.1.2] 2023-07-11
 ### Added
 - Add item control extension. For now, the support restricted to autocomplete in ValueSet fields.
