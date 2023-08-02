@@ -1,7 +1,7 @@
 /**
  * Form related helper functions.
  */
-import {inject, Injectable} from '@angular/core';
+import {inject, Injectable, SimpleChange} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
@@ -28,7 +28,8 @@ export class FormService {
 
   private _loading = false;
   _guidingStep$: Subject<string> = new Subject<string>();
-  _formReset$: BehaviorSubject<void> = new BehaviorSubject<void>(null);
+  _formReset$: Subject<void> = new Subject<void>();
+  _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
 
   localStorageError: Error = null;
   treeModel: TreeModel;
@@ -122,6 +123,23 @@ export class FormService {
    */
   get formReset$(): Observable<void> {
     return this._formReset$.asObservable();
+  }
+
+  /**
+   * Form changed getter. Triggered when new form is loaded, such as clicking different node on the sidebar.
+   * @return - Observable resolving to SimpleChange object.
+   */
+  get formChanged$(): Observable<SimpleChange> {
+    return this._formChanged$.asObservable();
+  }
+
+  /**
+   * Trigger formChanged$ observable with form changes.
+   *
+   * @param change - SimpleChange object representing changes to the form.
+   */
+  formChanged(change: SimpleChange): void {
+    this._formChanged$.next(change);
   }
 
   /**

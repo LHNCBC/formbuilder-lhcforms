@@ -408,6 +408,41 @@ describe('Home page', () => {
       });
     });
 
+    it('should fix a bug in messing up default selections when switched to another node', () => {
+      const sampleFile = 'answer-option-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Answer options form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption')
+        .find('[id^="radio_answerOption."]').as('firstRadioDefault');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption')
+        .find('[id^="radio_answerOption."]').as('secondRadioDefault');
+
+      // First item's default is second option
+      cy.get('@secondRadioDefault').should('be.checked');
+      // Switch to second item
+      cy.clickTreeNode('Item 2 with answer option');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption')
+        .find('[id^="radio_answerOption."]').as('thirdRadioDefault');
+      // Second item has no defaults
+      cy.get('@firstRadioDefault').should('not.be.checked');
+      cy.get('@secondRadioDefault').should('not.be.checked');
+      cy.get('@thirdRadioDefault').should('not.be.checked');
+
+      // Select first option in second item.
+      cy.get('@firstRadioDefault').click();
+      // Switch to first item
+      cy.clickTreeNode('Item with answer option');
+      // First item's default should be intact.
+      cy.get('@secondRadioDefault').should('be.checked');
+      // Switch to second item
+      cy.clickTreeNode('Item 2 with answer option');
+      // Second item's default is first option.
+      cy.get('@firstRadioDefault').should('be.checked');
+    });
+
     it('should fix initial input box when switched data type from choice to decimal', () => {
       const sampleFile = 'initial-component-bugfix.json';
       let fixtureJson;

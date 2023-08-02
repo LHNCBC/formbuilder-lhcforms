@@ -1,9 +1,17 @@
-import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import fhir from 'fhir/r4';
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {TreeService} from '../../../services/tree.service';
 import {Subscription} from 'rxjs';
+import { FormService } from 'src/app/services/form.service';
 
 @Component({
   selector: 'lfb-answer-option',
@@ -15,7 +23,11 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
 
-  constructor(private treeService: TreeService, private elementRef: ElementRef, private cdr: ChangeDetectorRef) {
+  // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
+  initializing = false;
+
+  constructor(private treeService: TreeService, private elementRef: ElementRef, private cdr: ChangeDetectorRef,
+              private formService: FormService) {
     super(elementRef, cdr);
   }
 
@@ -24,16 +36,22 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   ngOnInit() {
     super.ngOnInit();
+    this.initializing = true;
+    this.init();
+    this.initializing = false;
+  }
+
+  init() {
+    this.selectionRadio = -1;
+    this.selectionCheckbox = [];
     const repeatProp = this.formProperty.findRoot().getProperty('repeats');
     this.setSelectionType(repeatProp.value);
     const aOptions = this.formProperty.value;
     const initials = this.formProperty.findRoot().getProperty('initial').value;
     this.setDefaultSelections(initials || [], aOptions || []);
-    if(this.setAnswerOptions(aOptions)) {
-      this.formProperty.setValue(aOptions, true);
-    }
+    this.setAnswerOptions(aOptions);
+    this.cdr.markForCheck();
   }
-
 
   /**
    * Set row selection type, i.e multiple selections or single selection
@@ -57,21 +75,51 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     let sub: Subscription;
 
     sub = this.formProperty.valueChanges.subscribe((newValue) => {
-      if(this.updateScoreExtensions(newValue)) {
-        this.cdr.markForCheck();
+      // Avoid updating score extensions during initialization.
+      if(!this.initializing) {
+        this.updateScoreExtensions(newValue);
       }
     });
     this.subscriptions.push(sub);
+
+    sub = this.formService.formReset$.subscribe(() => {
+      // Flag valueChanges observer to avoid updating score extensions.
+      this.initializing = true;
+      // Updates *.valueCoding.__$score and *.initialSelected.
+      this.init();
+      this.initializing = false;
+     });
+    this.subscriptions.push(sub);
+
     const repeatProp = this.formProperty.findRoot().getProperty('repeats');
     sub = repeatProp.valueChanges.subscribe((isRepeating) => {
       this.setSelectionType(isRepeating);
-      if(isRepeating) {
-        this.updateWithCheckboxSelections();
-      }
-      else {
-        this.updateWithRadioSelection();
+      if(!this.initializing) {
+        const firstCheckbox = this.selectionCheckbox.findIndex((e) => {return e});
+        // When flipping DEFAULT TYPE from radio to checkbox or vice versa, and if no selections are made on
+        // the current type, assign first selection of previous type to the current type.
+        if(isRepeating) {
+          // If no checkboxes selected, pick the radio selection as current checkbox selection.
+          if(firstCheckbox < 0 && this.selectionRadio >= 0) {
+            this.selectionCheckbox[this.selectionRadio] = true;
+          }
+          this.updateWithCheckboxSelections();
+         }
+        else {
+          // If no radio buttons are selected, pick the first checkbox as radio selection.
+          if(this.selectionRadio < 0 && firstCheckbox >= 0) {
+            this.selectionRadio = firstCheckbox;
+          }
+          this.updateWithRadioSelection();
+        }
       }
       this.cdr.markForCheck();
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.formService.formChanged$.subscribe((change) => {
+      // New form is to be loaded, mark initialization.
+      this.initializing = true;
     });
     this.subscriptions.push(sub);
   }
@@ -83,7 +131,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   setAnswerOptions(answerOptions: any []) {
     let changed = false;
-    answerOptions?.forEach((option) => {
+    answerOptions?.forEach((option, index) => {
       if(option.valueCoding) {
         const scoreExt = option.extension?.find(ext => ext.url === AnswerOptionComponent.ORDINAL_URI);
         const score = option.valueCoding.__$score !== undefined ? option.valueCoding.__$score : null;
@@ -94,6 +142,10 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
         }
       }
     });
+    if(changed) {
+      // This triggers valueChanges event on all observers.
+      this.formProperty.setValue(answerOptions, false);
+    }
     return changed;
   }
 
@@ -141,25 +193,25 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   /**
    * Set up defaults column reading 'initial' form properties.
    */
-  setDefaultSelections(initialArray: any [], answerOptionArray: any []) {
+  setDefaultSelections(initialArray: any [], answerOptionArray: any []): boolean {
+    let changed = false;
     answerOptionArray.forEach((prop, index) => {
       const rowFromInitial = initialArray.find(initial => this.isEqualCoding(initial.valueCoding, prop.valueCoding));
-      if(rowFromInitial) {
-        if(this.rowSelectionType === 'radio')
-          this.selectionRadio = index;
-        else if(this.rowSelectionType === 'checkbox')
-          this.selectionCheckbox[index] = true;
-      }
-      if(prop.initialSelected) {
-        if(this.rowSelectionType === 'radio') {
-          this.selectionRadio = index;
-        }
-        else if(this.rowSelectionType === 'checkbox') {
-          this.selectionCheckbox[index] = true;
+      if(rowFromInitial || prop.initialSelected) {
+        if (this.rowSelectionType === 'radio') {
+          if (this.selectionRadio !== index) {
+            this.selectionRadio = index;
+            changed = true;
+          }
+        } else if (this.rowSelectionType === 'checkbox') {
+          if (!this.selectionCheckbox[index]) {
+            this.selectionCheckbox[index] = true;
+            changed = true;
+          }
         }
       }
     });
-    this.radioSelection(null);
+    return changed;
   }
 
 
@@ -193,8 +245,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
         }
       }
       if(updated) {
-        const extProp = this.formProperty.getProperty(`${index}/extension`);
-        extProp.setValue(option.extension, true);
         changed = true;
       }
     });
@@ -206,15 +256,8 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    * Handle user input for radio selection. Set initial form property value.
    */
   radioSelection(event) {
-    super.radioSelection(event);
-    if(this.rowSelectionType === 'radio') {
-      if(event !== undefined && event !== null && !Number.isNaN(event)) {
-        this.selectionRadio = event;
-      }
-      if(this.selectionRadio >= 0) {
-        this.updateWithRadioSelection();
-      }
-    }
+    this.selectionRadio = event;
+    this.updateWithRadioSelection();
   }
 
 
@@ -223,16 +266,23 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   updateWithRadioSelection() {
     const currentValue = this.formProperty.value;
+    let updated = false;
     currentValue?.forEach((option, index) => {
       if(index === this.selectionRadio) {
-        option.initialSelected = true;
+        if(!option.initialSelected) {
+          option.initialSelected = true;
+          updated = true;
+        }
       }
-      else {
+      else if(option.initialSelected) {
         delete option.initialSelected;
+        updated = true;
       }
     });
 
-    this.formProperty.setValue(currentValue, false);
+    if(updated) {
+      this.formProperty.updateValueAndValidity();
+    }
   }
 
   /**
@@ -240,16 +290,23 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   updateWithCheckboxSelections() {
     const currentValue = this.formProperty.value;
+    let updated = false;
     currentValue?.forEach((option, index) => {
       if(this.selectionCheckbox[index]) {
-        option.initialSelected = true;
+        if(!option.initialSelected) {
+          option.initialSelected = true;
+          updated = true;
+        }
       }
-      else {
+      else if(option.initialSelected) {
         delete option.initialSelected;
+        updated = true;
       }
     });
 
-    this.formProperty.setValue(currentValue, false);
+    if(updated) {
+      this.formProperty.updateValueAndValidity();
+    }
   }
 
   /**
@@ -257,7 +314,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    * Handle user input for checkboxes selection. Set initial form property value.
    */
   checkboxSelection(event) {
-    super.checkboxSelection(event);
     this.updateWithCheckboxSelections();
   }
 }

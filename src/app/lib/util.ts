@@ -272,9 +272,9 @@ export class Util {
     const value = copy(fhirQInternal); // Deep copy. Leave the internal model untouched.
     traverse(value).forEach(function (node) {
       this.before(function () {
-        if(node && Array.isArray(node) && node.includes(undefined)) {
-          // Remove empty elements from array. They do not trigger callbacks.
-          this.update(node.filter(()=>{return true}));
+        if(node && Array.isArray(node)) {
+          // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
+          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
         }
         else if (node?.__$helpText?.trim().length > 0) {
           const index = Util.findItemIndexWithHelpText(node.item);
@@ -309,7 +309,7 @@ export class Util {
         if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
           // tslint:disable-next-line:only-arrow-functions
           if (this.notRoot) {
-            this.delete();
+            this.remove(); // Splices off any array elements.
           }
         }
       });
