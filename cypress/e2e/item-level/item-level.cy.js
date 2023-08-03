@@ -359,10 +359,88 @@ describe('Home page', () => {
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Answer options form');
       cy.contains('button', 'Edit questions').click();
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption');
+
+      cy.get('@firstOption').find('td:nth-child(1) input').should('have.value', 'd1');
+      cy.get('@firstOption').find('td:nth-child(2) input').should('have.value', 'a');
+      cy.get('@firstOption').find('td:nth-child(3) input').should('have.value', 's');
+      cy.get('@firstOption').find('td:nth-child(4) input').should('have.value', '1');
+      cy.get('@firstOption').find('td:nth-child(5) input').should('be.visible').and('not.be.checked');
+      cy.get('@secondOption').find('td:nth-child(1) input').should('have.value', 'd2');
+      cy.get('@secondOption').find('td:nth-child(2) input').should('have.value', 'b');
+      cy.get('@secondOption').find('td:nth-child(3) input').should('have.value', 's');
+      cy.get('@secondOption').find('td:nth-child(4) input').as('secondScore')
+        .should('have.value', '2');
+      cy.get('@secondOption').find('td:nth-child(5) input').as('secondDefaultRadio')
+        .should('be.visible').and('be.checked');
+
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
-        expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
       });
+
+      cy.get('@secondScore').clear().type('22');
+      cy.get('lfb-answer-option table+button').click();
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption').should('be.visible');
+      cy.get('@thirdOption').find('td:nth-child(1) input').type('d3');
+      cy.get('@thirdOption').find('td:nth-child(2) input').type('c');
+      cy.get('@thirdOption').find('td:nth-child(3) input').type('s');
+      cy.get('@thirdOption').find('td:nth-child(4) input').type('33');
+      cy.get('@thirdOption').find('td:nth-child(5) input').as('thirdDefaultRadio').click();
+
+      const ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerOption).to.deep.equal([
+          {
+            valueCoding: {display: 'd1', code: 'a', system: 's'},
+            extension: [{url: ORDINAL_URI, valueDecimal: 1}]
+          },
+          {
+            valueCoding: {display: 'd2', code: 'b', system: 's'},
+            extension: [{url: ORDINAL_URI, valueDecimal: 22}]
+          },
+          {
+            valueCoding: {display: 'd3', code: 'c', system: 's'},
+            extension: [{url: ORDINAL_URI, valueDecimal: 33}],
+            initialSelected: true
+          },
+       ]);
+      });
+    });
+
+    it('should fix a bug in messing up default selections when switched to another node', () => {
+      const sampleFile = 'answer-option-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Answer options form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption')
+        .find('[id^="radio_answerOption."]').as('firstRadioDefault');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption')
+        .find('[id^="radio_answerOption."]').as('secondRadioDefault');
+
+      // First item's default is second option
+      cy.get('@secondRadioDefault').should('be.checked');
+      // Switch to second item
+      cy.clickTreeNode('Item 2 with answer option');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption')
+        .find('[id^="radio_answerOption."]').as('thirdRadioDefault');
+      // Second item has no defaults
+      cy.get('@firstRadioDefault').should('not.be.checked');
+      cy.get('@secondRadioDefault').should('not.be.checked');
+      cy.get('@thirdRadioDefault').should('not.be.checked');
+
+      // Select first option in second item.
+      cy.get('@firstRadioDefault').click();
+      // Switch to first item
+      cy.clickTreeNode('Item with answer option');
+      // First item's default should be intact.
+      cy.get('@secondRadioDefault').should('be.checked');
+      // Switch to second item
+      cy.clickTreeNode('Item 2 with answer option');
+      // Second item's default is first option.
+      cy.get('@firstRadioDefault').should('be.checked');
     });
 
     it('should fix initial input box when switched data type from choice to decimal', () => {
@@ -853,6 +931,10 @@ describe('Home page', () => {
       });
 
       cy.get('@unit0').clear().type('xxxx').blur().should('have.value', 'xxxx');
+
+      // The blur() event may not be enough to update the form. Use some UI events to trigger the update.
+      cy.contains('button', 'Preview').click();
+      cy.contains('mat-dialog-actions button', 'Close').click();
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial[0]).to.deep.equal({

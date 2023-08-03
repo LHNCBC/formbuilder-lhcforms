@@ -6,6 +6,7 @@ import traverse from 'traverse';
 import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import copy from 'fast-copy';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -265,14 +266,15 @@ export class Util {
    * . Converts __$helpText to appropriate FHIR help text item.
    * . Converts converts enableWhen[x].question object to linkId.
    *
-   * @param value - Questionnaire object used in the form builder.
+   * @param fhirQInternal - Questionnaire object used in the form builder.
    */
-  static convertToQuestionnaireJSON(value) {
+  static convertToQuestionnaireJSON(fhirQInternal) {
+    const value = copy(fhirQInternal); // Deep copy. Leave the internal model untouched.
     traverse(value).forEach(function (node) {
       this.before(function () {
-        if(node && Array.isArray(node) && node.includes(undefined)) {
-          // Remove empty elements from array. They do not trigger callbacks.
-          this.update(node.filter(()=>{return true}));
+        if(node && Array.isArray(node)) {
+          // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
+          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
         }
         else if (node?.__$helpText?.trim().length > 0) {
           const index = Util.findItemIndexWithHelpText(node.item);
@@ -307,7 +309,7 @@ export class Util {
         if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
           // tslint:disable-next-line:only-arrow-functions
           if (this.notRoot) {
-            this.delete();
+            this.remove(); // Splices off any array elements.
           }
         }
       });

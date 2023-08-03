@@ -281,9 +281,15 @@ export class BasePageComponent implements OnInit, OnDestroy {
    * View preview of lforms widget and questionnaire json
    */
   showPreviewDlg() {
+    // configure lforms template options
+    const lformsTemplateOptions = {
+      options: {
+        displayScoreWithAnswerText: false // Not show scores
+      }
+    };
+
     this.matDlg.open(PreviewDlgComponent,
-      {data: {
-        questionnaire: Util.convertToQuestionnaireJSON(this.formValue)},
+      {data: {questionnaire: Util.convertToQuestionnaireJSON(this.formValue), lfData: lformsTemplateOptions},
         width: '80vw', height: '80vh'
       }
     );
