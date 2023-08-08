@@ -89,6 +89,7 @@ import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-method
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 import { TerminologyServerComponent } from './lib/widgets/terminology-server/terminology-server.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
+import { ItemControlComponent } from './lib/widgets/item-control/item-control.component';
 import { DateComponent } from './lib/widgets/date/date.component';
 import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
@@ -158,6 +159,7 @@ import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
     ObservationExtractComponent,
     TerminologyServerComponent,
     AnswerValueSetComponent,
+    ItemControlComponent,
     DateComponent,
     TextAreaComponent,
     DatetimeComponent,

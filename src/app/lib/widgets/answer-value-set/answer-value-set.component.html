@@ -33,7 +33,7 @@
              (blur)="onEclBlur($event)"
              class="col textline-widget form-control form-control-sm"
              [attr.id]="id+'_ecl'"
-             placeholder="SNOMED ECL">
+             placeholder="Enter SNOMED ECL">
       </div>
     </div>
     <div class="row m-0 align-items-center">
@@ -59,7 +59,7 @@
 
     </div>
     <ng-container *ngIf="formProperty.value">
-      <div class="fst-italic text-decoration-underline text-black-50">Formatted SNOMED answerValueSet URI:</div>
+      <div class="fst-italic text-decoration-underline text-black-50">Formatted answerValueSet URI:</div>
       <span class="text-break text-black-50">{{formProperty.value}}</span>
     </ng-container>
   </div>

@@ -36,13 +36,17 @@
                 "glob": "**/*.css",
                 "input": "./src/lib/lforms",
                 "output": "lforms/"
+              },
+              {
+                "glob": "**/*.png",
+                "input": "./src/lib/lforms",
+                "output": "lforms/"
               }
             ],
             "styles": [
               "./node_modules/@bugsplat/angular-tree-component/css/angular-tree-component.css",
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "src/styles.css",
-              "./node_modules/autocomplete-lhc/source/auto_completion.css"
+              "src/styles.css"
             ],
             "scripts": [
               "./node_modules/jquery/dist/jquery.min.js"

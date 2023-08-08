@@ -2,6 +2,33 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.5.0] 2023-08-03
+### Added
+- Added these fields to advanced section in the form level fields: 
+  implicit rules, version, name, date, publisher, copyright, approvalDate, lastReviewDate
+### Changed
+- Converted schema and layout json files to json5 format.
+- Refactored the widget configuration code for better organization of widgets defined in schema.
+
+## [9.1.4] 2023-07-21
+### Fixed
+- Fixed a bug which was missing scores in answerOption field.
+- Replaced initial[x] objects with answerOption[x].initialSelected flag to indicate
+  default answers in choice/open-choice type items.
+
+## [9.1.3] 2023-07-21
+### Fixed
+- Updated lforms to 33.4.1 to fix a bug with list positioning of autocomplete input box
+  in preview dialog.
+
+## [9.1.2] 2023-07-11
+### Added
+- Add item control extension. For now, the support restricted to autocomplete in ValueSet fields.
+
+## [9.1.1] 2023-07-07
+### Fixed
+- Fix z-index of autocomplete #searchResults window.
+
 ## [9.1.0] 2023-05-17
 ### Added
 - Support for SNOMED value set URI.

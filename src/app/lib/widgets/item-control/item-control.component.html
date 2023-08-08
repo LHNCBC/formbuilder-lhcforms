@@ -1,0 +1,19 @@
+<div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+  <lfb-label *ngIf="!nolabel"
+             [for]="id"
+             [title]="schema.title"
+             [helpMessage]="schema.description"
+             [ngClass]="labelClasses"
+  ></lfb-label>
+  <div [ngClass]="controlClasses">
+    <div class="col-auto form-check">
+      <input
+        type="checkbox"
+        [id]="'item_control_'+id"
+        class="form-check-input"
+        [ngModel]="autoComplete"
+        (ngModelChange)="autoCompleteChanged($event)"/>
+      <label [for]="'item_control_'+id" class="form-check-label">{{label}}</label></div>
+  </div>
+</div>
+

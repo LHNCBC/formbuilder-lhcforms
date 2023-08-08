@@ -2,7 +2,9 @@ import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {UnitsComponent} from '../units/units.component';
-import Def from 'autocomplete-lhc';
+// import Def from 'autocomplete-lhc';
+
+declare var LForms: any;
 
 @Component({
   selector: 'lfb-quantity-unit',
@@ -23,7 +25,7 @@ export class QuantityUnitComponent extends UnitsComponent implements AfterViewIn
     this.subscriptions.push(sub);
 
     // Setup selection handler
-    Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
+    LForms.Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
       if (data.used_list) {
         const selected = data.list.find((el) => {
           return el[0] === data.item_code;

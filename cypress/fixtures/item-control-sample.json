@@ -1,0 +1,32 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Item control sample form",
+  "status": "draft",
+  "item": [
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://snowstorm.ihtsdotools.org/fhir"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "autocomplete",
+                "display": "Auto-complete"
+              }
+            ],
+            "text": "Display answer choices using control with auto-complete"
+          }
+        }
+      ],
+      "linkId": "332757666007",
+      "text": "Item 0",
+      "answerValueSet": "http://snomed.info/sct/900000000000207008?fhir_vs=ecl%2F%3C+429019009+%7CFinding+related+to+biological+sex+%28finding%29%7C+MINUS+%3C%3C+302081005+%7CFinding+of+sex+of+baby+%28finding%29%7C"
+    }
+  ]
+}

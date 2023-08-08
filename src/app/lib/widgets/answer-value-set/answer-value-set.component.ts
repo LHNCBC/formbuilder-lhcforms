@@ -174,7 +174,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    * Parse answerValueSet URI to extract fhirVS, edition and version fields.
    */
   updateSnomedFields(answerValueSetURI: string) {
-    if(answerValueSetURI) {
+    if(answerValueSetURI && answerValueSetURI.startsWith(AnswerValueSetComponent.snomedBaseUri)) {
       const uri = new URL(answerValueSetURI);
       let ecl = uri.searchParams.get('fhir_vs') || '';
       ecl = ecl.replace(this.eclPrefixRE, '');
@@ -184,6 +184,11 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
         this.snomedEdition = matches[1] ? matches[1] : '';
         this.snomedVersion = matches[3] ? matches[3] : '';
       }
+    }
+    else {
+      this.snomedFhirVS = '';
+      this.snomedEdition = '';
+      this.snomedVersion = '';
     }
   }
 

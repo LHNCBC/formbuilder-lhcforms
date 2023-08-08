@@ -6,20 +6,20 @@
     <ng-container *ngTemplateOutlet="loincTermsContent"></ng-container>
     <div>
       <input id="acceptLoinc" type="checkbox" class="form-check-inline" [(ngModel)]="acceptedTerms.acceptedLoinc" required>
-      <label for="acceptLoinc" class="form-check-label align-top">I accept LOINC Terms of Use.</label>
+      <label for="acceptLoinc" class="form-check-label align-top">I accept the LOINC Terms of Use.</label>
     </div>
     <hr>
     <div>
       <input id="useSnomed" type="checkbox" class="form-check-inline" [(ngModel)]="useSnomed" aria-controls="snomedContent">
       <label for="useSnomed" class="form-check-label pb-3 align-top">Optionally, enable SNOMED CT terminology support.
-        <br><small role="note" class="pb-3">Currently the support is restricted to creating answer list for questions.</small>
+        <br><small role="note" class="pb-3">Currently the support is limited to creating answer lists for questions.</small>
       </label>
     </div>
     <ng-container *ngIf="useSnomed">
       <div id="snomedContent">
         <ng-container *ngTemplateOutlet="snomedTermsContent"></ng-container>
         <input id="acceptSnomed" type="checkbox" class="form-check-inline" [(ngModel)]="acceptedTerms.acceptedSnomed">
-        <label class="form-check-label pb-2" for="acceptSnomed">I accept SNOMED International SNOMED CT Browser License Agreement.</label>
+        <label class="form-check-label pb-2" for="acceptSnomed">I accept the SNOMED International SNOMED CT Browser License Agreement.</label>
       </div>
     </ng-container>
   </div>
