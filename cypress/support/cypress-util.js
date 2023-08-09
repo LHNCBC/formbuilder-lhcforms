@@ -63,4 +63,39 @@ export class CypressUtil {
       expect(extensions).to.deep.equal(expectedValue);
     });
   };
+
+  /**
+   * Assert code field creation in form level fields and item level fields.
+   * @param jsonPointerToCodeField - JSON pointer to code field in questionnaire.
+   * Example:
+   *   For form level: '/code'
+   *   For first root item: /item/0/code
+   */
+  static assertCodeField(jsonPointerToCodeField) {
+    cy.contains('[for^="booleanRadio_true"]', 'Include code').click({force: true});
+    cy.contains('table > thead', 'Code').parent().parent().as('codeField');
+    cy.get('@codeField').find('tbody').as('codeTable');
+    cy.get('@codeTable').find('tr:nth-child(1)').as('firstRow');
+    cy.get('@firstRow').find('[id^="code.0.code_"]').type('c1').as('code1');
+    cy.get('@firstRow').find('[id^="code.0.system_"]').type('s1').as('system1');
+    cy.get('@firstRow').find('[id^="code.0.display_"]').type('d1').as('display1');
+
+    cy.get('@codeField').find('button').contains('Add new code').as('addCode').click();
+    cy.get('@codeTable').find('tr:nth-child(2)').as('secondRow');
+    cy.get('@secondRow').find('[id^="code.1.code_"]').type('c2').as('code2');
+    cy.get('@secondRow').find('[id^="code.1.system_"]').type('s2').as('system2');
+    cy.get('@secondRow').find('[id^="code.1.display_"]').type('d2').as('display2');
+
+    cy.get('@addCode').click();
+    cy.get('@codeTable').find('tr:nth-child(3)').as('thirdRow');
+    cy.get('@thirdRow').find('[id^="code.2.code_"]').type('c3').as('code3');
+    cy.get('@thirdRow').find('[id^="code.2.system_"]').type('s3').as('system3');
+    cy.get('@thirdRow').find('[id^="code.2.display_"]').type('d3').as('display3');
+
+    CypressUtil.assertValueInQuestionnaire(jsonPointerToCodeField,[
+      {code: 'c1', system: 's1', display: 'd1'},
+      {code: 'c2', system: 's2', display: 'd2'},
+      {code: 'c3', system: 's3', display: 'd3'}
+    ]);
+  }
 }

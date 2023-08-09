@@ -82,6 +82,11 @@ describe('Home page', () => {
       cy.get('@codeOption').includeExcludeCodeField();
     });
 
+    it('should create codes at item level', () => {
+      CypressUtil.assertCodeField('/item/0/code');
+    });
+
+
     it('should import item from CTSS with answer option', () => {
       cy.contains('Add new item from LOINC').scrollIntoView().click();
       cy.contains('ngb-modal-window label', 'Question').click();
