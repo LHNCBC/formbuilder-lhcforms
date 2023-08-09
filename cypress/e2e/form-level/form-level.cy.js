@@ -134,6 +134,10 @@ describe('Home page', () => {
       cy.contains('div', 'Code').should('be.visible').includeExcludeCodeField('form');
     });
 
+    it('should create codes at form level', () => {
+      CypressUtil.assertCodeField('/code');
+    });
+
     it('should display Questionnaire.url', () => {
       cy.get('#url').as('url').type('http://example.com/1');
       cy.questionnaireJSON().should((json) => {
