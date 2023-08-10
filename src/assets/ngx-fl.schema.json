@@ -1818,9 +1818,7 @@
         "labelPosition": "left",
         "labelClasses": "col-sm-2",
         "controlClasses": "col-sm-10",
-        "noCollapseButton": true,
         "addButtonLabel": "Add new code",
-        "singleItem": true,
         "showFields": [
           {"field": "code", "col": 3, "nolabel": true},
           {"field": "system", "col": 4, "nolabel": true},
