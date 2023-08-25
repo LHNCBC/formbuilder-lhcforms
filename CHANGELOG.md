@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.5.0] 2023-08-03
+## [9.2.0] 2023-08-03
 ### Added
 - Added these fields to advanced section in the form level fields: 
   implicit rules, version, name, date, publisher, copyright, approvalDate, lastReviewDate
