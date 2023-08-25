@@ -58,6 +58,7 @@
     "@types/fhir": "^0.0.36",
     "ace-builds": "^1.16.0",
     "bootstrap": "^5.2.3",
+    "date-fns": "^2.30.0",
     "fast-copy": "^2.1.1",
     "fhirclient": "^2.5.2",
     "iso-639-1": "^2.1.15",

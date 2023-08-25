@@ -17,6 +17,7 @@
                [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
                [required]="schema.widget.required"
                [lfbDisableControl]="schema.disabled"
+               [footerTemplate]="footerTemplate"
                ngbDatepicker
                #d="ngbDatepicker"
         >
@@ -30,5 +31,8 @@
       </ng-container>
     </div>
   </div>
+  <ng-template #footerTemplate>
+    <div class="text-center"><button (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
+  </ng-template>
 </ng-template>
 

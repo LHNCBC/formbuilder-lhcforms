@@ -1,33 +1,28 @@
-import {Component, Injectable, OnInit} from '@angular/core';
-import {NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct, NgbTimeAdapter, NgbTimeStruct} from '@ng-bootstrap/ng-bootstrap';
+import {Component, ElementRef, inject, Injectable, OnInit, ViewChild} from '@angular/core';
+import {
+  NgbCalendar,
+  NgbDate,
+  NgbDateAdapter,
+  NgbDateParserFormatter,
+  NgbDateStruct,
+  NgbInputDatepicker,
+  NgbTimeAdapter,
+  NgbTimeStruct
+} from '@ng-bootstrap/ng-bootstrap';
 import {DateComponent} from '../date/date.component';
+import {DateUtil, DateTime} from '../../date-util';
 
-
-interface DateTime {
-  date: Date;
-}
 
 
 interface ConfigureDateTime {
   setDateTime(dateTime: DateTime);
 }
 
-const formatISODateTime = (dateTime: DateTime) => {
-  let ret: string = null;
-  if(dateTime.date) {
-    ret = dateTime.date.toISOString();
-  }
-  return ret;
-}
-
-const isValidDate = (date: Date) => {
-  return date && !isNaN(date.getTime());
-}
 /**
  * Example of a String Time adapter
  */
 @Injectable()
-export class LfbTimeAdapter extends NgbTimeAdapter<Date> implements ConfigureDateTime {
+export class LfbTimeAdapter extends NgbTimeAdapter<NgbTimeStruct> implements ConfigureDateTime {
   static id = 0;
   static readonly DELIMITER = '-';
   dateTime: DateTime = null;
@@ -41,23 +36,14 @@ export class LfbTimeAdapter extends NgbTimeAdapter<Date> implements ConfigureDat
   setDateTime(dateTime: DateTime) {
     this.dateTime = dateTime;
   }
-  fromModel(date: Date | null): NgbTimeStruct | null {
-    let ret = null;
-    if (isValidDate(date)) {
-        ret = {
-          hour: date.getHours(),
-          minute: date.getMinutes(),
-          second: date.getSeconds(),
-        };
-    }
-    return ret;
+  fromModel(timeStruct: NgbTimeStruct | null): NgbTimeStruct | null {
+    this.dateTime.timeStruct = timeStruct;
+    return this.dateTime.timeStruct;
   }
 
-  toModel(time: NgbTimeStruct | null): Date | null {
-    this.dateTime.date.setHours(time.hour);
-    this.dateTime.date.setMinutes(time.minute);
-    this.dateTime.date.setSeconds(time.second);
-    return this.dateTime.date;
+  toModel(time: NgbTimeStruct | null): NgbTimeStruct | null {
+    this.dateTime.timeStruct = time;
+    return this.dateTime.timeStruct;
   }
 }
 
@@ -87,32 +73,15 @@ export class LfbDateAdapter extends NgbDateAdapter<string> implements ConfigureD
    * @param value - model, which is ISO string
    */
   fromModel(value: string | null): NgbDateStruct | null {
-    let ret = null;
-    const dt = new Date(value);
-    if(value && isValidDate(dt)) {
-      this.dateTime.date = dt;
-      ret = {
-        year: dt.getFullYear(),
-        month: dt.getMonth()+1,
-        day: dt.getDate()
-      }
-    }
-
-    return ret;
+    const dateTime = DateUtil.parseISOToDateTime(value);
+    Object.assign(this.dateTime, dateTime);
+    return this.dateTime.dateStruct;
   }
 
   toModel(date: NgbDateStruct | null): string | null {
-    let ret = null;
-    if(date) {
-      if(!this.dateTime.date) {
-        this.dateTime.date = new Date(Date.now());
-      }
-      this.dateTime.date.setFullYear(date.year);
-      this.dateTime.date.setMonth(date.month - 1);
-      this.dateTime.date.setDate(date.day);
-      ret = this.dateTime.date.toISOString();
-    }
-    return ret;
+    this.dateTime.dateStruct = date;
+    const val = DateUtil.formatToISO(this.dateTime);
+    return val.length > 0 ? val : null;
   }
 }
 
@@ -124,7 +93,6 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
 
   static id = 0;
   dateTime: DateTime = null;
-
   constructor() {
     super();
     LfbDateParserFormatter.id++;
@@ -135,28 +103,16 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
     this.dateTime = dateTime;
   }
   parse(value: string): NgbDateStruct {
-    // const dateTime = LfbDateTimeParserFormatter.parseDateTime(value);
-    let ret = null;
-    const date = new Date(value);
-    if(isValidDate(date)) {
-      this.dateTime.date.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-      ret = {
-        year: date.getFullYear(),
-        month: date.getMonth()+1,
-        day: date.getDate()
-      }
-    }
-
-    return ret;
+    const dateTime: DateTime = DateUtil.parseLocalToDateTime(value);
+    Object.assign(this.dateTime, dateTime);
+    return this.dateTime.dateStruct;
   }
 
   format(date: NgbDateStruct | null): string {
-    let ret = '';
-    if(date) {
-      ret = this.dateTime.date?.toLocaleString();
-    }
-    return ret;
+    this.dateTime.dateStruct = date;
+    return DateUtil.formatToLocal(this.dateTime);
   }
+
 }
 
 @Component({
@@ -172,34 +128,83 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
 export class DatetimeComponent extends DateComponent implements OnInit {
 
   static id = 0;
-  dateTime: DateTime = {date: null};
-  dateTimeRE = '([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\.[0-9]{1,9})?)?)?(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)?)?)?';
+  dateTime: DateTime = {dateStruct: null, timeStruct: null, millis: NaN};
+  includeTime = true;
 
+  model: string;
+  @ViewChild('inputBox', {read: ElementRef}) inputRef: ElementRef;
+  @ViewChild('d', {read: NgbInputDatepicker}) dp: NgbInputDatepicker;
+
+  calendar = inject(NgbCalendar);
   constructor(private dateAdapter: NgbDateAdapter<string>,
               private parserFormatter: NgbDateParserFormatter,
-              private timeAdapter: NgbTimeAdapter<Date> ) {
+              private timeAdapter: NgbTimeAdapter<NgbTimeStruct>) {
     super();
     DatetimeComponent.id++;
     console.log(`DateTimeComponent: constructor(): ${DatetimeComponent.id}`);
   }
   ngOnInit() {
     super.ngOnInit();
-    this.initDateTime(this.formProperty.value);
-     (this.parserFormatter as unknown as ConfigureDateTime).setDateTime(this.dateTime);
+    const dTime = DateUtil.parseISOToDateTime(this.formProperty.value);
+    this.dateTime.dateStruct = dTime.dateStruct;
+    this.dateTime.timeStruct = dTime.timeStruct;
+    this.dateTime.millis = dTime.millis;
+    this.includeTime = !(dTime.dateStruct && !dTime.timeStruct);
+    (this.parserFormatter as unknown as ConfigureDateTime).setDateTime(this.dateTime);
     (this.dateAdapter as unknown as ConfigureDateTime).setDateTime(this.dateTime);
     (this.timeAdapter as unknown as ConfigureDateTime).setDateTime(this.dateTime);
   }
 
-  initDateTime(isoDateString: string) {
-    const date = new Date(isoDateString);
-    if(isValidDate(date)) {
-      this.dateTime.date = date;
-    }
+  /**
+   * Used in time input template to update formProperty value.
+   * @param event - Not used.
+   */
+  updateValue(event?) {
+    this.dateTime.timeStruct = event || null;
+    let val: string | null = DateUtil.formatToISO(this.dateTime);
+    val = val.length > 0 ? val : null;
+    this.formProperty.setValue(val, false);
   }
 
-  updateValue(event) {
-    if(this.dateTime.date && !isNaN(this.dateTime.date.getTime())) {
-      this.formProperty.setValue((this.dateTime.date.toISOString()), false);
+  onDateSelected(selectedDate: NgbDate) {
+    this.dateTime.dateStruct = {year: selectedDate.year, month: selectedDate.month, day: selectedDate.day};
+  }
+
+  /**
+   * Select current time.
+   */
+  now() {
+    this.includeTime = true;
+    this.dateTime.dateStruct = this.calendar.getToday();
+    const now = new Date();
+    this.dateTime.timeStruct = {
+      hour: now.getHours(),
+      minute: now.getMinutes(),
+      second: now.getSeconds()
+    };
+    this.dateTime.millis = now.getMilliseconds();
+    this.updateValue(this.dateTime.timeStruct);
+  }
+
+  /**
+   * Select current date.
+   */
+  today() {
+    this.dateTime.dateStruct = this.calendar.getToday();
+    this.updateValue(this.dateTime.timeStruct);
+  }
+
+  /**
+   * Handle user keyboard input.
+   */
+  handleInput() {
+    const inputEl = this.inputRef.nativeElement;
+    const value = inputEl?.value;
+    if(inputEl?.classList.contains('ng-valid') && value?.trim().length > 0) {
+      const d = new Date(value.trim());
+      if(DateUtil.isValidDate(d)) {
+        this.dp.navigateTo({year: d.getUTCFullYear(), month: d.getUTCMonth()+1, day: d.getUTCDate()});
+      }
     }
   }
 }

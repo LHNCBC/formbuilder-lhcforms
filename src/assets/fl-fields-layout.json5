@@ -54,14 +54,14 @@
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
       controlClasses: "col-sm-3",
-      placeholder: 'YYYY-MM-DD'
+      placeholder: 'yyyy-MM-dd'
     },
     inputDateTime: {
       id: "datetime",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
       controlClasses: "col-sm-3",
-      placeholder: 'YYYY-MM-DDTHH:mm:ssZ'
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
     __$terminologyServer: {
       "id": "terminology-server",
