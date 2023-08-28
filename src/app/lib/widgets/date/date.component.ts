@@ -68,7 +68,7 @@ export class DateComponent extends StringComponent {
   /**
    * Reset formProperty if input box has invalid date format.
    * Intended to be invoked on blur event of an input box.
-   * @param event
+   * @param event - DOM event
    */
   suppressInvalidDate(event: Event) {
     const inputEl = event.target as HTMLInputElement;
