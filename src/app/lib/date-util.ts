@@ -15,7 +15,6 @@ export class DateUtil {
   static isoDateTimeRE   = /([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.([0-9]{1,9}))?)?)?(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)?)?)?/;
   // Modified from above to display local date/time. Keep matching indices the same
   static localDateTimeRE = /([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])( ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.([0-9]{1,3}))?)?)?)?/;
-  // static localDateTimeRE = /([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0?[1-9]|1[0-2])(-(0?[1-9]|[1-2][0-9]|3[0-1])(\s+([01]?[0-9]|2[0-3]):([0-5]?[0-9]):([0-5]?[0-9]|60)(\.([0-9]{1,3}))?(\s+[aApP][mM])?)?)?)?/;
 
   /**
    * Check the validity of the date object. Invalid date objects return false.
@@ -23,6 +22,18 @@ export class DateUtil {
    */
   static isValidDate(date: Date): boolean {
     return date && !isNaN(date.getTime());
+  }
+
+  /**
+   * Check if it is a valid date format.
+   * @param dateString - string representation of date.
+   */
+  static isValidFormat(dateString: string): boolean {
+    let ret = false;
+    if(this.localDateTimeRE.exec(dateString)) {
+      ret = true;
+    }
+    return ret;
   }
 
   /**

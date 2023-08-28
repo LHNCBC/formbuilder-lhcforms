@@ -342,6 +342,26 @@ describe('Home page', () => {
           });
         });
 
+        it('should not accept invalid dates', () => {
+          // Pick a sample datetime and date widgets; date is datetime widget and approvalDate is date widget.
+          ['date', 'approvalDate'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            cy.get(widgetSel).clear().type('2020-01-23').blur();
+
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.equal('2020-01-23');
+            });
+            cy.get(widgetSel).clear().type('abc').blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+            cy.get(widgetSel).clear().type('202').blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+          })
+        });
+
       });
     });
   });

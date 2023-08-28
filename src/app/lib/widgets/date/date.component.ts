@@ -64,4 +64,16 @@ export class DateComponent extends StringComponent {
     val = val.length > 0 ? val : null;
     this.formProperty.setValue(val, false);
   }
+
+  /**
+   * Reset formProperty if input box has invalid date format.
+   * Intended to be invoked on blur event of an input box.
+   * @param event
+   */
+  suppressInvalidDate(event: Event) {
+    const inputEl = event.target as HTMLInputElement;
+    if(!DateUtil.isValidFormat(inputEl.value)) {
+      this.formProperty.setValue(null, false);
+    }
+  }
 }

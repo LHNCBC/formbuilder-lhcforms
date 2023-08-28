@@ -20,6 +20,7 @@
                [footerTemplate]="footerTemplate"
                ngbDatepicker
                #d="ngbDatepicker"
+               (blur)="suppressInvalidDate($event)"
         >
         <button class="btn btn-outline-secondary py-0" (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
       </div>
