@@ -17,7 +17,7 @@ const path = require('path');
 let downloadUrl = 'https://clinicaltables.nlm.nih.gov/lforms-versions';
 
 // Change version here to update LForms package.
-const version = '33.3.3';
+const version = '33.4.1';
 
 // External scripts could change version?
 if(version?.length) {
@@ -28,6 +28,7 @@ if(version?.length) {
 if(process.argv.length > 2) {
   downloadUrl = process.argv[2];
 }
+console.log(`Downloading from ${downloadUrl}`);
 
 const destinationFolder = path.join(__dirname, '../src/lib/lforms/lib');
 const filePathMap = {
@@ -41,7 +42,10 @@ const filePathMap = {
   'webcomponent/styles.css'         : 'elements',
   'fhir/lformsFHIRAll.min.js'       : 'fhir',
   'fhir/lformsFHIRAll.min.js.map'   : 'fhir',
-  'webcomponent/assets/lib/zone.min.js': 'elements/assets/lib'
+  'webcomponent/assets/lib/zone.min.js': 'elements/assets/lib',
+  'webcomponent/down_arrow_gray_10_10.png': 'elements',
+  'webcomponent/magnifying_glass.png': 'elements'
+
 }
 
 const appFolder = path.dirname(path.dirname(path.dirname(destinationFolder)));

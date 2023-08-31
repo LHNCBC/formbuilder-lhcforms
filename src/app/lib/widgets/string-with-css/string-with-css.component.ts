@@ -30,6 +30,7 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
    * Initialize member variables.
    */
   ngOnInit() {
+    super.ngOnInit();
     this.name = this.formProperty.canonicalPathNotation;
     this.elementTypeFieldFormProperty = this.getCorrespondingFieldElementProperty();
     this.elementTypeFieldValue = this.elementTypeFieldFormProperty?.value;

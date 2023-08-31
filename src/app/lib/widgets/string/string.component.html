@@ -7,14 +7,22 @@
                [title]="schema.title"
                [helpMessage]="schema.description"
                [ngClass]="labelClasses"
+               class="form-label"
     ></lfb-label>
-    <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
-           [ngClass]="controlClasses"
-           [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
-           [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
-           [attr.maxLength]="schema.maxLength || null"
-           [attr.minLength]="schema.minLength || null"
-           [required]="schema.isRequired"
-           [lfbDisableControl]="schema.disabled">
+    <div class="col p-0 position-relative">
+      <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
+             [ngClass]="controlClasses"
+             [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
+             [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+             [attr.maxLength]="schema.maxLength || null"
+             [attr.minLength]="schema.minLength || null"
+             [required]="schema.isRequired"
+             [lfbDisableControl]="schema.disabled">
+      <ng-container *ngFor="let error of errors">
+        <small *ngIf="formProperty.value && error"
+               class="text-danger form-text" role="alert"
+        >{{error.modifiedMessage || error.originalMessage}}</small>
+      </ng-container>
+    </div>
   </div>
 </ng-template>

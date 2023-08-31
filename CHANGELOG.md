@@ -2,6 +2,51 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.2.0] 2023-08-28
+### Added
+- Added support for stu3 export and import.
+
+## [9.1.5] 2023-08-08
+### Changed
+- Changed code field to be multiple instances.
+
+## [9.1.4] 2023-07-21
+### Fixed
+- Fixed a bug which was missing scores in answerOption field.
+- Replaced initial[x] objects with answerOption[x].initialSelected flag to indicate
+  default answers in choice/open-choice type items.
+
+## [9.1.3] 2023-07-21
+### Fixed
+- Updated lforms to 33.4.1 to fix a bug with list positioning of autocomplete input box
+  in preview dialog.
+
+## [9.1.2] 2023-07-11
+### Added
+- Add item control extension. For now, the support restricted to autocomplete in ValueSet fields.
+
+## [9.1.1] 2023-07-07
+### Fixed
+- Fix z-index of autocomplete #searchResults window.
+
+## [9.1.0] 2023-05-17
+### Added
+- Support for SNOMED value set URI.
+
+## [9.0.3] 2023-05-17
+### Fix
+- Fix layout issues in answer-option-methods component.
+- Upper case 'uri' in a label.
+
+## [9.0.2] 2023-05-10
+### Fix
+- Fix display of validation errors for string component.
+- Change Questionnaire.url validation to FHIR specified pattern.
+
+## [9.0.1] 2023-05-08
+### Added
+- Added support for Questionnaire.url.
+
 ## [9.0.0] 2023-03-28
 ### Changed (Breaking changes)
 - Updated angular to version 15.x.x

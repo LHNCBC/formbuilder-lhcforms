@@ -1,8 +1,7 @@
-import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {Subscription} from 'rxjs';
-import fhir from '../../../fhir';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
 
 @Component({
@@ -10,7 +9,7 @@ import {LiveAnnouncer} from '@angular/cdk/a11y';
   templateUrl: './terminology-server.component.html',
   styleUrls: ['./terminology-server.component.css']
 })
-export class TerminologyServerComponent extends LfbControlWidgetComponent implements OnInit, OnDestroy {
+export class TerminologyServerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
 
   static PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
   subscriptions: Subscription[] = [];
@@ -20,6 +19,8 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
   }
 
   @ViewChild('hint', {read: ElementRef}) hintEl: ElementRef;
+  @ViewChild('urlInput', {read: ElementRef}) urlInput: ElementRef;
+  urlValid = true;
 
   constructor(private extensionService: ExtensionsService, private liveAnnouncer: LiveAnnouncer) {
     super();
@@ -33,10 +34,15 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
   }
 
   ngOnInit() {
+    super.ngOnInit();
     const ext = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
     if(ext?.valueUrl) {
       this.tsExtension.valueUrl = ext.valueUrl;
     }
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
     const subscription = this.extensionService.extensionsObservable.subscribe((extensions) => {
       const tsExt = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
       if(tsExt?.valueUrl) {
@@ -46,6 +52,9 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
         this.tsExtension.valueUrl = '';
       }
     });
+    setTimeout(() => {
+      this.urlValid = this.urlInput.nativeElement.checkValidity();
+    }, 0);
     this.subscriptions.push(subscription);
   }
 
@@ -54,6 +63,7 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
    * @param url - The value emitted.
    */
   urlChanged(url) {
+    this.urlValid = this.urlInput.nativeElement.checkValidity();
     this.tsExtension.valueUrl = url.trim();
     this.updateExtension();
   }

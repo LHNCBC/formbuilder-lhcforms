@@ -1,7 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import '~bootstrap/dist/css/bootstrap.min.css';
-@import '~autocomplete-lhc/source/auto_completion.css';
 
 /* Set the height and line-height of the tab header */
 mat-tab-group.preview-json-tabs mat-tab-header {
@@ -29,6 +28,23 @@ mat-tab-group.preview-json-tabs mat-tab-header {
 
 .lfb-mat-tooltip {
   font-size: 12px;
+}
+
+.lfb-ngb-tooltip-link {
+  color: whitesmoke;
+}
+
+.lfb-ngb-tooltip-link:hover {
+  color: lightblue;
+}
+
+/**
+ * z-index of #searchResults in autocomplete-lhc and NgbDialog clash with 1000.
+ * Override it in #searchResults to make sure it is visible when autocomplete-lhc
+ * is used in dialog boxes.
+*/
+#searchResults {
+  z-index: 1010 !important;
 }
 
 html, body { height: 100%; }

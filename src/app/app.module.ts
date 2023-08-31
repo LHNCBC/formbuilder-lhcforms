@@ -87,6 +87,8 @@ import { IntegerDirective } from './lib/directives/integer.directive';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 import { TerminologyServerComponent } from './lib/widgets/terminology-server/terminology-server.component';
+import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
+import { ItemControlComponent } from './lib/widgets/item-control/item-control.component';
 
 @NgModule({
   declarations: [
@@ -150,7 +152,9 @@ import { TerminologyServerComponent } from './lib/widgets/terminology-server/ter
     IntegerDirective,
     AnswerOptionMethodsComponent,
     ObservationExtractComponent,
-    TerminologyServerComponent
+    TerminologyServerComponent,
+    AnswerValueSetComponent,
+    ItemControlComponent
   ],
   imports: [
     AppRoutingModule,

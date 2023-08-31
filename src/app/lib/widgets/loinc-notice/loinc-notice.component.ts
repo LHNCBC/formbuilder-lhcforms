@@ -8,12 +8,25 @@ import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 })
 export class LoincNoticeComponent implements OnInit {
 
+  acceptedTerms: {acceptedLoinc: boolean, acceptedSnomed: boolean} = {
+    acceptedLoinc: false,
+    acceptedSnomed: false
+  };
+  useSnomed: false;
   constructor(private activeModal: NgbActiveModal) { }
 
   ngOnInit(): void {
   }
 
-  close(value: boolean) {
-    this.activeModal.close(value);
+  /**
+   * Close the dialog after accepting the terms.
+   *
+   */
+  close(accept: boolean) {
+    if(accept) {
+      this.activeModal.close(this.acceptedTerms);
+    } else {
+      this.activeModal.close(null);
+    }
   }
 }

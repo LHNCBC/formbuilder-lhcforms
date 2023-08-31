@@ -377,14 +377,14 @@
     },
     "url": {
       "description": "An absolute URI that is used to identify this questionnaire when it is referenced in a specification, model, design or an instance; also called its canonical identifier. This SHOULD be globally unique and SHOULD be a literal address at which at which an authoritative instance of this questionnaire is (or will be) published. This URL can be the target of a canonical reference. It SHALL remain the same when the questionnaire is stored on different servers.",
-      "title": "Url",
-      "pattern": "^\\S*$",
+      "title": "URL",
       "type": "string",
+      "pattern": "^\\S*$",
       "widget": {
         "id": "string",
         "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
+        "labelClasses": "col-sm-2 ps-0 pe-1",
+        "controlClasses": "col textline-widget form-control form-control-sm"
       }
     },
     "identifier": {
@@ -1818,9 +1818,7 @@
         "labelPosition": "left",
         "labelClasses": "col-sm-2",
         "controlClasses": "col-sm-10",
-        "noCollapseButton": true,
         "addButtonLabel": "Add new code",
-        "singleItem": true,
         "showFields": [
           {"field": "code", "col": 3, "nolabel": true},
           {"field": "system", "col": 4, "nolabel": true},

@@ -5,14 +5,13 @@ import {
   EventEmitter,
   Input,
   OnDestroy,
-  AfterViewInit,
   Output, TemplateRef,
-  ViewChild
+  ViewChild, OnInit
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
-import {BehaviorSubject, from, Observable, of, Subject} from 'rxjs';
-import {catchError, debounceTime, distinctUntilChanged, finalize, mergeMap, switchMap, takeUntil} from 'rxjs/operators';
+import {from, Observable, of, Subject} from 'rxjs';
+import {catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil} from 'rxjs/operators';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
@@ -23,7 +22,6 @@ import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search
 import { PreviewDlgComponent } from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
 import {Util} from '../lib/util';
-import {MatTabChangeEvent} from '@angular/material/tabs';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
@@ -38,7 +36,7 @@ type ExportType = 'CREATE' | 'UPDATE';
   styleUrls: ['./base-page.component.css'],
   providers: [NgbActiveModal]
 })
-export class BasePageComponent implements AfterViewInit, OnDestroy {
+export class BasePageComponent implements OnInit, OnDestroy {
 
   private unsubscribe = new Subject<void>();
   @Input()
@@ -58,7 +56,8 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
   @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
   selectedPreviewTab = 0;
-  acceptTermsOfUse = false;
+  acceptedTermsOfUse = false;
+  acceptedSnomed = false;
 
 
   constructor(private formService: FormService,
@@ -77,7 +76,9 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
       this.startOption = 'from_autosave';
     }
 
-    this.acceptTermsOfUse = sessionStorage.acceptTermsOfUse === 'true';
+    this.acceptedTermsOfUse = sessionStorage.acceptedLoinc === 'true';
+    this.acceptedSnomed = sessionStorage.acceptedSnomed === 'true';
+    this.formService.setSnomedUser(this.acceptedSnomed);
 
     this.formSubject.asObservable().pipe(
       debounceTime(500),
@@ -93,20 +94,22 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
   }
 
-  ngAfterViewInit() {
+  ngOnInit() {
     // @ts-ignore
     if(window.Cypress) {
       // @ts-ignore
       window.basePageComponent = this;
     }
-    if(!this.acceptTermsOfUse) {
+    if(!this.acceptedTermsOfUse) {
       this.modalService.open(
         LoincNoticeComponent,{size: 'lg', container: 'body > lfb-root', keyboard: false, backdrop: 'static'}
       ).result
         .then(
           (result) => {
-            this.acceptTermsOfUse = result;
-            sessionStorage.acceptTermsOfUse = result;
+            this.acceptedTermsOfUse = result.acceptedLoinc;
+            sessionStorage.acceptedLoinc = result.acceptedLoinc;
+            sessionStorage.acceptedSnomed = result.acceptedSnomed;
+            this.formService.setSnomedUser(result.acceptedSnomed);
           },
           (reason) => {
             console.error(reason);
@@ -278,9 +281,15 @@ export class BasePageComponent implements AfterViewInit, OnDestroy {
    * View preview of lforms widget and questionnaire json
    */
   showPreviewDlg() {
+    // configure lforms template options
+    const lformsTemplateOptions = {
+      options: {
+        displayScoreWithAnswerText: false // Not show scores
+      }
+    };
+
     this.matDlg.open(PreviewDlgComponent,
-      {data: {
-        questionnaire: Util.convertToQuestionnaireJSON(this.formValue)},
+      {data: {questionnaire: Util.convertToQuestionnaireJSON(this.formValue), lfData: lformsTemplateOptions},
         width: '80vw', height: '80vh'
       }
     );

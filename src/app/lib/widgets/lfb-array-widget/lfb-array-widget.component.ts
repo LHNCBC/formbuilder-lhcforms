@@ -2,9 +2,10 @@
  * Customize array-widget from ngx-schema-form. ArrayWidget represents a component
  * with array of objects, typically like a table of rows with columns.
  */
-import {Component, Input, OnInit} from '@angular/core';
+import {AfterViewInit, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {ArrayWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'lfb-array-widget',
@@ -13,8 +14,9 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
   styles: [
   ]
 })
-export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
+export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit, AfterViewInit, OnDestroy {
   // Info icon
+  subscriptions: Subscription [] = [];
   faInfo = faInfoCircle;
   // Properties to customize the layout, typically read from layout schema json.
   @Input()
@@ -37,10 +39,6 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
   booleanControlledInitial = true;
 
   ngOnInit() {
-    this.formProperty.valueChanges.subscribe((vals) => {
-      this.updateWidget();
-
-    });
     if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0) {
       this.formProperty.addItem();
     }
@@ -49,7 +47,21 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
     this.controlClasses = this.controlClasses || widget.controlClasses || '';
   }
 
+  /**
+   * This is a base class for all array type components.
+   * While initializations are done in ngOnInit(), add all subscriptions in ngAfterViewInit().
+   */
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    const sub = this.formProperty.valueChanges.subscribe((vals) => {
+      this.updateWidget();
+    });
+    this.subscriptions.push(sub);
+  }
 
+  /**
+   * Read/update widget attributes from schema.
+   */
   updateWidget() {
     const widget = this.formProperty.schema.widget;
     // Input is priority followed by widget definition and default
@@ -71,5 +83,14 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit {
 
     this.booleanControlledInitial = widget.booleanControlledInitial !== undefined ?
       widget.booleanControlledInitial : this.booleanControlledInitial; // If not defined, show the control.
+  }
+
+  /**
+   * Cleanup, including freeing up all subscriptions.
+   */
+  ngOnDestroy() {
+    this.subscriptions.forEach((sub) => {
+      sub?.unsubscribe();
+    })
   }
 }

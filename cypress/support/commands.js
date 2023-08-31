@@ -31,12 +31,18 @@ import {CypressUtil} from "./cypress-util";
  * Load home page and wait until LForms is loaded.
  */
 Cypress.Commands.add('loadHomePage',() => {
+  cy.clearSession();
   cy.goToHomePage();
-  cy.loincAccepted().then((flag) => {
-    if (flag !== 'true') {
-      cy.acceptLoinc();
-    }
-  });
+  cy.acceptAllTermsOfUse();
+});
+
+/**
+ * Load the page without accepting SNOMED license.
+ */
+Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
+  cy.clearSession();
+  cy.goToHomePage();
+  cy.acceptLoincOnly();
 });
 
 
@@ -52,7 +58,15 @@ Cypress.Commands.add('goToHomePage', () => {
 /**
  * Accept LOINC notice dialog.
  */
-Cypress.Commands.add('acceptLoinc', () => {
+Cypress.Commands.add('acceptAllTermsOfUse', () => {
+  cy.get('#acceptLoinc').click();
+  cy.get('#useSnomed').click();
+  cy.get('#acceptSnomed').click();
+  cy.contains('lfb-loinc-notice button', 'Accept').click();
+});
+
+Cypress.Commands.add('acceptLoincOnly', () => {
+  cy.get('#acceptLoinc').click();
   cy.contains('lfb-loinc-notice button', 'Accept').click();
 });
 
@@ -72,9 +86,20 @@ Cypress.Commands.add('clearSession',() => {
  * element locator when restarting stopped tests in cy-open.
  */
 Cypress.Commands.add('loincAccepted',() => {
+  return cy.getSessionStorageItem('acceptedLoinc');
+});
+
+/**
+ * Get an item from session storage.
+ */
+Cypress.Commands.add('getSessionStorageItem',(item) => {
   return cy.window()
-    .its('sessionStorage')
-    .invoke('getItem', 'acceptTermsOfUse');
+    .its('sessionStorage').invoke('getItem', item);
+});
+
+
+Cypress.Commands.add('snomedAccepted',() => {
+  return cy.getSessionStorageItem('acceptedSnomed');
 });
 
 
@@ -178,6 +203,8 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
  */
 Cypress.Commands.add('addAnswerOptions', () => {
   cy.selectDataType('choice');
+  // No 'initial' widget for choice. User selects default radio in answer option table.
+  // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
   cy.get('[id^="answerOption.0.valueCoding.code"]').type('c1');
   cy.get('[id^="answerOption.0.valueCoding.system"]').type('s1');
@@ -190,7 +217,6 @@ Cypress.Commands.add('addAnswerOptions', () => {
       url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
       valueDecimal: 2.1
     }]);
-    expect(qJson.item[0].initial).to.be.undefined; // No default selected
   });
 
   // Add a second answerOption.
@@ -205,16 +231,24 @@ Cypress.Commands.add('addAnswerOptions', () => {
 
   cy.questionnaireJSON().should((qJson) => {
     expect(qJson.item[0].type).equal('choice');
-    expect(qJson.item[0].answerOption[1].valueCoding).to.deep.equal({display: 'd2', code: 'c2', system: 's2'});
-    expect(qJson.item[0].answerOption[1].extension).to.deep.equal([{
-      url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
-      valueDecimal: 3
-    }]);
-    // Default/initial value coding.
-    expect(qJson.item[0].answerOption[0].initialSelected).to.equal(true);
-    expect(qJson.item[0].answerOption[1].initialSelected).to.be.undefined;
+    expect(qJson.item[0].answerOption).to.deep.equal([
+      {
+        initialSelected: true,
+        valueCoding: {display: 'd1', code: 'c1', system: 's1'},
+        extension: [{
+          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          valueDecimal: 2.1
+        }]
+      },
+      {
+        valueCoding: {display: 'd2', code: 'c2', system: 's2'},
+        extension: [{
+          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          valueDecimal: 3
+        }]
+      },
+    ]);
   });
-
 });
 
 /**
@@ -232,7 +266,13 @@ Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOption
 
   const coding = {code: 'c1', system: 's1', display: 'd1'}
   cy.get('@codeYes').click();
-  cy.get('[id^="code.0.code_"]').type(coding.code);
+  cy.get('[id^="code.0.code_"]').as('code');
+  cy.get('@code').type('ab ');
+  cy.get('@code').next('small')
+    .should('be.visible')
+    .contains('Spaces are not allowed at the beginning or end.');
+  cy.get('@code').clear();
+  cy.get('@code').type(coding.code);
   cy.get('[id^="code.0.system_"]').type(coding.system);
   cy.get('[id^="code.0.display_"]').type(coding.display);
   cy.questionnaireJSON().should((q) => {

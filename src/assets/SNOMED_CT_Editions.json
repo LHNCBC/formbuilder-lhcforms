@@ -1,0 +1,2771 @@
+{
+  "resourceType": "Bundle",
+  "id": "5220b40f-b630-4b8a-b2e8-4218c0318d85",
+  "meta": {
+    "lastUpdated": "2023-06-07T16:13:56.108+00:00"
+  },
+  "type": "searchset",
+  "total": 162,
+  "link": [
+    {
+      "relation": "self",
+      "url": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem"
+    }
+  ],
+  "entry": [
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000221109_20221130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000221109_20221130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000221109/version/20221130",
+        "name": "SNOMED_CT",
+        "title": "Argentinian Edition",
+        "status": "active",
+        "date": "2022-11-30T00:00:00+00:00",
+        "publisher": "Argentina Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000221109_20220531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000221109_20220531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000221109/version/20220531",
+        "name": "SNOMED_CT",
+        "title": "Argentinian Edition",
+        "status": "active",
+        "date": "2022-05-31T00:00:00+00:00",
+        "publisher": "Argentina Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000221109_20211130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000221109_20211130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000221109/version/20211130",
+        "name": "SNOMED_CT",
+        "title": "Argentinian Edition",
+        "status": "active",
+        "date": "2021-11-30T00:00:00+00:00",
+        "publisher": "Argentina Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000221109_20210531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000221109_20210531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000221109/version/20210531",
+        "name": "SNOMED_CT",
+        "title": "Argentinian Edition",
+        "status": "active",
+        "date": "2021-05-31T00:00:00+00:00",
+        "publisher": "Argentina Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000221109_20201130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000221109_20201130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000221109/version/20201130",
+        "name": "SNOMED_CT",
+        "title": "Argentinian Edition",
+        "status": "active",
+        "date": "2020-11-30T00:00:00+00:00",
+        "publisher": "Argentina Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000221109_20200531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000221109_20200531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000221109/version/20200531",
+        "name": "SNOMED_CT",
+        "title": "Argentinian Edition",
+        "status": "active",
+        "date": "2020-05-31T00:00:00+00:00",
+        "publisher": "Argentina Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000221109_20191130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000221109_20191130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000221109/version/20191130",
+        "name": "SNOMED_CT",
+        "title": "Argentinian Edition",
+        "status": "active",
+        "date": "2019-11-30T00:00:00+00:00",
+        "publisher": "Argentina Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000221109_20190531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000221109_20190531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000221109/version/20190531",
+        "name": "SNOMED_CT",
+        "title": "Argentinian Edition",
+        "status": "active",
+        "date": "2019-05-31T00:00:00+00:00",
+        "publisher": "Argentina Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_32506021000036107_20220131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_32506021000036107_20220131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/32506021000036107/version/20220131",
+        "name": "SNOMED_CT",
+        "title": "Australian Edition",
+        "status": "active",
+        "date": "2022-01-31T00:00:00+00:00",
+        "publisher": "Australian Digital Health Agency",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000234105_20230215",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000234105_20230215",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000234105/version/20230215",
+        "name": "SNOMED_CT",
+        "title": "Austrian Edition",
+        "status": "active",
+        "date": "2023-02-15T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000234105_20220815",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000234105_20220815",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000234105/version/20220815",
+        "name": "SNOMED_CT",
+        "title": "Austrian Edition",
+        "status": "active",
+        "date": "2022-08-15T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20230515",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20230515",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20230515",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2023-05-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20221115",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20221115",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20221115",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2022-11-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20220315",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20220315",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20220315",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2022-03-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20210915",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20210915",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20210915",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2021-09-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20210315",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20210315",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20210315",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2021-03-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20200915",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20200915",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20200915",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2020-09-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20200315",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20200315",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20200315",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2020-03-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20190915",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20190915",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20190915",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2019-09-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20190315",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20190315",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20190315",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2019-03-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000172109_20180315",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000172109_20180315",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000172109/version/20180315",
+        "name": "SNOMED_CT",
+        "title": "Belgian Edition",
+        "status": "active",
+        "date": "2018-03-15T00:00:00+00:00",
+        "publisher": "Belgian Federal Public Service Health, Food Chain Safety and Environment",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_20621000087109_20230331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_20621000087109_20230331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/20621000087109/version/20230331",
+        "name": "SNOMED_CT",
+        "title": "Canadian Edition",
+        "status": "active",
+        "date": "2023-03-31T00:00:00+00:00",
+        "publisher": "Canada Health Infoway",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_20621000087109_20220930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_20621000087109_20220930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/20621000087109/version/20220930",
+        "name": "SNOMED_CT",
+        "title": "Canadian Edition",
+        "status": "active",
+        "date": "2022-09-30T00:00:00+00:00",
+        "publisher": "Canada Health Infoway",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20230331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20230331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20230331",
+        "name": "SNOMED_CT",
+        "title": "Common French Translation",
+        "status": "active",
+        "date": "2023-03-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20210930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20210930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20210930",
+        "name": "SNOMED_CT",
+        "title": "Common French Translation",
+        "status": "active",
+        "date": "2021-09-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20210331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20210331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20210331",
+        "name": "SNOMED_CT",
+        "title": "Common French Translation",
+        "status": "active",
+        "date": "2021-03-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20200930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20200930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20200930",
+        "name": "SNOMED_CT",
+        "title": "Common French Translation",
+        "status": "active",
+        "date": "2020-09-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20230501",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20230501",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20230501",
+        "name": "SNOMED_CT",
+        "title": "Common German Translation",
+        "status": "active",
+        "date": "2023-05-01T00:00:00+00:00",
+        "publisher": "Common German Translation User Group",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20230331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20230331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20230331",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2023-03-31T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20220930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20220930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20220930",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2022-09-30T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20220331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20220331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20220331",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2022-03-31T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20210930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20210930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20210930",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2021-09-30T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20210331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20210331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20210331",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2021-03-31T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20200930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20200930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20200930",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2020-09-30T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20200331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20200331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20200331",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2020-03-31T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20190930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20190930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20190930",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2019-09-30T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_554471000005108_20190331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_554471000005108_20190331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/554471000005108/version/20190331",
+        "name": "SNOMED_CT",
+        "title": "Danish Edition",
+        "status": "active",
+        "date": "2019-03-31T00:00:00+00:00",
+        "publisher": "Danish Health Data Authority",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000181102_20230530",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000181102_20230530",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000181102/version/20230530",
+        "name": "SNOMED_CT",
+        "title": "Estonian Edition",
+        "status": "active",
+        "date": "2023-05-30T00:00:00+00:00",
+        "publisher": "Estonia Health and Welfare Information Systems Centre",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000181102_20221130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000181102_20221130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000181102/version/20221130",
+        "name": "SNOMED_CT",
+        "title": "Estonian Edition",
+        "status": "active",
+        "date": "2022-11-30T00:00:00+00:00",
+        "publisher": "Estonia Health and Welfare Information Systems Centre",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000181102_20220530",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000181102_20220530",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000181102/version/20220530",
+        "name": "SNOMED_CT",
+        "title": "Estonian Edition",
+        "status": "active",
+        "date": "2022-05-30T00:00:00+00:00",
+        "publisher": "Estonia Health and Welfare Information Systems Centre",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000181102_20211130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000181102_20211130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000181102/version/20211130",
+        "name": "SNOMED_CT",
+        "title": "Estonian Edition",
+        "status": "active",
+        "date": "2021-11-30T00:00:00+00:00",
+        "publisher": "Estonia Health and Welfare Information Systems Centre",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000181102_20210530",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000181102_20210530",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000181102/version/20210530",
+        "name": "SNOMED_CT",
+        "title": "Estonian Edition",
+        "status": "active",
+        "date": "2021-05-30T00:00:00+00:00",
+        "publisher": "Estonia Health and Welfare Information Systems Centre",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000181102_20201130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000181102_20201130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000181102/version/20201130",
+        "name": "SNOMED_CT",
+        "title": "Estonian Edition",
+        "status": "active",
+        "date": "2020-11-30T00:00:00+00:00",
+        "publisher": "Estonia Health and Welfare Information Systems Centre",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20221215",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20221215",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20221215",
+        "name": "SNOMED_CT",
+        "title": "Finnish Edition",
+        "status": "active",
+        "date": "2022-12-15T00:00:00+00:00",
+        "publisher": "Finnish Institute for Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20211215",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20211215",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20211215",
+        "name": "SNOMED_CT",
+        "title": "Finnish Edition",
+        "status": "active",
+        "date": "2021-12-15T00:00:00+00:00",
+        "publisher": "Finnish Institute for Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20230531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20230531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20230531",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2023-05-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20230430",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20230430",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20230430",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2023-04-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20230331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20230331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20230331",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2023-03-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20230228",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20230228",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20230228",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2023-02-28T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20230131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20230131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20230131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2023-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20221231",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20221231",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20221231",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-12-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20221130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20221130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20221130",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-11-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20221031",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20221031",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20221031",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-10-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220930",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-09-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220831",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220831",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220831",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-08-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220630",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220630",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220630",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-06-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220531",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-05-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220430",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220430",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220430",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-04-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220331",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-03-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220228",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220228",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220228",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-02-28T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20220131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20220131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20220131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2022-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20210731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20210731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20210731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2021-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20210131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20210131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20210131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2021-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20200731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20200731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20200731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2020-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20200309",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20200309",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20200309",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2020-03-09T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20200131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20200131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20200131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2020-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20190731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20190731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20190731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2019-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20190131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20190131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20190131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2019-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20180731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20180731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20180731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2018-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20180131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20180131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20180131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2018-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20170731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20170731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20170731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2017-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20170131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20170131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20170131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2017-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20160731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20160731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20160731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2016-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20160131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20160131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20160131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2016-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20150731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20150731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20150731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2015-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20150131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20150131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20150131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2015-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20140731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20140731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20140731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2014-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20140131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20140131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20140131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2014-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20130731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20130731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20130731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2013-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20130131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20130131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20130131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2013-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20120731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20120731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20120731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2012-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20120131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20120131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20120131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2012-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20110731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20110731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20110731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2011-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20110131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20110131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20110131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2011-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20100731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20100731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20100731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2010-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20100131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20100131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20100131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2010-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20090731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20090731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20090731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2009-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20090131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20090131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20090131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2009-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20080731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20080731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20080731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2008-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20080131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20080131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20080131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2008-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20070731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20070731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20070731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2007-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20070131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20070131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20070131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2007-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20060731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20060731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20060731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2006-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20060131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20060131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20060131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2006-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20050731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20050731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20050731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2005-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20050131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20050131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20050131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2005-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20040731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20040731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20040731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2004-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20040131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20040131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20040131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2004-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20030731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20030731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20030731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2003-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20030131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20030131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20030131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2003-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20020731",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20020731",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20020731",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2002-07-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_900000000000207008_20020131",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_900000000000207008_20020131",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/900000000000207008/version/20020131",
+        "name": "SNOMED_CT",
+        "title": "International Edition",
+        "status": "active",
+        "date": "2002-01-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000220105_20230421",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000220105_20230421",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000220105/version/20230421",
+        "name": "SNOMED_CT",
+        "title": "Irish Edition",
+        "status": "active",
+        "date": "2023-04-21T00:00:00+00:00",
+        "publisher": "Department of Health / eHealth Ireland",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000220105_20221021",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000220105_20221021",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000220105/version/20221021",
+        "name": "SNOMED_CT",
+        "title": "Irish Edition",
+        "status": "active",
+        "date": "2022-10-21T00:00:00+00:00",
+        "publisher": "Department of Health / eHealth Ireland",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000220105_20220421",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000220105_20220421",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000220105/version/20220421",
+        "name": "SNOMED_CT",
+        "title": "Irish Edition",
+        "status": "active",
+        "date": "2022-04-21T00:00:00+00:00",
+        "publisher": "Department of Health / eHealth Ireland",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000146104_20230331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000146104_20230331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000146104/version/20230331",
+        "name": "SNOMED_CT",
+        "title": "Netherlands Edition",
+        "status": "active",
+        "date": "2023-03-31T00:00:00+00:00",
+        "publisher": "Nictiz",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000146104_20220930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000146104_20220930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000146104/version/20220930",
+        "name": "SNOMED_CT",
+        "title": "Netherlands Edition",
+        "status": "active",
+        "date": "2022-09-30T00:00:00+00:00",
+        "publisher": "Nictiz",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000146104_20220331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000146104_20220331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000146104/version/20220331",
+        "name": "SNOMED_CT",
+        "title": "Netherlands Edition",
+        "status": "active",
+        "date": "2022-03-31T00:00:00+00:00",
+        "publisher": "Nictiz",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000146104_20210930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000146104_20210930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000146104/version/20210930",
+        "name": "SNOMED_CT",
+        "title": "Netherlands Edition",
+        "status": "active",
+        "date": "2021-09-30T00:00:00+00:00",
+        "publisher": "Nictiz",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000146104_20210331",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000146104_20210331",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000146104/version/20210331",
+        "name": "SNOMED_CT",
+        "title": "Netherlands Edition",
+        "status": "active",
+        "date": "2021-03-31T00:00:00+00:00",
+        "publisher": "Nictiz",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_11000146104_20200930",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_11000146104_20200930",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/11000146104/version/20200930",
+        "name": "SNOMED_CT",
+        "title": "Netherlands Edition",
+        "status": "active",
+        "date": "2020-09-30T00:00:00+00:00",
+        "publisher": "Nictiz",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_21000210109_20230401",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_21000210109_20230401",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/21000210109/version/20230401",
+        "name": "SNOMED_CT",
+        "title": "New Zealand Edition",
+        "status": "active",
+        "date": "2023-04-01T00:00:00+00:00",
+        "publisher": "Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_21000210109_20221001",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_21000210109_20221001",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/21000210109/version/20221001",
+        "name": "SNOMED_CT",
+        "title": "New Zealand Edition",
+        "status": "active",
+        "date": "2022-10-01T00:00:00+00:00",
+        "publisher": "Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_21000210109_20220401",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_21000210109_20220401",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/21000210109/version/20220401",
+        "name": "SNOMED_CT",
+        "title": "New Zealand Edition",
+        "status": "active",
+        "date": "2022-04-01T00:00:00+00:00",
+        "publisher": "Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_21000210109_20211001",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_21000210109_20211001",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/21000210109/version/20211001",
+        "name": "SNOMED_CT",
+        "title": "New Zealand Edition",
+        "status": "active",
+        "date": "2021-10-01T00:00:00+00:00",
+        "publisher": "Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_21000210109_20210401",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_21000210109_20210401",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/21000210109/version/20210401",
+        "name": "SNOMED_CT",
+        "title": "New Zealand Edition",
+        "status": "active",
+        "date": "2021-04-01T00:00:00+00:00",
+        "publisher": "Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_21000210109_20201001",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_21000210109_20201001",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/21000210109/version/20201001",
+        "name": "SNOMED_CT",
+        "title": "New Zealand Edition",
+        "status": "active",
+        "date": "2020-10-01T00:00:00+00:00",
+        "publisher": "Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_21000210109_20200401",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_21000210109_20200401",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/21000210109/version/20200401",
+        "name": "SNOMED_CT",
+        "title": "New Zealand Edition",
+        "status": "active",
+        "date": "2020-04-01T00:00:00+00:00",
+        "publisher": "Ministry of Health",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_51000202101_20230415",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_51000202101_20230415",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/51000202101/version/20230415",
+        "name": "SNOMED_CT",
+        "title": "Norwegian Edition",
+        "status": "active",
+        "date": "2023-04-15T00:00:00+00:00",
+        "publisher": "The Norwegian Directorate of eHealth",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_51000202101_20221015",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_51000202101_20221015",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/51000202101/version/20221015",
+        "name": "SNOMED_CT",
+        "title": "Norwegian Edition",
+        "status": "active",
+        "date": "2022-10-15T00:00:00+00:00",
+        "publisher": "The Norwegian Directorate of eHealth",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_51000202101_20220415",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_51000202101_20220415",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/51000202101/version/20220415",
+        "name": "SNOMED_CT",
+        "title": "Norwegian Edition",
+        "status": "active",
+        "date": "2022-04-15T00:00:00+00:00",
+        "publisher": "The Norwegian Directorate of eHealth",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_51000202101_20211015",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_51000202101_20211015",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/51000202101/version/20211015",
+        "name": "SNOMED_CT",
+        "title": "Norwegian Edition",
+        "status": "active",
+        "date": "2021-10-15T00:00:00+00:00",
+        "publisher": "The Norwegian Directorate of eHealth",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_51000202101_20201015",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_51000202101_20201015",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/51000202101/version/20201015",
+        "name": "SNOMED_CT",
+        "title": "Norwegian Edition",
+        "status": "active",
+        "date": "2020-10-15T00:00:00+00:00",
+        "publisher": "The Norwegian Directorate of eHealth",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_51000202101_20200415",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_51000202101_20200415",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/51000202101/version/20200415",
+        "name": "SNOMED_CT",
+        "title": "Norwegian Edition",
+        "status": "active",
+        "date": "2020-04-15T00:00:00+00:00",
+        "publisher": "The Norwegian Directorate of eHealth",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_51000202101_20191015",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_51000202101_20191015",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/51000202101/version/20191015",
+        "name": "SNOMED_CT",
+        "title": "Norwegian Edition",
+        "status": "active",
+        "date": "2019-10-15T00:00:00+00:00",
+        "publisher": "The Norwegian Directorate of eHealth",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_449081005_20221031",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_449081005_20221031",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/449081005/version/20221031",
+        "name": "SNOMED_CT",
+        "title": "Spanish Edition",
+        "status": "active",
+        "date": "2022-10-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_449081005_20220430",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_449081005_20220430",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/449081005/version/20220430",
+        "name": "SNOMED_CT",
+        "title": "Spanish Edition",
+        "status": "active",
+        "date": "2022-04-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_449081005_20211031",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_449081005_20211031",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/449081005/version/20211031",
+        "name": "SNOMED_CT",
+        "title": "Spanish Edition",
+        "status": "active",
+        "date": "2021-10-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_449081005_20210430",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_449081005_20210430",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/449081005/version/20210430",
+        "name": "SNOMED_CT",
+        "title": "Spanish Edition",
+        "status": "active",
+        "date": "2021-04-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_449081005_20201031",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_449081005_20201031",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/449081005/version/20201031",
+        "name": "SNOMED_CT",
+        "title": "Spanish Edition",
+        "status": "active",
+        "date": "2020-10-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_449081005_20200430",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_449081005_20200430",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/449081005/version/20200430",
+        "name": "SNOMED_CT",
+        "title": "Spanish Edition",
+        "status": "active",
+        "date": "2020-04-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_449081005_20191031",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_449081005_20191031",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/449081005/version/20191031",
+        "name": "SNOMED_CT",
+        "title": "Spanish Edition",
+        "status": "active",
+        "date": "2019-10-31T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_449081005_20190430",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_449081005_20190430",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/449081005/version/20190430",
+        "name": "SNOMED_CT",
+        "title": "Spanish Edition",
+        "status": "active",
+        "date": "2019-04-30T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20230531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20230531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20230531",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2023-05-31T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20221130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20221130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20221130",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2022-11-30T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20220531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20220531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20220531",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2022-05-31T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20211130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20211130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20211130",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2021-11-30T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20210531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20210531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20210531",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2021-05-31T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20201130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20201130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20201130",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2020-11-30T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20200531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20200531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20200531",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2020-05-31T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20191130",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20191130",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20191130",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2019-11-30T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_45991000052106_20190531",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_45991000052106_20190531",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/45991000052106/version/20190531",
+        "name": "SNOMED_CT",
+        "title": "Swedish Edition",
+        "status": "active",
+        "date": "2019-05-31T00:00:00+00:00",
+        "publisher": "The National Board of Health and Welfare",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20230607",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20230607",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20230607",
+        "name": "SNOMED_CT",
+        "title": "Swiss Edition",
+        "status": "active",
+        "date": "2023-06-07T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20221207",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20221207",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20221207",
+        "name": "SNOMED_CT",
+        "title": "Swiss Edition",
+        "status": "active",
+        "date": "2022-12-07T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20220607",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20220607",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20220607",
+        "name": "SNOMED_CT",
+        "title": "Swiss Edition",
+        "status": "active",
+        "date": "2022-06-07T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_null_20211207",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_null_20211207",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/null/version/20211207",
+        "name": "SNOMED_CT",
+        "title": "Swiss Edition",
+        "status": "active",
+        "date": "2021-12-07T00:00:00+00:00",
+        "publisher": "SNOMED International",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_731000124108_20230301",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_731000124108_20230301",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/731000124108/version/20230301",
+        "name": "SNOMED_CT",
+        "title": "United States Edition",
+        "status": "active",
+        "date": "2023-03-01T00:00:00+00:00",
+        "publisher": "National Library of Medicine",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_731000124108_20220901",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_731000124108_20220901",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/731000124108/version/20220901",
+        "name": "SNOMED_CT",
+        "title": "United States Edition",
+        "status": "active",
+        "date": "2022-09-01T00:00:00+00:00",
+        "publisher": "National Library of Medicine",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_731000124108_20220301",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_731000124108_20220301",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/731000124108/version/20220301",
+        "name": "SNOMED_CT",
+        "title": "United States Edition",
+        "status": "active",
+        "date": "2022-03-01T00:00:00+00:00",
+        "publisher": "National Library of Medicine",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_731000124108_20210901",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_731000124108_20210901",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/731000124108/version/20210901",
+        "name": "SNOMED_CT",
+        "title": "United States Edition",
+        "status": "active",
+        "date": "2021-09-01T00:00:00+00:00",
+        "publisher": "National Library of Medicine",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_731000124108_20210301",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_731000124108_20210301",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/731000124108/version/20210301",
+        "name": "SNOMED_CT",
+        "title": "United States Edition",
+        "status": "active",
+        "date": "2021-03-01T00:00:00+00:00",
+        "publisher": "National Library of Medicine",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_731000124108_20200901",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_731000124108_20200901",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/731000124108/version/20200901",
+        "name": "SNOMED_CT",
+        "title": "United States Edition",
+        "status": "active",
+        "date": "2020-09-01T00:00:00+00:00",
+        "publisher": "National Library of Medicine",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_731000124108_20200301",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_731000124108_20200301",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/731000124108/version/20200301",
+        "name": "SNOMED_CT",
+        "title": "United States Edition",
+        "status": "active",
+        "date": "2020-03-01T00:00:00+00:00",
+        "publisher": "National Library of Medicine",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_5631000179106_20221215",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_5631000179106_20221215",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/5631000179106/version/20221215",
+        "name": "SNOMED_CT",
+        "title": "Uruguay Edition",
+        "status": "active",
+        "date": "2022-12-15T00:00:00+00:00",
+        "publisher": "Centro de Servicios de Salud - NRC",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_5631000179106_20220615",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_5631000179106_20220615",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/5631000179106/version/20220615",
+        "name": "SNOMED_CT",
+        "title": "Uruguay Edition",
+        "status": "active",
+        "date": "2022-06-15T00:00:00+00:00",
+        "publisher": "Centro de Servicios de Salud - NRC",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_5631000179106_20211215",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_5631000179106_20211215",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/5631000179106/version/20211215",
+        "name": "SNOMED_CT",
+        "title": "Uruguay Edition",
+        "status": "active",
+        "date": "2021-12-15T00:00:00+00:00",
+        "publisher": "Centro de Servicios de Salud - NRC",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_5631000179106_20210615",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_5631000179106_20210615",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/5631000179106/version/20210615",
+        "name": "SNOMED_CT",
+        "title": "Uruguay Edition",
+        "status": "active",
+        "date": "2021-06-15T00:00:00+00:00",
+        "publisher": "Centro de Servicios de Salud - NRC",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_5631000179106_20201215",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_5631000179106_20201215",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/5631000179106/version/20201215",
+        "name": "SNOMED_CT",
+        "title": "Uruguay Edition",
+        "status": "active",
+        "date": "2020-12-15T00:00:00+00:00",
+        "publisher": "Centro de Servicios de Salud - NRC",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_5631000179106_20200615",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_5631000179106_20200615",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/5631000179106/version/20200615",
+        "name": "SNOMED_CT",
+        "title": "Uruguay Edition",
+        "status": "active",
+        "date": "2020-06-15T00:00:00+00:00",
+        "publisher": "Centro de Servicios de Salud - NRC",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_5631000179106_20191215",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_5631000179106_20191215",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/5631000179106/version/20191215",
+        "name": "SNOMED_CT",
+        "title": "Uruguay Edition",
+        "status": "active",
+        "date": "2019-12-15T00:00:00+00:00",
+        "publisher": "Centro de Servicios de Salud - NRC",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    },
+    {
+      "fullUrl": "https://snowstorm.ihtsdotools.org/fhir/CodeSystem/sct_5631000179106_20190615",
+      "resource": {
+        "resourceType": "CodeSystem",
+        "id": "sct_5631000179106_20190615",
+        "url": "http://snomed.info/sct",
+        "version": "http://snomed.info/sct/5631000179106/version/20190615",
+        "name": "SNOMED_CT",
+        "title": "Uruguay Edition",
+        "status": "active",
+        "date": "2019-06-15T00:00:00+00:00",
+        "publisher": "Centro de Servicios de Salud - NRC",
+        "hierarchyMeaning": "is-a",
+        "compositional": true,
+        "content": "complete"
+      }
+    }
+  ]
+}

@@ -3,15 +3,56 @@
 import {CypressUtil} from '../../support/cypress-util'
 import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 
-describe('Home page accept LOINC notice', () => {
+describe('Home page accept Terms of Use notices', () => {
   before(() => {
     cy.clearSession();
   });
+  afterEach(() => {
+    cy.clearSession();
+  });
 
-  it('should accept LOINC notice', () => {
+  it('should make SNOMED CT available after accepting SNOMED notice', () => {
     cy.goToHomePage();
-    cy.acceptLoinc();
+    cy.contains('lfb-loinc-notice button', 'Accept').as('accept').should('not.be.enabled');
+    cy.get('#acceptLoinc').as('loinc').click();
+    cy.get('@loinc').should('be.checked');
+    cy.get('@accept').should('be.enabled');
+    cy.get('#useSnomed').click();
+    cy.get('@accept').should('not.be.enabled');
+    cy.get('#acceptSnomed').as('snomed').click();
+    cy.get('@snomed').should('be.checked');
+    cy.get('@accept').should('be.enabled');
+    cy.get('@loinc').click();
+    cy.get('@accept').should('not.be.enabled');
+    cy.get('@loinc').click();
+    cy.get('@accept').should('be.enabled').click();
+
     cy.loincAccepted().should('equal', 'true');
+    cy.snomedAccepted().should('equal', 'true');
+
+    cy.get('input[type="radio"][value="scratch"]').click();
+    cy.get('button').contains('Continue').click();
+    cy.get('button').contains('Create questions').click();
+    cy.selectDataType('choice');
+    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_value-set"]')
+      .should('be.visible').and('not.be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]')
+      .should('be.visible').and('not.be.checked');
+  });
+
+  it('should not find SNOMED CT functionality after accepting only LOINC terms of use.', () => {
+    cy.goToHomePage();
+    cy.acceptLoincOnly();
+    cy.loincAccepted().should('equal', 'true');
+    cy.snomedAccepted().should('equal', 'false');
+    cy.get('input[type="radio"][value="scratch"]').click();
+    cy.get('button').contains('Continue').click();
+    cy.get('button').contains('Create questions').click();
+    cy.selectDataType('choice');
+    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.visible').and('not.be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('not.exist');
   });
 });
 
@@ -137,6 +178,23 @@ describe('Home page', () => {
       cy.contains('div', 'Code').should('be.visible').includeExcludeCodeField('form');
     });
 
+    it('should create codes at form level', () => {
+      CypressUtil.assertCodeField('/code');
+    });
+
+    it('should display Questionnaire.url', () => {
+      cy.get('#url').as('url').type('http://example.com/1');
+      cy.questionnaireJSON().should((json) => {
+        expect(json.url).equal('http://example.com/1');
+      });
+      cy.get('@url').clear().type('a a');
+      cy.get('@url').next('small')
+        .should('be.visible')
+        .contains('Spaces and other whitespace characters are not allowed in this field.');
+      cy.get('@url').clear();
+      cy.get('@url').siblings('small').should('not.exist');
+    });
+
     it('should retain title edits', () => {
       cy.get('#title').should('have.value', 'New Form').clear();
       cy.get('#title').type('Dummy title');
@@ -167,12 +225,12 @@ describe('Home page', () => {
       cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
       cy.contains('div[role="tab"]', 'View Rendered Form').scrollIntoView().click();
       cy.get('wc-lhc-form').should('be.visible', true);
-      cy.get('#1\\/1').as('acInput').should('have.value', 'd2 - 2');
+      cy.get('#1\\/1').as('acInput').should('have.value', 'd2');
       cy.get('@acInput').focus();
       cy.get('#completionOptionsScroller').as('acResults').should('be.visible');
       cy.get('@acResults').find('ul > li').as('acListItems').should('have.length', 2);
       cy.get('@acListItems').first().click();
-      cy.get('@acInput').should('have.value', 'd1 - 1');
+      cy.get('@acInput').should('have.value', 'd1');
       cy.contains('mat-dialog-actions > button', 'Close').click();
     });
 
@@ -229,6 +287,11 @@ describe('Home page', () => {
       });
 
       it('should create terminology server extension', () => {
+        cy.tsUrl().next('small.text-danger').should('not.exist');
+        cy.tsUrl().type('ab');
+        cy.tsUrl().next('small.text-danger').should('have.text', 'Please enter a valid URL.');
+        cy.tsUrl().clear();
+        cy.tsUrl().next('small.text-danger').should('not.exist');
         cy.tsUrl().type('http://example.org/fhir');
         CypressUtil.assertValueInQuestionnaire('/extension',
           [{

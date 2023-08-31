@@ -35,12 +35,15 @@ import {EnableWhenComponent} from './widgets/enable-when/enable-when.component';
 import {QuantityUnitComponent} from './widgets/quantity-unit/quantity-unit.component';
 import {NumberComponent} from './widgets/number/number.component';
 import {TerminologyServerComponent} from './widgets/terminology-server/terminology-server.component';
+import {AnswerValueSetComponent} from './widgets/answer-value-set/answer-value-set.component';
+import {ItemControlComponent} from './widgets/item-control/item-control.component';
 
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
   constructor() {
     super();
+    this.register('answer-value-set', AnswerValueSetComponent);
     this.register('row-layout',  RowLayoutComponent);
     this.register('grid', GridComponent);
     this.register('table', TableComponent);
@@ -64,6 +67,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('units', UnitsComponent);
     this.register('answer-option', AnswerOptionComponent);
     this.register('answer-option-methods', AnswerOptionMethodsComponent);
+    this.register('item-control', ItemControlComponent);
     this.register('help-text', HelpTextComponent);
     this.register('string-with-css', StringWithCssComponent);
     this.register('restrictions', RestrictionsComponent);

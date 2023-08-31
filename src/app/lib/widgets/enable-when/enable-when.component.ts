@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectorRef, Component, DoCheck, ElementRef, OnInit, Renderer2, ViewEncapsulation} from '@angular/core';
+import {ChangeDetectorRef, Component, DoCheck, ElementRef, OnInit, Renderer2, ViewEncapsulation} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
 import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
@@ -12,7 +12,7 @@ import {Observable, of } from 'rxjs';
   styleUrls: ['./enable-when.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck, AfterViewInit {
+export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck {
 
   showFieldNames: string[] = ['question', 'operator', 'answerString'];
   showHeaderFields: any[];

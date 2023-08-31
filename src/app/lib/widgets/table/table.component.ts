@@ -19,10 +19,9 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
-  Output,
   SimpleChanges
 } from '@angular/core';
-import {ArrayWidget, FormProperty} from '@lhncbc/ngx-schema-form';
+import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import {faTrash} from '@fortawesome/free-solid-svg-icons';
 import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
@@ -37,7 +36,7 @@ import {Subscription} from 'rxjs';
   templateUrl: './table.component.html', // Use separate files for possible reuse from a derived class
   styleUrls: ['./table.component.css']
 })
-export class TableComponent extends LfbArrayWidgetComponent implements OnInit, DoCheck, OnChanges, OnDestroy {
+export class TableComponent extends LfbArrayWidgetComponent implements OnInit, AfterViewInit, DoCheck, OnChanges {
 
   static seqNum = 0;
   // Icons for buttons.
@@ -64,7 +63,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, D
   rowSelectionType = null; // 'radio' or 'checkbox'
   rowSelection = false; // If a row selection column is displayed. Default is no column.
 
-  subscriptions: Subscription [] = [];
   constructor(private elRef: ElementRef, private cdRef: ChangeDetectorRef) {
     super();
   }
@@ -107,6 +105,16 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, D
       this.rowSelection = widget.rowSelection;
       this.rowSelectionType = widget.rowSelectionType || 'radio'; // Defaults to radio buttons.
     }
+    this.selectionRadio = -1;
+    this.selectionCheckbox = [];
+  }
+
+
+  /**
+   * Initialize setting up observers.
+   */
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
     const singleItemEnableSource = this.formProperty.schema.widget ?
       this.formProperty.schema.widget.singleItemEnableSource : null;
     const multipleSelectionEnableSource = this.formProperty.schema.widget ?
@@ -118,9 +126,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, D
     // . Source if present and is true means show the buttons.
     // . Absence of source condition means the default behavior which is show the buttons.
     let prop = singleItemEnableSource ? this.formProperty.searchProperty(singleItemEnableSource) : null;
-    let subsciption: Subscription;
+    let subscription: Subscription;
     if (prop) {
-      subsciption = prop.valueChanges.subscribe((newValue) => {
+      subscription = prop.valueChanges.subscribe((newValue) => {
         if (newValue === false) {
           // If already has multiple items in the array, remove all items except first one.
           if (this.formProperty.properties.length > 1) {
@@ -135,15 +143,13 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, D
         }
         this.cdRef.markForCheck();
       });
-      this.subscriptions.push(subsciption);
+      this.subscriptions.push(subscription);
     }
 
     prop = multipleSelectionEnableSource ? this.formProperty.searchProperty(multipleSelectionEnableSource) : null;
     if (prop) {
-      subsciption = prop.valueChanges.subscribe((newValue) => {
-        this.selectionRadio = -1;
-        this.selectionCheckbox = [];
-        if (!newValue && this.rowSelection) {
+      subscription = prop.valueChanges.subscribe((newValue) => {
+        if (newValue === false && this.rowSelection) {
           this.rowSelectionType = 'radio';
         }
         else if(newValue && this.rowSelection) {
@@ -151,7 +157,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, D
         }
         this.cdRef.markForCheck();
       });
-      this.subscriptions.push(subsciption);
+      this.subscriptions.push(subscription);
     }
 
     const keyField = this.formProperty.findRoot().schema.widget.keyField;
@@ -159,17 +165,18 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, D
       this.keyField = keyField;
     }
     // Lookout for any changes to key field
-    subsciption = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
+    subscription = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
       const showFields = this.getShowFields();
       this.noHeader = showFields.some((f) => f.noHeader);
       this.cdRef.markForCheck();
     });
 
-    this.subscriptions.push(subsciption);
+    this.subscriptions.push(subscription);
 
-    subsciption = this.formProperty.valueChanges.subscribe((newValue) => {
+    subscription = this.formProperty.valueChanges.subscribe((newValue) => {
       this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(newValue);
     });
+    this.subscriptions.push(subscription);
   }
 
   /**
@@ -298,7 +305,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, D
   /**
    * Remove a given item, i.e. a row in the table.
    *
-   * Before calling parent class api to remove the item, we need to do some house keeping with respect to table's
+   * Before calling parent class api to remove the item, we need to do some housekeeping with respect to table's
    * selection (radio/checkbox) indexes.
    *
    * @param formProperty - The row represented by its form property.
@@ -335,11 +342,5 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, D
    * Possible method for handling row selections for checkboxes.
    */
   checkboxSelection(event) {
-  }
-
-  ngOnDestroy() {
-    this.subscriptions.forEach((s) => {
-      s.unsubscribe();
-    });
   }
 }

@@ -1,0 +1,36 @@
+{
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://snowstorm.ihtsdotools.org/fhir"
+        }
+      ],
+      "type": "choice",
+      "linkId": "1",
+      "text": "Item with SNOMED answer value set",
+      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20221231?fhir_vs=ecl%2F%3C%20429019009%20%7CFinding%20related%20to%20biological%20sex%20(finding)%7C%20MINUS%20%3C%3C%20302081005%20%7CFinding%20of%20sex%20of%20baby%20(finding)%7C"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
+        }
+      ],
+      "type": "choice",
+      "linkId": "2",
+      "text": "Item with non-snomed answer value set",
+      "answerValueSet": "http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions"
+    },
+    {
+      "type": "choice",
+      "linkId": "3",
+      "text": "Item with answer option (default)"
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "title": "SNOMED answer value set form",
+  "status": "draft"
+}

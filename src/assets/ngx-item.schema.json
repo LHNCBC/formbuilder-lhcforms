@@ -87,7 +87,7 @@
         "type": "object"
       },
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
+        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url'"]
       },
       "widget": {
         "id": "restrictions",
@@ -295,9 +295,7 @@
         "labelPosition": "left",
         "labelClasses": "col-sm-2",
         "controlClasses": "col-sm-10",
-        "noCollapseButton": true,
         "addButtonLabel": "Add new code",
-        "singleItem": true,
         "showFields": [
           {"field": "code", "col": 3, "nolabel": true},
           {"field": "system", "col": 4, "nolabel": true},
@@ -971,7 +969,7 @@
     },
     "__$answerOptionMethods": {
       "description": "Define predefined answers for the user to choose.",
-      "title": "Predefined answers",
+      "title": "Answer list source",
       "oneOf": [
         {
           "type": "string",
@@ -980,8 +978,13 @@
         },
         {
           "type": "string",
+          "enum": ["snomed-value-set"],
+          "title": "SNOMED answer value set"
+        },
+        {
+          "type": "string",
           "enum": ["value-set"],
-          "title": "Answer value set uri"
+          "title": "Answer value set URI"
         }
       ],
       "default": "answer-option",
@@ -1002,10 +1005,10 @@
       "pattern": "^\\S*$",
       "type": "string",
       "visibleIf": {
-        "/__$answerOptionMethods": ["value-set"]
+        "/__$answerOptionMethods": ["value-set", "snomed-value-set"]
       },
       "widget": {
-        "id": "url",
+        "id": "answer-value-set",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col textline-widget form-control form-control-sm"
@@ -1294,6 +1297,28 @@
           {"field": "valueCoding.__$score", "title": "Score", "col": 2, "nolabel": true},
           {"field": "valueReference", "col": 9, "nolabel": true}
         ]
+      }
+    },
+    "__$itemControl": {
+      "description": "Choose the type of control for the answer list. The default is a drop-down list, which works well for lists that aren't too large. For large lists, you can make it an autocomplete list, in which matching items will show up when the user starts typing, though some FHIR servers (e.g., the SNOMED server) might not return results until the user types a few characters.",
+      "title": "Choice type",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"],
+        "allOf": [
+          {
+            "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+          },
+          {
+            "__$answerOptionMethods": ["$EXP$ target.value != 'answer-option'"]
+          }
+        ]
+      },
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0 m-0"
       }
     },
     "__$terminologyServer": {
@@ -5068,6 +5093,12 @@
       "fields": ["answerOption"],
       "showFields": [
         { "field": "answerOption", "col": 12 }
+      ]
+    },
+    {
+      "fields": ["__$itemControl"],
+      "showFields": [
+        { "field": "__$itemControl", "col": 12 }
       ]
     },
     {
