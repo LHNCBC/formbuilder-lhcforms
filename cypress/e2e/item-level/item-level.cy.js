@@ -678,7 +678,7 @@ describe('Home page', () => {
       });
     });
 
-    it('should import with item having item-control extension', () => { //TODO - Extension order is not maintained, fix.
+    it('should import with item having item-control extension', () => {
       const icId = '#item_control___\\$itemControl';
       cy.uploadFile('item-control-sample.json', true);
       cy.get('#title').should('have.value', 'Item control sample form');

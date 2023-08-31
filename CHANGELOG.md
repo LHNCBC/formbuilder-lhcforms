@@ -6,6 +6,10 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Added
 - Added support for stu3 export and import.
 
+## [9.1.6] 2023-08-22
+### Changed
+- Updated the copy-lforms.js script to use the latest version (v34) of lforms.
+
 ## [9.1.5] 2023-08-08
 ### Changed
 - Changed code field to be multiple instances.
