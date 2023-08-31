@@ -14,8 +14,8 @@ export class DateUtil {
   // Copied from FHIR spec.
   static isoDateTimeRE   = /([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.([0-9]{1,9}))?)?)?(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)?)?)?/;
   // Modified from above to display local date/time. Keep matching indices the same
-  static localDateTimeRE = /([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])( ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.([0-9]{1,3}))?)?)?)?/;
-
+  static localDateTimeRE = /^\s*([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])( ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.([0-9]{1,3}))?)?)?)?\s*([aApP][mM])?\s*$/;
+  static dateRE = /^\s*([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?\s*$/;
   /**
    * Check the validity of the date object. Invalid date objects return false.
    * @param date - Date object.
@@ -30,7 +30,7 @@ export class DateUtil {
    */
   static isValidFormat(dateString: string): boolean {
     let ret = false;
-    if(this.localDateTimeRE.exec(dateString)) {
+    if(this.localDateTimeRE.test(dateString)) {
       ret = true;
     }
     return ret;
@@ -40,16 +40,18 @@ export class DateUtil {
    * Parse ISO string to DateTime structure.
    * @param isoDateString - Zulu time representation.
    */
-  static parseISOToDateTime(isoDateString: string): DateTime {
-    return DateUtil.parseToDateTime(isoDateString, DateUtil.isoDateTimeRE);
+  static parseISOToDateTime(isoDateString: string, dateOnly = false): DateTime {
+    const regex = dateOnly ? DateUtil.dateRE : DateUtil.isoDateTimeRE;
+    return DateUtil.parseToDateTime(isoDateString, regex);
   }
 
   /**
    * Parse local date string to DateTime structure.
    * @param localDateString - Local representation of datetime.
    */
-  static parseLocalToDateTime(localDateString: string): DateTime {
-    return DateUtil.parseToDateTime(localDateString, DateUtil.localDateTimeRE);
+  static parseLocalToDateTime(localDateString: string, dateOnly = false): DateTime {
+    const regex = dateOnly ? DateUtil.dateRE : DateUtil.localDateTimeRE;
+    return DateUtil.parseToDateTime(localDateString, regex);
   }
 
   /**
@@ -71,7 +73,7 @@ export class DateUtil {
       millis: NaN
     }
 
-    const date = dateString && dateString.trim() ? new Date(dateString) : null;
+    const date = dateString?.trim() ? new Date(dateString) : null;
     const isValid = DateUtil.isValidDate(date);
     if(isValid && matches && matches[timeInd]) {
         ret.dateStruct = {

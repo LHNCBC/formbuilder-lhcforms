@@ -22,7 +22,8 @@
                #d="ngbDatepicker"
                (blur)="suppressInvalidDate($event)"
         >
-        <button class="btn btn-outline-secondary py-0" (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
+        <button class="btn btn-outline-secondary py-0" [attr.aria-label]="'Date picker for '+schema.title"
+                (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
       </div>
 
       <ng-container *ngFor="let error of errors">

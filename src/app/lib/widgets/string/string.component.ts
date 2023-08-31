@@ -10,6 +10,8 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 })
 export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
 
+  // Replace standard error messages from schema validator with customized messages.
+  // Keys are error codes from the validator.
   modifiedMessages = {
     PATTERN: [
       {
@@ -65,6 +67,10 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
     });
   }
 
+  /**
+   * Replace standard schema validator error message with customized message.
+   * @param pattern - Pattern as specified in the schema to identify the replacement message.
+   */
   getModifiedErrorForPatternMismatch(pattern: string): string {
     const messageObj = this.modifiedMessages.PATTERN.find((el) => {
       return el.pattern === pattern;

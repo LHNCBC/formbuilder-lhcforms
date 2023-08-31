@@ -344,7 +344,7 @@ describe('Home page', () => {
 
         it('should not accept invalid dates', () => {
           // Pick a sample datetime and date widgets; date is datetime widget and approvalDate is date widget.
-          ['date', 'approvalDate'].forEach((widgetId) => {
+          ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
             const widgetSel = '#'+widgetId;
             cy.get(widgetSel).clear().type('2020-01-23').blur();
 
@@ -359,7 +359,41 @@ describe('Home page', () => {
             cy.questionnaireJSON().then((q) => {
               expect(q[widgetId]).to.be.undefined;
             });
-          })
+          });
+
+          ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            cy.get(widgetSel).clear().type('2020-01-02 10:');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('not.exist');
+            cy.get(widgetSel).type('ab');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+          });
+          ['date'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            cy.get(widgetSel).clear().type('2020-01-02 100');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+            cy.get(widgetSel).clear().type('2020-01-02 100');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}:10:10.1 am');
+            cy.get(widgetSel).parent().next('small.text-danger').should('not.exist');
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+            });
+          });
         });
 
       });

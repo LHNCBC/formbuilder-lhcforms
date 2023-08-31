@@ -7,7 +7,7 @@ import {faCalendar} from '@fortawesome/free-solid-svg-icons';
 @Injectable()
 export class LfbDateAdapter extends NgbDateAdapter<string> {
   fromModel(value: string | null): NgbDateStruct | null {
-    return DateUtil.parseISOToDateTime(value).dateStruct;
+    return DateUtil.parseISOToDateTime(value, true).dateStruct;
   }
 
   toModel(date: NgbDateStruct | null): string | null {
@@ -27,7 +27,7 @@ export class LfbDateAdapter extends NgbDateAdapter<string> {
 export class LfbDateParserFormatter extends NgbDateParserFormatter {
 
   parse(value: string): NgbDateStruct {
-    return DateUtil.parseLocalToDateTime(value).dateStruct;
+    return DateUtil.parseLocalToDateTime(value, true).dateStruct;
   }
 
   format(date: NgbDateStruct | null): string {
