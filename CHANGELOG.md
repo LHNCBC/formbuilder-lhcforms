@@ -10,6 +10,10 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Converted schema and layout json files to json5 format.
 - Refactored the widget configuration code for better organization of widgets defined in schema.
 
+## [9.1.6] 2023-08-22
+### Changed
+- Updated the copy-lforms.js script to use the latest version (v34) of lforms.
+
 ## [9.1.5] 2023-08-08
 ### Changed
 - Changed code field to be multiple instances.
