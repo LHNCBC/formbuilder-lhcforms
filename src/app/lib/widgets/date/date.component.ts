@@ -72,7 +72,7 @@ export class DateComponent extends StringComponent {
    */
   suppressInvalidDate(event: Event) {
     const inputEl = event.target as HTMLInputElement;
-    if(!DateUtil.isValidFormat(inputEl.value)) {
+    if(inputEl.classList.contains('ng-invalid')) {
       this.formProperty.setValue(null, false);
     }
   }

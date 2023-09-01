@@ -2,7 +2,7 @@
  * Helper class for date and datetime related functions.
  */
 import {NgbDateStruct, NgbTimeStruct} from '@ng-bootstrap/ng-bootstrap';
-import {format} from 'date-fns';
+import {format, parse, parseISO} from 'date-fns';
 
 export interface DateTime {
   dateStruct: NgbDateStruct;
@@ -29,20 +29,35 @@ export class DateUtil {
    * @param dateString - string representation of date.
    */
   static isValidFormat(dateString: string): boolean {
-    let ret = false;
-    if(this.localDateTimeRE.test(dateString)) {
-      ret = true;
+    let ret = true;
+    const yearIndex = 1;
+    const monthIndex = 5;
+    const dayIndex = 7;
+    const matches = DateUtil.localDateTimeRE.exec(dateString);
+    if(!matches) {
+      ret = false;
+    }
+    else if(matches[dayIndex]) {
+      // Verify date portion for invalid dates such as 2023-02-29.
+      ret = DateUtil.isValidDate(parse(`${matches[yearIndex]}-${matches[monthIndex]}-${matches[dayIndex]}`, 'yyyy-MM-dd', new Date()));
     }
     return ret;
   }
 
+  /**
+   * Validate ISO format
+   * @param isoString - ISO date string
+   */
+  static isValidISOFormat(isoString: string): boolean {
+    return DateUtil.isValidDate(parseISO(isoString));
+  }
   /**
    * Parse ISO string to DateTime structure.
    * @param isoDateString - Zulu time representation.
    */
   static parseISOToDateTime(isoDateString: string, dateOnly = false): DateTime {
     const regex = dateOnly ? DateUtil.dateRE : DateUtil.isoDateTimeRE;
-    return DateUtil.parseToDateTime(isoDateString, regex);
+    return DateUtil.parseToDateTime(isoDateString, regex, true);
   }
 
   /**
@@ -59,7 +74,7 @@ export class DateUtil {
    * @param dateString - Date string.
    * @param dateTimeRE - One of the two regular expression, for ISO or local
    */
-  static parseToDateTime(dateString: string, dateTimeRE: RegExp): DateTime {
+  static parseToDateTime(dateString: string, dateTimeRE: RegExp, isoFormat = false): DateTime {
     const matches = dateTimeRE.exec(dateString);
     const yearInd = 1;
     const monthInd = 5;
@@ -73,7 +88,8 @@ export class DateUtil {
       millis: NaN
     }
 
-    const date = dateString?.trim() ? new Date(dateString) : null;
+    const formatValidation = isoFormat ? DateUtil.isValidISOFormat : DateUtil.isValidFormat;
+    const date = dateString?.trim().length > 0 && formatValidation(dateString) ? new Date(dateString) : null;
     const isValid = DateUtil.isValidDate(date);
     if(isValid && matches && matches[timeInd]) {
         ret.dateStruct = {

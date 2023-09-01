@@ -342,7 +342,7 @@ describe('Home page', () => {
           });
         });
 
-        it('should not accept invalid dates', () => {
+        it('should accept valid but not invalid dates', () => {
           // Pick a sample datetime and date widgets; date is datetime widget and approvalDate is date widget.
           ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
             const widgetSel = '#'+widgetId;
@@ -377,6 +377,15 @@ describe('Home page', () => {
             cy.questionnaireJSON().then((q) => {
               expect(q[widgetId]).to.be.undefined;
             });
+
+            ['2023-11-31', '2023-02-29', '2023-02-30', '2023-02-31'].forEach((input) => {
+              cy.get(widgetSel).clear().type(input);
+              cy.get(widgetSel).parent().next('small.text-danger').should('have.text', 'Invalid date.');
+              cy.get(widgetSel).blur();
+              cy.questionnaireJSON().then((q) => {
+                expect(q[widgetId]).to.be.undefined;
+              });
+            });
           });
           ['date'].forEach((widgetId) => {
             const widgetSel = '#'+widgetId;
@@ -395,7 +404,6 @@ describe('Home page', () => {
             });
           });
         });
-
       });
     });
   });

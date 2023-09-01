@@ -28,9 +28,9 @@
                 (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
       </div>
 
-      <ng-container *ngFor="let error of errors">
+      <ng-container *ngFor="let error of errors ? Array.from(errors).reverse() : null">
         <small *ngIf="formProperty.value && error"
-               class="text-danger form-text" role="alert"
+               class="text-danger form-text pe-1" role="alert"
         >{{error.modifiedMessage || error.originalMessage}}</small>
       </ng-container>
     </div>

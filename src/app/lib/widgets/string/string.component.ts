@@ -24,11 +24,11 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
       },       // code
       {
         pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$',
-        message: 'Valid format is yyyy-MM-dd'
+        message: 'Valid format is yyyy-MM-dd.'
       }, // Date
       {
         pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$',
-        message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM)'
+        message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM).'
       } // Datetime
     ],
     MIN_LENGTH: null,
@@ -36,6 +36,7 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   }
   errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
 
+  Array = Array; // To use in templates.
   ngOnInit() {
     super.ngOnInit();
     this.controlClasses = this.controlClasses || 'form-control form-control-sm';
