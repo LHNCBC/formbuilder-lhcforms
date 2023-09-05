@@ -271,7 +271,6 @@ describe('Home page', () => {
       });
     });
 
-
     it('should expand/collapse advanced fields panel', () => {
       cy.tsUrl().should('not.be.visible');
       cy.advancedFields().click();
@@ -336,6 +335,118 @@ describe('Home page', () => {
             valueUrl: 'http://a.b'
           }]
         );
+      });
+
+      it('should import with advanced fields', () => {
+        cy.readFile('cypress/fixtures/form-level-advanced-fields.json').then((json) => {
+          cy.uploadFile('form-level-advanced-fields.json');
+          cy.get('#title').should('have.value', 'Advanced fields sample');
+          cy.questionnaireJSON().then((previewJson) => {
+            ['implicitRules', 'version', 'name', 'date', 'publisher', 'copyright', 'approvalDate', 'lastReviewDate']
+              .forEach((f) => {
+                expect(previewJson[f]).to.be.deep.equal(json[f]);
+              })
+          });
+        });
+      });
+
+      describe('Date and Datetime related fields.', () => {
+        const dateRE = /^\d{4}-\d{2}-\d{2}$/;
+        const dateTimeRE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} (AM|PM)$/;
+        const dateTimeZuluRE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+        it('should test revised date (date time picker)', () => {
+          cy.get('#date+button').as('dateBtn').click();
+          cy.get('#date').as('dateInput');
+          cy.get('ngb-datepicker').should('be.visible');
+          cy.get('#ignoreTimeCheckBox').as('includeTime').should('be.checked');
+          cy.contains('ngb-datepicker button', 'Today').click();
+          cy.get('@dateInput').should('have.prop', 'value').should('match', dateRE);
+          cy.contains('ngb-datepicker button', 'Now').as('now').click();
+          cy.get('@dateInput').should('have.prop', 'value').should('match', dateTimeRE);
+          cy.get('@includeTime').click();
+          cy.get('ngb-timepicker fieldset').should('be.disabled');
+          cy.get('@dateInput').should('have.prop', 'value').should('match', dateRE);
+          cy.get('@now').click();
+          cy.get('@dateInput').should('have.prop', 'value').should('match', dateTimeRE);
+          cy.questionnaireJSON().then((previewJson) => {
+            expect(previewJson.date).to.match(dateTimeZuluRE);
+          });
+        });
+
+        it('should test approval date (date picker)', () => {
+          cy.get('#approvalDate+button').as('approvalDt').click();
+          cy.get('ngb-datepicker').should('be.visible');
+          cy.contains('ngb-datepicker button', 'Today').click();
+          cy.get('#approvalDate').as('approvalDtInput').should('have.prop', 'value').should('match', dateRE);
+          cy.get('@approvalDtInput').clear().type('2021-01-01');
+          cy.questionnaireJSON().then((previewJson) => {
+            expect(previewJson.approvalDate).to.be.equal('2021-01-01');
+          });
+        });
+
+        it('should accept valid but not invalid dates', () => {
+          // Pick a sample datetime and date widgets; date is datetime widget and approvalDate is date widget.
+          ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            cy.get(widgetSel).clear().type('2020-01-23').blur();
+
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.equal('2020-01-23');
+            });
+            cy.get(widgetSel).clear().type('abc').blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+            cy.get(widgetSel).clear().type('202').blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+          });
+
+          ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            cy.get(widgetSel).clear().type('2020-01-02 10:');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('not.exist');
+            cy.get(widgetSel).type('ab');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+
+            ['2023-11-31', '2023-02-29', '2023-02-30', '2023-02-31'].forEach((input) => {
+              cy.get(widgetSel).clear().type(input);
+              cy.get(widgetSel).parent().next('small.text-danger').should('have.text', 'Invalid date.');
+              cy.get(widgetSel).blur();
+              cy.questionnaireJSON().then((q) => {
+                expect(q[widgetId]).to.be.undefined;
+              });
+            });
+          });
+          ['date'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            cy.get(widgetSel).clear().type('2020-01-02 100');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+            cy.get(widgetSel).clear().type('2020-01-02 100');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}:10:10.1 am');
+            cy.get(widgetSel).parent().next('small.text-danger').should('not.exist');
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+            });
+          });
+        });
       });
     });
   });

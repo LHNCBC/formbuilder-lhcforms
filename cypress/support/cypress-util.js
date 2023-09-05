@@ -1,6 +1,6 @@
 import {Util} from '../../src/app/lib/util';
 import {ExtensionDefs} from "../../src/app/lib/extension-defs";
-import jsonPointer from "jsonpointer";
+import {JsonPointer} from "json-ptr";
 
 export class CypressUtil {
   /**
@@ -50,7 +50,7 @@ export class CypressUtil {
    */
   static assertValueInQuestionnaire(ptrInQuestionnaire, expectedValue) {
     cy.questionnaireJSON().should((q) => {
-      expect(jsonPointer.get(q, ptrInQuestionnaire)).to.deep.equal(expectedValue);
+      expect(JsonPointer.get(q, ptrInQuestionnaire)).to.deep.equal(expectedValue);
     });
   }
 
@@ -63,7 +63,7 @@ export class CypressUtil {
    */
   static assertExtensionsInQuestionnaire(extensionPtrInQuestionnaire, matchingExtUrl, expectedValue) {
     cy.questionnaireJSON().should((q) => {
-      const extensions = jsonPointer.get(q, extensionPtrInQuestionnaire).filter((e) => e.url === matchingExtUrl);
+      const extensions = JsonPointer.get(q, extensionPtrInQuestionnaire).filter((e) => e.url === matchingExtUrl);
       expect(extensions).to.deep.equal(expectedValue);
     });
   };

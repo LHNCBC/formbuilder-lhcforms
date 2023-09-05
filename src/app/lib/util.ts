@@ -7,6 +7,8 @@ import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import copy from 'fast-copy';
+import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {DateUtil} from './date-util';
 
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
@@ -441,5 +443,38 @@ export class Util {
     return text?.length > limit ? (text.substring(0, limit).trim() + '...') : text;
   }
 
+  /**
+   * Date type validator. Flags error for invalid dates such as 2023-11-31.
+   * @param value - value from formProperty, which is in ISO format.
+   * @param formProperty - FormProperty of the field.
+   */
+  static dateValidator(value: string, formProperty: FormProperty): any [] {
+    let errors: any[] = [];
+    if(value?.trim().length > 0 && !DateUtil.isValidISOFormat(value)) {
+        const errorCode = 'INVALID_DATE';
+        const err: any = {};
+        err.code = errorCode;
+        err.path = `#${formProperty.canonicalPathNotation}`;
+        err.message = 'Invalid date.';
+        err.params = [value];
+        errors.push(err);
+    }
+    if(errors.length) {
+      formProperty.extendErrors(errors);
+    }
+    else {
+      errors = null;
+    }
+    return errors;
+  }
+
+  /**
+   * Validator for datetime type. For now passing through the date validator.
+   * @param value - formProperty value in ISO format.
+   * @param formProperty - FormProperty of the field.
+   */
+  static dateTimeValidator(value: string, formProperty: FormProperty): any [] {
+    return Util.dateValidator(value, formProperty);
+  }
 
 }

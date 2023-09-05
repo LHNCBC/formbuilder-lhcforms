@@ -37,6 +37,9 @@ import {NumberComponent} from './widgets/number/number.component';
 import {TerminologyServerComponent} from './widgets/terminology-server/terminology-server.component';
 import {AnswerValueSetComponent} from './widgets/answer-value-set/answer-value-set.component';
 import {ItemControlComponent} from './widgets/item-control/item-control.component';
+import {DateComponent} from './widgets/date/date.component';
+import {TextAreaComponent} from './widgets/textarea/textarea.component';
+import {DatetimeComponent} from './widgets/datetime/datetime.component';
 
 
 @Injectable()
@@ -48,6 +51,9 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('grid', GridComponent);
     this.register('table', TableComponent);
     this.register('string', StringComponent);
+    this.register('textarea', TextAreaComponent);
+    this.register('date', DateComponent);
+    this.register('datetime', DatetimeComponent);
     this.register('url', StringComponent);
     this.register('select', SelectComponent);
     this.register('checkbox', CheckboxComponent);

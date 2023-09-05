@@ -1,0 +1,102 @@
+{
+  "formLayout": {
+    "basic": [
+      {
+        "showFields": [
+          { "field": "title", "col": 12 },
+          { "field": "__$codeYesNo", "col": 12 },
+          { "field": "code", "col": 12 },
+          { "field": "status", "col": 12},
+          { "field": "url", "col": 12},
+          { "field": "description", "col": 12},
+          { "field": "purpose", "col": 12}
+        ]
+      }
+    ],
+    "advanced": [
+      {
+        "showFields": [
+          { "field": "__$terminologyServer", "col": 12},
+          { field:  "implicitRules", col:  12},
+          { field:  "version", col:  12},
+          { field:  "name", col:  12},
+          { field:  "date", col:  12},
+          { field:  "publisher", col:  12},
+          { field:  "copyright", col:  12},
+          { field:  "approvalDate", col:  12},
+          { field:  "lastReviewDate", col:  12}
+        ]
+      }
+    ]
+  },
+  overridePropertyLabels: {
+    '/properties/name': 'Questionnaire name',
+    '/properties/date': 'Revision date',
+  },
+  // Specify widget layout.
+  // id is widget schema registry defined in lforms-widget-registry.ts
+  // Label classes and control classes are used in the widget templates to fine tune widget layout positions
+  widgets: {
+    inputBox: {
+      id: "string",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 textline-widget form-control"
+    },
+    textArea: {
+      id: "textarea",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 textline-widget form-control"
+    },
+    inputDate: {
+      id: "date",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd'
+    },
+    inputDateTime: {
+      id: "datetime",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
+    __$terminologyServer: {
+      "id": "terminology-server",
+      "placeholder": "Enter url for preferred terminology server",
+      "note": "You may wish to set this if you want to provide an answer value set for any item in this questionnaire.",
+      "labelPosition": "left",
+      "labelWidthClass": "col-sm-2",
+      "controlWidthClass": "col-sm-10"
+    }
+  },
+  // Map property: Each widget type is mapped to fields with json pointers of its schema.
+  widgetsMap: {
+    // List of fields implementing this widget.
+    inputBox: [
+      '/properties/url',
+      '/properties/implicitRules',
+      '/properties/version',
+      '/properties/title',
+      '/properties/name',
+      '/properties/publisher',
+      '/properties/description',
+      '/properties/purpose',
+    ],
+    textArea: [
+      '/properties/copyright',
+    ],
+    inputDate: [
+      '/properties/approvalDate',
+      '/properties/lastReviewDate'
+    ],
+    inputDateTime: [
+      '/properties/date'
+    ],
+    __$terminologyServer: [
+      '/properties/__$terminologyServer'
+    ]
+  }
+}

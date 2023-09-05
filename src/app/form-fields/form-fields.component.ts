@@ -71,7 +71,10 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
         this.extensionsService.setExtensions(arrayProperty);
       }
       return null;
-    }
+    },
+    '/date': Util.dateTimeValidator.bind(this),
+    '/approvalDate': Util.dateValidator.bind(this),
+    '/lastReviewDate': Util.dateValidator.bind(this)
   };
 
   @Output()

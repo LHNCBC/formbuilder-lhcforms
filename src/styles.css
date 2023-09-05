@@ -11,6 +11,12 @@ mat-tab-group.preview-json-tabs mat-tab-header {
 .form-control > p {
   display:none !important;
 }
+
+.form-control {
+  height: calc(1.0em + .75rem + 2px);
+  padding: 0 3px 0 3px;
+}
+
 .add-scrolling {
   max-height: 200px;
   max-width: 240%;
