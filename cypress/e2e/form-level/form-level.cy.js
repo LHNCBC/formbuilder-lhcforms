@@ -346,10 +346,12 @@ describe('Home page', () => {
           // Pick a sample datetime and date widgets; date is datetime widget and approvalDate is date widget.
           ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
             const widgetSel = '#'+widgetId;
-            cy.get(widgetSel).clear().type('2020-01-23').blur();
+            ['2020', '2020-06', '2020-06-23'].forEach((validDate) => {
+              cy.get(widgetSel).clear().type(validDate).blur();
 
-            cy.questionnaireJSON().then((q) => {
-              expect(q[widgetId]).to.be.equal('2020-01-23');
+              cy.questionnaireJSON().then((q) => {
+                expect(q[widgetId]).to.be.equal(validDate);
+              });
             });
             cy.get(widgetSel).clear().type('abc').blur();
             cy.questionnaireJSON().then((q) => {

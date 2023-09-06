@@ -30,6 +30,7 @@ export class DateUtil {
    */
   static isValidFormat(dateString: string): boolean {
     let ret = true;
+    // Regular expression matching indexes.
     const yearIndex = 1;
     const monthIndex = 5;
     const dayIndex = 7;
@@ -51,6 +52,7 @@ export class DateUtil {
   static isValidISOFormat(isoString: string): boolean {
     return DateUtil.isValidDate(parseISO(isoString));
   }
+
   /**
    * Parse ISO string to DateTime structure.
    * @param isoDateString - Zulu time representation.
@@ -76,6 +78,7 @@ export class DateUtil {
    */
   static parseToDateTime(dateString: string, dateTimeRE: RegExp, isoFormat = false): DateTime {
     const matches = dateTimeRE.exec(dateString);
+    // Regular expression matching indexes.
     const yearInd = 1;
     const monthInd = 5;
     const dayInd = 7;
@@ -91,7 +94,8 @@ export class DateUtil {
     const formatValidation = isoFormat ? DateUtil.isValidISOFormat : DateUtil.isValidFormat;
     const date = dateString?.trim().length > 0 && formatValidation(dateString) ? new Date(dateString) : null;
     const isValid = DateUtil.isValidDate(date);
-    if(isValid && matches && matches[timeInd]) {
+    if(isValid && matches) {
+      if(matches[timeInd]) {
         ret.dateStruct = {
           year: date.getFullYear(),
           month: date.getMonth() + 1,
@@ -103,13 +107,14 @@ export class DateUtil {
           second: date.getSeconds()
         }
         ret.millis = parseInt(matches[millisInd], 10);
-    }
-    else if(isValid && matches) {
-      ret.dateStruct = {
-        year: matches[yearInd] ? parseInt(matches[yearInd], 10) : null,
-        month: matches[monthInd] ? parseInt(matches[monthInd], 10) : null,
-        day: matches[dayInd] ? parseInt(matches[dayInd], 10) : null
-      };
+      }
+      else {
+        ret.dateStruct = {
+          year: matches[yearInd] ? parseInt(matches[yearInd], 10) : null,
+          month: matches[monthInd] ? parseInt(matches[monthInd], 10) : null,
+          day: matches[dayInd] ? parseInt(matches[dayInd], 10) : null
+        };
+      }
     }
 
     return ret;
