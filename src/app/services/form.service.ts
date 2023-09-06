@@ -65,6 +65,14 @@ export class FormService {
     this._itemEditorSchema = itemEditorSchema;
   }
 
+  /**
+   * Override schema.widget with widget definitions from layout.
+   * @param schema - Schema object typically from *-schema.json file.
+   * @param widgets - widgets definitions from layout files.
+   * @param widgetsMap - An object mapping widget type to list of json pointers to select fields in schema. The selected field's widget
+   *   definition is replaced with widget definitions from the layout.
+   *   See src/assets/*layout.json5 and src/assets/*schema.json5 files for more information.
+   */
   overrideSchemaWidgetFromLayout(schema, {widgets, widgetsMap}) {
     if(!widgetsMap || !widgets) {
       return;
@@ -84,6 +92,12 @@ export class FormService {
     });
   }
 
+  /**
+   * Override field labels with custom labels. By default, title attribute of the field is used as label. To override default label,
+   * custom labels are defined in layout file.
+   * @param schema - Schema object.
+   * @param overridePropertyLabels - An object defined in layout file.
+   */
   overrideFieldLabelsFromLayout(schema, {overridePropertyLabels}) {
     if(!overridePropertyLabels) {
       return;
