@@ -450,7 +450,8 @@ export class Util {
    */
   static dateValidator(value: string, formProperty: FormProperty): any [] {
     let errors: any[] = [];
-    if(value?.trim().length > 0 && !DateUtil.isValidISOFormat(value)) {
+    const dateValidation = DateUtil.validateDate(value);
+    if(value?.trim().length > 0 && !dateValidation.validDate && dateValidation.validFormat) {
         const errorCode = 'INVALID_DATE';
         const err: any = {};
         err.code = errorCode;
