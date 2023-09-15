@@ -23,7 +23,7 @@ export class CypressUtil {
       formService = service;
       return CypressUtil.getBasePageComponent().its('formValue');
     }).then((form) => {
-      return cy.wrap(formService.convertR4(Util.convertToQuestionnaireJSON(form), format));
+      return cy.wrap(formService.convertFromR4(Util.convertToQuestionnaireJSON(form), format));
     });
   }
 
