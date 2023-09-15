@@ -14,7 +14,7 @@ export class DateUtil {
   // Copied from FHIR spec.
   static isoDateTimeRE   = /([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.([0-9]{1,9}))?)?)?(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)?)?)?/;
   // Modified from above to display local date/time. Keep matching indices the same
-  static localDateTimeRE = /^\s*([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])( ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.([0-9]{1,3}))?)?)?)?\s*([aApP][mM])?\s*$/;
+  static localDateTimeRE = /^\s*([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])( ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.([0-9]{1,3}))?)?)?)?\s*([aApP]\.?[mM]\.?)?\s*$/;
   static dateRE = /^\s*([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?\s*$/;
   /**
    * Check the validity of the date object. Invalid date objects return false.
@@ -24,34 +24,6 @@ export class DateUtil {
     return date && !isNaN(date.getTime());
   }
 
-  /**
-   * Check if it is a valid date format.
-   * @param dateString - string representation of date.
-   */
-  static isValidFormat(dateString: string): boolean {
-    let ret = true;
-    // Regular expression matching indexes.
-    const yearIndex = 1;
-    const monthIndex = 5;
-    const dayIndex = 7;
-    const matches = DateUtil.localDateTimeRE.exec(dateString);
-    if(!matches) {
-      ret = false;
-    }
-    else if(matches[dayIndex]) {
-      // Verify date portion for invalid dates such as 2023-02-29.
-      ret = DateUtil.isValidDate(parse(`${matches[yearIndex]}-${matches[monthIndex]}-${matches[dayIndex]}`, 'yyyy-MM-dd', new Date()));
-    }
-    return ret;
-  }
-
-  /**
-   * Validate ISO format
-   * @param isoString - ISO date string
-   */
-  static isValidISOFormat(isoString: string): boolean {
-    return DateUtil.isValidDate(parseISO(isoString));
-  }
 
   /**
    * Parse ISO string to DateTime structure.
@@ -91,10 +63,9 @@ export class DateUtil {
       millis: NaN
     }
 
-    const formatValidation = isoFormat ? DateUtil.isValidISOFormat : DateUtil.isValidFormat;
-    const date = dateString?.trim().length > 0 && formatValidation(dateString) ? new Date(dateString) : null;
-    const isValid = DateUtil.isValidDate(date);
-    if(isValid && matches) {
+    const dateValidation = DateUtil.validateDate(dateString);
+    const date = dateValidation.date;
+    if(dateValidation.validDate && matches) {
       if(matches[timeInd]) {
         ret.dateStruct = {
           year: date.getFullYear(),
@@ -172,6 +143,58 @@ export class DateUtil {
 
       ret = format(DateUtil.getDate(dateTime), formatSpec);
     }
+    return ret;
+  }
+
+  /**
+   * Check date string and return validity flags and parsed date.
+   *
+   * @param dateString - String representation of a date.
+   */
+  static validateDate(dateString: string): {date: Date, validDate: boolean, validFormat: boolean } {
+    const ret = {date: new Date(NaN), validFormat: false, validDate: false};
+    ret.date = parseISO(dateString);
+    ret.validDate = DateUtil.isValidDate(ret.date);
+    ret.validFormat = DateUtil.isValidDate(new Date(dateString));
+    if(!ret.validDate) {
+      // Not ISO format, try local
+      ret.date = DateUtil.parseForValidDate(dateString);
+      ret.validDate = DateUtil.isValidDate(ret.date);
+      ret.validFormat = ret.validDate;
+      if(!ret.validDate) {
+        ret.validFormat = DateUtil.isValidDate(new Date(dateString));
+      }
+    }
+    return ret;
+  }
+
+  /**
+   * Parse to exclude invalid dates such as 2/30. The regular date constructor returns next valid date,
+   * which is not helpful to identify invalid dates.
+   * @param dateString - String representation of datetime.
+   * @return - Date object.
+   */
+  static parseForValidDate(dateString: string): Date {
+    let ret = new Date(NaN);
+    if(!dateString?.trim().length) {
+      return ret;
+    }
+    // Extract date portion and check it with date-fns.parse() for invalid dates such as 2/30
+    const matches = dateString.trim().match(/^(\d{4}(-\d{1,2}(-\d{1,2})?)?)/);
+    const datePortion = matches?.[1];
+
+    if(datePortion && matches[3]) {
+      // Day is specified. Check with date-fns.parse().
+      ret = parse(datePortion, 'yyyy-M-d', new Date());
+      if(DateUtil.isValidDate(ret)) {
+        // Date portion is valid, check the whole string.
+        ret = new Date(dateString);
+      }
+    }
+    else { // If the day is not specified, date constructor is okay.
+      ret = new Date(dateString);
+    }
+
     return ret;
   }
 }

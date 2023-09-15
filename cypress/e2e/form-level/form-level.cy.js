@@ -57,7 +57,7 @@ describe('Home page accept Terms of Use notices', () => {
 });
 
 describe('Home page', () => {
-  before(() => {
+  beforeEach(() => {
     // Cypress starts out with a blank slate for each test
     // so we must tell it to visit our website with the `cy.visit()` command.
     // Since we want to visit the same URL at the start of all our tests,
@@ -162,13 +162,10 @@ describe('Home page', () => {
   });
 
   describe('Form level fields', () => {
-    before(() => {
+    beforeEach(() => {
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
-    });
-
-    beforeEach(() => {
       cy.resetForm();
       cy.get('[id^="booleanRadio_true"]').as('codeYes');
       cy.get('[id^="booleanRadio_false"]').as('codeNo');
@@ -454,14 +451,11 @@ describe('Home page', () => {
   });
 
   describe('User specified FHIR server dialog', () => {
-    before(() => {
+    beforeEach(() => {
       cy.loadHomePage();
       cy.contains('button', 'Continue').click();
       cy.contains('button', 'Import').click();
       cy.contains('button', 'Import from a FHIR server...').click();
-    });
-
-    beforeEach(() => {
       cy.contains('div.modal-footer button', 'Add your FHIR server').click();
       cy.get('#urlInput').as('inputUrl');
       cy.contains('button', 'Validate').as('validate');
@@ -509,13 +503,10 @@ describe('Home page', () => {
   });
 
   describe('Warning dialog when replacing current form', () => {
-    before(() => {
+    beforeEach(() => {
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.contains('button', 'Continue').click();
-    })
-
-    beforeEach(() => {
       cy.resetForm();
       cy.uploadFile('answer-option-sample.json');
     });

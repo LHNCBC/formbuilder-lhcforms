@@ -86,7 +86,7 @@
     "@webcomponents/webcomponentsjs": "^2.7.0",
     "angular-http-server": "^1.11.1",
     "codelyzer": "^6.0.2",
-    "cypress": "^10.11.0",
+    "cypress": "^13.2.0",
     "cypress-fail-on-console-error": "^4.0.2",
     "jasmine-core": "^4.6.0",
     "jasmine-spec-reporter": "~7.0.0",

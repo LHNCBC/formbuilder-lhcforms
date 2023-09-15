@@ -9,16 +9,6 @@ const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition
 const ucumUrl = 'http://unitsofmeasure.org';
 
 describe('Home page', () => {
-  before(() => {
-    // Cypress starts out with a blank slate for each test
-    // so we must tell it to visit our website with the `cy.visit()` command.
-    // Since we want to visit the same URL at the start of all our tests,
-    // we include it in our beforeEach function so that it runs before each test
-    cy.loadHomePage();
-    cy.get('input[type="radio"][value="scratch"]').click();
-    cy.get('button').contains('Continue').click();
-  })
-
   describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
@@ -32,19 +22,17 @@ describe('Home page', () => {
       }
     }];
 
-    before(() => {
-      cy.get('button').contains('Create questions').click();
-    });
-
     beforeEach(() => {
-      cy.resetForm();
+      cy.loadHomePage();
+      cy.get('input[type="radio"][value="scratch"]').click();
+      cy.get('button').contains('Continue').click();
       cy.contains('button', 'Create questions').click();
       cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
       cy.get('#type').as('type');
       cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('#__\\$helpText').as('helpText');
-      cy.contains('div', 'Question code').should('be.visible').as('codeOption');
+      cy.contains('div', 'Question code').as('codeOption').should('be.visible');
       cy.get('@codeOption').find('[for^="booleanRadio_true"]').as('codeYes'); // Radio label for clicking
       cy.get('@codeOption').find('[for^="booleanRadio_false"]').as('codeNo'); // Radio label for clicking
       cy.get('@codeOption').find('[id^="booleanRadio_true"]').as('codeYesRadio'); // Radio input for assertions
@@ -573,8 +561,8 @@ describe('Home page', () => {
 
       // First item is with SNOMED CT URI.
       cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
-      cy.get('lfb-answer-option').as('answerOption').should('not.exist');
-      cy.get('#answerValueSet_non-snomed').as('nonSnomedUrl').should('not.exist');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').should('not.exist');
 
       cy.get('#answerValueSet_ecl').as('ecl').should('contain.value',decodedValueTextPart);
       cy.get('#answerValueSet_edition').as('edition')
@@ -592,7 +580,7 @@ describe('Home page', () => {
       cy.get('@ecl').should('not.exist');
       cy.get('@edition').should('not.exist');
       cy.get('@version').should('not.exist');
-      cy.get('@answerOption').should('not.exist');
+      cy.get('lfb-answer-option').should('not.exist');
 
       cy.clickTreeNode('Item with answer option');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
@@ -600,7 +588,7 @@ describe('Home page', () => {
       cy.get('@ecl').should('not.exist');
       cy.get('@edition').should('not.exist');
       cy.get('@version').should('not.exist');
-      cy.get('@nonSnomedUrl').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').should('not.exist');
 
 
       cy.clickTreeNode('Item with SNOMED');
@@ -1375,7 +1363,9 @@ describe('Home page', () => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.resetForm();
+      cy.loadHomePage();
+      cy.get('input[type="radio"][value="scratch"]').click();
+      cy.get('button').contains('Continue').click();
       cy.uploadFile(sampleFile, false);
       cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
       cy.contains('button', 'Edit questions').click();
@@ -1411,13 +1401,11 @@ describe('Home page', () => {
 });
 
 describe('Accepting only LOINC terms of use', () => {
-  before(() => {
+  beforeEach(() => {
     cy.loadHomePageWithLoincOnly();
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
-  });
-  beforeEach(() => {
     cy.resetForm()
     cy.get('button').contains('Create questions').click();
   });
