@@ -390,7 +390,7 @@ export class FormService {
    * @param fhirQ - Given questionnaire.
    * @param version -  desired format, such as STU3
    */
-  convertR4(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
+  convertFromR4(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
     let ret = fhirQ;
     if(version !== 'R4') {
       ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, version,

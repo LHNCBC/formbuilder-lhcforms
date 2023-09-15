@@ -20,7 +20,7 @@
              <mat-tab>
                <ng-template matTabLabel>{{ fmt }} Version</ng-template>
                <ng-template matTabContent>
-                 <pre class="fix-pre {{fmt}}">{{ formService.convertR4(data?.questionnaire, fmt) | json }}</pre>
+                 <pre class="fix-pre {{fmt}}">{{ formService.convertFromR4(data?.questionnaire, fmt) | json }}</pre>
                </ng-template>
              </mat-tab>
            </ng-container>

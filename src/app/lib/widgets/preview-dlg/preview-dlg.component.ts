@@ -41,6 +41,6 @@ export class PreviewDlgComponent {
    * @param version - 'STU3' | 'R4' and other defined version types in LForms.
    */
   getFormat(version = 'R4') {
-    return this.formService.convertR4(this.data.questionnaire, version);
+    return this.formService.convertFromR4(this.data.questionnaire, version);
   }
 }

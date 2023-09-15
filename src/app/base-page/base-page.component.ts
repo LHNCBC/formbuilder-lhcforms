@@ -309,7 +309,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
    * 'R4' is assumed if not specified.
    */
   saveToFile(exportVersion = 'R4') {
-    const questionnaire = this.formService.convertR4(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
+    const questionnaire = this.formService.convertFromR4(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
     const content = this.toString(questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
     const formName = questionnaire.title;
