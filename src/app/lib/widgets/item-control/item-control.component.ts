@@ -3,6 +3,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 import {ExtensionsService} from '../../../services/extensions.service';
 import {FormService} from '../../../services/form.service';
 import {Subscription} from 'rxjs';
+import fhir from 'fhir/r4';
 
 @Component({
   selector: 'lfb-item-control',
@@ -12,24 +13,35 @@ import {Subscription} from 'rxjs';
 export class ItemControlComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   static itemControlUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
 
-  static autoCompleteCoding = {
+  Object = Object;
+  autoCompleteCoding = {
     code: 'autocomplete',
     display: 'Auto-complete',
     system: 'http://hl7.org/fhir/questionnaire-item-control'
   };
 
-  static itemControlExtension = {
+  itemControlExtension = {
     url: ItemControlComponent.itemControlUrl,
     valueCodeableConcept: {
-      coding: [ItemControlComponent.autoCompleteCoding]
+      coding: [this.autoCompleteCoding]
     }
   }
 
+  optionList = {
+    'drop-down': 'Drop-down',
+    'radio-button': 'Radio button',
+    'check-box': 'Check box',
+    autocomplete: 'Autocomplete'
+  };
+
+  option = 'drop-down';
   subscriptions: Subscription [] = [];
   autoComplete = false;
   readonly = false;
   // TODO - Revisit the text
   label = 'Make the answer list an autocomplete input control.';
+
+  extensionJson = '';
 
   constructor(private extensionsService: ExtensionsService, private formService: FormService) {
     super();
@@ -42,10 +54,26 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    const sub = this.formService.formReset$.subscribe(() => {
+    let sub = this.formService.formReset$.subscribe(() => {
       this.autoComplete = this.hasAutoCompleteExt();
+      this.option = this.getOption();
     });
     this.subscriptions.push(sub);
+    sub = this.extensionsService.extensionsObservable.subscribe((extensions) => {
+      this.extensionJson = JSON.stringify(extensions, null, 2);
+    });
+    this.subscriptions.push(sub);
+  }
+
+
+  getItemControlExtension(): fhir.Extension {
+    const exts = this.extensionsService.getExtensionsByUrl(ItemControlComponent.itemControlUrl);
+    return exts ? exts[0] : null;
+  }
+
+  getOption() {
+    const ext = this.getItemControlExtension();
+    return ext ? ext.valueCodeableConcept.coding[0].code : null;
   }
 
 
@@ -81,6 +109,25 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     }
   }
 
+  updateItemControlExt(option: string) {
+    if(!option || option === 'drop-down') {
+      this.removeAutoCompleteExt();
+    }
+    else {
+      this.itemControlExtension.valueCodeableConcept.coding[0].code = option;
+      this.itemControlExtension.valueCodeableConcept.coding[0].display = this.optionList[option];
+      const ext = this.getItemControlExtension();
+      if(!ext) {
+        this.itemControlExtension.valueCodeableConcept.coding[0].code = option;
+        this.itemControlExtension.valueCodeableConcept.coding[0].display = this.optionList[option];
+        this.addAutoCompleteExt();
+      }
+      else {
+        ext.valueCodeableConcept.coding[0].code = option;
+        ext.valueCodeableConcept.coding[0].display = this.optionList[option];
+      }
+    }
+  }
   /**
    * Add autocomplete extension, only if it does not exist.
    */
@@ -97,7 +144,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
         this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
       }
     }
-    this.extensionsService.addExtension(ItemControlComponent.itemControlExtension, 'valueCodeableConcept');
+    this.extensionsService.addExtension(this.itemControlExtension, 'valueCodeableConcept');
   }
 
   /**

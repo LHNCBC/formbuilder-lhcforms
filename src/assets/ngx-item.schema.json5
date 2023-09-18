@@ -1318,7 +1318,7 @@
         "id": "item-control",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col p-0 m-0"
+        "controlClasses": "col-auto btn-group btn-group-sm p-0"
       }
     },
     "__$terminologyServer": {
