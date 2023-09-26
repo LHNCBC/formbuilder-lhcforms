@@ -139,15 +139,30 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
         const selectedUnit = data.list.find((unit) => {
           return unit[0] === data.item_code;
         });
-        this.extensionsService.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
-          UnitsComponent.ucumSystemUrl, data.item_code, selectedUnit[1]), 'valueCoding');
+        this.updateUnits(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+          UnitsComponent.ucumSystemUrl, data.item_code, selectedUnit[1]));
       }
       else {
-        this.extensionsService.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
-          null, data.final_val, data.final_val), 'valueCoding');
+        this.updateUnits(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+          null, data.final_val, data.final_val));
       }
     });
 
+  }
+
+
+  /**
+   * Update unit extensions for integer/decimal and quantity types.
+   *
+   * @param unitExt - Extension object representing the appropriate unit extension.
+   */
+  updateUnits(unitExt: fhir.Extension) {
+    if(this.dataType === 'integer' || this.dataType === 'decimal') {
+      this.extensionsService.resetExtension(unitExt.url, unitExt, 'valueCoding', false);
+    }
+    else if(this.dataType === 'quantity') {
+      this.extensionsService.addExtension(unitExt, 'valueCoding');
+    }
   }
 
 
