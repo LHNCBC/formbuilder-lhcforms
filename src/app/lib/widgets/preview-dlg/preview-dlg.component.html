@@ -15,8 +15,8 @@
          View Questionnaire JSON
        </ng-template>
        <ng-template matTabContent>
-         <mat-tab-group class="preview-json-tabs" [mat-stretch-tabs]="false">
-           <ng-container  *ngFor="let fmt of ['R4', 'STU3']">
+         <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false">
+           <ng-container *ngFor="let fmt of ['R4', 'STU3']">
              <mat-tab>
                <ng-template matTabLabel>{{ fmt }} Version</ng-template>
                <ng-template matTabContent>

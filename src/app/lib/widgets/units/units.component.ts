@@ -69,7 +69,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
       'Name',
       'Guidance'
     ],
-    valueCols: [0]
+    valueCols: [1]
   }
 
   autoComp: any;
@@ -84,6 +84,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   ngAfterViewInit() {
+    super.ngAfterViewInit();
     this.options.toolTip = this.schema.placeholder;
     // Watch item type to setup autocomplete
     let sub = this.formProperty.searchProperty('/type')
@@ -114,10 +115,13 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
       const initialUnits = this.extensionsService.getExtensionsByUrl(UnitsComponent.unitsExtUrl[this.dataType]) || [];
 
       for (let i=0, len=initialUnits.length; i<len; ++i) {
-        const dispVal = initialUnits[i].valueCoding.code || initialUnits[i].valueCoding.display;
-        this.autoComp.storeSelectedItem(dispVal, dispVal);
+        const dispVal = initialUnits[i].valueCoding.display || initialUnits[i].valueCoding.code;
+        this.autoComp.storeSelectedItem(dispVal, initialUnits[i].valueCoding.code);
         if(this.options.maxSelect === '*') {
           this.autoComp.addToSelectedArea(dispVal);
+        }
+        else {
+          this.autoComp.setFieldVal(dispVal);
         }
       }
     });
