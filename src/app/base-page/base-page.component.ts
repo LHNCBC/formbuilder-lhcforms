@@ -167,6 +167,18 @@ export class BasePageComponent implements OnInit, OnDestroy {
     this.notifyChange(this.formValue);
   }
 
+  /**
+   * Set the fields to questionnaire and invoke change detection on child components.
+   * @param fieldsObj: Object with new fields.
+   */
+  setFieldsAndInvokeChangeDetection(fieldsObj: any) {
+    // Set the fields to a shallow copy of the questionnaire to invoke change detection on <sf-form>
+    const q = Object.assign({}, this.questionnaire);
+    Object.keys(fieldsObj).forEach((f) => {
+      q[f] = fieldsObj[f];
+    });
+    this.setQuestionnaire(q);
+  }
 
   /**
    * Switch guiding step
@@ -487,7 +499,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
           modalRef.componentInstance.serverResponse = null;
         }
         else {
-          this.setQuestionnaire(response);
+          this.setFieldsAndInvokeChangeDetection({id: response.id});
           modalRef.componentInstance.error = null;
           modalRef.componentInstance.serverResponse = response;
         }
