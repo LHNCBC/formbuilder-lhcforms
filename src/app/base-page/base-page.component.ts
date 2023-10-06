@@ -132,12 +132,12 @@ export class BasePageComponent implements OnInit, OnDestroy {
    */
   formFieldsChanged(formChanges) {
     [this.formValue, this.questionnaire, this.formFields].forEach((obj) => {
+      const itemsArray = obj.item; // Save item to append it at the bottom.
       for (const key of Object.keys(obj)) {
-        if(key !== 'item') {
-          delete obj[key];
-        }
+        delete obj[key];
       }
       Object.assign(obj, formChanges);
+      obj.item = itemsArray;
     });
     this.notifyChange(this.formValue);
   }
