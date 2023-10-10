@@ -197,7 +197,7 @@ export class ExtensionsService {
    * @param selfOnly - Emit change event to only self. False, emits the event to parent.
    *   Refer angular's reactive form documentation for more information.
    */
-  resetExtension(extUrl: fhirPrimitives.url, value: fhir.Extension, valueType: string, selfOnly) {
+  resetExtension(extUrl: fhirPrimitives.url, value: fhir.Extension, valueType: string, selfOnly: boolean) {
     const extProp: FormProperty = this.getFirstExtensionFormPropertyByUrl(extUrl);
     if(extProp) {
       extProp.reset(value, selfOnly);

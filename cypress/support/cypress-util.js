@@ -1,6 +1,7 @@
 import {Util} from '../../src/app/lib/util';
 import {ExtensionDefs} from "../../src/app/lib/extension-defs";
 import {JsonPointer} from "json-ptr";
+import {format, parseISO} from 'date-fns';
 
 export class CypressUtil {
   /**
@@ -124,5 +125,14 @@ export class CypressUtil {
   static deleteDownloadFile(filename, ignoreIfNotExist = true) {
     const downloadsFolder = Cypress.config('downloadsFolder');
     cy.task('deleteFile', {filename, folder: downloadsFolder, ignoreIfNotExist});
+  }
+
+  /**
+   * Convert zulu time to local time zone
+   * @param zuluTimeStr - Zulu time string
+   * @returns {string} - Translate to local time zone.
+   */
+  static getLocalTime(zuluTimeStr) {
+    return format(parseISO(zuluTimeStr), 'yyyy-MM-dd hh:mm:ss.SSS a');
   }
 }

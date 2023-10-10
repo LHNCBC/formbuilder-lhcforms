@@ -9,7 +9,17 @@
       "type": "decimal",
       "initial": [{
         "valueDecimal": 1.1
-      }]
+      }],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "[in_i]",
+            "display": "inch",
+            "system": "http://unitsofmeasure.org"
+          }
+        }
+      ]
     }
   ]
 }

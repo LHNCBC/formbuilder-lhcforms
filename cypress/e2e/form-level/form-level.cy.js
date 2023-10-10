@@ -6,7 +6,15 @@ import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 describe('Home page accept Terms of Use notices', () => {
   before(() => {
     cy.clearSession();
+    cy.readFile('cypress/fixtures/snomedEditions.json').then((bundle) => {
+      cy.intercept('GET', 'https://snowstorm.ihtsdotools.org/fhir/CodeSystem', {
+        statusCode: 200,
+        body: bundle
+      });
+    });
   });
+
+
   afterEach(() => {
     cy.clearSession();
   });
@@ -88,7 +96,7 @@ describe('Home page', () => {
         cy.uploadFile('answer-option-sample.json');
         cy.get('#title').should('have.value', 'Answer options form');
         cy.questionnaireJSON().then((previewJson) => {
-          expect(previewJson).to.be.deep.equal(previewJson);
+          expect(previewJson).to.be.deep.equal(json);
         });
       });
     });
@@ -245,26 +253,86 @@ describe('Home page', () => {
       cy.contains('mat-dialog-actions > button', 'Close').click();
     });
 
-    it('should create questionnaire on the fhir server', () => {
-      cy.uploadFile('answer-option-sample.json');
-      cy.contains('button.dropdown-toggle.btn', 'Export').as('exportMenu');
-      cy.get('@exportMenu').click(); // Open menu
-      cy.contains('button.dropdown-item', 'Update the questionnaire').as('updateMenuItem');
-      cy.get('@updateMenuItem').should('have.class', 'disabled');
-      cy.get('@exportMenu').click();  // Close the menu
-      cy.FHIRServerResponse('Create a new questionnaire').should((json) => {
-        expect(json.id).not.undefined;
-        expect(json.meta).not.undefined;
-      });
+    describe('Upload questionnaires to FHIR server', () => {
 
-      // Update
-      cy.get('#title').clear().type('Modified title');
-      cy.get('@exportMenu').click();
-      cy.get('@updateMenuItem').should('be.visible');
-      cy.get('@updateMenuItem').should('not.have.class', 'disabled');
-      cy.get('@exportMenu').click();
-      cy.FHIRServerResponse('Update').should((json) => {
-        expect(json.title).equal('Modified title');
+      /**
+       *
+       * @param fixtureFile - Fixture file
+       * @param stubOverrideObj - Object having overriding fields for stubbed responses.
+       * @returns {Cypress.Chainable<{responseStub: *, fixtureJson: *}>} Chainable with
+       */
+      const setupStub = (fixtureFile, stubOverrideObj) => {
+        return cy.readFile('cypress/fixtures/' + fixtureFile).then((json) => {
+          const fJson = json;
+          const rStub = json;
+
+          Object.keys(stubOverrideObj).forEach((f) => {
+            rStub[f] = stubOverrideObj[f];
+          });
+
+          return {fixtureJson: fJson, responseStub: rStub};
+        });
+      };
+
+
+      [
+        {
+          fixtureFile: 'initial-sample.R4.json',
+          serverBaseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4',
+          version: 'R4',
+        },
+        {
+          fixtureFile: 'initial-sample.STU3.json',
+          serverBaseUrl: 'http://hapi.fhir.org/baseDstu3',
+          version: 'STU3',
+        }
+      ].forEach((testConfig) => {
+        let responseStub;
+        beforeEach(() => {
+          setupStub(testConfig.fixtureFile, {
+            // Use the following fields in the server response.
+            id: '1111',
+            meta: {
+              versionId: "1",
+              lastUpdated: "2020-02-22T22:22:22.222-00:00"
+            }
+          }).then((resp) => {
+            responseStub = resp.responseStub;
+          });
+        });
+
+        it('should create/update questionnaire on the fhir server - ' + testConfig.version, () => {
+          cy.uploadFile(testConfig.fixtureFile);
+          cy.contains('button.dropdown-toggle.btn', 'Export').as('exportMenu');
+          cy.get('@exportMenu').click(); // Open menu
+          cy.contains('button.dropdown-item', 'Update the questionnaire').as('updateMenuItem');
+          cy.get('@updateMenuItem').should('have.class', 'disabled');
+          cy.get('@exportMenu').click();  // Close the menu
+          cy.intercept('POST', testConfig.serverBaseUrl+'/Questionnaire', {
+            statusCode: 201,
+            body: responseStub
+          }).as('create');
+          cy.FHIRServerResponse('Create a new questionnaire', testConfig.serverBaseUrl).should((json) => {
+            expect(json).to.deep.equal(responseStub);
+          });
+          cy.wait('@create');
+
+          // Update
+          responseStub.title = 'Modified title';
+          cy.get('#title').clear().type(responseStub.title);
+          cy.get('@exportMenu').click();
+          cy.get('@updateMenuItem').should('be.visible');
+          cy.get('@updateMenuItem').should('not.have.class', 'disabled');
+          cy.get('@exportMenu').click();
+          cy.intercept('PUT', testConfig.serverBaseUrl+'/Questionnaire/'+responseStub.id, {
+            statusCode: 200,
+            body: responseStub
+          }).as('update');
+          cy.FHIRServerResponse('Update').should((json) => {
+            expect(json).to.deep.equal(responseStub);
+          });
+          cy.wait('@update');
+        });
       });
     });
 
@@ -334,15 +402,38 @@ describe('Home page', () => {
         );
       });
 
-      it('should import with advanced fields', () => {
-        cy.readFile('cypress/fixtures/form-level-advanced-fields.json').then((json) => {
-          cy.uploadFile('form-level-advanced-fields.json');
-          cy.get('#title').should('have.value', 'Advanced fields sample');
-          cy.questionnaireJSON().then((previewJson) => {
-            ['implicitRules', 'version', 'name', 'date', 'publisher', 'copyright', 'approvalDate', 'lastReviewDate']
-              .forEach((f) => {
-                expect(previewJson[f]).to.be.deep.equal(json[f]);
-              })
+      describe('Import date fields', () => {
+        const fileToFieldsMap = {
+          'form-level-advanced-fields.json':
+            ['implicitRules', 'version', 'name', 'date', 'publisher', 'copyright', 'approvalDate', 'lastReviewDate'],
+          'datetime-1.json': ['date', 'approvalDate', 'lastReviewDate'],
+          'datetime-2.json': ['date', 'approvalDate', 'lastReviewDate']
+        };
+
+        Object.keys(fileToFieldsMap).forEach((file, index) => {
+          it('should import with advanced fields from: ' + file, () => {
+            cy.fixture(file).then((json) => {
+              cy.uploadFile(file);
+              const fieldList = fileToFieldsMap[file];
+
+              cy.get('#title').should('have.value', json.title); // Wait until fields are loaded.
+              fieldList.forEach((field) => {
+                let expVal = json[field];
+                // Any datetime with zulu time included should be translated to local time.
+                if (file === 'form-level-advanced-fields.json' && field === 'date') {
+                  expVal = CypressUtil.getLocalTime(json[field]);
+                }
+                cy.get('#' + field).should((fieldEl) => {
+                  expect(fieldEl.val(), expVal);
+                });
+              });
+
+              cy.questionnaireJSON().then((previewJson) => {
+                fieldList.forEach((f) => {
+                  expect(previewJson[f]).to.be.deep.equal(json[f]);
+                });
+              });
+            });
           });
         });
       });

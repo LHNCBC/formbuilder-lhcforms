@@ -1,11 +1,11 @@
-import {Injectable, Type} from '@angular/core';
+import {Injectable, inject} from '@angular/core';
 import Client from 'fhirclient/lib/Client';
-import * as FHIR from 'fhirclient';
+import * as fhirClient from 'fhirclient';
 import {defer, from, Observable} from 'rxjs';
 import fhir from 'fhir/r4';
-import {fhirclient} from 'fhirclient/lib/types';
-import Resource = fhirclient.FHIR.Resource;
 import {fhirPrimitives} from '../fhir';
+import {FormService} from './form.service';
+import {map} from 'rxjs/operators';
 
 export interface FHIRServer {
   // resultsOffset: number;
@@ -65,6 +65,7 @@ export class FhirService {
 */
   currentServer: FHIRServer;
   smartClient: Client;
+  formService = inject(FormService);
   constructor() {
     // this.smartClient = FHIR.client(window.location.href+'fhir-api');
     this.setFhirServer(this.fhirServerList[0]);
@@ -81,9 +82,10 @@ export class FhirService {
       // There is no equivalent field to identify the author/publisher in lforms.
       // This field could be handy to retrieve user's resources from fhir server.
       // For now combine name and email to make it unique and searchable by name.
-      const res = typeof resource === 'string' ? JSON.parse(resource) : resource;
+      let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
       this.assignPublisher(res, userProfile);
 
+      res = this.formService.convertFromR4(res, this.getFhirServer().version);
       return this.promiseToObservable(this.smartClient.create(res));
     };
 
@@ -96,8 +98,9 @@ export class FhirService {
      * @returns - An http promise
      */
     update(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
-      const res = typeof resource === 'string' ? JSON.parse(resource) : resource;
+      let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
       this.assignPublisher(res, userProfile);
+      res = this.formService.convertFromR4(res, this.getFhirServer().version);
       return this.promiseToObservable(this.smartClient.update(res));
     };
 
@@ -111,6 +114,8 @@ export class FhirService {
       return this.promiseToObservable(this.smartClient.request<fhir.Resource>({
         url: 'Questionnaire/'+id+'?_format=application/fhir+json',
         // headers: this.config.headers
+      })).pipe(map((res: fhir.Resource) => {
+        return this.formService.convertToR4(res as fhir.Questionnaire);
       }));
     };
 
@@ -190,7 +195,7 @@ export class FhirService {
      */
     setFhirServer(fhirServer: FHIRServer): void {
       this.currentServer = fhirServer;
-      this.smartClient = FHIR.client(this.currentServer.endpoint);
+      this.smartClient = fhirClient.client(this.currentServer.endpoint);
     };
 
     getFhirServer(): FHIRServer {

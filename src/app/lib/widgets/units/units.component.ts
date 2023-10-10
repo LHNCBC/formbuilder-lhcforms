@@ -69,7 +69,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
       'Name',
       'Guidance'
     ],
-    valueCols: [0]
+    valueCols: [1]
   }
 
   autoComp: any;
@@ -84,6 +84,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   ngAfterViewInit() {
+    super.ngAfterViewInit();
     this.options.toolTip = this.schema.placeholder;
     // Watch item type to setup autocomplete
     let sub = this.formProperty.searchProperty('/type')
@@ -114,10 +115,13 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
       const initialUnits = this.extensionsService.getExtensionsByUrl(UnitsComponent.unitsExtUrl[this.dataType]) || [];
 
       for (let i=0, len=initialUnits.length; i<len; ++i) {
-        const dispVal = initialUnits[i].valueCoding.code || initialUnits[i].valueCoding.display;
-        this.autoComp.storeSelectedItem(dispVal, dispVal);
+        const dispVal = initialUnits[i].valueCoding.display || initialUnits[i].valueCoding.code;
+        this.autoComp.storeSelectedItem(dispVal, initialUnits[i].valueCoding.code);
         if(this.options.maxSelect === '*') {
           this.autoComp.addToSelectedArea(dispVal);
+        }
+        else {
+          this.autoComp.setFieldVal(dispVal);
         }
       }
     });
@@ -135,15 +139,30 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
         const selectedUnit = data.list.find((unit) => {
           return unit[0] === data.item_code;
         });
-        this.extensionsService.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
-          UnitsComponent.ucumSystemUrl, data.item_code, selectedUnit[1]), 'valueCoding');
+        this.updateUnits(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+          UnitsComponent.ucumSystemUrl, data.item_code, selectedUnit[1]));
       }
       else {
-        this.extensionsService.addExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
-          null, data.final_val, data.final_val), 'valueCoding');
+        this.updateUnits(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+          null, data.final_val, data.final_val));
       }
     });
 
+  }
+
+
+  /**
+   * Update unit extensions for integer/decimal and quantity types.
+   *
+   * @param unitExt - Extension object representing the appropriate unit extension.
+   */
+  updateUnits(unitExt: fhir.Extension) {
+    if(this.dataType === 'integer' || this.dataType === 'decimal') {
+      this.extensionsService.resetExtension(unitExt.url, unitExt, 'valueCoding', false);
+    }
+    else if(this.dataType === 'quantity') {
+      this.extensionsService.addExtension(unitExt, 'valueCoding');
+    }
   }
 
 
