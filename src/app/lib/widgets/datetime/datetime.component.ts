@@ -30,7 +30,6 @@ export class LfbTimeAdapter extends NgbTimeAdapter<NgbTimeStruct> implements Con
   constructor() {
     super();
     LfbTimeAdapter.id++;
-    console.log(`LfbTimeAdapter: constructor(): ${LfbTimeAdapter.id}`);
   }
 
   setDateTime(dateTime: DateTime) {
@@ -59,7 +58,6 @@ export class LfbDateAdapter extends NgbDateAdapter<string> implements ConfigureD
   constructor() {
     super();
     LfbDateAdapter.id++;
-    console.log(`LfbDateTimeAdapter: constructor(): ${LfbDateAdapter.id}`);
   }
 
 
@@ -96,7 +94,6 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
   constructor() {
     super();
     LfbDateParserFormatter.id++;
-    console.log(`LfbDateTimeParserFormatter: constructor(): ${LfbDateParserFormatter.id}`);
   }
 
   setDateTime(dateTime: DateTime) {
@@ -141,7 +138,6 @@ export class DatetimeComponent extends DateComponent implements OnInit {
               private timeAdapter: NgbTimeAdapter<NgbTimeStruct>) {
     super();
     DatetimeComponent.id++;
-    console.log(`DateTimeComponent: constructor(): ${DatetimeComponent.id}`);
   }
   ngOnInit() {
     super.ngOnInit();
