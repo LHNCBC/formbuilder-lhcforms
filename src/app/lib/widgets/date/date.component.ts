@@ -1,4 +1,4 @@
-import {Component, inject, Injectable} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, inject, Injectable, ViewChild} from '@angular/core';
 import {NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct} from '@ng-bootstrap/ng-bootstrap';
 import {StringComponent} from '../string/string.component';
 import {DateUtil} from '../../date-util';
@@ -45,14 +45,29 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter {
     {provide: NgbDateParserFormatter, useClass: LfbDateParserFormatter}
   ]
 })
-export class DateComponent extends StringComponent {
+export class DateComponent extends StringComponent implements AfterViewInit {
   static id = 0;
   dateIcon = faCalendar;
+
+  @ViewChild('d', {read: ElementRef}) inputEl: ElementRef;
 
   calendar = inject(NgbCalendar);
   constructor() {
     super();
     DateComponent.id++;
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    const inputEl = this.inputEl.nativeElement as HTMLInputElement;
+    this.formProperty.valueChanges.subscribe((val) => {
+      // If the value is invalid, NgbDatepicker does not update input element's value.
+      // yyyy, and yyyy-MM are valid in FHIR but not in ngbDatepicker.
+      // Manually update the input's value.
+      if(inputEl.value !== val && /^([0-9]{4}(-[0-9]{2})?)?$/.test(val?.trim())) {
+        inputEl.value = val;
+      }
+    });
   }
 
   /**

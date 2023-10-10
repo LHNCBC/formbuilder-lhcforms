@@ -291,15 +291,38 @@ describe('Home page', () => {
         );
       });
 
-      it('should import with advanced fields', () => {
-        cy.readFile('cypress/fixtures/form-level-advanced-fields.json').then((json) => {
-          cy.uploadFile('form-level-advanced-fields.json');
-          cy.get('#title').should('have.value', 'Advanced fields sample');
-          cy.questionnaireJSON().then((previewJson) => {
-            ['implicitRules', 'version', 'name', 'date', 'publisher', 'copyright', 'approvalDate', 'lastReviewDate']
-              .forEach((f) => {
-                expect(previewJson[f]).to.be.deep.equal(json[f]);
-              })
+      describe('Import date fields', () => {
+        const fileToFieldsMap = {
+          'form-level-advanced-fields.json':
+            ['implicitRules', 'version', 'name', 'date', 'publisher', 'copyright', 'approvalDate', 'lastReviewDate'],
+          'datetime-1.json': ['date', 'approvalDate', 'lastReviewDate'],
+          'datetime-2.json': ['date', 'approvalDate', 'lastReviewDate']
+        };
+
+        Object.keys(fileToFieldsMap).forEach((file, index) => {
+          it('should import with advanced fields from: ' + file, () => {
+            cy.fixture(file).then((json) => {
+              cy.uploadFile(file);
+              const fieldList = fileToFieldsMap[file];
+
+              cy.get('#title').should('have.value', json.title); // Wait until fields are loaded.
+              fieldList.forEach((field) => {
+                let expVal = json[field];
+                // Any datetime with zulu time included should be translated to local time.
+                if (file === 'form-level-advanced-fields.json' && field === 'date') {
+                  expVal = CypressUtil.getLocalTime(json[field]);
+                }
+                cy.get('#' + field).should((fieldEl) => {
+                  expect(fieldEl.val(), expVal);
+                });
+              });
+
+              cy.questionnaireJSON().then((previewJson) => {
+                fieldList.forEach((f) => {
+                  expect(previewJson[f]).to.be.deep.equal(json[f]);
+                });
+              });
+            });
           });
         });
       });

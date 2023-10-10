@@ -1,0 +1,15 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Date field sample - 1",
+  "status": "draft",
+  "date": "2000-01",
+  "approvalDate": "2023-04",
+  "lastReviewDate": "2020",
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Item 0",
+      "type": "string"
+    }
+  ]
+}
