@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.2.1] 2023-08-28
+### Added
+- Added support for stu3 export and import.
+
 ## [9.2.0] 2023-08-03
 ### Added
 - Added these fields to advanced section in the form level fields: 

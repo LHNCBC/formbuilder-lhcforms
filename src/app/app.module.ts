@@ -67,7 +67,6 @@ import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-searc
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
-import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { HelpTextComponent } from './lib/widgets/help-text/help-text.component';
 import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.component';
 import { PreviewDlgComponent } from './lib/widgets/preview-dlg/preview-dlg.component';
@@ -137,7 +136,6 @@ import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
     BooleanRadioComponent,
     UnitsComponent,
     AnswerOptionComponent,
-    InitialComponent,
     HelpTextComponent,
     SfFormWrapperComponent,
     PreviewDlgComponent,

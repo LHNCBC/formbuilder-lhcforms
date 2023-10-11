@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, Injectable, Input, NgModule, OnInit} from '@angular/core';
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TreeModule} from '@bugsplat/angular-tree-component';
 import {
   DefaultWidgetRegistry, FormProperty,

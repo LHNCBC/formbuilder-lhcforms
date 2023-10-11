@@ -108,6 +108,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     this.selectionRadio = -1;
     this.selectionCheckbox = [];
   }
+
+
   /**
    * Initialize setting up observers.
    */
@@ -151,9 +153,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
           this.rowSelectionType = 'radio';
         }
         else if(newValue && this.rowSelection) {
-          this.rowSelectionType = 'checkbox';
-        }
-        if(newValue === false && this.rowSelection && this.formProperty.properties.length === 1) {
           this.rowSelectionType = 'checkbox';
         }
         this.cdRef.markForCheck();

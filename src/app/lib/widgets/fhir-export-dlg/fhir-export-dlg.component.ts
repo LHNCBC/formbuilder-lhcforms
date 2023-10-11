@@ -61,11 +61,4 @@ export class FhirExportDlgComponent implements OnInit {
   close(value: any): void {
     this.activeModal.close(value);
   }
-
-  /**
-   * Get FHIR server list.
-   */
-  getServerList(): FHIRServer [] {
-    return this.fhirService.fhirServerList;
-  }
 }

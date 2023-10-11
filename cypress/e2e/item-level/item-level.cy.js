@@ -74,7 +74,6 @@ describe('Home page', () => {
       CypressUtil.assertCodeField('/item/0/code');
     });
 
-
     it('should import item from CTSS with answer option', () => {
       cy.contains('Add new item from LOINC').scrollIntoView().click();
       cy.contains('ngb-modal-window label', 'Question').click();
@@ -337,7 +336,7 @@ describe('Home page', () => {
       });
 
       cy.selectDataType('choice');
-      cy.get('[id^="initial"]').should('not.be.visible');
+      cy.get('[id^="initial"]').should('not.exist');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('choice');
         expect(qJson.item[0].initial).to.be.undefined;
@@ -445,14 +444,13 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].answerOption).to.deep.equal(fixtureJson.item[0].item[0].answerOption);
-        expect(qJson.item[0].item[0].initial).to.deep.equal(fixtureJson.item[0].item[0].initial);
       });
 
       cy.toggleTreeNodeExpansion('Group item 1');
       cy.getTreeNode('Choice item 1.1').click();
       cy.get('@type').find(':selected').should('have.text', 'choice');
       cy.get('[id^="answerOption."]').should('be.visible');
-      cy.get('[id^="initial"]').should('not.be.visible');
+      cy.get('[id^="initial"]').should('not.exist');
       cy.get('[id^="radio_answerOption.1"]').should('be.checked', true);
       cy.selectDataType('decimal');
       cy.get('[id^="answerOption."]').should('not.exist');
@@ -705,9 +703,9 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
-      ['[in_i]', '[in_br]'].forEach((result) => {
-        cy.contains('#completionOptions tr', result).click();
-        cy.contains('span.autocomp_selected li', result).should('be.visible');
+      [['[in_i]', 'inch'], ['[in_br]', 'inch - British']].forEach((result) => {
+        cy.contains('#completionOptions tr', result[0]).click();
+        cy.contains('span.autocomp_selected li', result[1]).should('be.visible');
       });
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('quantity');
@@ -731,13 +729,27 @@ describe('Home page', () => {
       cy.get('@units').type('inch');
       cy.get('#searchResults').should('be.visible');
       cy.contains('#completionOptions tr', '[in_i]').click();
-      cy.get('@units').last().should('have.value','[in_i]');
+      cy.get('@units').last().should('have.value','inch');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('decimal');
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[0].valueCoding.code).equal('[in_i]');
         expect(qJson.item[0].extension[0].valueCoding.display).equal('inch');
+      });
+    });
+
+    it('should import decimal/integer units', () => {
+      const sampleFile = 'decimal-type-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.contains('button', 'Edit questions').click();
+      cy.get('#type option:selected').should('have.text', 'decimal');
+      cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
+      cy.get('[id^="units"]').should('have.value', 'inch');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson).to.deep.equal(fixtureJson);
       });
     });
 
@@ -897,7 +909,7 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Quantity Sample');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson).to.deep.equal(fixtureJson);
+        expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
       });
     });
 
@@ -1275,7 +1287,7 @@ describe('Home page', () => {
         cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'days');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson).to.deep.equal(fixtureJson);
+          expect(qJson.item).to.deep.equal(fixtureJson.item);
         });
 
         // Remove
@@ -1343,7 +1355,7 @@ describe('Home page', () => {
           cy.get('[id^="radio_Yes_observationExtract"]').should('be.checked');
 
           cy.questionnaireJSON().should((qJson) => {
-            expect(qJson).to.deep.equal(fixtureJson);
+            expect(qJson.item).to.deep.equal(fixtureJson.item);
           });
 
           // Remove
@@ -1401,7 +1413,6 @@ describe('Home page', () => {
     });
   });
 });
-
 
 describe('Accepting only LOINC terms of use', () => {
   beforeEach(() => {

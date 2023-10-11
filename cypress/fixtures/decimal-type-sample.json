@@ -7,7 +7,19 @@
       "text": "Item with decimal data type",
       "linkId": "1",
       "type": "decimal",
-      "initial": 1.1
+      "initial": [{
+        "valueDecimal": 1.1
+      }],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "[in_i]",
+            "display": "inch",
+            "system": "http://unitsofmeasure.org"
+          }
+        }
+      ]
     }
   ]
 }

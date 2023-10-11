@@ -23,15 +23,8 @@
               "valueCoding": {
                 "code": "a2",
                 "display": "Answer 2"
-              }
-            }
-          ],
-          "initial": [
-            {
-              "valueCoding": {
-                "code": "a2",
-                "display": "Answer 2"
-              }
+              },
+              "initialSelected": true
             }
           ]
         }

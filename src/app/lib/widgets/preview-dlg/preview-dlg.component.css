@@ -1,3 +1,10 @@
 .close-button {
   float: right;
 }
+.fix-pre {
+  margin-top: revert;
+}
+
+.lfb-mat-tab-content {
+  max-height: 60vh;
+}

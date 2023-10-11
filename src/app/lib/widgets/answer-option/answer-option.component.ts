@@ -47,14 +47,13 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     const repeatProp = this.formProperty.findRoot().getProperty('repeats');
     this.setSelectionType(repeatProp.value);
     const aOptions = this.formProperty.value;
-    const initials = this.formProperty.findRoot().getProperty('initial').value;
-    this.setDefaultSelections(initials || [], aOptions || []);
+    this.updateDefaultSelections(aOptions || []);
     this.setAnswerOptions(aOptions);
     this.cdr.markForCheck();
   }
 
   /**
-   * Set row selection type, i.e multiple selections or single selection
+   * Set row selection type, i.e. multiple selections or single selection
    * @param isRepeat - Repeat indicates multiple selections, set in 'repeat' field.
    */
   setSelectionType(isRepeat: boolean) {
@@ -117,7 +116,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     });
     this.subscriptions.push(sub);
 
-    sub = this.formService.formChanged$.subscribe((change) => {
+    sub = this.formService.formChanged$.subscribe(() => {
       // New form is to be loaded, mark initialization.
       this.initializing = true;
     });
@@ -131,7 +130,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   setAnswerOptions(answerOptions: any []) {
     let changed = false;
-    answerOptions?.forEach((option, index) => {
+    answerOptions?.forEach((option) => {
       if(option.valueCoding) {
         const scoreExt = option.extension?.find(ext => ext.url === AnswerOptionComponent.ORDINAL_URI);
         const score = option.valueCoding.__$score !== undefined ? option.valueCoding.__$score : null;
@@ -161,6 +160,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    * @param coding1 - First coding object
    * @param coding2 - second coding object
    */
+/*
   isEqualCoding(coding1: fhir.Coding, coding2: fhir.Coding) {
     if(!coding1 && !coding2) {
       return true; // Match if both are undefined
@@ -188,30 +188,27 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
     return ret;
   }
+*/
 
 
   /**
-   * Set up defaults column reading 'initial' form properties.
+   * Set up defaults column reading 'initialSelected' flag.
    */
-  setDefaultSelections(initialArray: any [], answerOptionArray: any []): boolean {
-    let changed = false;
-    answerOptionArray.forEach((prop, index) => {
-      const rowFromInitial = initialArray.find(initial => this.isEqualCoding(initial.valueCoding, prop.valueCoding));
-      if(rowFromInitial || prop.initialSelected) {
-        if (this.rowSelectionType === 'radio') {
-          if (this.selectionRadio !== index) {
-            this.selectionRadio = index;
-            changed = true;
-          }
-        } else if (this.rowSelectionType === 'checkbox') {
-          if (!this.selectionCheckbox[index]) {
-            this.selectionCheckbox[index] = true;
-            changed = true;
-          }
+  updateDefaultSelections(answerOptionArray: any []) {
+    if(this.rowSelectionType === 'radio') {
+      this.selectionRadio = -1;
+      answerOptionArray.some((prop, index) => {
+        if(prop.initialSelected) {
+          this.selectionRadio = index;
         }
-      }
-    });
-    return changed;
+        return this.selectionRadio >= 0;
+      });
+    }
+    else if(this.rowSelectionType === 'checkbox') {
+      answerOptionArray.forEach((prop, index) => {
+        this.selectionCheckbox[index] = !!prop.initialSelected;
+      });
+    }
   }
 
 
@@ -222,7 +219,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   updateScoreExtensions(options) {
     let changed = false;
-    options?.forEach((option, index) => {
+    options?.forEach((option) => {
       const i = option.extension?.findIndex((ext) => ext.url === AnswerOptionComponent.ORDINAL_URI);
       const valueDecimal = i >= 0 ? option.extension[i].valueDecimal : null;
       const score = option.valueCoding?.__$score !== undefined ? option.valueCoding?.__$score : null;

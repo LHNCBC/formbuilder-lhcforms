@@ -494,6 +494,10 @@
                 ],
                 "text": "Auto-complete"
               }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/terminology-server",
+              "valueUrl": "https://lforms-fhir.nlm.nih.gov/baseR4"
             }
           ],
           "linkId": "/54126-8/54133-4",

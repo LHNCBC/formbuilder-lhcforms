@@ -12,7 +12,7 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
 
   static RENDERING_STYLE_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/rendering-style';
   cssValue: string;
-  name: string;
+  // name: string;
   elementTypeFieldFormProperty: FormProperty;
   elementTypeFieldValue; any;
 

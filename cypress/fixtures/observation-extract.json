@@ -4,19 +4,18 @@
   "status": "draft",
   "item": [
     {
-      "id": 1,
       "extension": [
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-          "valueDecimal": 20.1
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
         },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/minValue",
           "valueDecimal": 15.2
         },
         {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
-          "valueBoolean": true
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 20.1
         }
       ],
       "linkId": "l1",
@@ -26,7 +25,8 @@
         {
           "code": "Code1"
         }
-      ]
+      ],
+      "required": false
     }
   ]
 }

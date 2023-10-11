@@ -2,7 +2,6 @@ import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {Subscription} from 'rxjs';
-import fhir from '../../../fhir';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
 
 @Component({

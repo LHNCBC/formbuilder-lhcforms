@@ -170,13 +170,15 @@ Cypress.Commands.add('loadLOINCForm', (searchTerm) => {
  * Get json from FHIR server response after create/update interaction.
  * @param menuText - Menu text to pick the menu item.
  */
-Cypress.Commands.add('FHIRServerResponse', (menuText) => {
+Cypress.Commands.add('FHIRServerResponse', (menuText, serverBaseUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4') => {
   cy.contains('button.dropdown-toggle.btn', 'Export').click();
   cy.contains('div.dropdown-menu.show button.dropdown-item', menuText).as('menu');
   cy.get('@menu').should('be.visible');
   cy.contains('button.dropdown-item', menuText).as('createMenu');
   cy.get('@createMenu').should('be.visible').click();
   if(menuText.startsWith('Create')) {
+    const serverId = '#' + serverBaseUrl.replace(/([-:./])/g, '\\$1');
+    cy.get(serverId).click();
     cy.contains('lfb-fhir-servers-dlg div button', 'Continue').click();
   }
   return cy.get('lfb-fhir-export-dlg div pre.fhir-response').invoke('text').then((text) => {
@@ -203,8 +205,8 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
  */
 Cypress.Commands.add('addAnswerOptions', () => {
   cy.selectDataType('choice');
-  // No widget for choice. User selects default radio in answer option table.
-  cy.get('[id^="initial"]').should('not.be.visible');
+  // No 'initial' widget for choice. User selects default radio in answer option table.
+  // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
   cy.get('[id^="answerOption.0.valueCoding.code"]').type('c1');
   cy.get('[id^="answerOption.0.valueCoding.system"]').type('s1');
@@ -266,7 +268,7 @@ Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOption
 
   const coding = {code: 'c1', system: 's1', display: 'd1'}
   cy.get('@codeYes').click();
-  cy.get('[id^="code.0.code_').as('code');
+  cy.get('[id^="code.0.code_"]').as('code');
   cy.get('@code').type('ab ');
   cy.get('@code').next('small')
     .should('be.visible')
