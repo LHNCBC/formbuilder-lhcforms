@@ -100,6 +100,11 @@ export class CypressUtil {
     ]);
   }
 
+  /**
+   * Convert zulu time to local time zone
+   * @param zuluTimeStr - Zulu time string
+   * @returns {string} - Translate to local time zone.
+   */
   static getLocalTime(zuluTimeStr) {
     return format(parseISO(zuluTimeStr), 'yyyy-MM-dd hh:mm:ss.SSS a');
   }
