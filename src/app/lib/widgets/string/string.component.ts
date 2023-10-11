@@ -10,16 +10,33 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 })
 export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
 
+  // Replace standard error messages from schema validator with customized messages.
+  // Keys are error codes from the validator.
   modifiedMessages = {
-    PATTERN: {
-      '^\\S*$': 'Spaces and other whitespace characters are not allowed in this field.', // uri
-      '^[^\\s]+(\\s[^\\s]+)*$': 'Spaces are not allowed at the beginning or end.',       // code
-    },
+    PATTERN: [
+      {
+        pattern: '^\\S*$',
+        message: 'Spaces and other whitespace characters are not allowed in this field.'
+      }, // uri
+      {
+        pattern: '^[^\\s]+(\\s[^\\s]+)*$',
+        message: 'Spaces are not allowed at the beginning or end.'
+      },       // code
+      {
+        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$',
+        message: 'Valid format is yyyy-MM-dd.'
+      }, // Date
+      {
+        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$',
+        message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM).'
+      } // Datetime
+    ],
     MIN_LENGTH: null,
     MAX_LENGTH: null
   }
   errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
 
+  Array = Array; // To use in templates.
   ngOnInit() {
     super.ngOnInit();
     this.controlClasses = this.controlClasses || 'form-control form-control-sm';
@@ -42,10 +59,23 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
           return acc;
         }, errorsObj);
         this.errors = Object.values(errorsObj).map((e: any) => {
-          const modifiedMessage = e.code === 'PATTERN' ? this.modifiedMessages.PATTERN[e.params[0]] : this.modifiedMessages[e.code];
+          const modifiedMessage = e.code === 'PATTERN'
+            ? this.getModifiedErrorForPatternMismatch(e.params[0])
+            : this.modifiedMessages[e.code];
           return {code: e.code, originalMessage: e.message, modifiedMessage};
         });
       }
     });
+  }
+
+  /**
+   * Replace standard schema validator error message with customized message.
+   * @param pattern - Pattern as specified in the schema to identify the replacement message.
+   */
+  getModifiedErrorForPatternMismatch(pattern: string): string {
+    const messageObj = this.modifiedMessages.PATTERN.find((el) => {
+      return el.pattern === pattern;
+    });
+    return messageObj ? messageObj.message : null;
   }
 }

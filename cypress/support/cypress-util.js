@@ -1,6 +1,7 @@
 import {Util} from '../../src/app/lib/util';
 import {ExtensionDefs} from "../../src/app/lib/extension-defs";
-import jsonPointer from "jsonpointer";
+import {JsonPointer} from "json-ptr";
+import {format, parseISO} from 'date-fns';
 
 export class CypressUtil {
   /**
@@ -46,7 +47,7 @@ export class CypressUtil {
    */
   static assertValueInQuestionnaire(ptrInQuestionnaire, expectedValue) {
     cy.questionnaireJSON().should((q) => {
-      expect(jsonPointer.get(q, ptrInQuestionnaire)).to.deep.equal(expectedValue);
+      expect(JsonPointer.get(q, ptrInQuestionnaire)).to.deep.equal(expectedValue);
     });
   }
 
@@ -59,7 +60,7 @@ export class CypressUtil {
    */
   static assertExtensionsInQuestionnaire(extensionPtrInQuestionnaire, matchingExtUrl, expectedValue) {
     cy.questionnaireJSON().should((q) => {
-      const extensions = jsonPointer.get(q, extensionPtrInQuestionnaire).filter((e) => e.url === matchingExtUrl);
+      const extensions = JsonPointer.get(q, extensionPtrInQuestionnaire).filter((e) => e.url === matchingExtUrl);
       expect(extensions).to.deep.equal(expectedValue);
     });
   };
@@ -97,5 +98,14 @@ export class CypressUtil {
       {code: 'c2', system: 's2', display: 'd2'},
       {code: 'c3', system: 's3', display: 'd3'}
     ]);
+  }
+
+  /**
+   * Convert zulu time to local time zone
+   * @param zuluTimeStr - Zulu time string
+   * @returns {string} - Translate to local time zone.
+   */
+  static getLocalTime(zuluTimeStr) {
+    return format(parseISO(zuluTimeStr), 'yyyy-MM-dd hh:mm:ss.SSS a');
   }
 }

@@ -29,21 +29,6 @@ import {SharedObjectService} from '../services/shared-object.service';
       margin-bottom: 1em;
     }
 
-    :host ::ng-deep .form-control {
-      height: calc(1.0em + .75rem + 2px);
-      padding: 0 3px 0 3px;
-    }
-
-    :host ::ng-deep fieldset {
-      border: 0;
-    }
-
-    .title {
-      margin-top: 10px;
-      font-size: 20px;
-      font-weight: bold;
-    }
-
   `]
 })
 export class NgxSchemaFormComponent {

@@ -379,13 +379,7 @@
       "description": "An absolute URI that is used to identify this questionnaire when it is referenced in a specification, model, design or an instance; also called its canonical identifier. This SHOULD be globally unique and SHOULD be a literal address at which at which an authoritative instance of this questionnaire is (or will be) published. This URL can be the target of a canonical reference. It SHALL remain the same when the questionnaire is stored on different servers.",
       "title": "URL",
       "type": "string",
-      "pattern": "^\\S*$",
-      "widget": {
-        "id": "string",
-        "labelPosition": "left",
-        "labelClasses": "col-sm-2 ps-0 pe-1",
-        "controlClasses": "col textline-widget form-control form-control-sm"
-      }
+      "pattern": "^\\S*$"
     },
     "identifier": {
       "description": "A formal identifier that is used to identify this questionnaire when it is represented in other formats, or referenced in a specification, model, design or an instance.",
@@ -693,25 +687,13 @@
       "description": "A natural language name identifying the questionnaire. This name should be usable as an identifier for the module by machine processing applications such as code generation.",
       "title": "Name",
       "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string",
-      "widget": {
-        "id": "string",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
-      }
+      "type": "string"
     },
     "title": {
       "description": "A short, descriptive, user-friendly title for the questionnaire.",
       "title": "Title",
       "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string",
-      "widget": {
-        "id": "string",
-        "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col textline-widget form-control form-control-sm"
-      }
+      "type": "string"
     },
     "derivedFrom": {
       "description": "The URL of a Questionnaire that this Questionnaire is based on.",
@@ -953,13 +935,7 @@
       "description": "A free text natural language description of the questionnaire from a consumer's perspective.",
       "title": "Description",
       "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string",
-      "widget": {
-        "id": "string",
-        "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col textline-widget form-control form-control-sm"
-      }
+      "type": "string"
     },
     "useContext": {
       "description": "The content was developed with a focus and intent of supporting the contexts that are listed. These contexts may be general categories (gender, age, ...) or may be references to specific programs (insurance plans, studies, ...) and may be used to assist with indexing and searching for appropriate questionnaire instances.",
@@ -1644,13 +1620,7 @@
       "description": "Explanation of why this questionnaire is needed and why it has been designed as it has.",
       "title": "Purpose",
       "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string",
-      "widget": {
-        "id": "string",
-        "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col textline-widget form-control form-control-sm"
-      }
+      "type": "string"
     },
     "copyright": {
       "description": "A copyright statement relating to the questionnaire and/or its contents. Copyright statements are generally legal restrictions on the use and publishing of the questionnaire.",
@@ -1829,15 +1799,7 @@
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
       "title": "Terminology server",
-      "type": "string",
-      "widget": {
-        "id": "terminology-server",
-        "placeholder": "Enter url for preferred terminology server",
-        "note": "You may wish to set this if you want to provide an answer value set for any item in this questionnaire.",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-10"
-      }
+      "type": "string"
     }
   },
   "additionalProperties": false,

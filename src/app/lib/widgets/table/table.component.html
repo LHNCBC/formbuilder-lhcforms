@@ -16,7 +16,7 @@
   <div [ngClass]="labelClasses">
     <button *ngIf="!noCollapseButton" href="#" type="button"
             [ngClass]="{'float-sm-end': labelPosition === 'left'}"
-            class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+            class="btn btn-sm m-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
             [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
       <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
     </button>

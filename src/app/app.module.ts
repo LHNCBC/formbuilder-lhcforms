@@ -90,6 +90,9 @@ import { ObservationExtractComponent } from './lib/widgets/observation-extract/o
 import { TerminologyServerComponent } from './lib/widgets/terminology-server/terminology-server.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
 import { ItemControlComponent } from './lib/widgets/item-control/item-control.component';
+import { DateComponent } from './lib/widgets/date/date.component';
+import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
+import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
 
 @NgModule({
   declarations: [
@@ -156,7 +159,10 @@ import { ItemControlComponent } from './lib/widgets/item-control/item-control.co
     ObservationExtractComponent,
     TerminologyServerComponent,
     AnswerValueSetComponent,
-    ItemControlComponent
+    ItemControlComponent,
+    DateComponent,
+    TextAreaComponent,
+    DatetimeComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -189,7 +195,8 @@ import { ItemControlComponent } from './lib/widgets/item-control/item-control.co
     MatDialogModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, AppJsonPipe]
+  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry},
+    AppJsonPipe]
 })
 export class AppModule implements DoBootstrap {
   ngDoBootstrap(appRef: ApplicationRef) {

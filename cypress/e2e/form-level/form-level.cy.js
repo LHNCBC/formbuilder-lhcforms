@@ -57,7 +57,7 @@ describe('Home page accept Terms of Use notices', () => {
 });
 
 describe('Home page', () => {
-  before(() => {
+  beforeEach(() => {
     // Cypress starts out with a blank slate for each test
     // so we must tell it to visit our website with the `cy.visit()` command.
     // Since we want to visit the same URL at the start of all our tests,
@@ -118,13 +118,10 @@ describe('Home page', () => {
   });
 
   describe('Form level fields', () => {
-    before(() => {
+    beforeEach(() => {
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
-    });
-
-    beforeEach(() => {
       cy.resetForm();
       cy.get('[id^="booleanRadio_true"]').as('codeYes');
       cy.get('[id^="booleanRadio_false"]').as('codeNo');
@@ -228,7 +225,6 @@ describe('Home page', () => {
       });
     });
 
-
     it('should expand/collapse advanced fields panel', () => {
       cy.tsUrl().should('not.be.visible');
       cy.advancedFields().click();
@@ -294,18 +290,152 @@ describe('Home page', () => {
           }]
         );
       });
+
+      describe('Import date fields', () => {
+        const fileToFieldsMap = {
+          'form-level-advanced-fields.json':
+            ['implicitRules', 'version', 'name', 'date', 'publisher', 'copyright', 'approvalDate', 'lastReviewDate'],
+          'datetime-1.json': ['date', 'approvalDate', 'lastReviewDate'],
+          'datetime-2.json': ['date', 'approvalDate', 'lastReviewDate']
+        };
+
+        Object.keys(fileToFieldsMap).forEach((file, index) => {
+          it('should import with advanced fields from: ' + file, () => {
+            cy.fixture(file).then((json) => {
+              cy.uploadFile(file);
+              const fieldList = fileToFieldsMap[file];
+
+              cy.get('#title').should('have.value', json.title); // Wait until fields are loaded.
+              fieldList.forEach((field) => {
+                let expVal = json[field];
+                // Any datetime with zulu time included should be translated to local time.
+                if (file === 'form-level-advanced-fields.json' && field === 'date') {
+                  expVal = CypressUtil.getLocalTime(json[field]);
+                }
+                cy.get('#' + field).should((fieldEl) => {
+                  expect(fieldEl.val(), expVal);
+                });
+              });
+
+              cy.questionnaireJSON().then((previewJson) => {
+                fieldList.forEach((f) => {
+                  expect(previewJson[f]).to.be.deep.equal(json[f]);
+                });
+              });
+            });
+          });
+        });
+      });
+
+      describe('Date and Datetime related fields.', () => {
+        const dateRE = /^\d{4}-\d{2}-\d{2}$/;
+        const dateTimeRE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} (AM|PM)$/;
+        const dateTimeZuluRE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
+        it('should test revised date (date time picker)', () => {
+          cy.get('#date+button').as('dateBtn').click();
+          cy.get('#date').as('dateInput');
+          cy.get('ngb-datepicker').should('be.visible');
+          cy.get('#ignoreTimeCheckBox').as('includeTime').should('be.checked');
+          cy.contains('ngb-datepicker button', 'Today').click();
+          cy.get('@dateInput').should('have.prop', 'value').should('match', dateRE);
+          cy.contains('ngb-datepicker button', 'Now').as('now').click();
+          cy.get('@dateInput').should('have.prop', 'value').should('match', dateTimeRE);
+          cy.get('@includeTime').click();
+          cy.get('ngb-timepicker fieldset').should('be.disabled');
+          cy.get('@dateInput').should('have.prop', 'value').should('match', dateRE);
+          cy.get('@now').click();
+          cy.get('@dateInput').should('have.prop', 'value').should('match', dateTimeRE);
+          cy.questionnaireJSON().then((previewJson) => {
+            expect(previewJson.date).to.match(dateTimeZuluRE);
+          });
+        });
+
+        it('should test approval date (date picker)', () => {
+          cy.get('#approvalDate+button').as('approvalDt').click();
+          cy.get('ngb-datepicker').should('be.visible');
+          cy.contains('ngb-datepicker button', 'Today').click();
+          cy.get('#approvalDate').as('approvalDtInput').should('have.prop', 'value').should('match', dateRE);
+          cy.get('@approvalDtInput').clear().type('2021-01-01');
+          cy.questionnaireJSON().then((previewJson) => {
+            expect(previewJson.approvalDate).to.be.equal('2021-01-01');
+          });
+        });
+
+        it('should accept valid but not invalid dates', () => {
+          // Pick a sample datetime and date widgets; date is datetime widget and approvalDate is date widget.
+          ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            ['2020', '2020-06', '2020-06-23'].forEach((validDate) => {
+              cy.get(widgetSel).clear().type(validDate).blur();
+
+              cy.questionnaireJSON().then((q) => {
+                expect(q[widgetId]).to.be.equal(validDate);
+              });
+            });
+            cy.get(widgetSel).clear().type('abc').blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+            cy.get(widgetSel).clear().type('202').blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+          });
+
+          ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            cy.get(widgetSel).clear().type('2020-01-02 10:');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}');
+            cy.get(widgetSel).parent().next('small.text-danger').should('not.exist');
+            cy.get(widgetSel).type('ab');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+
+            ['2023-11-31', '2023-02-29', '2023-02-30', '2023-02-31'].forEach((input) => {
+              cy.get(widgetSel).clear().type(input);
+              cy.get(widgetSel).parent().next('small.text-danger').should('have.text', 'Invalid date.');
+              cy.get(widgetSel).blur();
+              cy.questionnaireJSON().then((q) => {
+                expect(q[widgetId]).to.be.undefined;
+              });
+            });
+          });
+          ['date'].forEach((widgetId) => {
+            const widgetSel = '#'+widgetId;
+            cy.get(widgetSel).clear().type('2020-01-02 100');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).blur();
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).to.be.undefined;
+            });
+            cy.get(widgetSel).clear().type('2020-01-02 100');
+            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).type('{backspace}:10:10.1 am');
+            cy.get(widgetSel).parent().next('small.text-danger').should('not.exist');
+            cy.questionnaireJSON().then((q) => {
+              expect(q[widgetId]).match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+            });
+          });
+        });
+      });
     });
   });
 
   describe('User specified FHIR server dialog', () => {
-    before(() => {
+    beforeEach(() => {
       cy.loadHomePage();
       cy.contains('button', 'Continue').click();
       cy.contains('button', 'Import').click();
       cy.contains('button', 'Import from a FHIR server...').click();
-    });
-
-    beforeEach(() => {
       cy.contains('div.modal-footer button', 'Add your FHIR server').click();
       cy.get('#urlInput').as('inputUrl');
       cy.contains('button', 'Validate').as('validate');
@@ -353,13 +483,10 @@ describe('Home page', () => {
   });
 
   describe('Warning dialog when replacing current form', () => {
-    before(() => {
+    beforeEach(() => {
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.contains('button', 'Continue').click();
-    })
-
-    beforeEach(() => {
       cy.resetForm();
       cy.uploadFile('answer-option-sample.json');
     });

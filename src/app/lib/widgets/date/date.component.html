@@ -1,0 +1,40 @@
+
+<input *ngIf="schema.widget.id ==='hidden'; else dateBlock"
+       [name]="name" type="hidden" [formControl]="control">
+<ng-template #dateBlock>
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label *ngIf="!nolabel"
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelClasses"
+               class="form-label"
+    ></lfb-label>
+    <div class="position-relative input-group-sm px-0" [ngClass]="controlClasses">
+      <div class="input-group input-group-sm">
+        <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
+               class="form-control textline-widget"
+               [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
+               [required]="schema.widget.required"
+               [lfbDisableControl]="schema.disabled"
+               [footerTemplate]="footerTemplate"
+               ngbDatepicker
+               #d="ngbDatepicker"
+               (blur)="suppressInvalidDate($event)"
+        >
+        <button class="btn btn-outline-secondary py-0" [attr.aria-label]="'Date picker for '+schema.title"
+                (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
+      </div>
+
+      <ng-container *ngFor="let error of errors ? Array.from(errors).reverse() : null">
+        <small *ngIf="formProperty.value && error"
+               class="text-danger form-text pe-1" role="alert"
+        >{{error.modifiedMessage || error.originalMessage}}</small>
+      </ng-container>
+    </div>
+  </div>
+  <ng-template #footerTemplate>
+    <div class="text-center"><button (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
+  </ng-template>
+</ng-template>
+

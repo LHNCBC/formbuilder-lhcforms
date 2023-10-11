@@ -2,6 +2,14 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.2.0] 2023-08-03
+### Added
+- Added these fields to advanced section in the form level fields: 
+  implicit rules, version, name, date, publisher, copyright, approvalDate, lastReviewDate
+### Changed
+- Converted schema and layout json files to json5 format.
+- Refactored the widget configuration code for better organization of widgets defined in schema.
+
 ## [9.1.6] 2023-08-22
 ### Changed
 - Updated the copy-lforms.js script to use the latest version (v34) of lforms.

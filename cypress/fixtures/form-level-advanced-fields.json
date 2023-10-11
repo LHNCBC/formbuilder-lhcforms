@@ -1,0 +1,20 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Advanced fields sample",
+  "status": "draft",
+  "name": "newform",
+  "implicitRules": "rule1",
+  "version": "draft version",
+  "date": "2000-01-02T03:04:05.678Z",
+  "publisher": "nlm",
+  "copyright": "Nothing",
+  "approvalDate": "2023-04-05",
+  "lastReviewDate": "2020-01-02",
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Item 0",
+      "type": "string"
+    }
+  ]
+}

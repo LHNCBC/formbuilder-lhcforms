@@ -11,12 +11,21 @@ import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import traverse from 'json-schema-traverse';
 import jsonTraverse from 'traverse';
-import ngxItemSchema from '../../assets/ngx-item.schema.json';
-import fhirExtensionSchema from '../../assets/fhir-extension-schema.json';
-import itemLayout from '../../assets/items-layout.json';
-import ngxFlSchema from '../../assets/ngx-fl.schema.json';
-import flLayout from '../../assets/fl-fields-layout.json';
-import itemEditorSchema from '../../assets/item-editor.schema.json';
+import {JsonPointer} from 'json-ptr';
+
+// Configuration files
+// @ts-ignore
+import ngxItemSchema from '../../assets/ngx-item.schema.json5';
+// @ts-ignore
+import fhirExtensionSchema from '../../assets/fhir-extension-schema.json5';
+// @ts-ignore
+import itemLayout from '../../assets/items-layout.json5';
+// @ts-ignore
+import ngxFlSchema from '../../assets/ngx-fl.schema.json5';
+// @ts-ignore
+import flLayout from '../../assets/fl-fields-layout.json5';
+// @ts-ignore
+import itemEditorSchema from '../../assets/item-editor.schema.json5';
 import {Util} from '../lib/util';
 import {FetchService} from './fetch.service';
 declare var LForms: any;
@@ -47,11 +56,61 @@ export class FormService {
       }
       obj.schema.definitions.Extension = fhirExtensionSchema as any;
       this._updateExtension(obj.schema);
-      obj.schema.layout = obj.layout;
+      obj.schema.formLayout = obj.layout.formLayout;
+      this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
+      this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
     });
     this.itemSchema = ngxItemSchema;
     this.flSchema = ngxFlSchema;
     this._itemEditorSchema = itemEditorSchema;
+  }
+
+  /**
+   * Override schema.widget with widget definitions from layout.
+   * @param schema - Schema object typically from *-schema.json file.
+   * @param widgets - widgets definitions from layout files.
+   * @param widgetsMap - An object mapping widget type to list of json pointers to select fields in schema. The selected field's widget
+   *   definition is replaced with widget definitions from the layout.
+   *   See src/assets/*layout.json5 and src/assets/*schema.json5 files for more information.
+   */
+  overrideSchemaWidgetFromLayout(schema, {widgets, widgetsMap}) {
+    if(!widgetsMap || !widgets) {
+      return;
+    }
+
+    Object.keys(widgetsMap).forEach((widgetType) => {
+      const widgetInfo = widgets[widgetType];
+      if(widgetInfo) {
+        const fieldPtrs: string[] = widgetsMap[widgetType];
+        fieldPtrs?.forEach((ptr) => {
+          const fieldSchema: any = JsonPointer.get(schema, ptr);
+          if(fieldSchema) {
+            fieldSchema.widget = widgetInfo;
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Override field labels with custom labels. By default, title attribute of the field is used as label. To override default label,
+   * custom labels are defined in layout file.
+   * @param schema - Schema object.
+   * @param overridePropertyLabels - An object defined in layout file.
+   */
+  overrideFieldLabelsFromLayout(schema, {overridePropertyLabels}) {
+    if(!overridePropertyLabels) {
+      return;
+    }
+
+    Object.entries(overridePropertyLabels).forEach(([ptr, title]) => {
+      const fieldSchema: any = JsonPointer.get(schema, ptr);
+      if(fieldSchema) {
+        if(fieldSchema) {
+          fieldSchema.title = title;
+        }
+      }
+    });
   }
 
   public get itemEditorSchema() {
