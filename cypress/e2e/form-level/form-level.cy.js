@@ -6,12 +6,7 @@ import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 describe('Home page accept Terms of Use notices', () => {
   before(() => {
     cy.clearSession();
-    cy.readFile('cypress/fixtures/snomedEditions.json').then((bundle) => {
-      cy.intercept('GET', 'https://snowstorm.ihtsdotools.org/fhir/CodeSystem', {
-        statusCode: 200,
-        body: bundle
-      });
-    });
+    CypressUtil.mockSnomedEditions();
   });
 
 

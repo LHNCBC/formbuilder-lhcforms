@@ -7,15 +7,11 @@
   ></lfb-label>
   <div [ngClass]="controlClasses">
     <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
-      <ng-container *ngFor="let opt of Object.keys(optionList)">
-        <input class="btn-check" [attr.id]="id + '.' + opt" value="{{opt}}" type="radio" [ngModel]="option"
-               (ngModelChange)="option = $event; updateItemControlExt($event)" name="{{id}}">
-        <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt">{{optionList[opt]}}</label>
+      <ng-container *ngFor="let opt of getOptions()">
+        <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt" value="{{opt}}" type="radio" [(ngModel)]="option"
+               (ngModelChange)="updateItemControlExt($event)">
+        <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt">{{optionsObj[opt]}}</label>
       </ng-container>
-    </div>
-    <div>
-      <pre>{{option}}</pre>
-      <pre>{{extensionJson}}</pre>
     </div>
   </div>
 </div>

@@ -46,7 +46,8 @@
           { "field": "__$observationExtract", "col": 12}
         ]
       }
-    ]
+    ],
+    "targetPage": "itemLevel"
   },
   "propertyLabels": {
     "text": "Question text",

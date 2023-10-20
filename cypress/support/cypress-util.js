@@ -135,4 +135,12 @@ export class CypressUtil {
   static getLocalTime(zuluTimeStr) {
     return format(parseISO(zuluTimeStr), 'yyyy-MM-dd hh:mm:ss.SSS a');
   }
+
+  static mockSnomedEditions() {
+    const fixture = 'snomedEditions.json';
+    cy.intercept('https://snowstorm.ihtsdotools.org/fhir/*', (req) => {
+      console.log(`cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`);
+      req.reply({fixture});
+    });
+  }
 }

@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.2.2] 2023-10-13
+### Added
+- Added item control extension to support radio and checkbox layout for answer list.
+
 ## [9.2.1] 2023-08-28
 ### Added
 - Added support for stu3 export and import.

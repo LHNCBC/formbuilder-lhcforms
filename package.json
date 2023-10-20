@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "9.2.1",
+  "version": "9.2.2",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -30,6 +30,7 @@
     "ci:cy-run": "start-server-and-test ci:start-server http://localhost:${npm_package_config_testPort} cy:run",
     "ci:cy-open": "start-server-and-test ci:start-server http://localhost:${npm_package_config_testPort} cy:open",
     "ci:start-server": "angular-http-server --silent --path ./dist/formbuilder-lhcforms -p ${npm_package_config_testPort}",
+    "e2e": "ng e2e",
     "postinstall": "ngcc"
   },
   "files": [
@@ -79,6 +80,7 @@
     "@angular/cli": "~15.2.4",
     "@angular/compiler-cli": "~15.2.4",
     "@angular/language-service": "~15.2.4",
+    "@cypress/schematic": "^2.5.1",
     "@types/hapi": "18.0.8",
     "@types/jasmine": "~4.3.1",
     "@types/jasminewd2": "~2.0.10",

@@ -104,6 +104,10 @@
             },
             "development": {
               "browserTarget": "formbuilder-lhcforms:build:development"
+            },
+            "e2e": {
+              "browserTarget": "formbuilder-lhcforms:build:development",
+              "port": 9031
             }
           },
           "defaultConfiguration": "development"
@@ -152,6 +156,14 @@
             "customWebpackConfig": {
               "path": "./webpack.config.js"
             }
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "formbuilder-lhcforms:serve:e2e",
+            "watch": true,
+            "headless": false
           }
         }
       }
