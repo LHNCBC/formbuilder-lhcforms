@@ -56,6 +56,17 @@ export class CypressUtil {
   }
 
   /**
+   * Get array of extensions which match a given extension uri.
+   *
+   * @param item - Object with extensions.
+   * @param matchingExtUrl - URI of the extensions.
+   */
+  static getExtensions(item, matchingExtUrl) {
+    let extensions = item?.extension || null;
+    return extensions?.filter((e) => e.url === matchingExtUrl);
+  };
+
+  /**
    * Assert extensions (array of extensions) which match a given extension uri.
    *
    * @param extensionPtrInQuestionnaire - json pointer pointing to an extension field in questionnaire json.

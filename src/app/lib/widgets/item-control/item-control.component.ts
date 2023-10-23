@@ -100,18 +100,13 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     else {
       this.option = option;
     }
-    if(!option || option === 'drop-down') {
-      this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
+    const ext = this.getItemControlExtension();
+    if(!ext) {
+      this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
     }
     else {
-      const ext = this.getItemControlExtension();
-      if(!ext) {
-        this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
-      }
-      else {
-        ext.valueCodeableConcept.coding[0].code = option;
-        ext.valueCodeableConcept.coding[0].display = this.optionsObj[option];
-      }
+      ext.valueCodeableConcept.coding[0].code = option;
+      ext.valueCodeableConcept.coding[0].display = this.optionsObj[option];
     }
   }
 

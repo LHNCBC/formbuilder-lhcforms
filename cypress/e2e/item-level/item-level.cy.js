@@ -538,10 +538,11 @@ describe('Home page', () => {
       cy.questionnaireJSON().should((q) => {
         expect(q.item[0].answerValueSet).contain('fhir_vs=ecl%2F123_extra_chars');
         expect(q.item[0].answerOption).to.be.undefined;
-        expect(q.item[0].extension[0]).to.deep.equal({
-          url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer',
+        const extUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
+        expect(CypressUtil.getExtensions(q.item[0], extUrl)).to.deep.equal([{
+          url: extUrl,
           valueUrl: 'https://snowstorm.ihtsdotools.org/fhir'
-        });
+        }]);
       });
 
       cy.get(eclSel).clear();
@@ -708,7 +709,7 @@ describe('Home page', () => {
 
           // No extension for drop-down
           cy.questionnaireJSON().should((qJson) => {
-            expect(qJson.item[0].extension).undefined;
+            expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
           });
         });
 
@@ -727,7 +728,7 @@ describe('Home page', () => {
         cy.get(dropDownBtn).click();
         cy.get(dropDownRadio).should('be.checked');
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[0].extension).undefined;
+          expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
         });
 
         cy.contains('lfb-label', 'Allow repeating question?').siblings('div.btn-group').contains('Yes').click();
@@ -776,7 +777,7 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('choice');
           expect(qJson.item[0].text).equal('Answer option dropdown');
-          expect(qJson.item[0].extension).undefined;
+          expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
         });
 
         cy.getTreeNode('Answer option radio-button').click();
