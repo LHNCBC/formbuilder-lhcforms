@@ -131,7 +131,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
   /**
    * Create extension object based on option.
-   * @param option - One of the options.
+   * @param option - The code of the options.
    */
   createExtension(option: string) {
     return {
