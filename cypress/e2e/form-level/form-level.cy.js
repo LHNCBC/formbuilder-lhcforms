@@ -333,16 +333,20 @@ describe('Home page', () => {
 
     it('should expand/collapse advanced fields panel', () => {
       cy.tsUrl().should('not.be.visible');
-      cy.advancedFields().click();
+      cy.expandAdvancedFields();
       cy.tsUrl().should('be.visible');
-      cy.advancedFields().click();
+      cy.collapseAdvancedFields();
       cy.tsUrl().should('not.be.visible');
     });
 
     describe('Form level fields: Advanced', () => {
       beforeEach(() => {
-        cy.advancedFields().click();
+        cy.expandAdvancedFields();
         cy.tsUrl().should('be.visible');
+      });
+
+      afterEach(() => {
+        cy.collapseAdvancedFields();
       });
 
       it('should create terminology server extension', () => {

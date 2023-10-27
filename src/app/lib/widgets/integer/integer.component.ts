@@ -20,7 +20,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
         ></lfb-label>
 	      <input lfbInteger [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
 	        [attr.id]="id"
-	        class="text-widget integer-widget form-control {{controlWidthClass}}" [formControl]="control"
+	        class="form-control {{controlWidthClass}}" [formControl]="control"
 	        type="number" [attr.min]="schema.minimum" [attr.max]="schema.maximum"
 	        [attr.placeholder]="schema.placeholder"
 	        [attr.maxLength]="schema.maxLength || null"

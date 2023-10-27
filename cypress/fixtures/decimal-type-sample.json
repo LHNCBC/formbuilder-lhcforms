@@ -18,6 +18,10 @@
             "display": "inch",
             "system": "http://unitsofmeasure.org"
           }
+        },
+        {
+          "url": "http://dummy.org",
+          "valueInteger": 1
         }
       ]
     }
