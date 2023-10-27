@@ -33,6 +33,11 @@
                 "output": "lforms/"
               },
               {
+                "glob": "**/*.js.map",
+                "input": "./src/lib/lforms",
+                "output": "lforms/"
+              },
+              {
                 "glob": "**/*.css",
                 "input": "./src/lib/lforms",
                 "output": "lforms/"
