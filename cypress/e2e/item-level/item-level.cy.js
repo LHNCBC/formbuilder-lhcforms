@@ -21,9 +21,9 @@ describe('Home page', () => {
         }]
       }
     }];
-    before(CypressUtil.mockSnomedEditions);
 
     beforeEach(() => {
+      CypressUtil.mockSnomedEditions();
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();

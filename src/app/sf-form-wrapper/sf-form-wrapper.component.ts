@@ -25,7 +25,7 @@ import {Util} from '../lib/util';
 })
 export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
   @ViewChild('itemForm') itemForm: FormComponent;
-  instantiate = true; // Control instance of sf-form
+
   validators = {
     /**
      * __$start and ++$end are custom internal fields. They are used to identify item loading into the editor.
@@ -78,14 +78,9 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
 
   ngOnChanges(changes: SimpleChanges) {
     if(changes.model) {
-      // Destroy the current component and recreate new one.
-      this.instantiate = false;
-      this.cdr.detectChanges();
-      this.instantiate = true;
       this.loading = true;
       // Notify the changes to the form.
       this.formService.formChanged(changes.model);
-      this.cdr.detectChanges();
       this.formService.resetForm();
     }
   }

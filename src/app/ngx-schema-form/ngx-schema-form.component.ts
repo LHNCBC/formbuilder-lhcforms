@@ -2,10 +2,12 @@
  * Handle layout and editing of item level fields
  */
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
-  Input,
+  Input, OnChanges,
   Output,
+  SimpleChanges,
 } from '@angular/core';
 import {SharedObjectService} from '../services/shared-object.service';
 
@@ -13,7 +15,7 @@ import {SharedObjectService} from '../services/shared-object.service';
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-      <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)"></lfb-sf-form-wrapper>
+      <lfb-sf-form-wrapper *ngIf="instantiate" [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)"></lfb-sf-form-wrapper>
     </div>
   `,
   styles: [`
@@ -31,11 +33,12 @@ import {SharedObjectService} from '../services/shared-object.service';
 
   `]
 })
-export class NgxSchemaFormComponent {
+export class NgxSchemaFormComponent implements OnChanges {
 
   static ID = 0;
   _id = ++NgxSchemaFormComponent.ID;
 
+  instantiate = true;
   myTestSchema: any;
   @Output()
   setLinkId = new EventEmitter();
@@ -46,9 +49,16 @@ export class NgxSchemaFormComponent {
   @Output()
   errorsChanged = new EventEmitter<any[]>();
 
-  constructor(private modelService: SharedObjectService) {
+  constructor(private modelService: SharedObjectService, private cdr: ChangeDetectorRef) {
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    // Destroy the current component and recreate new one.
+    this.instantiate = false;
+    this.cdr.detectChanges();
+    this.instantiate = true;
+    this.cdr.detectChanges();
+  }
 
   /**
    * The model is changed, emit the event.
