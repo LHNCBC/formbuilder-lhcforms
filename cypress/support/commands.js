@@ -447,7 +447,7 @@ Cypress.Commands.add('expandAdvancedFields',() => {
 });
 
 /**
- * Collapse advanced panelhttps://nih.sharepoint.com/sites/NLM-LHNCBCIntranet/SitePages/LHNCBCintranet.aspx
+ * Collapse advanced panel
  */
 Cypress.Commands.add('collapseAdvancedFields',() => {
   cy.contains('button', 'Advanced fields').find('svg.fa-angle-up').click();
