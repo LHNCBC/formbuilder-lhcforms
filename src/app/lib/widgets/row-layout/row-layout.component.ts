@@ -2,10 +2,9 @@
  * For layout of fields in rows. Field width could be entire 12 columns (bootstrap grid size),
  * in which case next field starts on next line.
  */
-import { Component, inject, OnInit } from '@angular/core';
-import { GridComponent} from '../grid.component/grid.component';
-import {faAngleDown, faAngleRight} from '@fortawesome/free-solid-svg-icons';
-import {faAngleUp} from '@fortawesome/free-solid-svg-icons';
+import {Component, inject, OnInit} from '@angular/core';
+import {GridComponent} from '../grid.component/grid.component';
+import {faAngleDown, faAngleUp} from '@fortawesome/free-solid-svg-icons';
 import {FormService} from '../../../services/form.service';
 
 @Component({
@@ -64,7 +63,6 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
    * Initialize
    */
   ngOnInit() {
-    // Change kebab case to camel case;
     this.widgetId = this.formProperty.schema.formLayout.targetPage;
     // Read rows from schema layout
     this.basicRows = this.formProperty.schema.formLayout.basic;

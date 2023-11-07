@@ -21,9 +21,9 @@ describe('Home page', () => {
         }]
       }
     }];
-    before(CypressUtil.mockSnomedEditions);
 
     beforeEach(() => {
+      CypressUtil.mockSnomedEditions();
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
@@ -1120,11 +1120,11 @@ describe('Home page', () => {
 
     describe('Item level fields: advanced', () => {
       beforeEach(() => {
-        cy.advancedFields().click();
+        cy.expandAdvancedFields();
         cy.tsUrl().should('be.visible'); // Proof of advanced panel expansion
       });
       afterEach(() => {
-        cy.advancedFields().click();
+        cy.collapseAdvancedFields();
       });
 
       it('should support conditional display with answer coding source', () => {
@@ -1331,7 +1331,6 @@ describe('Home page', () => {
         cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
 
         cy.contains('button', 'Edit questions').click();
-        cy.advancedFields().click();
         cy.toggleTreeNodeExpansion('Family member health history');
         cy.toggleTreeNodeExpansion('Living?');
         cy.clickTreeNode('Living?');
@@ -1373,7 +1372,6 @@ describe('Home page', () => {
         cy.uploadFile(sampleFile, true); // Avoid warning form loading based on item or form
         cy.get('#title').should('have.value', 'Terminology server sample form');
         cy.contains('button', 'Edit questions').click();
-        cy.advancedFields().click();
         cy.tsUrl().should('be.visible').should('have.value', 'http://example.com/r4');
         CypressUtil.assertExtensionsInQuestionnaire(
           '/item/0/extension',

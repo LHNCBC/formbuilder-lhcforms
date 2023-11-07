@@ -6,9 +6,9 @@ import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 describe('Home page accept Terms of Use notices', () => {
   before(() => {
     cy.clearSession();
-    CypressUtil.mockSnomedEditions();
   });
 
+  beforeEach(CypressUtil.mockSnomedEditions);
 
   afterEach(() => {
     cy.clearSession();
@@ -67,6 +67,7 @@ describe('Home page', () => {
     // we include it in our beforeEach function so that it runs before each test
     // loadHomePage() calls visit() with assertions for LForms object on window.
     // It also deals with loinc notice, if needed.
+    CypressUtil.mockSnomedEditions();
     cy.loadHomePage();
   });
 
@@ -148,6 +149,20 @@ describe('Home page', () => {
     it('should export to local file in STU3 format', () => {
       cy.uploadFile('sample.R4.json');
       cy.get('#title').should('have.value', 'Sample R4 form');
+
+      cy.contains('div', 'Code').find('[id^="booleanRadio_true"]').should('be.checked');
+      cy.contains('table > thead', 'Code').parent().parent().as('codeField');
+      cy.get('@codeField').find('tbody').as('codeTable');
+      cy.get('@codeTable').find('tr:nth-child(1)').as('firstRow');
+      cy.get('@firstRow').find('[id^="code.0.code_"]').should('have.value', '34565-2');
+
+      cy.contains('button', 'Edit questions').click();
+      cy.contains('div', 'Question code').find('[id^="booleanRadio_true"]').should('be.checked');
+      cy.contains('table > thead', 'Code').parent().parent().as('codeField');
+      cy.get('@codeField').find('tbody').as('codeTable');
+      cy.get('@codeTable').find('tr:nth-child(1)').as('firstRow');
+      cy.get('@firstRow').find('[id^="code.0.code_"]').should('have.value', '8358-4');
+
       cy.contains('button.dropdown-toggle', 'Export').click();
       cy.contains('button.dropdown-item', 'Export to file in STU3 format').click();
       cy.readFile('cypress/downloads/Sample-R4-form.STU3.json').then((json) => {
@@ -333,16 +348,21 @@ describe('Home page', () => {
 
     it('should expand/collapse advanced fields panel', () => {
       cy.tsUrl().should('not.be.visible');
-      cy.advancedFields().click();
+      cy.expandAdvancedFields();
       cy.tsUrl().should('be.visible');
-      cy.advancedFields().click();
+      cy.collapseAdvancedFields();
       cy.tsUrl().should('not.be.visible');
     });
 
     describe('Form level fields: Advanced', () => {
       beforeEach(() => {
-        cy.advancedFields().click();
+        cy.expandAdvancedFields();
         cy.tsUrl().should('be.visible');
+      });
+
+      afterEach(() => {
+        cy.collapseAdvancedFields();
+        cy.tsUrl().should('not.be.visible');
       });
 
       it('should create terminology server extension', () => {
