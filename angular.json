@@ -33,6 +33,11 @@
                 "output": "lforms/"
               },
               {
+                "glob": "**/*.js.map",
+                "input": "./src/lib/lforms",
+                "output": "lforms/"
+              },
+              {
                 "glob": "**/*.css",
                 "input": "./src/lib/lforms",
                 "output": "lforms/"
@@ -104,6 +109,14 @@
             },
             "development": {
               "browserTarget": "formbuilder-lhcforms:build:development"
+            },
+            "e2e-dev": {
+              "browserTarget": "formbuilder-lhcforms:build:development",
+              "port": 9031
+            },
+            "e2e-prod": {
+              "browserTarget": "formbuilder-lhcforms:build:production",
+              "port": 9031
             }
           },
           "defaultConfiguration": "development"
@@ -151,6 +164,23 @@
             ],
             "customWebpackConfig": {
               "path": "./webpack.config.js"
+            }
+          }
+        },
+        "e2e": {
+          "builder": "@cypress/schematic:cypress",
+          "options": {
+            "devServerTarget": "formbuilder-lhcforms:serve:e2e-dev",
+            "watch": true,
+            "headless": false,
+            "browser": "chrome"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "formbuilder-lhcforms:serve:e2e-prod",
+              "watch": false,
+              "headless": true,
+              "browser": "chrome"
             }
           }
         }

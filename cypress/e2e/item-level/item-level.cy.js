@@ -23,6 +23,7 @@ describe('Home page', () => {
     }];
 
     beforeEach(() => {
+      CypressUtil.mockSnomedEditions();
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
@@ -477,7 +478,7 @@ describe('Home page', () => {
       });
 
       cy.get('[for^="__\\$answerOptionMethods_answer-option"]').click();
-      cy.get('answerValueSet_non-snomed').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').should('not.exist');
       cy.get('lfb-answer-option').should('be.visible');
       const aOptions = [
         {display: 'display 1', code: 'c1', system: 's1'},
@@ -537,10 +538,11 @@ describe('Home page', () => {
       cy.questionnaireJSON().should((q) => {
         expect(q.item[0].answerValueSet).contain('fhir_vs=ecl%2F123_extra_chars');
         expect(q.item[0].answerOption).to.be.undefined;
-        expect(q.item[0].extension[0]).to.deep.equal({
-          url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer',
+        const extUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
+        expect(CypressUtil.getExtensions(q.item[0], extUrl)).to.deep.equal([{
+          url: extUrl,
           valueUrl: 'https://snowstorm.ihtsdotools.org/fhir'
-        });
+        }]);
       });
 
       cy.get(eclSel).clear();
@@ -629,70 +631,234 @@ describe('Home page', () => {
       cy.contains('mat-dialog-actions button', 'Close').click();
     });
 
-    it('should create item-control extension with autocomplete option', () => {
-      const icId = '#item_control___\\$itemControl';
-      cy.get(icId).should('not.exist'); // Datatype is other than choice, open-choice
-      cy.selectDataType('open-choice');
-      cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
-      cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
-      cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod').click();
-      cy.get(icId).should('be.visible'); // open-choice type with snomed answerValueSet
-      cy.get('@answerOptionMethod').click();
-      cy.get(icId).should('not.exist'); // open-choice type with answer-option
-      cy.selectDataType('choice');
-      cy.get('@nonSnomedMethod').click();
-      cy.get(icId).should('be.visible'); // choice type with answerValueSet
+    describe('Item control', () => {
+      const itemControlExtensions = {
+        'drop-down': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'drop-down',
+              display: 'Drop down',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        autocomplete: {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'autocomplete',
+              display: 'Auto-complete',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'radio-button': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'radio-button',
+              display: 'Radio Button',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'check-box': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'check-box',
+              display: 'Check-box',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        }
+      };
 
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
-        expect(qJson.item[0].extension).undefined;
+
+      it('should create item-control extension with autocomplete option', () => {
+        const icTag = 'lfb-item-control';
+        const dropDownBtn = '[for^="__\\$itemControl\\.drop-down"]';
+        const radioBtn = '[for^="__\\$itemControl\\.radio-button"]';
+        const checkboxBtn = '[for^="__\\$itemControl\\.check-box"]';
+        const acBtn = '[for^="__\\$itemControl\\.autocomplete"]';
+
+        const dropDownRadio = '#__\\$itemControl\\.drop-down';
+        const checkboxRadio = '#__\\$itemControl\\.check-box';
+
+        cy.get(icTag).should('not.exist'); // Datatype is other than choice, open-choice
+        cy.selectDataType('open-choice');
+        cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
+        cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
+        cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod');
+        cy.get('@answerOptionMethod').click();
+        cy.get(dropDownBtn).should('be.visible');
+        cy.get(dropDownRadio).should('be.checked'); // Default is answer-option
+        cy.get(radioBtn).should('be.visible'); // Radio option when repeats is false by default.
+        cy.get(checkboxBtn).should('not.exist'); // Not visible when repeats is true
+        cy.get(acBtn).should('not.exist'); // Not visible for answerOption.
+
+        // For value set options.
+        ['@snomedMethod', '@nonSnomedMethod'].forEach((vsMethod) => {
+          cy.get(vsMethod).click();
+          cy.get(dropDownBtn).should('be.visible');
+          cy.get(dropDownRadio).should('be.checked'); // Default
+          cy.get(radioBtn).should('be.visible');
+          cy.get(checkboxBtn).should('not.exist');
+          cy.get(acBtn).should('be.visible'); // Autocomplete should be visible.
+
+          // No extension for drop-down
+          cy.questionnaireJSON().should((qJson) => {
+            expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
+          });
+        });
+
+        cy.get('@snomedMethod').click();
+
+        ['radio-button', 'autocomplete'].forEach((option) => {
+          const optBtn = '[for^="__\\$itemControl\\.' + option + '"]';
+          const optRadioId = '#__\\$itemControl\\.' + option;
+          cy.get(optBtn).click();
+          cy.get(optRadioId).should('be.checked');
+          cy.questionnaireJSON().should((qJson) => {
+            expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions[option]]);
+          });
+        });
+
+        cy.get(dropDownBtn).click();
+        cy.get(dropDownRadio).should('be.checked');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
+        });
+
+        cy.contains('lfb-label', 'Allow repeating question?').siblings('div.btn-group').contains('Yes').click();
+        cy.get(dropDownBtn).should('be.visible');
+        cy.get(dropDownRadio).should('be.checked');
+        cy.get(radioBtn).should('not.exist');
+        cy.get(checkboxBtn).should('be.visible');
+        cy.get(acBtn).should('be.visible');
+
+        cy.get(checkboxBtn).click();
+        cy.get(checkboxRadio).should('be.checked')
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['check-box']]);
+        });
       });
 
-      cy.get(icId).click(); // Checked
+      it('should import with item having item-control extension', () => {
+        const icTag = 'lfb-item-control';
+        const dropDownBtn = '[for^="__\\$itemControl\\.drop-down"]';
+        const radioBtn = '[for^="__\\$itemControl\\.radio-button"]';
+        const checkboxBtn = '[for^="__\\$itemControl\\.check-box"]';
+        const acBtn = '[for^="__\\$itemControl\\.autocomplete"]';
 
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
-        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl');
-        expect(qJson.item[0].extension[0].valueCodeableConcept.coding[0].code).equal('autocomplete');
-        expect(qJson.item[0].extension[0].valueCodeableConcept.coding[0].display).equal('Auto-complete');
-        expect(qJson.item[0].extension[0].valueCodeableConcept.coding[0].system).equal('http://hl7.org/fhir/questionnaire-item-control');
-      });
+        const dropDownRadio = '#__\\$itemControl\\.drop-down';
+        const checkRadio = '#__\\$itemControl\\.check-box';
+        const radioRadio = '#__\\$itemControl\\.radio-button';
+        const acRadio = '#__\\$itemControl\\.autocomplete';
 
-      cy.get(icId).click(); // Unchecked
+        const answerMethodsAnswerOptionBtn = '[for^="__\\$answerOptionMethods_answer-option"]';
+        const answerMethodsValueSetBtn = '[for^="__\\$answerOptionMethods_value-set"]';
 
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
-        expect(qJson.item[0].extension).undefined;
-      });
-    });
+        const answerMethodsAnswerOptionRadio = '#__\\$answerOptionMethods_answer-option';
+        const answerMethodsValueSetRadio = '#__\\$answerOptionMethods_value-set';
 
-    it('should import with item having item-control extension', () => {
-      const icId = '#item_control___\\$itemControl';
-      cy.uploadFile('item-control-sample.json', true);
-      cy.get('#title').should('have.value', 'Item control sample form');
-      cy.contains('button', 'Edit questions').click();
-      cy.get(icId).should('be.visible');
-      cy.get(icId).should('be.checked');
+        cy.uploadFile('item-control-sample.json', true);
+        cy.get('#title').should('have.value', 'Item control sample form');
+        cy.contains('button', 'Edit questions').click();
 
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
-        expect(qJson.item[0].extension.length).equal(2);
-        expect(qJson.item[0].extension[1].url)
-          .equal('http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl');
-        expect(qJson.item[0].extension[1].valueCodeableConcept.coding[0].code).equal('autocomplete');
-        expect(qJson.item[0].extension[1].valueCodeableConcept.coding[0].display).equal('Auto-complete');
-        expect(qJson.item[0].extension[1].valueCodeableConcept.coding[0].system)
-          .equal('http://hl7.org/fhir/questionnaire-item-control');
-      });
+        cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
+        cy.get(dropDownRadio).should('be.visible').and('be.checked');
+        cy.get(radioBtn).should('be.visible');
+        cy.get(acBtn).should('not.exist');
+        cy.get(checkboxBtn).should('not.exist');
 
-      cy.get(icId).click(); // Unchecked
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].type).equal('choice');
+          expect(qJson.item[0].text).equal('Answer option dropdown');
+          expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
+        });
 
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
-        expect(qJson.item[0].extension.length).equal(1);
-        expect(qJson.item[0].extension[0].url)
-          .equal('http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer');
-        expect(qJson.item[0].extension[0].valueUrl).equal('https://snowstorm.ihtsdotools.org/fhir');
+        cy.getTreeNode('Answer option radio-button').click();
+        cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
+        cy.get(dropDownBtn).should('be.visible');
+        cy.get(dropDownRadio).and('not.be.checked');
+        cy.get(radioBtn).should('be.visible');
+        cy.get(radioRadio).and('be.checked');
+        cy.get(acBtn).should('not.exist');
+        cy.get(checkboxBtn).should('not.exist');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[1].type).equal('choice');
+          expect(qJson.item[1].text).equal('Answer option radio-button');
+          expect(qJson.item[1].extension).to.deep.equal([itemControlExtensions['radio-button']]);
+        });
+
+        cy.getTreeNode('Answer option check-box').click();
+        cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
+        cy.get(dropDownBtn).should('be.visible');
+        cy.get(dropDownRadio).and('not.be.checked');
+        cy.get(checkboxBtn).should('be.visible');
+        cy.get(checkRadio).should('be.checked');
+        cy.get(radioBtn).should('not.exist');
+        cy.get(acBtn).should('not.exist');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[2].type).equal('choice');
+          expect(qJson.item[2].text).equal('Answer option check-box');
+          expect(qJson.item[2].repeats).equal(true);
+          expect(qJson.item[2].extension).to.deep.equal([itemControlExtensions['check-box']]);
+        });
+
+        cy.getTreeNode('Valueset autocomplete').click();
+        cy.get(answerMethodsValueSetRadio).should('be.checked');
+        cy.get(dropDownBtn).should('be.visible');
+        cy.get(dropDownRadio).should('not.be.checked');
+        cy.get(acBtn).should('be.visible');
+        cy.get(acRadio).should('be.checked');
+        cy.get(radioBtn).should('be.visible');
+        cy.get(radioRadio).should('not.be.checked');
+        cy.get(checkboxBtn).should('not.exist');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[3].type).equal('choice');
+          expect(qJson.item[3].text).equal('Valueset autocomplete');
+          expect(qJson.item[3].extension[1]).to.deep.equal(itemControlExtensions.autocomplete);
+        });
+
+        cy.getTreeNode('Valueset radio-button').click();
+        cy.get(answerMethodsValueSetRadio).should('be.checked');
+        cy.get(dropDownBtn).should('be.visible');
+        cy.get(dropDownRadio).should('not.be.checked');
+        cy.get(acBtn).should('be.visible');
+        cy.get(acRadio).should('not.be.checked');
+        cy.get(radioBtn).should('be.visible');
+        cy.get(radioRadio).should('be.checked');
+        cy.get(checkboxBtn).should('not.exist');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[4].type).equal('choice');
+          expect(qJson.item[4].text).equal('Valueset radio-button');
+          expect(qJson.item[4].extension[1]).to.deep.equal(itemControlExtensions['radio-button']);
+        });
+
+        cy.getTreeNode('Valueset check-box').click();
+        cy.get(answerMethodsValueSetRadio).should('be.checked');
+        cy.get(dropDownBtn).should('be.visible');
+        cy.get(dropDownRadio).should('not.be.checked');
+        cy.get(acBtn).should('be.visible');
+        cy.get(acRadio).should('not.be.checked');
+        cy.get(checkboxBtn).should('be.visible');
+        cy.get(checkRadio).should('be.checked');
+        cy.get(radioBtn).should('not.exist');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[5].type).equal('choice');
+          expect(qJson.item[5].text).equal('Valueset check-box');
+          expect(qJson.item[5].repeats).equal(true);
+          expect(qJson.item[5].extension[1]).to.deep.equal(itemControlExtensions['check-box']);
+        });
       });
     });
 
@@ -954,9 +1120,13 @@ describe('Home page', () => {
 
     describe('Item level fields: advanced', () => {
       beforeEach(() => {
-        cy.advancedFields().click();
+        cy.expandAdvancedFields();
         cy.tsUrl().should('be.visible'); // Proof of advanced panel expansion
       });
+      afterEach(() => {
+        cy.collapseAdvancedFields();
+      });
+
       it('should support conditional display with answer coding source', () => {
         cy.addAnswerOptions();
         cy.contains('Add new item').scrollIntoView().click();
@@ -1161,7 +1331,6 @@ describe('Home page', () => {
         cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
 
         cy.contains('button', 'Edit questions').click();
-        cy.advancedFields().click();
         cy.toggleTreeNodeExpansion('Family member health history');
         cy.toggleTreeNodeExpansion('Living?');
         cy.clickTreeNode('Living?');
@@ -1203,7 +1372,6 @@ describe('Home page', () => {
         cy.uploadFile(sampleFile, true); // Avoid warning form loading based on item or form
         cy.get('#title').should('have.value', 'Terminology server sample form');
         cy.contains('button', 'Edit questions').click();
-        cy.advancedFields().click();
         cy.tsUrl().should('be.visible').should('have.value', 'http://example.com/r4');
         CypressUtil.assertExtensionsInQuestionnaire(
           '/item/0/extension',
@@ -1276,7 +1444,6 @@ describe('Home page', () => {
         cy.uploadFile(sampleFile, true);
         cy.get('#title').should('have.value', 'Form with observation link period');
         cy.contains('button', 'Edit questions').click();
-        cy.advancedFields().click();
         cy.get('@codeYesRadio').should('be.checked');
         cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
         cy.get('[id^="observationLinkPeriod"]').as('timeWindow')
@@ -1348,7 +1515,6 @@ describe('Home page', () => {
           cy.uploadFile(sampleFile, true);
           cy.get('#title').should('have.value', 'Form with observation extract');
           cy.contains('button', 'Edit questions').click();
-          cy.advancedFields().click();
           cy.get('@codeYesRadio').should('be.checked');
           cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
 

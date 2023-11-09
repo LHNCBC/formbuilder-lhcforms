@@ -56,6 +56,17 @@ export class CypressUtil {
   }
 
   /**
+   * Get array of extensions which match a given extension uri.
+   *
+   * @param item - Object with extensions.
+   * @param matchingExtUrl - URI of the extensions.
+   */
+  static getExtensions(item, matchingExtUrl) {
+    let extensions = item?.extension || null;
+    return extensions?.filter((e) => e.url === matchingExtUrl);
+  };
+
+  /**
    * Assert extensions (array of extensions) which match a given extension uri.
    *
    * @param extensionPtrInQuestionnaire - json pointer pointing to an extension field in questionnaire json.
@@ -134,5 +145,13 @@ export class CypressUtil {
    */
   static getLocalTime(zuluTimeStr) {
     return format(parseISO(zuluTimeStr), 'yyyy-MM-dd hh:mm:ss.SSS a');
+  }
+
+  static mockSnomedEditions() {
+    const fixture = 'snomedEditions.json';
+    cy.intercept('https://snowstorm.ihtsdotools.org/fhir/*', (req) => {
+      console.log(`cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`);
+      req.reply({fixture});
+    });
   }
 }

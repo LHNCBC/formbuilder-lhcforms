@@ -39,6 +39,10 @@ export class FormService {
   _guidingStep$: Subject<string> = new Subject<string>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
+  _advPanelState = {
+    formLevel: true,
+    itemLevel: true
+  }
 
   localStorageError: Error = null;
   treeModel: TreeModel;
@@ -190,6 +194,34 @@ export class FormService {
    */
   get formChanged$(): Observable<SimpleChange> {
     return this._formChanged$.asObservable();
+  }
+
+  /**
+   * Setter for form level advanced panel state
+   */
+  set formLevel(collapse: boolean) {
+    this._advPanelState.formLevel = collapse;
+  }
+
+  /**
+   * Getter for form level advanced panel state
+   */
+  get formLevel(): boolean {
+    return this._advPanelState.formLevel;
+  }
+
+  /**
+   * Setter for item level advanced panel state
+   */
+  set itemLevel(collapse: boolean) {
+    this._advPanelState.itemLevel = collapse;
+  }
+
+  /**
+   * Getter for item level advanced panel state
+   */
+  get itemLevel(): boolean {
+    return this._advPanelState.itemLevel;
   }
 
   /**

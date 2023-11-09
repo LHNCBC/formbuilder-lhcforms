@@ -5,10 +5,181 @@
   "item": [
     {
       "type": "choice",
+      "linkId": "3802912299620",
+      "text": "Answer option dropdown",
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 11
+            }
+          ],
+          "valueCoding": {
+            "system": "s13",
+            "code": "c12",
+            "display": "d11"
+          },
+          "initialSelected": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 12
+            }
+          ],
+          "valueCoding": {
+            "system": "s12",
+            "code": "c12",
+            "display": "d12"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 13
+            }
+          ],
+          "valueCoding": {
+            "system": "s13",
+            "code": "c13",
+            "display": "d13"
+          }
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "1579489327138",
+      "text": "Answer option radio-button",
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 21
+            }
+          ],
+          "valueCoding": {
+            "system": "s21",
+            "code": "c21",
+            "display": "d21"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 22
+            }
+          ],
+          "valueCoding": {
+            "system": "s22",
+            "code": "c22",
+            "display": "d22"
+          },
+          "initialSelected": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 23
+            }
+          ],
+          "valueCoding": {
+            "system": "s23",
+            "code": "c23",
+            "display": "d23"
+          }
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "7150512041732",
+      "text": "Answer option check-box",
+      "repeats": true,
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 31
+            }
+          ],
+          "valueCoding": {
+            "system": "s31",
+            "code": "c31",
+            "display": "d31"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 32
+            }
+          ],
+          "valueCoding": {
+            "system": "s32",
+            "code": "c32",
+            "display": "d32"
+          },
+          "initialSelected": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 33
+            }
+          ],
+          "valueCoding": {
+            "system": "s33",
+            "code": "c33",
+            "display": "d33"
+          },
+          "initialSelected": true
+        }
+      ]
+    },
+    {
+      "type": "choice",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
-          "valueUrl": "https://snowstorm.ihtsdotools.org/fhir"
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
         },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -19,14 +190,62 @@
                 "code": "autocomplete",
                 "display": "Auto-complete"
               }
-            ],
-            "text": "Display answer choices using control with auto-complete"
+            ]
+          }
+        }
+      ],
+      "linkId": "5636893491427",
+      "text": "Valueset autocomplete",
+      "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/ucum&count=4"
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ]
           }
         }
       ],
       "linkId": "332757666007",
-      "text": "Item 0",
-      "answerValueSet": "http://snomed.info/sct/900000000000207008?fhir_vs=ecl%2F%3C+429019009+%7CFinding+related+to+biological+sex+%28finding%29%7C+MINUS+%3C%3C+302081005+%7CFinding+of+sex+of+baby+%28finding%29%7C"
+      "text": "Valueset radio-button",
+      "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/hcpcs&count=4"
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "1108655660295",
+      "text": "Valueset check-box",
+      "repeats": true,
+      "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions&count=4"
     }
   ]
 }

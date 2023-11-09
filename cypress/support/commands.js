@@ -432,11 +432,24 @@ Cypress.Commands.add('getExtensions', (extensionsArray, url) => {
   return extensionsArray?.filter((ext) => ext.url === url);
 });
 
-Cypress.Commands.add('advancedFields', () => {
-  return cy.contains('button', 'Advanced fields');
-});
-
+/**
+ * Get input field for terminology server url
+ */
 Cypress.Commands.add('tsUrl', () => {
   return cy.get('[id="__$terminologyServer"]');
+});
+
+/**
+ * Expand advanced panel
+ */
+Cypress.Commands.add('expandAdvancedFields',() => {
+  cy.contains('button', 'Advanced fields').find('svg.fa-angle-down').click();
+});
+
+/**
+ * Collapse advanced panel
+ */
+Cypress.Commands.add('collapseAdvancedFields',() => {
+  cy.contains('button', 'Advanced fields').find('svg.fa-angle-up').click();
 });
 

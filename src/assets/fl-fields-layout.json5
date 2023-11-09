@@ -27,7 +27,8 @@
           { field:  "lastReviewDate", col:  12}
         ]
       }
-    ]
+    ],
+    "targetPage": "formLevel"
   },
   overridePropertyLabels: {
     '/properties/name': 'Questionnaire name',

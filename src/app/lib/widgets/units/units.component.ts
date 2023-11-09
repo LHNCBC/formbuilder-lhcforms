@@ -75,7 +75,6 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
   autoComp: any;
 
   dataType = 'string';
-  subscriptions: Subscription [];
 
   constructor(private extensionsService: ExtensionsService) {
     super();

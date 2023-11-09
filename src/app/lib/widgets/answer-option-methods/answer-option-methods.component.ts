@@ -33,10 +33,6 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    const sub = this.formService.formReset$.subscribe(() => {
-      this.updateUI();
-    });
-    this.subscriptions.push(sub);
   }
 
   /**

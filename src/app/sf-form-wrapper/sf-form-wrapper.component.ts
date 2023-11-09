@@ -81,10 +81,7 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
       this.loading = true;
       // Notify the changes to the form.
       this.formService.formChanged(changes.model);
-      // The new form properties may not be updated at the time of this invocation. Wait for next tick to notify.
-      setTimeout(() => {
-        this.formService.resetForm();
-      });
+      this.formService.resetForm();
     }
   }
 
