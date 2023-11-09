@@ -141,7 +141,7 @@ This project follows [Semantic Versioning](http://semver.org/).
  - Fix units in valueQuantity of initial field.
 ### Added
  - Add app version information to the header.
- - Add tabindex to active node in side bar tree to improve accessibility.
+ - Add tabindex to active node in sidebar tree to improve accessibility.
 
 ## [7.0.14]  2022-07-07
 ### Fixed
@@ -202,7 +202,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [7.0.0]  2021-12-30
 ### Feature
-- This version of form builder is revised using angular2 frame work.
+- This version of form builder is revised using angular2 framework.
   The user interface is revised aligning with FHIR questionnaire definition.
 
 ## [6.5.2]  2021-10-05
@@ -260,7 +260,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [6.3.1]  2020-12-01
 ### Fixed
-- Display FHIR search results, even if Bundle.total is absent.
+- Display FHIR search results, even if `Bundle.total` is absent.
 
 ## [6.3.0]  2020-10-14
 ### Added
@@ -378,12 +378,12 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [3.1.4]  2019-08-28
 ### Fixed.
-- Fix a bug in conversion of Questionnaire.code in form level fields.
+- Fix a bug in conversion of `Questionnaire.code` in form level fields.
 - Fix a bug in importing FHIR Questionnaire without meta field.
 
 ## [3.1.3]  2019-08-15
 ### Fixed.
-- Fixed overwriting of linkid in enableWhen.question, when converted to FHIR Questionnaire.
+- Fixed overwriting of linkId in `enableWhen.question`, when converted to FHIR Questionnaire.
 
 ### Changed
 - Removed restriction on insisting code for answer lists.
@@ -404,7 +404,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [3.0.10]  2019-07-19
 ### Added.
-- Added a warning message about loosing the changes when the browser tab is closed or new form is imported.
+- Added a warning message about losing the changes when the browser tab is closed or new form is imported.
 
 ## [3.0.9]  2019-06-06
 ### Changed.
@@ -444,7 +444,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [3.0.1]  2019-03-08
 ### Fixed.
--  Whitelist apis.google.com to allow google/facebook/twitter logins.
+-  Whitelist apis.google.com to allow, google/facebook/twitter logins.
 
 ## [3.0.0]  2019-02-07
 ### Added.
@@ -467,7 +467,7 @@ servers are tagged with supported FHIR version such as R4, STU3 etc.
 
 ## [2.1.2]  2018-11-27
 ### Fixed.
--  Add google analytics to white list of content security policy.
+-  Add Google Analytics to white list of content security policy.
 
 ## [2.1.1]  2018-11-27
 ### Fixed.
@@ -484,7 +484,7 @@ will help to pre-configure the express app with customized middlewares before do
 form builder specific configurations.
 
 This is a breaking change due to signature changes in import/require statements if using
-this as an npm package.
+this as a npm package.
 
 ## [1.0.4]  2018-10-17
 ### Fixed
@@ -525,7 +525,7 @@ ranked higher during the auto-completion.
 ## [0.8.5]  2018-06-07
 ### Changed
 - Changed units lookup from static list to ajax call to clinical table search
-  service and used table format display for auto completion.
+  service and used table format display for auto-completion.
 
 ## [0.8.4]  2018-06-01
 ### Added
@@ -533,7 +533,7 @@ ranked higher during the auto-completion.
 
 ## [0.8.3]  2018-05-24
 ### Added
-- Added tags for google analytics
+- Added tags for Google Analytics
 
 ## [0.8.2]  2018-05-14
 ### Fixed
@@ -579,9 +579,9 @@ ranked higher during the auto-completion.
 
 ## [0.5.0]  2017-05-31
 ### Added
-- Added popup menu to the nodes on the side bar.
+- Added popup menu to the nodes on the sidebar.
 - Added dialog box to capture target item to
-  move nodes on the side bar using popup menu items.
+  move nodes on the sidebar using popup menu items.
 ### Fixed
 - Addressed some accessibility issues.
 - Fixed converting section/header to regular item
