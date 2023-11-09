@@ -780,7 +780,7 @@ describe('Home page', () => {
           expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
         });
 
-        cy.getTreeNode('Answer option radio-button').click();
+        cy.clickTreeNode('Answer option radio-button');
         cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).and('not.be.checked');
@@ -795,7 +795,7 @@ describe('Home page', () => {
           expect(qJson.item[1].extension).to.deep.equal([itemControlExtensions['radio-button']]);
         });
 
-        cy.getTreeNode('Answer option check-box').click();
+        cy.clickTreeNode('Answer option check-box');
         cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).and('not.be.checked');
@@ -811,7 +811,7 @@ describe('Home page', () => {
           expect(qJson.item[2].extension).to.deep.equal([itemControlExtensions['check-box']]);
         });
 
-        cy.getTreeNode('Valueset autocomplete').click();
+        cy.clickTreeNode('Valueset autocomplete');
         cy.get(answerMethodsValueSetRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).should('not.be.checked');
@@ -827,7 +827,7 @@ describe('Home page', () => {
           expect(qJson.item[3].extension[1]).to.deep.equal(itemControlExtensions.autocomplete);
         });
 
-        cy.getTreeNode('Valueset radio-button').click();
+        cy.clickTreeNode('Valueset radio-button');
         cy.get(answerMethodsValueSetRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).should('not.be.checked');
@@ -843,7 +843,7 @@ describe('Home page', () => {
           expect(qJson.item[4].extension[1]).to.deep.equal(itemControlExtensions['radio-button']);
         });
 
-        cy.getTreeNode('Valueset check-box').click();
+        cy.clickTreeNode('Valueset check-box');
         cy.get(answerMethodsValueSetRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).should('not.be.checked');
