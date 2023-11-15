@@ -19,7 +19,7 @@
                [attr.required]="schema.isRequired ? '' : null"
                [lfbDisableControl]="schema.disabled">
         <div ngbDropdown class="" #myDropdown="ngbDropdown" placement="bottom-right">
-          <button class="btn btn-sm btn-outline-primary rounded-0 rounded-end" [attr.id]="id+'dropdownButton'" ngbDropdownToggle>{{cssButtonLabel()}}</button>
+          <button type="button" class="btn btn-sm btn-outline-primary rounded-0 rounded-end" [attr.id]="id+'dropdownButton'" ngbDropdownToggle>{{cssButtonLabel()}}</button>
           <div ngbDropdownMenu [attr.aria-labelledby]="id+'dropdownButton'" style="{height: 200px; width: 200px}">
             <form class="p-1" [attr.id]="id+'dropdownForm'">
               <div>
