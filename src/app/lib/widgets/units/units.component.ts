@@ -149,14 +149,23 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
           UnitsComponent.ucumSystemUrl, data.item_code, selectedUnit[1]));
       }
       else {
-        this.updateUnits(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
-          null, data.final_val, data.final_val));
+        const unitExt = this.getUnitExtension();
+        if(unitExt?.valueCoding?.display !== data.final_val) {
+          this.updateUnits(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+            null, data.final_val, data.final_val));
+        }
       }
     });
 
   }
 
 
+  /**
+   * Get unit extension.
+   */
+  getUnitExtension(): fhir.Extension {
+    return this.extensionsService.getFirstExtensionByUrl(UnitsComponent.unitsExtUrl[this.dataType]);
+  }
   /**
    * Update unit extensions for integer/decimal and quantity types.
    *

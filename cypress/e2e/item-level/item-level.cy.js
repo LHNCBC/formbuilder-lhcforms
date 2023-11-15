@@ -952,6 +952,24 @@ describe('Home page', () => {
           }
         });
       });
+
+      cy.clickTreeNode('Item with invalid units');
+      cy.get('@units').should('have.value', 'X Y');
+      cy.contains('button', 'Preview').click();
+      cy.contains('mat-dialog-actions button', 'Close').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[1].extension).to.deep.equal([{
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit',
+          valueCoding: {
+            system: 'http://x.y',
+            code: 'XY',
+            display: 'X Y'
+          }
+        }, {
+          "url": "http://dummy.org",
+          "valueInteger": 2
+        }]);
+      });
     });
 
     it('should add/edit css to text and prefix fields', () => {
