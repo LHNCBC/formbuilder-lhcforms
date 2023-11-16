@@ -42,13 +42,13 @@
       id: "string",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 textline-widget form-control"
+      controlClasses: "col-sm-10 form-control"
     },
     textArea: {
       id: "textarea",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 textline-widget form-control"
+      controlClasses: "col-sm-10 form-control"
     },
     inputDate: {
       id: "date",

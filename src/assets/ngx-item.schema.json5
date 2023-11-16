@@ -1011,7 +1011,7 @@
         "id": "answer-value-set",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col textline-widget form-control form-control-sm"
+        "controlClasses": "col form-control form-control-sm"
       }
     },
     "answerOption": {

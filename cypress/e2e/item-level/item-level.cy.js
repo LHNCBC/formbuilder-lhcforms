@@ -780,7 +780,7 @@ describe('Home page', () => {
           expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
         });
 
-        cy.getTreeNode('Answer option radio-button').click();
+        cy.clickTreeNode('Answer option radio-button');
         cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).and('not.be.checked');
@@ -795,7 +795,7 @@ describe('Home page', () => {
           expect(qJson.item[1].extension).to.deep.equal([itemControlExtensions['radio-button']]);
         });
 
-        cy.getTreeNode('Answer option check-box').click();
+        cy.clickTreeNode('Answer option check-box');
         cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).and('not.be.checked');
@@ -811,7 +811,7 @@ describe('Home page', () => {
           expect(qJson.item[2].extension).to.deep.equal([itemControlExtensions['check-box']]);
         });
 
-        cy.getTreeNode('Valueset autocomplete').click();
+        cy.clickTreeNode('Valueset autocomplete');
         cy.get(answerMethodsValueSetRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).should('not.be.checked');
@@ -827,7 +827,7 @@ describe('Home page', () => {
           expect(qJson.item[3].extension[1]).to.deep.equal(itemControlExtensions.autocomplete);
         });
 
-        cy.getTreeNode('Valueset radio-button').click();
+        cy.clickTreeNode('Valueset radio-button');
         cy.get(answerMethodsValueSetRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).should('not.be.checked');
@@ -843,7 +843,7 @@ describe('Home page', () => {
           expect(qJson.item[4].extension[1]).to.deep.equal(itemControlExtensions['radio-button']);
         });
 
-        cy.getTreeNode('Valueset check-box').click();
+        cy.clickTreeNode('Valueset check-box');
         cy.get(answerMethodsValueSetRadio).should('be.checked');
         cy.get(dropDownBtn).should('be.visible');
         cy.get(dropDownRadio).should('not.be.checked');
@@ -895,7 +895,7 @@ describe('Home page', () => {
       cy.get('@units').type('inch');
       cy.get('#searchResults').should('be.visible');
       cy.contains('#completionOptions tr', '[in_i]').click();
-      cy.get('@units').last().should('have.value','inch');
+      cy.get('@units').should('have.value','inch');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('decimal');
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
@@ -903,19 +903,54 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].valueCoding.code).equal('[in_i]');
         expect(qJson.item[0].extension[0].valueCoding.display).equal('inch');
       });
+      cy.get('@units').clear();
+      // Invoke preview to trigger update.
+      cy.contains('button', 'Preview').click();
+      cy.contains('mat-dialog-actions button', 'Close').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('decimal');
+        expect(qJson.item[0].extension).undefined;
+      });
     });
 
     it('should import decimal/integer units', () => {
       const sampleFile = 'decimal-type-sample.json';
       let fixtureJson;
-      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.readFile('cypress/fixtures/' + sampleFile).should((json) => {
+        fixtureJson = json
+      });
       cy.uploadFile(sampleFile, true);
       cy.contains('button', 'Edit questions').click();
       cy.get('#type option:selected').should('have.text', 'decimal');
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
-      cy.get('[id^="units"]').should('have.value', 'inch');
+      cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson).to.deep.equal(fixtureJson);
+      });
+
+      cy.get('@units').clear();
+      // Invoke preview to trigger update.
+      cy.contains('button', 'Preview').click();
+      cy.contains('mat-dialog-actions button', 'Close').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0]).to.deep.equal(fixtureJson.item[0].extension[1]);
+      });
+
+      cy.get('@units').type('m');
+      cy.contains('#completionOptions tr', 'meter').first().click();
+      cy.get('@units').should('have.value', 'meter');
+      cy.contains('button', 'Preview').click();
+      cy.contains('mat-dialog-actions button', 'Close').click();
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0]).to.deep.equal(fixtureJson.item[0].extension[1]);
+        expect(qJson.item[0].extension[1]).to.deep.equal({
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit',
+          valueCoding: {
+            system: 'http://unitsofmeasure.org',
+            code: 'm',
+            display: 'meter'
+          }
+        });
       });
     });
 
@@ -1074,9 +1109,16 @@ describe('Home page', () => {
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Quantity Sample');
       cy.contains('button', 'Edit questions').click();
+      cy.get('@type').contains('quantity');
+      cy.get('[id^="units"]').as('units').should('be.visible');
+      cy.get('@units').prev('ul').as('selectedUnits');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
       });
+      cy.get('@selectedUnits').find('li').contains('xx').as('nonUcum');
+      cy.get('@selectedUnits').find('li').contains('meter').as('ucum');
+      cy.get('@nonUcum').contains('button', '×').click();
+
     });
 
     it('should create quantity type with initial quantity unit', () => {
@@ -1123,6 +1165,7 @@ describe('Home page', () => {
         cy.expandAdvancedFields();
         cy.tsUrl().should('be.visible'); // Proof of advanced panel expansion
       });
+
       afterEach(() => {
         cy.collapseAdvancedFields();
       });

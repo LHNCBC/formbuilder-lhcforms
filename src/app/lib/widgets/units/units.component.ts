@@ -129,9 +129,16 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
     // Setup selection handler
     LForms.Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
       if(data.removed) {
-        this.extensionsService.removeExtension((ext) => {
-          return ext.value.url === UnitsComponent.unitsExtUrl[this.dataType] &&
-                 ext.value.valueCoding.code === data.final_val;
+        this.extensionsService.removeExtension((extProp) => {
+          const ext = extProp.value;
+          return ext.url === UnitsComponent.unitsExtUrl[this.dataType] &&
+            ((ext.valueCoding.code && data.item_code) ?
+              ext.valueCoding.code === data.item_code : ext.valueCoding.display === data.final_val)
+        });
+      }
+      else if(this.options.maxSelect === 1 && !(data.final_val?.trim())) {
+        this.extensionsService.removeExtension((extProp) => {
+          return extProp.value.url === UnitsComponent.unitsExtUrl[this.dataType];
         });
       }
       else if(data.used_list) {
