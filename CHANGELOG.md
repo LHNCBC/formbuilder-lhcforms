@@ -445,7 +445,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [3.0.1]  2019-03-08
 ### Fixed.
--  Whitelist apis.google.com to allow, google/facebook/twitter logins.
+-  Whitelist apis.google.com to allow google/facebook/twitter logins.
 
 ## [3.0.0]  2019-02-07
 ### Added.
