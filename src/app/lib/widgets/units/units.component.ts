@@ -166,6 +166,8 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
   getUnitExtension(): fhir.Extension {
     return this.extensionsService.getFirstExtensionByUrl(UnitsComponent.unitsExtUrl[this.dataType]);
   }
+
+
   /**
    * Update unit extensions for integer/decimal and quantity types.
    *

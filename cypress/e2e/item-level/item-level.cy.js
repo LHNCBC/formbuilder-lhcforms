@@ -953,7 +953,7 @@ describe('Home page', () => {
         });
       });
 
-      cy.clickTreeNode('Item with invalid units');
+      cy.clickTreeNode('Item with non-ucum units');
       cy.get('@units').should('have.value', 'X Y');
       cy.contains('button', 'Preview').click();
       cy.contains('mat-dialog-actions button', 'Close').click();
