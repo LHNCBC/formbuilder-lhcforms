@@ -6,6 +6,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Fixed a bug where the unit extensions are not removed when deleted from the input field.
 - Fixed a bug where the system field is missing after loading an item with a non-ucum unit.
+- Changed the help text field to allow multi-line input.
 
 ## [9.2.2] 2023-10-13
 ### Added
