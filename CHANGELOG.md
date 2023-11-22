@@ -4,7 +4,9 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [9.2.3] 2023-10-27
 ### Fixed
-- Fixed a bug where unit extensions not removed when deleted from the input field.
+- Fixed a bug where the unit extensions are not removed when deleted from the input field.
+- Fixed a bug where the system field is missing after loading an item with a non-ucum unit.
+- Changed the help text field to allow multi-line input.
 
 ## [9.2.2] 2023-10-13
 ### Added
@@ -444,7 +446,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [3.0.1]  2019-03-08
 ### Fixed.
--  Whitelist apis.google.com to allow, google/facebook/twitter logins.
+-  Whitelist apis.google.com to allow google/facebook/twitter logins.
 
 ## [3.0.0]  2019-02-07
 ### Added.
