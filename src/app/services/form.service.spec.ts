@@ -24,4 +24,22 @@ describe('FormService', () => {
     expect(clonedSample.item[0].__$helpText).toBe(sampleJson.item[0].item[0].text);
     expect(clonedSample.item[0].item).toBeUndefined();
   });
+
+  it('should traverse to ancestors', () => {
+    const e = 'x';
+    const d: any = {e};
+    const c: any = {d};
+    const b: any = {c};
+    const a: any = {b};
+    b.parent = a;
+    c.parent = b;
+    d.parent = c;
+
+    let reply = service.traverseAncestors(d, (n) => {return true});
+    expect(reply).toEqual([d, c, b, a]);
+    reply = service.traverseAncestors(d, (n) => {return n !== c});
+    expect(reply).toEqual([d, c]);
+    reply = service.traverseAncestors(b, (n) => {return true});
+    expect(reply).toEqual([b, a]);
+  });
 });

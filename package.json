@@ -22,7 +22,7 @@
     "create-version-file": "echo {\\\"version\\\": \\\"${npm_package_version}\\\"} > ./src/assets/version.json",
     "build": "npm run create-version-file && npm run copy-lforms && ng build --configuration production",
     "test": "npm run unit-test && npm run e2e:prod",
-    "unit-test": "source ./bashrc.formbuilder && ng test --watch=false --browsers ChromeHeadless",
+    "unit-test": "source ./bashrc.formbuilder && ng test --watch=false",
     "lint": "ng lint",
     "cy:verify": "cypress verify",
     "e2e": "source ./bashrc.formbuilder && ng e2e",

@@ -11,7 +11,9 @@ import {fhirPrimitives} from '../fhir';
  * to extension: ArrayProperty whenever the model has changed, typically in ngOnChanges().
  */
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 // @ts-ignore
 export class ExtensionsService {
   extensionsProp: ArrayProperty;

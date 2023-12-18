@@ -83,14 +83,15 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   questionnaireChange = new EventEmitter<fhir.Questionnaire>();
   loading = false;
   formValue: fhir.Questionnaire;
+  extensionsService: ExtensionsService;
   constructor(
     private http: HttpClient,
     private dataSrv: FetchService,
     private modal: NgbModal,
-    private formService: FormService,
-    private extensionsService: ExtensionsService
+    private formService: FormService
   ) {
     this.qlSchema = this.formService.getFormLevelSchema();
+    this.extensionsService = this.formService.formLevelExtensionService;
   }
 
   ngAfterViewInit() {

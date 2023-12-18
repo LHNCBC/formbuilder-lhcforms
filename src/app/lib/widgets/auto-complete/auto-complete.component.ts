@@ -1,19 +1,46 @@
 /**
  * Define auto complete options
  */
-import {Component, OnInit, Input, Output, EventEmitter} from '@angular/core';
-import {HttpClient, HttpResponse} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {FormControl} from '@angular/forms';
-import {debounceTime, distinctUntilChanged, filter, map, startWith, switchMap} from 'rxjs/operators';
-import {FetchService} from '../../../services/fetch.service';
+import {
+  Component,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+  ViewChild,
+  ElementRef,
+  OnDestroy,
+  AfterViewInit,
+  SimpleChanges, OnChanges
+} from '@angular/core';
+import {Subscription} from 'rxjs';
+import fhir from 'fhir/r4';
+import {fhirPrimitives} from '../../../fhir';
+import integer = fhirPrimitives.integer;
+import {HttpParams} from '@angular/common/http';
+declare var LForms: any;
 
-export interface Options {
-  searchUrl: string;
-  httpOptions: any;
-  processResponse?: (response: HttpResponse<any>) => Observable<AutoCompleteResult[]>;
+export interface FhirOptions {
+  fhirServer: fhirPrimitives.url;
+  valueSetUri: fhirPrimitives.uri;
+  operation?: string;
+  count?: number;
+}
+export interface LhcAutoCompleteOptions {
+  url?: fhirPrimitives.url;
+  matchListValue?: boolean;
+  maxSelect?: integer;
+  suggestionMode?: integer;
+  autocomp?: boolean;
+  fhir?: boolean;
+  search?: (element, count) => Promise<any>;
+  toolTip?: string;
 }
 
+export interface AutoCompleteOptions {
+  acOptions: LhcAutoCompleteOptions;
+  fhirOptions?: FhirOptions;
+}
 export interface AutoCompleteResult {
 /**
  * Define result item for auto complete results
@@ -22,82 +49,148 @@ export interface AutoCompleteResult {
   id: string;
 }
 @Component({
+  standalone: true,
   selector: 'lfb-auto-complete',
   template: `
-    <mat-form-field>
-      <input type="text"
-             matInput
-             [placeholder]="placeholder"
-             [formControl]="myControl"
-             [matAutocomplete]="autoGroup">
-      <mat-autocomplete autoActiveFirstOption [disableRipple]="true" #autoGroup="matAutocomplete" [panelWidth]="'100%'"
-                        [displayWith]="displayFn" (optionSelected)="selectOption($event.option.value)">
-        <mat-option *ngFor="let result of acResults | async" [value]="result">
-          <div class="container-fluid">
-            <div class="form-row">
-              <div class="col-1"><small>id: {{result.id}}</small></div><div class="col-11"><small>{{result.title}}</small></div>
-            </div>
-          </div>
-        </mat-option>
-      </mat-autocomplete>
-    </mat-form-field>
-  `,
-  styles: ['.mat-form-field {width: inherit; }']
+    <input #ac [attr.id]="elId" type="text" autocomplete="off" class="form-control">
+  `
 })
-export class AutoCompleteComponent implements OnInit {
+export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestroy {
 
-  myControl = new FormControl();
+  static _serialNumber = 0;
+  subscriptions: Subscription [] = [];
   @Input()
-  placeholder;
+  model: fhir.Coding;
   @Input()
-  options: Options;
-  acResults: Observable<AutoCompleteResult[]>;
-  // Selected event
+  options: AutoCompleteOptions;
+
   @Output()
-  optionSelected = new EventEmitter<AutoCompleteResult>();
-  @Input()
-  searchCallback: (term: string) => Observable<AutoCompleteResult[]>;
+  removed = new EventEmitter<fhir.Coding>();
+  @Output()
+  selected = new EventEmitter<fhir.Coding>();
+  @ViewChild('ac') acElementRef: ElementRef;
+  el: HTMLInputElement;
+  autoComp: any;
+  elId: string;
 
-  constructor(private http: HttpClient, private lformsService: FetchService) { }
+  constructor() {
+    this.elId = 'lfb-auto-complete-' + AutoCompleteComponent._serialNumber++;
+  }
 
-  ngOnInit() {
-    if (!this.options.httpOptions.observe) {
-      this.options.httpOptions.observe = 'body' as const;
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes.options && !changes.options.firstChange) {
+      this.resetAutocomplete();
     }
-    if (!this.options.httpOptions.response) {
-      this.options.httpOptions.responseType = 'json' as const;
+  }
+
+  ngAfterViewInit() {
+    this.el = this.acElementRef.nativeElement;
+    this.resetAutocomplete();
+  }
+
+  /**
+   * Reset auto-completer with updated options.
+   */
+  resetAutocomplete() {
+    this.destroyAutocomplete();
+    if(this.options?.fhirOptions) {
+      this.options.acOptions.fhir = true;
+      this.options.acOptions.url = this.createValueSetUrl(this.options.fhirOptions);
     }
-    this.acResults = this.myControl.valueChanges.pipe(
-      startWith(''),
-      filter(value => value.length > 2), // Minimum two characters to search
-      debounceTime(100), // Wait for 100 millis of typing delays
-      distinctUntilChanged(), // Input should be changed
-      switchMap((value) => this._search(value)) // Final search term
-    );
+    this.autoComp = new LForms.Def.Autocompleter.Search(this.el.id, this.options.acOptions.url, this.options.acOptions);
+    if(this.model && (this.model.display || this.model.code)) {
+      this.autoComp.setFieldVal(this.model.display, false);
+      this.autoComp.storeSelectedItem(this.model.display, this.model.code);
+    }
+
+    LForms.Def.Autocompleter.Event.observeListSelections(this.el.id, (data) => {
+      let coding = null;
+      if(data.removed) {
+        this.removed.emit(this.autoComp.getItemData(data.final_val));
+      }
+      else if(this.options.acOptions.maxSelect === 1 && !(data.final_val?.trim())) {
+        this.removed.emit(null);
+      }
+      else if(data.used_list) {
+        coding = this.autoComp.getItemData(data.final_val);
+        this.selected.emit(this.convertLHCCoding(coding));
+      }
+      else {
+        const prevDisplay = this.model?.display;
+        if(prevDisplay && prevDisplay !== data.final_val.trim()) {
+          const display = data.final_val?.trim();
+          coding = null;
+          if(display) {
+            coding = {code: display.replace(/\s+/g, '_'), display};
+          }
+          this.selected.emit(coding);
+        }
+      }
+    });
   }
 
   /**
-   *   Handle user selection of a result item.
-   *   @param result - Selected result item.
+   * Map internal format of an element from ValueSet expansion list, to fhir.Coding
+   * @param lhcCoding - Selected object from Internal auto-complete selection.
    */
-  selectOption(result: AutoCompleteResult) {
-    this.optionSelected.emit(result);
+  convertLHCCoding(lhcCoding: any): fhir.Coding {
+    if(!lhcCoding) {
+      return null;
+    }
+    const coding: fhir.Coding = {};
+    if(lhcCoding.code) {
+      coding.code = lhcCoding.code;
+    }
+    if(lhcCoding.text) {
+      coding.display = lhcCoding.text;
+    }
+    if(lhcCoding.code_system) {
+      coding.system = lhcCoding.code_system;
+    }
+    return coding;
   }
 
   /**
-   * Format result item display
-   * @param result - Result item to format
+   * Format url of the server request based on the request options.
+   * @param fhirOptions - Options to make a request to FHIR server.
    */
-  displayFn(result: AutoCompleteResult) {
-    return result && result.title ? result.title : '';
+  createValueSetUrl(fhirOptions: FhirOptions): fhirPrimitives.url {
+    let ret = null;
+    if(fhirOptions.fhirServer) {
+      const baseUrl = fhirOptions.fhirServer.endsWith('/') ? fhirOptions.fhirServer : fhirOptions.fhirServer + '/';
+      const url = new URL('ValueSet/'+fhirOptions.operation, baseUrl);
+      if(fhirOptions.valueSetUri)  {
+        // The valueSetUri is already encoded. URLSearchParams.set() encodes it again. Decode the original.
+        url.searchParams.set('url', decodeURIComponent(fhirOptions.valueSetUri));
+      }
+      ret = url.toString();
+    }
+    return ret;
+  }
+
+
+  /**
+   * Destroy autocomplete.
+   * Make sure to reset value
+   */
+  destroyAutocomplete() {
+    if(this.autoComp) {
+      this.autoComp.setFieldVal('', false); // autoComp.destroy() does not clear the input box for single-select
+      this.autoComp.destroy();
+      this.autoComp = null;
+    }
   }
 
   /**
-   * Search lforms service
-   * @param value - Search term from the input
-   * @private
+   * Clean up before destroy.
+   * Destroy autocomplete, unsubscribe all subscriptions.
    */
-  _search(value): Observable<AutoCompleteResult []> {
-    return this.searchCallback(value);
+  ngOnDestroy() {
+    this.destroyAutocomplete();
+    this.subscriptions.forEach((s) => {
+      if(s) {
+        s.unsubscribe();
+      }
+    });
   }
 }

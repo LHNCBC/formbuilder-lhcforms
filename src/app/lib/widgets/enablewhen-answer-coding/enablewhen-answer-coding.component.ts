@@ -7,11 +7,20 @@ import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
 import {Subscription} from 'rxjs';
+import {AutoCompleteOptions} from '../auto-complete/auto-complete.component';
+import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+declare var LForms: any;
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
+      <ng-container *ngIf="autoComplete; else answerOption">
+        <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
+      </ng-container>
+    </div>
+
+    <ng-template #answerOption>
       <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
               name="{{name}}" [attr.id]="id"
               class="form-control"
@@ -21,15 +30,30 @@ import {Subscription} from 'rxjs';
           >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
         </ng-container>
       </select>
-    </div>
+    </ng-template>
   `,
   styles: [
   ]
 })
-export class EnablewhenAnswerCodingComponent extends ObjectWidget implements AfterViewInit, OnDestroy {
+export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
 
   subscriptions: Subscription [] = [];
   answerOptions: any[] = [];
+  autoComplete = false;
+  acOptions: AutoCompleteOptions = {
+    acOptions: {
+      matchListValue: true,
+      maxSelect: 1,
+      suggestionMode: LForms.Def.Autocompleter.USE_STATISTICS,
+      autocomp: true,
+    },
+    fhirOptions: {
+      fhirServer: null,
+      valueSetUri: null,
+      operation: '$expand',
+      count: 7
+    }
+  }
   model: fhir.Coding;
 
   /**
@@ -41,37 +65,76 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
     super();
   }
 
+  ngOnInit() {
+    const initValue = this.formProperty.value;
+    if(initValue) {
+      this.model = initValue;
+    }
+    this.init(this.formProperty.searchProperty('question').value);
+  }
+
+
   /**
    * Component initialization.
    */
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
 
-    this.formProperty.valueChanges.subscribe((newValue) => {
+    let sub = this.formProperty.valueChanges.subscribe((newValue) => {
       this.model = newValue;
     });
+    this.subscriptions.push(sub);
 
     // Listen to question value changes.
-    this.formProperty.searchProperty('question').valueChanges.subscribe((source) => {
-      this.answerOptions = [];
-      if (!source) {
-        return;
-      }
-      const answerType = this.formProperty.searchProperty('__$answerType').value;
-
-      if (answerType === 'choice' || answerType === 'open-choice') {
-        const sourceNode = this.formService.getTreeNodeByLinkId(source);
-        this.answerOptions =
-          (sourceNode && sourceNode.data && sourceNode.data.answerOption)
-            ? sourceNode.data.answerOption : [];
-        this.answerOptions = this.answerOptions.filter((opt) => {
-          return !!opt?.valueCoding?.code || !!opt?.valueCoding?.display;
-        });
-      }
-      this.model = !this.model && this.answerOptions?.length > 0 ? this.answerOptions[0] : this.model;
+    sub = this.formProperty.searchProperty('question').valueChanges.subscribe((source) => {
+      this.init(source);
     });
+    this.subscriptions.push(sub);
   }
 
+
+  /**
+   * Initialize the auto-complete widget
+   * @param sourceLinkId - Link id of the enableWhen source.
+   */
+  init(sourceLinkId: string) {
+    this.answerOptions = [];
+    this.autoComplete = false;
+    if (!sourceLinkId) {
+      return;
+    }
+    const answerType = this.formProperty.searchProperty('__$answerType').value;
+
+    if (answerType === 'choice' || answerType === 'open-choice') {
+      const sourceNode = this.formService.getTreeNodeByLinkId(sourceLinkId);
+      const answerValueSet = sourceNode?.data?.answerValueSet?.trim();
+      this.autoComplete = !!answerValueSet;
+      if(answerValueSet) {
+        this.acOptions.fhirOptions.valueSetUri = decodeURI(answerValueSet);
+        this.acOptions.fhirOptions.fhirServer = this.formService.getPreferredTerminologyServer(sourceNode);
+      }
+      else {
+        this.answerOptions = this.processSourceAnswers(sourceNode?.data);
+      }
+    }
+    this.model = !this.model && this.answerOptions?.length > 0 ? this.answerOptions[0] : this.model;
+  }
+
+  /**
+   * Pick valid answers from the answerOption array.
+   * @param sourceItem - Source item
+   */
+  processSourceAnswers(sourceItem: fhir.QuestionnaireItem): any [] {
+    let ret = [];
+    if(sourceItem?.answerOption?.length) {
+      ret = (sourceItem?.answerOption)
+        ? sourceItem.answerOption : [];
+      ret = ret.filter((opt) => {
+        return !!opt?.valueCoding?.code || !!opt?.valueCoding?.display;
+      });
+    }
+    return ret;
+  }
 
 
   /**
@@ -79,7 +142,8 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements Aft
    * @param coding - Option value
    */
   modelChanged(coding: fhir.Coding) {
-    this.formProperty.setValue(coding, false);
+    this.model = coding || {};
+    this.formProperty.reset(this.model, false);
   }
 
 
