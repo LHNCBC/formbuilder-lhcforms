@@ -7,8 +7,10 @@ import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
 const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
 const ucumUrl = 'http://unitsofmeasure.org';
-
+const snomedEclText =
+  '< 429019009 |Finding related to biological sex|';
 describe('Home page', () => {
+  beforeEach(CypressUtil.mockSnomedEditions);
   describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
@@ -23,7 +25,6 @@ describe('Home page', () => {
     }];
 
     beforeEach(() => {
-      CypressUtil.mockSnomedEditions();
       cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
@@ -554,8 +555,7 @@ describe('Home page', () => {
     });
 
     it('should import a form with an item having SNOMED CT answerValueSet', () => {
-      const decodedValueTextPart = '< 429019009 |Finding related to biological sex';
-      const encodedUriPart = 'fhir_vs='+encodeURIComponent('ecl/' + decodedValueTextPart);
+      const encodedUriPart = 'fhir_vs='+encodeURIComponent('ecl/' + snomedEclText);
 
       cy.uploadFile('snomed-answer-value-set-sample.json', true);
       cy.get('#title').should('have.value', 'SNOMED answer value set form');
@@ -566,7 +566,7 @@ describe('Home page', () => {
       cy.get('lfb-answer-option').should('not.exist');
       cy.get('#answerValueSet_non-snomed').should('not.exist');
 
-      cy.get('#answerValueSet_ecl').as('ecl').should('contain.value',decodedValueTextPart);
+      cy.get('#answerValueSet_ecl').as('ecl').should('contain.value',snomedEclText);
       cy.get('#answerValueSet_edition').as('edition')
         .find('option:selected').should('have.text', 'International Edition (900000000000207008)');
       cy.get('#answerValueSet_version').as('version')
@@ -610,12 +610,16 @@ describe('Home page', () => {
         expect(qJson.item[2].answerValueSet).to.be.undefined;
       });
 
+      cy.intercept('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**',
+        {fixture: 'snomed-ecl-expression-mock.json'}).as('snomedReq');
+
       // Assertions in preview.
       cy.contains('button', 'Preview').click();
 
       // SNOMED CT answers
       cy.contains('.mdc-tab.mat-mdc-tab', 'View Rendered Form').click();
       cy.get('#1\\/1').as('inputBox1').click();
+      cy.wait('@snomedReq');
       cy.get('#searchResults').should('be.visible');
       cy.get('@inputBox1').type('{downarrow}{enter}', {force: true});
       cy.get('#searchResults').should('not.be.visible');
@@ -1319,7 +1323,7 @@ describe('Home page', () => {
         cy.get(r2Answer).should('not.exist');
       });
 
-      it('should work with operator exists value conditional display', () => {
+      it('should work with operator exists value in conditional display', () => {
         // cy.selectDataType('choice');
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
@@ -1382,6 +1386,91 @@ describe('Home page', () => {
         cy.get(errorIcon1El).should('be.visible');
         cy.get(r1DecimalAnswer).type('2.3');
         cy.get(errorIcon1El).should('not.exist');
+      });
+
+      it('should support source item with answerValueSet in conditional display', () => {
+        cy.selectDataType('choice');
+        cy.get('label[for^="__\\$answerOptionMethods_value-set"]').click();
+        cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
+        cy.tsUrl().scrollIntoView().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
+        cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 1');
+
+        const r1Question = '[id^="enableWhen.0.question"]';
+        const r1Operator = '[id^="enableWhen.0.operator"]';
+        const r1Answer = 'lfb-enable-when table tbody tr:nth-child(1) lfb-enablewhen-answer-coding lfb-auto-complete input';
+        cy.get(r1Question).as('r1Question').type('{enter}');
+        cy.get(r1Operator).as('r1Operator').select('=');
+        cy.get(r1Answer).click();
+        cy.get(r1Answer).type('dia');
+        cy.get('#searchResults').contains('Diabetes mellitus').click();
+
+        cy.questionnaireJSON().should((json) => {
+          expect(json.item[1].enableWhen).to.deep.equal([
+            {
+              question: json.item[0].linkId,
+              operator: '=',
+              answerCoding: {
+                system: 'http://clinicaltables.nlm.nih.gov/fhir/CodeSystem/conditions',
+                code: '2143',
+                display: 'Diabetes mellitus'
+              }
+            }
+          ]);
+        });
+      });
+
+      it('should support source item with SNOMED answerValueSet in conditional display', () => {
+        cy.selectDataType('choice');
+        cy.get('label[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
+        cy.get('#answerValueSet_ecl').type(snomedEclText);
+        cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
+        cy.contains('Add new item').scrollIntoView().click();
+
+        const r1Question = '[id^="enableWhen.0.question"]';
+        const r1Operator = '[id^="enableWhen.0.operator"]';
+        const r1Answer = 'lfb-enable-when table tbody tr:nth-child(1) lfb-enablewhen-answer-coding lfb-auto-complete input';
+        cy.get(r1Question).as('r1Question').type('{enter}');
+        cy.get(r1Operator).as('r1Operator').select('=');
+        cy.get(r1Answer).click();
+        cy.intercept(
+          {
+            method: 'GET',
+            https: true,
+            hostname: 'snowstorm.ihtsdotools.org',
+            pathname: '/fhir/ValueSet/$expand',
+            query: {
+              url: /^http:\/\/snomed.info\/sct\/900000000000207008\?fhir_vs=ecl\//,
+              filter: /m(a(le?)?)?/,
+              _format: 'application/json',
+              count: '7'
+            },
+            times: 4
+          },
+          {
+            fixture: 'snomed-ecl-expression-mock.json'
+          }).as('snomedReq');
+
+
+        cy.get(r1Answer).type('male');
+        cy.wait('@snomedReq');
+        cy.get('#searchResults li:nth-child(1)').click();
+        cy.get(r1Answer).should('have.value', 'Intersex');
+
+        cy.questionnaireJSON().should((json) => {
+          expect(json.item[1].enableWhen).to.deep.equal([
+            {
+              question: json.item[0].linkId,
+              operator: '=',
+              answerCoding: {
+                system: 'http://snomed.info/sct',
+                code: '32570691000036108',
+                display: 'Intersex'
+              }
+            }
+          ]);
+        });
       });
 
       it('should import form with conditional display field', () => {

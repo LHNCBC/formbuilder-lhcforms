@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
-import {BehaviorSubject, Observable, Observer, Subject, Subscription} from 'rxjs';
+import {Observable, Subject, Subscription} from 'rxjs';
 import {fhirPrimitives} from '../fhir';
 
 /**
@@ -12,17 +12,22 @@ import {fhirPrimitives} from '../fhir';
  */
 
 @Injectable({
+  // Provide a service in the root, which is accessed by form-level fields. The item level fields have their instance of this service.
   providedIn: 'root'
 })
 // @ts-ignore
 export class ExtensionsService {
+  static __ID = 0;
+  _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
   _propertyMap: Map<fhirPrimitives.url, FormProperty []> = new Map();
   _extMap: Map<fhirPrimitives.url, fhir.Extension []> = new Map();
   subscriptions: Subscription [] = [];
   extensionsChange$: Subject<fhir.Extension []> = new Subject<fhir.Extension []>();
 
-  constructor() { }
+  constructor() {
+    this._id = this._id + ExtensionsService.__ID++;
+  }
 
 
   /**

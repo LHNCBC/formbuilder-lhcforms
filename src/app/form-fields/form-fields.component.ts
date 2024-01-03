@@ -5,7 +5,7 @@ import {
   Component,
   Input,
   Output,
-  EventEmitter, OnChanges, AfterViewInit, SimpleChanges, ViewChild
+  EventEmitter, OnChanges, AfterViewInit, SimpleChanges, ViewChild, inject
 } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {FetchService} from '../services/fetch.service';
@@ -18,6 +18,17 @@ import {ArrayProperty, FormComponent, FormProperty} from '@lhncbc/ngx-schema-for
 import {ExtensionsService} from '../services/extensions.service';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 
+/**
+ * Use provider factory to inject extensions service for form level fields. There is one extensionsService provided in root of the
+ * application and is injected into form service (which is also provided in root). This service instance is used for form level fields.
+ * For item level fields, each questionnaire item will have their own extensions service.
+ *
+ * @param formService - Dependency from which the root extensionsService instance is accessed.
+ */
+function configExtensionsServiceFactory(formService: FormService): ExtensionsService {
+  // console.log(`form-fields.component: configExtensionsServiceFactory(): returning ${formService.formLevelExtensionService._id}`);
+  return formService.formLevelExtensionService;
+}
 @Component({
   selector: 'lfb-form-fields',
   template: `
@@ -41,7 +52,11 @@ import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
       </div>
     </div>
   `,
-  providers: [ExtensionsService],
+  providers: [{
+    provide: ExtensionsService,
+    useFactory: configExtensionsServiceFactory,
+    deps: [FormService]
+  }],
   styles: [`
     .content {
       padding: 0.5rem;
@@ -83,15 +98,14 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   questionnaireChange = new EventEmitter<fhir.Questionnaire>();
   loading = false;
   formValue: fhir.Questionnaire;
-  extensionsService: ExtensionsService;
+  formService: FormService = inject(FormService);
+  extensionsService: ExtensionsService = inject(ExtensionsService);
   constructor(
     private http: HttpClient,
     private dataSrv: FetchService,
-    private modal: NgbModal,
-    private formService: FormService
+    private modal: NgbModal
   ) {
     this.qlSchema = this.formService.getFormLevelSchema();
-    this.extensionsService = this.formService.formLevelExtensionService;
   }
 
   ngAfterViewInit() {
