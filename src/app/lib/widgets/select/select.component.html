@@ -7,7 +7,7 @@
                 [ngClass]="labelClasses"
     ></lfb-label>
     <div [ngClass]="controlClasses">
-    <select *ngIf="schema.type!='array'"
+    <select *ngIf="schema.type !== 'array'"
             [formControl]="control"
             name="{{name}}"
             [attr.id]="id"

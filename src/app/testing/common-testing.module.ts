@@ -1,44 +1,37 @@
-import {ChangeDetectorRef, Component, Injectable, Input, NgModule, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, Input, NgModule} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TreeModule} from '@bugsplat/angular-tree-component';
 import {
-  DefaultWidgetRegistry, FormProperty,
-  FormPropertyFactory,
   ISchema,
   SchemaFormModule,
-  SchemaValidatorFactory,
   WidgetRegistry,
-  ZSchemaValidatorFactory,
-  SchemaPreprocessor, ValidatorRegistry, ExpressionCompilerFactory, LogService
 } from '@lhncbc/ngx-schema-form';
 import {HttpClientModule} from '@angular/common/http';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {LayoutModule} from '@angular/cdk/layout';
 import {MatButtonModule} from '@angular/material/button';
-import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatIconModule} from '@angular/material/icon';
 import {MatListModule} from '@angular/material/list';
 import {MatSidenavModule} from '@angular/material/sidenav';
-import {MatToolbar, MatToolbarModule} from '@angular/material/toolbar';
+import {MatToolbarModule} from '@angular/material/toolbar';
 import {AppModule} from '../app.module';
 import {LformsWidgetRegistry} from '../lib/lforms-widget-registry';
 import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  // tslint:disable-next-line:component-selector
+  // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sf-test',
   template: `
     <sf-form [schema]="schema" [(model)]="model"></sf-form>
   `
 })
-export class TestComponent implements OnInit {
+export class TestComponent {
 
   @Input()
   schema: ISchema = {type: 'object', properties: {}};
   @Input()
   model: any;
 
-  ngOnInit() {
-  }
 }
 
 @NgModule({

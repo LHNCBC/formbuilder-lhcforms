@@ -1,7 +1,7 @@
 /**
  * A label with help icon and associated help message.
  */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
@@ -25,7 +25,7 @@ import {CommonModule} from '@angular/common';
     }
   `]
 })
-export class LabelComponent implements OnInit {
+export class LabelComponent {
 
   // Input properties
   @Input()
@@ -39,7 +39,4 @@ export class LabelComponent implements OnInit {
   @Input()
   labelWidthClass: string;
   constructor() { }
-
-  ngOnInit() {
-  }
 }

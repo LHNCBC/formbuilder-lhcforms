@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {FhirService, FHIRServer} from '../../../services/fhir.service';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject} from 'rxjs';
@@ -18,7 +18,7 @@ enum ExportType {
   templateUrl: './fhir-export-dlg.component.html',
   styleUrls: ['./fhir-export-dlg.component.css']
 })
-export class FhirExportDlgComponent implements OnInit {
+export class FhirExportDlgComponent {
 
   private _loading$ = new BehaviorSubject<boolean>(false);
   serverResponse: any;
@@ -49,9 +49,6 @@ export class FhirExportDlgComponent implements OnInit {
    */
   private _set(patch: Partial<State>) {
     Object.assign(this._state, patch);
-  }
-
-  ngOnInit(): void {
   }
 
   /**
