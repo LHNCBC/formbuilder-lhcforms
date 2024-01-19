@@ -336,7 +336,7 @@ export class FormService {
    */
   getPreferredTerminologyServer(sourceNode: ITreeNode) {
     let ret = null;
-    this.traverseAncestors(sourceNode, (node) => {
+    Util.traverseAncestors(sourceNode, (node) => {
       const found = node.data.extension?.find((ext) => {
         return ext.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
       });
@@ -346,26 +346,6 @@ export class FormService {
     if(!ret) {
       const ext = this.formLevelExtensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI)
       ret = ext ? ext.valueUrl : null;
-    }
-    return ret;
-  }
-
-  /**
-   * Traverse up the chain of tree invoking a callback for each node visited. The callback should return false to terminate the traversal.
-   * @param sourceNode - The node to start the traversal.
-   * @param callback - Callback method with the argument of node visited. The function should return true to continue, and false to
-   * terminate the traversal.
-   *
-   * @return - Returns an array consisting the nodes in the order it visited.
-   */
-  traverseAncestors(sourceNode: ITreeNode, callback: (node: ITreeNode) => boolean): any[] {
-    const ret = [];
-    let n = sourceNode;
-    let traverseAncestor = true;
-    while (n && traverseAncestor) {
-      ret.push(n);
-      traverseAncestor = callback(n);
-      n = n.parent;
     }
     return ret;
   }
