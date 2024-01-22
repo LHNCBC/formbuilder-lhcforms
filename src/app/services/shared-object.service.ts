@@ -46,16 +46,6 @@ export class SharedObjectService {
     }
   }
 
-  /**
-   * Set a tree node to share it with listeners.
-   *
-   * @param node - A node in the sidebar tree
-   */
-  /*
-  setNode(node: ITreeNode): void {
-    this.nodeSource$.next(node);
-  }
-  */
 
   set questionnaire(questionnaire: fhir.Questionnaire) {
     this.questionnaireSource$.next(questionnaire);
