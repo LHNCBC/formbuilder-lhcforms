@@ -251,7 +251,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     if(this.itemList.length === 0) {
       this.itemList.push({text: 'Item 0', type: 'string'});
     }
-    this.itemData = this.itemList[0];
     if(this.treeComponent?.treeModel) {
       this.treeComponent?.treeModel.update();
     }
@@ -285,13 +284,17 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Handles tree update event
    */
   onTreeUpdated() {
-    if(!this.treeComponent.treeModel.getFocusedNode()) {
+    this.focusNode = this.treeComponent.treeModel.getFocusedNode();
+    if(!this.focusNode) {
       const node = this.treeComponent.treeModel.getFirstRoot();
       if(node) {
         this.treeComponent.treeModel.setFocusedNode(node);
         this.treeComponent.treeModel.setActiveNode(node, true);
         this.setNode(node);
       }
+    }
+    else {
+      this.treeComponent.treeModel.setActiveNode(this.focusNode, true);
     }
   }
 

@@ -13,12 +13,8 @@
 }
 
 .node-content-wrapper-active,
-.node-content-wrapper.node-content-wrapper-active:hover,
-.node-content-wrapper-active.node-content-wrapper-focused {
-  background-color: lightgrey;
-}
 .node-content-wrapper-focused {
-  background-color: lightgoldenrodyellow;
+  background-color: lightgrey;
 }
 .node-content-wrapper:hover {
   background-color: lightgoldenrodyellow;
