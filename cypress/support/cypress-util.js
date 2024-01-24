@@ -156,6 +156,8 @@ export class CypressUtil {
   }
 
   /**
+   * Modify a given json, overriding certain fields and return original and modified copies.
+   * Intended to make some minor changes to the fixtures during the tests.
    *
    * @param fixtureFile - Fixture file
    * @param stubOverrideObj - Object having overriding fields for stubbed responses.
