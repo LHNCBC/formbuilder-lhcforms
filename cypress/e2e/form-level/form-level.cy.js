@@ -265,25 +265,6 @@ describe('Home page', () => {
 
     describe('Upload questionnaires to FHIR server', () => {
 
-      /**
-       *
-       * @param fixtureFile - Fixture file
-       * @param stubOverrideObj - Object having overriding fields for stubbed responses.
-       * @returns {Cypress.Chainable<{responseStub: *, fixtureJson: *}>} Chainable with
-       */
-      const setupStub = (fixtureFile, stubOverrideObj) => {
-        return cy.readFile('cypress/fixtures/' + fixtureFile).then((json) => {
-          const fJson = json;
-          const rStub = json;
-
-          Object.keys(stubOverrideObj).forEach((f) => {
-            rStub[f] = stubOverrideObj[f];
-          });
-
-          return {fixtureJson: fJson, responseStub: rStub};
-        });
-      };
-
 
       [
         {
@@ -299,7 +280,7 @@ describe('Home page', () => {
       ].forEach((testConfig) => {
         let responseStub;
         beforeEach(() => {
-          setupStub(testConfig.fixtureFile, {
+          CypressUtil.setupStub(testConfig.fixtureFile, {
             // Use the following fields in the server response.
             id: '1111',
             meta: {

@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.2.4] 2024-01-22
+### Fixed
+- Fixed a bug where a wrong node in the sidebar tree is highlighted.
+
 ## [9.2.3] 2023-10-27
 ### Fixed
 - Fixed a bug where the unit extensions are not removed when deleted from the input field.
