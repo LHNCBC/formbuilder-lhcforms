@@ -27,7 +27,18 @@
     {
       "type": "choice",
       "linkId": "3",
-      "text": "Item with answer option (default)"
+      "text": "Item with answer option (default)",
+      "enableWhen": [
+        {
+          "question": "1",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://clinicaltables.nlm.nih.gov/fhir/CodeSystem/conditions",
+            "code": "2143",
+            "display": "Diabetes mellitus"
+          }
+        }
+      ]
     }
   ],
   "resourceType": "Questionnaire",

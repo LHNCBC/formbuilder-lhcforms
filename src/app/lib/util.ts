@@ -477,4 +477,24 @@ export class Util {
     return Util.dateValidator(value, formProperty);
   }
 
+  /**
+   * Traverse up the chain of tree invoking a callback for each node visited. The callback should return false to terminate the traversal.
+   * @param sourceNode - The node to start the traversal.
+   * @param callback - Callback method with the argument of node visited. The function should return true to continue, and false to
+   * terminate the traversal.
+   *
+   * @return - Returns an array consisting the nodes in the order it visited.
+   */
+  static traverseAncestors(sourceNode: ITreeNode, callback: (node: ITreeNode) => boolean): any[] {
+    const ret = [];
+    let n = sourceNode;
+    let traverseAncestor = true;
+    while (n && traverseAncestor) {
+      ret.push(n);
+      traverseAncestor = callback(n);
+      n = n.parent;
+    }
+    return ret;
+  }
+
 }

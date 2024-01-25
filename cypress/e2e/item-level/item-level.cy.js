@@ -130,6 +130,44 @@ describe('Home page', () => {
       cy.get('#text').should('have.value', 'Heart rate'); // This node should still exist.
     });
 
+    it('should show correct focused node on the sidebar tree after updating the form from FHIR server', () => {
+      const fixture = 'sidebar-node-highlighting-form.R4.json';
+      const fhirServer = 'https://lforms-fhir.nlm.nih.gov/baseR4';
+      let responseStub = null;
+      CypressUtil.setupStub(fixture, {
+        // Use the following fields in the server response.
+        id: '1111',
+        meta: {
+          versionId: "1",
+          lastUpdated: "2020-02-22T22:22:22.222-00:00"
+        }
+      }).then((resp) => {
+        responseStub = resp.responseStub;
+      });
+      cy.intercept('POST', fhirServer+'/Questionnaire', (req) => {
+        req.reply({statusCode: 201, body: responseStub});
+      }).as('create');
+
+      cy.uploadFile(fixture, true);
+
+      cy.contains('button', 'Edit questions').click();
+      cy.clickTreeNode('Second item'); // Load other than first item.
+
+      cy.FHIRServerResponse('Create a new questionnaire', fhirServer).should((json) => {
+        expect(json).to.deep.equal(responseStub);
+      });
+      cy.wait('@create');
+      // The fix should load the same item as selected before, i.e. second item.
+      cy.get('#text').should('have.value', 'Second item');
+      cy.getTreeNode('First item').parents('div.node-content-wrapper').first().as('firstItem');
+      cy.get('@firstItem').should('not.have.class', 'node-content-wrapper-focused');
+      cy.get('@firstItem').should('not.have.class', 'node-content-wrapper-active');
+
+      cy.getTreeNode('Second item').parents('div.node-content-wrapper').first().as('secondItem');
+      cy.get('@secondItem').should('have.class', 'node-content-wrapper-focused');
+      cy.get('@secondItem').should('have.class', 'node-content-wrapper-active');
+    });
+
     it('should delete items', () => {
       const nestedItemsFilename = 'nested-items-delete-sample.json';
       cy.uploadFile(nestedItemsFilename, true);

@@ -154,4 +154,26 @@ export class CypressUtil {
       req.reply({fixture});
     });
   }
+
+  /**
+   * Modify a given json, overriding certain fields and return original and modified copies.
+   * Intended to make some minor changes to the fixtures during the tests.
+   *
+   * @param fixtureFile - Fixture file
+   * @param stubOverrideObj - Object having overriding fields for stubbed responses.
+   * @returns {Cypress.Chainable<{responseStub: *, fixtureJson: *}>} Chainable with
+   */
+  static setupStub (fixtureFile, stubOverrideObj) {
+    return cy.readFile('cypress/fixtures/' + fixtureFile).then((json) => {
+      const fJson = json;
+      const rStub = JSON.parse(JSON.stringify(json));
+
+      Object.keys(stubOverrideObj).forEach((f) => {
+        rStub[f] = stubOverrideObj[f];
+      });
+
+      return {fixtureJson: fJson, responseStub: rStub};
+    });
+  };
+
 }
