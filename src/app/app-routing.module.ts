@@ -1,10 +1,13 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import {NgxSchemaFormComponent} from './ngx-schema-form/ngx-schema-form.component';
+import {SnomedComponent} from './snomed/snomed.component';
+import {BasePageComponent} from './base-page/base-page.component';
 
 const routes: Routes = [
-    {path: 'ngx', component: NgxSchemaFormComponent}
-  ];
+  {path: '', component: BasePageComponent},
+  {path: 'snomed', component: SnomedComponent},
+  {path: '**', redirectTo: ''}
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
