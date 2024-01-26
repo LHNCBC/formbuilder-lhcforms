@@ -33,9 +33,9 @@
           "question": "1",
           "operator": "=",
           "answerCoding": {
-            "system": "http://clinicaltables.nlm.nih.gov/fhir/CodeSystem/conditions",
-            "code": "2143",
-            "display": "Diabetes mellitus"
+            "system": "http://snomed.info/sct",
+            "code": "32570691000036108",
+            "display": "Intersex"
           }
         }
       ]
