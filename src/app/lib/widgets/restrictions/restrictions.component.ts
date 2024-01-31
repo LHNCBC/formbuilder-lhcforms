@@ -59,9 +59,9 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   static typeToOptions = {
     decimal: RestrictionsComponent.numberOptions,
     integer: RestrictionsComponent.numberOptions,
-    date: RestrictionsComponent.numberOptions,
-    dateTime: RestrictionsComponent.numberOptions,
-    time: RestrictionsComponent.numberOptions,
+    //date: RestrictionsComponent.numberOptions,
+    //dateTime: RestrictionsComponent.numberOptions,
+    //time: RestrictionsComponent.numberOptions,
     string: RestrictionsComponent.stringOptions,
     text: RestrictionsComponent.stringOptions,
     attachment: RestrictionsComponent.attachOptions
