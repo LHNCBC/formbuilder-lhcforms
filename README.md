@@ -6,7 +6,7 @@
         $ git clone https://github.com/lhncbc/formbuilder-lhcforms.git
 
 3. Build the project.
-   * To build the project, change to formbuilder directory. Edit bashrc.formbuilder file to suit your development environment. Make sure that ./node_modules/.bin is in your path for the rest of the installation.
+   * To build the project, change to formbuilder-lhcforms directory. Edit bashrc.formbuilder file to suit your development environment. Make sure that ./node_modules/.bin is in your path for the rest of the installation.
 
           $ cd formbuilder-lhcforms
           $ source bashrc.formbuilder
