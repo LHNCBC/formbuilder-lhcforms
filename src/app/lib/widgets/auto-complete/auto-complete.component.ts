@@ -32,6 +32,7 @@ export interface LhcAutoCompleteOptions {
   maxSelect?: integer;
   suggestionMode?: integer;
   autocomp?: boolean;
+  showListOnFocusIfEmpty?: boolean;
   fhir?: boolean;
   search?: (element, count) => Promise<any>;
   toolTip?: string;

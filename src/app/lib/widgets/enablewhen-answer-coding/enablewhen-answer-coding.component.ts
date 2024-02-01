@@ -8,7 +8,6 @@ import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
 import {Subscription} from 'rxjs';
 import {AutoCompleteOptions} from '../auto-complete/auto-complete.component';
-import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 declare var LForms: any;
 
 @Component({
@@ -46,6 +45,7 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
       maxSelect: 1,
       suggestionMode: LForms.Def.Autocompleter.USE_STATISTICS,
       autocomp: true,
+      showListOnFocusIfEmpty: true,
     },
     fhirOptions: {
       fhirServer: null,
