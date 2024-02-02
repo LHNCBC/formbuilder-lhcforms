@@ -43,9 +43,10 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     acOptions: {
       matchListValue: true,
       maxSelect: 1,
-      suggestionMode: LForms.Def.Autocompleter.USE_STATISTICS,
+      suggestionMode: LForms.Def.Autocompleter.NO_COMPLETION_SUGGESTIONS,
       autocomp: true,
       showListOnFocusIfEmpty: true,
+      sort: false
     },
     fhirOptions: {
       fhirServer: null,
