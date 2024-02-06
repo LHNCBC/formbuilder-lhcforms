@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "9.2.5",
+  "version": "9.2.6",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -22,7 +22,7 @@
     "create-version-file": "echo {\\\"version\\\": \\\"${npm_package_version}\\\"} > ./src/assets/version.json",
     "build": "npm run create-version-file && npm run copy-lforms && ng build --configuration production",
     "test": "npm run unit-test && npm run e2e:prod",
-    "unit-test": "source ./bashrc.formbuilder && ng test --watch=false --browsers ChromeHeadless",
+    "unit-test": "source ./bashrc.formbuilder && ng test --watch=false",
     "lint": "ng lint",
     "cy:verify": "cypress verify",
     "e2e": "source ./bashrc.formbuilder && ng e2e",
@@ -73,6 +73,11 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
+    "@angular-eslint/builder": "15.2.1",
+    "@angular-eslint/eslint-plugin": "15.2.1",
+    "@angular-eslint/eslint-plugin-template": "15.2.1",
+    "@angular-eslint/schematics": "15.2.1",
+    "@angular-eslint/template-parser": "15.2.1",
     "@angular/cli": "~15.2.4",
     "@angular/compiler-cli": "~15.2.4",
     "@angular/language-service": "~15.2.4",
@@ -81,11 +86,13 @@
     "@types/jasmine": "~4.3.1",
     "@types/jasminewd2": "~2.0.10",
     "@types/node": "^18.15.5",
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
     "@webcomponents/webcomponentsjs": "^2.7.0",
     "angular-http-server": "^1.11.1",
-    "codelyzer": "^6.0.2",
     "cypress": "^13.2.0",
     "cypress-fail-on-console-error": "^4.0.2",
+    "eslint": "^8.33.0",
     "jasmine-core": "^4.6.0",
     "jasmine-spec-reporter": "~7.0.0",
     "json-pointer": "^0.6.1",
@@ -97,7 +104,6 @@
     "karma-jasmine-html-reporter": "^1.7.0",
     "postcss": "^8.3.0",
     "ts-node": "~9.1.1",
-    "tslint": "~6.1.3",
     "typescript": "^4.8.4"
   }
 }

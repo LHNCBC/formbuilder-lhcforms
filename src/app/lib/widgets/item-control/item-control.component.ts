@@ -4,6 +4,7 @@ import {ExtensionsService} from '../../../services/extensions.service';
 import {FormService} from '../../../services/form.service';
 import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
+import {Util} from '../../util';
 
 @Component({
   selector: 'lfb-item-control',
@@ -12,7 +13,7 @@ import fhir from 'fhir/r4';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemControlComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
-  static itemControlUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
+  static itemControlUrl = Util.ITEM_CONTROL_EXT_URL;
 
   optionsObj = {
     'drop-down': 'Drop down',

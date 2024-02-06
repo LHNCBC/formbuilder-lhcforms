@@ -1,7 +1,7 @@
 /**
  * Dialog to select FHIR server from the list of servers.
  */
-import {Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FHIRServer, FhirService} from '../../../services/fhir.service';
 import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/user-specified-server-dlg.component';
@@ -53,7 +53,7 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
     }
   `]
 })
-export class FhirServersDlgComponent implements OnInit {
+export class FhirServersDlgComponent {
 
   @Input()
   fhirServerList: any [];
@@ -66,8 +66,6 @@ export class FhirServersDlgComponent implements OnInit {
     this.selectedServer = this.fhirService.getFhirServer();
   }
 
-  ngOnInit(): void {
-  }
 
   /**
    * Button handler to add user specified FHIR server to the list.

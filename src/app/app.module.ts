@@ -38,7 +38,6 @@ import { CheckboxComponent } from './lib/widgets/checkbox.component/checkbox.com
 import { IntegerComponent } from './lib/widgets/integer/integer.component';
 import { FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import { AppFormElementComponent } from './lib/widgets/form-element/form-element.component';
-import { LabelComponent } from './lib/widgets/label/label.component';
 import { TitleComponent } from './lib/widgets/title/title.component';
 import { ElementChooserComponent } from './lib/widgets/element-chooser/element-chooser.component';
 import { AutoCompleteComponent } from './lib/widgets/auto-complete/auto-complete.component';
@@ -85,12 +84,12 @@ import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
-import { TerminologyServerComponent } from './lib/widgets/terminology-server/terminology-server.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
 import { ItemControlComponent } from './lib/widgets/item-control/item-control.component';
 import { DateComponent } from './lib/widgets/date/date.component';
 import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
+import {LabelComponent} from './lib/widgets/label/label.component';
 
 @NgModule({
   declarations: [
@@ -106,10 +105,8 @@ import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
     CheckboxComponent,
     IntegerComponent,
     AppFormElementComponent,
-    LabelComponent,
     TitleComponent,
     ElementChooserComponent,
-    AutoCompleteComponent,
     RadioComponent,
     HeaderComponent,
     FooterComponent,
@@ -153,7 +150,6 @@ import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
     IntegerDirective,
     AnswerOptionMethodsComponent,
     ObservationExtractComponent,
-    TerminologyServerComponent,
     AnswerValueSetComponent,
     ItemControlComponent,
     DateComponent,
@@ -189,6 +185,8 @@ import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
     MatAutocompleteModule,
     MatSelectModule,
     MatDialogModule,
+    AutoCompleteComponent,
+    LabelComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry},

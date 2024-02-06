@@ -2,11 +2,10 @@
  * An input box for enableWhen's source to search eligible source items listed in the tree.
  */
 import {Component, OnInit, ViewChild} from '@angular/core';
-import {BehaviorSubject, merge, Observable, of, Subject} from 'rxjs';
+import {merge, Observable, Subject} from 'rxjs';
 import {FormService} from '../../../services/form.service';
-import {debounceTime, distinctUntilChanged, filter, map, startWith, switchMap} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged, filter, map} from 'rxjs/operators';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
-import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
@@ -20,7 +19,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
 
       <lfb-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
-      <input *ngIf="schema.type!='array'"
+      <input *ngIf="schema.type !== 'array'"
              name="{{name}}"
              [attr.id]="id"
              [attr.disabled]="schema.readOnly ? '' : null"
