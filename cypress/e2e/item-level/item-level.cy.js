@@ -76,6 +76,22 @@ describe('Home page', () => {
       CypressUtil.assertCodeField('/item/0/code');
     });
 
+    it('should import form with nested extensions', () => {
+      const sampleFile = 'nested-extension-sample.json';
+      let fixtureJson = null;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.contains('button', 'Preview').click();
+      cy.contains('mat-dialog-actions button', 'Close').click();
+      cy.questionnaireJSON().should((json) => {
+        expect(json.item[0].extension[0].extension[0].extension[0].valueDecimal).to.equal(1.1);
+        expect(json.item[0].extension[0].extension[1].extension[0].valueString).to.equal('Nested item: 1/2/1');
+        expect(json.item[0].extension[0].extension[1].extension[1].valueString).to.equal('Nested item: 1/2/2');
+        expect(json.extension[0].extension[0].extension[0].valueString).to.equal('Form level extension: 1/1/1');
+        expect(json).to.deep.equal(fixtureJson);
+      });
+    });
+
     it('should import item from CTSS with answer option', () => {
       cy.contains('Add new item from LOINC').scrollIntoView().click();
       cy.contains('ngb-modal-window label', 'Question').click();

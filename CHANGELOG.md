@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.2.8] 2024-02-06
+### Fixed
+- Fixed missing nested extensions.
+
 ## [9.2.7] 2024-02-06
 ### Fixed
 - Disable unsupported date/time restrictions (Thanks to @ghaliouss)
