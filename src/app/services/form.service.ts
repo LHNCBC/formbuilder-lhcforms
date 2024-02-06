@@ -17,7 +17,7 @@ import {JsonPointer} from 'json-ptr';
 // @ts-ignore
 import ngxItemSchema from '../../assets/ngx-item.schema.json5';
 // @ts-ignore
-import fhirExtensionSchema from '../../assets/fhir-extension-schema.json5';
+import fhirSchemaDefinitions from '../../assets/fhir-definitions.schema.json5';
 // @ts-ignore
 import itemLayout from '../../assets/items-layout.json5';
 // @ts-ignore
@@ -58,8 +58,7 @@ export class FormService {
       if(!obj.schema.definitions) {
         obj.schema.definitions = {};
       }
-      obj.schema.definitions.Extension = fhirExtensionSchema as any;
-      this._updateExtension(obj.schema);
+      obj.schema.definitions = fhirSchemaDefinitions.definitions as any;
       obj.schema.formLayout = obj.layout.formLayout;
       this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
       this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
@@ -133,36 +132,6 @@ export class FormService {
    */
   getFormLevelSchema() {
     return this.flSchema;
-  }
-
-  /**
-   * Update main schema with adjusted extension schema recursively
-   *
-   * @param rootSchema
-   */
-  _updateExtension(rootSchema: any) {
-    const extension = rootSchema.definitions.Extension;
-    traverse(rootSchema, {}, (
-      schema,
-      jsonPtr,
-      rootSch,
-      parentJsonPtr,
-      parentKeyword,
-      parentSchema,
-      indexOrProp) => {
-      if(parentKeyword === 'items' && (parentJsonPtr.endsWith('extension') || parentJsonPtr.endsWith('modifierExtension'))) {
-        // Save title and description before over writing them.
-        const commonFields = {title: schema.title, description: schema.description};
-        Object.assign(schema, extension);
-        // title and description are overwritten. Restore them.
-        if(commonFields.title) {
-          schema.title = commonFields.title;
-        }
-        if(commonFields.description) {
-          schema.description = commonFields.description;
-        }
-      }
-    });
   }
 
   set loading(loading: boolean) {
