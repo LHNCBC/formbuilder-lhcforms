@@ -1,8 +1,7 @@
 /**
  * Customized pull down box.
  */
-import {AfterViewInit, Component, Input, OnInit} from '@angular/core';
-import {SelectWidget} from '@lhncbc/ngx-schema-form';
+import {AfterViewInit, Component, Input} from '@angular/core';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
@@ -20,7 +19,7 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
   @Input()
   selectOptionsMap: any = {};
 
-  // Options list for the pulldown
+  // Options list for the pull down
   allowedOptions: Array<{value: string, label: string}>;
 
   /**
@@ -53,7 +52,7 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
   }
 
   /**
-   * Optionally to exlude any options from the schema.
+   * Optionally to exclude any options from the schema.
    * @param opt
    */
   isIncluded(opt: string): boolean {

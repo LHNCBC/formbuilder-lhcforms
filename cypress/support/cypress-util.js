@@ -149,7 +149,7 @@ export class CypressUtil {
 
   static mockSnomedEditions() {
     const fixture = 'snomedEditions.json';
-    cy.intercept('https://snowstorm.ihtsdotools.org/fhir/*', (req) => {
+    cy.intercept('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (req) => {
       console.log(`cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`);
       req.reply({fixture});
     });

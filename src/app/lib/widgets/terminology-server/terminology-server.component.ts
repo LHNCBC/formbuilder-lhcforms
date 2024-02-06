@@ -3,8 +3,13 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 import {ExtensionsService} from '../../../services/extensions.service';
 import {Subscription} from 'rxjs';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
+import {LabelComponent} from '../label/label.component';
+import {FormsModule} from '@angular/forms';
+import {CommonModule} from '@angular/common';
 
 @Component({
+  standalone: true,
+  imports: [CommonModule, FormsModule, LabelComponent],
   selector: 'lfb-terminology-server',
   templateUrl: './terminology-server.component.html',
   styleUrls: ['./terminology-server.component.css']
