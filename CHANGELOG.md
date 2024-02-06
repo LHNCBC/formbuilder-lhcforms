@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.2.7] 2024-02-06
+### Fixed
+- Fixed missing nested extensions.
+
 ## [9.2.6] 2024-02-06
 ### Fixed
 - Fix enableWhen condition when source item is an answerValueSet.
