@@ -1,14 +1,14 @@
 /**
  * Customize layout of checkbox from ngx-schema-form.
  */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {CheckboxWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'lfb-checkbox',
   template: `<div class="widget">
-	<div *ngIf="schema.type!='array'" [attr.class]="'form-check '+lfbClass">
+	<div *ngIf="schema.type !== 'array'" [attr.class]="'form-check '+lfbClass">
     <input class="form-check-input" [formControl]="control" name="{{name}}"
              [attr.id]="id" [indeterminate]="control.value !== false && control.value !== true ? true :null"
              type="checkbox" [attr.disabled]="schema.readOnly ? '' : null">

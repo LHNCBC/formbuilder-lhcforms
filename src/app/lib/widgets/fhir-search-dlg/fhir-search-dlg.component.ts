@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {FhirService, FHIRServer} from '../../../services/fhir.service';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../../../fhir';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {delay, map, switchMap, tap} from 'rxjs/operators';
+import {map, switchMap, tap} from 'rxjs/operators';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 // Search related inputs on the page.
 interface State {
@@ -35,7 +35,7 @@ interface SearchField {
   ],
   templateUrl: 'fhir-search-dlg.component.html'
 })
-export class FhirSearchDlgComponent implements OnInit {
+export class FhirSearchDlgComponent {
 
   infoIcon = faInfoCircle;
   private _loading$ = new BehaviorSubject<boolean>(false);
@@ -71,7 +71,7 @@ export class FhirSearchDlgComponent implements OnInit {
   };
 
   constructor(public fhirService: FhirService, private activeModal: NgbActiveModal) {
-    // Set up search pipe line
+    // Set up search pipeline
     this._search$.pipe(
       tap(() => this._loading$.next(true)),
       switchMap(() => this._search()),
@@ -81,7 +81,7 @@ export class FhirSearchDlgComponent implements OnInit {
       this._bundle$.next(bundle);
     });
 
-    // Set up bundle pipe line. Bundle could be invoked either by search or navigation.
+    // Set up bundle pipeline. Bundle could be invoked either by search or navigation.
     this.bundle$.pipe(map((bundle) => {
       this.questionnaires = null;
       if(!bundle) {
@@ -162,8 +162,6 @@ export class FhirSearchDlgComponent implements OnInit {
     return this.fhirService.search(this.searchTerm, this.searchField.field, {_count: this.pageSize});
   }
 
-  ngOnInit(): void {
-  }
 
   /**
    * Search button handler.

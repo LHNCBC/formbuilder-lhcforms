@@ -24,4 +24,5 @@ describe('FormService', () => {
     expect(clonedSample.item[0].__$helpText).toBe(sampleJson.item[0].item[0].text);
     expect(clonedSample.item[0].item).toBeUndefined();
   });
+
 });

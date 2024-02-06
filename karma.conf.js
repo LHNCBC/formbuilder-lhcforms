@@ -32,7 +32,13 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless_without_password_security'],
+    customLaunchers: {
+      ChromeHeadless_without_password_security: {
+        base: 'ChromeHeadless',
+        flags: ['--password-store=basic']
+      },
+    },
     singleRun: false,
     restartOnFileChange: true
   });

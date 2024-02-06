@@ -28,6 +28,8 @@ import flLayout from '../../assets/fl-fields-layout.json5';
 import itemEditorSchema from '../../assets/item-editor.schema.json5';
 import {Util} from '../lib/util';
 import {FetchService} from './fetch.service';
+import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
+import {ExtensionsService} from './extensions.service';
 declare var LForms: any;
 
 @Injectable({
@@ -53,6 +55,7 @@ export class FormService {
   snomedUser = false;
 
   fetchService = inject(FetchService);
+  formLevelExtensionService = inject(ExtensionsService);
   constructor(private modalService: NgbModal, private http: HttpClient) {
     [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
       if(!obj.schema.definitions) {
@@ -325,6 +328,26 @@ export class FormService {
    */
   getTreeNodeByLinkId(linkId: string): ITreeNode {
     return this.findNodeByLinkId(this.treeModel.roots, linkId);
+  }
+
+  /**
+   * Get preferred terminology server walking along the ancestral tree nodes. Returns the first encountered server.
+   * @param sourceNode - Tree node to start the traversal.
+   */
+  getPreferredTerminologyServer(sourceNode: ITreeNode) {
+    let ret = null;
+    Util.traverseAncestors(sourceNode, (node) => {
+      const found = node.data.extension?.find((ext) => {
+        return ext.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
+      });
+      ret = found ? found.valueUrl : null;
+      return !ret; // Continue traverse if url is not found.
+    });
+    if(!ret) {
+      const ext = this.formLevelExtensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI)
+      ret = ext ? ext.valueUrl : null;
+    }
+    return ret;
   }
 
 

@@ -21,7 +21,7 @@ export declare module fhirPrimitives {
    * A stream of bytes
    */
   type base64Binary = string;
-  // tslint:disable-next-line:max-line-length
+  // eslint-disable-next-line max-len
   /**
    * A string which has at least one character and no leading or trailing whitespace and where there is no whitespace other than single spaces in the contents
    */
