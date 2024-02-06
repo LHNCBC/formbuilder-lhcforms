@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.2.5] 2024-01-24
+## [9.2.6] 2024-02-06
 ### Fixed
 - Fix enableWhen condition when source item is an answerValueSet.
+
+## [9.2.5] 2024-01-30
+### Fixed
+- Fixed README.
 
 ## [9.2.4] 2024-01-22
 ### Fixed
