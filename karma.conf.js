@@ -12,13 +12,6 @@ module.exports = function (config) {
       require('karma-coverage-istanbul-reporter'),
       require('@angular-devkit/build-angular/plugins/karma')
     ],
-    files: [
-      'dist/formbuilder-lhcforms/lforms/lib/elements/assets/lib/zone.min.js',
-      'dist/formbuilder-lhcforms/lforms/lib/elements/runtime.js',
-      'dist/formbuilder-lhcforms/lforms/lib/elements/polyfills.js',
-      'dist/formbuilder-lhcforms/lforms/lib/elements/main.js',
-      'dist/formbuilder-lhcforms/lforms/lib/fhir/lformsFHIRAll.min.js',
-    ],
     client: {
       clearContext: false // leave Jasmine Spec Runner output visible in browser
     },

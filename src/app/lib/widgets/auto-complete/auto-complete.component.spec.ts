@@ -5,6 +5,7 @@ import { AutoCompleteComponent } from './auto-complete.component';
 import {HttpClient} from '@angular/common/http';
 import fhir from 'fhir/r4';
 import {By} from '@angular/platform-browser';
+import {FormService} from '../../../services/form.service';
 declare var LForms: any;
 
 describe('AutoCompleteComponent', () => {
@@ -15,7 +16,7 @@ describe('AutoCompleteComponent', () => {
   beforeEach((() => {
     TestBed.configureTestingModule({
       imports: [ HttpClientTestingModule, AutoCompleteComponent ],
-      providers: [{provide: ComponentFixtureAutoDetect, useValue: true}]
+      providers: [{provide: ComponentFixtureAutoDetect, useValue: true}, FormService]
     })
     .compileComponents()
     httpTestingController = TestBed.inject(HttpTestingController);

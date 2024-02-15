@@ -8,6 +8,7 @@ import {Observable} from 'rxjs';
 import {fhirclient} from 'fhirclient/lib/types';
 import RequestOptions = fhirclient.RequestOptions;
 import {TestUtil} from '../testing/util';
+import {FormService} from './form.service';
 
 describe('FhirService', () => {
   let service: FhirService;
@@ -28,7 +29,7 @@ describe('FhirService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [ HttpClientTestingModule ],
-      providers: [FhirService]
+      providers: [FhirService, FormService]
     });
     service = TestBed.inject(FhirService);
   });
@@ -39,7 +40,7 @@ describe('FhirService', () => {
     expect(service.getFhirServer().endpoint).toBe(serverUrl);
   });
 
-  it('Should read()', (done) => {
+  it('should read()', (done) => {
     // Ideally would like to intercept underlying XHR requests and mock them. For some reason angular test bed modules
     // are not intercepting those calls from fhirclient.js.
     // Alternatively spy on smart client api calls and mock the responses.

@@ -7,6 +7,10 @@
    <mat-tab-group [mat-stretch-tabs]="true">
      <mat-tab label="View Rendered Form">
        <ng-template matTabContent>
+         <div>
+           <div class="float-sm-end fw-bold" style="font-size: 70%;">LForms version: {{formService.lformsVersion}}</div>
+           <div>&nbsp;</div> <!-- Needed to float the above div -->
+         </div>
          <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options"></wc-lhc-form>
        </ng-template>
      </mat-tab>

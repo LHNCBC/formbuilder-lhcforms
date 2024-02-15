@@ -9,9 +9,9 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {Observable, Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import traverse from 'json-schema-traverse';
 import jsonTraverse from 'traverse';
 import {JsonPointer} from 'json-ptr';
+import {loadLForms, getSupportedLFormsVersions} from 'lforms-loader';
 
 // Configuration files
 // @ts-ignore
@@ -41,6 +41,7 @@ export class FormService {
   _guidingStep$: Subject<string> = new Subject<string>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
+  _error: Subject<Error> = new Subject<Error>();
   _advPanelState = {
     formLevel: true,
     itemLevel: true
@@ -53,6 +54,8 @@ export class FormService {
   private _itemEditorSchema: any = {properties: {}};
 
   snomedUser = false;
+  _lformsVersion = '';
+  _lformsErrorMessage = null;
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
@@ -69,6 +72,18 @@ export class FormService {
     this.itemSchema = ngxItemSchema;
     this.flSchema = ngxFlSchema;
     this._itemEditorSchema = itemEditorSchema;
+
+
+    // Load lforms.
+    this.loadLFormsLib().then((loadedVersion: string) => {
+      this._lformsVersion = LForms.lformsVersion;
+      console.log(`LForms loaded in FormService.contructor(): ${loadedVersion}`);
+    }).catch((error) => {
+      console.error(error);
+      this._lformsVersion = 'ERROR';
+      this._error.next(error);
+    });
+
   }
 
   /**
@@ -137,6 +152,13 @@ export class FormService {
     return this.flSchema;
   }
 
+  get lformsVersion(): string {
+    return this._lformsVersion;
+  }
+
+  get lformsErrorMessage(): string | null {
+    return this._lformsErrorMessage;
+  }
   set loading(loading: boolean) {
     this._loading = loading;
   }
@@ -152,6 +174,9 @@ export class FormService {
     return this._guidingStep$.asObservable();
   }
 
+  get error$(): Observable<Error> {
+    return this._error.asObservable();
+  }
 
   /**
    * Getter for form reset Observable
@@ -583,5 +608,20 @@ export class FormService {
     if(this.snomedUser) {
       this.fetchService.fetchSnomedEditions();
     }
+  }
+
+  /**
+   * Load LForms library at run time.
+   * @return - A promise which resolves to version number loaded.
+   */
+  loadLFormsLib(): Promise<string> {
+    return getSupportedLFormsVersions().then((versions) => {
+      const latestVersion = versions[0] || '34.3.0';
+      return loadLForms(latestVersion).then(() => latestVersion).catch((error) => {
+        throw new Error(error);
+      });
+    }).catch((error) => {
+      throw new Error(error);
+    });
   }
 }
