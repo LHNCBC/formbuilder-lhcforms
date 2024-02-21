@@ -98,10 +98,7 @@ describe('GET /', function () {
 
       it('should import question with answers', function () {
         fb.typeQuestionRadio.click();
-        fb.searchBox.clear();
-        fb.searchBox.click(); // restore focus to field
-        fb.sendKeys(fb.searchBox, '21858-6');
-        fb.searchBox.sendKeys(protractor.Key.DOWN);
+        fb.autoCompSelectByText(fb.searchBox, '21858-6', 'Grade Cancer');
         clickImportButton();
         util.getJSONSource('lforms').then(function (text) {
           var lforms = JSON.parse(text);
