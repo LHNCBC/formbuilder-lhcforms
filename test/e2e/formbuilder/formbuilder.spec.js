@@ -91,6 +91,7 @@ describe('GET /', function () {
         fb.searchBox.clear();
         fb.searchBox.click(); // restore focus to field
         fb.sendKeys(fb.searchBox, 'Vital ');
+        fb.waitForElementDisplayed(element(by.id('searchResults')));
         fb.searchBox.sendKeys(protractor.Key.DOWN);
         clickImportButton();
         expect(fb.panelTitle.getAttribute('innerText')).toContain('Vital');
@@ -98,10 +99,7 @@ describe('GET /', function () {
 
       it('should import question with answers', function () {
         fb.typeQuestionRadio.click();
-        fb.searchBox.clear();
-        fb.searchBox.click(); // restore focus to field
-        fb.sendKeys(fb.searchBox, '21858-6');
-        fb.searchBox.sendKeys(protractor.Key.DOWN);
+        fb.autoCompSelectByText(fb.searchBox, '21858-6', 'Grade Cancer');
         clickImportButton();
         util.getJSONSource('lforms').then(function (text) {
           var lforms = JSON.parse(text);
@@ -114,6 +112,7 @@ describe('GET /', function () {
         fb.searchBox.clear();
         fb.searchBox.click(); // restore focus to field
         fb.sendKeys(fb.searchBox, '3141-9');
+        fb.waitForElementDisplayed(element(by.id('searchResults')));
         fb.searchBox.sendKeys(protractor.Key.DOWN);
         clickImportButton();
         util.getJSONSource('lforms').then(function (text) {

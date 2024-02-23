@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [6.5.4]  2022-02-20
+### Fixed
+- Fix broken build process due to angular-spinner in bower components.
+
 ## [6.5.3]  2022-09-08
 ### Updated
 - Updated package lock file to address momentjs vulnerability.

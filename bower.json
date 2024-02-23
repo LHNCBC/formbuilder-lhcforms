@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "6.5.2",
+  "version": "6.5.4",
   "main": [
     "client/app/app.js",
     "client/app/config.js",
@@ -50,7 +50,7 @@
     "lforms": "29.2.1",
     "ngSmoothScroll": "~2.0.0",
     "traverse": "0.6.7",
-    "angular-spinner": "~0.8.0",
+    "angular-spinner": "git://github.com/urish/angular-spinner#0.8.0",
     "fhir.js": "git://github.com/akanduru/fhir.js#ng-fhir",
     "fhirclient": "git://github.com/smart-on-fhir/client-js"
   },
