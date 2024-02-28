@@ -17,7 +17,7 @@ describe('Home page accept Terms of Use notices', () => {
   describe('Loading LForms', () => {
     it('should display error message on lforms loading error', () => {
       // Simulate error condition.
-      cy.intercept({method: 'GET', url: /^https:\/\/clinicaltables.nlm.nih.gov\/lforms-versions(\/[.0-9]+)?/, times: 4},
+      cy.intercept({method: 'GET', url: /^https:\/\/lhcfhirtools-static.nlm.nih.gov\/lforms-versions(\/[.0-9]+)?/, times: 4},
         (req) => {
           console.log(`request url: ${req.url}`);
           req.reply(404, 'File not found!');

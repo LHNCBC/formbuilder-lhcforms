@@ -93,9 +93,9 @@ export class BasePageComponent implements OnInit, OnDestroy {
     });
 
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
-    formService.error$.subscribe((error) => {
+    FormService.lformsLoaded$.subscribe({error: (error) => {
       this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
-    });
+    }});
   }
 
   ngOnInit() {

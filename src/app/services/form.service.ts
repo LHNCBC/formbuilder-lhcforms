@@ -36,12 +36,12 @@ declare var LForms: any;
   providedIn: 'root'
 })
 export class FormService {
+  static _lformsLoaded$ = new Subject<string>();
 
   private _loading = false;
   _guidingStep$: Subject<string> = new Subject<string>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
-  _error: Subject<Error> = new Subject<Error>();
   _advPanelState = {
     formLevel: true,
     itemLevel: true
@@ -77,11 +77,11 @@ export class FormService {
     // Load lforms.
     this.loadLFormsLib().then((loadedVersion: string) => {
       this._lformsVersion = LForms.lformsVersion;
-      console.log(`LForms loaded in FormService.contructor(): ${loadedVersion}`);
+      FormService._lformsLoaded$.next(this._lformsVersion);
     }).catch((error) => {
       console.error(error);
       this._lformsVersion = 'ERROR';
-      this._error.next(error);
+      FormService._lformsLoaded$.error(error);
     });
 
   }
@@ -174,8 +174,8 @@ export class FormService {
     return this._guidingStep$.asObservable();
   }
 
-  get error$(): Observable<Error> {
-    return this._error.asObservable();
+  static get lformsLoaded$(): Observable<string> {
+    return FormService._lformsLoaded$.asObservable();
   }
 
   /**
@@ -618,9 +618,11 @@ export class FormService {
     return getSupportedLFormsVersions().then((versions) => {
       const latestVersion = versions[0] || '34.3.0';
       return loadLForms(latestVersion).then(() => latestVersion).catch((error) => {
+        console.error(`lforms-loader.loadLForms() failed: ${error.message}`);
         throw new Error(error);
       });
     }).catch((error) => {
+      console.error(`lforms-loader.getSupportedLFormsVersions() failed: ${error.message}`);
       throw new Error(error);
     });
   }

@@ -2,9 +2,9 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.2.9] 2024-02-013
+## [10.0.0] 2024-02-013
 ### Changed
-- Load lforms from https://clinicaltables.nlm.nih.gov/lforms-versions at run time.
+- Always use the latest lforms version for preview. The package is loaded at run time from https://lhcfhirtools-static.nlm.nih.gov/lforms-versions.
 
 ## [9.2.8] 2024-02-06
 ### Fixed

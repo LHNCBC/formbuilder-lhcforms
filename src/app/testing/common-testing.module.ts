@@ -17,6 +17,8 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import {AppModule} from '../app.module';
 import {LformsWidgetRegistry} from '../lib/lforms-widget-registry';
 import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import {FormService} from '../services/form.service';
+import {FhirService} from '../services/fhir.service';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -59,7 +61,12 @@ export class CommonTestingModule {
 
   static commonTestingDeclarations: any [] = [];
 
-  static commonTestProviders: any [] = [{provide: WidgetRegistry, useClass: LformsWidgetRegistry}, NgbActiveModal];
+  static commonTestProviders: any [] = [
+    {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
+    NgbActiveModal,
+    FormService,
+    FhirService
+  ];
 
   static setUpTestBedConfig = (moduleConfig: any) => {
     beforeEach(async () => {
@@ -75,6 +82,19 @@ export class CommonTestingModule {
         imports,
         providers
       }).compileComponents();
+    });
+
+    beforeEach(async () => {
+      return new Promise<string>((resolve, reject) => {
+        FormService.lformsLoaded$.subscribe({next: (lformsVersion) => {
+            console.log(`LForms loaded after inject(FormService) in CommonTestingModule: ${lformsVersion}`);
+            resolve(lformsVersion);
+          }, error: (err) => {
+            console.log(`Failed to load LForms after inject(FormService) in CommonTestingModule: ${err.message}`);
+            reject(err);
+          }});
+        TestBed.inject(FormService);
+      });
     });
   };
 
