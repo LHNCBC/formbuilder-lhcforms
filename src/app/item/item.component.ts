@@ -121,7 +121,7 @@ export class ConfirmDlgComponent {
   styleUrls: ['./item.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   errorIcon = faExclamationTriangle;
   helpIcon = faInfoCircle;
   id = 1;
@@ -231,9 +231,6 @@ export class ItemComponent implements OnInit, AfterViewInit, OnChanges, OnDestro
               private dataSrv: FetchService,
               private cdr: ChangeDetectorRef) {
     this.itemEditorSchema = formService.itemEditorSchema;
-  }
-
-  ngOnInit() {
   }
 
 

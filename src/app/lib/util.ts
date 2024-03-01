@@ -243,7 +243,7 @@ export class Util {
   }
 
   /**
-   * Create help text item. Most of it is boiler plate structure except item.text and item.linkId.
+   * Create help text item. Most of it is boilerplate structure except item.text and item.linkId.
    *
    * @param item - Item for which help text item is created, mainly to help assign linkId.
    * @param helpText - Help text, typically obtained from user input box.
@@ -262,7 +262,7 @@ export class Util {
   /**
    * Prunes the questionnaire model using the following conditions:
    * . Removes 'empty' values from the object. Emptiness is defined in Util.isEmpty().
-   *   The following are considred empty: undefined, null, {}, [], and  ''.
+   *   The following are considered empty: undefined, null, {}, [], and  ''.
    * . Removes any thing with __$* keys.
    * . Removes functions.
    * . Converts __$helpText to appropriate FHIR help text item.
@@ -309,7 +309,6 @@ export class Util {
       this.after(function () {
         // Remove all custom fields starting with __$ and empty fields.
         if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
-          // tslint:disable-next-line:only-arrow-functions
           if (this.notRoot) {
             this.remove(); // Splices off any array elements.
           }
@@ -476,6 +475,26 @@ export class Util {
    */
   static dateTimeValidator(value: string, formProperty: FormProperty): any [] {
     return Util.dateValidator(value, formProperty);
+  }
+
+  /**
+   * Traverse up the chain of tree invoking a callback for each node visited. The callback should return false to terminate the traversal.
+   * @param sourceNode - The node to start the traversal.
+   * @param callback - Callback method with the argument of node visited. The function should return true to continue, and false to
+   * terminate the traversal.
+   *
+   * @return - Returns an array consisting the nodes in the order it visited.
+   */
+  static traverseAncestors(sourceNode: ITreeNode, callback: (node: ITreeNode) => boolean): any[] {
+    const ret = [];
+    let n = sourceNode;
+    let traverseAncestor = true;
+    while (n && traverseAncestor) {
+      ret.push(n);
+      traverseAncestor = callback(n);
+      n = n.parent;
+    }
+    return ret;
   }
 
 }

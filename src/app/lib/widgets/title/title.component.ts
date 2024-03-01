@@ -1,7 +1,7 @@
 /**
  * Component for creating a title for a control.
  */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -15,7 +15,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
     </span>
   `
 })
-export class TitleComponent implements OnInit {
+export class TitleComponent {
 
   // Input properties
   @Input()
@@ -26,6 +26,4 @@ export class TitleComponent implements OnInit {
   helpIcon = faInfoCircle;
   constructor() { }
 
-  ngOnInit() {
-  }
 }

@@ -152,19 +152,12 @@
           }
         },
         "lint": {
-          "builder": "@angular-builders/custom-webpack:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ],
-            "customWebpackConfig": {
-              "path": "./webpack.config.js"
-            }
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
           }
         },
         "e2e": {
@@ -189,6 +182,9 @@
   },
   "defaultProject": "formbuilder-lhcforms",
   "cli": {
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": [
+      "@angular-eslint/schematics"
+    ]
   }
 }

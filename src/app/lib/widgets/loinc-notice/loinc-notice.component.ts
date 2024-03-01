@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, EventEmitter, Output} from '@angular/core';
+import {Component} from '@angular/core';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -6,7 +6,7 @@ import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './loinc-notice.component.html',
   styleUrls: ['./loinc-notice.component.css']
 })
-export class LoincNoticeComponent implements OnInit {
+export class LoincNoticeComponent {
 
   acceptedTerms: {acceptedLoinc: boolean, acceptedSnomed: boolean} = {
     acceptedLoinc: false,
@@ -15,8 +15,6 @@ export class LoincNoticeComponent implements OnInit {
   useSnomed: false;
   constructor(private activeModal: NgbActiveModal) { }
 
-  ngOnInit(): void {
-  }
 
   /**
    * Close the dialog after accepting the terms.

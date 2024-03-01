@@ -1,39 +1,50 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {ComponentFixture, ComponentFixtureAutoDetect, TestBed} from '@angular/core/testing';
+import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 
-import { AutoCompleteComponent, Options } from './auto-complete.component';
-import {CommonTestingModule, TestComponent} from '../../../testing/common-testing.module';
-import {HttpClientModule} from '@angular/common/http';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
+import { AutoCompleteComponent } from './auto-complete.component';
+import {HttpClient} from '@angular/common/http';
+import fhir from 'fhir/r4';
+import {By} from '@angular/platform-browser';
+declare var LForms: any;
 
-xdescribe('AutoCompleteComponent', () => {
+describe('AutoCompleteComponent', () => {
   let component: AutoCompleteComponent;
   let fixture: ComponentFixture<AutoCompleteComponent>;
+  let httpTestingController: HttpTestingController;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
-      declarations: [ AutoCompleteComponent ],
-      imports: [HttpClientModule, MatAutocompleteModule, MatFormFieldModule, MatInputModule]
+      imports: [ HttpClientTestingModule, AutoCompleteComponent ],
+      providers: [{provide: ComponentFixtureAutoDetect, useValue: true}]
     })
-    .compileComponents();
+    .compileComponents()
+    httpTestingController = TestBed.inject(HttpTestingController);
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AutoCompleteComponent);
     component = fixture.componentInstance;
     component.options = {
-      searchUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire',
-      httpOptions: {
-        observe: 'body' as const,
-        responseType: 'json' as const
+      acOptions: {
+        toolTip: 'Test placeholder',
+        matchListValue: true,
+        maxSelect: 1,
+        suggestionMode: LForms.Def.Autocompleter.USE_STATISTICS,
+        autocomp: true,
+      },
+      fhirOptions: {
+        // fhirServer: 'https://clinicaltables.nlm.nih.gov/fhir/R4',
+        // valueSetUri: 'http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions',
+        fhirServer: 'https://a.com/fhir',
+        valueSetUri: 'http://a.com/fhir/ValueSet/vs1',
+        operation: '$expand',
+        count: 7
       }
     };
-
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    // @ts-ignore
     expect(component).toBeTruthy();
   });
 });

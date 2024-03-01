@@ -17,7 +17,7 @@ import {JsonPointer} from 'json-ptr';
 // @ts-ignore
 import ngxItemSchema from '../../assets/ngx-item.schema.json5';
 // @ts-ignore
-import fhirExtensionSchema from '../../assets/fhir-extension-schema.json5';
+import fhirSchemaDefinitions from '../../assets/fhir-definitions.schema.json5';
 // @ts-ignore
 import itemLayout from '../../assets/items-layout.json5';
 // @ts-ignore
@@ -28,6 +28,8 @@ import flLayout from '../../assets/fl-fields-layout.json5';
 import itemEditorSchema from '../../assets/item-editor.schema.json5';
 import {Util} from '../lib/util';
 import {FetchService} from './fetch.service';
+import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
+import {ExtensionsService} from './extensions.service';
 declare var LForms: any;
 
 @Injectable({
@@ -53,13 +55,13 @@ export class FormService {
   snomedUser = false;
 
   fetchService = inject(FetchService);
+  formLevelExtensionService = inject(ExtensionsService);
   constructor(private modalService: NgbModal, private http: HttpClient) {
     [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
       if(!obj.schema.definitions) {
         obj.schema.definitions = {};
       }
-      obj.schema.definitions.Extension = fhirExtensionSchema as any;
-      this._updateExtension(obj.schema);
+      obj.schema.definitions = fhirSchemaDefinitions.definitions as any;
       obj.schema.formLayout = obj.layout.formLayout;
       this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
       this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
@@ -133,36 +135,6 @@ export class FormService {
    */
   getFormLevelSchema() {
     return this.flSchema;
-  }
-
-  /**
-   * Update main schema with adjusted extension schema recursively
-   *
-   * @param rootSchema
-   */
-  _updateExtension(rootSchema: any) {
-    const extension = rootSchema.definitions.Extension;
-    traverse(rootSchema, {}, (
-      schema,
-      jsonPtr,
-      rootSch,
-      parentJsonPtr,
-      parentKeyword,
-      parentSchema,
-      indexOrProp) => {
-      if(parentKeyword === 'items' && (parentJsonPtr.endsWith('extension') || parentJsonPtr.endsWith('modifierExtension'))) {
-        // Save title and description before over writing them.
-        const commonFields = {title: schema.title, description: schema.description};
-        Object.assign(schema, extension);
-        // title and description are overwritten. Restore them.
-        if(commonFields.title) {
-          schema.title = commonFields.title;
-        }
-        if(commonFields.description) {
-          schema.description = commonFields.description;
-        }
-      }
-    });
   }
 
   set loading(loading: boolean) {
@@ -325,6 +297,26 @@ export class FormService {
    */
   getTreeNodeByLinkId(linkId: string): ITreeNode {
     return this.findNodeByLinkId(this.treeModel.roots, linkId);
+  }
+
+  /**
+   * Get preferred terminology server walking along the ancestral tree nodes. Returns the first encountered server.
+   * @param sourceNode - Tree node to start the traversal.
+   */
+  getPreferredTerminologyServer(sourceNode: ITreeNode) {
+    let ret = null;
+    Util.traverseAncestors(sourceNode, (node) => {
+      const found = node.data.extension?.find((ext) => {
+        return ext.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
+      });
+      ret = found ? found.valueUrl : null;
+      return !ret; // Continue traverse if url is not found.
+    });
+    if(!ret) {
+      const ext = this.formLevelExtensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI)
+      ret = ext ? ext.valueUrl : null;
+    }
+    return ret;
   }
 
 

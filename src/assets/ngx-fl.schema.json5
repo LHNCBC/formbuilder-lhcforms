@@ -30,26 +30,7 @@
         "extension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
           "items": {
-            "description": "Optional Extension Element - found in all resources.",
-            "properties": {
-              "id": {
-                "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "url": {
-                "description": "Source of the definition for the extension code - a logical name or a URL.",
-                "pattern": "^\\S*$",
-                "type": "string"
-              },
-              "value": {
-                "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              }
-            },
-            "additionalProperties": false,
-            "type": "object"
+            "$ref": "#/definitions/Extension"
           },
           "type": "array",
           "widget": {
@@ -96,26 +77,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -172,26 +134,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -267,26 +210,7 @@
         "extension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
           "items": {
-            "description": "Optional Extension Element - found in all resources.",
-            "properties": {
-              "id": {
-                "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "url": {
-                "description": "Source of the definition for the extension code - a logical name or a URL.",
-                "pattern": "^\\S*$",
-                "type": "string"
-              },
-              "value": {
-                "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              }
-            },
-            "additionalProperties": false,
-            "type": "object"
+            "$ref": "#/definitions/Extension"
           },
           "type": "array",
           "widget": {
@@ -318,26 +242,7 @@
     "extension": {
       "description": "May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
       "items": {
-        "description": "Optional Extension Element - found in all resources.",
-        "properties": {
-          "id": {
-            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-            "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string"
-          },
-          "url": {
-            "description": "Source of the definition for the extension code - a logical name or a URL.",
-            "pattern": "^\\S*$",
-            "type": "string"
-          },
-          "value": {
-            "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-            "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object"
+        "$ref": "#/definitions/Extension"
       },
       "type": "array",
       "title": "Extension",
@@ -348,26 +253,7 @@
     "modifierExtension": {
       "description": "May be used to represent additional information that is not part of the basic definition of the resource and that modifies the understanding of the element that contains it and/or the understanding of the containing element's descendants. Usually modifier elements provide negation or qualification. To make the use of extensions safe and manageable, there is a strict set of governance applied to the definition and use of extensions. Though any implementer is allowed to define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension. Applications processing a resource are required to check for modifier extensions.\n\nModifier extensions SHALL NOT change the meaning of any elements on Resource or DomainResource (including cannot change the meaning of modifierExtension itself).",
       "items": {
-        "description": "Optional Extension Element - found in all resources.",
-        "properties": {
-          "id": {
-            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-            "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string"
-          },
-          "url": {
-            "description": "Source of the definition for the extension code - a logical name or a URL.",
-            "pattern": "^\\S*$",
-            "type": "string"
-          },
-          "value": {
-            "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-            "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object"
+        "$ref": "#/definitions/Extension"
       },
       "type": "array",
       "title": "Modifier extension",
@@ -394,26 +280,7 @@
           "extension": {
             "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
             "items": {
-              "description": "Optional Extension Element - found in all resources.",
-              "properties": {
-                "id": {
-                  "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                },
-                "url": {
-                  "description": "Source of the definition for the extension code - a logical name or a URL.",
-                  "pattern": "^\\S*$",
-                  "type": "string"
-                },
-                "value": {
-                  "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object"
+              "$ref": "#/definitions/Extension"
             },
             "type": "array",
             "widget": {
@@ -442,26 +309,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -484,26 +332,7 @@
                     "extension": {
                       "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                       "items": {
-                        "description": "Optional Extension Element - found in all resources.",
-                        "properties": {
-                          "id": {
-                            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                            "pattern": "^[ \\r\\n\\t\\S]+$",
-                            "type": "string"
-                          },
-                          "url": {
-                            "description": "Source of the definition for the extension code - a logical name or a URL.",
-                            "pattern": "^\\S*$",
-                            "type": "string"
-                          },
-                          "value": {
-                            "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                            "pattern": "^[ \\r\\n\\t\\S]+$",
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": false,
-                        "type": "object"
+                        "$ref": "#/definitions/Extension"
                       },
                       "type": "array",
                       "widget": {
@@ -574,26 +403,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -625,26 +435,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -763,26 +554,7 @@
           "extension": {
             "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
             "items": {
-              "description": "Optional Extension Element - found in all resources.",
-              "properties": {
-                "id": {
-                  "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                },
-                "url": {
-                  "description": "Source of the definition for the extension code - a logical name or a URL.",
-                  "pattern": "^\\S*$",
-                  "type": "string"
-                },
-                "value": {
-                  "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object"
+              "$ref": "#/definitions/Extension"
             },
             "type": "array",
             "widget": {
@@ -807,26 +579,7 @@
                 "extension": {
                   "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                   "items": {
-                    "description": "Optional Extension Element - found in all resources.",
-                    "properties": {
-                      "id": {
-                        "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                        "pattern": "^[ \\r\\n\\t\\S]+$",
-                        "type": "string"
-                      },
-                      "url": {
-                        "description": "Source of the definition for the extension code - a logical name or a URL.",
-                        "pattern": "^\\S*$",
-                        "type": "string"
-                      },
-                      "value": {
-                        "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                        "pattern": "^[ \\r\\n\\t\\S]+$",
-                        "type": "string"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "type": "object"
+                    "$ref": "#/definitions/Extension"
                   },
                   "type": "array",
                   "widget": {
@@ -878,26 +631,7 @@
                     "extension": {
                       "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                       "items": {
-                        "description": "Optional Extension Element - found in all resources.",
-                        "properties": {
-                          "id": {
-                            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                            "pattern": "^[ \\r\\n\\t\\S]+$",
-                            "type": "string"
-                          },
-                          "url": {
-                            "description": "Source of the definition for the extension code - a logical name or a URL.",
-                            "pattern": "^\\S*$",
-                            "type": "string"
-                          },
-                          "value": {
-                            "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                            "pattern": "^[ \\r\\n\\t\\S]+$",
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": false,
-                        "type": "object"
+                        "$ref": "#/definitions/Extension"
                       },
                       "type": "array",
                       "widget": {
@@ -950,26 +684,7 @@
           "extension": {
             "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
             "items": {
-              "description": "Optional Extension Element - found in all resources.",
-              "properties": {
-                "id": {
-                  "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                },
-                "url": {
-                  "description": "Source of the definition for the extension code - a logical name or a URL.",
-                  "pattern": "^\\S*$",
-                  "type": "string"
-                },
-                "value": {
-                  "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object"
+              "$ref": "#/definitions/Extension"
             },
             "type": "array",
             "widget": {
@@ -990,26 +705,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -1059,26 +755,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -1101,26 +778,7 @@
                     "extension": {
                       "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                       "items": {
-                        "description": "Optional Extension Element - found in all resources.",
-                        "properties": {
-                          "id": {
-                            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                            "pattern": "^[ \\r\\n\\t\\S]+$",
-                            "type": "string"
-                          },
-                          "url": {
-                            "description": "Source of the definition for the extension code - a logical name or a URL.",
-                            "pattern": "^\\S*$",
-                            "type": "string"
-                          },
-                          "value": {
-                            "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                            "pattern": "^[ \\r\\n\\t\\S]+$",
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": false,
-                        "type": "object"
+                        "$ref": "#/definitions/Extension"
                       },
                       "type": "array",
                       "widget": {
@@ -1181,26 +839,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -1252,26 +891,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -1289,26 +909,7 @@
                   "extension": {
                     "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                     "items": {
-                      "description": "Optional Extension Element - found in all resources.",
-                      "properties": {
-                        "id": {
-                          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                          "pattern": "^[ \\r\\n\\t\\S]+$",
-                          "type": "string"
-                        },
-                        "url": {
-                          "description": "Source of the definition for the extension code - a logical name or a URL.",
-                          "pattern": "^\\S*$",
-                          "type": "string"
-                        },
-                        "value": {
-                          "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                          "pattern": "^[ \\r\\n\\t\\S]+$",
-                          "type": "string"
-                        }
-                      },
-                      "additionalProperties": false,
-                      "type": "object"
+                      "$ref": "#/definitions/Extension"
                     },
                     "type": "array",
                     "widget": {
@@ -1360,26 +961,7 @@
                   "extension": {
                     "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                     "items": {
-                      "description": "Optional Extension Element - found in all resources.",
-                      "properties": {
-                        "id": {
-                          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                          "pattern": "^[ \\r\\n\\t\\S]+$",
-                          "type": "string"
-                        },
-                        "url": {
-                          "description": "Source of the definition for the extension code - a logical name or a URL.",
-                          "pattern": "^\\S*$",
-                          "type": "string"
-                        },
-                        "value": {
-                          "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                          "pattern": "^[ \\r\\n\\t\\S]+$",
-                          "type": "string"
-                        }
-                      },
-                      "additionalProperties": false,
-                      "type": "object"
+                      "$ref": "#/definitions/Extension"
                     },
                     "type": "array",
                     "widget": {
@@ -1435,26 +1017,7 @@
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                 "items": {
-                  "description": "Optional Extension Element - found in all resources.",
-                  "properties": {
-                    "id": {
-                      "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    },
-                    "url": {
-                      "description": "Source of the definition for the extension code - a logical name or a URL.",
-                      "pattern": "^\\S*$",
-                      "type": "string"
-                    },
-                    "value": {
-                      "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                      "pattern": "^[ \\r\\n\\t\\S]+$",
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object"
+                  "$ref": "#/definitions/Extension"
                 },
                 "type": "array",
                 "widget": {
@@ -1502,26 +1065,7 @@
           "extension": {
             "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
             "items": {
-              "description": "Optional Extension Element - found in all resources.",
-              "properties": {
-                "id": {
-                  "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                },
-                "url": {
-                  "description": "Source of the definition for the extension code - a logical name or a URL.",
-                  "pattern": "^\\S*$",
-                  "type": "string"
-                },
-                "value": {
-                  "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object"
+              "$ref": "#/definitions/Extension"
             },
             "type": "array",
             "widget": {
@@ -1544,26 +1088,7 @@
                 "extension": {
                   "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
                   "items": {
-                    "description": "Optional Extension Element - found in all resources.",
-                    "properties": {
-                      "id": {
-                        "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                        "pattern": "^[ \\r\\n\\t\\S]+$",
-                        "type": "string"
-                      },
-                      "url": {
-                        "description": "Source of the definition for the extension code - a logical name or a URL.",
-                        "pattern": "^\\S*$",
-                        "type": "string"
-                      },
-                      "value": {
-                        "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                        "pattern": "^[ \\r\\n\\t\\S]+$",
-                        "type": "string"
-                      }
-                    },
-                    "additionalProperties": false,
-                    "type": "object"
+                    "$ref": "#/definitions/Extension"
                   },
                   "type": "array",
                   "widget": {
@@ -1652,26 +1177,7 @@
         "extension": {
           "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
           "items": {
-            "description": "Optional Extension Element - found in all resources.",
-            "properties": {
-              "id": {
-                "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "url": {
-                "description": "Source of the definition for the extension code - a logical name or a URL.",
-                "pattern": "^\\S*$",
-                "type": "string"
-              },
-              "value": {
-                "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              }
-            },
-            "additionalProperties": false,
-            "type": "object"
+            "$ref": "#/definitions/Extension"
           },
           "type": "array",
           "widget": {
@@ -1699,7 +1205,16 @@
       "title": "Code",
       "widget": {
         "id": "boolean-radio",
-        "optionLabels": [[false, "No code"], [true, "Include code"]],
+        "optionLabels": [
+          [
+            false,
+            "No code"
+          ],
+          [
+            true,
+            "Include code"
+          ]
+        ],
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
@@ -1719,26 +1234,7 @@
           "extension": {
             "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
             "items": {
-              "description": "Optional Extension Element - found in all resources.",
-              "properties": {
-                "id": {
-                  "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                },
-                "url": {
-                  "description": "Source of the definition for the extension code - a logical name or a URL.",
-                  "pattern": "^\\S*$",
-                  "type": "string"
-                },
-                "value": {
-                  "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-                  "pattern": "^[ \\r\\n\\t\\S]+$",
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object"
+              "$ref": "#/definitions/Extension"
             },
             "type": "array",
             "widget": {
@@ -1806,6 +1302,9 @@
   "required": [
     "resourceType"
   ],
+  "definitions": {
+    // Merge field definitions from fhir-definitions.schema.json5.
+  },
   "steps": [
     {
       "title": "Form level attributes",

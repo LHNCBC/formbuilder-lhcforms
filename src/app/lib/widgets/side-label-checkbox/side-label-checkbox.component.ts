@@ -7,7 +7,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'lfb-side-label-checkbox',
-  template: `<div *ngIf="schema.type!='array'" class="widget row m-0">
+  template: `<div *ngIf="schema.type !== 'array'" class="widget row m-0">
       <label *ngIf="!nolabel && schema.title" [attr.for]="id" class="form-check-label {{labelWidthClass}}">
         {{ schema.title }}
         <div *ngIf="schema.description" tabindex="0" class="btn border-0 m-0 p-0"
