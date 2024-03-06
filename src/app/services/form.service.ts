@@ -302,8 +302,9 @@ export class FormService {
   /**
    * Get preferred terminology server walking along the ancestral tree nodes. Returns the first encountered server.
    * @param sourceNode - Tree node to start the traversal.
+   * @return - Returns the url of the terminology server extracted from the extension.
    */
-  getPreferredTerminologyServer(sourceNode: ITreeNode) {
+  getPreferredTerminologyServer(sourceNode: ITreeNode): string {
     let ret = null;
     Util.traverseAncestors(sourceNode, (node) => {
       const found = node.data.extension?.find((ext) => {
