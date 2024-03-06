@@ -4,7 +4,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [10.0.0] 2024-02-013
 ### Changed
-- Always use the latest lforms version for preview. The package is loaded at run time from https://lhcfhirtools-static.nlm.nih.gov/lforms-versions.
+- Always use the latest lforms version for preview. The package is loaded
+  at run time from https://lhcforms-static.nlm.nih.gov/lforms-versions.
 
 ## [9.2.8] 2024-02-06
 ### Fixed
