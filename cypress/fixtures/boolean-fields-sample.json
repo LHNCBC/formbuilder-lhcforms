@@ -1,0 +1,36 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "1",
+  "name": "Name - Sample for boolean field value",
+  "title": "Title - Sample for boolean field value",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "item0",
+      "text": "Item 0",
+      "type": "boolean",
+      "readOnly": true,
+      "required": false
+    },
+    {
+      "linkId": "item1",
+      "text": "Item 1",
+      "type": "boolean",
+      "initial": [{
+        "valueBoolean": true
+      }],
+      "readOnly": false,
+      "required": true,
+      "repeats": false
+    },
+    {
+      "linkId": "item2",
+      "text": "Item 2",
+      "type": "boolean",
+      "initial": [{
+        "valueBoolean": false
+      }],
+      "repeats": true
+    }
+  ]
+}

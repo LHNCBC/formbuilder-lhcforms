@@ -5,10 +5,10 @@
       <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
         <ng-container *ngFor="let key of optionsKeys">
           <input type="radio" class="btn-check"
-                 name="{{_id}}"
+                 [name]="_id"
                  [formControl]="control"
                  [attr.id]="'booleanRadio_'+key+_id"
-                 [value]="key"
+                 [value]="(key === 'true' || key === true) ? true : (key === 'false' || key === false) ? false : null"
                  [attr.disabled]="schema.readOnly ? '' : null">
           <label class="btn btn-outline-success m-0" [attr.for]="'booleanRadio_'+key+_id">{{options.get(key)}}</label>
         </ng-container>

@@ -453,3 +453,47 @@ Cypress.Commands.add('collapseAdvancedFields',() => {
   cy.contains('button', 'Advanced fields').find('svg.fa-angle-up').click();
 });
 
+/**
+ * Click a radio button identified by field label and value of the radio button.
+ */
+Cypress.Commands.add('booleanFieldClick', (fieldLabel, rbValue) => {
+  return cy.getBooleanFieldParent(fieldLabel).find('label[for^="booleanRadio_'+rbValue+'"]').click();
+});
+
+/**
+ * Get radio input tag identified by field label and input value.
+ */
+Cypress.Commands.add('getBooleanInput', (fieldLabel, rbValue) => {
+  return cy.getBooleanFieldParent(fieldLabel).find('input[id^="booleanRadio_'+rbValue+'"]');
+});
+
+/**
+ * Get a parent element of a boolean field identified by its label.
+ * Used to get elements of radio input and labels.
+ */
+Cypress.Commands.add('getBooleanFieldParent', (fieldLabel) => {
+  return cy.get('lfb-boolean-radio lfb-label label').contains(fieldLabel).parent().next();
+});
+
+/**
+ * Get parent for elements of boolean input/label in initial[x].valueBoolean field.
+ * The initial value field has different css path compared to above general boolean field.
+ */
+Cypress.Commands.add('getInitialValueBooleanParent', () => {
+  return cy.get('lfb-table lfb-label label').contains('Initial value').parent().parent().next()
+    .find('table tr:nth-child(1)');
+});
+
+/**
+ * Get input element for 'Initial value' boolean field.
+ */
+Cypress.Commands.add('getInitialValueBooleanInput', (rbValue) => {
+  return cy.getInitialValueBooleanParent().find('input[id^="booleanRadio_'+rbValue+'"]');
+});
+
+/**
+ * Click radio button of 'Initial value' boolean field.
+ */
+Cypress.Commands.add('getInitialValueBooleanClick', (rbValue) => {
+  return getInitialValueBooleanParent().find('label[for^="booleanRadio_'+rbValue+'"]').click();
+});
