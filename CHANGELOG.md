@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.3.0] 2024-02-013
+### Changed
+- Always use the latest lforms version for preview. The package is loaded
+  at run time from the CDN.
+
 ## [9.2.8] 2024-02-06
 ### Fixed
 - Fixed missing nested extensions.

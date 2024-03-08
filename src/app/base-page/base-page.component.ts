@@ -58,6 +58,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
   selectedPreviewTab = 0;
   acceptedTermsOfUse = false;
   acceptedSnomed = false;
+  lformsErrorMessage = null;
 
 
   constructor(private formService: FormService,
@@ -92,6 +93,9 @@ export class BasePageComponent implements OnInit, OnDestroy {
     });
 
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
+    FormService.lformsLoaded$.subscribe({error: (error) => {
+      this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
+    }});
   }
 
   ngOnInit() {

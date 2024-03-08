@@ -5,17 +5,21 @@ import sampleJson from '../../../cypress/fixtures/help-text-sample.json';
 import traverse from 'traverse';
 import {HttpClient, HttpHandler} from '@angular/common/http';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {CommonTestingModule} from '../testing/common-testing.module';
 
 describe('FormService', () => {
   let service: FormService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({providers: [NgbModal, HttpClient, HttpHandler]});
+  CommonTestingModule.setUpTestBedConfig({providers: [NgbModal, HttpClient, HttpHandler]});
+
+  beforeEach(async () => {
     service = TestBed.inject(FormService);
+    expect(window['LForms']).toBeDefined();
   });
 
-  it('should be created', () => {
+  it('should be created', async () => {
     expect(service).toBeTruthy();
+    expect(service.lformsVersion).toMatch(/^[0-9]+\.[0-9]+\.[0-9]+$/);
   });
 
   it('should update __$helpText', () => {

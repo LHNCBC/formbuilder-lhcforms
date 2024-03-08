@@ -9,7 +9,6 @@ describe('FetchService', () => {
   CommonTestingModule.setUpTestBedConfig({providers: [FetchService]});
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
     service = TestBed.inject(FetchService);
   });
 

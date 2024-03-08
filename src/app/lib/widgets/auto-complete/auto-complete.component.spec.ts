@@ -2,24 +2,21 @@ import {ComponentFixture, ComponentFixtureAutoDetect, TestBed} from '@angular/co
 import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 
 import { AutoCompleteComponent } from './auto-complete.component';
-import {HttpClient} from '@angular/common/http';
-import fhir from 'fhir/r4';
-import {By} from '@angular/platform-browser';
-declare var LForms: any;
+import {CommonTestingModule} from '../../../testing/common-testing.module';
 
 describe('AutoCompleteComponent', () => {
   let component: AutoCompleteComponent;
   let fixture: ComponentFixture<AutoCompleteComponent>;
   let httpTestingController: HttpTestingController;
 
-  beforeEach((() => {
-    TestBed.configureTestingModule({
-      imports: [ HttpClientTestingModule, AutoCompleteComponent ],
-      providers: [{provide: ComponentFixtureAutoDetect, useValue: true}]
-    })
-    .compileComponents()
+  CommonTestingModule.setUpTestBedConfig({
+    imports: [HttpClientTestingModule],
+    providers: [{provide: ComponentFixtureAutoDetect, useValue: true}]
+  });
+
+  beforeEach(async() => {
     httpTestingController = TestBed.inject(HttpTestingController);
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AutoCompleteComponent);
@@ -29,7 +26,7 @@ describe('AutoCompleteComponent', () => {
         toolTip: 'Test placeholder',
         matchListValue: true,
         maxSelect: 1,
-        suggestionMode: LForms.Def.Autocompleter.USE_STATISTICS,
+        sort: false,
         autocomp: true,
       },
       fhirOptions: {

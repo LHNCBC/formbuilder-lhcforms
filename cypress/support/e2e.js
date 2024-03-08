@@ -24,7 +24,8 @@ const config = {
     // TODO -
     //  The following is a result of bug in lforms while processing answerValueSet field. Remove it
     // after the bug is fixed in lforms.
-    /Access to XMLHttpRequest at 'https:\/\/lforms-fhir.nlm.nih.gov\/baseR4\/ValueSet%2F%24expand\?/
+    /Access to XMLHttpRequest at 'https:\/\/lforms-fhir.nlm.nih.gov\/baseR4\/ValueSet%2F%24expand\?/,
+    /the list of LForms versions from https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions/
   ]
 };
 

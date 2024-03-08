@@ -14,6 +14,30 @@ describe('Home page accept Terms of Use notices', () => {
     cy.clearSession();
   });
 
+  describe('Loading LForms', () => {
+    it('should display error message on lforms loading error', () => {
+      // Simulate error condition.
+      cy.intercept({method: 'GET', url: /^https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions(\/[.0-9]+)?/, times: 4},
+        (req) => {
+          console.log(`request url: ${req.url}`);
+          req.reply(404, 'File not found!');
+        });
+
+      cy.visit('/')
+      cy.acceptAllTermsOfUse();
+      cy.get('.card').as('errorCard').contains('.card-header', 'Error');
+      cy.get('@errorCard').find('.card-body').should('include.text', 'Encountered an error which causes');
+    });
+
+    it('should not display error after loading LForms', () => {
+      cy.visit('/')
+      cy.acceptAllTermsOfUse();
+      cy.window().should('have.property', 'LForms');
+      cy.window().its('LForms.lformsVersion').should('match', /^[0-9]+\.[0-9]+\.[0-9]+$/);
+      cy.get('.card.bg-danger-subtle').should('not.exist');
+    });
+  });
+
   it('should make SNOMED CT available after accepting SNOMED notice', () => {
     cy.goToHomePage();
     cy.contains('lfb-loinc-notice button', 'Accept').as('accept').should('not.be.enabled');
