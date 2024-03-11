@@ -35,6 +35,8 @@ import {NodeDialogComponent} from './node-dialog.component';
 import {Util} from '../lib/util';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
+import copy from "fast-copy";
+import traverse from "traverse";
 
 declare var LForms: any;
 
@@ -533,11 +535,29 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
+   * Menu item handler for copy tasks.
+   * @param domEvent - DOM event.
+   * @param contextNode - Context node.
+   */
+  onCopyDlg(domEvent: Event, contextNode: ITreeNode) {
+    const modalRef = this.openNodeDlg(contextNode, 'Copy');
+    modalRef.result.then((result) => {
+      this.copyItem(contextNode, result.target, result.location);
+    }, (reason) => {
+    })
+      .finally(() => {
+        setTimeout(() => {
+          this.focusActiveNode();
+        });
+      });
+    domEvent.stopPropagation();
+  }
+  /**
    * Dialog box to interact with target node searching.
    * @param contextNode - Context node
    * @param mode - Move or insert.
    */
-  openNodeDlg(contextNode: ITreeNode, mode: ('Move'|'Insert')): NgbModalRef {
+  openNodeDlg(contextNode: ITreeNode, mode: ('Move'|'Insert'|'Copy')): NgbModalRef {
     const modalRef = this.modalService.open(NodeDialogComponent, {ariaLabelledBy: 'modal-move-title'});
     modalRef.componentInstance.node = contextNode;
     modalRef.componentInstance.item = this;
@@ -770,5 +790,47 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     });
+  }
+
+  private addNewItem(position: 'AFTER' | 'BEFORE' | 'CHILD', newItem, targetNode: ITreeNode) {
+
+    switch (position) {
+      case 'CHILD':
+        if (!targetNode.data.item) {
+          targetNode.data.item = [];
+        }
+        targetNode.data.item.push(newItem);
+        break;
+
+      case 'BEFORE':
+        targetNode.parent.data.item.splice(targetNode.index, 0, newItem);
+        break;
+
+      case 'AFTER':
+        targetNode.parent.data.item.splice(targetNode.index + 1, 0, newItem);
+        break;
+    }
+  }
+  /**
+   * Copy the item in the data structure.
+   * @param contextNode - The node to copy
+   * @param targetNode - Destination node
+   * @param position - ('AFTER'|'BEFORE'|'CHILD')
+   */
+  private copyItem(contextNode: ITreeNode, targetNode: ITreeNode, position: ('AFTER' | 'BEFORE' | 'CHILD') = 'AFTER') {
+    const nodeData = contextNode.data;
+    const newItem = copy(nodeData);
+    newItem.text = 'Copy of ' + newItem.text;
+    traverse(newItem).forEach(node => {
+      if (node && node.linkId) {
+        node.linkId = Math.floor(100000000000 + Math.random() * 900000000000);
+      }
+    });
+    this.addNewItem(position, newItem, targetNode);
+    this.treeComponent.treeModel.update();
+    const result = this.formService.getTreeNodeByLinkId(newItem.linkId);
+    if (result) {
+      this.treeComponent.treeModel.setFocusedNode(result);
+    }
   }
 }
