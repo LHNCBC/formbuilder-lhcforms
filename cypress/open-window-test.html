@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<div class="bg-body p-2" xmlns="http://www.w3.org/1999/html">
+  <button id="openWin" class="btn btn-primary m-2" onClick="openFormBuilder()">Open form builder</button>
+  <button id="sendQ" class="btn btn-primary m-2" onClick="sendQuestionnaire()">Post questionnaire</button>
+  <p class="m-1" id="url"></p>
+  <p class="m-1" id="init"></p>
+  <pre class="m-1" id="updateQ">Look for message from opened window here!</pre>
+  <pre class="m-1" id="closedQ">Look for message from opened window here!</pre>
+</div>
+
+<script>
+  const initialQ = {resourceType: 'Questionnaire', title: 'Form loaded from open-window-test.html', status: 'draft', item: [{text: 'q one', linkId: 'q-1'}]};
+
+  let fbWindow = null;
+  // let fbUrl = 'http://localhost:9030';
+  let fbUrl = '/';
+  let initEl = document.getElementById('init');
+  let updateEl = document.getElementById('updateQ');
+  updateEl.innerHTML = `Update event not recieved yet!`;
+  let closedEl = document.getElementById('closedQ');
+  closedEl.innerHTML = `closed event not recieved yet!`;
+
+  let urlEl = document.getElementById('url');
+  window.addEventListener('message', handleMessage, true);
+
+  function handleMessage(event) {
+    let messageFromOpenedWindow;
+    fbUrl = new URL(fbUrl, window.location.href).toString();
+    console.log(`Message type ${event.data?.type} received from ${event.origin}`);
+    if (!fbUrl.startsWith(event.origin)) {
+      return;
+    }
+    switch (event.data?.type) {
+      case 'initialized':
+        // Wait for the child window to be ready, before sending initial questionnaire.
+        initEl.innerHTML = `Window initialized`;
+        sendQuestionnaire(); // Send the
+        break;
+      case 'updateQuestionnaire': // Use this to get continuous updates.
+        messageFromOpenedWindow = JSON.stringify(event.data, null, 2);
+        updateEl.innerHTML = `${event.data?.type}: Questionnaire from opened window (${new Date().toISOString()}): \n${messageFromOpenedWindow};`
+        break;
+      case 'closed': // Triggered when the window
+        messageFromOpenedWindow = JSON.stringify(event.data, null, 2);
+        closedEl.innerHTML = `${event.data?.type}: Questionnaire from opened window (${new Date().toISOString()}): \n${messageFromOpenedWindow};`
+        break;
+      default:
+        console.log(`Unknown message type ${event.data?.type} received from ${event.origin}`);
+    }
+  }
+
+  function openFormBuilder() {
+    fbWindow = window.open(fbUrl, 'formbuilder_window');
+    fbWindow.focus();
+    urlEl.innerHTML = 'Opened url: ' + fbUrl;
+  }
+
+  function sendQuestionnaire() {
+    if(fbWindow && !fbWindow.closed) {
+      console.log(`Posting initialQuestionnaire to ${fbUrl}`);
+      fbWindow?.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbUrl);
+    }
+  }
+</script>
+</body>
+</html>

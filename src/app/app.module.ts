@@ -3,7 +3,6 @@ import {ApplicationRef, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, NgModule} from '@an
 import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
 
 import { AppComponent } from './app.component';
-import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -157,7 +156,6 @@ import {LabelComponent} from './lib/widgets/label/label.component';
     DatetimeComponent,
   ],
   imports: [
-    AppRoutingModule,
     BrowserModule,
     BrowserAnimationsModule,
     FormsModule,

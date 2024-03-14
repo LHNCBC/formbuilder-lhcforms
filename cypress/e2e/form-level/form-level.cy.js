@@ -653,4 +653,40 @@ describe('Home page', () => {
     });
   });
 
-})
+});
+/*
+describe('Open formbuilder in a new window', () => {
+  before(() => {
+    cy.clearSession();
+    CypressUtil.mockSnomedEditions();
+    cy.visit('/test/open-window-test.html');
+    cy.window().them((win) => {
+      cy.spy(win, 'open').as('windowOpen');
+    });
+
+    cy.get('#openWin').click();
+    cy.get('@windowOpen').should('be.called', '/');
+  });
+
+  beforeEach(() => {
+    cy.clearSession();
+    cy.visit('/', {
+      onBeforeLoad: (win) => {
+        cy.stub(win, 'opener').value({
+          location: {href: win.document.location.href+'/test/open-window-test.html'},
+          postMessage: (msgData, targetUrl) => {}
+        });
+        cy.stub(win.opener, 'postMessage').as('postMessage');
+      }
+    });
+  });
+
+  it('should open formbuilder in a new window', () => {
+    cy.wait('@postMessage');
+    cy.get('@postMessage').should('be.calledWith', {});
+    cy.get('#title').should('have.value', 'Form loaded from open-window-test.html');
+
+  });
+
+});
+*/

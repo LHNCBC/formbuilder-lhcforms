@@ -95,6 +95,109 @@
               "extractLicenses": false,
               "vendorChunk": true,
               "buildOptimizer": false
+            },
+            "prod_with_test_html": {
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*.js",
+                  "input": "./node_modules/@webcomponents/webcomponentsjs",
+                  "output": "webcomponents/"
+                },
+                {
+                  "glob": "**/*.js",
+                  "input": "./src/lib/lforms",
+                  "output": "lforms/"
+                },
+                {
+                  "glob": "**/*.js.map",
+                  "input": "./src/lib/lforms",
+                  "output": "lforms/"
+                },
+                {
+                  "glob": "**/*.css",
+                  "input": "./src/lib/lforms",
+                  "output": "lforms/"
+                },
+                {
+                  "glob": "**/*.png",
+                  "input": "./src/lib/lforms",
+                  "output": "lforms/"
+                },
+                {
+                  "glob": "**/*.html",
+                  "input": "./cypress",
+                  "output": "./test/"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            },
+            "dev_with_test_html": {
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*.js",
+                  "input": "./node_modules/@webcomponents/webcomponentsjs",
+                  "output": "webcomponents/"
+                },
+                {
+                  "glob": "**/*.js",
+                  "input": "./src/lib/lforms",
+                  "output": "lforms/"
+                },
+                {
+                  "glob": "**/*.js.map",
+                  "input": "./src/lib/lforms",
+                  "output": "lforms/"
+                },
+                {
+                  "glob": "**/*.css",
+                  "input": "./src/lib/lforms",
+                  "output": "lforms/"
+                },
+                {
+                  "glob": "**/*.png",
+                  "input": "./src/lib/lforms",
+                  "output": "lforms/"
+                },
+                {
+                  "glob": "**/*.html",
+                  "input": "./cypress",
+                  "output": "./test/"
+                }
+              ],
+              "optimization": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "extractLicenses": false,
+              "vendorChunk": true,
+              "buildOptimizer": false
             }
           }
         },
@@ -108,14 +211,14 @@
               "browserTarget": "formbuilder-lhcforms:build:production"
             },
             "development": {
-              "browserTarget": "formbuilder-lhcforms:build:development"
+              "browserTarget": "formbuilder-lhcforms:build:dev_with_test_html"
             },
             "e2e-dev": {
-              "browserTarget": "formbuilder-lhcforms:build:development",
+              "browserTarget": "formbuilder-lhcforms:build:dev_with_test_html",
               "port": 9031
             },
             "e2e-prod": {
-              "browserTarget": "formbuilder-lhcforms:build:production",
+              "browserTarget": "formbuilder-lhcforms:build:prod_with_test_html",
               "port": 9031
             }
           },

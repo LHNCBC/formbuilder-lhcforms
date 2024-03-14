@@ -2,6 +2,14 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.4.0] 2024-03-14
+### Added 
+- Added a feature to invoke formbuilder from a parent window,
+  in a new child window and optionally initialize it with a questionnaire.
+- If opened from another window, the formbuilder will post a message
+  back the parent window with the updated questionnaire. It will post a final message,
+  when the child window is closed, with final version of questionnaire.
+
 ## [9.2.8] 2024-02-06
 ### Fixed
 - Fixed missing nested extensions.

@@ -465,6 +465,16 @@ export class FormService {
    */
   autoSaveForm(fhirQ: fhir.Questionnaire) {
     this.autoSave('fhirQuestionnaire', fhirQ);
+    this.notifyWindowOpener({type: 'updateQuestionnaire', questionnaire: fhirQ});
+  }
+
+
+  notifyWindowOpener(data: any) {
+    let openerUrl = window.opener?.location?.href;
+    if(openerUrl) {
+      window.opener.postMessage(data, openerUrl);
+      console.log(`${data.type} data posted to ${openerUrl}`);
+    }
   }
 
 
