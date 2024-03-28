@@ -1260,7 +1260,7 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.get('@type').contains('quantity');
       cy.get('[id^="units"]').as('units').should('be.visible');
-      cy.get('@units').prev('ul').as('selectedUnits');
+      cy.get('@units').parent().prev('ul').as('selectedUnits');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
       });
