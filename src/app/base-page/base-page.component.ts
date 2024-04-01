@@ -56,6 +56,8 @@ export class BasePageComponent implements OnInit {
   acceptedTermsOfUse = false;
   acceptedSnomed = false;
   openerUrl: string = null;
+  lformsErrorMessage = null;
+
 
   constructor(private formService: FormService,
               private modelService: SharedObjectService,
@@ -89,6 +91,9 @@ export class BasePageComponent implements OnInit {
     });
 
     formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
+    FormService.lformsLoaded$.subscribe({error: (error) => {
+      this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
+    }});
   }
 
   ngOnInit() {

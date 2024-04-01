@@ -1,13 +1,13 @@
 import {TestBed} from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import {HttpResponse, HttpRequest} from '@angular/common/http';
 import fhir from 'fhir/r4';
 
 import { FhirService } from './fhir.service';
-import {Observable} from 'rxjs';
 import {fhirclient} from 'fhirclient/lib/types';
 import RequestOptions = fhirclient.RequestOptions;
 import {TestUtil} from '../testing/util';
+import {FormService} from './form.service';
+import {CommonTestingModule} from '../testing/common-testing.module';
 
 describe('FhirService', () => {
   let service: FhirService;
@@ -25,11 +25,11 @@ describe('FhirService', () => {
     }]
   };
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [ HttpClientTestingModule ],
-      providers: [FhirService]
-    });
+  CommonTestingModule.setUpTestBedConfig({
+    imports: [ HttpClientTestingModule ]
+  });
+
+  beforeEach(async () => {
     service = TestBed.inject(FhirService);
   });
 
@@ -39,19 +39,19 @@ describe('FhirService', () => {
     expect(service.getFhirServer().endpoint).toBe(serverUrl);
   });
 
-  it('Should read()', (done) => {
+  it('should read()', (done) => {
     // Ideally would like to intercept underlying XHR requests and mock them. For some reason angular test bed modules
     // are not intercepting those calls from fhirclient.js.
     // Alternatively spy on smart client api calls and mock the responses.
     const reqSpy = spyOn(service.getSmartClient(), 'request')
       .withArgs({url: 'Questionnaire/12345-6?_format=application/fhir+json'})
       .and.returnValue(Promise.resolve(dummyQ));
-    service.read('12345-6').subscribe((q) => {
+    service.read('12345-6').subscribe({next: (q) => {
       expect(q).toBe(dummyQ);
       done();
-    }, (error) => {
+    }, error: (error) => {
       done.fail(error);
-    });
+    }});
     expect(reqSpy).toHaveBeenCalled();
   });
 

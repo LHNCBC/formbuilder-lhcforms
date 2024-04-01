@@ -9,9 +9,9 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {Observable, Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import traverse from 'json-schema-traverse';
 import jsonTraverse from 'traverse';
 import {JsonPointer} from 'json-ptr';
+import {loadLForms, getSupportedLFormsVersions} from 'lforms-loader';
 
 // Configuration files
 // @ts-ignore
@@ -36,6 +36,7 @@ declare var LForms: any;
   providedIn: 'root'
 })
 export class FormService {
+  static _lformsLoaded$ = new Subject<string>();
 
   private _loading = false;
   _guidingStep$: Subject<string> = new Subject<string>();
@@ -53,6 +54,8 @@ export class FormService {
   private _itemEditorSchema: any = {properties: {}};
 
   snomedUser = false;
+  _lformsVersion = '';
+  _lformsErrorMessage = null;
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
@@ -69,6 +72,18 @@ export class FormService {
     this.itemSchema = ngxItemSchema;
     this.flSchema = ngxFlSchema;
     this._itemEditorSchema = itemEditorSchema;
+
+
+    // Load lforms.
+    this.loadLFormsLib().then((loadedVersion: string) => {
+      this._lformsVersion = LForms.lformsVersion;
+      FormService._lformsLoaded$.next(this._lformsVersion);
+    }).catch((error) => {
+      console.error(error);
+      this._lformsVersion = 'ERROR';
+      FormService._lformsLoaded$.error(error);
+    });
+
   }
 
   /**
@@ -137,6 +152,13 @@ export class FormService {
     return this.flSchema;
   }
 
+  get lformsVersion(): string {
+    return this._lformsVersion;
+  }
+
+  get lformsErrorMessage(): string | null {
+    return this._lformsErrorMessage;
+  }
   set loading(loading: boolean) {
     this._loading = loading;
   }
@@ -152,6 +174,9 @@ export class FormService {
     return this._guidingStep$.asObservable();
   }
 
+  static get lformsLoaded$(): Observable<string> {
+    return FormService._lformsLoaded$.asObservable();
+  }
 
   /**
    * Getter for form reset Observable
@@ -302,8 +327,9 @@ export class FormService {
   /**
    * Get preferred terminology server walking along the ancestral tree nodes. Returns the first encountered server.
    * @param sourceNode - Tree node to start the traversal.
+   * @return - Returns the url of the terminology server extracted from the extension.
    */
-  getPreferredTerminologyServer(sourceNode: ITreeNode) {
+  getPreferredTerminologyServer(sourceNode: ITreeNode): string {
     let ret = null;
     Util.traverseAncestors(sourceNode, (node) => {
       const found = node.data.extension?.find((ext) => {
@@ -593,5 +619,22 @@ export class FormService {
     if(this.snomedUser) {
       this.fetchService.fetchSnomedEditions();
     }
+  }
+
+  /**
+   * Load LForms library at run time.
+   * @return - A promise which resolves to version number loaded.
+   */
+  loadLFormsLib(): Promise<string> {
+    return getSupportedLFormsVersions().then((versions) => {
+      const latestVersion = versions[0] || '34.3.0';
+      return loadLForms(latestVersion).then(() => latestVersion).catch((error) => {
+        console.error(`lforms-loader.loadLForms() failed: ${error.message}`);
+        throw new Error(error);
+      });
+    }).catch((error) => {
+      console.error(`lforms-loader.getSupportedLFormsVersions() failed: ${error.message}`);
+      throw new Error(error);
+    });
   }
 }

@@ -26,26 +26,6 @@
                 "glob": "**/*.js",
                 "input": "./node_modules/@webcomponents/webcomponentsjs",
                 "output": "webcomponents/"
-              },
-              {
-                "glob": "**/*.js",
-                "input": "./src/lib/lforms",
-                "output": "lforms/"
-              },
-              {
-                "glob": "**/*.js.map",
-                "input": "./src/lib/lforms",
-                "output": "lforms/"
-              },
-              {
-                "glob": "**/*.css",
-                "input": "./src/lib/lforms",
-                "output": "lforms/"
-              },
-              {
-                "glob": "**/*.png",
-                "input": "./src/lib/lforms",
-                "output": "lforms/"
               }
             ],
             "styles": [

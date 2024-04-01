@@ -25,17 +25,7 @@ describe('FhirSearchDlgComponent', () => {
     TestBed.resetTestingModule();
   });
 
-  CommonTestingModule.setUpTestBed(FhirSearchDlgComponent);
-
-
-  beforeEach( async () => {
-    await TestBed.configureTestingModule({
-      declarations: [ FhirSearchDlgComponent ],
-      imports: [NgbModule],
-      providers: [NgbActiveModal]
-    })
-      .compileComponents();
-  });
+  CommonTestingModule.setUpTestBedConfig({declarations: [FhirSearchDlgComponent]});
 
   beforeEach(() => {
     fixture = TestBed.createComponent(FhirSearchDlgComponent);

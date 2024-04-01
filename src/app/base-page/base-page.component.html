@@ -58,6 +58,10 @@
       </nav>
       <a target="_self" id="exportAnchor" class="d-none">Export</a>
       <input #fileInput class="d-none" type="file" (change)="onFileSelected($event)" (click)="fileInput.value = null;">
+      <div class="card bg-danger-subtle m-auto w-75" *ngIf="lformsErrorMessage">
+        <div class="card-header d-flex justify-content-center"><h6 class="card-title">Error</h6></div>
+        <div class="card-body">{{lformsErrorMessage}}</div>
+      </div>
 
       <ng-container *ngIf="guidingStep === 'home'">
         <ng-container *ngTemplateOutlet="home"></ng-container>

@@ -74,6 +74,7 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
   el: HTMLInputElement;
   autoComp: any;
   elId: string;
+  autoCompleteEventsUnsubscribe: () => void;
 
   constructor() {
     this.elId = 'lfb-auto-complete-' + AutoCompleteComponent._serialNumber++;
@@ -105,7 +106,7 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
       this.autoComp.storeSelectedItem(this.model.display, this.model.code);
     }
 
-    LForms.Def.Autocompleter.Event.observeListSelections(this.el.id, (data) => {
+    this.autoCompleteEventsUnsubscribe = LForms.Def.Autocompleter.Event.observeListSelections(this.el.id, (data) => {
       let coding = null;
       if(data.removed) {
         this.removed.emit(this.autoComp.getItemData(data.final_val));
@@ -176,6 +177,10 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
    * Make sure to reset value
    */
   destroyAutocomplete() {
+    if(this.autoCompleteEventsUnsubscribe) {
+      this.autoCompleteEventsUnsubscribe();
+      this.autoCompleteEventsUnsubscribe = null;
+    }
     if(this.autoComp) {
       this.autoComp.setFieldVal('', false); // autoComp.destroy() does not clear the input box for single-select
       this.autoComp.destroy();
