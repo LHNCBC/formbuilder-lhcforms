@@ -8,64 +8,93 @@
 <div class="bg-body p-2" xmlns="http://www.w3.org/1999/html">
   <button id="openWin" class="btn btn-primary m-2" onClick="openFormBuilder()">Open form builder</button>
   <button id="sendQ" class="btn btn-primary m-2" onClick="sendQuestionnaire()">Post questionnaire</button>
+  <button id="clear" class="btn btn-primary m-2" onClick="clearMessages()">Clear messages</button>
   <p class="m-1" id="url"></p>
-  <p class="m-1" id="init"></p>
-  <pre class="m-1" id="updateQ">Look for message from opened window here!</pre>
-  <pre class="m-1" id="closedQ">Look for message from opened window here!</pre>
+  <h6 id="initH">initialized</h6>
+  <pre class="m-1" id="initW"></pre>
+  <h6 id="updateH">updateQuestionnaire</h6>
+  <pre class="m-1" id="updateQ"></pre>
+  <h6 id="closedH">closed</h6>
+  <pre class="m-1" id="closedQ"></pre>
 </div>
 
 <script>
+  // Sample questionnaire to be edited in form builder.
   const initialQ = {resourceType: 'Questionnaire', title: 'Form loaded from open-window-test.html', status: 'draft', item: [{text: 'q one', linkId: 'q-1'}]};
 
   let fbWindow = null;
-  // let fbUrl = 'http://localhost:9030';
   let fbUrl = '/';
-  let initEl = document.getElementById('init');
+
+  let initHeader = document.getElementById('initH');
+  let updateHeader = document.getElementById('updateH');
+  let closedHeader = document.getElementById('closedH');
+  let initEl = document.getElementById('initW');
   let updateEl = document.getElementById('updateQ');
-  updateEl.innerHTML = `Update event not recieved yet!`;
   let closedEl = document.getElementById('closedQ');
-  closedEl.innerHTML = `closed event not recieved yet!`;
 
   let urlEl = document.getElementById('url');
   window.addEventListener('message', handleMessage, true);
 
+
+  /**
+   * Listen to messages from form builder.
+   */
   function handleMessage(event) {
-    let messageFromOpenedWindow;
+    const messageFromOpenedWindow = JSON.stringify(event.data, null, 2);
     fbUrl = new URL(fbUrl, window.location.href).toString();
-    console.log(`Message type ${event.data?.type} received from ${event.origin}`);
+    // console.log(`Message type ${event.data?.type} received from ${event.origin}`);
     if (!fbUrl.startsWith(event.origin)) {
       return;
     }
     switch (event.data?.type) {
       case 'initialized':
         // Wait for the child window to be ready, before sending initial questionnaire.
-        initEl.innerHTML = `Window initialized`;
-        sendQuestionnaire(); // Send the
+        initHeader.innerHTML = `${event.data?.type}: New window initialized (${new Date().toISOString()})`;
+        initEl.innerHTML = `${messageFromOpenedWindow}`;
+        sendQuestionnaire(); // Send initial questionnaire.
         break;
-      case 'updateQuestionnaire': // Use this to get continuous updates.
-        messageFromOpenedWindow = JSON.stringify(event.data, null, 2);
-        updateEl.innerHTML = `${event.data?.type}: Questionnaire from opened window (${new Date().toISOString()}): \n${messageFromOpenedWindow};`
+      case 'updateQuestionnaire':
+        // Use this to get continuous updates. Wiil be triggered by every edit in
+        // the form builder with about 0.5 second debounce.
+        updateHeader.innerHTML = `${event.data?.type}: Updated questionnaire from opened window (${new Date().toISOString()})`;
+        updateEl.innerHTML = `${messageFromOpenedWindow}`
         break;
-      case 'closed': // Triggered when the window
-        messageFromOpenedWindow = JSON.stringify(event.data, null, 2);
-        closedEl.innerHTML = `${event.data?.type}: Questionnaire from opened window (${new Date().toISOString()}): \n${messageFromOpenedWindow};`
+      case 'closed':
+        // Triggered when the window is closed. Use this to get last updated questionnaire
+        closedHeader.innerHTML = `${event.data?.type}: Final questionnaire from opened window after it is closed (${new Date().toISOString()})`;
+        closedEl.innerHTML = `${messageFromOpenedWindow}`;
         break;
       default:
         console.log(`Unknown message type ${event.data?.type} received from ${event.origin}`);
     }
   }
 
+  /**
+   * Open a child window to load form builder app. 
+   */
   function openFormBuilder() {
     fbWindow = window.open(fbUrl, 'formbuilder_window');
     fbWindow.focus();
     urlEl.innerHTML = 'Opened url: ' + fbUrl;
   }
 
+  /**
+   * Send questionnaire to form builder using window.postMessage()
+   */
   function sendQuestionnaire() {
     if(fbWindow && !fbWindow.closed) {
       console.log(`Posting initialQuestionnaire to ${fbUrl}`);
       fbWindow?.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbUrl);
     }
+  }
+
+  /**
+   * Clear messages, typically to read fresh messages.
+   */
+  function clearMessages() {
+    initEl.innerHTML = '';
+    updateEl.innerHTML = '';
+    closedEl.innerHTML = '';
   }
 </script>
 </body>
