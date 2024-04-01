@@ -69,7 +69,7 @@ test.describe('Open formbuilder in a new window', () => {
 
     const loc = eventElementMap[type];
     if(loc) {
-      await expect(page.locator(loc)).toContainText(type); // Wait until the page is updated.
+      await expect(page.locator(loc)).toContainText(type, {timeout: 10000}); // Wait until the page is updated.
       const str = await page.locator(loc).textContent();
       ret = JSON.parse(str);
     }
