@@ -2,6 +2,18 @@
 
 @import '~bootstrap/dist/css/bootstrap.min.css';
 
+.mat-mdc-dialog-container .mdc-dialog__content {
+  color: inherit !important;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__content {
+  line-height: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  /* letter-spacing: inherit !important; */
+}
+
+
 /* Set the height and line-height of the tab header */
 mat-tab-group.preview-json-tabs mat-tab-header {
   border-top: lightgrey solid 1px;
