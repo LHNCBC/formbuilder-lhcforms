@@ -13,8 +13,8 @@ describe('FormService', () => {
   CommonTestingModule.setUpTestBedConfig({providers: [NgbModal, HttpClient, HttpHandler]});
 
   beforeEach(async () => {
-    service = TestBed.inject(FormService);
-    expect(window['LForms']).toBeDefined();
+    service = await TestBed.inject(FormService);
+    await expect(window['LForms']).toBeDefined();
   });
 
   it('should be created', async () => {

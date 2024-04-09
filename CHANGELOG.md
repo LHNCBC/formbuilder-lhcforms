@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.3.2] 2024-04-08
+### Fixed
+- Fixed flaky unit tests.
+
 ## [9.3.1] 2024-03-28
 ### Fixed
 - Fixed a cypress test.
