@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.3.3] 2024-04-11
+### Changed
+- Added a tagline to header.
+- Changed text in terms of use.
+- Added text to preview dialog
+
 ## [9.3.2] 2024-04-08
 ### Fixed
 - Fixed flaky unit tests.

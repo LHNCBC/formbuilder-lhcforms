@@ -8,30 +8,32 @@ import appVersion from '../../assets/version.json';
 @Component({
   selector: 'lfb-header',
   template: `
-    <mat-toolbar id="header" class="ps-0 pe-0">
+    <nav id="header" class="ps-0 pe-0 d-flex">
       <mat-icon id="logo" svgIcon="home" aria-label="Home"></mat-icon>
-      <div id="siteNameBox">
-        <a mat-button id="siteName" href="/">NLM Form Builder</a>
+      <div id="siteNameBox" class="d-flex flex-column align-self-baseline ps-2">
+        <div class="fs-4"><a class="btn btn-link p-0" id="siteName" href="/">NLM Form Builder</a></div>
+        <div class="fs-6">A tool for building HL7<sup>®</sup> FHIR<sup>®</sup> Questionnaires</div>
+
       </div>
-      <div *ngIf="appVersion" class="float-lg-right version-info align-self-end fw-bold"
+      <div *ngIf="appVersion" class="float-lg-right version-info align-self-end fw-bold pb-1"
         >Version: <a target="_blank" rel="noopener noreferrer"
                      href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
       <div class="float-lg-right" *ngIf="isFirebaseEnabled">
         <div *ngIf="!isUserSignedIn">
-          <button mat-button color="primary" (click)="showSignInDialog()">
+          <button class="btn btn-sm btn-primary" (click)="showSignInDialog()">
             <button class="btn border-0 m-0 p-0" matTooltip="Login with OAuth authenticators">Sign in</button>
           </button>
         </div>
         <div *ngIf="isUserSignedIn">
           <span>{{userProfile.displayName}}</span>
-          <button mat-button color="primary" (click)="signOut()">
+          <button class="btn btn-sm btn-primary" (click)="signOut()">
             <button class="btn border-0 m-0 p-0"
                   [ngbTooltip]="userProfile.displayName + userProfile.email ? (' : ' + userProfile.email) : ''">Sign out</button>
           </button>
         </div>
         <div *ngIf="loginError">{{loginError.message}}</div>
       </div>
-    </mat-toolbar>
+</nav>
   `,
   styles: [`
     #header {
@@ -93,7 +95,6 @@ import appVersion from '../../assets/version.json';
     }
 
     .version-info {
-      font-size: 60%;
     }
 
     .version-info a:hover {
