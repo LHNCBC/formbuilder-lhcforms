@@ -1,39 +1,45 @@
- <h2 mat-dialog-title class="bg-primary text-white pe-2 pb-3">Preview of Questionnaire
+<h2 mat-dialog-title class="bg-primary text-white pe-2 pb-3">Preview of Questionnaire
    <button mat-icon-button class="close-button mt-2" [mat-dialog-close]="true">
      <mat-icon class="close-icon">close</mat-icon>
    </button>
- </h2>
- <mat-dialog-content class="lfb-mat-tab-content">
-   <mat-tab-group [mat-stretch-tabs]="true">
-     <mat-tab label="View Rendered Form">
-       <ng-template matTabContent>
-         <div>
-           <div class="float-sm-end fw-bold" style="font-size: 70%;">LForms version: {{formService.lformsVersion}}</div>
-           <div>&nbsp;</div> <!-- Needed to float the above div -->
-         </div>
-         <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options"></wc-lhc-form>
-       </ng-template>
-     </mat-tab>
-     <mat-tab>
-       <ng-template matTabLabel>
-         View Questionnaire JSON
-       </ng-template>
-       <ng-template matTabContent>
-         <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false">
-           <ng-container *ngFor="let fmt of ['R4', 'STU3']">
-             <mat-tab>
-               <ng-template matTabLabel>{{ fmt }} Version</ng-template>
-               <ng-template matTabContent>
-                 <pre class="fix-pre {{fmt}}">{{ formService.convertFromR4(data?.questionnaire, fmt) | json }}</pre>
-               </ng-template>
-             </mat-tab>
-           </ng-container>
-         </mat-tab-group>
-       </ng-template>
-     </mat-tab>
-   </mat-tab-group>
- </mat-dialog-content>
- <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
-   <button class="btn btn-primary" (click)="close()">Close</button>
- </mat-dialog-actions>
+</h2>
+<mat-dialog-content class="lfb-mat-tab-content">
+  <mat-tab-group [mat-stretch-tabs]="true">
+    <mat-tab label="View Rendered Form">
+      <ng-template matTabContent>
+        <div>
+          <div class="pt-1">This preview is being handled by
+            <a href="https://lhncbc.github.io/lforms/" class="link-primary" target="_blank">LHC-Forms</a>,
+            which you can also use via the
+            <a href="https://lhncbc.github.io/questionnaire-viewer/" class="link-primary" target="_blank">Questionnaire Viewer</a>,
+            or in your own applications.
+          </div>
+          <small class="float-sm-end fw-bold">LForms version: {{formService.lformsVersion}}</small>
+          <div>&nbsp;</div> <!-- Needed to float the above div -->
+        </div>
+        <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options"></wc-lhc-form>
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template matTabLabel>
+        View Questionnaire JSON
+      </ng-template>
+      <ng-template matTabContent>
+        <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false">
+          <ng-container *ngFor="let fmt of ['R4', 'STU3']">
+            <mat-tab>
+              <ng-template matTabLabel>{{ fmt }} Version</ng-template>
+              <ng-template matTabContent>
+                <pre class="fix-pre {{fmt}}">{{ formService.convertFromR4(data?.questionnaire, fmt) | json }}</pre>
+              </ng-template>
+            </mat-tab>
+          </ng-container>
+        </mat-tab-group>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</mat-dialog-content>
+<mat-dialog-actions class="border-top pe-3 pt-3" align="end">
+  <button class="btn btn-primary" (click)="close()">Close</button>
+</mat-dialog-actions>
 
