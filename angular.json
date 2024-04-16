@@ -69,6 +69,20 @@
               ]
             },
             "development": {
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*.js",
+                  "input": "./node_modules/@webcomponents/webcomponentsjs",
+                  "output": "webcomponents/"
+                },
+                {
+                  "glob": "**/*.html",
+                  "input": "./tests",
+                  "output": "./tests/"
+                }
+              ],
               "optimization": false,
               "sourceMap": true,
               "namedChunks": true,
@@ -86,29 +100,9 @@
                   "output": "webcomponents/"
                 },
                 {
-                  "glob": "**/*.js",
-                  "input": "./src/lib/lforms",
-                  "output": "lforms/"
-                },
-                {
-                  "glob": "**/*.js.map",
-                  "input": "./src/lib/lforms",
-                  "output": "lforms/"
-                },
-                {
-                  "glob": "**/*.css",
-                  "input": "./src/lib/lforms",
-                  "output": "lforms/"
-                },
-                {
-                  "glob": "**/*.png",
-                  "input": "./src/lib/lforms",
-                  "output": "lforms/"
-                },
-                {
                   "glob": "**/*.html",
-                  "input": "./cypress",
-                  "output": "./test/"
+                  "input": "./tests",
+                  "output": "./tests/"
                 }
               ],
               "fileReplacements": [
@@ -136,48 +130,6 @@
                   "maximumError": "10kb"
                 }
               ]
-            },
-            "dev_with_test_html": {
-              "assets": [
-                "src/favicon.ico",
-                "src/assets",
-                {
-                  "glob": "**/*.js",
-                  "input": "./node_modules/@webcomponents/webcomponentsjs",
-                  "output": "webcomponents/"
-                },
-                {
-                  "glob": "**/*.js",
-                  "input": "./src/lib/lforms",
-                  "output": "lforms/"
-                },
-                {
-                  "glob": "**/*.js.map",
-                  "input": "./src/lib/lforms",
-                  "output": "lforms/"
-                },
-                {
-                  "glob": "**/*.css",
-                  "input": "./src/lib/lforms",
-                  "output": "lforms/"
-                },
-                {
-                  "glob": "**/*.png",
-                  "input": "./src/lib/lforms",
-                  "output": "lforms/"
-                },
-                {
-                  "glob": "**/*.html",
-                  "input": "./cypress",
-                  "output": "./test/"
-                }
-              ],
-              "optimization": false,
-              "sourceMap": true,
-              "namedChunks": true,
-              "extractLicenses": false,
-              "vendorChunk": true,
-              "buildOptimizer": false
             }
           }
         },
@@ -191,10 +143,10 @@
               "browserTarget": "formbuilder-lhcforms:build:production"
             },
             "development": {
-              "browserTarget": "formbuilder-lhcforms:build:dev_with_test_html"
+              "browserTarget": "formbuilder-lhcforms:build:development"
             },
             "e2e-dev": {
-              "browserTarget": "formbuilder-lhcforms:build:dev_with_test_html",
+              "browserTarget": "formbuilder-lhcforms:build:development",
               "port": 9031
             },
             "e2e-prod": {
@@ -263,7 +215,6 @@
       }
     }
   },
-  "defaultProject": "formbuilder-lhcforms",
   "cli": {
     "analytics": false,
     "schematicCollections": [

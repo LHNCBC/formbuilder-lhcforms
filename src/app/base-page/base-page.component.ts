@@ -122,6 +122,9 @@ export class BasePageComponent implements OnInit {
     this.addWindowListeners();
   }
 
+  /**
+   * Add window listeners, mainly to handle messaging with other browser windows.
+   */
   addWindowListeners() {
     if (this.openerUrl) {
       const msgListener = (event) => {

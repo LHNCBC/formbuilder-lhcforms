@@ -495,6 +495,11 @@ export class FormService {
   }
 
 
+  /**
+   * Send data to parent window (window that opened this page).
+   * 
+   * @param data - Data to post.
+   */
   notifyWindowOpener(data: any) {
     let openerUrl = window.opener?.location?.href;
     if(openerUrl) {

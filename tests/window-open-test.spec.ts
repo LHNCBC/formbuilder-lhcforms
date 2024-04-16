@@ -1,7 +1,7 @@
 import {test, expect, Page} from '@playwright/test';
 
 import {MainPO} from "./po/main-po";
-test.describe('Open formbuilder in a new window', () => {
+test.describe('Open form builder in a new window', () => {
   let mainPO: MainPO;
 
 
@@ -15,7 +15,7 @@ test.describe('Open formbuilder in a new window', () => {
       }
     });
 
-    await page.goto('/test/open-window-test.html');
+    await page.goto('/tests/window-open-test.html');
     const pagePromise = page.context().waitForEvent('page');
     await page.getByRole('button', {name: 'Open form builder'}).click();
     const newPage = await pagePromise;
@@ -24,20 +24,15 @@ test.describe('Open formbuilder in a new window', () => {
     mainPO.clearSession();
     await mainPO.loadFLPage();
   });
-/*
-  test.afterEach(async () => {
-    if(!mainPO.page.isClosed()) {
-      await mainPO.clearSession();
-    }
-  });
-*/
-  test('should open formbuilder in a new window', async ({page}) => {
-    const initialQTitle = 'Form loaded from open-window-test.html';
+
+  test('should open form builder in a new window', async ({page}) => {
+    const initialQTitle = 'Form loaded from window-open-test.html';
     const messageData = {data: null};
     messageData.data = await getMessage(page, 'initialized');
     expect(messageData.data.type).toBe('initialized');
-    await page.getByRole('button', {name: 'Clear messages'}).click();
     messageData.data = await getMessage(page, 'updateQuestionnaire');
+    expect(messageData.data.type).toBe('updateQuestionnaire');
+    await page.getByRole('button', {name: 'Clear messages'}).click();
     await page.getByRole('button', {name: 'Post questionnaire'}).click();
     await expect(await mainPO.titleLocator).toHaveValue(initialQTitle);
     messageData.data = await getMessage(page, 'updateQuestionnaire');
@@ -60,7 +55,6 @@ test.describe('Open formbuilder in a new window', () => {
 
   async function getMessage(page: Page, type: string) {
     let ret = null;
-    let str = '';
     const eventElementMap = {
       initialized: '#initW',
       updateQuestionnaire: '#updateQ',
@@ -69,7 +63,7 @@ test.describe('Open formbuilder in a new window', () => {
 
     const loc = eventElementMap[type];
     if(loc) {
-      await expect(page.locator(loc)).toContainText(type, {timeout: 10000}); // Wait until the page is updated.
+      await expect(page.locator(loc)).toContainText(type); // Wait until the page is updated.
       const str = await page.locator(loc).textContent();
       ret = JSON.parse(str);
     }
