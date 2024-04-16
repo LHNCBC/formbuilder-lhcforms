@@ -1492,6 +1492,18 @@ describe('Home page', () => {
 
       });
 
+      it('should display the tree hierarchy sequence number concatenated with the item text ', () => {
+        cy.selectDataType('decimal');
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 1');
+
+        const r1Question = '[id^="enableWhen.0.question"]';
+        // First row operator='exist'
+        cy.get(r1Question).type('{enter}');
+        cy.get(r1Question).should('have.value', '1 - Item 0');
+
+      });
+
       it('should fix a bug showing answer field when source item is decimal and operator is other than exists', () => {
         cy.selectDataType('decimal');
         cy.contains('Add new item').scrollIntoView().click();
