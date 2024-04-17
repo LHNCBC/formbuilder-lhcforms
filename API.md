@@ -1,8 +1,8 @@
-## Controlling the Form Builder from an independent web page using javascript
+## Controlling the Form Builder from an independent web page using JavaScript
 
 ##### Important: For this to work, make sure that the browser settings are not blocking the display of popup windows.
 
-The form builder web application can be invoked using javascript from another
+The form builder web application can be invoked using JavaScript from another
 web page. It can be opened in a new page/tab (sometimes referred as child
 window). The choice of new page or a new tab depends on the browser settings or
 preferences. The newly opened form builder can be loaded with an initial
@@ -30,7 +30,7 @@ A <a href="https://developer.mozilla.org/docs/Web/API/Window/message_event">
 window event listener</a> is a callback function attached to the parent window
 listening to `message` events. The callback receives an event object, where
 `event.data` is the data object sent by the message emitter, in this case the
-form builder. The form builder defined its own messages with `'initialized'`,
+form builder. The form builder defines its own messages with `'initialized'`,
 `'updateQuestionnaire'`, and `'closed'` types. The message type is in
 `event.data.type`. Here is a typical handler to receive the messages from the
 form builder.
@@ -106,7 +106,7 @@ window, as described above.
 
 ### Loading with an initial questionnaire
 You can load a form builder with an existing FHIR questionnaire resource. You
-want to wait for `initialized` message after opening the form builder window,
+want to wait for the `initialized` message after opening the form builder window,
 before sending the message to the form builder.
 
 ```
