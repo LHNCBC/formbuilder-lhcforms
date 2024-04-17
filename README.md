@@ -24,7 +24,9 @@
   Point the browser at http://localhost:9030
 
 ### Application Programming Interface (API)
-Form builder is an application. However, external web interface is possible using javascript in an html page. Refer to <a href="API.md">API.md</a> for documentation.
+The form builder is an application. However, it is possible to control it via
+JavaScript from another web page. Refer to <a href="API.md">API.md</a>
+for documentation.
         
 
         
