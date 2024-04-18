@@ -10,6 +10,16 @@ This project follows [Semantic Versioning](http://semver.org/).
   back the parent window with the updated questionnaire. It will post a final message,
   when the child window is closed, with final version of questionnaire.
 
+## [9.3.3] 2024-04-11
+### Changed
+- Added a tagline to header.
+- Changed text in terms of use.
+- Added text to preview dialog
+
+## [9.3.2] 2024-04-08
+### Fixed
+- Fixed flaky unit tests.
+
 ## [9.3.1] 2024-03-28
 ### Fixed
 - Fixed a cypress test.
