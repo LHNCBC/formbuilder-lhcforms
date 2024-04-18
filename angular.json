@@ -69,12 +69,67 @@
               ]
             },
             "development": {
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*.js",
+                  "input": "./node_modules/@webcomponents/webcomponentsjs",
+                  "output": "webcomponents/"
+                },
+                {
+                  "glob": "**/*.html",
+                  "input": "./tests",
+                  "output": "./tests/"
+                }
+              ],
               "optimization": false,
               "sourceMap": true,
               "namedChunks": true,
               "extractLicenses": false,
               "vendorChunk": true,
               "buildOptimizer": false
+            },
+            "prod_with_test_html": {
+              "assets": [
+                "src/favicon.ico",
+                "src/assets",
+                {
+                  "glob": "**/*.js",
+                  "input": "./node_modules/@webcomponents/webcomponentsjs",
+                  "output": "webcomponents/"
+                },
+                {
+                  "glob": "**/*.html",
+                  "input": "./tests",
+                  "output": "./tests/"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
             }
           }
         },
@@ -95,7 +150,7 @@
               "port": 9031
             },
             "e2e-prod": {
-              "browserTarget": "formbuilder-lhcforms:build:production",
+              "browserTarget": "formbuilder-lhcforms:build:prod_with_test_html",
               "port": 9031
             }
           },
@@ -160,7 +215,6 @@
       }
     }
   },
-  "defaultProject": "formbuilder-lhcforms",
   "cli": {
     "analytics": false,
     "schematicCollections": [

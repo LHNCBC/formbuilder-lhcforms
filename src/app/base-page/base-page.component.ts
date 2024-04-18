@@ -26,7 +26,6 @@ import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
 import {SharedObjectService} from '../services/shared-object.service';
-declare var LForms: any;
 
 type ExportType = 'CREATE' | 'UPDATE';
 
@@ -36,14 +35,13 @@ type ExportType = 'CREATE' | 'UPDATE';
   styleUrls: ['./base-page.component.css'],
   providers: [NgbActiveModal]
 })
-export class BasePageComponent implements OnInit, OnDestroy {
+export class BasePageComponent implements OnInit {
 
   private unsubscribe = new Subject<void>();
   @Input()
   guidingStep = 'home'; // 'choose-start', 'home', 'item-editor'
   startOption = 'scratch';
   importOption = '';
-  editMode = 'fresh';
   questionnaire: fhir.Questionnaire = null;
   formFields: fhir.Questionnaire = null;
   formValue: fhir.Questionnaire;
@@ -55,9 +53,9 @@ export class BasePageComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInputEl: ElementRef;
   @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
-  selectedPreviewTab = 0;
   acceptedTermsOfUse = false;
   acceptedSnomed = false;
+  openerUrl: string = null;
   lformsErrorMessage = null;
 
 
@@ -119,11 +117,50 @@ export class BasePageComponent implements OnInit, OnDestroy {
             console.error(reason);
           });
     }
+
+    this.openerUrl = window.opener?.location?.href || null;
+    this.addWindowListeners();
+  }
+
+  /**
+   * Add window listeners, mainly to handle messaging with other browser windows.
+   */
+  addWindowListeners() {
+    if (this.openerUrl) {
+      const msgListener = (event) => {
+        const message = event.data;
+        if(!this.openerUrl.startsWith(event.origin)) {
+          return;
+        }
+        switch (message?.type) {
+          case 'initialQuestionnaire':
+            try {
+              console.log(`Received questionnaire from ${this.openerUrl}`);
+              this.setQuestionnaire(JSON.parse(JSON.stringify(message.questionnaire)));
+              this.setStep('fl-editor');
+            }
+            catch(err) {
+              console.error(`Failed to parse questionnaire received from ${this.openerUrl}: ${err}`);
+            }
+            break;
+
+          default:
+            console.log(`Received a message from ${this.openerUrl}: type = ${event.data?.type}`);
+            break;
+        }
+      }
+      window.addEventListener('message', msgListener);
+      window.addEventListener('beforeunload', (event) => {
+        window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
+      });
+
+      window.opener.postMessage({type: 'initialized'}, this.openerUrl);
+    }
   }
 
   /**
    * Notify changes to form.
-   * @param form - form object, a.k.a questionnaire
+   * @param form - form object, a.k.a. questionnaire
    */
   notifyChange(form) {
     this.formSubject.next(form);
@@ -132,7 +169,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
   /**
    * Handle value changes in form-fields component.
-   * @param event - Emits questionnaire (Form level copy)
+   * @param formChanges - questionnaire (Form level copy)
    */
   formFieldsChanged(formChanges) {
     [this.formValue, this.questionnaire, this.formFields].forEach((obj) => {
@@ -173,7 +210,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
 
   /**
    * Set the fields to questionnaire and invoke change detection on child components.
-   * @param fieldsObj: Object with new fields.
+   * @param fieldsObj - Object with new fields.
    */
   setFieldsAndInvokeChangeDetection(fieldsObj: any) {
     // Set the fields to a shallow copy of the questionnaire to invoke change detection on <sf-form>
@@ -273,14 +310,14 @@ export class BasePageComponent implements OnInit, OnDestroy {
           }
         });
       }
-      fileReader.onerror = (error) => {
+      fileReader.onerror = () => {
         this.showError('Error occurred reading file: ${selectedFile.name}');
       }
       fileReader.readAsText(selectedFile, 'UTF-8');
     };
 
     if(this.questionnaire) {
-      this.warnFormLoading((load) => {
+      this.warnFormLoading(() => {
         loadFromFile();
       }, );
     }
@@ -337,7 +374,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
     // Use hidden anchor to do file download.
     // const downloadLink: HTMLAnchorElement = document.createElement('a');
     const downloadLink = document.getElementById('exportAnchor');
-    const urlFactory = (window.URL || window.webkitURL);
+    const urlFactory = (URL || webkitURL);
     if(this.objectUrl != null) {
       // First release any resources on existing object url
       urlFactory.revokeObjectURL(this.objectUrl);
@@ -407,10 +444,16 @@ export class BasePageComponent implements OnInit, OnDestroy {
   /**
    * Close menu handler.
    */
-  newStart() {
-    this.setStep('home');
-    if(!this.isDefaultForm()) {
-      this.startOption = 'from_autosave';
+  close() {
+    if(this.openerUrl) {
+      // window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
+      window.close();
+    }
+    else {
+      this.setStep('home');
+      if(!this.isDefaultForm()) {
+        this.startOption = 'from_autosave';
+      }
     }
   }
 

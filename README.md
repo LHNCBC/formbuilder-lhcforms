@@ -22,7 +22,11 @@
 
         $ npm start
   Point the browser at http://localhost:9030
-        
+
+### Application Programming Interface (API)
+The form builder is an application. However, it is possible to control it via
+JavaScript from another web page. Refer to <a href="API.md">API.md</a>
+for documentation.
         
 
         
