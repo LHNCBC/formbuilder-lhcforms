@@ -4,11 +4,14 @@ import {MainPO} from "./po/main-po";
 
 test.describe('Window opener notice', async () => {
 
-  test('should not exist', async ({page}) => {
+  test('should not exist if not opened by window.open() call', async ({page}) => {
     await page.goto('/');
     const mainPO = new MainPO(page);
     await mainPO.loadFLPage();
-    // By now the notice should have been attached, if it is attached.
+    // Note: Trying to assert non-existent element that it should NOT exist.
+    // However, after loading main page the element should have been attached,
+    // if it was opened by window.open(). So, negative assertion has still some
+    // testing value.
     await expect(page.getByText(MainPO.windowOpenerNotice)).not.toBeAttached();
   });
 });
