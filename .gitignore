@@ -58,3 +58,7 @@ scratch/
 /src/lib/lforms
 /src/assets/version.json
 /cypress/downloads
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
