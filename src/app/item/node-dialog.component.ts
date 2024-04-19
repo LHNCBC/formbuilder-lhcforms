@@ -6,6 +6,8 @@ import {NgbActiveModal, NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import {ItemComponent} from './item.component';
 import {Util} from '../lib/util';
 
+export type DialogMode = 'Move' | 'Insert' | 'Copy';
+
 @Component({
   selector: 'lfb-node-dialog',
   template: `
@@ -82,7 +84,7 @@ export class NodeDialogComponent implements OnInit {
   @Input()
   item: ItemComponent;
   @Input()
-  mode: ('Move'|'Insert');
+  mode: DialogMode;
 
   targetNode: ITreeNode;
   targetLocation = 'AFTER';

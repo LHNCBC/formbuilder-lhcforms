@@ -27,11 +27,11 @@ import {NgbActiveModal, NgbDropdown, NgbModal, NgbModalRef} from '@ng-bootstrap/
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {debounceTime, distinctUntilChanged, switchMap,} from 'rxjs/operators';
-import fhir from 'fhir/r4';
+import fhir, { QuestionnaireItem } from 'fhir/r4';
 import {TreeService} from '../services/tree.service';
 import {faEllipsisH, faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {environment} from '../../environments/environment';
-import {NodeDialogComponent} from './node-dialog.component';
+import {NodeDialogComponent, DialogMode} from './node-dialog.component';
 import {Util} from '../lib/util';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
@@ -451,24 +451,12 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param position - Insertion point.
    */
   onInsertItem(dropdown: NgbDropdown, domEvent: Event, contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
-    const newItem = {text: 'New item ' + this.id++};
-    const nodeData = contextNode.data;
-    switch(position) {
-      case 'CHILD':
-        if (!nodeData.item) {
-          nodeData.item = [];
-        }
-        nodeData.item.push(newItem);
-        break;
-
-      case 'BEFORE':
-        contextNode.parent.data.item.splice(contextNode.index, 0, newItem);
-        break;
-
-      case 'AFTER':
-        contextNode.parent.data.item.splice(contextNode.index + 1, 0, newItem);
-        break;
-    }
+    const newItem: QuestionnaireItem = {
+      text: 'New item ' + this.id++,
+      type: 'string',
+      linkId: this.createLinkId()
+    };
+    this.addNewItem(position, newItem, contextNode);
     this.treeComponent.treeModel.update();
     this.setFocusedNode(position);
     domEvent.stopPropagation();
@@ -557,7 +545,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param contextNode - Context node
    * @param mode - Move or insert.
    */
-  openNodeDlg(contextNode: ITreeNode, mode: ('Move'|'Insert'|'Copy')): NgbModalRef {
+  openNodeDlg(contextNode: ITreeNode, mode: DialogMode): NgbModalRef {
     const modalRef = this.modalService.open(NodeDialogComponent, {ariaLabelledBy: 'modal-move-title'});
     modalRef.componentInstance.node = contextNode;
     modalRef.componentInstance.item = this;
@@ -792,8 +780,15 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     });
   }
 
-  private addNewItem(position: 'AFTER' | 'BEFORE' | 'CHILD', newItem, targetNode: ITreeNode) {
-
+  /**
+   * Add/insert item in the tree. 
+   * 
+   * @param position - ('AFTER' || 'BEFORE' || 'CHILD' )
+   * @param newItem - QuestionnaireItem to add.
+   * @param targetNode - Context node where the item to add.
+   */
+  private addNewItem(position: 'AFTER' | 'BEFORE' | 'CHILD',
+                     newItem: QuestionnaireItem, targetNode: ITreeNode) {
     switch (position) {
       case 'CHILD':
         if (!targetNode.data.item) {
@@ -811,6 +806,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         break;
     }
   }
+
+
   /**
    * Copy the item in the data structure.
    * @param contextNode - The node to copy
@@ -823,7 +820,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     newItem.text = 'Copy of ' + newItem.text;
     traverse(newItem).forEach(node => {
       if (node && node.linkId) {
-        node.linkId = Math.floor(100000000000 + Math.random() * 900000000000);
+        node.linkId = this.createLinkId();
       }
     });
     this.addNewItem(position, newItem, targetNode);
@@ -832,5 +829,13 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (result) {
       this.treeComponent.treeModel.setFocusedNode(result);
     }
+  }
+
+  /**
+   * Create a new linkId
+   * @returns A randomized number converted to string.
+   */
+  private createLinkId() {
+    return Math.floor(100000000000 + Math.random() * 900000000000).toString();
   }
 }
