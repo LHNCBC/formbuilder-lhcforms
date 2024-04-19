@@ -1627,7 +1627,7 @@ describe('Home page', () => {
         cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Yes');
         cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA33-6');
         cy.clickTreeNode('Date of Birth');
-        cy.get('[id^="enableWhen.0.question"]').should('have.value', 'Living?');
+        cy.get('[id^="enableWhen.0.question"]').should('have.value', '1.1 - Living?');
         cy.get('[id^="enableWhen.0.operator"]')
           .find('option:selected').should('have.text','=');
         cy.get('[id^="enableWhen.0.answerCoding"]')

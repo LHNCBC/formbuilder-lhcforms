@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.4.0] 2024-04-19
+### Added 
+- Added sequence numbers to questions in conditional display source field. (Thanks to @ghaliouss)
+
 ## [9.4.0] 2024-04-01
 ### Added 
 - Added a feature to invoke formbuilder from a parent window,
