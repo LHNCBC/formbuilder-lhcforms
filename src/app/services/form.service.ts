@@ -491,6 +491,21 @@ export class FormService {
    */
   autoSaveForm(fhirQ: fhir.Questionnaire) {
     this.autoSave('fhirQuestionnaire', fhirQ);
+    this.notifyWindowOpener({type: 'updateQuestionnaire', questionnaire: fhirQ});
+  }
+
+
+  /**
+   * Send data to parent window (window that opened this page).
+   * 
+   * @param data - Data to post.
+   */
+  notifyWindowOpener(data: any) {
+    let openerUrl = window.opener?.location?.href;
+    if(openerUrl) {
+      window.opener.postMessage(data, openerUrl);
+      console.log(`${data.type} data posted to ${openerUrl}`);
+    }
   }
 
 

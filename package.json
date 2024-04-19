@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "9.3.1",
+  "version": "9.4.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -18,14 +18,20 @@
     "start-public": "node ./bin/start-public.js",
     "install-and-build": "npm install && npm run clean-build",
     "clean-build": "ng cache clean && npm ci && npm run build",
+    "build-with-test-html": "ng build --configuration prod_with_test_html",
     "create-version-file": "echo {\\\"version\\\": \\\"${npm_package_version}\\\"} > ./src/assets/version.json",
     "build": "npm run create-version-file && ng build --configuration production",
     "test": "npm run unit-test && npm run e2e:prod",
     "unit-test": "ng test --watch=false",
     "lint": "ng lint",
     "cy:verify": "cypress verify",
+    "cy-run": "cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort}",
     "e2e": "ng e2e",
-    "e2e:prod": "ng run formbuilder-lhcforms:e2e:production",
+    "e2e:start-server": "npm run build-with-test-html && angular-http-server --silent --path ./dist/formbuilder-lhcforms -p ${npm_package_config_testPort}",
+    "pw-run": "npx playwright test",
+    "e2e:pw-run": "start-server-and-test e2e:start-server http://localhost:${npm_package_config_testPort} pw-run",
+    "e2e:prod": "start-server-and-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:cy-pw-run",
+    "e2e:cy-pw-run": "npm run cy-run && npm run pw-run",
     "postinstall": "ngcc"
   },
   "files": [
@@ -81,6 +87,7 @@
     "@angular/compiler-cli": "~15.2.4",
     "@angular/language-service": "~15.2.4",
     "@cypress/schematic": "^2.5.1",
+    "@playwright/test": "^1.42.1",
     "@types/hapi": "18.0.8",
     "@types/jasmine": "~4.3.1",
     "@types/jasminewd2": "~2.0.10",
@@ -102,6 +109,7 @@
     "karma-jasmine": "~4.0.2",
     "karma-jasmine-html-reporter": "^1.7.0",
     "postcss": "^8.3.0",
+    "start-server-and-test": "2.0.3",
     "ts-node": "~9.1.1",
     "typescript": "^4.8.4"
   }
