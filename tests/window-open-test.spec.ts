@@ -1,7 +1,19 @@
 import {test, expect, Page} from '@playwright/test';
 
 import {MainPO} from "./po/main-po";
-test.describe('Open form builder in a new window', () => {
+
+test.describe('Window opener notice', async () => {
+
+  test('should not exist', async ({page}) => {
+    await page.goto('/');
+    const mainPO = new MainPO(page);
+    await mainPO.loadFLPage();
+    // By now the notice should have been attached, if it is attached.
+    await expect(page.getByText(MainPO.windowOpenerNotice)).not.toBeAttached();
+  });
+});
+
+test.describe('Open form builder in a new window', async () => {
   let mainPO: MainPO;
 
 
@@ -23,6 +35,7 @@ test.describe('Open form builder in a new window', () => {
     mainPO = new MainPO(newPage);
     mainPO.clearSession();
     await mainPO.loadFLPage();
+    await expect(mainPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
   });
 
   test('should open form builder in a new window', async ({page}) => {

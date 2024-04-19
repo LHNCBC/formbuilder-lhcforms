@@ -311,7 +311,7 @@ export class BasePageComponent implements OnInit {
         });
       }
       fileReader.onerror = () => {
-        this.showError('Error occurred reading file: ${selectedFile.name}');
+        this.showError(`Error occurred reading file: ${selectedFile.name}`);
       }
       fileReader.readAsText(selectedFile, 'UTF-8');
     };

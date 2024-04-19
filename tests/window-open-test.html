@@ -83,7 +83,6 @@
    */
   function sendQuestionnaire() {
     if(fbWindow && !fbWindow.closed) {
-      console.log(`Posting initialQuestionnaire to ${fbUrl}`);
       fbWindow?.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbUrl);
     }
   }

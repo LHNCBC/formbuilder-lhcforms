@@ -6,7 +6,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 // require('dotenv').config();
 
-const baseURL = 'http://localhost:9031';
+const baseURL = `http://localhost:${process.env.npm_package_config_testPort}`;
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -21,7 +21,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'line',
+  reporter: 'dot',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -72,7 +72,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run ci:start-server',
+    command: 'npm run e2e:start-server',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
