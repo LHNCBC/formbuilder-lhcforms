@@ -155,35 +155,36 @@ export class BasePageComponent implements OnInit {
    * Add window listeners, mainly to handle messaging with other browser windows.
    */
   addWindowListeners() {
-    if (this.formService.windowOpenerUrl) {
+    if (this.openerUrl) {
       const msgListener = (event) => {
         const message = event.data;
-        if(!this.formService.windowOpenerUrl.startsWith(event.origin)) {
+        const parentUrl = this.formService.windowOpenerUrl;
+        if(!parentUrl.startsWith(event.origin)) {
           return;
         }
         switch (message?.type) {
           case 'initialQuestionnaire':
             try {
-              console.log(`Received questionnaire from ${this.formService.windowOpenerUrl}`);
+              console.log(`Received questionnaire from ${parentUrl}`);
               this.setQuestionnaire(JSON.parse(JSON.stringify(message.questionnaire)));
               this.setStep('fl-editor');
             }
             catch(err) {
-              console.error(`Failed to parse questionnaire received from ${this.formService.windowOpenerUrl}: ${err}`);
+              console.error(`Failed to parse questionnaire received from ${parentUrl}: ${err}`);
             }
             break;
 
           default:
-            console.log(`Received a message from ${this.formService.windowOpenerUrl}: type = ${event.data?.type}`);
+            console.log(`Received a message from ${parentUrl}: type = ${event.data?.type}`);
             break;
         }
       }
       window.addEventListener('message', msgListener);
       window.addEventListener('beforeunload', (event) => {
-        window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.formService.windowOpenerUrl);
+        window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
       });
 
-      window.opener.postMessage({type: 'initialized'}, this.formService.windowOpenerUrl);
+      window.opener.postMessage({type: 'initialized'}, this.openerUrl);
     }
   }
 
@@ -474,7 +475,7 @@ export class BasePageComponent implements OnInit {
    * Close menu handler.
    */
   close() {
-    if(this.formService.windowOpenerUrl) {
+    if(this.openerUrl) {
       window.close();
     }
     else {
