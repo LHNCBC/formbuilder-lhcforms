@@ -71,9 +71,15 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npm run e2e:start-server',
+    //-TODO:
+    // playwright tests use two servers.
+    // Until an npm command is implemented to start two servers,
+    // use `npm run e2e:pw-run` to run these tests. 
+  /*
+    webServer: {
+    command: 'npm run e2e:start-server', 
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
+  */
 });

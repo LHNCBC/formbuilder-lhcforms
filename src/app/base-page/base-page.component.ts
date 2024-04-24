@@ -55,7 +55,6 @@ export class BasePageComponent implements OnInit {
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
   acceptedTermsOfUse = false;
   acceptedSnomed = false;
-  openerUrl: string = null;
   lformsErrorMessage = null;
 
 
@@ -118,43 +117,73 @@ export class BasePageComponent implements OnInit {
           });
     }
 
-    this.openerUrl = window.opener?.location?.href || null;
+    if(window.opener) {
+      this.formService.windowOpenerUrl = this.parseOpenerUrl(window.location) || window.document.referrer || window.origin;
+    }
     this.addWindowListeners();
+  }
+
+
+/**
+ * Parse location object for url of window.opener.
+ * window.location.href is expected to have url path of the form
+ * '/window-open?referrer=[openerUrl], where <code>openerUrl</code> is location.href
+ * of the parent window (window.opener). If the referrer parameter is missing,
+ * it reads referrer or origin header for the url.
+ * 
+ * @param location - Window location object
+ * @returns string - window.opener url.
+ */
+  private parseOpenerUrl(location: Location): string {
+    let ret = null;
+    const pathname = location?.pathname.replace(/^\//, '').toLowerCase();
+    if(pathname === 'window-open') {
+      const params = new URLSearchParams(location.search);
+      ret = params.get('referrer');
+    }
+    return ret;
+  }
+
+  /**
+   * getter for url of the window.opener
+   */
+  get openerUrl(): string {
+    return this.formService.windowOpenerUrl;
   }
 
   /**
    * Add window listeners, mainly to handle messaging with other browser windows.
    */
   addWindowListeners() {
-    if (this.openerUrl) {
+    if (this.formService.windowOpenerUrl) {
       const msgListener = (event) => {
         const message = event.data;
-        if(!this.openerUrl.startsWith(event.origin)) {
+        if(!this.formService.windowOpenerUrl.startsWith(event.origin)) {
           return;
         }
         switch (message?.type) {
           case 'initialQuestionnaire':
             try {
-              console.log(`Received questionnaire from ${this.openerUrl}`);
+              console.log(`Received questionnaire from ${this.formService.windowOpenerUrl}`);
               this.setQuestionnaire(JSON.parse(JSON.stringify(message.questionnaire)));
               this.setStep('fl-editor');
             }
             catch(err) {
-              console.error(`Failed to parse questionnaire received from ${this.openerUrl}: ${err}`);
+              console.error(`Failed to parse questionnaire received from ${this.formService.windowOpenerUrl}: ${err}`);
             }
             break;
 
           default:
-            console.log(`Received a message from ${this.openerUrl}: type = ${event.data?.type}`);
+            console.log(`Received a message from ${this.formService.windowOpenerUrl}: type = ${event.data?.type}`);
             break;
         }
       }
       window.addEventListener('message', msgListener);
       window.addEventListener('beforeunload', (event) => {
-        window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
+        window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.formService.windowOpenerUrl);
       });
 
-      window.opener.postMessage({type: 'initialized'}, this.openerUrl);
+      window.opener.postMessage({type: 'initialized'}, this.formService.windowOpenerUrl);
     }
   }
 
@@ -445,8 +474,7 @@ export class BasePageComponent implements OnInit {
    * Close menu handler.
    */
   close() {
-    if(this.openerUrl) {
-      // window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
+    if(this.formService.windowOpenerUrl) {
       window.close();
     }
     else {

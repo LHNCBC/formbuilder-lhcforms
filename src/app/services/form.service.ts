@@ -56,6 +56,7 @@ export class FormService {
   snomedUser = false;
   _lformsVersion = '';
   _lformsErrorMessage = null;
+  _windowOpenerUrl: string = null;
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
@@ -150,6 +151,14 @@ export class FormService {
    */
   getFormLevelSchema() {
     return this.flSchema;
+  }
+
+  get windowOpenerUrl(): string {
+    return this._windowOpenerUrl;
+  }
+
+  set windowOpenerUrl(url: string) {
+    this._windowOpenerUrl = url;
   }
 
   get lformsVersion(): string {
@@ -501,10 +510,8 @@ export class FormService {
    * @param data - Data to post.
    */
   notifyWindowOpener(data: any) {
-    let openerUrl = window.opener?.location?.href;
-    if(openerUrl) {
-      window.opener.postMessage(data, openerUrl);
-      console.log(`${data.type} data posted to ${openerUrl}`);
+    if(this._windowOpenerUrl) {
+      window.opener.postMessage(data, this._windowOpenerUrl);
     }
   }
 
