@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.4.0] 2024-04-19
+## [9.4.1] 2024-04-19
 ### Added 
 - Added sequence numbers to questions in conditional display source field. (Thanks to @ghaliouss)
 
