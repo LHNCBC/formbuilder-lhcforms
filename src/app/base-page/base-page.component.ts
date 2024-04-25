@@ -118,7 +118,7 @@ export class BasePageComponent implements OnInit {
     }
 
     if(window.opener) {
-      this.formService.windowOpenerUrl = this.parseOpenerUrl(window.location) || window.document.referrer || window.origin;
+      this.formService.windowOpenerUrl = this.parseOpenerUrl(window.location);
     }
     this.addWindowListeners();
   }
@@ -136,7 +136,7 @@ export class BasePageComponent implements OnInit {
  */
   private parseOpenerUrl(location: Location): string {
     let ret = null;
-    const pathname = location?.pathname.replace(/^\//, '').toLowerCase();
+    const pathname = location?.pathname.replace(/^\/+/, '').toLowerCase();
     if(pathname === 'window-open') {
       const params = new URLSearchParams(location.search);
       ret = params.get('referrer');
