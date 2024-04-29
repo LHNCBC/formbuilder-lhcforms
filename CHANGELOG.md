@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.4.1] 2024-04-29
+### Fixed 
+- Display error messages in preview reported by lforms widget.
+
 ## [9.4.0] 2024-04-01
 ### Added 
 - Added a feature to invoke formbuilder from a parent window,
