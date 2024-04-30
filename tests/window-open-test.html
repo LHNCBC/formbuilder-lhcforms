@@ -23,7 +23,8 @@
   const initialQ = {resourceType: 'Questionnaire', title: 'Form loaded from window-open-test.html', status: 'draft', item: [{text: 'q one', linkId: 'q-1'}]};
 
   let fbWindow = null;
-  let fbUrl = '/';
+  // Open the form builder window running on separate origin
+  let fbUrl = 'http://localhost:9032';
 
   let initHeader = document.getElementById('initH');
   let updateHeader = document.getElementById('updateH');
@@ -41,8 +42,6 @@
    */
   function handleMessage(event) {
     const messageFromOpenedWindow = JSON.stringify(event.data, null, 2);
-    fbUrl = new URL(fbUrl, window.location.href).toString();
-    // console.log(`Message type ${event.data?.type} received from ${event.origin}`);
     if (!fbUrl.startsWith(event.origin)) {
       return;
     }
@@ -73,7 +72,7 @@
    * Open a child window to load form builder app. 
    */
   function openFormBuilder() {
-    fbWindow = window.open(fbUrl, 'formbuilder_window');
+    fbWindow = window.open(fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href), 'formbuilder_window');
     fbWindow.focus();
     urlEl.innerHTML = 'Opened url: ' + fbUrl;
   }
@@ -83,7 +82,6 @@
    */
   function sendQuestionnaire() {
     if(fbWindow && !fbWindow.closed) {
-      console.log(`Posting initialQuestionnaire to ${fbUrl}`);
       fbWindow?.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbUrl);
     }
   }

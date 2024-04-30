@@ -3,6 +3,8 @@
 This project follows [Semantic Versioning](http://semver.org/).
 
 ## [9.4.1] 2024-04-29
+### Added
+- Added notice for window opener invocation.
 ### Fixed 
 - Display error messages in preview reported by lforms widget.
 

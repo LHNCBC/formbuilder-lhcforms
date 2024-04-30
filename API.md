@@ -95,10 +95,16 @@ function handleFormBuilderMessages(event) {
 ### Open form builder window
 After setting up the message event handler, open the form builder in a new
 window. Use the <a href="https://developer.mozilla.org/docs/Web/API/Window/open">
-`window.open()`</a> method of the DOM Window interface.
+`window.open()`</a> method of the DOM Window interface. The form builder uses the
+parent window's location url to send the messages. Cross origin (CORS) restrictions
+prevent accessing the information, so the caller needs to provide the
+`window.location.href` as a`referrer` parameter in the url to establish the
+communication. The pathname to provide the url parameter is `/window-open`.
+
+Here is an example:
 
 ```
-const fbWin = window.open(fbUrl, 'formBuilderWindow');
+const fbWin = window.open(fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href), 'formBuilderWindow');
 ```
 
 Use `fbWin.postMessage` to send the `initialQuestionnaire` message to the child
