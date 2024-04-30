@@ -1382,6 +1382,26 @@ describe('Home page', () => {
 
       });
 
+      it('should display lforms errors in preview', () => {
+        const sampleFile = 'questionnaire-enableWhen-missing-linkId.json';
+        cy.uploadFile(sampleFile, true);
+        cy.get('#title').should('have.value', 'Questionnaire where enableWhen contains an invalid linkId');
+        cy.contains('button', 'Edit questions').click();
+        cy.contains('button', 'Preview').click();
+        cy.get('wc-lhc-form').should('exist').parent().as('tabBody');
+        cy.get('@tabBody').find('.card.bg-danger-subtle').should('be.visible');
+        cy.contains('mat-dialog-actions button', 'Close').click();
+
+        // Delete offending item and assert the error does not exist
+        cy.getTreeNode('enableWhen item with an invalid linkId').click();
+        cy.contains('button', 'Delete this item').click();
+        cy.contains('lfb-confirm-dlg button', 'Yes').click();
+        cy.contains('button', 'Preview').click();
+        cy.get('wc-lhc-form').should('exist').parent().as('tabBody');
+        cy.get('@tabBody').find('.card.bg-danger-subtle').should('not.exist');
+        cy.contains('mat-dialog-actions button', 'Close').click();        
+      });
+
       it('should show answer column if there is an answer option in any row of conditional display', () => {
         cy.selectDataType('choice');
         cy.enterAnswerOptions([
