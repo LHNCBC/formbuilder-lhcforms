@@ -23,6 +23,8 @@ export class PreviewDlgComponent {
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
   format = 'R4';
 
+  lformsErrors: string;
+
   constructor(
     public formService: FormService,
     private fhirService: FhirService,
@@ -42,5 +44,13 @@ export class PreviewDlgComponent {
    */
   getFormat(version = 'R4') {
     return this.formService.convertFromR4(this.data.questionnaire, version);
+  }
+
+  /**
+   * Handle errors from <wc-lhc-form>
+   * @param event - event object emitted by wc-lhc-form.
+   */
+  handleLFormsError(event) {
+    this.lformsErrors = event.detail;
   }
 }

@@ -3,7 +3,7 @@ import {Locator, Page, expect} from "@playwright/test";
 export class MainPO {
 
   readonly _page;
-  
+  static readonly windowOpenerNotice = 'Notice: This page is sending changes back to the page';
   constructor(page: Page) {
     this._page = page;
   }
@@ -94,7 +94,7 @@ export class MainPO {
 
 
   /**
-   * Mock SNOMED editions request. 
+   * Mock SNOMED editions request.
    */
   async mockSnomedEditions() {
     await this._page.route('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (route) => {

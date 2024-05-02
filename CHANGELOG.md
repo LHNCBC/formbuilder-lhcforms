@@ -2,9 +2,15 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.4.1] 2024-04-19
+## [9.4.2] 2024-05-02
 ### Added 
 - Added sequence numbers to questions in conditional display source field. (Thanks to @ghaliouss)
+
+## [9.4.1] 2024-04-29
+### Added
+- Added notice for window opener invocation.
+### Fixed 
+- Display error messages in preview reported by lforms widget.
 
 ## [9.4.0] 2024-04-01
 ### Added 

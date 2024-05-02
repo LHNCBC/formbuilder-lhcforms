@@ -55,7 +55,6 @@ export class BasePageComponent implements OnInit {
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
   acceptedTermsOfUse = false;
   acceptedSnomed = false;
-  openerUrl: string = null;
   lformsErrorMessage = null;
 
 
@@ -118,8 +117,38 @@ export class BasePageComponent implements OnInit {
           });
     }
 
-    this.openerUrl = window.opener?.location?.href || null;
+    if(window.opener) {
+      this.formService.windowOpenerUrl = this.parseOpenerUrl(window.location);
+    }
     this.addWindowListeners();
+  }
+
+
+/**
+ * Parse location object for url of window.opener.
+ * window.location.href is expected to have url path of the form
+ * '/window-open?referrer=[openerUrl], where <code>openerUrl</code> is location.href
+ * of the parent window (window.opener). If the referrer parameter is missing,
+ * it reads referrer or origin header for the url.
+ * 
+ * @param location - Window location object
+ * @returns string - window.opener url.
+ */
+  private parseOpenerUrl(location: Location): string {
+    let ret = null;
+    const pathname = location?.pathname.replace(/^\/+/, '').toLowerCase();
+    if(pathname === 'window-open') {
+      const params = new URLSearchParams(location.search);
+      ret = params.get('referrer');
+    }
+    return ret;
+  }
+
+  /**
+   * getter for url of the window.opener
+   */
+  get openerUrl(): string {
+    return this.formService.windowOpenerUrl;
   }
 
   /**
@@ -129,23 +158,24 @@ export class BasePageComponent implements OnInit {
     if (this.openerUrl) {
       const msgListener = (event) => {
         const message = event.data;
-        if(!this.openerUrl.startsWith(event.origin)) {
+        const parentUrl = this.formService.windowOpenerUrl;
+        if(!parentUrl.startsWith(event.origin)) {
           return;
         }
         switch (message?.type) {
           case 'initialQuestionnaire':
             try {
-              console.log(`Received questionnaire from ${this.openerUrl}`);
+              console.log(`Received questionnaire from ${parentUrl}`);
               this.setQuestionnaire(JSON.parse(JSON.stringify(message.questionnaire)));
               this.setStep('fl-editor');
             }
             catch(err) {
-              console.error(`Failed to parse questionnaire received from ${this.openerUrl}: ${err}`);
+              console.error(`Failed to parse questionnaire received from ${parentUrl}: ${err}`);
             }
             break;
 
           default:
-            console.log(`Received a message from ${this.openerUrl}: type = ${event.data?.type}`);
+            console.log(`Received a message from ${parentUrl}: type = ${event.data?.type}`);
             break;
         }
       }
@@ -311,7 +341,7 @@ export class BasePageComponent implements OnInit {
         });
       }
       fileReader.onerror = () => {
-        this.showError('Error occurred reading file: ${selectedFile.name}');
+        this.showError(`Error occurred reading file: ${selectedFile.name}`);
       }
       fileReader.readAsText(selectedFile, 'UTF-8');
     };
@@ -446,7 +476,6 @@ export class BasePageComponent implements OnInit {
    */
   close() {
     if(this.openerUrl) {
-      // window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
       window.close();
     }
     else {

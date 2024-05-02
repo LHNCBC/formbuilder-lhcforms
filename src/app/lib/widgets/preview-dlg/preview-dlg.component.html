@@ -17,7 +17,8 @@
           <small class="float-sm-end fw-bold">LForms version: {{formService.lformsVersion}}</small>
           <div>&nbsp;</div> <!-- Needed to float the above div -->
         </div>
-        <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options"></wc-lhc-form>
+        <div *ngIf="lformsErrors" class="card bg-danger-subtle text-center">{{lformsErrors}}</div>
+        <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options" (onError)="handleLFormsError($event)"></wc-lhc-form>
       </ng-template>
     </mat-tab>
     <mat-tab>
