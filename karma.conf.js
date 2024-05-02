@@ -1,8 +1,16 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
+const lformsVersion = '36.0.3';
+
 module.exports = function (config) {
   config.set({
+    files: [
+      `https://lhcforms-static.nlm.nih.gov/lforms-versions/${lformsVersion}/webcomponent/styles.css`,
+      `https://lhcforms-static.nlm.nih.gov/lforms-versions/${lformsVersion}/webcomponent/zone.min.js`,
+      `https://lhcforms-static.nlm.nih.gov/lforms-versions/${lformsVersion}/webcomponent/lhc-forms.js`,
+      `https://lhcforms-static.nlm.nih.gov/lforms-versions/${lformsVersion}/fhir/lformsFHIRAll.min.js`,
+    ],
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
     plugins: [
@@ -31,6 +39,10 @@ module.exports = function (config) {
         base: 'ChromeHeadless',
         flags: ['--password-store=basic']
       },
+      ChromeDebug: {
+        base: 'Chrome',
+        flags: ['--password-store=basic']
+      }
     },
     singleRun: false,
     restartOnFileChange: true
