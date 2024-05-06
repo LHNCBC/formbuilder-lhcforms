@@ -88,16 +88,8 @@ export class CommonTestingModule {
       }).compileComponents();
     });
 
-    beforeEach(async () => {
-      return new Promise<string>((resolve, reject) => {
-        FormService.lformsLoaded$.subscribe({next: (lformsVersion) => {
-            resolve(lformsVersion);
-          }, error: (err) => {
-            console.log(`Failed to load LForms after inject(FormService) in CommonTestingModule: ${err.message}`);
-            reject(err);
-          }});
-        TestBed.inject(FormService);
-      });
+    beforeEach(() => {
+      TestBed.inject(FormService);
     });
   };
 

@@ -19,18 +19,18 @@ describe('Home page accept Terms of Use notices', () => {
       // Simulate error condition.
       cy.intercept({method: 'GET', url: /^https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions(\/[.0-9]+)?/, times: 4},
         (req) => {
-          console.log(`request url: ${req.url}`);
+          console.log(`Intercepted in 'loadingError' request url: ${req.url}`);
           req.reply(404, 'File not found!');
-        });
+        }).as('loadingError');
 
-      cy.visit('/')
+      cy.visit('/'); // Avoid goToHomePage(), which intercepts lforms loading calls of its own.
       cy.acceptAllTermsOfUse();
       cy.get('.card').as('errorCard').contains('.card-header', 'Error');
       cy.get('@errorCard').find('.card-body').should('include.text', 'Encountered an error which causes');
     });
 
     it('should not display error after loading LForms', () => {
-      cy.visit('/')
+      cy.goToHomePage();
       cy.acceptAllTermsOfUse();
       cy.window().should('have.property', 'LForms');
       cy.window().its('LForms.lformsVersion').should('match', /^[0-9]+\.[0-9]+\.[0-9]+$/);
