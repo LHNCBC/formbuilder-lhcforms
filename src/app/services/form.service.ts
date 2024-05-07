@@ -451,7 +451,10 @@ export class FormService {
    */
   convertFromR4(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
     let ret = fhirQ;
-    if(version !== 'R4') {
+    if (version === 'LHC-FORMS') {
+      ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
+      console.log(ret);
+    } else if (version !== 'R4') {
       ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, version,
         LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
     }
@@ -506,7 +509,7 @@ export class FormService {
 
   /**
    * Send data to parent window (window that opened this page).
-   * 
+   *
    * @param data - Data to post.
    */
   notifyWindowOpener(data: any) {
