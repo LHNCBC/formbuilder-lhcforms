@@ -201,6 +201,26 @@ describe('Home page', () => {
         });
       });
     });
+
+    it('should export to local file in LHC-FORMS format', () => {
+      cy.uploadFile('sample.R4.json');
+      cy.get('#title').should('have.value', 'Sample R4 form');
+      cy.contains('button.dropdown-toggle', 'Export').click();
+      cy.contains('button.dropdown-item', 'Export to file in LHC-FORMS format').click();
+      cy.readFile('cypress/downloads/Sample-R4-form.LHC-FORMS.json').then((json) => {
+        cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
+        cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
+        cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'R4').scrollIntoView().click();
+        cy.get('.preview-json-tabs mat-tab-body.mat-mdc-tab-body-active pre.R4').invoke('text').then((text) => {
+          const form = JSON.parse(text);
+          expect(form.title).to.be.equal(json.name);
+          expect(form.item[0].text).to.be.equal(json.items[0].question);
+          expect(form.item[0].code[0].code).to.be.equal(json.items[0].codeList[0].code);
+          expect(form.item[0].answerOption.length).to.be.equal(json.items[0].answers.length);
+        });
+        cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
+      });
+    });
   });
 
   describe('Form level fields', () => {
