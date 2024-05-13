@@ -8,7 +8,6 @@ module.exports = function (config) {
       {
         pattern: './node_modules/lforms-loader/dist/lformsLoader.js',
         type: 'module'
-
       },
       {
         pattern: './src/app/testing/karma-lforms-loader.js',
