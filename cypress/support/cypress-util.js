@@ -2,7 +2,6 @@ import {Util} from '../../src/app/lib/util';
 import {ExtensionDefs} from "../../src/app/lib/extension-defs";
 import {JsonPointer} from "json-ptr";
 import {format, parseISO} from 'date-fns';
-import semverSort from 'semver/functions/rsort.js';
 
 export class CypressUtil {
 
@@ -170,14 +169,10 @@ export class CypressUtil {
       }
       else {
         req.continue((res) => {
-            const versions =
-                [...res.body.matchAll(/>lforms-([^<]+)\.zip</g)].map(
-                    m => m[1]).filter(v => v.split('.')[0] >= 29);
-            semverSort(versions);
-            CypressUtil.lformsLibs.set(req.url, versions);
+            CypressUtil.lformsLibs.set(req.url, res.body);
             console.log(`LForms versions after call through to ${req.url}`);
-            res.send({body: versions});
-    
+            res.send({body: res.body});
+
         });
       }
     }).as('lformsVersions');

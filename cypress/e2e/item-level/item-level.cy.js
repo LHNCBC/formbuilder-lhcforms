@@ -1399,7 +1399,7 @@ describe('Home page', () => {
         cy.contains('button', 'Preview').click();
         cy.get('wc-lhc-form').should('exist').parent().as('tabBody');
         cy.get('@tabBody').find('.card.bg-danger-subtle').should('not.exist');
-        cy.contains('mat-dialog-actions button', 'Close').click();        
+        cy.contains('mat-dialog-actions button', 'Close').click();
       });
 
       it('should show answer column if there is an answer option in any row of conditional display', () => {

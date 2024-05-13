@@ -3,23 +3,20 @@ import {getSupportedLFormsVersions, loadLForms} from '../../../node_modules/lfor
 // Suppress loading karma, until LForms is loaded.
 window.__karma__.loaded = () => {}
 
-console.log(`${Date.now()}: Loading LForms in karma-lforms-loader...`);
-
 (async () => {
-  const latestVersion = await getSupportedLFormsVersions().then((versions) => {
-    return versions[0] || '34.3.0';
-  }).catch((err) => {
-    console.error(`Failed to get LForms version - ${err.stack}`);    
-    throw err;
-  });
-
-  const loadedVersion = await loadLForms(latestVersion).then(() => {
-    return LForms.lformsVersion;
-  }).catch((error) => {
-    console.error(`Failed to load LForms library - version ${latestVersion}: ${error.stack}`);
+  const lfVersions = await getSupportedLFormsVersions().catch((error) => {
+    const msg = `lformsLoader.getSupportedLFormsVersions() failed.`;
+    console.error(`${Date.now()}: ${msg}`);
     throw error;
   });
 
-  console.log(`${Date.now()}: Loaded LForms in karma-lforms-loader - version: ${loadedVersion}...`);
+  console.log(`${Date.now()}: The latest LForms version is ${lfVersions[0]}`);
+  const loadedVersion = await loadLForms(lfVersions[0]).catch((errorEvent) => {
+    const msg = `lformsLoader.loadLForms(${lfVersions[0]}) failed.`;
+    console.error(`${Date.now()}: ${msg}`);
+    throw new Error(msg, {cause: errorEvent.error}); // 'error' is an instance of ErrorEvent. 
+  });
+
+  console.log(`${Date.now()}: Successfully Loaded LForms libraries - ${loadedVersion}`);
   window.__karma__.start();
 })();

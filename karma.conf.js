@@ -13,7 +13,6 @@ module.exports = function (config) {
       {
         pattern: './src/app/testing/karma-lforms-loader.js',
         type: 'module'
-
       },
     ],
     basePath: '',
