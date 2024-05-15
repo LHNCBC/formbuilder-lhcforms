@@ -21,7 +21,7 @@ export type DialogMode = 'Move' | 'Insert' | 'Copy';
     <div class="modal-body">
       <form>
         <div class="form-group">
-          <label for="moveTarget1" class="">Pick a target item to move to:</label>
+          <label for="moveTarget1" class="">Pick a target item to {{mode.toLocaleLowerCase()}} to:</label>
           <input
                  name="name"
                  id="moveTarget1"
