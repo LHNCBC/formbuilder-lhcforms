@@ -451,7 +451,9 @@ export class FormService {
    */
   convertFromR4(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
     let ret = fhirQ;
-    if(version !== 'R4') {
+    if (version === 'LHC-Forms') {
+      ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
+    } else if (version !== 'R4') {
       ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, version,
         LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
     }
