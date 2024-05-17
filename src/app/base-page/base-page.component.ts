@@ -74,8 +74,14 @@ export class BasePageComponent implements OnInit {
       this.startOption = 'from_autosave';
     }
 
-    this.acceptedTermsOfUse = sessionStorage.acceptedLoinc === 'true';
-    this.acceptedSnomed = sessionStorage.acceptedSnomed === 'true';
+    const acceptedTermsOfUse = JSON.parse(localStorage.getItem("acceptedTermsOfUse"));
+    if (acceptedTermsOfUse) {
+      // Accepted terms expires in a week.
+      const weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
+      const acceptedTermsExpired = Date.now() - acceptedTermsOfUse.timestamp > weekInMilliseconds;
+      this.acceptedTermsOfUse = !acceptedTermsExpired && acceptedTermsOfUse.acceptedLoinc;
+      this.acceptedSnomed = !acceptedTermsExpired && acceptedTermsOfUse.acceptedSnomed;
+    }
     this.formService.setSnomedUser(this.acceptedSnomed);
 
     this.formSubject.asObservable().pipe(
@@ -108,8 +114,11 @@ export class BasePageComponent implements OnInit {
         .then(
           (result) => {
             this.acceptedTermsOfUse = result.acceptedLoinc;
-            sessionStorage.acceptedLoinc = result.acceptedLoinc;
-            sessionStorage.acceptedSnomed = result.acceptedSnomed;
+            localStorage.setItem('acceptedTermsOfUse', JSON.stringify({
+              acceptedLoinc: result.acceptedLoinc,
+              acceptedSnomed: result.acceptedSnomed,
+              timestamp: Date.now()
+            }));
             this.formService.setSnomedUser(result.acceptedSnomed);
           },
           (reason) => {
@@ -130,7 +139,7 @@ export class BasePageComponent implements OnInit {
  * '/window-open?referrer=[openerUrl], where <code>openerUrl</code> is location.href
  * of the parent window (window.opener). If the referrer parameter is missing,
  * it reads referrer or origin header for the url.
- * 
+ *
  * @param location - Window location object
  * @returns string - window.opener url.
  */
