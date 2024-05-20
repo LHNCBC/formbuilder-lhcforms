@@ -131,7 +131,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       subscription = prop.valueChanges.subscribe((newValue) => {
         if (newValue === false) {
           // If already has multiple items in the array, remove all items except first one.
-          if (this.formProperty.properties.length > 1) {
+          if (+this.formProperty.properties.length > 1) {
             this.formProperty.properties = (this.formProperty.properties as FormProperty[]).slice(0, 1);
             this.formProperty.updateValueAndValidity(false, true);
           }
@@ -166,7 +166,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     }
     // Lookout for any changes to key field
     subscription = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
-      const showFields = this.getShowFields();
+      const showFields = this.getShowTableFields();
       this.noHeader = showFields.some((f) => f.noHeader);
       this.cdRef.markForCheck();
     });
@@ -190,7 +190,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   /**
    * Get fields to show.
    */
-  getShowFields(): any [] {
+  getShowTableFields(): any [] {
     let ret: any [] = [];
     if (this.formProperty.schema.widget && this.formProperty.schema.widget.showFields) {
       const showFields = this.formProperty.schema.widget.showFields;
@@ -207,7 +207,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   isVisible(propertyId) {
     let ret = true;
-    if (this.formProperty.properties.length > 0) {
+    if (+this.formProperty.properties.length > 0) {
       ret = Util.isVisible(this.formProperty.properties[0], propertyId);
     }
     return ret;
@@ -294,7 +294,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   getPropertyFromTable(arrayProperties, row, col): FormProperty {
     let prop = arrayProperties[row];
-    const fieldPath = this.getShowFields()[col].field;
+    const fieldPath = this.getShowTableFields()[col].field;
     fieldPath.split('.').forEach((field) => {
       prop = prop.getProperty(field);
     });

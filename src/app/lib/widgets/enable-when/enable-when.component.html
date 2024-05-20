@@ -22,7 +22,7 @@
     <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
   </div>
   <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
-    <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
+    <table class="table table-borderless table-sm lfb-table" *ngIf="+formProperty.properties.length > 0">
       <thead *ngIf="!noHeader" class="table-active">
       <tr class="d-flex">
         <th *ngFor="let showField of showHeaderFields" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
