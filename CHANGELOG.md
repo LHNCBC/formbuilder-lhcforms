@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.5.0] 2024-05-20
+### Changed
+- Accept terms of use only once a week.
+
 ## [9.4.2] 2024-05-08
 ### Added
 - Menu option to download LHC-Forms format.
