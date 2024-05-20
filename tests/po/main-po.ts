@@ -84,10 +84,10 @@ export class MainPO {
   async clearSession() {
     await this._page.evaluate(() => {
       try {
-        window.sessionStorage.clear();
+        window.localStorage.clear();
       }
       catch (e) {
-        console.log(`Session storage not accessible: ${e.message}`);
+        console.log(`Local storage not accessible: ${e.message}`);
       }
     });
   }

@@ -76,31 +76,19 @@ Cypress.Commands.add('acceptLoincOnly', () => {
  */
 Cypress.Commands.add('clearSession',() => {
   cy.window()
-    .its('sessionStorage')
+    .its('localStorage')
     .invoke('clear');
 });
 
 
 /**
- * Check if loinc notice is accepted. Used to avoid invoking
- * element locator when restarting stopped tests in cy-open.
- */
-Cypress.Commands.add('loincAccepted',() => {
-  return cy.getSessionStorageItem('acceptedLoinc');
-});
-
-/**
  * Get an item from session storage.
  */
-Cypress.Commands.add('getSessionStorageItem',(item) => {
+Cypress.Commands.add('getLocalStorageItem',(item) => {
   return cy.window()
-    .its('sessionStorage').invoke('getItem', item);
+    .its('localStorage').invoke('getItem', item);
 });
 
-
-Cypress.Commands.add('snomedAccepted',() => {
-  return cy.getSessionStorageItem('acceptedSnomed');
-});
 
 
 /**
