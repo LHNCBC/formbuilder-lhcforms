@@ -40,11 +40,11 @@ module.exports = function (config) {
     customLaunchers: {
       ChromeHeadless_without_password_security: {
         base: 'ChromeHeadless',
-        flags: ['--password-store=basic']
+        flags: ['--password-store=basic', '--disable-crash-reporter']
       },
       ChromeDebug: {
         base: 'Chrome',
-        flags: ['--password-store=basic']
+        flags: ['--password-store=basic', '--disable-crash-reporter']
       }
     },
     singleRun: false,
