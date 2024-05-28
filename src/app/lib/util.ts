@@ -10,6 +10,8 @@ import copy from 'fast-copy';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
 
+export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
+
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
   static helpItemTemplate = {
@@ -52,6 +54,24 @@ export class Util {
     quantity: 'answerQuantity',
     reference: 'answerReference'
   };
+
+  /**
+   * See if the guiding step is one of the defined type. The flag is store in localStorage/sessionStorage.
+   * This function is to help sanitize the stored values.
+   * @param step - Potentially a defined guiding step.
+   */
+  static isGuidingStep(step: GuidingStep): step is GuidingStep {
+    return (step === 'home' || step === 'fl-editor' || step === 'item-editor');
+  }
+
+  /**
+   * Helps to sanitize the file name read from DOM input element.
+   * @param fileName - File name to validate.
+   */
+  static isValidFileName(fileName: string): boolean {
+    console.log(`isValidFileName: xx${fileName}yy`);
+    return !/^[\.\~]|[\/\\]/.test(fileName);
+  }
 
   // Capitalize the camel case strings.
   static capitalize(str): string {

@@ -21,7 +21,7 @@ import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-serv
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { PreviewDlgComponent } from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
-import {Util} from '../lib/util';
+import {GuidingStep, Util} from '../lib/util';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
@@ -39,7 +39,7 @@ export class BasePageComponent implements OnInit {
 
   private unsubscribe = new Subject<void>();
   @Input()
-  guidingStep = 'home'; // 'choose-start', 'home', 'item-editor'
+  guidingStep: GuidingStep = 'home'; // 'choose-start', 'home', 'item-editor'
   startOption = 'scratch';
   importOption = '';
   questionnaire: fhir.Questionnaire = null;
@@ -90,7 +90,7 @@ export class BasePageComponent implements OnInit {
       console.log('Saved');
     });
 
-    formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
+    formService.guidingStep$.subscribe((step: GuidingStep) => {this.guidingStep = step;});
     FormService.lformsLoaded$.subscribe({error: (error) => {
       this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
     }});
@@ -128,7 +128,14 @@ export class BasePageComponent implements OnInit {
   addWindowListeners() {
     if (this.openerUrl) {
       const msgListener = (event) => {
-        const message = event.data;
+        let message;
+        try {
+          message = JSON.parse(JSON.stringify(event.data));
+
+        } catch {
+          return; // Ignore errors.
+        }
+
         if(!this.openerUrl.startsWith(event.origin)) {
           return;
         }
@@ -145,7 +152,7 @@ export class BasePageComponent implements OnInit {
             break;
 
           default:
-            console.log(`Received a message from ${this.openerUrl}: type = ${event.data?.type}`);
+            console.log(`Received a message from ${this.openerUrl}: type = ${message?.type}`);
             break;
         }
       }
@@ -225,7 +232,7 @@ export class BasePageComponent implements OnInit {
    * Switch guiding step
    * @param step - a
    */
-  setStep(step: string) {
+  setStep(step: GuidingStep) {
     this.formService.setGuidingStep(step);
     this.formService.autoSave('state', step);
   }
@@ -242,6 +249,7 @@ export class BasePageComponent implements OnInit {
   onContinue() {
     if(this.startOption === 'from_autosave') {
       let state = this.formService.autoLoad('state');
+      state = Util.isGuidingStep(state) ? state : 'fl-editor';
       state = state === 'home' ? 'fl-editor' : state;
       this.formService.setGuidingStep(state);
       this.setQuestionnaire(this.formService.autoLoadForm());
@@ -311,8 +319,13 @@ export class BasePageComponent implements OnInit {
         });
       }
       fileReader.onerror = () => {
-        this.showError('Error occurred reading file: ${selectedFile.name}');
+        this.showError(`Error occurred reading file: ${selectedFile.name}`);
       }
+      if(!Util.isValidFileName(selectedFile.name)) {
+        this.showError(`Invalid file name: ${selectedFile.name}`);
+        return;
+      }
+
       fileReader.readAsText(selectedFile, 'UTF-8');
     };
 

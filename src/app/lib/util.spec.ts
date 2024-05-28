@@ -18,4 +18,18 @@ describe('Util', () => {
     reply = Util.traverseAncestors(b, (n) => {return true});
     expect(reply).toEqual([b, a]);
   });
+
+  it('should reject file names', () => {
+    expect(Util.isValidFileName('~a.a')).toBeFalsy();
+    expect(Util.isValidFileName('.a.a')).toBeFalsy();
+    expect(Util.isValidFileName('/a.a')).toBeFalsy();
+    expect(Util.isValidFileName('a\\a')).toBeFalsy();
+  });
+
+  it('should accept file names', () => {
+    expect(Util.isValidFileName('a.a')).toBeTruthy();
+    expect(Util.isValidFileName('aa')).toBeTruthy();
+    expect(Util.isValidFileName('a a')).toBeTruthy();
+    expect(Util.isValidFileName('A b.c')).toBeTruthy();
+  });
 });

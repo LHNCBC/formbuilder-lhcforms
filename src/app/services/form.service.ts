@@ -26,7 +26,7 @@ import ngxFlSchema from '../../assets/ngx-fl.schema.json5';
 import flLayout from '../../assets/fl-fields-layout.json5';
 // @ts-ignore
 import itemEditorSchema from '../../assets/item-editor.schema.json5';
-import {Util} from '../lib/util';
+import {GuidingStep, Util} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
@@ -39,7 +39,7 @@ export class FormService {
   static _lformsLoaded$ = new Subject<string>();
 
   private _loading = false;
-  _guidingStep$: Subject<string> = new Subject<string>();
+  _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
   _advPanelState = {
@@ -240,7 +240,7 @@ export class FormService {
    * Inform the listeners of change in step.
    * @param step
    */
-  setGuidingStep(step: string) {
+  setGuidingStep(step: GuidingStep) {
     this._guidingStep$.next(step);
   }
 
@@ -497,7 +497,7 @@ export class FormService {
 
   /**
    * Send data to parent window (window that opened this page).
-   * 
+   *
    * @param data - Data to post.
    */
   notifyWindowOpener(data: any) {
