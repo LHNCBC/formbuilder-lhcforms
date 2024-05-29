@@ -78,15 +78,27 @@ Cypress.Commands.add('clearSession',() => {
   cy.window()
     .its('localStorage')
     .invoke('clear');
+  cy.window()
+    .its('sessionStorage')
+    .invoke('clear');
+});
+
+
+/**
+ * Get an item from local storage.
+ */
+Cypress.Commands.add('getLocalStorageItem',(item) => {
+  return cy.window()
+    .its('localStorage').invoke('getItem', item);
 });
 
 
 /**
  * Get an item from session storage.
  */
-Cypress.Commands.add('getLocalStorageItem',(item) => {
+Cypress.Commands.add('getSessionStorageItem',(item) => {
   return cy.window()
-    .its('localStorage').invoke('getItem', item);
+    .its('sessionStorage').invoke('getItem', item);
 });
 
 

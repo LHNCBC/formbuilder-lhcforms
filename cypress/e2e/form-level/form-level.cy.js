@@ -75,12 +75,10 @@ describe('Home page accept Terms of Use notices', () => {
   it('should not find SNOMED CT functionality after accepting only LOINC terms of use.', () => {
     cy.goToHomePage();
     cy.acceptLoincOnly();
-    cy.getLocalStorageItem('acceptedTermsOfUse')
-      .should((x) => {
-        const acceptedTermsOfUse = JSON.parse(x);
-        expect(acceptedTermsOfUse.acceptedLoinc).to.be.true;
-        expect(acceptedTermsOfUse.acceptedSnomed).to.be.false;
-      });
+    cy.getSessionStorageItem('acceptedLoinc')
+      .should('equal', 'true');
+    cy.getSessionStorageItem('acceptedSnomed')
+      .should('equal', 'false');
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
