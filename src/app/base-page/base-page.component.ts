@@ -304,9 +304,16 @@ export class BasePageComponent implements OnInit {
    */
   onFileSelected(event) {
     const loadFromFile = () => {
-      const fileReader = new FileReader();
-      const selectedFile = event.target.files[0];
+      const file = event.target.files[0];
+      let selectedFile;
+      if(!Util.isValidFileName(file.name)) {
+        this.showError(`Invalid file name: ${file.name}`);
+        return;
+      } else {
+        selectedFile = file;
+      }
       event.target.value = null; //
+      const fileReader = new FileReader();
       fileReader.onload = () => {
         setTimeout(() => {
           this.setStep('fl-editor');
@@ -320,10 +327,6 @@ export class BasePageComponent implements OnInit {
       }
       fileReader.onerror = () => {
         this.showError(`Error occurred reading file: ${selectedFile.name}`);
-      }
-      if(!Util.isValidFileName(selectedFile.name)) {
-        this.showError(`Invalid file name: ${selectedFile.name}`);
-        return;
       }
 
       fileReader.readAsText(selectedFile, 'UTF-8');
