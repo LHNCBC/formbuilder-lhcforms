@@ -403,7 +403,7 @@ export class BasePageComponent implements OnInit {
     }
     const objUrl = urlFactory.createObjectURL(blob);
     this.objectUrl = this._domSanitizer.sanitize(SecurityContext.URL, objUrl)
-    downloadLink.setAttribute('href', this.objectUrl);
+    // downloadLink.setAttribute('href', this.objectUrl);
     downloadLink.setAttribute('download', exportFileName + '.'+exportVersion+'.json');
     // Avoid using downloadLink.click(), which will display down content in the browser.
     downloadLink.dispatchEvent(new MouseEvent('click'));
