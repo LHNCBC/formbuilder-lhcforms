@@ -4,7 +4,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [9.4.3] 2024-05-21
 ### Changed
-- Upgrade to angular 17.
+- Upgraded to angular 17.
 
 ## [9.4.2] 2024-05-08
 ### Added
