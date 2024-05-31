@@ -557,8 +557,8 @@ export class FormService {
     if(this._storageAvailable('localStorage')) {
       let str = localStorage.getItem(key);
       if(str) {
+        str = this._domSanitizer.sanitize(SecurityContext.URL, str);
         if(key !== 'state') {
-          str = this._domSanitizer.sanitize(SecurityContext.URL, str);
           ret = JSON.parse(str);
         }
         else {
