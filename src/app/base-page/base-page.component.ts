@@ -3,10 +3,13 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  inject,
   Input,
-  OnDestroy,
-  Output, TemplateRef,
-  ViewChild, OnInit
+  OnInit,
+  Output,
+  SecurityContext,
+  TemplateRef,
+  ViewChild
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
@@ -19,13 +22,14 @@ import {FetchService} from '../services/fetch.service';
 import {FhirService} from '../services/fhir.service';
 import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
-import { PreviewDlgComponent } from '../lib/widgets/preview-dlg/preview-dlg.component';
+import {PreviewDlgComponent} from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
 import {GuidingStep, Util} from '../lib/util';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
 import {SharedObjectService} from '../services/shared-object.service';
+import {DomSanitizer} from '@angular/platform-browser';
 
 type ExportType = 'CREATE' | 'UPDATE';
 
@@ -57,6 +61,7 @@ export class BasePageComponent implements OnInit {
   acceptedSnomed = false;
   openerUrl: string = null;
   lformsErrorMessage = null;
+  _domSanitizer = inject<DomSanitizer>(DomSanitizer);
 
 
   constructor(private formService: FormService,
@@ -397,7 +402,7 @@ export class BasePageComponent implements OnInit {
       this.objectUrl = null;
     }
     this.objectUrl = urlFactory.createObjectURL(blob);
-    downloadLink.setAttribute('href', this.objectUrl);
+    downloadLink.setAttribute('href', this._domSanitizer.sanitize(SecurityContext.URL, this.objectUrl));
     downloadLink.setAttribute('download', exportFileName + '.'+exportVersion+'.json');
     // Avoid using downloadLink.click(), which will display down content in the browser.
     downloadLink.dispatchEvent(new MouseEvent('click'));
