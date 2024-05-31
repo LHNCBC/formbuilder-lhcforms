@@ -1,7 +1,7 @@
 /**
  * Form related helper functions.
  */
-import {inject, Injectable, SimpleChange} from '@angular/core';
+import {inject, Injectable, SecurityContext, SimpleChange} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {TreeModel} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
@@ -30,6 +30,8 @@ import {GuidingStep, Util} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
+import {DomSanitizer} from '@angular/platform-browser';
+
 declare var LForms: any;
 
 @Injectable({
@@ -59,6 +61,8 @@ export class FormService {
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
+  _domSanitizer = inject<DomSanitizer>(DomSanitizer);
+
   constructor(private modalService: NgbModal, private http: HttpClient) {
     [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
       if(!obj.schema.definitions) {
@@ -551,9 +555,10 @@ export class FormService {
   autoLoad(key: string): any {
     let ret: any = null;
     if(this._storageAvailable('localStorage')) {
-      const str = localStorage.getItem(key);
+      let str = localStorage.getItem(key);
       if(str) {
         if(key !== 'state') {
+          str = this._domSanitizer.sanitize(SecurityContext.URL, str);
           ret = JSON.parse(str);
         }
         else {
