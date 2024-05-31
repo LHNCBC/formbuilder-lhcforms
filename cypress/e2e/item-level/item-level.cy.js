@@ -644,11 +644,21 @@ describe('Home page', () => {
 
       cy.get(eclSel).should('be.visible');
       cy.get(eclSel).parent().parent().parent().as('controlDiv');
+
+      // Expand the Advance Fields
+      cy.expandAdvancedFields();
+      // The terminology server should be blank
+      cy.tsUrl().should('be.visible').should('have.value', '');
+
       cy.get('lfb-answer-option').should('not.exist');
       cy.get('@controlDiv').find('span.text-break').should('not.exist');
       cy.get(eclSel).type('123');
       cy.get('@controlDiv').click() // Blur on eclSel
       cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
+      
+      // The terminology server should now have value
+      cy.tsUrl().should('have.value', 'https://snowstorm.ihtsdotools.org/fhir');
+
       // Preserve ecl edited in non-snomed input box
       cy.get('@nonSnomedMethod').click();
       cy.get('#answerValueSet_ecl').should('not.exist');
@@ -674,6 +684,11 @@ describe('Home page', () => {
       });
 
       cy.get(eclSel).clear();
+
+      cy.get('@controlDiv').click() // Blur on eclSel
+      // The terminology server should now be blank
+      cy.tsUrl().should('be.visible').should('have.value', '');
+
       cy.get('@controlDiv').find('span.text-break').should('not.exist');
       cy.questionnaireJSON().should((q) => {
         expect(q.item[0].answerValueSet).to.be.undefined;

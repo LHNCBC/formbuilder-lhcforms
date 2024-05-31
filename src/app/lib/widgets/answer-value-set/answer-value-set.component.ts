@@ -116,9 +116,13 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    * @param event - DOM event object
    */
   onEclBlur(event: Event) {
+/*     
     if(this.snomedUrl) {
       this.setSNOMEDTerminologyServer(true);
     }
+ */
+    this.setSNOMEDTerminologyServer(this.snomedUrl !== "");
+
   }
 
   /**

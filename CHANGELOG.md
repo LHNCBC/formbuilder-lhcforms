@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.4.3] 2024-05-31
+### Fixed
+- Fixed the issue where the 'Terminology server' field was not refreshed when
+  the 'SNOMED answer value set' option was selected and the ECL field changed.
+
 ## [9.4.2] 2024-05-08
 ### Added
 - Menu option to download LHC-Forms format.
