@@ -3,13 +3,9 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  inject,
   Input,
-  OnInit,
-  Output,
-  SecurityContext,
-  TemplateRef,
-  ViewChild
+  Output, TemplateRef,
+  ViewChild, OnInit
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
@@ -29,7 +25,6 @@ import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
 import {SharedObjectService} from '../services/shared-object.service';
-import {DomSanitizer} from '@angular/platform-browser';
 
 type ExportType = 'CREATE' | 'UPDATE';
 
@@ -61,7 +56,6 @@ export class BasePageComponent implements OnInit {
   acceptedSnomed = false;
   openerUrl: string = null;
   lformsErrorMessage = null;
-  _domSanitizer = inject<DomSanitizer>(DomSanitizer);
 
 
   constructor(private formService: FormService,
@@ -309,14 +303,13 @@ export class BasePageComponent implements OnInit {
    */
   onFileSelected(event) {
     const loadFromFile = () => {
-      const file = event.target.files[0];
-      let selectedFile;
-      if(!Util.isValidFileName(file.name)) {
-        this.showError(`Invalid file name: ${file.name}`);
+      const selectedFile = Util.validateFile(event.target.files[0]);
+
+      if(!selectedFile) {
+        this.showError(`Invalid file name: ${selectedFile.name}`);
         return;
-      } else {
-        selectedFile = file;
       }
+
       event.target.value = null; //
       const fileReader = new FileReader();
       fileReader.onload = () => {
@@ -401,8 +394,7 @@ export class BasePageComponent implements OnInit {
       urlFactory.revokeObjectURL(this.objectUrl);
       this.objectUrl = null;
     }
-    const objUrl = urlFactory.createObjectURL(blob);
-    this.objectUrl = this._domSanitizer.sanitize(SecurityContext.URL, objUrl)
+    this.objectUrl = urlFactory.createObjectURL(blob);
     downloadLink.setAttribute('href', this.objectUrl);
     downloadLink.setAttribute('download', exportFileName + '.'+exportVersion+'.json');
     // Avoid using downloadLink.click(), which will display down content in the browser.

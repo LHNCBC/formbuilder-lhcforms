@@ -20,16 +20,19 @@ describe('Util', () => {
   });
 
   it('should reject file names', () => {
-    expect(Util.isValidFileName('~a.a')).toBeFalsy();
-    expect(Util.isValidFileName('.a.a')).toBeFalsy();
-    expect(Util.isValidFileName('/a.a')).toBeFalsy();
-    expect(Util.isValidFileName('a\\a')).toBeFalsy();
+    expect(Util.validateFile(<File>null)).toBeNull();
+    expect(Util.validateFile(<File>{name: null})).toBeNull();
+    expect(Util.validateFile(<File>{name: '  '})).toBeNull();
+    expect(Util.validateFile(<File>{name: '~a.a'})).toBeNull();
+    expect(Util.validateFile(<File>{name: '.a.a'})).toBeNull();
+    expect(Util.validateFile(<File>{name: '/a.a'})).toBeNull();
+    expect(Util.validateFile(<File>{name: 'a\\a'})).toBeNull();
   });
 
   it('should accept file names', () => {
-    expect(Util.isValidFileName('a.a')).toBeTruthy();
-    expect(Util.isValidFileName('aa')).toBeTruthy();
-    expect(Util.isValidFileName('a a')).toBeTruthy();
-    expect(Util.isValidFileName('A b.c')).toBeTruthy();
+    expect(Util.validateFile(<File>{name: 'a.a'})).toBeDefined();
+    expect(Util.validateFile(<File>{name: 'aa'})).toBeDefined();
+    expect(Util.validateFile(<File>{name: 'a a'})).toBeDefined();
+    expect(Util.validateFile(<File>{name: 'A b.c'})).toBeDefined();
   });
 });

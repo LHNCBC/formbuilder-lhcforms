@@ -66,11 +66,10 @@ export class Util {
 
   /**
    * Helps to sanitize the file name read from DOM input element.
-   * @param fileName - File name to validate.
+   * @param file - File object to validate.
    */
-  static isValidFileName(fileName: string): boolean {
-    console.log(`isValidFileName: xx${fileName}yy`);
-    return !/^[\.\~]|[\/\\]/.test(fileName);
+  static validateFile(file: File): File {
+    return (file?.name?.trim().length > 0 && !/^[\.\~]|[\/\\]/.test(file.name)) ? file : null;
   }
 
   // Capitalize the camel case strings.
