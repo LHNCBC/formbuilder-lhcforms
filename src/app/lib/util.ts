@@ -69,7 +69,7 @@ export class Util {
    * @param file - File object to validate.
    */
   static validateFile(file: File): File {
-    return (file?.name?.trim().length > 0 && !/^[\.\~]|[\/\\]/.test(file.name)) ? file : null;
+    return (file?.name?.trim().length > 0 && !/^[.~]|[\/\\]/.test(file.name)) ? file : null;
   }
 
   // Capitalize the camel case strings.
