@@ -125,7 +125,6 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    * @param isAdd - True is add, false is remove
    */
   setSNOMEDTerminologyServer(isAdd: boolean) {
-    console.log('avs::setSNOMEDTerminologyServer::isAdd - ' + isAdd);
     if(isAdd) {
       if(!this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI)) {
         this.extensionService.addExtension({
