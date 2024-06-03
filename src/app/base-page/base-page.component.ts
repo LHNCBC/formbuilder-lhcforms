@@ -4,8 +4,10 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  Output, TemplateRef,
-  ViewChild, OnInit
+  OnInit,
+  Output,
+  TemplateRef,
+  ViewChild
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
@@ -303,10 +305,11 @@ export class BasePageComponent implements OnInit {
    */
   onFileSelected(event) {
     const loadFromFile = () => {
-      const selectedFile = Util.validateFile(event.target.files[0]);
+      const file = event.target.files[0];
+      const selectedFile = Util.validateFile(file);
 
       if(!selectedFile) {
-        this.showError(`Invalid file name: ${selectedFile.name}`);
+        this.showError(`Invalid file name: ${file?.name}`);
         return;
       }
 

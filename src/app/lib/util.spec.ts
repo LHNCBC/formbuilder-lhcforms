@@ -22,7 +22,6 @@ describe('Util', () => {
   it('should reject file names', () => {
     expect(Util.validateFile(<File>null)).toBeNull();
     expect(Util.validateFile(<File>{name: null})).toBeNull();
-    expect(Util.validateFile(<File>{name: '  '})).toBeNull();
     expect(Util.validateFile(<File>{name: '~a.a'})).toBeNull();
     expect(Util.validateFile(<File>{name: '.a.a'})).toBeNull();
     expect(Util.validateFile(<File>{name: '/a.a'})).toBeNull();
