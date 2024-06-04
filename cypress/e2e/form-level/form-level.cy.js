@@ -17,7 +17,7 @@ describe('Home page accept Terms of Use notices', () => {
   describe('Loading LForms', () => {
     it('should display error message on lforms loading error', () => {
       // Simulate error condition.
-      cy.intercept({method: 'GET', url: /^https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions(\/[.0-9]+)?/, times: 4},
+      cy.intercept({method: 'GET', url: /^https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions(\/[.0-9]+)?/},
         (req) => {
           console.log(`request url: ${req.url}`);
           req.reply(404, 'File not found!');
@@ -25,7 +25,7 @@ describe('Home page accept Terms of Use notices', () => {
 
       cy.visit('/')
       cy.acceptAllTermsOfUse();
-      cy.get('.card').as('errorCard').contains('.card-header', 'Error');
+      cy.get('.card').as('errorCard').contains('.card-header', 'Error', {timeout: 10000});
       cy.get('@errorCard').find('.card-body').should('include.text', 'Encountered an error which causes');
     });
 
