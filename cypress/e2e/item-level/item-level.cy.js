@@ -388,6 +388,59 @@ describe('Home page', () => {
       });
     });
 
+    describe('Copy context node using sidebar tree node context menu', () => {
+      beforeEach(() => {
+        cy.contains('button', 'Add new item').click();
+        cy.contains('button', 'Add new item').click();
+        cy.contains('button', 'Add new item').click();
+        cy.getTreeNode('New item 1').as('node1');
+        cy.getTreeNode('New item 2').as('node2');
+        cy.getTreeNode('New item 3').as('node3');
+        cy.getTreeNode('Item 0').click();
+
+        cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '1');
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
+
+        cy.getTreeNode('Item 0').find('button.dropdown-toggle').click();
+        cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Copy this item').click();
+        cy.get('lfb-node-dialog').contains('button', 'Copy').as('copyBtn');
+        cy.get('@copyBtn').should('be.disabled');
+        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{downarrow}{enter}');
+
+      });
+
+      afterEach(() => {
+        cy.resetForm();
+        cy.contains('button', 'Create questions').click();
+      });
+
+      it('should copy before a target node', () => {
+        cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
+        cy.get('@copyBtn').should('not.be.disabled').click();
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '4');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '5');
+      });
+
+      it('should copy after a target node', () => {
+        cy.get('input[type="radio"][value="BEFORE"]').click();
+        cy.get('@copyBtn').should('not.be.disabled').click();
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '3');
+      });
+
+      it('should copy as a child of a target', () => {
+        cy.get('input[type="radio"][value="CHILD"]').click();
+        cy.get('@copyBtn').should('not.be.disabled').click();
+        cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '1');
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
+      });
+    });
+
     it('should import help text item', () => {
       const helpTextFormFilename = 'help-text-sample.json';
       const helpString = 'testing help text from import';
