@@ -158,7 +158,7 @@ export class BasePageComponent implements OnInit {
   addWindowListeners() {
     if (this.openerUrl) {
       const msgListener = (event) => {
-        const message = event.data;
+        const message = JSON.parse(JSON.stringify(event.data)); // Sanitize input.
         const parentUrl = this.formService.windowOpenerUrl;
         if(!parentUrl.startsWith(event.origin)) {
           return;
@@ -176,7 +176,7 @@ export class BasePageComponent implements OnInit {
             break;
 
           default:
-            console.log(`Received a message from ${parentUrl}: type = ${event.data?.type}`);
+            console.log(`Received a message from ${parentUrl}: type = ${message?.type}`);
             break;
         }
       }
