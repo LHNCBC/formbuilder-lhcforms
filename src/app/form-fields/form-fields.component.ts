@@ -13,7 +13,7 @@ import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.com
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
-import {Util} from '../lib/util';
+import {GuidingStep, Util} from '../lib/util';
 import {ArrayProperty, FormComponent, FormProperty} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
@@ -141,7 +141,7 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   /**
    * Send message to base page to switch the view.
    */
-  setGuidingStep(step: string) {
+  setGuidingStep(step: GuidingStep) {
     this.formService.setGuidingStep(step);
     this.formService.autoSave('state', step); // Record change of state.
   }

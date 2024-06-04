@@ -4,9 +4,10 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  OnDestroy,
-  Output, TemplateRef,
-  ViewChild, OnInit
+  OnInit,
+  Output,
+  TemplateRef,
+  ViewChild
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
@@ -19,9 +20,9 @@ import {FetchService} from '../services/fetch.service';
 import {FhirService} from '../services/fhir.service';
 import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
-import { PreviewDlgComponent } from '../lib/widgets/preview-dlg/preview-dlg.component';
+import {PreviewDlgComponent} from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
-import {Util} from '../lib/util';
+import {GuidingStep, Util} from '../lib/util';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
@@ -39,7 +40,7 @@ export class BasePageComponent implements OnInit {
 
   private unsubscribe = new Subject<void>();
   @Input()
-  guidingStep = 'home'; // 'choose-start', 'home', 'item-editor'
+  guidingStep: GuidingStep = 'home'; // 'choose-start', 'home', 'item-editor'
   startOption = 'scratch';
   importOption = '';
   questionnaire: fhir.Questionnaire = null;
@@ -89,7 +90,7 @@ export class BasePageComponent implements OnInit {
       console.log('Saved');
     });
 
-    formService.guidingStep$.subscribe((step) => {this.guidingStep = step;});
+    formService.guidingStep$.subscribe((step: GuidingStep) => {this.guidingStep = step;});
     FormService.lformsLoaded$.subscribe({error: (error) => {
       this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
     }});
@@ -130,7 +131,7 @@ export class BasePageComponent implements OnInit {
  * '/window-open?referrer=[openerUrl], where <code>openerUrl</code> is location.href
  * of the parent window (window.opener). If the referrer parameter is missing,
  * it reads referrer or origin header for the url.
- * 
+ *
  * @param location - Window location object
  * @returns string - window.opener url.
  */
@@ -255,7 +256,7 @@ export class BasePageComponent implements OnInit {
    * Switch guiding step
    * @param step - a
    */
-  setStep(step: string) {
+  setStep(step: GuidingStep) {
     this.formService.setGuidingStep(step);
     this.formService.autoSave('state', step);
   }
@@ -272,6 +273,7 @@ export class BasePageComponent implements OnInit {
   onContinue() {
     if(this.startOption === 'from_autosave') {
       let state = this.formService.autoLoad('state');
+      state = Util.isGuidingStep(state) ? state : 'fl-editor';
       state = state === 'home' ? 'fl-editor' : state;
       this.formService.setGuidingStep(state);
       this.setQuestionnaire(this.formService.autoLoadForm());
@@ -326,9 +328,16 @@ export class BasePageComponent implements OnInit {
    */
   onFileSelected(event) {
     const loadFromFile = () => {
-      const fileReader = new FileReader();
-      const selectedFile = event.target.files[0];
+      const file = event.target.files[0];
+      const selectedFile = Util.validateFile(file);
+
+      if(!selectedFile) {
+        this.showError(`Invalid file name: ${file?.name}`);
+        return;
+      }
+
       event.target.value = null; //
+      const fileReader = new FileReader();
       fileReader.onload = () => {
         setTimeout(() => {
           this.setStep('fl-editor');
@@ -343,6 +352,7 @@ export class BasePageComponent implements OnInit {
       fileReader.onerror = () => {
         this.showError(`Error occurred reading file: ${selectedFile.name}`);
       }
+
       fileReader.readAsText(selectedFile, 'UTF-8');
     };
 
@@ -476,6 +486,7 @@ export class BasePageComponent implements OnInit {
    */
   close() {
     if(this.openerUrl) {
+      // window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
       window.close();
     }
     else {
