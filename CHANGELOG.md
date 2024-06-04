@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.4.4] 2024-06-04
+### Changed
+- Upgraded to angular 17.
+
 ## [9.4.3] 2024-06-04
 ### Added
 - Feature to add a copy of a selected node of a questionnaire item tree
