@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "9.4.1",
+  "version": "9.4.3",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -9,6 +9,7 @@
     "url": "https://github.com/lhncbc/formbuilder-lhcforms"
   },
   "config": {
+    "testPortSecond": "9032",
     "testPort": "9031",
     "devPort": "9030"
   },
@@ -28,10 +29,11 @@
     "cy-run": "cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort}",
     "e2e": "ng e2e",
     "e2e:start-server": "npm run build-with-test-html && angular-http-server --silent --path ./dist/formbuilder-lhcforms -p ${npm_package_config_testPort}",
+    "e2e:start-second-server": "npm run build-with-test-html && angular-http-server --silent --path ./dist/formbuilder-lhcforms -p ${npm_package_config_testPortSecond}",
     "pw-run": "npx playwright test",
-    "e2e:pw-run": "start-server-and-test e2e:start-server http://localhost:${npm_package_config_testPort} pw-run",
-    "e2e:prod": "start-server-and-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:cy-pw-run",
-    "e2e:cy-pw-run": "npm run cy-run && npm run pw-run",
+    "e2e:pw-run": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:start-second-server http://localhost:${npm_package_config_testPortSecond} pw-run",
+    "e2e:prod": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:start-second-server http://localhost:${npm_package_config_testPortSecond} cy-pw-run",
+    "cy-pw-run": "npm run cy-run && npm run pw-run",
     "postinstall": "ngcc"
   },
   "files": [

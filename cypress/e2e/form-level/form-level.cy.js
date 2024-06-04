@@ -156,7 +156,7 @@ describe('Home page', () => {
       cy.uploadFile('sample.STU3.json');
       cy.get('#title').should('have.value', 'Sample STU3 form');
       cy.contains('button.dropdown-toggle', 'Export').click();
-      cy.contains('button.dropdown-item', 'Export to file in R4 format').click();
+      cy.contains('button.dropdown-item', 'Export to file in FHIR R4 format').click();
       cy.readFile('cypress/downloads/Sample-STU3-form.R4.json').then((json) => {
         cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
         cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
@@ -188,7 +188,7 @@ describe('Home page', () => {
       cy.get('@firstRow').find('[id^="code.0.code_"]').should('have.value', '8358-4');
 
       cy.contains('button.dropdown-toggle', 'Export').click();
-      cy.contains('button.dropdown-item', 'Export to file in STU3 format').click();
+      cy.contains('button.dropdown-item', 'Export to file in FHIR STU3 format').click();
       cy.readFile('cypress/downloads/Sample-R4-form.STU3.json').then((json) => {
         cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
         cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
@@ -199,6 +199,26 @@ describe('Home page', () => {
           expect(form).to.be.deep.equal(json);
           cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
         });
+      });
+    });
+
+    it('should export to local file in LHC-FORMS format', () => {
+      cy.uploadFile('sample.R4.json');
+      cy.get('#title').should('have.value', 'Sample R4 form');
+      cy.contains('button.dropdown-toggle', 'Export').click();
+      cy.contains('button.dropdown-item', 'Export to file in LHC-Forms internal (and volatile) format').click();
+      cy.readFile('cypress/downloads/Sample-R4-form.LHC-Forms.json').then((json) => {
+        cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
+        cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
+        cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'R4').scrollIntoView().click();
+        cy.get('.preview-json-tabs mat-tab-body.mat-mdc-tab-body-active pre.R4').invoke('text').then((text) => {
+          const form = JSON.parse(text);
+          expect(form.title).to.be.equal(json.name);
+          expect(form.item[0].text).to.be.equal(json.items[0].question);
+          expect(form.item[0].code[0].code).to.be.equal(json.items[0].codeList[0].code);
+          expect(form.item[0].answerOption.length).to.be.equal(json.items[0].answers.length);
+        });
+        cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
       });
     });
   });

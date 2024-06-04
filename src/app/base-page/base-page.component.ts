@@ -56,7 +56,6 @@ export class BasePageComponent implements OnInit {
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
   acceptedTermsOfUse = false;
   acceptedSnomed = false;
-  openerUrl: string = null;
   lformsErrorMessage = null;
 
 
@@ -119,8 +118,38 @@ export class BasePageComponent implements OnInit {
           });
     }
 
-    this.openerUrl = window.opener?.location?.href || null;
+    if(window.opener) {
+      this.formService.windowOpenerUrl = this.parseOpenerUrl(window.location);
+    }
     this.addWindowListeners();
+  }
+
+
+/**
+ * Parse location object for url of window.opener.
+ * window.location.href is expected to have url path of the form
+ * '/window-open?referrer=[openerUrl], where <code>openerUrl</code> is location.href
+ * of the parent window (window.opener). If the referrer parameter is missing,
+ * it reads referrer or origin header for the url.
+ *
+ * @param location - Window location object
+ * @returns string - window.opener url.
+ */
+  private parseOpenerUrl(location: Location): string {
+    let ret = null;
+    const pathname = location?.pathname.replace(/^\/+/, '').toLowerCase();
+    if(pathname === 'window-open') {
+      const params = new URLSearchParams(location.search);
+      ret = params.get('referrer');
+    }
+    return ret;
+  }
+
+  /**
+   * getter for url of the window.opener
+   */
+  get openerUrl(): string {
+    return this.formService.windowOpenerUrl;
   }
 
   /**
@@ -129,31 +158,25 @@ export class BasePageComponent implements OnInit {
   addWindowListeners() {
     if (this.openerUrl) {
       const msgListener = (event) => {
-        let message;
-        try {
-          message = JSON.parse(JSON.stringify(event.data));
-
-        } catch {
-          return; // Ignore errors.
-        }
-
-        if(!this.openerUrl.startsWith(event.origin)) {
+        const message = event.data;
+        const parentUrl = this.formService.windowOpenerUrl;
+        if(!parentUrl.startsWith(event.origin)) {
           return;
         }
         switch (message?.type) {
           case 'initialQuestionnaire':
             try {
-              console.log(`Received questionnaire from ${this.openerUrl}`);
+              console.log(`Received questionnaire from ${parentUrl}`);
               this.setQuestionnaire(JSON.parse(JSON.stringify(message.questionnaire)));
               this.setStep('fl-editor');
             }
             catch(err) {
-              console.error(`Failed to parse questionnaire received from ${this.openerUrl}: ${err}`);
+              console.error(`Failed to parse questionnaire received from ${parentUrl}: ${err}`);
             }
             break;
 
           default:
-            console.log(`Received a message from ${this.openerUrl}: type = ${message?.type}`);
+            console.log(`Received a message from ${parentUrl}: type = ${event.data?.type}`);
             break;
         }
       }

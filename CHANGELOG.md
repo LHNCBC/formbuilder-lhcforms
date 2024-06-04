@@ -2,10 +2,20 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.4.1] 2024-04-19
-### Added 
+## [9.4.3] 2024-06-04
+### Added
 - Feature to add a copy of a selected node of a questionnaire item tree
-(contributed by @ghaliouss).
+  (contributed by @ghaliouss).
+
+## [9.4.2] 2024-05-08
+### Added
+- Menu option to download LHC-Forms format.
+
+## [9.4.1] 2024-04-29
+### Added
+- Added notice for window opener invocation.
+### Fixed 
+- Display error messages in preview reported by lforms widget.
 
 ## [9.4.0] 2024-04-01
 ### Added 

@@ -1,3 +1,4 @@
+<div *ngIf="openerUrl" class="bg-warning-subtle border border-black text-center">Notice: This page is sending changes back to the page that opened it, <span class="text-primary">{{openerUrl}}</span></div>
 <div class="page-defaults container bg-white shadow">
     <lfb-header id="fixedTop" [isFirebaseEnabled]="false"></lfb-header>
     <div id="resizableMiddle">
@@ -8,8 +9,9 @@
             Export
           </button>
           <div class="dropdown-menu" ngbDropdownMenu>
-            <button ngbDropdownItem (click)="saveToFile()">Export to file in R4 format</button>
-            <button ngbDropdownItem (click)="saveToFile('STU3')">Export to file in STU3 format</button>
+            <button ngbDropdownItem (click)="saveToFile()">Export to file in FHIR R4 format</button>
+            <button ngbDropdownItem (click)="saveToFile('STU3')">Export to file in FHIR STU3 format</button>
+            <button ngbDropdownItem (click)="saveToFile('LHC-Forms')">Export to file in LHC-Forms internal (and volatile) format</button>
             <button ngbDropdownItem (click)="exportToServer('CREATE')">Create a new questionnaire on a FHIR server...</button>
             <button ngbDropdownItem
                     (click)="exportToServer('UPDATE')"
