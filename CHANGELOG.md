@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.5.1] 2024-06-04
+### Added
+- Added sequence numbers to questions in conditional display source field. (Thanks to @ghaliouss)
+
 ## [9.5.0] 2024-06-04
 ### Changed
 - Upgraded to angular 17.

@@ -20,6 +20,8 @@ import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
 import {FhirService} from '../services/fhir.service';
 
+declare var LForms: any;
+
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sf-test',
@@ -76,6 +78,8 @@ export class CommonTestingModule {
       declarations = moduleConfig.declarations ? [...declarations, ...moduleConfig.declarations] : declarations;
       imports = moduleConfig.imports ? [...imports, ...moduleConfig.imports] : imports;
       providers = moduleConfig.providers ? [...providers, ...moduleConfig.providers] : providers;
+      const spy = spyOn(FormService.prototype, 'loadLFormsLib');
+      spy.and.callFake(() => {return Promise.resolve(LForms.lformsVersion)});
 
       await TestBed.configureTestingModule({
         declarations,
@@ -84,16 +88,8 @@ export class CommonTestingModule {
       }).compileComponents();
     });
 
-    beforeEach(async () => {
-      return new Promise<string>((resolve, reject) => {
-        FormService.lformsLoaded$.subscribe({next: (lformsVersion) => {
-            resolve(lformsVersion);
-          }, error: (err) => {
-            console.log(`Failed to load LForms after inject(FormService) in CommonTestingModule: ${err.message}`);
-            reject(err);
-          }});
-        TestBed.inject(FormService);
-      });
+    beforeEach(() => {
+      TestBed.inject(FormService);
     });
   };
 
