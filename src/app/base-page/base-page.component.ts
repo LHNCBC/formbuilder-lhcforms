@@ -158,7 +158,13 @@ export class BasePageComponent implements OnInit {
   addWindowListeners() {
     if (this.openerUrl) {
       const msgListener = (event) => {
-        const message = JSON.parse(JSON.stringify(event.data)); // Sanitize input.
+        let message = null;
+        try {
+          message = JSON.parse(JSON.stringify(event.data)); // Sanitize input.
+        } catch (e) {
+          console.error(`Unrecognized input from ${event.origin}`);
+          return;
+        }
         const parentUrl = this.formService.windowOpenerUrl;
         if(!parentUrl.startsWith(event.origin)) {
           return;
