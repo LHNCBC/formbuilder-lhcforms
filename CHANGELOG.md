@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.0] 2024-06-06
+### Changed
+- Accept terms of use only once a week.
+
 ## [9.5.1] 2024-06-04
 ### Added
 - Added sequence numbers to questions in conditional display source field. (Thanks to @ghaliouss)

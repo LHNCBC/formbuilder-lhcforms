@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "9.5.1",
+  "version": "9.6.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -69,7 +69,7 @@
     "jquery": "^3.6.3",
     "json-ptr": "^3.1.1",
     "json5": "^2.2.3",
-    "lforms-loader": "^3.0.0",
+    "lforms-loader": "^3.0.3",
     "lodash-es": "^4.17.21",
     "math-to-fhirpath": "NLMLHC/math-to-fhirpath",
     "rxjs": "~7.4.0",

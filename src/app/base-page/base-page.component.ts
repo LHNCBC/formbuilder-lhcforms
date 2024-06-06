@@ -57,6 +57,8 @@ export class BasePageComponent implements OnInit {
   acceptedTermsOfUse = false;
   acceptedSnomed = false;
   lformsErrorMessage = null;
+  // Accepted terms in localstorage expires in a week.
+  weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
 
 
   constructor(private formService: FormService,
@@ -75,8 +77,19 @@ export class BasePageComponent implements OnInit {
       this.startOption = 'from_autosave';
     }
 
-    this.acceptedTermsOfUse = sessionStorage.acceptedLoinc === 'true';
-    this.acceptedSnomed = sessionStorage.acceptedSnomed === 'true';
+    const localStorageTerms = JSON.parse(localStorage.getItem("acceptedTermsOfUse"));
+    if (localStorageTerms) {
+      const acceptedTermsExpired = Date.now() - localStorageTerms.timestamp > this.weekInMilliseconds;
+      if (acceptedTermsExpired) {
+        localStorage.removeItem("acceptedTermsOfUse");
+      } else {
+        this.acceptedTermsOfUse = localStorageTerms.acceptedLoinc;
+        this.acceptedSnomed = localStorageTerms.acceptedSnomed;
+      }
+    } else {
+      this.acceptedTermsOfUse = sessionStorage.acceptedLoinc === 'true';
+      this.acceptedSnomed = sessionStorage.acceptedSnomed === 'true';
+    }
     this.formService.setSnomedUser(this.acceptedSnomed);
 
     this.formSubject.asObservable().pipe(
@@ -109,8 +122,16 @@ export class BasePageComponent implements OnInit {
         .then(
           (result) => {
             this.acceptedTermsOfUse = result.acceptedLoinc;
-            sessionStorage.acceptedLoinc = result.acceptedLoinc;
-            sessionStorage.acceptedSnomed = result.acceptedSnomed;
+            if (result.acceptedLoinc && result.acceptedSnomed) {
+              localStorage.setItem('acceptedTermsOfUse', JSON.stringify({
+                acceptedLoinc: result.acceptedLoinc,
+                acceptedSnomed: result.acceptedSnomed,
+                timestamp: Date.now()
+              }));
+            } else {
+              sessionStorage.acceptedLoinc = result.acceptedLoinc;
+              sessionStorage.acceptedSnomed = result.acceptedSnomed;
+            }
             this.formService.setSnomedUser(result.acceptedSnomed);
           },
           (reason) => {
