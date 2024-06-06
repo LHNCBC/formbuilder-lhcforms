@@ -23,10 +23,10 @@
     <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
   </div>
   <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
-    <table class="table table-borderless table-sm lfb-table" *ngIf="formProperty.properties.length > 0">
+    <table class="table table-borderless table-sm lfb-table" *ngIf="+formProperty.properties.length > 0">
       <thead *ngIf="!noHeader" class="table-active">
       <tr class="d-flex">
-        <th *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
+        <th *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
           <lfb-title
             [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
             [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
@@ -43,7 +43,7 @@
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
       <tr class="d-flex" *ngFor="let itemProperty of formProperty.properties; index as ind">
-        <td *ngFor="let showField of getShowFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
+        <td *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
           <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
         </td>
         <td *ngIf="rowSelectionType === 'radio'" class="col-sm-2 text-center align-self-center">

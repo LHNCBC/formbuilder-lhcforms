@@ -2,9 +2,22 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.5.0] 2024-05-20
+## [9.6.0] 2024-06-06
 ### Changed
 - Accept terms of use only once a week.
+
+## [9.5.1] 2024-06-04
+### Added
+- Added sequence numbers to questions in conditional display source field. (Thanks to @ghaliouss)
+
+## [9.5.0] 2024-06-04
+### Changed
+- Upgraded to angular 17.
+
+## [9.4.3] 2024-06-04
+### Added
+- Feature to add a copy of a selected node of a questionnaire item tree
+  (contributed by @ghaliouss).
 
 ## [9.4.2] 2024-05-08
 ### Added

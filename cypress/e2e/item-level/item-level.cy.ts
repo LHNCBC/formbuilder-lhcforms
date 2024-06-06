@@ -388,6 +388,59 @@ describe('Home page', () => {
       });
     });
 
+    describe('Copy context node using sidebar tree node context menu', () => {
+      beforeEach(() => {
+        cy.contains('button', 'Add new item').click();
+        cy.contains('button', 'Add new item').click();
+        cy.contains('button', 'Add new item').click();
+        cy.getTreeNode('New item 1').as('node1');
+        cy.getTreeNode('New item 2').as('node2');
+        cy.getTreeNode('New item 3').as('node3');
+        cy.getTreeNode('Item 0').click();
+
+        cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '1');
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
+
+        cy.getTreeNode('Item 0').find('button.dropdown-toggle').click();
+        cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Copy this item').click();
+        cy.get('lfb-node-dialog').contains('button', 'Copy').as('copyBtn');
+        cy.get('@copyBtn').should('be.disabled');
+        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{downarrow}{enter}');
+
+      });
+
+      afterEach(() => {
+        cy.resetForm();
+        cy.contains('button', 'Create questions').click();
+      });
+
+      it('should copy before a target node', () => {
+        cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
+        cy.get('@copyBtn').should('not.be.disabled').click();
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '4');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '5');
+      });
+
+      it('should copy after a target node', () => {
+        cy.get('input[type="radio"][value="BEFORE"]').click();
+        cy.get('@copyBtn').should('not.be.disabled').click();
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '3');
+      });
+
+      it('should copy as a child of a target', () => {
+        cy.get('input[type="radio"][value="CHILD"]').click();
+        cy.get('@copyBtn').should('not.be.disabled').click();
+        cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '1');
+        cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
+      });
+    });
+
     it('should import help text item', () => {
       const helpTextFormFilename = 'help-text-sample.json';
       const helpString = 'testing help text from import';
@@ -1399,7 +1452,7 @@ describe('Home page', () => {
         cy.contains('button', 'Preview').click();
         cy.get('wc-lhc-form').should('exist').parent().as('tabBody');
         cy.get('@tabBody').find('.card.bg-danger-subtle').should('not.exist');
-        cy.contains('mat-dialog-actions button', 'Close').click();        
+        cy.contains('mat-dialog-actions button', 'Close').click();
       });
 
       it('should show answer column if there is an answer option in any row of conditional display', () => {
@@ -1509,6 +1562,18 @@ describe('Home page', () => {
             }
           ]);
         });
+
+      });
+
+      it('should display the tree hierarchy sequence number concatenated with the item text ', () => {
+        cy.selectDataType('decimal');
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.get('#text').should('have.value', 'New item 1');
+
+        const r1Question = '[id^="enableWhen.0.question"]';
+        // First row operator='exist'
+        cy.get(r1Question).type('{enter}');
+        cy.get(r1Question).should('have.value', '1 - Item 0');
 
       });
 
@@ -1635,7 +1700,7 @@ describe('Home page', () => {
         cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Yes');
         cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA33-6');
         cy.clickTreeNode('Date of Birth');
-        cy.get('[id^="enableWhen.0.question"]').should('have.value', 'Living?');
+        cy.get('[id^="enableWhen.0.question"]').should('have.value', '1.1 - Living?');
         cy.get('[id^="enableWhen.0.operator"]')
           .find('option:selected').should('have.text','=');
         cy.get('[id^="enableWhen.0.answerCoding"]')

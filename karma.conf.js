@@ -1,8 +1,19 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
+
 module.exports = function (config) {
   config.set({
+    files: [
+      {
+        pattern: './node_modules/lforms-loader/dist/lformsLoader.js',
+        type: 'module'
+      },
+      {
+        pattern: './src/app/testing/karma-lforms-loader.js',
+        type: 'module'
+      },
+    ],
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
     plugins: [
@@ -29,8 +40,12 @@ module.exports = function (config) {
     customLaunchers: {
       ChromeHeadless_without_password_security: {
         base: 'ChromeHeadless',
-        flags: ['--password-store=basic']
+        flags: ['--password-store=basic', '--disable-crash-reporter']
       },
+      ChromeDebug: {
+        base: 'Chrome',
+        flags: ['--password-store=basic', '--disable-crash-reporter']
+      }
     },
     singleRun: false,
     restartOnFileChange: true
