@@ -1467,6 +1467,20 @@
         "type": ["$EXP$ target.value != 'display'"]
       }
     },
+    "__$editableLinkId": {
+      "description": "Manually change the Link Id. The linkId has a max length of 255 characters.",
+
+      "type": "string",
+      "title": "Link Id",
+      "maxLength": 255,
+      "widget": {
+        "id": "editable-link-id",
+        "note": "*Make sure to update any places in the questionnaire that reference the linkId.",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0"
+      }
+    },
     "__$units": {
       "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
       "title": "Units",
@@ -1725,6 +1739,17 @@
       "showFields": [
         {
           "field": "__$observationExtract",
+          "col": 10
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$editableLinkId"
+      ],
+      "showFields": [
+        {
+          "field": "__$editableLinkId",
           "col": 10
         }
       ]

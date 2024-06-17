@@ -1,6 +1,7 @@
 import {
+  OnInit,
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
   Component,
   EventEmitter, Input, OnChanges,
   Output, SimpleChanges,
@@ -12,6 +13,7 @@ import {ArrayProperty, FormComponent, FormProperty, PropertyGroup} from '@lhncbc
 import {ExtensionsService} from '../services/extensions.service';
 import {ObjectProperty} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../lib/util';
+import { SharedObjectService } from '../services/shared-object.service';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -23,7 +25,7 @@ import {Util} from '../lib/util';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ExtensionsService]
 })
-export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
+export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('itemForm') itemForm: FormComponent;
 
   validators = {
@@ -55,7 +57,8 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
       return null;
     },
     '/enableWhen': this.validateEnableWhenAll.bind(this),
-    '/enableWhen/*': this.validateEnableWhenSingle.bind(this)
+    '/enableWhen/*': this.validateEnableWhenSingle.bind(this),
+    '/__$editableLinkId': this.validateLinkId.bind(this)
   };
 
   mySchema: any = {properties: {}};
@@ -71,10 +74,25 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
   linkIdCollection = new LinkIdCollection();
   loading = false;
 
-  constructor(private extensionsService: ExtensionsService, private formService: FormService, private cdr: ChangeDetectorRef) {
+  questionnaire;
+  linkId;
+  linkIds;
+
+  constructor(private extensionsService: ExtensionsService,
+              private formService: FormService,
+              private modelService: SharedObjectService) {
     this.mySchema = formService.getItemSchema();
   }
 
+  ngOnInit(): void {
+    // Subscribe to changes to the questionnaire and obtain a set of
+    // unique link ids as a result.
+    this.modelService.questionnaire$.subscribe((questionnaire) => {
+      this.questionnaire = questionnaire;
+      if (this.questionnaire)
+        this.linkIds = Util.getLinkIdsAsSet(this.questionnaire.item);
+    });
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if(changes.model) {
@@ -183,6 +201,45 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
     else {
       errors = null;
     }
+    return errors;
+  }
+
+
+  /**
+   * Custom validator for unique linkId. 
+   * @param value - Value of linkId
+   * @param formProperty - Object form property of the linkId
+   * @param rootProperty - Root form property
+   */
+  validateLinkId (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null  {
+    let errors: any[] = [];
+
+    const extensionsProp = rootProperty.getProperty('extension');
+    this.linkId = formProperty.parent.getProperty('linkId').value;
+
+    const changed = (value && this.questionnaire && this.linkId && value !== this.linkId);
+    if (changed) {
+      const editableLinkId = formProperty;
+
+      if (this.linkIds.has(value)) {
+        const errorCode = 'DUPLICATE_LINK_ID';
+        const err: any = {};
+        err.code = errorCode;
+        err.path = `#${editableLinkId.canonicalPathNotation}`;
+        err.message = `Entered linkId must be unique.`;
+        const valStr = "";
+        err.params = [{'linkId': this.linkId, 'editableLinkId': value}];
+        errors.push(err);
+      }
+    }
+    
+    if(errors.length) {
+      formProperty.extendErrors(errors);
+    }
+    else {
+      errors = null;
+    }
+    this.errorsChanged.next(errors);
     return errors;
   }
 }

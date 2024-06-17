@@ -1900,6 +1900,236 @@ describe('Home page', () => {
     });
   });
 
+  describe('Item level fields: advanced - Editable Link Id', () => {
+    beforeEach(() => {
+      const sampleFile = 'USSG-family-portrait.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.loadHomePage();
+      cy.get('input[type="radio"][value="scratch"]').click();
+      cy.get('button').contains('Continue').click();
+      cy.uploadFile(sampleFile, false);
+      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+      cy.contains('button', 'Edit questions').click();
+
+      cy.expandAdvancedFields();
+      cy.tsUrl().should('be.visible'); // Proof of advanced panel expansion
+    });
+
+    afterEach(() => {
+      cy.collapseAdvancedFields();
+    });
+
+    it('should update the link id', () => {
+      // 300 characters long
+      const longLinkId = "/sQbMAgt9SavZxxL63WIFBju6Hdwjp3JHyFzXnBKVdLEtCJ71u6TNMhXt" +
+                          "znjw9HV9b7N6kY33bLiZMEy7nSCJupWu3MIzFg2PfT4JEEa5VFXk3KgaZ" +
+                          "ypvFH8EGDlxe9bpLoZqbXgxBCQ0iFmG6FKyA1FiuMMtZYoaXHPpJ0M6kZ" +
+                          "bjBbTbmOSrtufcLu1SrN0MN0h30lxak1yNfCjqqlsxdGescju0nu0nJvg" +
+                          "6K1Vd5rhBGavjkrBnbDXLrOglYT0gf1HaIBbGGM4C9kO8dTxqBOqg1KHn" +
+                          "ctpWOL3vc0PIiXB";
+      const linkIdSizeLimit = 255;
+
+      cy.editableLinkId()
+        .should('be.visible')
+        .should('have.value', '/54126-8');
+
+      cy.editableLinkId()
+        .clear()
+        .type(longLinkId);
+
+      // Because of size limit, the linkId was truncated
+      // to 255 characters
+      cy.editableLinkId()
+        .invoke('val')
+        .should('not.equal', longLinkId)
+        .its('length')
+        .should('eq', linkIdSizeLimit);
+    });
+
+    it('should detect duplicate link id and display error', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+      cy.getTreeNode('Living?').click();
+      
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1');
+      
+      cy.editableLinkId()  
+        .clear()
+        .type('/54114-4');
+
+      cy.displayDuplicateKeyError();
+
+      // The node 'Living?' should display a red triangle icon (error)
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      // In addition, the parent node should also display the red triangle icon as well.
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Now go to the grandchild node
+      cy.getTreeNode('Current Age').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()  
+        .clear()
+        .type('/54114-4/54139-1');
+
+      cy.displayDuplicateKeyError();
+
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the child node.
+      cy.getTreeNode('Living?').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1');
+      
+      // Error messages on the content panel should go away
+      cy.hideDisplayDuplicateKeyError();
+
+      // The red triangle icons on the tree panel for the child and parent nodes
+      // should remained since there is still error at the grandchild node.
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the grandchild node.
+      cy.getTreeNode('Current Age').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1/54141-7');
+
+      // Error messages on the content panel should go away
+      cy.hideDisplayDuplicateKeyError();
+
+      // The red triangle icons on the tree panel for the grandchild, child
+      // and parent nodes should now be hidden.
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('have.attr', 'hidden');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('have.attr', 'hidden');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('have.attr', 'hidden');
+    });
+
+    it('should check siblings for error before clearing out errors from ancestor', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Expand the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+
+      // Go to the grandchild node '2.4.2 Current Age'
+      cy.getTreeNode('Current Age').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()  
+        .clear()
+        .type('/54114-4/54139-1');
+
+      cy.displayDuplicateKeyError();
+
+      // On the Tree panel, the error icon should display on the parent, child, and grandchild
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Go to the sibling node '2.4.3 Cause of Death' and enter the duplicate link id
+      cy.getTreeNode('Cause of Death').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54112-8');
+      cy.editableLinkId()  
+        .clear()
+        .type('/54114-4/54139-1');
+
+      cy.displayDuplicateKeyError();
+
+      // Fix the duplicate link id for the node '2.4.2 Current Age'.
+      cy.getTreeNode('Current Age').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1/54141-7');
+      
+      // Error messages on the content panel should go away
+      cy.hideDisplayDuplicateKeyError();
+
+      // The red triangle icons on the tree panel for the node '2.4.2 Current Age' should be hidden.
+      cy.getTreeNode('Current Age')
+      .find('fa-icon#error')
+      .should('have.attr', 'hidden');
+      
+      // However, the parent node '2.4 Living?' and grandparent node '2 Family memeber health history'
+      // should still showing error icon because there is still an error with the node 
+      // '2.4.3 Cause of Death'
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the node '2.4.3 Cause of Death'.
+      cy.getTreeNode('Cause of Death').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1/54112-8');
+
+      // Error messages on the content panel should go away
+      cy.hideDisplayDuplicateKeyError();
+
+      // The red triangle icons on the tree panel for the grandchild, child
+      // and parent nodes should now be hidden.
+      cy.getTreeNode('Cause of Death')
+        .find('fa-icon#error')
+        .should('have.attr', 'hidden');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('have.attr', 'hidden');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('have.attr', 'hidden');
+    });
+
+  });
+
   describe('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';

@@ -89,6 +89,7 @@ import { DateComponent } from './lib/widgets/date/date.component';
 import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
 import {LabelComponent} from './lib/widgets/label/label.component';
+import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable-link-id.component';
 
 @NgModule({
   declarations: [
@@ -154,6 +155,7 @@ import {LabelComponent} from './lib/widgets/label/label.component';
     DateComponent,
     TextAreaComponent,
     DatetimeComponent,
+    EditableLinkIdComponent
   ],
   imports: [
     BrowserModule,

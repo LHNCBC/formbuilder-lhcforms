@@ -441,6 +441,49 @@ Cypress.Commands.add('tsUrl', () => {
 });
 
 /**
+ * Get input field for editable link id
+ */
+Cypress.Commands.add('editableLinkId', () => {
+  return cy.get('[id^="__$editableLinkId"]');
+});
+
+/**
+ * Display the Duplicate Key error
+ */
+Cypress.Commands.add('displayDuplicateKeyError', () => {
+  // The link id text input should be outline in red
+  cy.editableLinkId()
+    .should('have.class', 'invalid');
+  // The error message should be display at the bottom of the text input
+  cy.get('small.text-danger')
+    .should('be.visible')
+    .should('contain.text', 'Entered linkId must be unique.');
+
+  // Error should display at the top of the content and at the bottom.
+  cy.get('mat-sidenav-content ul > li')
+    .should('contain.text', 
+      'Error(s) exist in this item. The resultant form may not render properly.');
+});
+
+/**
+ * Hide the Duplicate Key error
+ */
+Cypress.Commands.add('hideDisplayDuplicateKeyError', () => {
+  // The link id text input should be outline in red
+  cy.editableLinkId()
+    .should('not.have.class', 'invalid');
+  // The error message should be display at the bottom of the text input
+  cy.get('small.text-danger')
+    .should('not.exist');
+    //.should('contain.text', 'Entered linkId must be unique.');
+
+  // Error should display at the top of the content and at the bottom.
+  cy.get('mat-sidenav-content ul > li')
+    .should('not.contain.text', 
+      'Error(s) exist in this item. The resultant form may not render properly.');
+});
+
+/**
  * Expand advanced panel
  */
 Cypress.Commands.add('expandAdvancedFields',() => {

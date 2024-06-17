@@ -210,6 +210,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   devMode = !environment.production;
   contextMenuActive = false;
   treeFirstFocus = false;
+
+  // Used to keep track of errors for the tree nodes by storing the unique link id of each item.
+  errorTrackingSet = new Set<String>();
+
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
    * Wait at least for two characters, 200 millis of inactivity and not the
@@ -270,12 +274,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
       Object.assign(this.itemData, item);
     }
-
     if (typeof this.itemData?.linkId === 'number') {
       this.itemData.linkId = ''+this.itemData.linkId;
     }
     this.loadingTime = (Date.now() - this.startTime)/1000;
-    // console.log('item changed', this.itemData?.linkId);
     if(!this.formService.loading) {
       this.itemChange.emit(this.itemList);
     }
@@ -681,8 +683,30 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   onErrorsChanged(errors: any []) {
     this.errors$.next(errors);
-  }
 
+    // Populate the tree panel on the left to show/hide error icons
+    if (this.focusNode) {
+      // There can be other errors that may or may not need to display the error icon. So 
+      // this is limited to just the DUPLICATE_LINK_ID error for now.
+      if (errors && errors.length > 0 && errors[0]?.code === "DUPLICATE_LINK_ID" ) {
+        if (!this.errorTrackingSet.has(this.focusNode.id.toString())) {
+          this.addNodeLinkIdToErrorTrackingSet(this.focusNode);
+        }
+      } else {
+        if (this.errorTrackingSet.has(this.focusNode.id.toString())) {
+          // Check if the child nodes contain errors. Only remove error icons for current node
+          // and ancestor nodes if child nodes do not have errors.
+          const childHasError = this.focusNode?.children?.some((n) => {
+            return this.errorTrackingSet.has(n.id.toString());
+          });
+
+          if (!childHasError) {
+            this.removeNodeLinkIdFromErrorTrackingSet(this.focusNode);
+          }
+        }
+      }
+    }
+  }
 
   /**
    * Stop the event propagation
@@ -837,5 +861,43 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   private createLinkId() {
     return Math.floor(100000000000 + Math.random() * 900000000000).toString();
+  }
+
+  /**
+   * Identify if the selected node has an error.
+   * @param node - Selected node.
+   * @returns True if the select node contains error, otherwise false.
+   */
+  hasError(node: ITreeNode): boolean {
+    return this.errorTrackingSet.has(node.id.toString());
+  }
+
+  /**
+   * Remove the current and ancestor nodes link ids from the error tracking set.
+   * @param node - Selected node.
+   */
+  removeNodeLinkIdFromErrorTrackingSet(node: ITreeNode): void {
+    this.errorTrackingSet.delete(node.id.toString());
+    if (node.parent && !node.isRoot) {
+      const siblingHasError = node.parent.children.some((n) => {
+        return this.errorTrackingSet.has(n.id.toString());
+      });
+
+      if (!siblingHasError)
+        this.removeNodeLinkIdFromErrorTrackingSet(node.parent);
+    }    
+  }
+
+  /**
+   * Add the current and ancestor nodes link ids to the error tracking set.
+   * @param node - Selected node.
+   */
+  addNodeLinkIdToErrorTrackingSet(node: ITreeNode): void {
+    if (!this.errorTrackingSet.has(node.id.toString()))
+      this.errorTrackingSet.add(node.id.toString());
+    // The root node may have parent, but it is not an item
+    if (node.parent && !node.isRoot) {
+      this.addNodeLinkIdToErrorTrackingSet(node.parent);
+    }
   }
 }
