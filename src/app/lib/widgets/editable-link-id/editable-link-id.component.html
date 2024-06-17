@@ -23,7 +23,7 @@
       <fa-icon id="error" [icon]="errorIcon" *ngIf="!formProperty.valid" style="color: red" aria-hidden="!!errors"></fa-icon>
             
       <ng-container *ngFor="let error of errors">
-        <small *ngIf="formProperty.value && error"
+        <small *ngIf="error"
         class="text-danger form-text" role="alert"
         >{{error.modifiedMessage || error.originalMessage}}</small>
       </ng-container>

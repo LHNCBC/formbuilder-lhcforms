@@ -217,11 +217,20 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const extensionsProp = rootProperty.getProperty('extension');
     this.linkId = formProperty.parent.getProperty('linkId').value;
 
-    const changed = (value && this.questionnaire && this.linkId && value !== this.linkId);
+    const changed = (this.questionnaire && this.linkId && value !== this.linkId);
     if (changed) {
       const editableLinkId = formProperty;
 
-      if (this.linkIds.has(value)) {
+      if (!value) {
+        const errorCode = 'REQUIRED';
+        const err: any = {};
+        err.code = errorCode;
+        err.path = `#${editableLinkId.canonicalPathNotation}`;
+        err.message = `Link Id is required.`;
+        const valStr = "";
+        err.params = [{'linkId': this.linkId, 'editableLinkId': value}];
+        errors.push(err);
+      } else if (this.linkIds.has(value)) {
         const errorCode = 'DUPLICATE_LINK_ID';
         const err: any = {};
         err.code = errorCode;

@@ -450,14 +450,14 @@ Cypress.Commands.add('editableLinkId', () => {
 /**
  * Display the Duplicate Key error
  */
-Cypress.Commands.add('displayDuplicateKeyError', () => {
+Cypress.Commands.add('displayFieldError', (errorMessage) => {
   // The link id text input should be outline in red
   cy.editableLinkId()
     .should('have.class', 'invalid');
   // The error message should be display at the bottom of the text input
   cy.get('small.text-danger')
     .should('be.visible')
-    .should('contain.text', 'Entered linkId must be unique.');
+    .should('contain.text', errorMessage);
 
   // Error should display at the top of the content and at the bottom.
   cy.get('mat-sidenav-content ul > li')
@@ -468,14 +468,13 @@ Cypress.Commands.add('displayDuplicateKeyError', () => {
 /**
  * Hide the Duplicate Key error
  */
-Cypress.Commands.add('hideDisplayDuplicateKeyError', () => {
+Cypress.Commands.add('hideFieldError', () => {
   // The link id text input should be outline in red
   cy.editableLinkId()
     .should('not.have.class', 'invalid');
   // The error message should be display at the bottom of the text input
   cy.get('small.text-danger')
     .should('not.exist');
-    //.should('contain.text', 'Entered linkId must be unique.');
 
   // Error should display at the top of the content and at the bottom.
   cy.get('mat-sidenav-content ul > li')

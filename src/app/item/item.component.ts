@@ -687,8 +687,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     // Populate the tree panel on the left to show/hide error icons
     if (this.focusNode) {
       // There can be other errors that may or may not need to display the error icon. So 
-      // this is limited to just the DUPLICATE_LINK_ID error for now.
-      if (errors && errors.length > 0 && errors[0]?.code === "DUPLICATE_LINK_ID" ) {
+      // this is limited to just the DUPLICATE_LINK_ID and REQUIRED errors for now.
+      if (errors && errors.length > 0 &&
+         ( errors[0]?.code === "DUPLICATE_LINK_ID" || errors[0]?.code === "REQUIRED") ) {
         if (!this.errorTrackingSet.has(this.focusNode.id.toString())) {
           this.addNodeLinkIdToErrorTrackingSet(this.focusNode);
         }

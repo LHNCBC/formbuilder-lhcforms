@@ -1901,6 +1901,8 @@ describe('Home page', () => {
   });
 
   describe('Item level fields: advanced - Editable Link Id', () => {
+    const REQUIRED = 'Link Id is required.';
+    const DUPLICATE_LINK_ID =  'Entered linkId must be unique.';
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
@@ -1947,6 +1949,38 @@ describe('Home page', () => {
         .should('eq', linkIdSizeLimit);
     });
 
+    it('should required linkId', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+      
+      // Now go to the grandchild node
+      cy.getTreeNode('Current Age').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()  
+        .clear()
+        .type('{backspace}');
+
+      cy.displayFieldError(REQUIRED);
+
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+    });
+
     it('should detect duplicate link id and display error', () => {
       // Click on 2 Family member health history
       cy.toggleTreeNodeExpansion('Family member health history');
@@ -1965,7 +1999,7 @@ describe('Home page', () => {
         .clear()
         .type('/54114-4');
 
-      cy.displayDuplicateKeyError();
+      cy.displayFieldError(DUPLICATE_LINK_ID);
 
       // The node 'Living?' should display a red triangle icon (error)
       cy.getTreeNode('Living?')
@@ -1988,7 +2022,7 @@ describe('Home page', () => {
         .clear()
         .type('/54114-4/54139-1');
 
-      cy.displayDuplicateKeyError();
+      cy.displayFieldError(DUPLICATE_LINK_ID);
 
       cy.getTreeNode('Current Age')
         .find('fa-icon#error')
@@ -2002,7 +2036,7 @@ describe('Home page', () => {
         .type('/54114-4/54139-1');
       
       // Error messages on the content panel should go away
-      cy.hideDisplayDuplicateKeyError();
+      cy.hideFieldError();
 
       // The red triangle icons on the tree panel for the child and parent nodes
       // should remained since there is still error at the grandchild node.
@@ -2021,7 +2055,7 @@ describe('Home page', () => {
         .type('/54114-4/54139-1/54141-7');
 
       // Error messages on the content panel should go away
-      cy.hideDisplayDuplicateKeyError();
+      cy.hideFieldError();
 
       // The red triangle icons on the tree panel for the grandchild, child
       // and parent nodes should now be hidden.
@@ -2055,7 +2089,7 @@ describe('Home page', () => {
         .clear()
         .type('/54114-4/54139-1');
 
-      cy.displayDuplicateKeyError();
+      cy.displayFieldError(DUPLICATE_LINK_ID);
 
       // On the Tree panel, the error icon should display on the parent, child, and grandchild
       cy.getTreeNode('Current Age')
@@ -2078,7 +2112,7 @@ describe('Home page', () => {
         .clear()
         .type('/54114-4/54139-1');
 
-      cy.displayDuplicateKeyError();
+      cy.displayFieldError(DUPLICATE_LINK_ID);
 
       // Fix the duplicate link id for the node '2.4.2 Current Age'.
       cy.getTreeNode('Current Age').click();
@@ -2088,14 +2122,14 @@ describe('Home page', () => {
         .type('/54114-4/54139-1/54141-7');
       
       // Error messages on the content panel should go away
-      cy.hideDisplayDuplicateKeyError();
+      cy.hideFieldError();
 
       // The red triangle icons on the tree panel for the node '2.4.2 Current Age' should be hidden.
       cy.getTreeNode('Current Age')
       .find('fa-icon#error')
       .should('have.attr', 'hidden');
       
-      // However, the parent node '2.4 Living?' and grandparent node '2 Family memeber health history'
+      // However, the parent node '2.4 Living?' and grandparent node '2 Family member health history'
       // should still showing error icon because there is still an error with the node 
       // '2.4.3 Cause of Death'
       cy.getTreeNode('Living?')
@@ -2113,7 +2147,7 @@ describe('Home page', () => {
         .type('/54114-4/54139-1/54112-8');
 
       // Error messages on the content panel should go away
-      cy.hideDisplayDuplicateKeyError();
+      cy.hideFieldError();
 
       // The red triangle icons on the tree panel for the grandchild, child
       // and parent nodes should now be hidden.
