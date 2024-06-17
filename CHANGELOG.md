@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.1] 2024-06-06
+### Added
+- Added editable link id field.
+
 ## [9.6.0] 2024-06-06
 ### Changed
 - Accept terms of use only once a week.
