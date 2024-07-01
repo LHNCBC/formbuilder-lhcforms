@@ -20,9 +20,12 @@
   <div class="p-0">
     <div class="row m-0 align-items-center">
       <label [for]="id+'_ecl'" class="col-3 ps-0 col-form-label">Enter SNOMED ECL
-        <div tabindex="0" class="btn border-0 p-0 b-0" [ngbTooltip]="eclHelp" triggers="manual" [attr.aria-label]="'Tooltip for ECL'"
-             #eclTooltip
-             (click)="eclTooltipOpen()"
+        <div tabindex="0" class="btn border-0 p-0 b-0" [ngbTooltip]="eclHelp" tooltipClass="custom-tooltip-class"
+             container="body" triggers="manual" [attr.aria-label]="'Tooltip for ECL'" tablindex="0"
+             #eclTooltip 
+             (mouseover)="eclTooltipOpen()"
+             (focus)="eclTooltipOpen()"
+             (blur)="eclTooltipClose($event)"
       ><fa-icon [icon]="faInfo" aria-hidden="true"></fa-icon></div>:</label>
       <div class="col input-group input-group-sm px-0">
         <span class="input-group-text">ecl/</span>
@@ -74,9 +77,11 @@
 </ng-template>
 
 <ng-template #eclHelp>
-  See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose()"
-                 href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or
-  try the ECL Builder in the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose()"
-                 href="https://browser.ihtsdotools.org/?perspective=full&languages=en">SNOMED CT Browser</a>.
-  In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.
+  <div (mouseleave)="eclTooltipClose($event)" id="eclHelp">
+    See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)"
+    href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or
+    try the ECL Builder in the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)"
+    href="https://browser.ihtsdotools.org/?perspective=full&languages=en">SNOMED CT Browser</a>.
+    In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.
+  </div>
 </ng-template>

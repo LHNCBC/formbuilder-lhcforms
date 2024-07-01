@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import {Subscription} from 'rxjs';
 import {FetchService, SNOMEDEditions} from '../../../services/fetch.service';
@@ -11,6 +11,7 @@ import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'lfb-answer-value-set',
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './answer-value-set.component.html',
   styleUrls: ['./answer-value-set.component.css']
 })
@@ -39,6 +40,8 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   valueSetType = 'value-set';
   tsHint = AnswerValueSetComponent.nonSnomedTSHint;
   eclHelp = '';
+
+  tooltipOpen = false;
 
   ngOnInit() {
     super.ngOnInit();
@@ -192,8 +195,13 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     }
   }
 
-  eclTooltipClose() {
+  eclTooltipClose(evt: MouseEvent) {
+    const relatedTarget = evt.relatedTarget as HTMLElement;
+
+    if (!this.tooltipOpen || !relatedTarget)
+      return;
     this.eclTooltip.close();
+    this.tooltipOpen = false;
   }
 
   /**
@@ -201,6 +209,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    */
   eclTooltipOpen() {
     this.eclTooltip.open();
+    this.tooltipOpen = true;
   }
 
   /**

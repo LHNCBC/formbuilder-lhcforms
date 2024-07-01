@@ -1,0 +1,34 @@
+.tooltip-inner a:link {
+  color: rgb(85, 115, 235);
+  text-decoration: underline;
+}
+
+.tooltip-inner a:visited {
+  color: rgb(166, 80, 220);
+  text-decoration: underline;
+}
+
+.tooltip-inner a:hover {
+  color: rgb(32, 197, 98);
+  text-decoration: underline;
+}
+
+.custom-tooltip-class {
+  background-color: #555;
+  color: #555;
+  border: #555;
+  font-size:13px;
+}
+
+.tooltip.show {
+  opacity: 1.0;
+  border-radius: 5px;
+}
+
+.tooltip-inner {
+  background-color: #555;
+}
+
+.tooltip {
+  --bs-tooltip-bg: #555;
+}
