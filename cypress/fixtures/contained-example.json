@@ -1,0 +1,31 @@
+{
+    "resourceType": "Questionnaire",
+    "contained": [
+      {
+        "resourceType": "Practitioner",
+        "id": "p1",
+        "name": [
+          {
+            "family": "Person",
+            "given": [
+              "Patricia"
+            ]
+          }
+        ]
+      }
+    ],
+    "id": "container-example-2-quest",
+    "url": "https://aphp.fr/ig/fhir/eds/Questionnaire/container-example-2-quest",
+    "name": "ContainerQuestExample",
+    "title": "Container example",
+    "status": "draft",
+    "date": "2023-11-01T12:11:21.000Z",
+    "item": [
+      {
+        "linkId": "F_MATER_001661",
+        "text": "Grossesse suivie au diagnostic prénatal",
+        "type": "boolean"
+      }
+    ]
+}
+
