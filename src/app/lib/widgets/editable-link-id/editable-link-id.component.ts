@@ -34,14 +34,7 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
     this.editableLinkId = this.extensionsService.extensionsProp.searchProperty('/editableLinkId')?.value;
 
     if (this.linkId) {
-      const node = this.formService.getTreeNodeByLinkId(this.linkId);
-  
-      // Display the __$editableLinkId if it contains value instead of the linkId
-      // so the id that may contain error will be displayed.
-      if (node.data?.__$editableLinkId)
-        this.formProperty.setValue(node.data?.__$editableLinkId, false);
-      else
-        this.formProperty.setValue(this.linkId, false);
+      this.formProperty.setValue(this.linkId, false);
     }
   }
 
@@ -76,11 +69,7 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
    * @param linkId - Selected linkId
    */
   linkIdChanged(linkId: string): void {
-    if (linkId && this.linkId !== linkId && !this.errors)  {
-      this.formProperty.findRoot().getProperty('linkId').setValue(linkId, false);
-    } else if (this.errors) {
-      this.formProperty.findRoot().getProperty('__$editableLinkId').setValue(linkId, false);
-    }
+    this.formProperty.findRoot().getProperty('linkId').setValue(linkId, false);
   }
 
   /**

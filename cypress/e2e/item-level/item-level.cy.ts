@@ -9,6 +9,8 @@ const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition
 const ucumUrl = 'http://unitsofmeasure.org';
 const snomedEclText =
   '< 429019009 |Finding related to biological sex|';
+const excludedField = 'id';
+
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
   describe('Item level fields', () => {
@@ -1108,8 +1110,11 @@ describe('Home page', () => {
       cy.get('#type option:selected').should('have.text', 'decimal');
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
       cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson).to.deep.equal(fixtureJson);
+      cy.questionnaireJSON().then((qJson) => {
+        // Due to the recent change where the id is now a random id instead of a linkId,
+        // the id will have to be removed for comparison with the fixtureJson.
+        const qJsonWithoutField = CypressUtil.omitField(qJson, excludedField);
+        expect(qJsonWithoutField).to.deep.equal(fixtureJson);
       });
 
       cy.get('@units').clear();
@@ -1223,7 +1228,10 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Form with restrictions');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
+        // Due to the recent change where the id is now a random id instead of a linkId,
+        // the id will have to be removed for comparison with the fixtureJson.
+        const qJsonItemWithoutField = CypressUtil.omitField(qJson.item[0], excludedField);
+        expect(qJsonItemWithoutField).to.deep.equal(fixtureJson.item[0]);
       });
     });
 
@@ -1816,7 +1824,10 @@ describe('Home page', () => {
         cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'days');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item).to.deep.equal(fixtureJson.item);
+          // Due to the recent change where the id is now a random id instead of a linkId,
+          // the id will have to be removed for comparison with the fixtureJson.
+          const qJsonWithoutField = CypressUtil.omitField(qJson, excludedField);
+          expect(qJsonWithoutField.item).to.deep.equal(fixtureJson.item);
         });
 
         // Remove
@@ -1883,7 +1894,10 @@ describe('Home page', () => {
           cy.get('[id^="radio_Yes_observationExtract"]').should('be.checked');
 
           cy.questionnaireJSON().should((qJson) => {
-            expect(qJson.item).to.deep.equal(fixtureJson.item);
+            // Due to the recent change where the id is now a random id instead of a linkId,
+            // the id will have to be removed for comparison with the fixtureJson.
+            const qJsonItemWithoutField = CypressUtil.omitField(qJson.item, excludedField);
+            expect(qJsonItemWithoutField).to.deep.equal(fixtureJson.item);
           });
 
           // Remove
@@ -2013,6 +2027,11 @@ describe('Home page', () => {
       // Now go to the grandchild node
       cy.getTreeNode('Current Age').click();
 
+      // The 'Conditional display' field needs to be filled in to prevent an error. 
+      // (ENABLEWHEN_ANSWER_REQUIRED)
+      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
+      cy.get('[id^="enableWhen.0.operator"]').select('Not empty');
+      
       // Go to the link id section and enter the duplicate link id
       cy.editableLinkId()
         .scrollIntoView()
@@ -2020,7 +2039,7 @@ describe('Home page', () => {
         .should('have.value', '/54114-4/54139-1/54141-7');
       cy.editableLinkId()  
         .clear()
-        .type('/54114-4/54139-1');
+        .type('/54114-4');
 
       cy.displayFieldError(DUPLICATE_LINK_ID);
 
@@ -2080,6 +2099,11 @@ describe('Home page', () => {
       // Go to the grandchild node '2.4.2 Current Age'
       cy.getTreeNode('Current Age').click();
 
+      // The 'Conditional display' field needs to be filled in to prevent an error. 
+      // (ENABLEWHEN_ANSWER_REQUIRED)
+      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
+      cy.get('[id^="enableWhen.0.operator"]').select('Not empty');
+
       // Go to the link id section and enter the duplicate link id
       cy.editableLinkId()
         .scrollIntoView()
@@ -2104,6 +2128,12 @@ describe('Home page', () => {
 
       // Go to the sibling node '2.4.3 Cause of Death' and enter the duplicate link id
       cy.getTreeNode('Cause of Death').click();
+
+      // The 'Conditional display' field needs to be filled in to prevent an error. 
+      // (ENABLEWHEN_ANSWER_REQUIRED)
+      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
+      cy.get('[id^="enableWhen.0.operator"]').select('Not empty');
+
       cy.editableLinkId()
         .scrollIntoView()
         .should('be.visible')

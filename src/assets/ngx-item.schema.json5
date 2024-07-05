@@ -146,10 +146,17 @@
     },
     "linkId": {
       "description": "An identifier that is unique within the Questionnaire allowing linkage to the equivalent item in a QuestionnaireResponse resource.",
-      "title": "Link id",
-      "pattern": "^[ \\r\\n\\t\\S]+$",
       "type": "string",
-      "widget": {"id": "hidden"}
+      "title": "Link Id",
+      "pattern": "^[^\\s]+(\\s[^\\s]+)*$",
+      "maxLength": 255,
+      "widget": {
+        "id": "editable-link-id",
+        "note": "*If you change, make sure to update any places in the questionnaire that reference the linkId.",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0"
+      }
     },
     "definition": {
       "description": "This element is a URI that refers to an [[[ElementDefinition]]] that provides information about this item, including information that might otherwise be included in the instance of the Questionnaire resource. A detailed description of the construction of the URI is shown in Comments, below. If this element is present then the following element values MAY be derived from the Element Definition if the corresponding elements of this Questionnaire resource instance have no value:\n\n* code (ElementDefinition.code) \n* type (ElementDefinition.type) \n* required (ElementDefinition.min) \n* repeats (ElementDefinition.max) \n* maxLength (ElementDefinition.maxLength) \n* answerValueSet (ElementDefinition.binding)\n* options (ElementDefinition.binding).",
@@ -1467,20 +1474,7 @@
         "type": ["$EXP$ target.value != 'display'"]
       }
     },
-    "__$editableLinkId": {
-      "description": "Manually change the Link Id. The linkId has a max length of 255 characters.",
 
-      "type": "string",
-      "title": "Link Id",
-      "maxLength": 255,
-      "widget": {
-        "id": "editable-link-id",
-        "note": "*Make sure to update any places in the questionnaire that reference the linkId.",
-        "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col p-0"
-      }
-    },
     "__$units": {
       "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
       "title": "Units",
@@ -1739,17 +1733,6 @@
       "showFields": [
         {
           "field": "__$observationExtract",
-          "col": 10
-        }
-      ]
-    },
-    {
-      "fields": [
-        "__$editableLinkId"
-      ],
-      "showFields": [
-        {
-          "field": "__$editableLinkId",
           "col": 10
         }
       ]

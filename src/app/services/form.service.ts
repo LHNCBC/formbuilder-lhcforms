@@ -3,7 +3,7 @@
  */
 import {inject, Injectable, SimpleChange} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
-import {TreeModel} from '@bugsplat/angular-tree-component';
+import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
@@ -33,6 +33,19 @@ import {ExtensionsService} from './extensions.service';
 
 declare var LForms: any;
 
+export interface TreeNodeStatus{
+  id: string;
+  linkId: string;
+  hasError?: boolean;
+  childHasError?: boolean;
+  errorMessage?: string;
+  errors?: any [];
+}
+
+export type TreeNodeStatusMap = {
+  [key:string]: TreeNodeStatus;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -61,6 +74,8 @@ export class FormService {
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
+
+  treeNodeStatusMap: TreeNodeStatusMap;
 
   constructor(private modalService: NgbModal, private http: HttpClient) {
     [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
@@ -255,6 +270,183 @@ export class FormService {
     this._guidingStep$.next(step);
   }
 
+  /**
+   * Walk through the treeModel and populate the TreeNodeStatus for each of the 
+   * TreeNodes into the TreeNodeStatusMap.
+   */
+  loadTreeNodeStatusMap(): void {
+    const treeNodeStatusMap: TreeNodeStatusMap = {};
+    function recurse(node: TreeNode): void {
+      const tmp: TreeNodeStatus = {
+        id: node.id,
+        linkId: node.data.linkId
+      }
+      treeNodeStatusMap[node.id.toString()] = tmp;
+
+      if (node.hasChildren) {
+        for (const child of node.children) {
+          recurse(child);
+        }
+      }
+    }
+
+    if (!this.treeNodeStatusMap || Object.keys(this.treeNodeStatusMap).length === 0) {
+      const roots = this.treeModel.roots;
+      if (roots) {
+        for (const root of roots) {
+          recurse(root);
+        }
+      }
+
+      this.treeNodeStatusMap = treeNodeStatusMap;
+    }
+  };
+
+  /**
+   * The 'linkId' must be unique within the questionnaire. Check if the edited 'linkId'
+   * already exists in the questionnaire.
+   * @param newLinkId - linkId associated with item of the node.
+   * @returns true if the edited 'linkId' is not unique, otherwie return false.
+   */
+  isTreeNodeHasDuplicateLinkId(newLinkId: string): boolean {
+    const node = this.treeModel.getFocusedNode();
+    return Object.values(this.treeNodeStatusMap).some(item => item.linkId === newLinkId && item.id !== node.id.toString());
+  };
+
+  /** 
+   * Check if the tree node for the given id contains an error.
+   * @returns true if the tree node contains error, otherwise false.
+   */
+  isTreeNodeHasErrorById(id: string): boolean {
+    if (this.treeNodeStatusMap && this.treeNodeStatusMap[id]) {
+      const nodeHasError = ('hasError' in this.treeNodeStatusMap[id]) ? this.treeNodeStatusMap[id]['hasError'] : false;
+      const childNodeHasError = ('childHasError' in this.treeNodeStatusMap[id]) ? this.treeNodeStatusMap[id]['childHasError'] : false;
+
+      return (nodeHasError || childNodeHasError);
+    }
+    return false;
+  }
+
+  /**
+   * Check if the focus node contains an error.
+   * @returns true if the focus node contains error, otherwise false.
+   */
+  isFocusNodeHasError(): boolean {
+    if (this.treeModel) {
+      const node = this.treeModel.getFocusedNode();
+      if (node)
+        return this.isTreeNodeHasErrorById(node.id.toString());
+    }
+    return false;
+  }
+
+  /**
+   * Return the TreeNodeStatus for the given id.
+   * @param id - teee node id.
+   * @returns - TreeNodeStatus object if found, otherwise null.
+   */
+  getTreeNodeStatusById(id: string): TreeNodeStatus | null {
+    if (this.treeNodeStatusMap && (id in this.treeNodeStatusMap)) {
+      return this.treeNodeStatusMap[id];
+    }
+    return null;
+  }
+
+  /**
+   * Set the ancestor nodes' 'childHasError' status to 'false'.
+   * @param node - Ancestor node.
+   */
+  removeErrorFromAncestorNodes(node: ITreeNode): void {
+    const nodeIdStr = node.id.toString();
+
+    if (nodeIdStr in this.treeNodeStatusMap) {
+      this.treeNodeStatusMap[nodeIdStr]['childHasError'] = false;
+    }
+
+    if (node.parent && !node.isRoot &&
+        (!('childHasError' in this.treeNodeStatusMap[nodeIdStr]) || !this.treeNodeStatusMap[nodeIdStr]['childHasError'])) {
+      const siblingHasError = node.parent.children.some((n) => {
+        const siblingIdStr = n.id.toString();
+        return this.treeNodeStatusMap[siblingIdStr]['hasError'];
+      });
+
+      if (!siblingHasError)
+        this.removeErrorFromAncestorNodes(node.parent);
+    }    
+  }
+
+  /**
+   * Set the ancestor nodes' 'childHasError' status to 'true'.
+   * @param node - Ancestor node.
+   */
+  addErrorForAncestorNodes(node: ITreeNode): void {
+    const nodeIdStr = node.id.toString();
+
+    if (nodeIdStr in this.treeNodeStatusMap) {
+      this.treeNodeStatusMap[nodeIdStr]['childHasError'] = true;
+    }
+
+    // The root node may have parent, but it is not an item
+    if (node.parent && !node.isRoot) {
+      this.addErrorForAncestorNodes(node.parent);
+    }
+  }
+
+  /**
+   * Update validation status to the TreeNodeStatusMap.
+   * @param id - node id
+   * @param linkId - linkId associated with item of the node.
+   * @param errors - Null, if the validation passes. Set the 'hasError' status to 'false' 
+   *                 and the ancestor nodes' 'chilcHasError' status to 'false'.
+   *                 Array of errors if the the validation fails. Set the 'hasError' status
+   *                 to 'true' and the ancestor nodes' 'childHasError' status to 'true'.
+   *                 Also stores the array of errors objects. 
+   */
+  updateValidationStatus(id: string, linkId: string, errors: any[]): void {
+    this.treeNodeStatusMap[id]['linkId'] = linkId;
+    this.treeNodeStatusMap[id]['hasError'] = (errors) ? true : false;
+    this.treeNodeStatusMap[id]['errors'] = (errors) ? errors : null;
+
+    const node = this.getTreeNodeById(id);
+
+    if (node.parent && !node.isRoot) {
+      if (errors) {
+        this.addErrorForAncestorNodes(node.parent);
+
+      } else {
+        if (!('childHasError' in this.treeNodeStatusMap[id]) || !this.treeNodeStatusMap[id]['childHasError'])
+          this.removeErrorFromAncestorNodes(node.parent);
+      }
+    }
+
+    this.autoSaveTreeNodeStatusMap();
+  }
+
+  /**
+   * Remove TreeNodeStateMap from local storage.
+   */
+  clearAutoSavedTreeNodeStatusMap() {
+    localStorage.removeItem('treeMap');
+    this.treeNodeStatusMap = {};
+  }
+
+  /**
+   * Save tree in local storage
+   * @param fhirQ - Questionnaire
+   */
+  autoSaveTreeNodeStatusMap() {
+    this.autoSave('treeMap', this.treeNodeStatusMap);
+  }
+
+  /**
+   * Retrieve tree from the storage.
+   */
+  autoLoadTreeNodeStatusMap(): TreeNodeStatusMap {
+    let treeNodeStatusMap = this.autoLoad('treeMap');
+
+    this.treeNodeStatusMap = treeNodeStatusMap;
+    return this.treeNodeStatusMap;
+  }
 
   /**
    * Intended to collect source items for enable when logic

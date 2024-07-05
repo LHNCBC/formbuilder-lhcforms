@@ -140,7 +140,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   treeOptions: ITreeOptions = {
     displayField: 'text',
     childrenField: 'item',
-    idField: 'linkId',
     actionMapping: {
       mouse: {
         dblClick: (tree, node, $event) => {
@@ -174,6 +173,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     scrollContainer: document.documentElement // HTML
   };
   errorMessage = 'Error(s) exist in this item. The resultant form may not render properly.';
+  childErrorMessage = 'A child item, or any of its descendant of this item has an error.';
+
   @Input()
   questionnaire: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', item: []};
   itemList: any [];
@@ -214,6 +215,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   // Used to keep track of errors for the tree nodes by storing the unique link id of each item.
   errorTrackingSet = new Set<String>();
 
+  isViewInited = false;
+  isTreeNodeError = false;
+  isChildTreeNodeError = false;
+
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
    * Wait at least for two characters, 200 millis of inactivity and not the
@@ -246,9 +251,11 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngAfterViewInit() {
     this.treeOptions.scrollContainer = this.sidenavEl.nativeElement;
     this.formService.setTreeModel(this.treeComponent.treeModel);
+    this.formService.loadTreeNodeStatusMap();
     setTimeout(() => {
       this.treeComponent.treeModel.update();
     });
+    this.isViewInited = true;
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -683,30 +690,18 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   onErrorsChanged(errors: any []) {
     this.errors$.next(errors);
+  }
 
-    // Populate the tree panel on the left to show/hide error icons
-    if (this.focusNode) {
-      // There can be other errors that may or may not need to display the error icon. So 
-      // this is limited to just the DUPLICATE_LINK_ID and REQUIRED errors for now.
-      if (errors && errors.length > 0 &&
-         ( errors[0]?.code === "DUPLICATE_LINK_ID" || errors[0]?.code === "REQUIRED") ) {
-        if (!this.errorTrackingSet.has(this.focusNode.id.toString())) {
-          this.addNodeLinkIdToErrorTrackingSet(this.focusNode);
-        }
-      } else {
-        if (this.errorTrackingSet.has(this.focusNode.id.toString())) {
-          // Check if the child nodes contain errors. Only remove error icons for current node
-          // and ancestor nodes if child nodes do not have errors.
-          const childHasError = this.focusNode?.children?.some((n) => {
-            return this.errorTrackingSet.has(n.id.toString());
-          });
+  /**
+   * Handle validationErrorsChanged event from <lfb-ngx-schema-form>
+   * @param errors - Event object from <lfb-ngx-schema-form>
+   */
+  onValidationErrorsChanged(errors: any []) {
+    const nodeIdStr = this.focusNode.id.toString();
 
-          if (!childHasError) {
-            this.removeNodeLinkIdFromErrorTrackingSet(this.focusNode);
-          }
-        }
-      }
-    }
+    const nodeStatus = this.formService.getTreeNodeStatusById(nodeIdStr);
+    this.isTreeNodeError = (nodeStatus && 'hasError' in nodeStatus) ? nodeStatus['hasError'] : false;
+    this.isChildTreeNodeError = (nodeStatus && 'childHasError' in nodeStatus) ? nodeStatus['childHasError'] : false;
   }
 
   /**
@@ -870,35 +865,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @returns True if the select node contains error, otherwise false.
    */
   hasError(node: ITreeNode): boolean {
-    return this.errorTrackingSet.has(node.id.toString());
-  }
-
-  /**
-   * Remove the current and ancestor nodes link ids from the error tracking set.
-   * @param node - Selected node.
-   */
-  removeNodeLinkIdFromErrorTrackingSet(node: ITreeNode): void {
-    this.errorTrackingSet.delete(node.id.toString());
-    if (node.parent && !node.isRoot) {
-      const siblingHasError = node.parent.children.some((n) => {
-        return this.errorTrackingSet.has(n.id.toString());
-      });
-
-      if (!siblingHasError)
-        this.removeNodeLinkIdFromErrorTrackingSet(node.parent);
-    }    
-  }
-
-  /**
-   * Add the current and ancestor nodes link ids to the error tracking set.
-   * @param node - Selected node.
-   */
-  addNodeLinkIdToErrorTrackingSet(node: ITreeNode): void {
-    if (!this.errorTrackingSet.has(node.id.toString()))
-      this.errorTrackingSet.add(node.id.toString());
-    // The root node may have parent, but it is not an item
-    if (node.parent && !node.isRoot) {
-      this.addNodeLinkIdToErrorTrackingSet(node.parent);
-    }
+    if (this.isViewInited)
+      return this.formService.isTreeNodeHasErrorById(node.id.toString());
+    return false;
   }
 }

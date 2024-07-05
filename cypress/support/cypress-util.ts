@@ -212,4 +212,28 @@ export class CypressUtil {
     });
   };
 
+  /**
+   * Recursively removes a specified field from an object or an array of objects.
+   *
+   * @param obj - The input object or array of objects from which the specified field should
+   *              be removed.
+   * @param field - A string representing the name of the field to be omitted from the object(s).
+   * @returns - A new object or array of objects with the specified field removed.
+   */
+  static omitField(obj, field) {
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.omitField(item, field));
+    } else if (typeof obj === 'object' && obj !== null) {
+
+      const { [field]: _, ...newObj } = obj;
+      for (const key in newObj) {
+        if (Array.isArray(newObj[key])) {
+          newObj[key] = this.omitField(newObj[key], field);
+        }
+      }
+      return newObj;
+    }
+    return obj;
+  }
+ 
 }

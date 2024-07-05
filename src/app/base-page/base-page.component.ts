@@ -304,6 +304,8 @@ export class BasePageComponent implements OnInit {
       state = state === 'home' ? 'fl-editor' : state;
       this.formService.setGuidingStep(state);
       this.setQuestionnaire(this.formService.autoLoadForm());
+
+      this.formService.autoLoadTreeNodeStatusMap();
     }
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
@@ -327,6 +329,10 @@ export class BasePageComponent implements OnInit {
           this.setStep('fl-editor');
         });
       }, ()=>{});
+    }
+
+    if(this.startOption !== 'from_autosave') {
+      this.formService.clearAutoSavedTreeNodeStatusMap();
     }
   }
 

@@ -58,7 +58,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     },
     '/enableWhen': this.validateEnableWhenAll.bind(this),
     '/enableWhen/*': this.validateEnableWhenSingle.bind(this),
-    '/__$editableLinkId': this.validateLinkId.bind(this)
+    '/linkId': this.validateLinkId.bind(this)
   };
 
   mySchema: any = {properties: {}};
@@ -70,6 +70,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   valueChange = new EventEmitter<any>();
   @Output()
   errorsChanged = new EventEmitter<any []>();
+  @Output()
+  validationErrorsChanged = new EventEmitter<any []>();
   @Input()
   linkIdCollection = new LinkIdCollection();
   loading = false;
@@ -214,12 +216,20 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   validateLinkId (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null  {
     let errors: any[] = [];
 
-    const extensionsProp = rootProperty.getProperty('extension');
-    this.linkId = formProperty.parent.getProperty('linkId').value;
+    if (!this.model) {
+      return null;
+    }
+  
+    if (!this.linkId) {
+      this.linkId = value;
+      return null;
+    }
 
-    const changed = (this.questionnaire && this.linkId && value !== this.linkId);
+    const extensionsProp = rootProperty.getProperty('extension');
+    const changed = (value !== this.linkId);
     if (changed) {
       const editableLinkId = formProperty;
+      this.linkId = value;
 
       if (!value) {
         const errorCode = 'REQUIRED';
@@ -228,27 +238,31 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
         err.path = `#${editableLinkId.canonicalPathNotation}`;
         err.message = `Link Id is required.`;
         const valStr = "";
-        err.params = [{'linkId': this.linkId, 'editableLinkId': value}];
+        err.params = [{'linkId': value, 'id': this.model.id}];
         errors.push(err);
-      } else if (this.linkIds.has(value)) {
+      } else if (this.formService.isTreeNodeHasDuplicateLinkId(value)) {
         const errorCode = 'DUPLICATE_LINK_ID';
         const err: any = {};
         err.code = errorCode;
         err.path = `#${editableLinkId.canonicalPathNotation}`;
         err.message = `Entered linkId must be unique.`;
         const valStr = "";
-        err.params = [{'linkId': this.linkId, 'editableLinkId': value}];
+        err.params = [{'linkId': value, 'id': this.model.id}];
         errors.push(err);
       }
+
+      if(errors.length) {
+        formProperty.extendErrors(errors);
+      }
+      else {
+        errors = null;
+      }
+      this.formService.updateValidationStatus(this.model.id, value, errors);
+    } else {
+      const nodeStatus = this.formService.getTreeNodeStatusById(this.model.id);
+      errors = (nodeStatus && 'errors' in nodeStatus) ? nodeStatus['errors'] : null;
     }
-    
-    if(errors.length) {
-      formProperty.extendErrors(errors);
-    }
-    else {
-      errors = null;
-    }
-    this.errorsChanged.next(errors);
+    this.validationErrorsChanged.next(errors);
     return errors;
   }
 }

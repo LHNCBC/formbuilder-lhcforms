@@ -444,7 +444,7 @@ Cypress.Commands.add('tsUrl', () => {
  * Get input field for editable link id
  */
 Cypress.Commands.add('editableLinkId', () => {
-  return cy.get('[id^="__$editableLinkId"]');
+  return cy.get('[id="linkId"]');
 });
 
 /**
