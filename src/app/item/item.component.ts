@@ -173,6 +173,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     scrollContainer: document.documentElement // HTML
   };
   errorMessage = 'Error(s) exist in this item. The resultant form may not render properly.';
+  errorMessageLite = 'Error(s) exist in this item.';
   childErrorMessage = 'A child item, or any of its descendant of this item has an error.';
 
   @Input()
@@ -772,6 +773,18 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
           messageList.push(`has children and is collapsed.`);
         }
       }
+
+      const nodeStatus = this.formService.getTreeNodeStatusById(node.id.toString());
+      const hasTreeNodeError = (nodeStatus && 'hasError' in nodeStatus) ? nodeStatus['hasError'] : false;
+      const hasChildTreeNodeError = (nodeStatus && 'childHasError' in nodeStatus) ? nodeStatus['childHasError'] : false;
+      if (hasTreeNodeError) {
+        messageList.push(this.errorMessageLite);
+      }
+      if (hasChildTreeNodeError) {
+        messageList.push(this.childErrorMessage)
+      }
+
+
       this.liveAnnouncer.announce(messageList.join(' '));
     }
   }
