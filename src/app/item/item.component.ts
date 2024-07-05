@@ -784,7 +784,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         messageList.push(this.childErrorMessage)
       }
 
-
       this.liveAnnouncer.announce(messageList.join(' '));
     }
   }
@@ -879,7 +878,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   hasError(node: ITreeNode): boolean {
     if (this.isViewInited)
-      return this.formService.isTreeNodeHasErrorById(node.id.toString());
+      return this.formService.isTreeNodeHasErrorById(node.id.toString(), true);
     return false;
   }
 }

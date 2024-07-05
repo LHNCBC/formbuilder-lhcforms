@@ -315,14 +315,20 @@ export class FormService {
 
   /** 
    * Check if the tree node for the given id contains an error.
+   * @id - tree node id
+   * @includeChildNodes - indicates whether to include child nodes in this check.
    * @returns true if the tree node contains error, otherwise false.
    */
-  isTreeNodeHasErrorById(id: string): boolean {
+  isTreeNodeHasErrorById(id: string, includeChildNodes: boolean = true): boolean {
     if (this.treeNodeStatusMap && this.treeNodeStatusMap[id]) {
       const nodeHasError = ('hasError' in this.treeNodeStatusMap[id]) ? this.treeNodeStatusMap[id]['hasError'] : false;
-      const childNodeHasError = ('childHasError' in this.treeNodeStatusMap[id]) ? this.treeNodeStatusMap[id]['childHasError'] : false;
-
-      return (nodeHasError || childNodeHasError);
+      
+      if (includeChildNodes) {
+        const childNodeHasError = ('childHasError' in this.treeNodeStatusMap[id]) ? this.treeNodeStatusMap[id]['childHasError'] : false;
+        return (nodeHasError || childNodeHasError);
+      } else {
+        return nodeHasError;
+      }
     }
     return false;
   }
@@ -335,14 +341,14 @@ export class FormService {
     if (this.treeModel) {
       const node = this.treeModel.getFocusedNode();
       if (node)
-        return this.isTreeNodeHasErrorById(node.id.toString());
+        return this.isTreeNodeHasErrorById(node.id.toString(), false);
     }
     return false;
   }
 
   /**
    * Return the TreeNodeStatus for the given id.
-   * @param id - teee node id.
+   * @param id - tree node id.
    * @returns - TreeNodeStatus object if found, otherwise null.
    */
   getTreeNodeStatusById(id: string): TreeNodeStatus | null {
