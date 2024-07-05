@@ -13,7 +13,6 @@ import { FormService } from 'src/app/services/form.service';
 })
 export class EditableLinkIdComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
   linkId;
-  editableLinkId;
   subscriptions: Subscription[] = [];
   questionnaire;
   errorIcon = faExclamationTriangle;
@@ -30,8 +29,7 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
   ngOnInit() {
     super.ngOnInit();
  
-    this.linkId = this.extensionsService.extensionsProp.searchProperty('/linkId').value;
-    this.editableLinkId = this.extensionsService.extensionsProp.searchProperty('/editableLinkId')?.value;
+    this.linkId = this.formProperty.searchProperty('/linkId').value;
 
     if (this.linkId) {
       this.formProperty.setValue(this.linkId, false);

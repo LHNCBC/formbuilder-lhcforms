@@ -1916,7 +1916,7 @@ describe('Home page', () => {
 
   describe('Item level fields: advanced - Editable Link Id', () => {
     const REQUIRED = 'Link Id is required.';
-    const DUPLICATE_LINK_ID =  'Entered linkId must be unique.';
+    const DUPLICATE_LINK_ID =  'Entered linkId is already used.';
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;

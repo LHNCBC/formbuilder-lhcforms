@@ -516,23 +516,5 @@ export class Util {
     return ret;
   }
 
-  /**
-   * Loop through questionnaire items and retrieve the linkId
-   * @param items - Quesionnaire items.
-   * @return - A set of unique link ids.
-   */
-  static getLinkIdsAsSet(items): Set<string> {
-    const ids: Set<string> = new Set();
-    function recurse(items): void {
-      for (const item of items) {
-        ids.add(item.linkId);
-        if (item.item && item.item.length > 0) {
-          recurse(item.item);
-        }
-      }
-    }
-    recurse(items);
-    return ids;
-  };
 
 }

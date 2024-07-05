@@ -279,7 +279,7 @@ export class FormService {
     function recurse(node: TreeNode): void {
       const tmp: TreeNodeStatus = {
         id: node.id,
-        linkId: node.data.linkId
+        linkId: (node.data.linkId) ? node.data.linkId : ''
       }
       treeNodeStatusMap[node.id.toString()] = tmp;
 

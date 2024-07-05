@@ -78,7 +78,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
   questionnaire;
   linkId;
-  linkIds;
 
   constructor(private extensionsService: ExtensionsService,
               private formService: FormService,
@@ -91,8 +90,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     // unique link ids as a result.
     this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
-      if (this.questionnaire)
-        this.linkIds = Util.getLinkIdsAsSet(this.questionnaire.item);
     });
   }
 
@@ -237,7 +234,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
         err.code = errorCode;
         err.path = `#${editableLinkId.canonicalPathNotation}`;
         err.message = `Link Id is required.`;
-        const valStr = "";
         err.params = [{'linkId': value, 'id': this.model.id}];
         errors.push(err);
       } else if (this.formService.isTreeNodeHasDuplicateLinkId(value)) {
@@ -245,8 +241,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
         const err: any = {};
         err.code = errorCode;
         err.path = `#${editableLinkId.canonicalPathNotation}`;
-        err.message = `Entered linkId must be unique.`;
-        const valStr = "";
+        err.message = `Entered linkId is already used.`;
         err.params = [{'linkId': value, 'id': this.model.id}];
         errors.push(err);
       }
