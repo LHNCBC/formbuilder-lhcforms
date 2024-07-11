@@ -7,7 +7,7 @@ import {ExtensionsService} from '../../../services/extensions.service';
 import {TerminologyServerComponent} from '../terminology-server/terminology-server.component';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
-
+import {Util} from '../../util';
 
 @Component({
   selector: 'lfb-answer-value-set',
@@ -23,7 +23,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields).';
   
   eclHelpContent = `See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
-                   `href="https://confluence.ihtsdotools.org/display/DOCECL?">ECL documentation</a> for more information, or ` +
+                   `href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or ` +
                    `try the ECL Builder in the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
                    `href="https://browser.ihtsdotools.org/?perspective=full&languages=en">SNOMED CT Browser</a>. ` +
                    `In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.`
@@ -227,5 +227,14 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
         sub.unsubscribe();
       }
     });
+  }
+
+  /**
+   * Clean up the ARIA label by removing the anchor tags (<a> and </a>) from a given string and replacing them with a specified string.
+   * @param input - the input string potentially including anchor tags.
+   * @returns - string with the anchor tags removed.
+   */
+  getURLFreeAriaLabel(input: string): string {
+    return Util.removeAnchorTagFromString(input, 'Link:', 'before'); 
   }
 }

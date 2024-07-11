@@ -21,7 +21,7 @@
     <div class="row m-0 align-items-center">
       <label  class="col-3 ps-0 col-form-label">Enter SNOMED ECL
         <div tabindex="0" class="btn border-0 p-0 b-0" [ngbTooltip]="eclHelp" tooltipClass="custom-tooltip-class"
-            container="body" triggers="manual" [attr.aria-label]="'Tooltip for ECL: ' + eclHelpContent" tablindex="0"
+            container="body" triggers="manual" [attr.aria-label]="getURLFreeAriaLabel('Tooltip for ECL: ' + eclHelpContent)" tablindex="0"
             #eclTooltip 
             (mouseover)="eclTooltipOpen()"
             (focus)="eclTooltipOpen()"

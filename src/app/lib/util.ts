@@ -516,4 +516,24 @@ export class Util {
     return ret;
   }
 
+
+  /**
+   * Removes the anchor tags (<a> and </a>) from a given string and replaces them with a specified string.
+   * @param str - the input string that potentiallly including anchor tags.
+   * @param replaceWith - string to insert of the removed anchor tag.
+   * @param position - defines whether to insert the replace string 'before' or 'after' the replacement string.
+   * @returns - a new string with the anchor tags removed and replaced according to the specified position.
+   */
+  static removeAnchorTagFromString(str, replaceWith, position = 'after'): string | null {
+    const regex = /<a[^>]*>(.*?)<\/a>/g;
+    let replacement;
+
+    if (position === 'before') {
+      replacement = replaceWith + '$1';
+    } else {
+      replacement = '$1' + replaceWith;
+    }
+
+    return str.replace(regex, replacement);
+  }
 }
