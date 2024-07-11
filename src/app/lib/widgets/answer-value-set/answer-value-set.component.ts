@@ -21,6 +21,12 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   static snomedTerminologyServer = 'https://snowstorm.ihtsdotools.org/fhir';
   static snomedTSHint = 'Note that this option also sets the terminology server option below (under "Advanced fields").';
   static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields).';
+  
+  eclHelpContent = `See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
+                   `href="https://confluence.ihtsdotools.org/display/DOCECL?">ECL documentation</a> for more information, or ` +
+                   `try the ECL Builder in the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
+                   `href="https://browser.ihtsdotools.org/?perspective=full&languages=en">SNOMED CT Browser</a>. ` +
+                   `In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.`
   faInfo = faInfoCircle;
   @ViewChild('eclTooltip', {read: NgbTooltip}) eclTooltip: NgbTooltip;
   snomedEditions: SNOMEDEditions = null;

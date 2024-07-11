@@ -1,23 +1,26 @@
 .tooltip-inner a:link {
-  color: rgb(85, 115, 235);
+  color: blue;
   text-decoration: underline;
 }
 
 .tooltip-inner a:visited {
-  color: rgb(166, 80, 220);
+  color: purple;
   text-decoration: underline;
 }
 
 .tooltip-inner a:hover {
-  color: rgb(32, 197, 98);
+  color: red;
   text-decoration: underline;
 }
 
+.tooltip-inner {
+  text-align: left;
+}
+
 .custom-tooltip-class {
-  background-color: #555;
-  color: #555;
-  border: #555;
-  font-size:13px;
+  font-size: 13px;
+  font-weight: 400;
+  border: 1px black solid;
 }
 
 .tooltip.show {
@@ -26,9 +29,52 @@
 }
 
 .tooltip-inner {
-  background-color: #555;
+  background-color: lightyellow;
+  color: black;
 }
 
-.tooltip {
-  --bs-tooltip-bg: #555;
+.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow::before,
+.bs-tooltip-bottom .tooltip-arrow::before {
+  border-bottom-color: black  !important;
+}
+
+.bs-tooltip-bottom .tooltip-arrow {
+  top: -8px;
+}
+
+.bs-tooltip-top .tooltip-arrow::before {
+  border-top-color: black  !important;
+}
+
+.bs-tooltip-top .tooltip-arrow {
+  bottom: -8px;
+}
+
+.tooltip .tooltip-arrow {
+  display: block;
+
+  width: var(--bs-tooltip-arrow-width);
+  height: var(--bs-tooltip-arrow-height);
+}
+
+.bs-tooltip-bottom .tooltip-arrow::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    border-width: 0 .4rem .4rem;
+    transform: translateY(2px);
+    border-color: transparent;
+    border-style: solid;
+    border-bottom-color: lightyellow;
+}
+
+.bs-tooltip-top .tooltip-arrow::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  border-width: 0 .4rem .4rem;
+  transform: translateY(-2px) rotate(180deg);
+  border-color: transparent;
+  border-style: solid;
+  border-bottom-color: lightyellow;
 }
