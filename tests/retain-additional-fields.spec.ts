@@ -26,7 +26,7 @@ test.describe('retain-additional-fields', async () => {
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(testFile);
 
-    await expect(page.locator('input#title')).toHaveValue('Container example');
+    await expect(page.locator('input#title')).toHaveValue('Contained example');
     await page.getByRole('button', {name: 'Preview'}).click();
     await page.getByText('View Questionnaire JSON').click();
     const json = JSON.parse(await page.locator('mat-tab-body pre').innerText());

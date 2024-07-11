@@ -6,25 +6,23 @@
         "id": "p1",
         "name": [
           {
-            "family": "Person",
+            "family": "Doe",
             "given": [
-              "Patricia"
+              "John"
             ]
           }
         ]
       }
     ],
-    "id": "container-example-2-quest",
-    "url": "https://aphp.fr/ig/fhir/eds/Questionnaire/container-example-2-quest",
-    "name": "ContainerQuestExample",
-    "title": "Container example",
+    "id": "example-1",
+    "url": "https://example.com/base/Questionnaire/contained-example.json",
+    "name": "contained-example",
+    "title": "Contained example",
     "status": "draft",
-    "date": "2023-11-01T12:11:21.000Z",
     "item": [
       {
-        "linkId": "F_MATER_001661",
-        "text": "Grossesse suivie au diagnostic prénatal",
-        "type": "boolean"
+        "linkId": "l1",
+        "text": "Item 1"
       }
     ]
 }
