@@ -1,0 +1,29 @@
+{
+    "resourceType": "Questionnaire",
+    "contained": [
+      {
+        "resourceType": "Practitioner",
+        "id": "p1",
+        "name": [
+          {
+            "family": "Doe",
+            "given": [
+              "John"
+            ]
+          }
+        ]
+      }
+    ],
+    "id": "example-1",
+    "url": "https://example.com/base/Questionnaire/contained-example.json",
+    "name": "contained-example",
+    "title": "Contained example",
+    "status": "draft",
+    "item": [
+      {
+        "linkId": "l1",
+        "text": "Item 1"
+      }
+    ]
+}
+
