@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.2] 2024-07-11
+### Changed
+- Changed tooltip font, background and link colors.
+- Updated the tooltip text to be read by screen reader.
+
 ## [9.6.1] 2024-06-17
 ### Changed
 - Update @lhncbc/ngx-schema-form to address a performance issue.
