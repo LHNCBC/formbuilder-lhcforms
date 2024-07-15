@@ -112,13 +112,11 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   }
 
   /**
-   * Handle onBlur event.
+   * Handle onChange event.
    * @param event - DOM event object
    */
-  onEclBlur(event: Event) {
-    if(this.snomedUrl) {
-      this.setSNOMEDTerminologyServer(true);
-    }
+  onEclChange(event: Event) {
+    this.setSNOMEDTerminologyServer(!!this.snomedUrl);
   }
 
   /**
@@ -137,7 +135,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     } else {
       this.extensionService.removeExtension((ext) => {
         return ext.value.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
-                 && ext.value.valueUrl === AnswerValueSetComponent.snomedTerminologyServer;
+                  && ext.value.valueUrl === AnswerValueSetComponent.snomedTerminologyServer;
       });
     }
   }

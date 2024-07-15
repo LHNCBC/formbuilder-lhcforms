@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.3] 2024-07-15
+### Fixed
+- Fixed the issue where the 'Terminology server' field was not refreshed when the 'SNOMED answer value set' option was selected and the ECL field changed.
+
 ## [9.6.2] 2024-07-03
 ### Changed
 - Fix a bug to retain contained field in Questionnaire.

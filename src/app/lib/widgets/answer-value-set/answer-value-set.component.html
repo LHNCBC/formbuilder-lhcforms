@@ -30,7 +30,7 @@
              [name]="name+'_ecl'"
              [ngModel]="snomedFhirVS"
              (ngModelChange)="onEclUpdate($event)"
-             (blur)="onEclBlur($event)"
+             (change)="onEclChange($event)"
              class="col form-control form-control-sm"
              [attr.id]="id+'_ecl'"
              placeholder="Enter SNOMED ECL">
