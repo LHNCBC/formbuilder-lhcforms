@@ -30,13 +30,13 @@
       <div class="col input-group input-group-sm px-0">
         <span class="input-group-text">ecl/</span>
         <input type="text"
-            [name]="name+'_ecl'"
-            [ngModel]="snomedFhirVS"
-            (ngModelChange)="onEclUpdate($event)"
-            (blur)="onEclBlur($event)"
-            class="col form-control form-control-sm"
-            [attr.id]="id+'_ecl'"
-            placeholder="Enter SNOMED ECL">
+             [name]="name+'_ecl'"
+             [ngModel]="snomedFhirVS"
+             (ngModelChange)="onEclUpdate($event)"
+             (change)="onEclChange($event)"
+             class="col form-control form-control-sm"
+             [attr.id]="id+'_ecl'"
+             placeholder="Enter SNOMED ECL">
       </div>
     </div>
     <div class="row m-0 align-items-center">
