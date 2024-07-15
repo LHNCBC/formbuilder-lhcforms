@@ -4,6 +4,8 @@ import {JsonPointer} from "json-ptr";
 import {format, parseISO} from 'date-fns';
 
 export class CypressUtil {
+
+  static lformsLibs = new Map();
   /**
    * Access base page component
    * @returns {Cypress.Chainable<Subject>}
@@ -153,6 +155,40 @@ export class CypressUtil {
       console.log(`cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`);
       req.reply({fixture});
     });
+  }
+
+  /**
+   * Cache calls to https://lhcforms-static to load LForms libraries.
+   */
+  static mockLFormsLoader() {
+    const lformsLibUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
+    cy.intercept(lformsLibUrl, async (req) => {
+      if(CypressUtil.lformsLibs.has(req.url)) {
+        console.log(`LForms versions from cached response for ${req.url}`);
+        req.reply(CypressUtil.lformsLibs.get(req.url));
+      }
+      else {
+        req.continue((res) => {
+            CypressUtil.lformsLibs.set(req.url, res.body);
+            console.log(`LForms versions after call through to ${req.url}`);
+            res.send({body: res.body});
+
+        });
+      }
+    }).as('lformsVersions');
+
+    cy.intercept(lformsLibUrl+'**/@(webcomponent|fhir)/*.@(js|css)', async (req) => {
+      if(CypressUtil.lformsLibs.has(req.url)) {
+        console.log(`LForms libraries from cache for ${req.url}`);
+        req.reply(CypressUtil.lformsLibs.get(req.url));
+      }
+      else {
+        req.continue((res) => {
+            CypressUtil.lformsLibs.set(req.url, res.body);
+            console.log(`LForms libraries after call through to ${req.url}`);
+        });
+      }
+    }).as('lformsLib');
   }
 
   /**

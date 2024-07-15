@@ -17,20 +17,20 @@ describe('Home page accept Terms of Use notices', () => {
   describe('Loading LForms', () => {
     it('should display error message on lforms loading error', () => {
       // Simulate error condition.
-      cy.intercept({method: 'GET', url: /^https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions(\/[.0-9]+)?/, times: 4},
+      cy.intercept({method: 'GET', url: /^https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions\//},
         (req) => {
-          console.log(`request url: ${req.url}`);
+          console.log(`Intercepted in 'loadingError' request url: ${req.url}`);
           req.reply(404, 'File not found!');
-        });
+        }).as('loadingError');
 
-      cy.visit('/')
+      cy.visit('/'); // Avoid goToHomePage(), which intercepts lforms loading calls of its own.
       cy.acceptAllTermsOfUse();
-      cy.get('.card').as('errorCard').contains('.card-header', 'Error');
+      cy.get('.card').as('errorCard').contains('.card-header', 'Error', {timeout: 10000});
       cy.get('@errorCard').find('.card-body').should('include.text', 'Encountered an error which causes');
     });
 
     it('should not display error after loading LForms', () => {
-      cy.visit('/')
+      cy.goToHomePage();
       cy.acceptAllTermsOfUse();
       cy.window().should('have.property', 'LForms');
       cy.window().its('LForms.lformsVersion').should('match', /^[0-9]+\.[0-9]+\.[0-9]+$/);
@@ -54,8 +54,12 @@ describe('Home page accept Terms of Use notices', () => {
     cy.get('@loinc').click();
     cy.get('@accept').should('be.enabled').click();
 
-    cy.loincAccepted().should('equal', 'true');
-    cy.snomedAccepted().should('equal', 'true');
+    cy.getLocalStorageItem('acceptedTermsOfUse')
+      .should((x) => {
+        const acceptedTermsOfUse = JSON.parse(x);
+        expect(acceptedTermsOfUse.acceptedLoinc).to.be.true;
+        expect(acceptedTermsOfUse.acceptedSnomed).to.be.true;
+      });
 
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
@@ -71,8 +75,10 @@ describe('Home page accept Terms of Use notices', () => {
   it('should not find SNOMED CT functionality after accepting only LOINC terms of use.', () => {
     cy.goToHomePage();
     cy.acceptLoincOnly();
-    cy.loincAccepted().should('equal', 'true');
-    cy.snomedAccepted().should('equal', 'false');
+    cy.getSessionStorageItem('acceptedLoinc')
+      .should('equal', 'true');
+    cy.getSessionStorageItem('acceptedSnomed')
+      .should('equal', 'false');
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();

@@ -50,6 +50,7 @@ Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
  * Visit home page and assert LForms, but do not deal with LOINC notice.
  */
 Cypress.Commands.add('goToHomePage', () => {
+  CypressUtil.mockLFormsLoader();
   cy.visit('/');
   cy.window().should('have.property', 'LForms');
 });
@@ -76,18 +77,22 @@ Cypress.Commands.add('acceptLoincOnly', () => {
  */
 Cypress.Commands.add('clearSession',() => {
   cy.window()
+    .its('localStorage')
+    .invoke('clear');
+  cy.window()
     .its('sessionStorage')
     .invoke('clear');
 });
 
 
 /**
- * Check if loinc notice is accepted. Used to avoid invoking
- * element locator when restarting stopped tests in cy-open.
+ * Get an item from local storage.
  */
-Cypress.Commands.add('loincAccepted',() => {
-  return cy.getSessionStorageItem('acceptedLoinc');
+Cypress.Commands.add('getLocalStorageItem',(item) => {
+  return cy.window()
+    .its('localStorage').invoke('getItem', item);
 });
+
 
 /**
  * Get an item from session storage.
@@ -97,10 +102,6 @@ Cypress.Commands.add('getSessionStorageItem',(item) => {
     .its('sessionStorage').invoke('getItem', item);
 });
 
-
-Cypress.Commands.add('snomedAccepted',() => {
-  return cy.getSessionStorageItem('acceptedSnomed');
-});
 
 
 /**

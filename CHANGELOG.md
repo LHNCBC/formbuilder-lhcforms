@@ -2,10 +2,34 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.4.3] 2024-05-31
+## [9.6.3] 2024-07-15
 ### Fixed
-- Fixed the issue where the 'Terminology server' field was not refreshed when
-  the 'SNOMED answer value set' option was selected and the ECL field changed.
+- Fixed the issue where the 'Terminology server' field was not refreshed when the 'SNOMED answer value set' option was selected and the ECL field changed.
+
+## [9.6.2] 2024-07-03
+### Changed
+- Fix a bug to retain contained field in Questionnaire.
+
+## [9.6.1] 2024-06-17
+### Changed
+- Update @lhncbc/ngx-schema-form to address a performance issue.
+
+## [9.6.0] 2024-06-06
+### Changed
+- Accept terms of use only once a week.
+
+## [9.5.1] 2024-06-04
+### Added
+- Added sequence numbers to questions in conditional display source field. (Thanks to @ghaliouss)
+
+## [9.5.0] 2024-06-04
+### Changed
+- Upgraded to angular 17.
+
+## [9.4.3] 2024-06-04
+### Added
+- Feature to add a copy of a selected node of a questionnaire item tree
+  (contributed by @ghaliouss).
 
 ## [9.4.2] 2024-05-08
 ### Added
