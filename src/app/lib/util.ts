@@ -11,7 +11,11 @@ import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
 
 export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
-
+export enum FHIR_VERSIONS {
+  R4,
+  STU3
+};
+export type FHIR_VERSION_TYPE = keyof typeof FHIR_VERSIONS;
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
   static helpItemTemplate = {

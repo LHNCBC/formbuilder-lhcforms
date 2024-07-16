@@ -5,7 +5,8 @@ import {defer, from, Observable} from 'rxjs';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../fhir';
 import {FormService} from './form.service';
-import {map} from 'rxjs/operators';
+import {catchError, map} from 'rxjs/operators';
+import {HttpErrorResponse, HttpClient, HttpResponse} from "@angular/common/http";
 
 export interface FHIRServer {
   // resultsOffset: number;
@@ -66,6 +67,7 @@ export class FhirService {
   currentServer: FHIRServer;
   smartClient: Client;
   formService = inject(FormService);
+  httpClient: HttpClient = inject<HttpClient>(HttpClient);
   constructor() {
     // this.smartClient = FHIR.client(window.location.href+'fhir-api');
     this.setFhirServer(this.fhirServerList[0]);
@@ -261,4 +263,26 @@ export class FhirService {
       return server.endpoint === endpoint;
     });
   }
+
+  getValidationErrorsBak(questionnaire: fhir.Questionnaire): Observable<any> {
+    return this.promiseToObservable(this.smartClient.request<fhir.Resource>({
+      url: 'Questionnaire/$validate',
+      headers: {'Content-Type': 'application/json'},
+      method: 'POST',
+      body: JSON.stringify(questionnaire)
+    })).pipe(catchError((res: HttpErrorResponse) => {
+      console.log(res.error);
+      return res.error.issue;
+    }));
+  }
+
+  getValidationErrors(questionnaire: fhir.Questionnaire): Observable<fhir.OperationOutcomeIssue[]> {
+    return this.httpClient.post<fhir.OperationOutcome>(
+      this.currentServer.endpoint+'/Questionnaire/$validate', JSON.stringify(questionnaire, null, 2),
+      {headers: {'Content-Type': 'application/fhir+json'},
+        observe: 'body',responseType: 'json'})
+      .pipe(map((outcome) => { return outcome.issue;}));
+  }
+
+
 }

@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.3] 2024-07-10
+### Added
+- Use $validate API on FHIR server to validate Questionnaire.
+
 ## [9.6.2] 2024-07-03
 ### Changed
 - Fix a bug to retain contained field in Questionnaire.

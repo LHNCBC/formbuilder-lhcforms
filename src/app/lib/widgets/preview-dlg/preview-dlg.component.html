@@ -4,7 +4,7 @@
    </button>
 </h2>
 <mat-dialog-content class="lfb-mat-tab-content">
-  <mat-tab-group [mat-stretch-tabs]="true">
+  <mat-tab-group [mat-stretch-tabs]="true" [selectedIndex]="activeTopLevelTabIndex" (selectedIndexChange)="activeTopLevelTabIndex=$event">
     <mat-tab label="View Rendered Form">
       <ng-template matTabContent>
         <div>
@@ -17,20 +17,37 @@
           <small class="float-sm-end fw-bold">LForms version: {{formService.lformsVersion}}</small>
           <div>&nbsp;</div> <!-- Needed to float the above div -->
         </div>
-        <div *ngIf="lformsErrors" class="card bg-danger-subtle text-center">{{lformsErrors}}</div>
+        <ng-container *ngIf="lformsErrors">
+          <div class="card bg-danger-subtle text-center">{{lformsErrors}}</div>
+          <ng-container *ngTemplateOutlet="validations"></ng-container>
+        </ng-container>
         <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options" (onError)="handleLFormsError($event)"></wc-lhc-form>
       </ng-template>
     </mat-tab>
     <mat-tab>
       <ng-template matTabLabel>
-        View Questionnaire JSON
+        View/Validate Questionnaire JSON
       </ng-template>
       <ng-template matTabContent>
-        <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false">
+        <nav class="navbar">
+          <div class="btn-group-sm" ngbDropdown role="group" aria-label="Run Validation">
+            <button id="btnGroupDrop1" type="button" class="btn btn-sm btn-secondary m-1 dropdown-toggle" ngbDropdownToggle>
+              Run Validation
+            </button>
+            <div class="dropdown-menu" ngbDropdownMenu>
+              <button ngbDropdownItem type="button" (click)="runValidations('R4')">On R4 version</button>
+              <button ngbDropdownItem type="button" (click)="runValidations('STU3')">On STU3 version</button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-secondary m-1" [cdkCopyToClipboard]="format">Copy to clipboard</button>
+        </nav>
+        <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false"
+                       [selectedIndex]="activeFormatTabIndex" (selectedIndexChange)="activeFormatTabIndex=$event">
           <ng-container *ngFor="let fmt of ['R4', 'STU3']">
             <mat-tab>
               <ng-template matTabLabel>{{ fmt }} Version</ng-template>
               <ng-template matTabContent>
+                <ng-container *ngTemplateOutlet="validations"></ng-container>
                 <pre class="fix-pre {{fmt}}">{{ formService.convertFromR4(data?.questionnaire, fmt) | json }}</pre>
               </ng-template>
             </mat-tab>
@@ -44,3 +61,25 @@
   <button class="btn btn-primary" (click)="close()">Close</button>
 </mat-dialog-actions>
 
+<ng-template #validations>
+  @if(validationErrors?.length > 0) {
+    <div ngbAccordion>
+      <div ngbAccordionItem [collapsed]="false">
+        <h2 ngbAccordionHeader>
+          <button ngbAccordionButton class="btn btn-sm text-danger p-2">Validation errors</button>
+        </h2>
+        <div ngbAccordionCollapse>
+          <div ngbAccordionBody class="p-0">
+            <ng-template>
+              <div class="card bg-danger-subtle p-2">
+                @for(error of validationErrors; track $index) {
+                  <li>{{error}}</li>
+                }
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</ng-template>
