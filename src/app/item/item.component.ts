@@ -174,7 +174,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   };
   errorMessage = 'Error(s) exist in this item. The resultant form may not render properly.';
   errorMessageLite = 'Error(s) exist in this item.';
-  childErrorMessage = 'A child item, or any of its descendant of this item has an error.';
+  childErrorMessage = 'A child item or one of its descendants has an error.';
 
   @Input()
   questionnaire: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', item: []};
@@ -212,9 +212,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   devMode = !environment.production;
   contextMenuActive = false;
   treeFirstFocus = false;
-
-  // Used to keep track of errors for the tree nodes by storing the unique link id of each item.
-  errorTrackingSet = new Set<String>();
 
   isViewInited = false;
   isTreeNodeError = false;
@@ -302,7 +299,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       if(node) {
         this.treeComponent.treeModel.setFocusedNode(node);
         this.treeComponent.treeModel.setActiveNode(node, true);
-        this.setNode(node);
+        this.setNode(node, true);
       }
     }
     else {
@@ -372,13 +369,23 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   /**
    * Set selected node, typically invoked when user clicks a node on the tree.
    * @param node - Selected node.
+   * @param checkForEmptyLinkId - A flg that indiciates whether to validate for an empty 'linkId'. 
+   *                              If set to 'true', the function will check if the 'linkId' is empty and
+   *                              assign a default value. If set to 'false', the validation will be skipped.  
    */
-  setNode(node: ITreeNode): void {
+  setNode(node: ITreeNode, checkForEmptyLinkId: boolean = false): void {
     this.startTime = Date.now();
     this.focusNode = node;
     this.itemData = this.focusNode ? this.focusNode.data : null;
-    if(this.focusNode && this.focusNode.data
-      && (!this.focusNode.data.linkId || typeof this.focusNode.data.linkId  === 'number')) {
+
+    /*
+      The 'checkForEmptyLinkId' is only set to true when there is a change to the 'linkId' and 
+      only in that situation that the default linkId will be assigned if the 'linkId' is empty.
+      So in the case where the 'linkId' is intentionally blanked out, it will not remain that way 
+      when the field is in focus again.
+    */
+    if(this.focusNode?.data && checkForEmptyLinkId
+      && (this.focusNode.data.linkId === undefined || typeof this.focusNode.data.linkId  === 'number')) {
       this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
     }
     this.treeService.nodeFocus.next(node);
@@ -447,8 +454,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
       this.treeComponent.treeModel.update();
       this.treeComponent.treeModel.focusNextNode();
-      this.setNode(this.treeComponent.treeModel.getFocusedNode());
-      document.getElementById('text').focus();
+      this.setNode(this.treeComponent.treeModel.getFocusedNode(), true);
+      this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId.toString());
       this.stopSpinner();
     });
   }
@@ -602,6 +609,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         this.treeComponent.treeModel.setFocusedNode(nextFocusedNode);
       }
       // Remove the node and update the tree.
+      this.formService.deleteTreeNodeStatus(this.focusNode.id.toString());
+
       this.focusNode.parent.data.item.splice(index, 1);
       this.treeComponent.treeModel.update();
       // Set the model for item editor.
@@ -691,6 +700,14 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   onErrorsChanged(errors: any []) {
     this.errors$.next(errors);
+
+    if (!this.focusNode)
+      return;
+    const nodeIdStr = this.focusNode.id.toString();
+    const nodeStatus = this.formService.getTreeNodeStatusById(nodeIdStr);
+
+    this.isTreeNodeError = (nodeStatus && 'hasError' in nodeStatus) ? nodeStatus['hasError'] : false;
+    this.isChildTreeNodeError = (nodeStatus && 'childHasError' in nodeStatus) ? nodeStatus['childHasError'] : false;
   }
 
   /**

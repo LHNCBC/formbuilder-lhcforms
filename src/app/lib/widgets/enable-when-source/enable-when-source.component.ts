@@ -96,6 +96,14 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
         this.formProperty.setValue(source.data.linkId, true);
         // Set answer type input
         this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
+      } else {
+        /*
+          In cases where the 'linkId' is invalid, the source is undefined, causing the
+          validation to throw an error for the 'EnableWhen' field. To solve this issue,
+          the value is set to blank and the '__$answerType' is default to 'string'.
+        */
+        this.formProperty.setValue('', true);
+        this.formProperty.searchProperty('__$answerType').setValue('string', true);
       }
     }
   }

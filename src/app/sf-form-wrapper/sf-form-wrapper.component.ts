@@ -113,7 +113,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    */
   updateValue(value) {
     if(!this.loading) { // Avoid emitting the changes while loading.
-      // console.log('sf-form.onChange() emitted:');
       this.valueChange.emit(value);
     }
   }
@@ -176,6 +175,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const op = formProperty.getProperty('operator');
     const aField = Util.getAnswerFieldName(aType || 'string');
     const answerX = formProperty.getProperty(aField);
+    const linkIdProperty = formProperty.findRoot().getProperty('linkId');
+
     let errors: any[] = [];
     if((q?.value?.trim().length > 0) && op?.value.length > 0) {
       const aValue = answerX?.value;
@@ -200,6 +201,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     else {
       errors = null;
     }
+
+    if (this.model && linkIdProperty) {
+      this.formService.updateValidationStatus(this.model.id, linkIdProperty.value, 'enableWhen', errors);
+    }
     return errors;
   }
 
@@ -216,12 +221,13 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     if (!this.model) {
       return null;
     }
-  
-    if (!this.linkId) {
+
+    if (this.linkId === undefined && value === '') {
       this.linkId = value;
       return null;
     }
 
+    const prevLinkId = this.linkId;
     const extensionsProp = rootProperty.getProperty('extension');
     const changed = (value !== this.linkId);
     if (changed) {
@@ -234,16 +240,27 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
         err.code = errorCode;
         err.path = `#${editableLinkId.canonicalPathNotation}`;
         err.message = `Link Id is required.`;
-        err.params = [{'linkId': value, 'id': this.model.id}];
+        err.params = [{'linkId': prevLinkId, 'id': this.model.id}];
         errors.push(err);
-      } else if (this.formService.isTreeNodeHasDuplicateLinkId(value)) {
-        const errorCode = 'DUPLICATE_LINK_ID';
-        const err: any = {};
-        err.code = errorCode;
-        err.path = `#${editableLinkId.canonicalPathNotation}`;
-        err.message = `Entered linkId is already used.`;
-        err.params = [{'linkId': value, 'id': this.model.id}];
-        errors.push(err);
+      } else {
+        if (this.formService.treeNodeHasDuplicateLinkId(value)) {
+          const errorCode = 'DUPLICATE_LINK_ID';
+          const err: any = {};
+          err.code = errorCode;
+          err.path = `#${editableLinkId.canonicalPathNotation}`;
+          err.message = `Entered linkId is already used.`;
+          err.params = [{'linkId': value, 'id': this.model.id}];
+          errors.push(err);
+        }
+        if (value.length > 255) {
+          const errorCode = 'MAX_LENGTH';
+          const err: any = {};
+          err.code = errorCode;
+          err.path = `#${editableLinkId.canonicalPathNotation}`;
+          err.message = `LinkId cannot exceeds 255 characters.`;
+          err.params = [{'linkId': value, 'id': this.model.id, 'field': 'linkId'}];
+          errors.push(err);
+        }
       }
 
       if(errors.length) {
@@ -252,10 +269,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       else {
         errors = null;
       }
-      this.formService.updateValidationStatus(this.model.id, value, errors);
+      this.formService.updateValidationStatus(this.model.id, value, 'linkId', errors);
     } else {
       const nodeStatus = this.formService.getTreeNodeStatusById(this.model.id);
-      errors = (nodeStatus && 'errors' in nodeStatus) ? nodeStatus['errors'] : null;
+      errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;
     }
     this.validationErrorsChanged.next(errors);
     return errors;

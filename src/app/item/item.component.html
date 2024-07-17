@@ -37,7 +37,7 @@
                 <div [ngClass]="node.nodeClass" class="d-flex" #tooltip="matTooltip" [matTooltip]="node.displayField">
                   <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span>
                   <span aria-hidden="true" class="text-truncate flex-fill node-display-field" [ngClass]="node.nodeClass">{{node.displayField}}</span>
-                  <fa-icon id="error" [hidden]="!hasError(node)" [icon]="errorIcon" style="color: red" aria-hidden="!!errors"></fa-icon>&nbsp;
+                  <fa-icon id="error" *ngIf="hasError(node)" [icon]="errorIcon" style="color: red" aria-hidden="!!errors"></fa-icon>&nbsp;
                   <ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container>
                 </div>
               </ng-template>

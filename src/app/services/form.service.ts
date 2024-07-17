@@ -30,8 +30,13 @@ import {GuidingStep, Util} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 declare var LForms: any;
+
+export interface ErrorNode {
+  [fieldName:string]: any [];
+}
 
 export interface TreeNodeStatus{
   id: string;
@@ -39,7 +44,7 @@ export interface TreeNodeStatus{
   hasError?: boolean;
   childHasError?: boolean;
   errorMessage?: string;
-  errors?: any [];
+  errors?: ErrorNode;
 }
 
 export type TreeNodeStatusMap = {
@@ -77,7 +82,7 @@ export class FormService {
 
   treeNodeStatusMap: TreeNodeStatusMap;
 
-  constructor(private modalService: NgbModal, private http: HttpClient) {
+  constructor(private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
     [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
       if(!obj.schema.definitions) {
         obj.schema.definitions = {};
@@ -303,14 +308,41 @@ export class FormService {
   };
 
   /**
+   * Add Tree Node Status for error tracking when an item is added to the Questionnaire
+   * @param id - tree node id
+   * @param linkId - linkId associated with item of the node.
+   */
+  addTreeNodeStatus(id: string, linkId: string): void {
+    if (!(id in this.treeNodeStatusMap)) {
+      const tmp: TreeNodeStatus = {
+        id: id,
+        linkId: (linkId) ? linkId : ''
+      }
+      this.treeNodeStatusMap[id] = tmp;
+    }
+  };
+
+  /**
+   * Remove the Tree Node Status from error tracking when the item is deleted.
+   * @param id - tree node id
+   */
+  deleteTreeNodeStatus(id: string): void {
+    delete this.treeNodeStatusMap[id];
+  }
+
+  /**
    * The 'linkId' must be unique within the questionnaire. Check if the edited 'linkId'
    * already exists in the questionnaire.
    * @param newLinkId - linkId associated with item of the node.
    * @returns true if the edited 'linkId' is not unique, otherwie return false.
    */
-  isTreeNodeHasDuplicateLinkId(newLinkId: string): boolean {
+  treeNodeHasDuplicateLinkId(newLinkId: string): boolean {
     const node = this.treeModel.getFocusedNode();
-    return Object.values(this.treeNodeStatusMap).some(item => item.linkId === newLinkId && item.id !== node.id.toString());
+    return Object.values(this.treeNodeStatusMap).some(item => {
+      const nodeItem = this.getTreeNodeStatusById(item.id);
+      return (nodeItem.id.toString() !== node.id.toString() && nodeItem.linkId.toString() === newLinkId &&
+              (!nodeItem?.hasError || (nodeItem?.hasError && !nodeItem.errors?.linkId?.some(err => err.code === "DUPLICATE_LINK_ID"))));
+    });
   };
 
   /** 
@@ -359,23 +391,35 @@ export class FormService {
   }
 
   /**
+   * Check if the sibling nodes contain errors. 
+   * @param node - current tree node
+   * @returns true if any of the sibling nodes contain errors, otherwise false.
+   */
+  siblingHasError(node:ITreeNode): boolean {
+    let siblingHasError = false;
+    if (node.parent && !node.isRoot) {
+      siblingHasError = node.parent.children.some((n) => {
+        const siblingIdStr = n.id.toString();
+        return node.id.toString() !== siblingIdStr && this.treeNodeStatusMap[siblingIdStr]['hasError'];
+      });
+    }
+    return siblingHasError;
+  }
+
+  /**
    * Set the ancestor nodes' 'childHasError' status to 'false'.
    * @param node - Ancestor node.
    */
   removeErrorFromAncestorNodes(node: ITreeNode): void {
     const nodeIdStr = node.id.toString();
-
     if (nodeIdStr in this.treeNodeStatusMap) {
       this.treeNodeStatusMap[nodeIdStr]['childHasError'] = false;
     }
 
     if (node.parent && !node.isRoot &&
         (!('childHasError' in this.treeNodeStatusMap[nodeIdStr]) || !this.treeNodeStatusMap[nodeIdStr]['childHasError'])) {
-      const siblingHasError = node.parent.children.some((n) => {
-        const siblingIdStr = n.id.toString();
-        return this.treeNodeStatusMap[siblingIdStr]['hasError'];
-      });
 
+      const siblingHasError = this.siblingHasError(node);
       if (!siblingHasError)
         this.removeErrorFromAncestorNodes(node.parent);
     }    
@@ -402,16 +446,31 @@ export class FormService {
    * Update validation status to the TreeNodeStatusMap.
    * @param id - node id
    * @param linkId - linkId associated with item of the node.
+   * @param fieldName - name of the field being validated.
    * @param errors - Null, if the validation passes. Set the 'hasError' status to 'false' 
    *                 and the ancestor nodes' 'chilcHasError' status to 'false'.
    *                 Array of errors if the the validation fails. Set the 'hasError' status
    *                 to 'true' and the ancestor nodes' 'childHasError' status to 'true'.
    *                 Also stores the array of errors objects. 
    */
-  updateValidationStatus(id: string, linkId: string, errors: any[]): void {
+  updateValidationStatus(id: string, linkId: string, fieldName: string, errors: any[]): void {
+    if (!this.treeNodeStatusMap || !this.treeNodeStatusMap[id])
+      return;
+
     this.treeNodeStatusMap[id]['linkId'] = linkId;
-    this.treeNodeStatusMap[id]['hasError'] = (errors) ? true : false;
-    this.treeNodeStatusMap[id]['errors'] = (errors) ? errors : null;
+    if (errors) {
+      if (!this.treeNodeStatusMap[id]['errors'])
+        this.treeNodeStatusMap[id]['errors'] = {}
+      this.treeNodeStatusMap[id]['errors'][fieldName] = errors;
+      this.treeNodeStatusMap[id]['hasError'] = true;
+    } else {
+      if (this.treeNodeStatusMap[id]['errors'] && fieldName in this.treeNodeStatusMap[id]['errors']) {
+        this.liveAnnouncer.announce('Error is resolved for this node.');
+        delete this.treeNodeStatusMap[id]['errors'][fieldName];
+      }
+
+      this.treeNodeStatusMap[id]['hasError'] = (Object.keys(this.treeNodeStatusMap[id]?.errors ?? {}).length > 0) ? true : false;
+    }
 
     const node = this.getTreeNodeById(id);
 
@@ -420,7 +479,13 @@ export class FormService {
         this.addErrorForAncestorNodes(node.parent);
 
       } else {
-        if (!('childHasError' in this.treeNodeStatusMap[id]) || !this.treeNodeStatusMap[id]['childHasError'])
+        // Only remove the error from ancestor nodes if 
+        // - the focus node does not contain errors
+        // - the child nodes do not contain errors 
+        // - the sibling nodes do not contain errors
+        const siblingHasError = this.siblingHasError(node);
+        if (!siblingHasError && Object.keys(this.treeNodeStatusMap[id]?.errors ?? {}).length === 0 &&
+            (!('childHasError' in this.treeNodeStatusMap[id]) || !this.treeNodeStatusMap[id]['childHasError']))
           this.removeErrorFromAncestorNodes(node.parent);
       }
     }

@@ -5,3 +5,13 @@
 input.invalid {
   outline: 2px solid red;
 }
+
+div.has-error > ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+div.has-error > ul:empty {
+  display: none;
+}

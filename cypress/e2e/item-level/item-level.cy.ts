@@ -2080,13 +2080,13 @@ describe('Home page', () => {
       // and parent nodes should now be hidden.
       cy.getTreeNode('Current Age')
         .find('fa-icon#error')
-        .should('have.attr', 'hidden');
+        .should('not.exist');
       cy.getTreeNode('Living?')
         .find('fa-icon#error')
-        .should('have.attr', 'hidden');
+        .should('not.exist');
       cy.getTreeNode('Family member health history')
         .find('fa-icon#error')
-        .should('have.attr', 'hidden');
+        .should('not.exist');
     });
 
     it('should check siblings for error before clearing out errors from ancestor', () => {
@@ -2156,8 +2156,8 @@ describe('Home page', () => {
 
       // The red triangle icons on the tree panel for the node '2.4.2 Current Age' should be hidden.
       cy.getTreeNode('Current Age')
-      .find('fa-icon#error')
-      .should('have.attr', 'hidden');
+        .find('fa-icon#error')
+        .should('not.exist');
       
       // However, the parent node '2.4 Living?' and grandparent node '2 Family member health history'
       // should still showing error icon because there is still an error with the node 
@@ -2183,15 +2183,57 @@ describe('Home page', () => {
       // and parent nodes should now be hidden.
       cy.getTreeNode('Cause of Death')
         .find('fa-icon#error')
-        .should('have.attr', 'hidden');
+        .should('not.exist');
       cy.getTreeNode('Living?')
         .find('fa-icon#error')
-        .should('have.attr', 'hidden');
+        .should('not.exist');
       cy.getTreeNode('Family member health history')
         .find('fa-icon#error')
-        .should('have.attr', 'hidden');
+        .should('not.exist');
     });
 
+    it('should allow the linkId to be set to empty and remain empty upon gaining focus', () => {
+      // Click on '2 Family member health history'
+      cy.getTreeNode('Family member health history').click();
+
+      // Click the 'Add new item' 
+      cy.contains('button', 'Add new item').click();
+      // Click on the new added item
+      cy.getTreeNode('New item 1').click();
+
+      // Go to the link id section and enter 1
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .clear()
+        .type('1');
+
+      // Click the 'Add new item' 
+      cy.contains('button', 'Add new item').click();
+
+      // Click back to 'New item 1'
+      cy.getTreeNode('New item 1').click();
+
+      // The linkId should be 1
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('have.value', '1');
+
+      // Clear the value
+      cy.editableLinkId()
+        .clear();
+
+      // Click back to 'New item 2'
+      cy.getTreeNode('New item 2').click();
+      
+      // Click back to 'New item 1'
+      cy.getTreeNode('New item 1').click();
+
+      // The linkId should remain empty. It should not get populate with the default linkId.
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('have.value', '');
+    });
   });
 
   describe('Test descendant items and display/group type changes', () => {
