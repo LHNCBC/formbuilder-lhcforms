@@ -1078,6 +1078,210 @@ describe('Home page', () => {
       });
     });
 
+    describe('Group item control', () => {
+      beforeEach(() => {
+        const sampleFile = 'USSG-family-portrait.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.loadHomePage();
+        cy.get('input[type="radio"][value="scratch"]').click();
+        cy.get('button').contains('Continue').click();
+        cy.uploadFile(sampleFile, false);
+        cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+        cy.contains('button', 'Edit questions').click();
+      });
+
+      const groupItemControlExtensions = {
+        'list': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'list',
+              display: 'List',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },        
+        'table': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'table',
+              display: 'Vertical Answer Table',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'htable': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'htable',
+              display: 'Horizontal Answer Table',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'gtable': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'gtable',
+              display: 'Group Table',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'grid': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'grid',
+              display: 'Group Grid',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'header': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'header',
+              display: 'Header',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'footer': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'footer',
+              display: 'Footer',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'page': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'page',
+              display: 'Page',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'tab-container': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'tab-container',
+              display: 'Tab Container',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        }
+      };
+
+      it('should create group item-control extension with autocomplete option', () => {
+        const icgTag = 'lfb-item-control-group';
+        const listBtn = '[for^="__\\$itemControlGroup\\.list"]';
+        const verticalAnsTblBtn = '[for^="__\\$itemControlGroup\\.table"]';
+        const horizontalAnsTblBtn = '[for^="__\\$itemControlGroup\\.htable"]';
+        const groupTblBtn = '[for^="__\\$itemControlGroup\\.gtable"]';
+        const groupGridBtn = '[for^="__\\$itemControlGroup\\.grid"]';
+        const headerBtn = '[for^="__\\$itemControlGroup\\.header"]';
+        const footerBtn = '[for^="__\\$itemControlGroup\\.footer"]';
+        const pageBtn = '[for^="__\\$itemControlGroup\\.page"]';
+        const tabContainerBtn = '[for^="__\\$itemControlGroup\\.tab-container"]';
+        
+        const listRadio = '#__\\$itemControlGroup\\.list';
+        const verticalAnsTblRadio = '#__\\$itemControlGroup\\.table';
+        const horizontalAnsTblRadio = '#__\\$itemControlGroup\\.htable';
+        const groupTblRadio = '#__\\$itemControlGroup\\.gtable';
+        const groupGridRadio = '#__\\$itemControlGroup\\.grid';
+        const headerRadio = '#__\\$itemControlGroup\\.header';
+        const footerRadio = '#__\\$itemControlGroup\\.footer';
+        const pageRadio = '#__\\$itemControlGroup\\.page';
+        const tabContainerRadio = '#__\\$itemControlGroup\\.tab-container';
+
+        // The Data type for the 1st question should be a group
+        cy.get('#type').should('contain.value', 'group');
+        // The Group Item Control should be visible and default to 'list'
+        cy.get(listRadio).should('be.checked');
+        // Extension should not exist
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['list']]);
+        });
+
+        // Select 'Vertical Answer Table' Group Item Control
+        cy.get(verticalAnsTblBtn).click();
+        cy.get(verticalAnsTblRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['table']]);
+        });
+
+        // Select 'Horizontal Answer Table' Group Item Control
+        cy.get(horizontalAnsTblBtn).click();
+        cy.get(horizontalAnsTblRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['htable']]);
+        });
+
+        // Select 'Group Table' Group Item Control
+        cy.get(groupTblBtn).click();
+        cy.get(groupTblRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['gtable']]);
+        });
+
+        // Select 'Group Grid' Group Item Control
+        cy.get(groupGridBtn).click();
+        cy.get(groupGridRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['grid']]);
+        });
+
+        // Select 'Header' Group Item Control
+        cy.get(headerBtn).click();
+        cy.get(headerRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['header']]);
+        });
+
+        // Select 'Footer' Group Item Control
+        cy.get(footerBtn).click();
+        cy.get(footerRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['footer']]);
+        });
+
+        // Select 'Page' Group Item Control
+        cy.get(pageBtn).click();
+        cy.get(pageRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['page']]);
+        });
+
+        // Select 'Tab Container' Group Item Control
+        cy.get(tabContainerBtn).click();
+        cy.get(tabContainerRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['tab-container']]);
+        });
+      });
+    });
+
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');

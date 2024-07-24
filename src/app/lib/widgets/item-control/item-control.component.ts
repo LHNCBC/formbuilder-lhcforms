@@ -26,25 +26,62 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   isRepeat = false;
   answerMethod = 'answer-option';
   subscriptions: Subscription [] = [];
+  dataType;
 
   constructor(private extensionsService: ExtensionsService, private formService: FormService, private cdr: ChangeDetectorRef) {
     super();
   }
 
+  /**
+   * Angular life cycle event - Initialize attributes.
+   */
   ngOnInit() {
     super.ngOnInit();
     this.init();
   }
 
   /**
+   * Compose a Group Item Control object from the schema.
+   */
+  composeGroupItemControlObject() {
+    if (this.formProperty?.schema?.oneOf) {
+      this.formProperty.schema.oneOf.forEach((groupItemControl) => {
+        this.optionsObj[groupItemControl.enum[0]] = groupItemControl.display;
+      });
+    }
+  }
+
+  /**
+   * Get the default item control based on the selected data type, or the item control defined in the 
+   * extension.
+   * @param dataTypeChanged - indicates if there is a change to the data type. True if the 
+   *                          data type changed; otherwise, False.
+   * @returns - item control
+   */
+  getItemControl(dataTypeChanged: boolean = false): string {
+    const ext = this.getItemControlExtension();
+    const defaultItemControl = (this.dataType === 'group') ? 'list' : 'drop-down';
+    if (dataTypeChanged)
+      return defaultItemControl;
+    
+    return ext ? ext.valueCodeableConcept.coding[0].code : defaultItemControl;
+  }
+
+  /**
    * Read formProperty values.
    */
   init() {
-    const ext = this.getItemControlExtension();
-    this.option = ext ? ext.valueCodeableConcept.coding[0].code : 'drop-down';
+    this.dataType = this.formProperty.searchProperty('/type').value;
+    this.option = this.getItemControl(false);
     this.isRepeat = !!this.formProperty.searchProperty('/repeats').value;
     this.answerMethod = this.formProperty.searchProperty('/__$answerOptionMethods').value;
+
+    this.composeGroupItemControlObject();
   }
+
+  /**
+   * Setup subscriptions.
+   */
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
@@ -57,9 +94,14 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.subscriptions.push(sub);
 
     sub = this.formProperty.searchProperty('/type').valueChanges.subscribe((type) => {
+      const changed = !(this.dataType === type);
+      this.dataType = type;
       // If type is not choice, cleanup the extension.
-      if (type !== 'choice' && type !== 'open-choice') {
+      if (type !== 'choice' && type !== 'open-choice' && type !== 'group') {
         this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
+      } else {
+        this.option = this.getItemControl(changed);
+        this.updateItemControlExt(this.option);
       }
       this.cdr.markForCheck();
     })
@@ -72,7 +114,6 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       this.cdr.markForCheck();
     })
     this.subscriptions.push(sub);
-
   }
 
   /**
@@ -101,6 +142,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     else {
       this.option = option;
     }
+
     const ext = this.getItemControlExtension();
     if(!ext) {
       this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
@@ -147,6 +189,9 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     }
   }
 
+  /**
+   * Remove subscriptions before removing the component.
+   */
   ngOnDestroy() {
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();

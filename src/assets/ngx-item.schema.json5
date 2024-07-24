@@ -1048,6 +1048,80 @@
         "controlClasses": "col-auto btn-group btn-group-sm p-0"
       }
     },
+    "__$itemControlGroup": {
+      // Proxy for item control extension.
+      "description": "Choose the type of control for the 'Group' data type. The default is a list. Some item controls are not supported by the LHC-Forms preview, as indicated by the asterisk (*) symbol.",
+      "title": "Group Item Control",
+      "oneOf": [
+        {
+          'enum': ["list"],
+          'display': 'List',
+          'description': 'Questions within the group should be listed sequentially',
+          'support': true
+        },
+        {
+          'enum': ["table"],
+          'display': 'Vertical Answer Table',
+          'description': 'Questions within the group are rows in the table with possible answers as columns. Used for \'choice\' questions. The questions within a group marked with this controlType SHALL provide an enumerated list of options and SHOULD refer to the same set of options, same value set or same expression. In the case of a \'sparse\' table where some options aren\'t available for some questions, the order of the answers in the table is not defined and some rendering tools may refuse to display the group as a table.',
+          
+          'support': true
+        },
+        {
+          'enum': ["htable"],
+          'display': 'Horizontal Answer Table',
+          'description': 'Questions within the group are columns in the table with possible answers as rows. Used for \'choice\' questions. The questions within a group marked with this controlType SHALL provide an enumerated list of options and SHOULD refer to the same set of options, same value set or same expression. In the case of a \'sparse\' table where some options aren\'t available for some questions, the order of the answers in the table is not defined and some rendering tools may refuse to display the group as a table.',
+          'support': false
+        },
+        {
+          'enum': ["gtable"],
+          'display': 'Group Table',
+          'description': 'Questions within the group are columns in the table with each group repetition as a row. Used for single-answer questions.',
+          'support': true
+        },
+        {
+          'enum': ["grid"],
+          'display': 'Group Grid',
+          'description': 'Child items of type=\'group\' within the a \'grid\' group are rows, and questions beneath the \'row\' groups are organized as columns in the grid. The grid might be fully populated, but could be sparse. Questions may support different data types and/or different answer choices.',
+          'support': false
+        },
+        {
+          'enum': ["header"],
+          'display': 'Header',
+          'description': 'The group is to be continuously visible at the top of the questionnaire.',
+          'support': false
+        },
+        {
+          'enum': ["footer"],
+          'display': 'Footer',
+          'description': 'The group is to be continuously visible at the bottom of the questionnaire.',
+          'support': false
+        },
+        {
+          'enum': ["page"],
+          'display': 'Page',
+          'description': 'Indicates that the content within the group should appear as a logical \"page\" when rendering the form, such that all enabled items within the page are displayed at once, but items in subsequent groups are not displayed until the user indicates a desire to move to the \next\' group. (Header and footer items may still be displayed.) This designation may also influence pagination when printing questionnaires. If there are items at the same level as a \'page\' group that are listed before the \'page\' group, they will be treated as a separate page. Header and footer groups for a questionnaire will be rendered on all pages.',
+          'support': false
+        },
+        {
+          'enum': ["tab-container"],
+          'display': 'Tab Container',
+          'description': 'Indicates that the group represents a collection of tabs. ALl child items SHALL be of type \'group\' and SHALL NOT declare any item controls themselves. Each child group represents one tab within the tab container, where the item.title is the label for the tab.',
+          'support': false
+        }
+      ],
+      "default": "list",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'group'"]
+      },
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm p-0",
+        "note": "* - not supported by LHC-Forms preview."
+      }
+    },
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
       "title": "Terminology server",
@@ -1637,6 +1711,17 @@
       "showFields": [
         {
           "field": "__$itemControl",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$itemControlGroup"
+      ],
+      "showFields": [
+        {
+          "field": "__$itemControlGroup",
           "col": 12
         }
       ]
