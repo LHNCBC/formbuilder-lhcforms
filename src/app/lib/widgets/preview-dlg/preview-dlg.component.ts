@@ -1,9 +1,21 @@
-import {Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
+import {Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import fhir from 'fhir/r4';
-import {FhirService} from '../../../services/fhir.service';
+import {FHIRServer, FHIRServerValidityResponse, FhirService} from '../../../services/fhir.service';
 import {FormService} from '../../../services/form.service';
-import {FHIR_VERSIONS, FHIR_VERSION_TYPE} from "../../util";
+import {FHIR_VERSIONS, FHIR_VERSION_TYPE, Util} from "../../util";
+import {fhirPrimitives} from "../../../fhir";
+import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
+import {
+  BehaviorSubject,
+  merge,
+  Observable,
+  of,
+  Subject,
+  Subscription
+} from "rxjs";
+import {debounceTime, distinctUntilChanged, filter, map} from "rxjs/operators";
+import {NgbAccordionItem, NgbTypeahead} from "@ng-bootstrap/ng-bootstrap";
 declare var LForms: any;
 
 /**
@@ -17,16 +29,62 @@ export interface PreviewData {
 @Component({
   selector: 'lfb-preview-dlg',
   templateUrl: './preview-dlg.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./preview-dlg.component.css']
 })
-export class PreviewDlgComponent implements OnInit {
+export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
+  @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
   format: FHIR_VERSION_TYPE = 'R4';
   activeTopLevelTabIndex = 0;
-  activeFormatTabIndex = 0;
+  activeJsonTabIndex = 0;
   lformsErrors: string;
-  validationErrors: string [];
+  inputUrlErrors: string;
+  validationErrors: {FHIR_VERSION_TYPE?: string[]} = {};
+  vServer: fhirPrimitives.url;
+  spinner$ = new BehaviorSubject<boolean>(false);
+  @ViewChild('autoCompNgb', { static: false, read: NgbTypeahead }) autoCompNgb: NgbTypeahead;
+  @ViewChild('errorsItem', { static: false, read: NgbAccordionItem }) errorsItem: NgbAccordionItem;
+  showNoErrorsMsg = false;
+
+  focus$ = new Subject<string>();
+  click$ = new Subject<string>();
+
+  /**
+   * Search function for url input.
+   * @param text$ - Observable of text from user input.
+   */
+  search = (text$: Observable<string>) => {
+    const debouncedText$ = text$.pipe(debounceTime(200), distinctUntilChanged());
+    const clicksWithClosedPopup$ = this.click$.pipe(filter(() => !this.autoCompNgb.isPopupOpen()));
+    const inputFocus$ = this.focus$;
+
+    return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
+      map((term) => {
+        term = term?.trim();
+        return this.filterServers(this.fhirService.validationServers, this.format, term).map((s) => {
+          return s.endpoint;
+        });
+      }),
+    );
+  };
+
+  /**
+   * Filter server list based on version and matching text.
+   *
+   * @param serverList - Set of FHIRServer objects.
+   * @param version - R4|STU3 etc.
+   * @param term - Text to match
+   */
+  filterServers = (serverList: Set<FHIRServer>, version: string, term: string) => {
+    return Array.from(serverList.values()).filter((server) => {
+      let yes = server.version === version;
+      return yes && term ? term.trim().toLowerCase().indexOf(server.endpoint.toLowerCase()) > -1 : yes;
+    });
+  }
+
+  subscriptions: Subscription[] = [];
 
   constructor(
     public formService: FormService,
@@ -39,11 +97,21 @@ export class PreviewDlgComponent implements OnInit {
 
   ngOnInit() {
     this.activeTopLevelTabIndex = 0;
-    this.activeFormatTabIndex = 0;
+    this.activeJsonTabIndex = 0;
+    this.vServer = this.fhirService.getLastUsedValidationServer(this.format);
   }
 
   close() {
     this.dialogRef.close();
+  }
+
+  /**
+   * Update format and server based on version tab selected.
+   * @param ngEvent - Angular event
+   */
+  onJsonVersionSelected(ngEvent: 0|1) {
+    this.format = FHIR_VERSIONS[ngEvent] as FHIR_VERSION_TYPE;
+    this.vServer = this.fhirService.getLastUsedValidationServer(this.format);
   }
 
   /**
@@ -64,24 +132,79 @@ export class PreviewDlgComponent implements OnInit {
    */
   handleLFormsError(event) {
     this.lformsErrors = event.detail;
-    this.runValidations('R4');
+    this.runValidations('R4', this.vServer);
   }
 
-  runValidations(format: string) {
-    const filterErrors = (issues: fhir.OperationOutcomeIssue[]) => {
-      return  issues.filter((iss) => {return iss.severity === 'fatal' || iss.severity === 'error';})
-        .map((err) => {
-          let str = `${err.severity.charAt(0).toUpperCase()+err.severity.slice(1)}: ${err.diagnostics}`;
-          if(err.location) {
-            str += ` [${err.location?.join('; ')}]`;
-          }
-          return str;
-        });
-    };
-    this.fhirService.getValidationErrors(this.getQuestionnaire(format)).subscribe({next: (issues) => {
-      this.validationErrors = filterErrors(issues);
-    }, error: (httpErrorResponse) => {
-        this.validationErrors = filterErrors(httpErrorResponse.error.issue);
-      }});
+  /**
+   * Run validations and set UI elements on response.
+   * @param format - R4|STU3
+   * @param rawInput - Url from the input box.
+   */
+  runValidations(format: string, rawInput: fhirPrimitives.url) {
+    const url = Util.extractBaseUrl(rawInput);
+    if(!url) {
+      this.validationErrors[format] = [`You entered an invalid URL: ${rawInput}`];
+      return;
+    }
+
+    const sTimeout = 30;
+    const urlObj = new URL(rawInput);
+    this.spinner$.next(true);
+    this.fhirService.runValidations(this.format, urlObj, this.getQuestionnaire(format), )
+      .subscribe({
+        next: (errorList: string[]) => {
+          this.validationErrors[this.format] = errorList;
+        },
+        error: (error) => {
+          this.validationErrors[this.format] = [error.message];
+        },
+        complete: () => {
+          this.spinner$.next(false);
+          this.errorsItem?.expand();
+          this.showNoErrorsMsg = !this.validationErrors[this.format].length;
+        }
+      });
+  }
+
+  /**
+   * Set the height on loading event of the code mirror. The default height 300
+   * which is not acceptable. Setting it to auto has performance implications.
+   * Set the based on approximate height.
+   *
+   * @param cm - CodemirrorComponent (angular event).
+   */
+  codeMirrorLoaded(cm: CodemirrorComponent) {
+    const height = this.calculateJSONElementHeight();
+    if(height > 0) {
+      cm.codeMirror.setSize(null, height);
+    }
+  }
+
+  /**
+   * JSON is the last item in the dialog content box is exclusive of header and footer.
+   * Subtract heights of all the boxes above and padding below.
+
+   * Approximate offset from the top of the dialog content is 160:
+   * 48 each for two tab headers, plus 39 for menu bar, plus 20 for padding from the bottom,
+   * plus 5 for various lines and extra.
+   */
+  calculateJSONElementHeight() {
+    return this.dlgContent ? this.dlgContent.nativeElement.offsetHeight - 160 : 0;
+  }
+
+  /**
+   * Clear errors on closing the accordion.
+   */
+  onErrorsClose() {
+    this.validationErrors[this.format] = [];
+  }
+
+  /**
+   * Clean up subscriptions.
+   */
+  ngOnDestroy() {
+    this.subscriptions.forEach((subscription: Subscription) => {
+      subscription?.unsubscribe();
+    })
   }
 }

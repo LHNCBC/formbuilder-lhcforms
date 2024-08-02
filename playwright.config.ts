@@ -29,6 +29,7 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    permissions: ['clipboard-read']
   },
 
   /* Configure projects for major browsers */
@@ -74,10 +75,10 @@ export default defineConfig({
     //-TODO:
     // playwright tests use two servers.
     // Until an npm command is implemented to start two servers,
-    // use `npm run e2e:pw-run` to run these tests. 
+    // use `npm run e2e:pw-run` to run these tests.
   /*
     webServer: {
-    command: 'npm run e2e:start-server', 
+    command: 'npm run e2e:start-server',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },

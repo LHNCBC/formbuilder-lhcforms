@@ -2,6 +2,7 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import path from 'path';
 import fs from 'node:fs/promises';
+import {PWUtils} from "./pw-utils";
 
 test.describe('retain-additional-fields', async () => {
   let mainPO: MainPO;
@@ -28,8 +29,9 @@ test.describe('retain-additional-fields', async () => {
 
     await expect(page.locator('input#title')).toHaveValue('Contained example');
     await page.getByRole('button', {name: 'Preview'}).click();
-    await page.getByText('View Questionnaire JSON').click();
-    const json = JSON.parse(await page.locator('mat-tab-body pre').innerText());
+    await page.getByText('View/Validate Questionnaire JSON').click();
+    await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
+    const json = JSON.parse(await PWUtils.getClipboardContent(page));
     expect(json.contained).toEqual(fileJson.contained);
   });
 });

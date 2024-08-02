@@ -90,6 +90,7 @@ import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
 import {LabelComponent} from './lib/widgets/label/label.component';
 import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
+import {CodemirrorModule} from "@ctrl/ngx-codemirror";
 
 @NgModule({
   declarations: [
@@ -186,7 +187,8 @@ import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
         MatDialogModule,
         AutoCompleteComponent,
         LabelComponent,
-        CdkCopyToClipboard
+        CdkCopyToClipboard,
+        CodemirrorModule
     ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry},

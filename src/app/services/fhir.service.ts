@@ -1,12 +1,14 @@
 import {Injectable, inject} from '@angular/core';
 import Client from 'fhirclient/lib/Client';
 import * as fhirClient from 'fhirclient';
-import {defer, from, Observable} from 'rxjs';
+import {defer, from, mergeMap, Observable, of, timeout, TimeoutError} from 'rxjs';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../fhir';
 import {FormService} from './form.service';
+import {FHIR_VERSION_TYPE, Util} from '../lib/util';
 import {catchError, map} from 'rxjs/operators';
-import {HttpErrorResponse, HttpClient, HttpResponse} from "@angular/common/http";
+import {HttpClient, HttpResponse, HttpParams} from "@angular/common/http";
+declare var LForms: any;
 
 export interface FHIRServer {
   // resultsOffset: number;
@@ -16,6 +18,15 @@ export interface FHIRServer {
   endpoint: fhirPrimitives.url;
   desc?: string;
   version?: string;
+}
+
+/**
+ * Specifies metadata response from a FHIR server.
+ */
+export interface FHIRServerValidityResponse {
+  message?: string;
+  errorMessage?: string;
+  fhirServer?: FHIRServer;
 }
 
 @Injectable({
@@ -59,13 +70,11 @@ export class FhirService {
       version: 'STU3'
     }
   ];
-/*
-  config: any = {
-    headers: {}
-  };
-*/
+
   currentServer: FHIRServer;
   smartClient: Client;
+
+  validationServers = new Set<FHIRServer>(this.fhirServerList);
   formService = inject(FormService);
   httpClient: HttpClient = inject<HttpClient>(HttpClient);
   constructor() {
@@ -264,25 +273,199 @@ export class FhirService {
     });
   }
 
-  getValidationErrorsBak(questionnaire: fhir.Questionnaire): Observable<any> {
-    return this.promiseToObservable(this.smartClient.request<fhir.Resource>({
-      url: 'Questionnaire/$validate',
-      headers: {'Content-Type': 'application/json'},
-      method: 'POST',
-      body: JSON.stringify(questionnaire)
-    })).pipe(catchError((res: HttpErrorResponse) => {
-      console.log(res.error);
-      return res.error.issue;
-    }));
-  }
+  /**
+   * Use /Questionnaire/$validate API to validate the questionnaire and return
+   * the server response.
+   *
+   * @param questionnaire - Input questionnaire to validate
+   * @param serverUrl - Server url. If it contains '/Questionnaire/$validate',
+   * it is assumed that it may contain additional search parameters and used
+   * unchanged. Otherwise, it is assumed as baseUrl and /Questionnaire/$validate
+   * is appended.
+   *
+   * @return - Observable with issues reported by the server.
+   */
+  getValidationErrors(questionnaire: fhir.Questionnaire, serverUrl?: fhirPrimitives.url): Observable<fhir.OperationOutcomeIssue[]> {
+    let url = serverUrl || this.currentServer.endpoint;
+    if(!/\Questionnaire\/\$validate/i.test(serverUrl)) {
+      url += '/Questionnaire/$validate';
+    }
 
-  getValidationErrors(questionnaire: fhir.Questionnaire): Observable<fhir.OperationOutcomeIssue[]> {
     return this.httpClient.post<fhir.OperationOutcome>(
-      this.currentServer.endpoint+'/Questionnaire/$validate', JSON.stringify(questionnaire, null, 2),
-      {headers: {'Content-Type': 'application/fhir+json'},
-        observe: 'body',responseType: 'json'})
-      .pipe(map((outcome) => { return outcome.issue;}));
+      url, JSON.stringify(questionnaire, null, 2),
+      {
+        headers: {'Content-Type': 'application/fhir+json'},
+        observe: 'body',
+        responseType: 'json'
+      })
+      .pipe(map((outcome) => { return outcome.issue || [];}));
   }
 
+  /**
+   * Get the last used server. The last in the list is assumed to be last used.
+   *
+   * @param fhirVersion - R4|STU3 etc.
+   *
+   * @returns - The url of the last used server.
+   */
+  getLastUsedValidationServer(fhirVersion: FHIR_VERSION_TYPE): fhirPrimitives.url {
+    const last = Array.from(this.validationServers).reverse().find((e) => {
+      return fhirVersion === e.version;
+    });
+
+    return last.endpoint;
+  }
+
+  /**
+   * Check for well-formedness of an url with http protocol.
+   *
+   * @param webUrl - Input url
+   * @return - A URL object of the input if valid, otherwise null.
+   */
+  getValidWebUrl(webUrl: fhirPrimitives.url): URL {
+    let urlObj: URL = null;
+    try {
+      urlObj = new URL(webUrl);
+      if(!urlObj.origin || !urlObj.origin.match(/^https?:\/\/[^\/]+(:\d+)?/i)) {
+        urlObj = null;
+      }
+    } catch (e) {}
+
+    return urlObj;
+  }
+
+  /**
+   * Validate base url of the FHIR server. It should respond to metadata API
+   * with FHIR version.
+   *
+   * @param fullUrl - User entered url string.
+   * @return - Observable with server's validity information.
+   */
+  validateBaseUrl(fullUrl: string): Observable<FHIRServerValidityResponse> {
+    const ret: FHIRServerValidityResponse = {};
+    let url = this.getValidWebUrl(fullUrl);
+
+    if (!url) {
+      ret.errorMessage = `Invalid url: ${fullUrl}`;
+      return of(ret);
+    }
+
+    const options: {params?: HttpParams, observe: 'response', responseType: 'json'} = {
+      observe: 'response',
+      responseType: 'json',
+      params: (new HttpParams())
+        .set('_format', 'json')
+        .set('_elements', 'fhirVersion,implementation') // Gives a small response. Is this reliable?
+    };
+
+    const baseUrl = Util.extractBaseUrl(fullUrl);
+    return this.httpClient.get<fhir.CapabilityStatement>(baseUrl+'/metadata', options)
+      .pipe(
+        map<HttpResponse<fhir.CapabilityStatement>, FHIRServerValidityResponse>((resp: HttpResponse<fhir.CapabilityStatement>) => {
+          const body: fhir.CapabilityStatement = resp.body;
+          const version = LForms.Util._fhirVersionToRelease(body.fhirVersion);
+          if(!version || version === body.fhirVersion) {
+            ret.errorMessage = `${url.href} returned an unsupported FHIR version: ${body.fhirVersion}`;
+            return ret;
+          }
+
+          const u = body.implementation?.url;
+          if(u && u !== baseUrl) {
+            fullUrl = fullUrl.replace(baseUrl, u);
+          }
+          ret.fhirServer = {
+            // Remove any trailing slashes.
+            endpoint: fullUrl,
+            desc: body.implementation?.description || '',
+            version
+          };
+          const s = Array.from(this.validationServers).find((el) => {
+            return el.endpoint === ret.fhirServer.endpoint;
+          });
+          if(!s) {
+            this.validationServers.add(ret.fhirServer);
+          }
+
+          return ret;
+        }),
+        catchError((error) => {
+          const ret: FHIRServerValidityResponse = {};
+          if(error.message.startsWith('Invalid url:')) {
+            ret.errorMessage = error.message;
+          } else {
+            // Error from the server.
+            ret.errorMessage = `${baseUrl}: Unable to confirm the URL is a FHIR server.`;
+          }
+          return of(ret);
+        }));
+  }
+
+  /**
+   * Run validations on a given server and version, with input questionnaire to validate.
+   * @param version - Supported version - R4|STU3
+   * @param url - URL object representing the server and any search parameters.
+   * @param questionnaire - fhir.Questionnaire to validate.
+   *
+   * @return - Observable with array of error messages.
+   */
+  runValidations(version: FHIR_VERSION_TYPE, url: URL, questionnaire: fhir.Questionnaire): Observable<string[]> {
+    const filterErrors = (issues: fhir.OperationOutcomeIssue[]) => {
+      return  issues?.filter((iss) => {return iss.severity === 'fatal' || iss.severity === 'error';})
+        .map((err) => {
+          let str = `${err.severity.charAt(0).toUpperCase()+err.severity.slice(1)}: ${err.diagnostics}`;
+          if(err.location) {
+            str += ` [${err.location?.join('; ')}]`;
+          }
+          return str;
+        });
+    };
+    const sTimeout = 30;
+    return this.validateBaseUrl(url.href)
+      .pipe(
+        timeout(sTimeout * 1000),
+        mergeMap((validServer: FHIRServerValidityResponse): Observable<string[]> => {
+          let ret: string[] = [];
+          if (validServer.errorMessage) {
+            ret.push(validServer.errorMessage);
+          } else if (validServer.fhirServer) {
+            if (validServer.fhirServer.version === version) {
+              return this.getValidationErrors(questionnaire, validServer.fhirServer.endpoint)
+                .pipe(
+                  map((issues: fhir.OperationOutcomeIssue[]): string[] => {
+                    return filterErrors(issues);
+                  }),
+                  catchError((error) => {
+                    let errors: string[] = [];
+                    if (error.status === 412) {
+                      // Hapi sends the errors with http code 412
+                      errors.push(...filterErrors(error.error.issue));
+                    } else if(error instanceof TimeoutError) {
+                      errors.push(`Connection timed out after ${sTimeout} seconds`);
+                    } else {
+                      if(error.status === 0) {
+                        // Mark the network errors
+                        errors.push(`Detected network error.`);
+                      }
+                      errors.push(error.message);
+                    }
+                    return of(errors);
+                  }));
+            } else {
+              ret.push(`This server version is ${validServer.fhirServer.version}. Please specify a server to validate ${version} format.`);
+            }
+          }
+          return of(ret);
+        }),
+        catchError((error) => {
+          const ret: string[] = [];
+          if(error instanceof TimeoutError) {
+            ret.push(`Connection timed out after ${sTimeout} seconds`);
+          } else {
+            ret.push(error.message);
+          }
+          return of(ret);
+        })
+      );
+  }
 
 }

@@ -8,3 +8,7 @@
 .lfb-mat-tab-content {
   max-height: 60vh;
 }
+
+.custom-header::after {
+  content: none;
+}

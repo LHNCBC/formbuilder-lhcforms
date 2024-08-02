@@ -212,4 +212,14 @@ export class CypressUtil {
     });
   };
 
+  /**
+   * Capture clipboard content.
+   *
+   * @param callback - Callback function providing the content as string to the caller.
+   */
+  static getClipboardContent(callback) {
+    return cy.window().then((win) => {
+      win.navigator.clipboard.readText().then((text) => callback(text));
+    });
+  }
 }

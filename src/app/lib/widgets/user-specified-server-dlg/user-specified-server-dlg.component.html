@@ -9,10 +9,9 @@
     <div *ngIf="valid" class="ng-valid"></div>
     <p class="text-success" *ngIf="message" role="alert" aria-atomic="true">{{message}}</p>
     <p class="text-danger" *ngIf="errorMessage" role="alert" aria-atomic="true">{{errorMessage}}</p>
-    <label for="urlInput">Specify base URL of your FHIR server</label>
+    <label for="urlInputId">Specify base URL of your FHIR server</label>
     <div class="input-group input-group-sm">
-      <input id="urlInput" #urlInput="ngModel" type="url" required class="form-control"
-             [(ngModel)]="inputUrl"
+      <input id="urlInputId" ngModel #urlInput="ngModel" type="url" required class="form-control"
              placeholder="Enter valid url of your FHIR server"
              aria-label=""
              aria-describedby="filterHelp">
@@ -21,7 +20,7 @@
         type="button"
         id="button-addon2"
         [disabled]="urlInput.errors"
-        (click)="validateFHIRUrl(inputUrl)">
+        (click)="validateFHIRUrl(urlInput.value)">
         <span>Validate</span>
       </button>
     </div>

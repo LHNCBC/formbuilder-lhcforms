@@ -9,6 +9,7 @@ import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import copy from 'fast-copy';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
+import {fhirPrimitives} from "../fhir";
 
 export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
 export enum FHIR_VERSIONS {
@@ -517,6 +518,38 @@ export class Util {
       traverseAncestor = callback(n);
       n = n.parent;
     }
+    return ret;
+  }
+
+  /**
+   * Return base url from input. Input could be base plus /Questionnaire/$validate, in addition to possible
+   * search parameters.
+   *
+   * @param fhirUrl - Input url.
+   *
+   * @return baseUrl of the fhir server.
+   */
+  static extractBaseUrl(fhirUrl: fhirPrimitives.url): fhirPrimitives.url {
+    let url: URL;
+    try {
+      url = new URL(fhirUrl);
+      if(!/^https?:$/i.test(url.protocol)) {
+        return null;
+      }
+    } catch(e) {
+      return null;
+    }
+
+    let ret: fhirPrimitives.url; // If the input is baseUrl or url with search params, return as it is.
+    const re = /(\/questionnaire\/\$validate)$/i;
+    if(url.pathname && re.test(url.pathname)) {
+      ret = url.origin + url.pathname.replace(re, '');
+    } else if(url.pathname && url.pathname.length > 1) {
+      ret = url.origin + url.pathname;
+    } else {
+      ret = url.origin;
+    }
+
     return ret;
   }
 
