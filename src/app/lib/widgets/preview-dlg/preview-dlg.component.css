@@ -12,3 +12,13 @@
 .custom-header::after {
   content: none;
 }
+
+.cm-container {
+  position: relative;
+}
+
+.overlay-top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+}

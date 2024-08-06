@@ -83,7 +83,7 @@
 
 <ng-template #jsonMenu let-fhirVersion>
   <nav class="navbar bg-white p-0">
-    <div class="input-group m-1 w-50">
+    <div class="input-group m-1">
       <input
         placeholder="Enter base url of a FHIR server"
         aria-label="URL of a FHIR server to run the validation"
@@ -101,17 +101,16 @@
                 (click)="runValidations(fhirVersion, vServer)">Run Validation</button>
       </div>
     </div>
-    <button type="button" class="btn btn-sm btn-primary m-1"
-            [cdkCopyToClipboard]="formService.convertFromR4(data?.questionnaire, fhirVersion) | json">Copy questionnaire to clipboard</button>
   </nav>
 </ng-template>
 
 <ng-template #jsonQ let-fhirVersion>
   <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
-  <ngx-codemirror
-    (codeMirrorLoaded)="codeMirrorLoaded($event)"
-    [ngModel]="formService.convertFromR4(this.data?.questionnaire, fhirVersion) | json"
-    [options]="{
+  <div class="cm-container">
+    <ngx-codemirror
+      (codeMirrorLoaded)="codeMirrorLoaded($event)"
+      [ngModel]="formService.convertFromR4(this.data?.questionnaire, fhirVersion) | json"
+      [options]="{
     lineNumbers: true,
     theme: 'idea code-editor',
     mode: {name: 'application/ld+json'},
@@ -120,6 +119,12 @@
     foldGutter: true,
     gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
   }"
-  ></ngx-codemirror>
+    ></ngx-codemirror>
+    <button tabindex="0" class="btn overlay-top-right"
+            title="Copy questionnaire to clipboard"
+            [attr.aria-label]="'Button to copy questionnaire to clipboard'"
+            [cdkCopyToClipboard]="formService.convertFromR4(data?.questionnaire, fhirVersion) | json"
+      ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
+  </div>
   <div #jsonContent></div>
 </ng-template>

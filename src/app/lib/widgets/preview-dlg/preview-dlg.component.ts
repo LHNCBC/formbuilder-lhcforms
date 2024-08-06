@@ -16,6 +16,7 @@ import {
 } from "rxjs";
 import {debounceTime, distinctUntilChanged, filter, map} from "rxjs/operators";
 import {NgbAccordionItem, NgbTypeahead} from "@ng-bootstrap/ng-bootstrap";
+import {faCopy} from '@fortawesome/free-solid-svg-icons';
 declare var LForms: any;
 
 /**
@@ -207,4 +208,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       subscription?.unsubscribe();
     })
   }
+
+  protected readonly faCopy = faCopy;
 }
