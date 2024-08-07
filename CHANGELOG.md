@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.4] 2024-08-07
+### Added
+- Added `canceled` event type to messages sent to parent window when using window.open() API.
+
 ## [9.6.3] 2024-07-10
 ### Added
 - Use $validate API on FHIR server to validate Questionnaire.

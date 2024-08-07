@@ -8,18 +8,21 @@ window). The choice of new page or a new tab depends on the browser settings or
 preferences. The newly opened form builder can be loaded with an initial
 questionnaire. The parent page (sometimes referred as parent window) can listen
 to real time changes in the form builder as the user makes the changes to the
-questionnaire. When the user closes the form builder window, the parent window
-will receive a closed message with the final modifications to the questionnaire.
+questionnaire. When the user clicks Save & Close button in the form builder window,
+the parent window will receive a closed message with the final modifications to the
+questionnaire and the form builder window is closed. When the user clicks the cancel
+button, the parent window will receive a canceled message, and the form builder window
+is closed.
 
 ### Set up event listener
 Before opening the form builder window, add an event listener to the parent
-window. The form builder sends three types of messages, namely `initialized`,
-`updateQuestionnaire`, and `closed`. It can also receive a message with type
+window. The form builder sends four types of messages, namely `initialized`,
+`updateQuestionnaire`, `closed`, and `canceled`. It can also receive a message with type
 `initialQuestionnaire`. The data object exchanged with the form builder consists
 of two fields, `type` and `questionnaire`. The `type` is one of the above
 defined message types. The `questionnaire` is the associated questionnaire for
-that message type. For the `initialized` message this field is undefined. Here
-is a code snippet to add an event listener.
+that message type. For the `initialized` and `canceled` messages this field is undefined.
+Here is a code snippet to add an event listener.
 
 ```
 window.addEventListener('message', handleFormBuilderMessages, true);
@@ -87,6 +90,14 @@ function handleFormBuilderMessages(event) {
 
         break;
 
+      case 'canceled':
+        // Triggered when the user on the form builder window clicks the Cancel button.
+        // Use this to discard any changes the user made to the form in this session
+        // along with any cleanup.
+        // ...
+
+        break;
+
     }
   }
 } 
@@ -96,7 +107,7 @@ function handleFormBuilderMessages(event) {
 After setting up the message event handler, open the form builder in a new
 window. Use the <a href="https://developer.mozilla.org/docs/Web/API/Window/open">
 `window.open()`</a> method of the DOM Window interface. The form builder uses the
-parent window's location url to send the messages. Cross origin (CORS) restrictions
+parent window's location url to send the messages. Cross-origin (CORS) restrictions
 prevent accessing the information, so the caller needs to provide the
 `window.location.href` as a`referrer` parameter in the url to establish the
 communication. The pathname to provide the url parameter is `/window-open`.

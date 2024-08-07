@@ -16,6 +16,8 @@
   <pre class="m-1" id="updateQ"></pre>
   <h6 id="closedH">closed</h6>
   <pre class="m-1" id="closedQ"></pre>
+  <h6 id="canceledH">canceled</h6>
+  <pre class="m-1" id="canceledQ"></pre>
 </div>
 
 <script>
@@ -29,9 +31,11 @@
   let initHeader = document.getElementById('initH');
   let updateHeader = document.getElementById('updateH');
   let closedHeader = document.getElementById('closedH');
+  let canceledHeader = document.getElementById('canceledH')
   let initEl = document.getElementById('initW');
   let updateEl = document.getElementById('updateQ');
   let closedEl = document.getElementById('closedQ');
+  let canceledEl = document.getElementById('canceledQ');
 
   let urlEl = document.getElementById('url');
   window.addEventListener('message', handleMessage, true);
@@ -63,13 +67,18 @@
         closedHeader.innerHTML = `${event.data?.type}: Final questionnaire from opened window after it is closed (${new Date().toISOString()})`;
         closedEl.innerHTML = `${messageFromOpenedWindow}`;
         break;
+      case 'canceled':
+        // Triggered when the window is canceled.
+        canceledHeader.innerHTML = `${event.data?.type}: Received canceled event. (${new Date().toISOString()})`;
+        canceledEl.innerHTML = `${messageFromOpenedWindow}`;
+        break;
       default:
         console.log(`Unknown message type ${event.data?.type} received from ${event.origin}`);
     }
   }
 
   /**
-   * Open a child window to load form builder app. 
+   * Open a child window to load form builder app.
    */
   function openFormBuilder() {
     fbWindow = window.open(fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href), 'formbuilder_window');
