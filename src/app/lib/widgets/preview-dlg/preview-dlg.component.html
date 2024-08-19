@@ -45,6 +45,7 @@
       </ng-template>
     </mat-tab>
   </mat-tab-group>
+  <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
 </mat-dialog-content>
 <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
   <button class="btn btn-primary" (click)="close()">Close</button>
@@ -107,7 +108,6 @@
 </ng-template>
 
 <ng-template #jsonQ let-fhirVersion>
-  <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
   <ngx-codemirror
     (codeMirrorLoaded)="codeMirrorLoaded($event)"
     [ngModel]="formService.convertFromR4(this.data?.questionnaire, fhirVersion) | json"
