@@ -43,3 +43,7 @@ label.btn {
 .btn span.not-supported {
   font-weight: bold;
 }
+
+.not-supported {
+  color: red;
+}

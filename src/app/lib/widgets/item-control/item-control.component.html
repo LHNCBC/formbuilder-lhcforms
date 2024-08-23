@@ -6,14 +6,19 @@
              [ngClass]="labelClasses">
   </lfb-label>
 
-  <div *ngIf="dataType === 'group'" class="m-auto ms-0 vertical-container d-flex flex-wrap">
-    <div [ngClass]="controlClasses+' m-auto ms-0 btn-container d-flex flex-wrap'" role="group">
+  <div *ngIf="dataType === 'group'" class="m-auto ms-0 vertical-container d-flex flex-wrap" style="width:80%">
+    <div [ngClass]="controlClasses+' m-auto ms-0 btn-container d-flex flex-wrap'" role="group" style="width:100%">
       <ng-container *ngFor="let opt of schema.oneOf">
-        <div tabindex="0" class="btn-wrapper" [matTooltip]="((opt.support) ? '(supported): ' : '(not supported): ') + opt.description"
-              [attr.aria-label]="opt.description">
-          <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt.enum[0]" value="{{opt.enum[0]}}" type="radio" [(ngModel)]="option"
-                 (ngModelChange)="updateItemControlExt($event)">
-          <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt.enum[0]">{{opt.display}} <span *ngIf="!opt.support" class="not-supported" aria-hidden="true">*</span></label>      
+        <div class="btn-wrapper" >
+          <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt.enum[0]"
+                 value="{{opt.enum[0]}}" type="radio" [(ngModel)]="option"
+                 (ngModelChange)="updateItemControlExt($event)"
+                 [attr.aria-label]="composeGroupItemControlLabel(opt)" tabindex="0" >
+          <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt.enum[0]"
+                 [matTooltip]="((opt.support) ? '(supported): ' : '(not supported): ') + opt.description">
+            {{opt.display}} 
+            <span *ngIf="!opt.support" class="not-supported" aria-hidden="true">*</span>
+          </label>      
         </div>
       </ng-container>
     </div>

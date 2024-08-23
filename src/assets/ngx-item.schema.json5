@@ -1056,56 +1056,56 @@
         {
           'enum': ["list"],
           'display': 'List',
-          'description': 'Questions within the group should be listed sequentially',
+          'description': 'Questions within the group should be presented sequentially.',
           'support': true
         },
         {
           'enum': ["table"],
           'display': 'Vertical Answer Table',
-          'description': 'Questions within the group are rows in the table with possible answers as columns. Used for \'choice\' questions. The questions within a group marked with this controlType SHALL provide an enumerated list of options and SHOULD refer to the same set of options, same value set or same expression. In the case of a \'sparse\' table where some options aren\'t available for some questions, the order of the answers in the table is not defined and some rendering tools may refuse to display the group as a table.',
+          'description': 'For \'choice\' questions, the table representation should have questions as rows and answers as columns. Ensure option sets are consistent within a group. Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
           
           'support': true
         },
         {
           'enum': ["htable"],
           'display': 'Horizontal Answer Table',
-          'description': 'Questions within the group are columns in the table with possible answers as rows. Used for \'choice\' questions. The questions within a group marked with this controlType SHALL provide an enumerated list of options and SHOULD refer to the same set of options, same value set or same expression. In the case of a \'sparse\' table where some options aren\'t available for some questions, the order of the answers in the table is not defined and some rendering tools may refuse to display the group as a table.',
+          'description': 'For \'choice\' questions, the table representation should have questions as columns and answers as rows. Ensure option sets are consistent within a group.  Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
           'support': false
         },
         {
           'enum': ["gtable"],
           'display': 'Group Table',
-          'description': 'Questions within the group are columns in the table with each group repetition as a row. Used for single-answer questions.',
+          'description': 'Questions within the group should be presented as columns in the table, with each group repetition forming a new row. This arrangement is suitable for single-answer questions.',
           'support': true
         },
         {
           'enum': ["grid"],
           'display': 'Group Grid',
-          'description': 'Child items of type=\'group\' within the a \'grid\' group are rows, and questions beneath the \'row\' groups are organized as columns in the grid. The grid might be fully populated, but could be sparse. Questions may support different data types and/or different answer choices.',
+          'description': 'Within a \'grid\' group, child items of type=\'group\' represents rows. Questions nested within these row groups are arranged as columns. The grid layout may be fully populated or sparse. Questions can support various data types and answer choices.',
           'support': false
         },
         {
           'enum': ["header"],
           'display': 'Header',
-          'description': 'The group is to be continuously visible at the top of the questionnaire.',
+          'description': 'The group should be prominently displayed at the top of the questionnaire.',
           'support': false
         },
         {
           'enum': ["footer"],
           'display': 'Footer',
-          'description': 'The group is to be continuously visible at the bottom of the questionnaire.',
+          'description': 'The group should be prominently displayed at the bottom of the questionnaire.',
           'support': false
         },
         {
           'enum': ["page"],
           'display': 'Page',
-          'description': 'Indicates that the content within the group should appear as a logical \"page\" when rendering the form, such that all enabled items within the page are displayed at once, but items in subsequent groups are not displayed until the user indicates a desire to move to the \next\' group. (Header and footer items may still be displayed.) This designation may also influence pagination when printing questionnaires. If there are items at the same level as a \'page\' group that are listed before the \'page\' group, they will be treated as a separate page. Header and footer groups for a questionnaire will be rendered on all pages.',
+          'description': 'A \'page\' group designation indicates that the content within it should be treated as a single logical unit for rendering. When rendering, all enabled items within the page should be displayed simulatenously, while subsequent groups remain hidden until the user navigates to them. Header and footer groups are typically displayed on all pages. However, items positioned before a \'page\' group at the same hierarchical level are considered separate pages.',
           'support': false
         },
         {
           'enum': ["tab-container"],
           'display': 'Tab Container',
-          'description': 'Indicates that the group represents a collection of tabs. ALl child items SHALL be of type \'group\' and SHALL NOT declare any item controls themselves. Each child group represents one tab within the tab container, where the item.title is the label for the tab.',
+          'description': 'A group with this designation represents a collection of tabs. All child items must be of type \'group\'. Child groups cannot directly declare item controls. Each child group serves as a tab within the tab container, with its \'item.title\' property used as the tab label.',
           'support': false
         }
       ],

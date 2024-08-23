@@ -148,6 +148,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
     }
     else {
+      delete ext.valueCodeableConcept.text;
       ext.valueCodeableConcept.coding[0].code = option;
       ext.valueCodeableConcept.coding[0].display = this.optionsObj[option];
     }
@@ -196,5 +197,17 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.subscriptions.forEach((sub) => {
       sub.unsubscribe();
     })
+  }
+
+  /**
+   * Compose the Group item control label to be announced by the screen reader.
+   * @param opt - JSON schema
+   * @returns - text to be read by the screen reader.
+   */
+  composeGroupItemControlLabel(opt: any): string {
+    let label = `Group item control ${opt.display}. ${opt.description}  `;
+    if (!opt.support)
+      label += "Please note that this item control is not supported by the LHC-Forms preview.";
+    return label;
   }
 }
