@@ -16,7 +16,7 @@ import {
 } from "rxjs";
 import {debounceTime, distinctUntilChanged, filter, map} from "rxjs/operators";
 import {NgbAccordionItem, NgbTypeahead} from "@ng-bootstrap/ng-bootstrap";
-import {faCopy} from '@fortawesome/free-solid-svg-icons';
+import {faCopy} from '@fortawesome/free-regular-svg-icons';
 declare var LForms: any;
 
 /**

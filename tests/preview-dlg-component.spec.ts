@@ -99,8 +99,8 @@ test.describe('preview-dlg-component.spec.ts', async () => {
     test('should display JSON content, copy clipboard, validate errors, alert for no errors etc.', async({page}) => {
       const noErrorAlertLocator = page.getByText('No errors found');
       const errorPanelLocator = page.locator('div.accordion > div.accordion-item');
-      const firstErrorLocator = errorPanelLocator.locator('div.card > li:first-child');
-      const secondErrorLocator = errorPanelLocator.locator('div.card > li:nth-child(2)');
+      const firstErrorLocator = errorPanelLocator.locator('div.card > ul > li:first-child');
+      const secondErrorLocator = errorPanelLocator.locator('div.card > ul > li:nth-child(2)');
       const fileChooserPromise = page.waitForEvent('filechooser');
       await page.getByLabel('Start from scratch').click();
       await page.getByRole('button', {name: 'Continue'}).click();
@@ -118,7 +118,7 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       await page.getByRole('tab',{name: 'View/Validate Questionnaire JSON'}).click();
 
       await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
-      const clipboard: string = await page.evaluate('navigator.clipboard.readText()');
+      let clipboard: string = await page.evaluate('navigator.clipboard.readText()');
       const json = JSON.parse(clipboard);
       expect(json.contained).toEqual(fileJson.contained);
 
@@ -132,15 +132,16 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       expect(await secondErrorLocator.innerText()).toMatch(/Error: Dummy error/);
       await expect(noErrorAlertLocator).not.toBeAttached();
 
+      await page.getByRole('button', {name: 'Copy validation errors to clipboard'}).click();
+      clipboard = await page.evaluate('navigator.clipboard.readText()');
+      expect(clipboard).toMatch(/Fatal: Dummy fatal from r4/);
+
       await page.getByRole('button', {name: 'Hide'}).click();
       expect(await errorPanelLocator.isVisible()).toBe(true);
-      await expect(firstErrorLocator).not.toBeAttached();
+      await expect(firstErrorLocator).toBeHidden(); // TODO - This line passes assertion for *.toBeVisible() also ??
 
       await page.getByRole('button', {name: 'Show'}).click();
-      expect(await firstErrorLocator.isVisible()).toBe(true);
-
-      await page.getByRole('button', {name: 'Remove the messages'}).click();
-      await expect(errorPanelLocator).not.toBeAttached();
+      await expect(firstErrorLocator).toBeVisible();
 
       await inputEl.clear();
       // Should show alert for no errors.

@@ -167,7 +167,7 @@ describe('Home page', () => {
         cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
         cy.contains('.mat-mdc-tab-labels span', 'View/Validate Questionnaire JSON').scrollIntoView().click();
         cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'R4').scrollIntoView().click();
-        cy.contains('button', 'Copy questionnaire to clipboard').focus().realClick();
+        cy.get('button[title="Copy questionnaire to clipboard"]').first().focus().realClick();
         CypressUtil.getClipboardContent((text) => {
           const form = JSON.parse(text);
           expect(form.item[0].answerOption.length).to.be.equal(3);
@@ -200,7 +200,7 @@ describe('Home page', () => {
         cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
         cy.contains('.mat-mdc-tab-labels span', 'View/Validate Questionnaire JSON').scrollIntoView().click();
         cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'STU3').scrollIntoView().click();
-        cy.contains('button', 'Copy questionnaire to clipboard').focus().realClick();
+        cy.get('button[title="Copy questionnaire to clipboard"]').first().focus().realClick();
         CypressUtil.getClipboardContent((text) => {
           const form = JSON.parse(text);
           expect(form.item[0].option.length).to.be.equal(3);
@@ -219,7 +219,7 @@ describe('Home page', () => {
         cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
         cy.contains('.mat-mdc-tab-labels span', 'View/Validate Questionnaire JSON').scrollIntoView().click();
         cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'R4').scrollIntoView().click();
-        cy.contains('button', 'Copy questionnaire to clipboard').focus().realClick();
+        cy.get('button[title="Copy questionnaire to clipboard"]').first().focus().realClick();
         CypressUtil.getClipboardContent((text) => {
           const form = JSON.parse(text);
           expect(form.title).to.be.equal(json.name);
