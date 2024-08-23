@@ -18,7 +18,7 @@
              maxlength="255"
              [ngClass]="{invalid: errors}"
              [attr.aria-invalid]="errors"
-             (focus)="checkForErrors()"
+             (focus)="announceErrors()"
              [formControl]="control">
       <ul>
         <ng-container *ngFor="let error of errors" id="errorMessages" role="alert" >

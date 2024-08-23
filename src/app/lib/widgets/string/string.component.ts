@@ -3,6 +3,7 @@
  */
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'lfb-string',
@@ -37,6 +38,11 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
 
   Array = Array; // To use in templates.
+
+  constructor(protected liveAnnouncer: LiveAnnouncer) {
+    super();
+  }
+
   ngOnInit() {
     super.ngOnInit();
     this.controlClasses = this.controlClasses || 'form-control form-control-sm';
@@ -77,5 +83,16 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
       return el.pattern === pattern;
     });
     return messageObj ? messageObj.message : null;
+  }
+
+
+  /**
+   * Check for errors when the field is focused and announce any existing errors.
+   */
+  announceErrors(): void {
+    if(this.errors) {
+      const combinedErrorMessage = this.errors.reduce((acc, error) => acc + error.originalMessage, '');
+      this.liveAnnouncer.announce(combinedErrorMessage);
+    }
   }
 }

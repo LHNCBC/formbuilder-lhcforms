@@ -249,10 +249,12 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngAfterViewInit() {
     this.treeOptions.scrollContainer = this.sidenavEl.nativeElement;
     this.formService.setTreeModel(this.treeComponent.treeModel);
-    this.formService.loadTreeNodeStatusMap();
+    
     setTimeout(() => {
       this.treeComponent.treeModel.update();
-    });
+      this.formService.loadTreeNodeStatusMap();
+      this.formService.loadLinkIdTracker();
+    }, 0);
     this.isViewInited = true;
   }
 
@@ -385,7 +387,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       when the field is in focus again.
     */
     if(this.focusNode?.data && checkForEmptyLinkId
-      && (this.focusNode.data.linkId === undefined || typeof this.focusNode.data.linkId  === 'number')) {
+      && (this.focusNode.data.linkId === undefined )) {
       this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
     }
     this.treeService.nodeFocus.next(node);
@@ -455,7 +457,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.treeComponent.treeModel.update();
       this.treeComponent.treeModel.focusNextNode();
       this.setNode(this.treeComponent.treeModel.getFocusedNode(), true);
-      this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId.toString());
+      this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId);
+      this.formService.addLinkIdToLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
       this.stopSpinner();
     });
   }
@@ -610,6 +613,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
       // Remove the node and update the tree.
       this.formService.deleteTreeNodeStatus(this.focusNode.id.toString());
+      this.formService.removeLinkIdFromLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
 
       this.focusNode.parent.data.item.splice(index, 1);
       this.treeComponent.treeModel.update();
@@ -877,6 +881,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     const result = this.formService.getTreeNodeByLinkId(newItem.linkId);
     if (result) {
       this.treeComponent.treeModel.setFocusedNode(result);
+      this.formService.addTreeNodeStatus(result.id.toString(), result.data.linkId);
+      this.formService.addLinkIdToLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
     }
   }
 

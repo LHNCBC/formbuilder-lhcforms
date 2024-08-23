@@ -1,10 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { StringComponent } from '../string/string.component';
-import { ExtensionsService } from 'src/app/services/extensions.service';
 import { Subscription } from 'rxjs';
-import { SharedObjectService } from 'src/app/services/shared-object.service';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import { FormService } from 'src/app/services/form.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
@@ -17,8 +14,8 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
   subscriptions: Subscription[] = [];
   errorIcon = faExclamationTriangle;
 
-  constructor(private liveAnnouncer: LiveAnnouncer) {
-    super();
+  constructor(protected liveAnnouncer: LiveAnnouncer) {
+    super(liveAnnouncer);
   }
 
   /**
@@ -40,7 +37,7 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
         // For some reason, errors have duplicates. Remove them.
         const errorsObj = {};
         errors.reduce((acc, error) => {
-          if ((error.path === "#/linkId" || error.path === "#linkId") && error.code !== "OBJECT_MISSING_REQUIRED_PROPERTY") {
+          if (error.path === "#linkId" && error.code !== "OBJECT_MISSING_REQUIRED_PROPERTY") {
             if (error.code !== "PATTERN" || (error.code === "PATTERN" && this.formProperty.value)) {
               if(!acc[error.code]) {
                 acc[error.code] = error;
@@ -56,16 +53,6 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
       }
     });
     this.subscriptions.push(sub);
-  }
-
-  /**
-   * Check for errors when the field is focused and announce any existing errors.
-   */
-  checkForErrors(): void {
-    if(this.errors) {
-      const combinedErrorMessage = this.errors.reduce((acc, error) => acc + error.originalMessage, '');
-      this.liveAnnouncer.announce(combinedErrorMessage);
-    }
   }
 
   /**

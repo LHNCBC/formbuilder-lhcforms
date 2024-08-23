@@ -82,10 +82,26 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    */
   isValid(rowProperty: ObjectProperty, field: string): boolean {
     const prop = rowProperty.getProperty(field);
+    const errorType = ["ENABLEWHEN", "INVALID_QUESTION"];
     const ret = prop._errors?.some((err) => {
-      return err.code?.startsWith('ENABLEWHEN');
+      return errorType.some(errType => err.code?.startsWith(errType));
     });
     return !ret;
+  }
+
+  /**
+   * Get errors from question[x] form property.
+   * @param rowProperty - Object property representing an enableWhen condition.
+   * @return - Observable<string>
+   */
+  getQuestionFieldErrors(rowProperty: ObjectProperty): Observable<string> {
+    let errorMessages: string [] = null;
+    const question = rowProperty.getProperty('question').value;
+    if (question) {
+      const formProperty = rowProperty.getProperty('question');  
+      errorMessages = this.getFieldErrors(formProperty);
+    }
+    return of(errorMessages?.join());
   }
 
   /**
@@ -110,7 +126,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    */
   getFieldErrors(fieldProperty: FormProperty): string [] {
     const messages = fieldProperty?._errors?.reduce((acc, error) => {
-      if(error.code?.startsWith('ENABLEWHEN')) {
+      if(error.code?.startsWith('ENABLEWHEN') || error.code?.startsWith('INVALID_QUESTION')) {
         acc.push(error.message);
       }
       return acc;

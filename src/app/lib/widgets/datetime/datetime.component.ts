@@ -11,7 +11,7 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import {DateComponent} from '../date/date.component';
 import {DateUtil, DateTime} from '../../date-util';
-
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 
 interface ConfigureDateTime {
@@ -135,8 +135,9 @@ export class DatetimeComponent extends DateComponent implements OnInit {
   calendar = inject(NgbCalendar);
   constructor(private dateAdapter: NgbDateAdapter<string>,
               private parserFormatter: NgbDateParserFormatter,
-              private timeAdapter: NgbTimeAdapter<NgbTimeStruct>) {
-    super();
+              private timeAdapter: NgbTimeAdapter<NgbTimeStruct>,
+              protected liveAnnouncer: LiveAnnouncer) {
+    super(liveAnnouncer);
     DatetimeComponent.id++;
   }
   ngOnInit() {

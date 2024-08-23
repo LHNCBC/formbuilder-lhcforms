@@ -306,6 +306,7 @@ export class BasePageComponent implements OnInit {
       this.setQuestionnaire(this.formService.autoLoadForm());
 
       this.formService.autoLoadTreeNodeStatusMap();
+      this.formService.loadLinkIdTracker();
     }
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');
@@ -333,6 +334,7 @@ export class BasePageComponent implements OnInit {
 
     if(this.startOption !== 'from_autosave') {
       this.formService.clearAutoSavedTreeNodeStatusMap();
+      this.formService.clearLinkIdTracker();
     }
   }
 

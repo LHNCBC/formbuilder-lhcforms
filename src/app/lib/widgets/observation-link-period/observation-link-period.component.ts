@@ -11,7 +11,7 @@ import fhir from 'fhir/r4';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {StringComponent} from '../string/string.component';
 import {fhirPrimitives} from '../../../fhir';
-
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 interface ObservationLinkPeriodExtension {
   url: fhirPrimitives.url,
@@ -49,8 +49,8 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
     {code: 'ms', unit: 'milliseconds'}
   ];
 
-  constructor(private extensionsService: ExtensionsService) {
-    super();
+  constructor(private extensionsService: ExtensionsService, protected liveAnnouncer: LiveAnnouncer) {
+    super(liveAnnouncer);
     this.elementId = 'observationLinkPeriod_'+ObservationLinkPeriodComponent.seqNum++;
     this.subscriptions = [];
   }

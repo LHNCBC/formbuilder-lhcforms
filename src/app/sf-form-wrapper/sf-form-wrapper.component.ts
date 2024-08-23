@@ -180,7 +180,23 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     let errors: any[] = [];
     if((q?.value?.trim().length > 0) && op?.value.length > 0) {
       const aValue = answerX?.value;
-      if(answerX && (Util.isEmpty(aValue)) && op?.value !== 'exists') {
+
+      // Validate whether the  'linkId' specified in the question exists.
+      // If not, then throw the 'INVALID_QUESTION' error.
+      if (!this.formService.isValidLinkId(q?.value)) {
+        const errorCode = 'INVALID_QUESTION';
+        const err: any = {};
+        err.code = errorCode;
+        err.path = `#${q.canonicalPathNotation}`;
+        err.message = `Question not found for the linkId '${q.value}'`;
+        const valStr = JSON.stringify(aValue);
+        err.params = [q.value, op.value, valStr];
+        errors.push(err);
+        const i = q._errors?.findIndex((e) => e.code === errorCode);
+        if(!(i >= 0)) { // Check if the error is already processed.
+          q.extendErrors(err);
+        }
+      } else if(answerX && (Util.isEmpty(aValue)) && op?.value !== 'exists') {
         const errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
         const err: any = {};
         err.code = errorCode;
@@ -208,6 +224,43 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     return errors;
   }
 
+  /**
+   * Handle the 'linkId' validation result by updating the 'linkIdTracker' and the validation status
+   * accordingly, depending on the outcome of the validation. 
+   * @param hasDuplicate - True if ther is a duplicate 'linkId', otherwise false.
+   * @param prevLinkId - existing linkId associated with item of the node. 
+   * @param newLinkId - updated linkId associated with item of the node. 
+   * @param errors - Array of errors from the validation or null.
+   */
+  handleLinkIdValidationResult(hasDuplicate: boolean, prevLinkId: string, newLinkId: string, errors: any[]): void {
+    let dupIds = null;
+    if (!errors) {
+      dupIds = this.formService.getLinkIdTrackerByLinkId(prevLinkId);
+    }
+    else if (hasDuplicate) {
+      dupIds = this.formService.getLinkIdTrackerByLinkId(newLinkId);
+      this.formService.updateLinkIdForLinkIdTracker(prevLinkId, newLinkId);
+    }
+
+    if (dupIds) {
+      if ((!errors && dupIds.length < 3) || errors) {
+        dupIds.forEach(id => {
+          if (errors)
+            errors[0].params[0].id = id;
+          const val = (id == this.model.id || !prevLinkId) ? newLinkId : prevLinkId;
+          this.formService.updateValidationStatus(id, val, 'linkId', errors);
+        });
+      } else {
+        this.formService.updateValidationStatus(this.model.id, newLinkId, 'linkId', errors);
+      }
+    } else {
+      this.formService.updateValidationStatus(this.model.id, newLinkId, 'linkId', errors);
+    }
+
+    if (!errors) {
+      this.formService.updateLinkIdForLinkIdTracker(prevLinkId, newLinkId);
+    }
+  }
 
   /**
    * Custom validator for unique linkId. 
@@ -228,6 +281,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     }
 
     const prevLinkId = this.linkId;
+    let hasDuplicate = false;
     const extensionsProp = rootProperty.getProperty('extension');
     const changed = (value !== this.linkId);
     if (changed) {
@@ -243,7 +297,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
         err.params = [{'linkId': prevLinkId, 'id': this.model.id}];
         errors.push(err);
       } else {
-        if (this.formService.treeNodeHasDuplicateLinkId(value)) {
+        if (this.formService.treeNodeHasDuplicateLinkIdByLinkIdTracker(value)) {
+          hasDuplicate = true;
+          
           const errorCode = 'DUPLICATE_LINK_ID';
           const err: any = {};
           err.code = errorCode;
@@ -257,7 +313,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
           const err: any = {};
           err.code = errorCode;
           err.path = `#${editableLinkId.canonicalPathNotation}`;
-          err.message = `LinkId cannot exceeds 255 characters.`;
+          err.message = `LinkId cannot exceed 255 characters.`;
           err.params = [{'linkId': value, 'id': this.model.id, 'field': 'linkId'}];
           errors.push(err);
         }
@@ -269,7 +325,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       else {
         errors = null;
       }
-      this.formService.updateValidationStatus(this.model.id, value, 'linkId', errors);
+
+      this.handleLinkIdValidationResult(hasDuplicate, prevLinkId, value, errors);
     } else {
       const nodeStatus = this.formService.getTreeNodeStatusById(this.model.id);
       errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;

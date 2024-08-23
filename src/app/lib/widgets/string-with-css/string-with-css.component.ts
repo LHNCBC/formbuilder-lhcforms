@@ -3,6 +3,7 @@ import {StringComponent} from '../string/string.component';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {Util} from '../../util';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'lfb-string-with-css',
@@ -21,8 +22,8 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
   };
 
 
-  constructor() {
-    super();
+  constructor(protected liveAnnouncer: LiveAnnouncer) {
+    super(liveAnnouncer);
   }
 
 
