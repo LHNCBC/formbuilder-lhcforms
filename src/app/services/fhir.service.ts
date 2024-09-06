@@ -326,7 +326,7 @@ export class FhirService {
     let urlObj: URL = null;
     try {
       urlObj = new URL(webUrl);
-      if(!urlObj.origin || !urlObj.origin.match(/^https?:\/\/[^\/]+(:\d+)?/i)) {
+      if(!urlObj.protocol.match(/^https?:/i)) {
         urlObj = null;
       }
     } catch (e) {}
