@@ -335,6 +335,24 @@ export class FormService {
     return this.findNodeByLinkId(this.treeModel.roots, linkId);
   }
 
+
+  /**
+   * Checks if the focused node has an extension.
+   * @returns True if the focused node's data contains an extension. Otherwise false.
+   */
+  hasExtension(): boolean {
+    const ext = this.treeModel?.getFocusedNode()?.data?.extension;
+    return Array.isArray(ext) ? ext.length > 0 : !!ext;
+  }
+
+  /**
+   * Checks if the focused node has sub-items.
+   * @returns True if the focused node's data contains sub-items. Otherwise false.
+   */
+  hasSubItems(): boolean {
+    return this.treeModel?.getFocusedNode()?.data?.item ?? false;
+  }
+
   /**
    * Get preferred terminology server walking along the ancestral tree nodes. Returns the first encountered server.
    * @param sourceNode - Tree node to start the traversal.

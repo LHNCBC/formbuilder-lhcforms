@@ -49,9 +49,6 @@ export class SfFormWrapperComponent implements OnChanges, AfterViewInit {
     '/type': (value: string, formProperty: FormProperty, rootProperty: PropertyGroup) => {
       // Internally represent display type as group. Identifying display/group type is deferred until
       // the form is converted to json output.
-      if(value === 'display') {
-        formProperty.setValue('group', true);
-      }
       return null;
     },
     '/enableWhen': this.validateEnableWhenAll.bind(this),

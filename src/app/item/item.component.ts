@@ -161,8 +161,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     allowDrag: (node) => {
       return true;
     },
-    allowDrop: (node) => {
-      return true;
+    allowDrop: (node, { parent, index }) => {
+      return (parent.data.type !== 'display');
     },
     // allowDragoverStyling: true,
     levelPadding: 10,

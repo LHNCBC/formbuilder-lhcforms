@@ -1285,7 +1285,7 @@ describe('Home page', () => {
 
     xit('should create display type', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header (group/display)');
+      cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
@@ -1296,7 +1296,7 @@ describe('Home page', () => {
       cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
 
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('group');
+        expect(qJson.item[0].type).equal('display');
       });
       cy.get('@item0').dblclick();
       cy.get('@item1').click();
@@ -1306,16 +1306,49 @@ describe('Home page', () => {
       });
     });
 
+    // Skip this test for now as the dragAndDropNode command is not functioning
+    xit('should not be able to drop item on display data type item', () => {
+      cy.get('@type').contains('string');
+      cy.selectDataType('display');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+      });
+      cy.get('@addNewItem').click();
+
+      cy.contains('.node-content-wrapper span', 'New item 1').as('item1');
+
+      cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
+
+      cy.get('.tree-node').eq(1).should('have.class', 'tree-node-level-1');
+    });
+
+    // Skip this test for now as the dragAndDropNode command is not functioning
+    xit('should be able to drop item on display data type item', () => {
+      cy.get('@type').contains('string');
+      cy.selectDataType('group');
+      cy.questionnaireJSON().should((qJson) => {
+        console.log('LOOK HERE ---- ' + JSON.stringify(qJson));
+        expect(qJson.item[0].type).equal('group');
+      });
+      cy.get('@addNewItem').click();
+
+      cy.contains('.node-content-wrapper span', 'New item 1').as('item1');
+
+      cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
+
+      cy.get('.tree-node').eq(1).should('have.class', 'tree-node-level-2');
+    });
+
     it('should retain header type after switching to another item and switching back', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header (group/display)');
+      cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
       cy.get('@addNewItem').click();
       cy.get('@type').contains('string');
       cy.get('@item0').click();
-      cy.get('@type').contains('header (group/display)');
+      cy.get('@type').contains('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
         expect(qJson.item[1].type).equal('string');
@@ -1930,6 +1963,7 @@ describe('Home page', () => {
         });
       });
     });
+
   });
 
   describe('Test descendant items and display/group type changes', () => {
@@ -1959,12 +1993,12 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].type).to.equal('string');
       });
       cy.get('#text').clear().type('xxx');
-      cy.get('#type').select('header (group/display)');
+      cy.get('#type').select('display');
 
       cy.clickTreeNode('My health history');
       cy.getTreeNode('xxx').click({force: true}); // Force through tooltip.
       cy.get('#text').should('have.value', 'xxx');
-      cy.get('#type').should('have.value', '12: group');
+      cy.get('#type').should('have.value', '13: display');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].text).to.equal('xxx');
@@ -1972,6 +2006,7 @@ describe('Home page', () => {
       });
     });
   });
+
 });
 
 describe('Accepting only LOINC terms of use', () => {

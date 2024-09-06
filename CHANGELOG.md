@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.6] 2024-10-03
+### Changed
+- Split the 'header (group/display)' data type option into separate options.
+
 ## [9.6.5] 2024-09-18
 ### Fixed
 - Change protocol of hapi.fhir.org urls to https.

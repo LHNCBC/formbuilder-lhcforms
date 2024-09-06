@@ -326,8 +326,7 @@ export class Util {
         }
         // Update type for header
         else if(this.key === 'type' && (node === 'group' || node === 'display')) {
-          const type = this.parent.node.item?.length > 0 ? 'group' : 'display';
-          this.update(type);
+          this.update(node);
         }
       });
 

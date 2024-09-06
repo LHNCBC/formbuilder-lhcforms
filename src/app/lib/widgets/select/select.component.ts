@@ -4,7 +4,7 @@
 import {AfterViewInit, Component, Input} from '@angular/core';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
-
+import {FormService} from '../../../services/form.service';
 
 @Component({
   selector: 'lfb-select',
@@ -22,6 +22,10 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
   // Options list for the pull down
   allowedOptions: Array<{value: string, label: string}>;
 
+  constructor(protected formService: FormService) {
+    super();
+  }
+
   /**
    * Initialize component, mainly the options list.
    */
@@ -32,7 +36,7 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
       return this.mapOption(e);
     });
     this.allowedOptions = allowedOptions.filter((e) => {
-      return this.isIncluded(e.value);
+      return this.isIncluded(e.value) && this.isTypeAllowed(e.value);
     });
     if(this.schema.widget.addEmptyOption) {
       this.allowedOptions.unshift({value: null, label: 'None'});
@@ -57,5 +61,22 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
    */
   isIncluded(opt: string): boolean {
     return !(this.selectOptionsMap.remove && this.selectOptionsMap.remove.indexOf(opt) >= 0);
+  }
+
+  /**
+   * Allows the inclusion of the data type option based on the following conditions:
+   *   - If the 'validateType' flag is not set.
+   *   - If the 'validateType' flag is set and the option is not equal to 'display'.
+   *   - If the 'validateType' flag is set, the option is equal to 'display', and the item does not
+   *     have extensions or sub-items. 
+   * @param opt - data type option.
+   * @returns True if the data type option should be included in the allowedOptions drop-down list
+   */
+  isTypeAllowed(opt: string): boolean {
+    return (!this.selectOptionsMap.validateType ||
+            (this.selectOptionsMap.validateType && 
+             (opt !== 'display' || (opt === 'display' && !this.formService.hasExtension() && !this.formService.hasSubItems()))
+            )
+           );
   }
 }
