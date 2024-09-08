@@ -44,6 +44,15 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
   }
 
   /**
+   * Recheck the options for the data type. 
+   */
+  onSelectFocus(): void {
+    this.allowedOptions = this.allowedOptions.filter((e) => {
+      return this.isTypeAllowed(e.value);
+    });
+  }
+
+  /**
    * Map any display strings.
    * @param opt
    */

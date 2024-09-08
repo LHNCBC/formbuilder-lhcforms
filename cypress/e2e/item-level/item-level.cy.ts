@@ -1285,7 +1285,7 @@ describe('Home page', () => {
 
     xit('should create display type', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('display');
+      cy.selectDataType('header display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
@@ -1309,7 +1309,7 @@ describe('Home page', () => {
     // Skip this test for now as the dragAndDropNode command is not functioning
     xit('should not be able to drop item on display data type item', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('display');
+      cy.selectDataType('header display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
@@ -1325,9 +1325,8 @@ describe('Home page', () => {
     // Skip this test for now as the dragAndDropNode command is not functioning
     xit('should be able to drop item on display data type item', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('group');
+      cy.selectDataType('header group');
       cy.questionnaireJSON().should((qJson) => {
-        console.log('LOOK HERE ---- ' + JSON.stringify(qJson));
         expect(qJson.item[0].type).equal('group');
       });
       cy.get('@addNewItem').click();
@@ -1339,16 +1338,88 @@ describe('Home page', () => {
       cy.get('.tree-node').eq(1).should('have.class', 'tree-node-level-2');
     });
 
+    it('should not display header display data type if item has extension', () => {
+      cy.get('@type').contains('string');
+
+      cy.get('#type').then($dataTypeSelect => {
+        cy.wrap($dataTypeSelect)
+          .should('be.visible')
+          .find('option')
+          .contains('header group')
+          .should('exist');
+
+        cy.wrap($dataTypeSelect)
+          .find('option')
+          .contains('header display')
+          .should('exist');
+      });
+
+      cy.expandAdvancedFields();
+
+      // Fill in the Terminology Server field which should result in the extension being added
+      cy.tsUrl().scrollIntoView().clear().type('https://snowstorm.ihtsdotools.org/fhir');
+
+      cy.get('#type').focus().then($dataTypeSelect => {
+        cy.wrap($dataTypeSelect)
+          .should('be.visible')
+          .find('option')
+          .contains('header group')
+          .should('exist');
+
+        cy.wrap($dataTypeSelect)
+          .find('option')
+          .should('not.contain', 'header display');
+      });
+    });
+
+    it('should not display header display data type if item has sub-item', () => {
+      cy.get('@type').contains('string');
+
+      cy.get('#type').then($dataTypeSelect => {
+        cy.wrap($dataTypeSelect)
+          .should('be.visible')
+          .find('option')
+          .contains('header group')
+          .should('exist');
+
+        cy.wrap($dataTypeSelect)
+          .find('option')
+          .contains('header display')
+          .should('exist');
+      });
+
+      cy.getTreeNode('Item 0').as('contextNode');
+      cy.get('@contextNode').find('span.node-display-prefix').should('have.text', '1');
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+
+      cy.contains('button.dropdown-item', 'Insert a new child item').click();
+      cy.get('#text').should('have.value', 'New item 1');
+      cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1.1');
+
+      cy.get('@contextNode').click();
+      cy.get('#type').focus().then($dataTypeSelect => {
+        cy.wrap($dataTypeSelect)
+          .should('be.visible')
+          .find('option')
+          .contains('header group')
+          .should('exist');
+
+        cy.wrap($dataTypeSelect)
+          .find('option')
+          .should('not.contain', 'header display');
+      });
+    });
+
     it('should retain header type after switching to another item and switching back', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('display');
+      cy.selectDataType('header display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
       cy.get('@addNewItem').click();
       cy.get('@type').contains('string');
       cy.get('@item0').click();
-      cy.get('@type').contains('display');
+      cy.get('@type').contains('header display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
         expect(qJson.item[1].type).equal('string');
@@ -1993,7 +2064,7 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].type).to.equal('string');
       });
       cy.get('#text').clear().type('xxx');
-      cy.get('#type').select('display');
+      cy.get('#type').select('header display');
 
       cy.clickTreeNode('My health history');
       cy.getTreeNode('xxx').click({force: true}); // Force through tooltip.
