@@ -1087,25 +1087,25 @@
         {
           'enum': ["header"],
           'display': 'Header',
-          'description': 'The group should be prominently displayed at the top of the questionnaire.',
+          'description': 'The group should always be visible at the top of the form\'s display area.',
           'support': false
         },
         {
           'enum': ["footer"],
           'display': 'Footer',
-          'description': 'The group should be prominently displayed at the bottom of the questionnaire.',
+          'description': 'The group should always be visible at the bottom of the form\'s display area.',
           'support': false
         },
         {
           'enum': ["page"],
           'display': 'Page',
-          'description': 'A \'page\' group designation indicates that the content within it should be treated as a single logical unit for rendering. When rendering, all enabled items within the page should be displayed simulatenously, while subsequent groups remain hidden until the user navigates to them. Header and footer groups are typically displayed on all pages. However, items positioned before a \'page\' group at the same hierarchical level are considered separate pages.',
+          'description': 'A \'page\' group designation indicates that the content within it should be treated as a single logical unit for rendering. When rendering, all enabled items within the page should be displayed simulatenously, while subsequent groups remain hidden until the user moves to their page. Header and footer groups are typically displayed on all pages. However, items positioned before a \'page\' group at the same hierarchical level are considered separate pages.',
           'support': false
         },
         {
           'enum': ["tab-container"],
           'display': 'Tab Container',
-          'description': 'A group with this designation represents a collection of tabs. All child items must be of type \'group\'. Child groups cannot directly declare item controls. Each child group serves as a tab within the tab container, with its \'item.title\' property used as the tab label.',
+          'description': 'A group with this designation represents a collection of tabs. All child items must be of type \'group\'. Child groups cannot directly declare item controls. Each child group serves as a tab within the tab container, with its \'item.text\' property used as the tab label.',
           'support': false
         }
       ],
