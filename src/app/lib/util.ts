@@ -324,10 +324,6 @@ export class Util {
         else if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);
         }
-        // Update type for header
-        else if(this.key === 'type' && (node === 'group' || node === 'display')) {
-          this.update(node);
-        }
       });
 
       this.after(function () {

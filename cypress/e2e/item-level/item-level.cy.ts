@@ -1285,7 +1285,7 @@ describe('Home page', () => {
 
     xit('should create display type', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header display');
+      cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
@@ -1309,7 +1309,7 @@ describe('Home page', () => {
     // Skip this test for now as the dragAndDropNode command is not functioning
     xit('should not be able to drop item on display data type item', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header display');
+      cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
@@ -1325,7 +1325,7 @@ describe('Home page', () => {
     // Skip this test for now as the dragAndDropNode command is not functioning
     xit('should be able to drop item on display data type item', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header group');
+      cy.selectDataType('group');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('group');
       });
@@ -1345,12 +1345,12 @@ describe('Home page', () => {
         cy.wrap($dataTypeSelect)
           .should('be.visible')
           .find('option')
-          .contains('header group')
+          .contains('group')
           .should('exist');
 
         cy.wrap($dataTypeSelect)
           .find('option')
-          .contains('header display')
+          .contains('display')
           .should('exist');
       });
 
@@ -1363,12 +1363,12 @@ describe('Home page', () => {
         cy.wrap($dataTypeSelect)
           .should('be.visible')
           .find('option')
-          .contains('header group')
+          .contains('group')
           .should('exist');
 
         cy.wrap($dataTypeSelect)
           .find('option')
-          .should('not.contain', 'header display');
+          .should('not.contain', 'display');
       });
     });
 
@@ -1379,12 +1379,12 @@ describe('Home page', () => {
         cy.wrap($dataTypeSelect)
           .should('be.visible')
           .find('option')
-          .contains('header group')
+          .contains('group')
           .should('exist');
 
         cy.wrap($dataTypeSelect)
           .find('option')
-          .contains('header display')
+          .contains('display')
           .should('exist');
       });
 
@@ -1401,25 +1401,25 @@ describe('Home page', () => {
         cy.wrap($dataTypeSelect)
           .should('be.visible')
           .find('option')
-          .contains('header group')
+          .contains('group')
           .should('exist');
 
         cy.wrap($dataTypeSelect)
           .find('option')
-          .should('not.contain', 'header display');
+          .should('not.contain', 'display');
       });
     });
 
     it('should retain header type after switching to another item and switching back', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header display');
+      cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
       cy.get('@addNewItem').click();
       cy.get('@type').contains('string');
       cy.get('@item0').click();
-      cy.get('@type').contains('header display');
+      cy.get('@type').contains('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
         expect(qJson.item[1].type).equal('string');
@@ -2064,7 +2064,7 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].type).to.equal('string');
       });
       cy.get('#text').clear().type('xxx');
-      cy.get('#type').select('header display');
+      cy.get('#type').select('display');
 
       cy.clickTreeNode('My health history');
       cy.getTreeNode('xxx').click({force: true}); // Force through tooltip.

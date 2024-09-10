@@ -83,9 +83,8 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
    */
   isTypeAllowed(opt: string): boolean {
     return (!this.selectOptionsMap.validateType ||
-            (this.selectOptionsMap.validateType && 
-             (opt !== 'display' || (opt === 'display' && !this.formService.hasExtension() && !this.formService.hasSubItems()))
-            )
+            opt !== 'display' ||
+            !(this.formService.hasExtension() || this.formService.hasSubItems())
            );
   }
 }

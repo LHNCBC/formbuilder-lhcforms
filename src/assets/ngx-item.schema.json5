@@ -48,11 +48,7 @@
         "controlClasses": "col-10 p-0",
         "selectOptionsMap": {
           "remove": ["reference", "attachment"],
-          "validateType": true,
-          "map": {
-            "group": "header group",
-            "display": "header display"
-          }
+          "validateType": true
         }
       },
       "default": "string"
