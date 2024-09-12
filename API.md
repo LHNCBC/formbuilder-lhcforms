@@ -11,8 +11,8 @@ to real time changes in the form builder as the user makes the changes to the
 questionnaire. When the user clicks Save & Close button in the form builder window,
 the parent window will receive a closed message with the final modifications to the
 questionnaire and the form builder window is closed. When the user clicks the cancel
-button, the parent window will receive a canceled message, and the form builder window
-is closed.
+button, the form builder window is closed and the parent window will receive a
+canceled message.
 
 ### Set up event listener
 Before opening the form builder window, add an event listener to the parent
