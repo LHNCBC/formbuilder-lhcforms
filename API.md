@@ -8,11 +8,11 @@ window). The choice of new page or a new tab depends on the browser settings or
 preferences. The newly opened form builder can be loaded with an initial
 questionnaire. The parent page (sometimes referred as parent window) can listen
 to real time changes in the form builder as the user makes the changes to the
-questionnaire. When the user clicks Save & Close button in the form builder window,
-the parent window will receive a closed message with the final modifications to the
-questionnaire and the form builder window is closed. When the user clicks the cancel
-button, the form builder window is closed and the parent window will receive a
-canceled message.
+questionnaire. When the user clicks `Save & Close` button in the form builder page, or
+close button on browser tab, the parent window will receive a closed message with
+the final modifications to the questionnaire and the form builder window is closed.
+When the user clicks the `cancel` button in the form builder page, the form builder
+window is closed and the parent window will receive a canceled message.
 
 ### Set up event listener
 Before opening the form builder window, add an event listener to the parent
