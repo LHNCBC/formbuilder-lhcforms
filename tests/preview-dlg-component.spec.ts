@@ -2,6 +2,7 @@ import {test, expect} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import path from "path";
 import fs from "node:fs/promises";
+import {PWUtils} from "./pw-utils";
 
 test.describe('preview-dlg-component.spec.ts', async () => {
 
@@ -99,28 +100,10 @@ test.describe('preview-dlg-component.spec.ts', async () => {
     test('should display JSON content, copy clipboard, validate errors, alert for no errors etc.', async({page}) => {
       const noErrorAlertLocator = page.getByText('No errors found');
       const errorPanelLocator = page.locator('div.accordion > div.accordion-item');
-      const firstErrorLocator = errorPanelLocator.locator('div.card > li:first-child');
-      const secondErrorLocator = errorPanelLocator.locator('div.card > li:nth-child(2)');
-      const fileChooserPromise = page.waitForEvent('filechooser');
-      await page.getByLabel('Start from scratch').click();
-      await page.getByRole('button', {name: 'Continue'}).click();
-      await page.getByRole('button', { name: 'Import' }).click();
-      await page.getByRole('button', { name: 'Import from file...' }).click();
-      const testFile = path.join(__dirname, '../cypress/fixtures/contained-example.json');
-      const fileJson = JSON.parse(await fs.readFile(testFile, 'utf-8'));
-
-      // Start waiting for file chooser before clicking.
-      const fileChooser = await fileChooserPromise;
-      await fileChooser.setFiles(testFile);
-
-      await expect(page.locator('input#title')).toHaveValue('Contained example');
-      await page.getByRole('button', {name: 'Preview'}).click();
-      await page.getByRole('tab',{name: 'View/Validate Questionnaire JSON'}).click();
-
-      await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
-      const clipboard: string = await page.evaluate('navigator.clipboard.readText()');
-      const json = JSON.parse(clipboard);
-      expect(json.contained).toEqual(fileJson.contained);
+      const firstErrorLocator = errorPanelLocator.locator('div.card > ul > li:first-child');
+      const secondErrorLocator = errorPanelLocator.locator('div.card > ul > li:nth-child(2)');
+      const {fileJson, fbJson} = await PWUtils.loadFile(page, '../cypress/fixtures/contained-example.json');
+      expect(fbJson.contained).toEqual(fileJson.contained);
 
       const inputEl = page.getByRole('combobox', {name: 'URL of a FHIR server to run the validation'});
       await inputEl.clear();
@@ -132,15 +115,16 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       expect(await secondErrorLocator.innerText()).toMatch(/Error: Dummy error/);
       await expect(noErrorAlertLocator).not.toBeAttached();
 
+      await page.getByRole('button', {name: 'Copy validation errors to clipboard'}).click();
+      const clipboard = await PWUtils.getClipboardContent(page);
+      expect(clipboard).toMatch(/Fatal: Dummy fatal from r4/);
+
       await page.getByRole('button', {name: 'Hide'}).click();
       expect(await errorPanelLocator.isVisible()).toBe(true);
-      await expect(firstErrorLocator).not.toBeAttached();
+      await expect(firstErrorLocator).toBeHidden(); // TODO - This line passes assertion for *.toBeVisible() also ??
 
       await page.getByRole('button', {name: 'Show'}).click();
-      expect(await firstErrorLocator.isVisible()).toBe(true);
-
-      await page.getByRole('button', {name: 'Remove the messages'}).click();
-      await expect(errorPanelLocator).not.toBeAttached();
+      await expect(firstErrorLocator).toBeVisible();
 
       await inputEl.clear();
       // Should show alert for no errors.

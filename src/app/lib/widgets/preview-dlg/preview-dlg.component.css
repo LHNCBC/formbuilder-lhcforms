@@ -6,9 +6,19 @@
 }
 
 .lfb-mat-tab-content {
-  max-height: 60vh;
+  max-height: 67vh;
 }
 
 .custom-header::after {
   content: none;
+}
+
+.overlay-container {
+  position: relative;
+}
+
+.overlay-top-right {
+  position: absolute;
+  top: 0;
+  right: 0;
 }

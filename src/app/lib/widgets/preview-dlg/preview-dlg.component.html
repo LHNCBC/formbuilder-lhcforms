@@ -45,6 +45,7 @@
       </ng-template>
     </mat-tab>
   </mat-tab-group>
+  <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
 </mat-dialog-content>
 <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
   <button class="btn btn-primary" (click)="close()">Close</button>
@@ -54,21 +55,29 @@
   @if(validationErrors[fhirVersion]?.length > 0) {
     <div ngbAccordion>
       <div ngbAccordionItem #errorsItem="ngbAccordionItem" [collapsed]="false">
-        <div ngbAccordionHeader class="accordion-button custom-header justify-content-between p-2">
+        <div ngbAccordionHeader class="accordion-button custom-header justify-content-between p-1 bg-primary-subtle">
           <p class="m-0">Validation errors</p>
           <div>
-            <button ngbAccordionToggle [attr.title]="errorsItem.collapsed ? 'Show the messages' : 'Hide the messages'" class="btn btn-sm btn-primary me-2">{{errorsItem.collapsed ? 'Show' : 'Hide'}}</button>
-            <button type="button" title="Remove the messages" class="btn btn-close btn-sm btn-outline-secondary ms-2" (click)="onErrorsClose()"></button>
+            <button ngbAccordionToggle [attr.title]="errorsItem.collapsed ? 'Show the messages' : 'Hide the messages'" class="btn btn-sm btn-primary">{{errorsItem.collapsed ? 'Show' : 'Hide'}}</button>
           </div>
         </div>
 
         <div ngbAccordionCollapse>
           <div ngbAccordionBody class="p-0">
             <ng-template>
-              <div class="card bg-danger-subtle p-2">
-                @for(error of validationErrors[fhirVersion]; track $index) {
-                  <li>{{error}}</li>
-                }
+              <div #errorsContainer class="overlay-container">
+                <div class="card bg-danger-subtle p-2 px-3">
+                  <ul>
+                    @for(error of validationErrors[fhirVersion]; track $index) {
+                      <li>{{error}}</li>
+                    }
+                  </ul>
+                </div>
+                <button tabindex="0" class="btn overlay-top-right py-1 pe-2"
+                      title="Copy validation errors to clipboard"
+                      [attr.aria-label]="'Button to copy validation errors to clipboard'"
+                      [cdkCopyToClipboard]="errorsContainer.innerText"
+                ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
               </div>
             </ng-template>
           </div>
@@ -82,9 +91,8 @@
 </ng-template>
 
 <ng-template #jsonMenu let-fhirVersion>
-  <nav class="navbar bg-white p-0">
-    <div class="input-group m-1 w-50">
-      <input
+  <div class="input-group p-1">
+    <input
         placeholder="Enter base url of a FHIR server"
         aria-label="URL of a FHIR server to run the validation"
         type="url"
@@ -95,31 +103,32 @@
         (click)="click$.next($any($event).target.value)"
         (change)="inputUrlErrors = null"
         #autoCompNgb="ngbTypeahead"
-      />
-      <div class="input-group-append">
-        <button type="button" class="btn btn-sm btn-primary"
-                (click)="runValidations(fhirVersion, vServer)">Run Validation</button>
-      </div>
-    </div>
-    <button type="button" class="btn btn-sm btn-primary m-1"
-            [cdkCopyToClipboard]="formService.convertFromR4(data?.questionnaire, fhirVersion) | json">Copy questionnaire to clipboard</button>
-  </nav>
+    />
+    <button type="button" class="btn btn-sm btn-primary"
+              (click)="runValidations(fhirVersion, vServer)">Run Validation</button>
+  </div>
 </ng-template>
 
 <ng-template #jsonQ let-fhirVersion>
-  <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
-  <ngx-codemirror
-    (codeMirrorLoaded)="codeMirrorLoaded($event)"
-    [ngModel]="formService.convertFromR4(this.data?.questionnaire, fhirVersion) | json"
-    [options]="{
-    lineNumbers: true,
-    theme: 'idea code-editor',
-    mode: {name: 'application/ld+json'},
-    readOnly: true,
-    lineWrapping: true,
-    foldGutter: true,
-    gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
-  }"
-  ></ngx-codemirror>
+  <div class="overlay-container">
+    <ngx-codemirror
+      (codeMirrorLoaded)="codeMirrorLoaded($event)"
+      [ngModel]="formService.convertFromR4(this.data?.questionnaire, fhirVersion) | json"
+      [options]="{
+        lineNumbers: true,
+        theme: 'idea code-editor',
+        mode: {name: 'application/ld+json'},
+        readOnly: true,
+        lineWrapping: true,
+        foldGutter: true,
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
+      }"
+    ></ngx-codemirror>
+    <button tabindex="0" class="btn overlay-top-right me-3"
+            title="Copy questionnaire to clipboard"
+            [attr.aria-label]="'Button to copy questionnaire to clipboard'"
+            [cdkCopyToClipboard]="formService.convertFromR4(data?.questionnaire, fhirVersion) | json"
+      ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
+  </div>
   <div #jsonContent></div>
 </ng-template>

@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "9.6.4",
+  "version": "9.6.3",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -37,7 +37,6 @@
     "e2e:prod": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:start-second-server http://localhost:${npm_package_config_testPortSecond} cy-pw-run",
     "e2e:cy-run-fl": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-fl",
     "e2e:cy-run-il": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-il",
-
     "cy-pw-run": "npm run cy-run && npm run pw-run"
   },
   "files": [
@@ -60,6 +59,7 @@
     "@ctrl/ngx-codemirror": "^7.0.0",
     "@fortawesome/angular-fontawesome": "^0.14.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
+    "@fortawesome/free-regular-svg-icons": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fullcalendar/core": "^6.1.5",
     "@lhncbc/ngx-schema-form": "2.11.0-forked2",

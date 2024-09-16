@@ -1,7 +1,7 @@
 import {Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import fhir from 'fhir/r4';
-import {FHIRServer, FHIRServerValidityResponse, FhirService} from '../../../services/fhir.service';
+import {FHIRServer, FhirService} from '../../../services/fhir.service';
 import {FormService} from '../../../services/form.service';
 import {FHIR_VERSIONS, FHIR_VERSION_TYPE, Util} from "../../util";
 import {fhirPrimitives} from "../../../fhir";
@@ -10,12 +10,12 @@ import {
   BehaviorSubject,
   merge,
   Observable,
-  of,
   Subject,
   Subscription
 } from "rxjs";
 import {debounceTime, distinctUntilChanged, filter, map} from "rxjs/operators";
 import {NgbAccordionItem, NgbTypeahead} from "@ng-bootstrap/ng-bootstrap";
+import {faCopy} from '@fortawesome/free-regular-svg-icons';
 declare var LForms: any;
 
 /**
@@ -122,10 +122,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     return this.formService.convertFromR4(this.data.questionnaire, version);
   }
 
-  selectTopLevelTab(index: number) {
-    this.activeTopLevelTabIndex = index;
-  }
-
   /**
    * Handle errors from <wc-lhc-form>
    * @param event - event object emitted by wc-lhc-form.
@@ -147,7 +143,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const sTimeout = 30;
     const urlObj = new URL(rawInput);
     this.spinner$.next(true);
     this.fhirService.runValidations(this.format, urlObj, this.getQuestionnaire(format), )
@@ -193,13 +188,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Clear errors on closing the accordion.
-   */
-  onErrorsClose() {
-    this.validationErrors[this.format] = [];
-  }
-
-  /**
    * Clean up subscriptions.
    */
   ngOnDestroy() {
@@ -207,4 +195,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
       subscription?.unsubscribe();
     })
   }
+
+  protected readonly faCopy = faCopy;
 }
