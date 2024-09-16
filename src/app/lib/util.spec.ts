@@ -34,4 +34,25 @@ describe('Util', () => {
     expect(Util.validateFile(<File>{name: 'a a'})).toBeDefined();
     expect(Util.validateFile(<File>{name: 'A b.c'})).toBeDefined();
   });
+
+  it('should replace anchor tags with replaceWith text', () => {
+    const str = `See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
+                `href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or ` +
+                `try the ECL Builder in the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
+                `href="https://browser.ihtsdotools.org/?perspective=full&languages=en">SNOMED CT Browser</a>. ` +
+                `In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.`
+    const strNoAnchors = `Questions with the group should be listed sequentially`;
+
+    const replaceWith1 = 'Link:';
+    const replaceWith2 = ' link';
+    const target1 = `See the Link:ECL documentation for more information, or try the ECL Builder in the Link:SNOMED CT Browser. ` +
+                    `In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.`;
+    const target2 = `See the ECL documentation link for more information, or try the ECL Builder in the SNOMED CT Browser link. ` +
+                    `In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.`;
+    
+    expect(Util.removeAnchorTagFromString(str, replaceWith1, 'before')).toBe(target1);
+    expect(Util.removeAnchorTagFromString(str, replaceWith2, 'after')).toBe(target2);
+    expect(Util.removeAnchorTagFromString(strNoAnchors, replaceWith1, 'before')).toBe(strNoAnchors);
+    
+  });
 });

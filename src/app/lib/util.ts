@@ -15,8 +15,9 @@ export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
 export enum FHIR_VERSIONS {
   R4,
   STU3
-};
+}
 export type FHIR_VERSION_TYPE = keyof typeof FHIR_VERSIONS;
+
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
   static helpItemTemplate = {
@@ -553,4 +554,24 @@ export class Util {
     return ret;
   }
 
+
+  /**
+   * Removes the anchor tags (<a> and </a>) from a given string and replaces them with a specified string.
+   * @param str - the input string that potentiallly including anchor tags.
+   * @param replaceWith - string to insert either before or after the text inside the removed anchor tags.
+   * @param position - defines whether to insert the replace string 'before' or 'after' the replacement string.
+   * @returns - a new string with the anchor tags removed and replaced according to the specified position.
+   */
+  static removeAnchorTagFromString(str: string, replaceWith: string, position: string = 'after'): string {
+    const regex = /<a[^>]*>(.*?)<\/a>/g;
+    let replacement;
+
+    if (position === 'before') {
+      replacement = replaceWith + '$1';
+    } else {
+      replacement = '$1' + replaceWith;
+    }
+
+    return str.replace(regex, replacement);
+  }
 }

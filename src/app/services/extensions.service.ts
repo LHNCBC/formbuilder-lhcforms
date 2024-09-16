@@ -157,6 +157,7 @@ export class ExtensionsService {
       return match(ext);
     });
     this.extensionsProp.removeItem(extension);
+    this.extensionsChange$.next(this.extensionsProp.value);
   }
 
   /**
@@ -174,6 +175,8 @@ export class ExtensionsService {
     if(valueType) {
       this.pruneUnusedValues(extProp, valueType);
     }
+    this.extensionsChange$.next(this.extensionsProp.value);
+
     return extProp;
   }
 

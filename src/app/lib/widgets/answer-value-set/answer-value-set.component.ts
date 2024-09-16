@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import {Subscription} from 'rxjs';
 import {FetchService, SNOMEDEditions} from '../../../services/fetch.service';
@@ -7,10 +7,11 @@ import {ExtensionsService} from '../../../services/extensions.service';
 import {TerminologyServerComponent} from '../terminology-server/terminology-server.component';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
-
+import {Util} from '../../util';
 
 @Component({
   selector: 'lfb-answer-value-set',
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './answer-value-set.component.html',
   styleUrls: ['./answer-value-set.component.css']
 })
@@ -20,6 +21,12 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   static snomedTerminologyServer = 'https://snowstorm.ihtsdotools.org/fhir';
   static snomedTSHint = 'Note that this option also sets the terminology server option below (under "Advanced fields").';
   static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields).';
+  
+  eclHelpContent = `See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
+                   `href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or ` +
+                   `try the ECL Builder in the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
+                   `href="https://browser.ihtsdotools.org/?perspective=full&languages=en">SNOMED CT Browser</a>. ` +
+                   `In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.`
   faInfo = faInfoCircle;
   @ViewChild('eclTooltip', {read: NgbTooltip}) eclTooltip: NgbTooltip;
   snomedEditions: SNOMEDEditions = null;
@@ -39,6 +46,8 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   valueSetType = 'value-set';
   tsHint = AnswerValueSetComponent.nonSnomedTSHint;
   eclHelp = '';
+
+  tooltipOpen = false;
 
   ngOnInit() {
     super.ngOnInit();
@@ -112,13 +121,11 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   }
 
   /**
-   * Handle onBlur event.
+   * Handle onChange event.
    * @param event - DOM event object
    */
-  onEclBlur(event: Event) {
-    if(this.snomedUrl) {
-      this.setSNOMEDTerminologyServer(true);
-    }
+  onEclChange(event: Event) {
+    this.setSNOMEDTerminologyServer(!!this.snomedUrl);
   }
 
   /**
@@ -137,7 +144,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     } else {
       this.extensionService.removeExtension((ext) => {
         return ext.value.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
-                 && ext.value.valueUrl === AnswerValueSetComponent.snomedTerminologyServer;
+                  && ext.value.valueUrl === AnswerValueSetComponent.snomedTerminologyServer;
       });
     }
   }
@@ -192,8 +199,13 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     }
   }
 
-  eclTooltipClose() {
+  eclTooltipClose(evt: MouseEvent) {
+    const relatedTarget = evt.relatedTarget as HTMLElement;
+
+    if (!this.tooltipOpen || !relatedTarget)
+      return;
     this.eclTooltip.close();
+    this.tooltipOpen = false;
   }
 
   /**
@@ -201,6 +213,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    */
   eclTooltipOpen() {
     this.eclTooltip.open();
+    this.tooltipOpen = true;
   }
 
   /**
@@ -212,5 +225,14 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
         sub.unsubscribe();
       }
     });
+  }
+
+  /**
+   * Clean up the ARIA label by removing the anchor tags (<a> and </a>) from a given string and replacing them with a specified string.
+   * @param input - the input string potentially including anchor tags.
+   * @returns - string with the anchor tags removed.
+   */
+  getURLFreeAriaLabel(input: string): string {
+    return Util.removeAnchorTagFromString(input, 'Link:', 'before'); 
   }
 }
