@@ -64,9 +64,25 @@ test.describe('Open form builder in a new window', async () => {
     await page.getByRole('button', {name: 'Clear messages'}).click();
     await mainPO.titleLocator.fill('');
     await mainPO.titleLocator.fill('yyyy');
-    await mainPO.page.getByRole('button', {name: 'Close'}).click();
+    await mainPO.page.getByRole('button', {name: 'Save & Close'}).click();
     messageData.data = await getMessage(page, 'closed');
     expect(messageData.data.questionnaire.title).toBe('yyyy');
+  });
+
+  test('should demo cancel event', async ({page}): Promise<void> => {
+    const messageData = {data: null};
+
+    messageData.data = await getMessage(page, 'initialized');
+    expect(messageData.data.type).toBe('initialized');
+    messageData.data = await getMessage(page, 'updateQuestionnaire');
+    expect(messageData.data.type).toBe('updateQuestionnaire');
+
+    await mainPO.page.getByRole('button', {name: 'Cancel'}).click();
+    await mainPO.page.getByRole('button', {name: 'No'}).click();
+    await mainPO.page.getByRole('button', {name: 'Cancel'}).click();
+    await mainPO.page.getByRole('button', {name: 'Yes'}).click();
+
+    messageData.data = await getMessage(page, 'canceled');
   });
 
   async function getMessage(page: Page, type: string) {
