@@ -1,10 +1,7 @@
 import {Component, ElementRef, ViewChild} from '@angular/core';
-import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
-import fhir from 'fhir/r4';
-import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
-import {FHIRServer, FhirService} from '../../../services/fhir.service';
+import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
+import {FHIRServer, FHIRServerValidityResponse, FhirService} from '../../../services/fhir.service';
 import {fhirPrimitives} from '../../../fhir';
-declare var LForms: any;
 
 @Component({
   selector: 'lfb-user-server-dlg',
@@ -18,71 +15,37 @@ export class UserSpecifiedServerDlgComponent {
   @ViewChild('inputEl', {read: ElementRef}) inputElRef: ElementRef;
   valid: boolean = null;
   newServerObj: FHIRServer = null;
-  constructor(private fhirService: FhirService, private _http: HttpClient,
-              public activeModal: NgbActiveModal, private modalService: NgbModal) {
+  constructor(private fhirService: FhirService,
+              public activeModal: NgbActiveModal) {
     this.newServerObj = null;
   }
 
 
-  validateFHIRUrl(baseUrl) {
+  /**
+   * Validate base url and set the UI error messages.
+   *
+   * @param baseUrl - Base url of a FHIR server.
+   *
+   */
+  validateFHIRUrl(baseUrl: fhirPrimitives.url) {
     this.message = null;
     this.errorMessage = null;
     this.newServerObj = null;
     const invalidUrlMsg = `You entered an invalid url: ${baseUrl}`;
-    try {
-      const url = new URL(baseUrl);
-      if(!url.origin || !url.origin.match(/^https?:\/\/[^\/]+/i)) {
-        this.errorMessage = invalidUrlMsg;
-        return;
-      }
-    }
-    catch(err) {
-      this.errorMessage = invalidUrlMsg;
-      return;
-    }
 
-    baseUrl = baseUrl.replace(/\/$/,'');
-    const options: any = {};
-    options.observe = 'response';
-    options.responseType = 'json';
-    options.params = (new HttpParams())
-      .set('_format', 'json')
-      .set('_elements', 'fhirVersion,implementation'); // Gives a small response. Is this reliable?
-
-    this._http.get<fhir.CapabilityStatement>(baseUrl.replace(/\/$/,'')+'/metadata', options)
-      .subscribe({
-        next: (resp: HttpResponse<fhir.CapabilityStatement>) => {
-          let ver: string = null;
-          if (resp.status !== 200) {
-            this.errorMessage = resp.statusText;
-            return;
-          }
-          const body = resp.body;
-          if (body.fhirVersion) {
-            ver = LForms.Util._fhirVersionToRelease(body.fhirVersion); // Convert to R4, STU3 etc.
-            if (ver === body.fhirVersion) {
-              ver = null; // Not converted, unsupported version.
-            }
-          }
-          if (ver) {
-            const newServerObj: FHIRServer = {
-              id: this.fhirService.fhirServerList.length + 1,
-              endpoint: body.implementation?.url || baseUrl,
-              desc: body.implementation?.description || '',
-              version: ver
-            }
-            // Remove any trailing slashes.
-            newServerObj.endpoint = newServerObj.endpoint.replace(/\/+$/, '');
-            this.message = `${baseUrl} was verified to be a FHIR server.`;
-            this.newServerObj = newServerObj;
-          } else {
-            this.errorMessage = `${baseUrl} returned an unsupported FHIR version: ${body.fhirVersion}`;
-          }
-        },
-        error: (error) => {
-          console.error(error.message);
-          this.errorMessage = 'Unable to confirm that that URL is a FHIR server.';
+    this.fhirService.validateBaseUrl(baseUrl).subscribe({
+      next: (resp: FHIRServerValidityResponse) => {
+        if(resp.errorMessage) {
+          this.errorMessage = resp.errorMessage.startsWith('Invalid url:') ? invalidUrlMsg : resp.errorMessage;
+        } else {
+          resp.fhirServer.id = this.fhirService.fhirServerList.length + 1;
+          this.newServerObj = resp.fhirServer;
+          this.message = `${baseUrl} was verified to be a FHIR server.`;
         }
-      });
+      },
+      error: (error) => {
+        this.errorMessage = error.message;
+      }
+    });
   }
 }

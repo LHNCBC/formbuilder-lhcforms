@@ -22,7 +22,8 @@
     "item": [
       {
         "linkId": "l1",
-        "text": "Item 1"
+        "text": "Item 1",
+        "type": "string"
       }
     ]
 }
