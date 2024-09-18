@@ -58,14 +58,14 @@ export class FhirService {
     {
       id: 3,
       displayName: 'UHN HAPI Server - R4',
-      endpoint: 'http://hapi.fhir.org/baseR4',
+      endpoint: 'https://hapi.fhir.org/baseR4',
       desc: 'UHN Test Server (R4 Resources)',
       version: 'R4'
     },
     {
       id: 2,
       displayName: 'UHN HAPI Server - STU3',
-      endpoint: 'http://hapi.fhir.org/baseDstu3',
+      endpoint: 'https://hapi.fhir.org/baseDstu3',
       desc: 'UHN Test Server (STU3 Resources)',
       version: 'STU3'
     }
