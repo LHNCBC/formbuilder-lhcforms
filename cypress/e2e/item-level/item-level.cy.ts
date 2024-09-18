@@ -2036,7 +2036,7 @@ describe('Home page', () => {
     });
 
   });
-
+ 
   describe('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
@@ -2075,6 +2075,83 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].text).to.equal('xxx');
         expect(qJson.item[0].item[0].type).to.equal('display');
       });
+    });
+
+    it('should not be able to move an item to an item of type "display"', () => {
+      cy.toggleTreeNodeExpansion('Family member health history');
+      cy.getTreeNode('Race').click();
+
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Display Data Type');
+      cy.selectDataType('display');
+      cy.getTreeNode('Display Data Type').find('span.node-display-prefix').should('have.text', '2.8');
+
+      // Select the 'Race' item and select the 'More options'.
+      cy.getTreeNode('Race').as('contextNode');
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      // Select the 'Move this item' option.
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+      cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+      // Select target item to be 'Gender' item and it should present with 3 drop locations.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click().type('Gender').should('exist').type('{downarrow}{enter}');
+      cy.get('lfb-node-dialog').find('ul').within(() => {
+        cy.get('li').should('have.length', 3);
+        cy.get('li').eq(0).should('contain.text', 'After the target item.');
+        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+        cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
+      });
+
+      // Re-enter the target to be 'Display Data Type'. Due to the data type, it should 
+      // only present with 2 drop locations.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
+      cy.get('lfb-node-dialog').find('button.dropdown-item').should('exist').should('have.length', 1).click();
+
+      cy.get('lfb-node-dialog').find('ul').within(() => {
+        cy.get('li').should('have.length', 2);
+        cy.get('li').eq(0).should('contain.text', 'After the target item.');
+        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+      });
+
+      // Clear the target again. 3 drop locations should be presented.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear();
+      cy.get('lfb-node-dialog form').click();
+      cy.get('lfb-node-dialog').find('ul').within(() => {
+        cy.get('li').should('have.length', 3);
+        cy.get('li').eq(0).should('contain.text', 'After the target item.');
+        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+        cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
+        // Select the 'As a child of target item.' option.
+        cy.get('li').eq(2).should('contain.text', 'As a child of target item.')
+          .find('input[type="radio"').check();
+
+      });
+      // The 'Display Data Type' item should be excluded from the target item list.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
+      cy.get('lfb-node-dialog').find('button.dropdown-item').should('not.exist');
+    });
+
+    it('should not be able to insert a new child item to an item of type "display"', () => {
+      cy.toggleTreeNodeExpansion('Family member health history');
+      cy.getTreeNode('Race').click();
+
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Display Data Type');
+      cy.selectDataType('display');
+      cy.getTreeNode('Display Data Type').find('span.node-display-prefix').should('have.text', '2.8');
+
+      // Select the 'Race' item and select the 'More options'.
+      cy.getTreeNode('Race').as('contextNode');
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      // One of the option should be 'Insert a new child item.'
+      cy.get('div.dropdown-menu.show').should('contain', 'Insert a new child item');
+      
+      // Select the 'Display Data Type' item and select the 'More options.'
+      cy.getTreeNode('Display Data Type').as('contextNode').click();
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      // Due to the data type 'display', the option 'Insert a new child item.' should be hidden.
+      cy.get('div.dropdown-menu.show').should('not.contain', 'Insert a new child item');
     });
   });
 

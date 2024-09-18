@@ -52,7 +52,7 @@ export type DialogMode = 'Move' | 'Insert' | 'Copy';
                 Before the target item.
               </label>
             </li>
-            <li>
+            <li *ngIf="targetNode?.data?.type !== 'display'">
               <label class="btn">
                 <input value="CHILD" type="radio" [(ngModel)]="targetLocation" name="targetLocation" [ngModelOptions]="{standalone: true}">
                 As a child of target item.
@@ -117,8 +117,13 @@ export class NodeDialogComponent implements OnInit {
     const inputFocus$ = this.focus$;
 
     return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
-      map(term => (term === '' ? this.sources
-        : this.sources.filter(el => el.data.text.toLowerCase().indexOf(term.toLowerCase()) > -1)))
+      map(term => {
+        const items = (term === '' ? this.sources
+          : this.sources.filter(el => el.data.text.toLowerCase().indexOf(term.toLowerCase()) > -1))
+        return (this.targetLocation === 'CHILD') ?
+                 items.filter(source => source.data.type !== 'display') :
+                 items;
+      })
     );
   };
 
