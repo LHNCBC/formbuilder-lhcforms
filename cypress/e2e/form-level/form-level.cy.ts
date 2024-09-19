@@ -327,7 +327,7 @@ describe('Home page', () => {
         },
         {
           fixtureFile: 'initial-sample.STU3.json',
-          serverBaseUrl: 'http://hapi.fhir.org/baseDstu3',
+          serverBaseUrl: 'https://hapi.fhir.org/baseDstu3',
           version: 'STU3',
         }
       ].forEach((testConfig) => {

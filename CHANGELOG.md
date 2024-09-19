@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.5] 2024-09-18
+### Fixed
+- Change protocol of hapi.fhir.org urls to https.
+
 ## [9.6.4] 2024-07-10
 ### Added
 - Use $validate API on FHIR server to validate Questionnaire.
