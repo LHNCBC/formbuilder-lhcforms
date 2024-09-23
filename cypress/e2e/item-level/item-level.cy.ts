@@ -351,7 +351,7 @@ describe('Home page', () => {
         cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
         cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
         cy.get('@moveBtn').should('be.disabled');
-        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{downarrow}{enter}');
+        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{enter}');
 
       });
 
@@ -360,7 +360,7 @@ describe('Home page', () => {
         cy.contains('button', 'Create questions').click();
       });
 
-      it('should move before a target node', () => {
+      it('should move after a target node', () => {
         cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
         cy.get('@moveBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
@@ -369,7 +369,7 @@ describe('Home page', () => {
         cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
       });
 
-      it('should move after a target node', () => {
+      it('should move before a target node', () => {
         cy.get('input[type="radio"][value="BEFORE"]').click();
         cy.get('@moveBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
@@ -407,7 +407,7 @@ describe('Home page', () => {
         cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Copy this item').click();
         cy.get('lfb-node-dialog').contains('button', 'Copy').as('copyBtn');
         cy.get('@copyBtn').should('be.disabled');
-        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{downarrow}{enter}');
+        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{enter}');
 
       });
 
@@ -416,7 +416,7 @@ describe('Home page', () => {
         cy.contains('button', 'Create questions').click();
       });
 
-      it('should copy before a target node', () => {
+      it('should copy after a target node', () => {
         cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
         cy.get('@copyBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
@@ -425,7 +425,7 @@ describe('Home page', () => {
         cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '5');
       });
 
-      it('should copy after a target node', () => {
+      it('should copy before a target node', () => {
         cy.get('input[type="radio"][value="BEFORE"]').click();
         cy.get('@copyBtn').should('not.be.disabled').click();
         cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '3');
@@ -1338,40 +1338,6 @@ describe('Home page', () => {
       cy.get('.tree-node').eq(1).should('have.class', 'tree-node-level-2');
     });
 
-    it('should not display header display data type if item has extension', () => {
-      cy.get('@type').contains('string');
-
-      cy.get('#type').then($dataTypeSelect => {
-        cy.wrap($dataTypeSelect)
-          .should('be.visible')
-          .find('option')
-          .contains('group')
-          .should('exist');
-
-        cy.wrap($dataTypeSelect)
-          .find('option')
-          .contains('display')
-          .should('exist');
-      });
-
-      cy.expandAdvancedFields();
-
-      // Fill in the Terminology Server field which should result in the extension being added
-      cy.tsUrl().scrollIntoView().clear().type('https://snowstorm.ihtsdotools.org/fhir');
-
-      cy.get('#type').focus().then($dataTypeSelect => {
-        cy.wrap($dataTypeSelect)
-          .should('be.visible')
-          .find('option')
-          .contains('group')
-          .should('exist');
-
-        cy.wrap($dataTypeSelect)
-          .find('option')
-          .should('not.contain', 'display');
-      });
-    });
-
     it('should not display header display data type if item has sub-item', () => {
       cy.get('@type').contains('string');
 
@@ -2075,6 +2041,22 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].text).to.equal('xxx');
         expect(qJson.item[0].item[0].type).to.equal('display');
       });
+    });
+
+    it('should not display selected node in the target node list', () => {
+      cy.toggleTreeNodeExpansion('Family member health history');
+      // Select the 'Relationship to patient' item and select the 'More options'.
+      cy.getTreeNode('Relationship to patient').as('contextNode');
+      cy.get('@contextNode').click();
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      
+      // Select the 'Move this item' option.
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+      cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+
+      // Search for 'Gender' in the target item. It should not be displayed.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click();
+      cy.get('lfb-node-dialog [role="listbox"]').find('button.dropdown-item').should('not.contain.text', 'Relationship to patient');
     });
 
     it('should not be able to move an item to an item of type "display"', () => {

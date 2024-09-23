@@ -97,15 +97,34 @@ export class ErrorTooltip {
     this.tooltipYOffset = 20;
   }
 
+  /**
+   * Controls the visibility of the tooltip.
+   * @param show - A boolean value indicating whether to show (true)
+   *               or hide (false) the tooltip. 
+   */
   showTooltip(show: boolean) {
     this.showDropNotAllowedTooltip = show;
   }
 
+  /**
+   * Updates the position of the tooltip based on the current mouse
+   * cursor location.
+   * @param locX - The current x-coordinate of the mouse cursor.
+   * @param locY - The current y-coordinate of the mouse cursor.
+   */
   updateTooltipMouseLocation(locX: number, locY: number) {
     this.tooltipMouseXLoc = locX + this.tooltipXOffset;
     this.tooltipMouseYLoc = locY + this.tooltipYOffset;
   }
 
+  /**
+   * Updates the offset location for the tooltip in relation to the
+   * cursor.
+   * @param offsetX - The horizontal offset from the mouse cursor for
+   *                  positioning the tooltip.
+   * @param offsetY - The vertical offset from the mouse cursor for 
+   *                  positioning the tooltip.
+   */
   updateTooltipOffset(offsetX: number, offsetY: number) {
     this.tooltipXOffset = offsetX;
     this.tooltipYOffset = offsetY;
