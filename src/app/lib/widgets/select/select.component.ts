@@ -77,7 +77,7 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
    *   - If the 'validateType' flag is not set.
    *   - If the 'validateType' flag is set and the option is not equal to 'display'.
    *   - If the 'validateType' flag is set, the option is equal to 'display', and the item does not
-   *     have extensions or sub-items. 
+   *     have sub-items. 
    * @param opt - data type option.
    * @returns True if the data type option should be included in the allowedOptions drop-down list
    */
