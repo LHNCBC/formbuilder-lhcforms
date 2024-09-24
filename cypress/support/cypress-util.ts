@@ -223,11 +223,11 @@ export class CypressUtil {
   static omitField(obj, field) {
     if (Array.isArray(obj)) {
       return obj.map(item => this.omitField(item, field));
-    } else if (typeof obj === 'object' && obj !== null) {
+    } else if (obj && typeof obj === 'object') {
 
       const { [field]: _, ...newObj } = obj;
       for (const key in newObj) {
-        if (Array.isArray(newObj[key])) {
+        if (Array.isArray(newObj[key]) || (newObj[key] && typeof newObj === 'object')) {
           newObj[key] = this.omitField(newObj[key], field);
         }
       }
