@@ -69,9 +69,8 @@ export class ValidationService {
     let aType = '';
     if (questionItem) {
       aType = questionItem.data.type;
-    } else {
-      return null;
     }
+
     const aField = Util.getAnswerFieldName(aType || 'string');
     const enableWhenObj: EnableWhenValidationObject = {
       'id': id,
