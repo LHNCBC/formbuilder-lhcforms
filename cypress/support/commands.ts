@@ -448,9 +448,10 @@ Cypress.Commands.add('editableLinkId', () => {
 });
 
 /**
- * Display the Duplicate Key error
+ * Check whether a specific error message is currently displayed in the UI for the linkId field.
+ * @param errorMessage - the error message to validate.
  */
-Cypress.Commands.add('displayFieldError', (errorMessage) => {
+Cypress.Commands.add('checkLinkIdErrorIsDisplayed', (errorMessage) => {
   // The link id text input should be outline in red
   cy.editableLinkId()
     .should('have.class', 'invalid');
@@ -466,9 +467,9 @@ Cypress.Commands.add('displayFieldError', (errorMessage) => {
 });
 
 /**
- * Hide the Duplicate Key error
+ * Check whether the error message for the linkId field is no longer displayed in the UI. 
  */
-Cypress.Commands.add('hideFieldError', () => {
+Cypress.Commands.add('checkLinkIdErrorIsNotDisplayed', () => {
   // The link id text input should be outline in red
   cy.editableLinkId()
     .should('not.have.class', 'invalid');

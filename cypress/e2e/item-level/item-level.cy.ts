@@ -13,6 +13,7 @@ const excludedField = 'id';
 
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
+ 
   describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
@@ -1912,6 +1913,7 @@ describe('Home page', () => {
         });
       });
     });
+
   });
 
   describe('Item level fields: advanced - Editable Link Id', () => {
@@ -1961,6 +1963,10 @@ describe('Home page', () => {
         .should('not.equal', longLinkId)
         .its('length')
         .should('eq', linkIdSizeLimit);
+
+      cy.editableLinkId()
+        .invoke('val')
+        .should('equal', longLinkId.substring(0, linkIdSizeLimit));
     });
 
     it('should required linkId', () => {
@@ -1982,7 +1988,7 @@ describe('Home page', () => {
         .clear()
         .type('{backspace}');
 
-      cy.displayFieldError(REQUIRED);
+      cy.checkLinkIdErrorIsDisplayed(REQUIRED);
 
       cy.getTreeNode('Current Age')
         .find('fa-icon#error')
@@ -2013,7 +2019,7 @@ describe('Home page', () => {
         .clear()
         .type('/54114-4');
 
-      cy.displayFieldError(DUPLICATE_LINK_ID);
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
 
       // The node 'Living?' should display a red triangle icon (error)
       cy.getTreeNode('Living?')
@@ -2041,7 +2047,7 @@ describe('Home page', () => {
         .clear()
         .type('/54114-4');
 
-      cy.displayFieldError(DUPLICATE_LINK_ID);
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
 
       cy.getTreeNode('Current Age')
         .find('fa-icon#error')
@@ -2055,7 +2061,7 @@ describe('Home page', () => {
         .type('/54114-4/54139-1');
       
       // Error messages on the content panel should go away
-      cy.hideFieldError();
+      cy.checkLinkIdErrorIsNotDisplayed();
 
       // The red triangle icons on the tree panel for the child and parent nodes
       // should remained since there is still error at the grandchild node.
@@ -2074,7 +2080,7 @@ describe('Home page', () => {
         .type('/54114-4/54139-1/54141-7');
 
       // Error messages on the content panel should go away
-      cy.hideFieldError();
+      cy.checkLinkIdErrorIsNotDisplayed();
 
       // The red triangle icons on the tree panel for the grandchild, child
       // and parent nodes should now be hidden.
@@ -2099,10 +2105,6 @@ describe('Home page', () => {
       // Go to the grandchild node '2.4.2 Current Age'
       cy.getTreeNode('Current Age').click();
 
-      // The 'Conditional display' field needs to be filled in to prevent an error. 
-      // (ENABLEWHEN_ANSWER_REQUIRED)
-      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
-      cy.get('[id^="enableWhen.0.operator"]').select('Not empty');
 
       // Go to the link id section and enter the duplicate link id
       cy.editableLinkId()
@@ -2113,7 +2115,7 @@ describe('Home page', () => {
         .clear()
         .type('/54114-4/54139-1');
 
-      cy.displayFieldError(DUPLICATE_LINK_ID);
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
 
       // On the Tree panel, the error icon should display on the parent, child, and grandchild
       cy.getTreeNode('Current Age')
@@ -2126,23 +2128,18 @@ describe('Home page', () => {
         .find('fa-icon#error')
         .should('exist');
 
-      // Go to the sibling node '2.4.3 Cause of Death' and enter the duplicate link id
-      cy.getTreeNode('Cause of Death').click();
-
-      // The 'Conditional display' field needs to be filled in to prevent an error. 
-      // (ENABLEWHEN_ANSWER_REQUIRED)
-      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
-      cy.get('[id^="enableWhen.0.operator"]').select('Not empty');
+      // Go to the sibling node '2.4.1 Date of Birth' and enter the duplicate link id
+      cy.getTreeNode('Date of Birth').click();
 
       cy.editableLinkId()
         .scrollIntoView()
         .should('be.visible')
-        .should('have.value', '/54114-4/54139-1/54112-8');
+        .should('have.value', '/54114-4/54139-1/54124-3');
       cy.editableLinkId()  
         .clear()
         .type('/54114-4/54139-1');
 
-      cy.displayFieldError(DUPLICATE_LINK_ID);
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
 
       // Fix the duplicate link id for the node '2.4.2 Current Age'.
       cy.getTreeNode('Current Age').click();
@@ -2152,7 +2149,7 @@ describe('Home page', () => {
         .type('/54114-4/54139-1/54141-7');
       
       // Error messages on the content panel should go away
-      cy.hideFieldError();
+      cy.checkLinkIdErrorIsNotDisplayed();
 
       // The red triangle icons on the tree panel for the node '2.4.2 Current Age' should be hidden.
       cy.getTreeNode('Current Age')
@@ -2169,19 +2166,18 @@ describe('Home page', () => {
         .find('fa-icon#error')
         .should('exist');
 
-      // Fix the duplicate link id for the node '2.4.3 Cause of Death'.
-      cy.getTreeNode('Cause of Death').click();
+      // Fix the duplicate link id for the node '2.4.1 Date of Birth'.
+      cy.getTreeNode('Date of Birth').click();
       cy.editableLinkId()
         .scrollIntoView()
-        .clear()
-        .type('/54114-4/54139-1/54112-8');
+        .type('/54124-3');
 
       // Error messages on the content panel should go away
-      cy.hideFieldError();
+      cy.checkLinkIdErrorIsNotDisplayed();
 
       // The red triangle icons on the tree panel for the grandchild, child
       // and parent nodes should now be hidden.
-      cy.getTreeNode('Cause of Death')
+      cy.getTreeNode('Date of Birth')
         .find('fa-icon#error')
         .should('not.exist');
       cy.getTreeNode('Living?')
@@ -2276,6 +2272,7 @@ describe('Home page', () => {
       });
     });
   });
+  
 });
 
 describe('Accepting only LOINC terms of use', () => {

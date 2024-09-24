@@ -37,6 +37,7 @@ import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
 import copy from "fast-copy";
 import traverse from "traverse";
+import { ValidationService } from '../services/validation.service';
 
 declare var LForms: any;
 
@@ -121,7 +122,10 @@ export class ConfirmDlgComponent {
   selector: 'lfb-item-component',
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    ValidationService
+  ]
 })
 export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   errorIcon = faExclamationTriangle;
@@ -160,8 +164,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     allowDrag: (node) => {
       return true;
     },
-    allowDrop: (node) => {
-      return true;
+    allowDrop: (node, { parent, index }) => {
+      return (parent.data.type !== 'display');
     },
     // allowDragoverStyling: true,
     levelPadding: 10,
@@ -217,6 +221,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   isTreeNodeError = false;
   isChildTreeNodeError = false;
 
+  spinnerCounter = 0;
+
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
    * Wait at least for two characters, 200 millis of inactivity and not the
@@ -238,7 +244,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
               private treeService: TreeService,
               private formService: FormService,
               private dataSrv: FetchService,
-              private cdr: ChangeDetectorRef) {
+              private validationService: ValidationService) {
     this.itemEditorSchema = formService.itemEditorSchema;
   }
 
@@ -249,9 +255,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngAfterViewInit() {
     this.treeOptions.scrollContainer = this.sidenavEl.nativeElement;
     this.formService.setTreeModel(this.treeComponent.treeModel);
-    
+
     setTimeout(() => {
       this.treeComponent.treeModel.update();
+
       this.formService.loadTreeNodeStatusMap();
       this.formService.loadLinkIdTracker();
     }, 0);
@@ -290,10 +297,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
   }
 
-
   /**
    * Handles tree update event
-   */
+  */
   onTreeUpdated() {
     this.focusNode = this.treeComponent.treeModel.getFocusedNode();
     if(!this.focusNode) {
@@ -346,6 +352,17 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         this.treeNodeFocusAnnounce(event.node);
         break;
 
+      case 'initialized':
+        this.startSpinner();
+        // Set the timeout to 100ms to allow the 1st item to validate by setFocusNode() before
+        // kicking of the validateAllItems to validate the rest of the items.
+        setTimeout(() => {
+          this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1);
+          setTimeout(() => {
+            this.stopSpinner();
+          }, 10);
+        }, 100);
+        break;
       default:
         break;
     }
@@ -355,17 +372,27 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   /**
    * Trigger spinner. It is a modal dialog disabling user actions.
    * Match this with stopSpinner.
+   * 
+   * There are three 'startSpinner' calls in this class. The 'spinnerCounter'
+   * increments with each call to track the number of active operations.
+   * The spinner is set to display only on the first 'startSpinner' call.
    */
   startSpinner() {
-    this.spinner$.next(true);
+    if (!this.spinnerCounter++)
+      this.spinner$.next(true);
   }
 
 
   /**
    * Stop spinner.
+   * 
+   * There are three 'stopSpinner' calls in this class. The 'spinnerCounter'
+   * decrements with each call to track the number of active operations.
+   * The spinner is set to hide only on the last 'stopSpinner' call.
    */
   stopSpinner() {
-    this.spinner$.next(false);
+    if (--this.spinnerCounter === 0)
+      this.spinner$.next(false);
   }
 
   /**
@@ -719,11 +746,12 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param errors - Event object from <lfb-ngx-schema-form>
    */
   onValidationErrorsChanged(errors: any []) {
-    const nodeIdStr = this.focusNode.id.toString();
-
-    const nodeStatus = this.formService.getTreeNodeStatusById(nodeIdStr);
-    this.isTreeNodeError = (nodeStatus && 'hasError' in nodeStatus) ? nodeStatus['hasError'] : false;
-    this.isChildTreeNodeError = (nodeStatus && 'childHasError' in nodeStatus) ? nodeStatus['childHasError'] : false;
+    if (this.focusNode) {
+      const nodeIdStr = this.focusNode.id.toString();
+      const nodeStatus = this.formService.getTreeNodeStatusById(nodeIdStr);
+      this.isTreeNodeError = (nodeStatus && 'hasError' in nodeStatus) ? nodeStatus['hasError'] : false;
+      this.isChildTreeNodeError = (nodeStatus && 'childHasError' in nodeStatus) ? nodeStatus['childHasError'] : false;
+    }
   }
 
   /**

@@ -281,17 +281,43 @@ export class FormService {
   }
 
   /**
+   * Traverses through the tree nodes, stores each node in the 'validationNodes'
+   * array, and returns this array to be used for validation during initialization.
+   * @returns - array of TreeNodes.
+   */
+  loadValidationNodes(): TreeNode[] {
+    const validationNodes: TreeNode[] = [];
+    function recurse(node: TreeNode): void {
+      validationNodes.push(node);
+
+      if (node.hasChildren) {
+        for (const child of node.children) {
+          recurse(child);
+        }
+      }
+    }
+
+    const roots = this.treeModel.roots;
+    if (roots) {
+      for (const root of roots) {
+        recurse(root);
+      }
+    }
+
+    return validationNodes;
+  }
+
+  /**
    * Walk through the treeModel and populate the TreeNodeStatus for each of the 
    * TreeNodes into the TreeNodeStatusMap.
    */
   loadTreeNodeStatusMap(): void {
     const treeNodeStatusMap: TreeNodeStatusMap = {};
     function recurse(node: TreeNode): void {
-      const tmp: TreeNodeStatus = {
+      treeNodeStatusMap[node.id.toString()] = {
         id: node.id,
         linkId: (node.data.linkId) ? node.data.linkId : ''
       }
-      treeNodeStatusMap[node.id.toString()] = tmp;
 
       if (node.hasChildren) {
         for (const child of node.children) {
@@ -319,11 +345,10 @@ export class FormService {
    */
   addTreeNodeStatus(id: string, linkId: string): void {
     if (!(id in this.treeNodeStatusMap)) {
-      const tmp: TreeNodeStatus = {
+      this.treeNodeStatusMap[id] = {
         id: id,
         linkId: (linkId) ? linkId : ''
       }
-      this.treeNodeStatusMap[id] = tmp;
     }
   };
 
@@ -337,42 +362,21 @@ export class FormService {
 
   /**
    * The 'linkId' must be unique within the questionnaire. Check if the edited 'linkId'
-   * already exists in the questionnaire.
-   * @param newLinkId - linkId associated with item of the node.
-   * @returns true if the edited 'linkId' is not unique, otherwie return false.
-   */
-  treeNodeHasDuplicateLinkId(newLinkId: string): boolean {
-    const node = this.treeModel.getFocusedNode();
-
-    if (!node || !this.treeNodeStatusMap)
-      return false;
-
-    return Object.values(this.treeNodeStatusMap).some(item => {
-      const nodeItem = this.getTreeNodeStatusById(item.id);
-
-      return (nodeItem.id.toString() !== node.id.toString() && nodeItem.linkId === newLinkId &&
-              (!nodeItem?.hasError || (nodeItem?.hasError && !nodeItem.errors?.linkId?.some(err => err.code === "DUPLICATE_LINK_ID"))));
-    });
-  };
-
-  /**
-   * The 'linkId' must be unique within the questionnaire. Check if the edited 'linkId'
    * already exists in the questionnaire using the 'linkIdTracker'.
    * @param newLinkId - linkId associated with item of the node.
+   * @param nodeId - tree node id.
    * @returns true if the edited 'linkId' is not unique, otherwie return false.
    */
-  treeNodeHasDuplicateLinkIdByLinkIdTracker(newLinkId: string): boolean {
-    const node = this.treeModel.getFocusedNode();
-
-    if (!node || !this.treeNodeStatusMap)
+  treeNodeHasDuplicateLinkIdByLinkIdTracker(newLinkId: string, nodeId: string): boolean {
+    if (!nodeId || !this.treeNodeStatusMap)
       return false;
 
-    return (newLinkId in this.linkIdTracker && ( this.linkIdTracker[newLinkId].length > 1 || (this.linkIdTracker[newLinkId].length === 1 && this.linkIdTracker[newLinkId].indexOf(node.id.toString()) === -1)) );
+    return (newLinkId in this.linkIdTracker && ( this.linkIdTracker[newLinkId].length > 1 || (this.linkIdTracker[newLinkId].length === 1 && this.linkIdTracker[newLinkId].indexOf(nodeId.toString()) === -1)) );
   };
 
   /** 
    * Check if the tree node for the given id contains an error.
-   * @id - tree node id
+   * @id - tree node id.
    * @includeChildNodes - indicates whether to include child nodes in this check.
    * @returns true if the tree node contains error, otherwise false.
    */
@@ -493,7 +497,7 @@ export class FormService {
         delete this.treeNodeStatusMap[id]['errors'][fieldName];
       }
 
-      this.treeNodeStatusMap[id]['hasError'] = (Object.keys(this.treeNodeStatusMap[id]?.errors ?? {}).length > 0) ? true : false;
+      this.treeNodeStatusMap[id]['hasError'] = (Object.keys(this.treeNodeStatusMap[id]?.errors ?? {}).length > 0);
     }
 
     const node = this.getTreeNodeById(id);
@@ -518,7 +522,7 @@ export class FormService {
   }
 
   /**
-   * Remove TreeNodeStateMap from local storage.
+   * Remove treeNodeStatusMap from local storage.
    */
   clearAutoSavedTreeNodeStatusMap() {
     localStorage.removeItem('treeMap');
@@ -526,8 +530,7 @@ export class FormService {
   }
 
   /**
-   * Save tree in local storage.
-   * @param fhirQ - Questionnaire
+   * Save treeNodeStatusMap in local storage.
    */
   autoSaveTreeNodeStatusMap() {
     this.autoSave('treeMap', this.treeNodeStatusMap);
@@ -552,12 +555,12 @@ export class FormService {
   }
 
   /**
-   * Retrieve 'linkIdTracker' for a specified 'linkId'.
+   * Retrieve node ids for a specified 'linkId'.
    * @param linkId - linkId associated with item of the node. 
    * @returns Array of tree node id(s) if found, otherwise null 
    */
-  getLinkIdTrackerByLinkId(linkId: string): string[] | null {
-    return (linkId) ? this.linkIdTracker[linkId] : null;
+  getNodeIdsByLinkId(linkId: string): string[] | null {
+    return ((linkId || linkId === '') && linkId in this.linkIdTracker) ? this.linkIdTracker[linkId] : null;
   }
 
   /**
@@ -566,7 +569,7 @@ export class FormService {
    * @returns True if the linkId exists in the linkIdTracker.
    */
   isValidLinkId(linkId: string): boolean {
-    return !!this.getLinkIdTrackerByLinkId(linkId);
+    return !!this.getNodeIdsByLinkId(linkId);
   }
 
   /**
@@ -606,14 +609,14 @@ export class FormService {
   /**
    * Update the 'linkIdTracker' whenever the 'linkId' value changes.
    * @param prevLinkId - existing linkId associated with item of the node. 
-   * @param newLinkId - updated linkId associated with item of the node. 
+   * @param newLinkId - updated linkId associated with item of the node.
+   * @param nodeId - tree node id
    */
-  updateLinkIdForLinkIdTracker(prevLinkId: string, newLinkId: string): void {
-    const node = this.treeModel.getFocusedNode();
-    if (node) {
+  updateLinkIdForLinkIdTracker(prevLinkId: string, newLinkId: string, nodeId: string): void {
+    if (nodeId) {
       if (prevLinkId)
-        this.removeLinkIdFromLinkIdTracker(node.id.toString(), prevLinkId);
-      this.addLinkIdToLinkIdTracker(node.id.toString(), newLinkId);
+        this.removeLinkIdFromLinkIdTracker(nodeId.toString(), prevLinkId);
+      this.addLinkIdToLinkIdTracker(nodeId.toString(), newLinkId);
     }
   }
 
@@ -628,10 +631,7 @@ export class FormService {
    * Retrieve tree from the storage.
    */
   autoLoadTreeNodeStatusMap(): TreeNodeStatusMap {
-    let treeNodeStatusMap = this.autoLoad('treeMap');
-
-    this.treeNodeStatusMap = treeNodeStatusMap;
-    return this.treeNodeStatusMap;
+    return this.treeNodeStatusMap = this.autoLoad('treeMap');
   }
 
   /**
@@ -710,7 +710,24 @@ export class FormService {
    * @param linkId
    */
   getTreeNodeByLinkId(linkId: string): ITreeNode {
-    return this.findNodeByLinkId(this.treeModel.roots, linkId);
+    return this.findNodeByLinkId(this.treeModel?.roots, linkId);
+  }
+
+  /**
+   * Checks if the focused node has an extension.
+   * @returns True if the focused node's data contains an extension. Otherwise false.
+   */
+  hasExtension(): boolean {
+    const ext = this.treeModel?.getFocusedNode()?.data?.extension;
+    return Array.isArray(ext) ? ext.length > 0 : !!ext;
+  }
+
+  /**
+   * Checks if the focused node has sub-items.
+   * @returns True if the focused node's data contains sub-items. Otherwise false.
+   */
+  hasSubItems(): boolean {
+    return this.treeModel?.getFocusedNode()?.data?.item ?? false;
   }
 
   /**

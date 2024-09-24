@@ -14,6 +14,7 @@ import {ExtensionsService} from '../services/extensions.service';
 import {ObjectProperty} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
+import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -48,14 +49,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       this.formService.loading = false;
       return null;
     },
-    '/type': (value: string, formProperty: FormProperty, rootProperty: PropertyGroup) => {
-      // Internally represent display type as group. Identifying display/group type is deferred until
-      // the form is converted to json output.
-      if(value === 'display') {
-        formProperty.setValue('group', true);
-      }
-      return null;
-    },
+    '/type': this.validateType.bind(this),
     '/enableWhen': this.validateEnableWhenAll.bind(this),
     '/enableWhen/*': this.validateEnableWhenSingle.bind(this),
     '/linkId': this.validateLinkId.bind(this)
@@ -81,6 +75,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
   constructor(private extensionsService: ExtensionsService,
               private formService: FormService,
+              private validationService: ValidationService,
               private modelService: SharedObjectService) {
     this.mySchema = formService.getItemSchema();
   }
@@ -91,7 +86,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
     });
-  }
+  };
 
   ngOnChanges(changes: SimpleChanges) {
     if(changes.model) {
@@ -119,7 +114,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
   onModelReset(value) {
     this.loading = false;
-    // console.log('sf-form.onModelReset() emitted:');
     if(!this.adjustRootFormProperty()) {
       this.valueChange.emit(value);
     }
@@ -142,14 +136,95 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     return ret;
   }
 
+  createValidationObj(id: number, linkId: string, value: any, formProperty: FormProperty): any {
+    return {
+      'id': ''+id,
+      'linkId': linkId,
+      'value': value,
+      'canonicalPath': formProperty.__canonicalPath,
+      'canonicalPathNotation': formProperty.__canonicalPathNotation
+    };
+  }
 
   /**
-   * Custom validator for enableWhen (Array of conditions).
-   * @param value -  Value of the field.
-   * @param arrayProperty - Array form property of the field.
-   * @param rootProperty - Root form property
+   * Create a validation object specifically for the 'enableWhen' field validation using 'formProperty'.
+   * @param formProperty - Object form property of the 'enableWhen' field.
+   * @returns - EnableWhen validation object.
    */
-  validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup) {
+  createEnableWhenValidationObj(formProperty: ObjectProperty): EnableWhenValidationObject {
+    const q = formProperty.getProperty('question');
+    const questionItem = this.formService.getTreeNodeByLinkId(q.value);
+    
+    let aType = '';
+
+    if (questionItem) {
+      aType = questionItem.data.type;
+    }
+
+    const op = formProperty.getProperty('operator');
+    const aField = Util.getAnswerFieldName(aType || 'string');
+    const answerX = formProperty.getProperty(aField);
+    const linkIdProperty = formProperty.findRoot().getProperty('linkId');
+
+    const enableWhenObj: EnableWhenValidationObject = {
+      'id': this.model.id,
+      'linkId': linkIdProperty.value,
+      'q': q,
+      'aType': aType,
+      'op': op,
+      'aField': aField,
+      'answerX': answerX
+    };
+
+    return enableWhenObj;
+  }
+
+  /**
+   * Custom validator wrapper for the 'type' field in ngx-schema-form. Creates a validation object using data
+   * from the 'value', and 'formProperty' and then invokes the actual validation function provided by
+   * the 'ValidationService'.
+   * @param value - Value of the 'type' field
+   * @param formProperty - Object form property of the 'type' field
+   * @param rootProperty - Root form property
+   * @returns Array of errors if validation fails, or null if it passes. This returns an error in the case:
+   *          1. (INVALID TYPE) - Data type is 'display' and the item has sub-items.
+   */
+  validateType(value, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
+    let errors: any[] = [];
+    
+    if (!this.model) {
+      return null;
+    }
+    const nodeId = this.model?.id;
+
+    if (!nodeId) {
+      return null;
+    }
+
+    const node = this.formService.getTreeNodeById(nodeId);
+    const linkId = node.data.linkId;
+    const validationObj = this.createValidationObj(nodeId, linkId, value, formProperty);
+    errors = this.validationService.validateType(validationObj);
+
+    if(errors?.length) {
+      formProperty.extendErrors(errors);
+    }
+
+    return errors;
+  }
+
+  /**
+   * Custom validator wrapper for the 'enableWhen' field in ngx-schema-form. Iterates through each 'enableWhen' condition
+   * array and validate each one of them.
+   * @param value - Value of 'enableWhen' field which can be array of 1 or more 'enableWhen' conditions.
+   * @param arrayProperty - Array of form property of the 'enable' field.
+   * @param rootProperty - Root form property.
+   * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
+   *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
+   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not 
+   *                                            and not equal to 'exists', and the answer is empty. 
+   */
+  validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
     let errors = null;
     // iterate all properties
     arrayProperty.forEachChild((property: ObjectProperty) => {
@@ -164,171 +239,80 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   }
 
   /**
-   * Custom validator for single condition in enableWhen
-   * @param value - Value of single enableWhen condition
-   * @param formProperty - Object form property of the condition
-   * @param rootProperty - Root form property
+   * Custom validator wrapper for single condition in enableWhen. Creates a validation object using data from the 'formProperty'
+   * and then invokes the actual validation function provided by the 'ValidationService'.
+   * @param value - Value of single enableWhen condition.
+   * @param formProperty - Object form property of the condition.
+   * @param rootProperty - Root form property.
+   * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
+   *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
+   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not 
+   *                                            and not equal to 'exists', and the answer is empty. 
    */
-  validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup) {
-    const aType = formProperty.getProperty('__$answerType').value;
-    const q = formProperty.getProperty('question');
-    const op = formProperty.getProperty('operator');
-    const aField = Util.getAnswerFieldName(aType || 'string');
-    const answerX = formProperty.getProperty(aField);
-    const linkIdProperty = formProperty.findRoot().getProperty('linkId');
-
-    let errors: any[] = [];
-    if((q?.value?.trim().length > 0) && op?.value.length > 0) {
-      const aValue = answerX?.value;
-
-      // Validate whether the  'linkId' specified in the question exists.
-      // If not, then throw the 'INVALID_QUESTION' error.
-      if (!this.formService.isValidLinkId(q?.value)) {
-        const errorCode = 'INVALID_QUESTION';
-        const err: any = {};
-        err.code = errorCode;
-        err.path = `#${q.canonicalPathNotation}`;
-        err.message = `Question not found for the linkId '${q.value}'`;
-        const valStr = JSON.stringify(aValue);
-        err.params = [q.value, op.value, valStr];
-        errors.push(err);
-        const i = q._errors?.findIndex((e) => e.code === errorCode);
-        if(!(i >= 0)) { // Check if the error is already processed.
-          q.extendErrors(err);
-        }
-      } else if(answerX && (Util.isEmpty(aValue)) && op?.value !== 'exists') {
-        const errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
-        const err: any = {};
-        err.code = errorCode;
-        err.path = `#${answerX.canonicalPathNotation}`;
-        err.message = `Answer field is required when you choose an operator other than 'Not empty' or 'Empty'`;
-        const valStr = JSON.stringify(aValue);
-        err.params = [q.value, op.value, valStr];
-        errors.push(err);
-        const i = answerX._errors?.findIndex((e) => e.code === errorCode);
-        if(!(i >= 0)) { // Check if the error is already processed.
-          answerX.extendErrors(err);
-        }
-      }
-    }
-    if(errors.length) {
-      formProperty.extendErrors(errors);
-    }
-    else {
-      errors = null;
-    }
-
-    if (this.model && linkIdProperty) {
-      this.formService.updateValidationStatus(this.model.id, linkIdProperty.value, 'enableWhen', errors);
-    }
-    return errors;
-  }
-
-  /**
-   * Handle the 'linkId' validation result by updating the 'linkIdTracker' and the validation status
-   * accordingly, depending on the outcome of the validation. 
-   * @param hasDuplicate - True if ther is a duplicate 'linkId', otherwise false.
-   * @param prevLinkId - existing linkId associated with item of the node. 
-   * @param newLinkId - updated linkId associated with item of the node. 
-   * @param errors - Array of errors from the validation or null.
-   */
-  handleLinkIdValidationResult(hasDuplicate: boolean, prevLinkId: string, newLinkId: string, errors: any[]): void {
-    let dupIds = null;
-    if (!errors) {
-      dupIds = this.formService.getLinkIdTrackerByLinkId(prevLinkId);
-    }
-    else if (hasDuplicate) {
-      dupIds = this.formService.getLinkIdTrackerByLinkId(newLinkId);
-      this.formService.updateLinkIdForLinkIdTracker(prevLinkId, newLinkId);
-    }
-
-    if (dupIds) {
-      if ((!errors && dupIds.length < 3) || errors) {
-        dupIds.forEach(id => {
-          if (errors)
-            errors[0].params[0].id = id;
-          const val = (id == this.model.id || !prevLinkId) ? newLinkId : prevLinkId;
-          this.formService.updateValidationStatus(id, val, 'linkId', errors);
-        });
-      } else {
-        this.formService.updateValidationStatus(this.model.id, newLinkId, 'linkId', errors);
-      }
-    } else {
-      this.formService.updateValidationStatus(this.model.id, newLinkId, 'linkId', errors);
-    }
-
-    if (!errors) {
-      this.formService.updateLinkIdForLinkIdTracker(prevLinkId, newLinkId);
-    }
-  }
-
-  /**
-   * Custom validator for unique linkId. 
-   * @param value - Value of linkId
-   * @param formProperty - Object form property of the linkId
-   * @param rootProperty - Root form property
-   */
-  validateLinkId (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null  {
+  validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
     if (!this.model) {
       return null;
     }
 
-    if (this.linkId === undefined && value === '') {
-      this.linkId = value;
+    const enableWhenObj = this.createEnableWhenValidationObj(formProperty);
+    if (!enableWhenObj)
+      return null;
+
+    errors = this.validationService.validateEnableWhenSingle(enableWhenObj);
+
+
+    if(errors && errors.length) {
+      formProperty.extendErrors(errors);
+    }
+    return errors;
+  }
+
+  /**
+   * Custom validator wrapper for the 'linkId' field in ngx-schema-form. Creates a validation object using data
+   * from the 'value', 'formProperty' and/or 'rootProperty' and then invokes the actual validation function provided by
+   * the 'ValidationService'.
+   * @param value - Value of the 'linkId' field.
+   * @param formProperty - Object form property of the 'linkId' field.
+   * @param rootProperty - Root form property
+   * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
+   *          1. (REQUIRED)          - linkId is empty.
+   *          2. (DUPLICATE_LINK_ID) - duplicate linkId.
+   *          3. (MAX_LENGTH)        - linkId is 255 characters or longer.
+   */
+  validateLinkId (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
+    let errors: any[] = [];
+
+    if (!this.model) {
       return null;
     }
 
-    const prevLinkId = this.linkId;
-    let hasDuplicate = false;
-    const extensionsProp = rootProperty.getProperty('extension');
-    const changed = (value !== this.linkId);
+    const nodeId = this.model.id;
+    const prevLinkId = rootProperty._value['linkId'];
+
+    if (!nodeId) {
+      return null;
+    }
+
+    if (!prevLinkId && value === '') {
+      // Check to see if the node already has errors, otherwise null 
+      const nodeStatus = this.formService.getTreeNodeStatusById(nodeId);
+      errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;
+      return errors;
+    }
+
+    const changed = (value !== prevLinkId);
     if (changed) {
-      const editableLinkId = formProperty;
-      this.linkId = value;
+      const validationObj = this.createValidationObj(nodeId, value, value, formProperty);
+      validationObj['prevLinkId'] = prevLinkId;
+      errors = this.validationService.validateLinkId(validationObj);
 
-      if (!value) {
-        const errorCode = 'REQUIRED';
-        const err: any = {};
-        err.code = errorCode;
-        err.path = `#${editableLinkId.canonicalPathNotation}`;
-        err.message = `Link Id is required.`;
-        err.params = [{'linkId': prevLinkId, 'id': this.model.id}];
-        errors.push(err);
-      } else {
-        if (this.formService.treeNodeHasDuplicateLinkIdByLinkIdTracker(value)) {
-          hasDuplicate = true;
-          
-          const errorCode = 'DUPLICATE_LINK_ID';
-          const err: any = {};
-          err.code = errorCode;
-          err.path = `#${editableLinkId.canonicalPathNotation}`;
-          err.message = `Entered linkId is already used.`;
-          err.params = [{'linkId': value, 'id': this.model.id}];
-          errors.push(err);
-        }
-        if (value.length > 255) {
-          const errorCode = 'MAX_LENGTH';
-          const err: any = {};
-          err.code = errorCode;
-          err.path = `#${editableLinkId.canonicalPathNotation}`;
-          err.message = `LinkId cannot exceed 255 characters.`;
-          err.params = [{'linkId': value, 'id': this.model.id, 'field': 'linkId'}];
-          errors.push(err);
-        }
-      }
-
-      if(errors.length) {
+      if (errors?.length) {
         formProperty.extendErrors(errors);
       }
-      else {
-        errors = null;
-      }
-
-      this.handleLinkIdValidationResult(hasDuplicate, prevLinkId, value, errors);
     } else {
-      const nodeStatus = this.formService.getTreeNodeStatusById(this.model.id);
+      const nodeStatus = this.formService.getTreeNodeStatusById(nodeId);
       errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;
     }
     this.validationErrorsChanged.next(errors);
