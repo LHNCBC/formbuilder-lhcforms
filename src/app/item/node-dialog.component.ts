@@ -119,11 +119,9 @@ export class NodeDialogComponent implements OnInit {
 
     return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
       map(term => {
-        const items = (term === '' ? this.sources
-          : this.sources.filter(el => el.data.text.toLowerCase().indexOf(term.toLowerCase()) > -1))
-        return (this.targetLocation === 'CHILD') ?
-                 items.filter(source => source.data.type !== 'display') :
-                 items;
+        return this.sources
+                 .filter(el => term === '' || el.data.text.toLowerCase().includes(term.toLowerCase()))
+                 .filter(source => this.targetLocation !== 'CHILD' || source.data.type !== 'display');
       })
     );
   };

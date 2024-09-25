@@ -1,7 +1,7 @@
 /**
  * Customized pull down box.
  */
-import {AfterViewInit, Component, Input} from '@angular/core';
+import {AfterViewInit, Component, inject, Input} from '@angular/core';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {FormService} from '../../../services/form.service';
@@ -13,6 +13,7 @@ import {FormService} from '../../../services/form.service';
 export class SelectComponent extends LfbControlWidgetComponent implements AfterViewInit {
   faInfo = faInfoCircle;
   nolabel = false;
+  formService = inject(FormService);
 
   // A mapping for options display string. Typically, the display strings are from schema definition.
   // This map helps to redefine the display string.
@@ -22,7 +23,7 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
   // Options list for the pull down
   allowedOptions: Array<{value: string, label: string}>;
 
-  constructor(protected formService: FormService) {
+  constructor() {
     super();
   }
 

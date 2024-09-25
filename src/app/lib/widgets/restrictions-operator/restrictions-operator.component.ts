@@ -34,8 +34,8 @@ export class RestrictionsOperatorComponent extends SelectComponent implements On
   rejectChange = new EventEmitter<{reject: boolean}>();
   @ViewChild('mySelect', {static: true}) mySelect: ElementRef;
 
-  constructor(private operatorService: RestrictionOperatorService, protected formService: FormService) {
-    super(formService);
+  constructor(private operatorService: RestrictionOperatorService) {
+    super();
   }
 
   ngOnInit() {
