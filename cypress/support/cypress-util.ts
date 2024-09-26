@@ -227,9 +227,7 @@ export class CypressUtil {
 
       const { [field]: _, ...newObj } = obj;
       for (const key in newObj) {
-        if (Array.isArray(newObj[key]) || (newObj[key] && typeof newObj === 'object')) {
-          newObj[key] = this.omitField(newObj[key], field);
-        }
+        newObj[key] = this.omitField(newObj[key], field);
       }
       return newObj;
     }
