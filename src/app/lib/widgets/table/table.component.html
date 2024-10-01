@@ -32,11 +32,12 @@
             [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
           ></lfb-title>
         </th>
-        <th *ngIf="rowSelectionType === 'radio' || rowSelectionType === 'checkbox'" class="col-sm-2">
+        <th *ngIf="rowSelectionType === 'radio' || rowSelectionType === 'checkbox'" class="col-sm-2 default-column">
           <lfb-title
             title="Default"
             helpMessage="Pick a default item"
           ></lfb-title>
+          <button type="button" class="btn btn-sm btn-outline-primary p-1 unselect " (click)="resetSelections()">Reset</button>
         </th>
         <th *ngIf="!singleItem" class="col-sm-1"></th>
       </tr>

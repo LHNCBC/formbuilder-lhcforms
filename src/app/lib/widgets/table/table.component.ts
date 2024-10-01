@@ -343,4 +343,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   checkboxSelection(event) {
   }
+
+  /**
+   * Resets all selections for the 'Answer Option' checkbox and radio options. 
+   */
+  resetSelections() {
+    this.selectionRadio = -1;
+    this.selectionCheckbox = [];
+  }
 }

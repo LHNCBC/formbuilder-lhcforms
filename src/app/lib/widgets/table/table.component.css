@@ -30,3 +30,18 @@
 .add-button-alert-popover {
   background-color: lightgoldenrodyellow;
 }
+
+button.unselect {
+  margin-top: -2px;
+  font-size: xx-small;
+  border-radius: 4px;
+  padding: 1px 2px 1px !important;
+  margin-left: 4px !important;
+}
+
+th.default-column {
+  white-space: nowrap;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
