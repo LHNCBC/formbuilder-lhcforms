@@ -136,6 +136,15 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     return ret;
   }
 
+  /**
+   * Creates a validation object using data from the ngx-schema-form model,
+   * FormProperty, and tree node to be used for the validation process.
+   * @param id - tree node id.
+   * @param linkId - linkId associated with item of the node.
+   * @param value - the value of the field to be validated.
+   * @param formProperty - Object form property of the 'enableWhen' field. 
+   * @returns - validation object to be used for the validation.
+   */
   createValidationObj(id: number, linkId: string, value: any, formProperty: FormProperty): any {
     return {
       'id': ''+id,
@@ -316,6 +325,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;
     }
     this.validationErrorsChanged.next(errors);
+
+
+    console.log('sf-form-wrapper::validateLinkId done');
     return errors;
   }
 }

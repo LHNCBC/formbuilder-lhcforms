@@ -470,14 +470,14 @@ Cypress.Commands.add('checkLinkIdErrorIsDisplayed', (errorMessage) => {
  * Check whether the error message for the linkId field is no longer displayed in the UI. 
  */
 Cypress.Commands.add('checkLinkIdErrorIsNotDisplayed', () => {
-  // The link id text input should be outline in red
+  // The link id text input should not have outline in red
   cy.editableLinkId()
     .should('not.have.class', 'invalid');
-  // The error message should be display at the bottom of the text input
+  // The error message should not be displayed at the bottom of the text input
   cy.get('small.text-danger')
     .should('not.exist');
 
-  // Error should display at the top of the content and at the bottom.
+  // Error should not be displayed at the top of the content and at the bottom.
   cy.get('mat-sidenav-content ul > li')
     .should('not.contain.text', 
       'Error(s) exist in this item. The resultant form may not render properly.');

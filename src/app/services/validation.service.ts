@@ -42,19 +42,22 @@ export class ValidationService {
       const itemData = JSON.parse(JSON.stringify(validationNodes[i].data));
       itemData.id = ''+itemData.id;
       const validatorKeys = Object.keys(this.validators);
+      const self = this;
 
       for (let j = 0; j < validatorKeys.length; j++) {
         const validatorKey = validatorKeys[j];
-        setTimeout(() => {
-          itemData.cannoncial = validatorKey;
-          itemData.canonicalPathNotation = validatorKey.startsWith('/') ? validatorKey.slice(1) : validatorKey;
-          itemData.value = itemData[itemData.canonicalPathNotation];
-          
-          this.validators[validatorKey](itemData, false);
-        }, 0);
+        setTimeout(function(itemDataCopy, validatorKeyCopy) {
+          return () => {
+            itemDataCopy.cannoncial = validatorKeyCopy;
+            itemDataCopy.canonicalPathNotation = validatorKeyCopy.startsWith('/') ? validatorKeyCopy.slice(1) : validatorKeyCopy;
+            itemDataCopy.value = itemDataCopy[itemDataCopy.canonicalPathNotation];
+            
+            self.validators[validatorKeyCopy](itemDataCopy, false);
+          };
+        } (itemData, validatorKey), 0);
       }
     }
-  }
+  };
 
   /**
    * Create a validation object specifically for the 'enableWhen' field validation.

@@ -354,14 +354,12 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
       case 'initialized':
         this.startSpinner();
-        // Set the timeout to 100ms to allow the 1st item to validate by setFocusNode() before
-        // kicking of the validateAllItems to validate the rest of the items.
         setTimeout(() => {
           this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1);
           setTimeout(() => {
             this.stopSpinner();
           }, 10);
-        }, 100);
+        }, 0);
         break;
       default:
         break;
