@@ -36,28 +36,43 @@ export class ValidationService {
    * Iterates through each node in the 'validationNodes' array and invokes the custom validators for each node.
    * @param validationNodes - list of tree nodes.
    * @param startIndex - starting index for validation.
+   * @returns - A promise that resolves when all items have been validated.
    */
-  validateAllItems(validationNodes: TreeNode[], startIndex = 0): void {
-    for (let i = startIndex; i < validationNodes.length; i++) {
-      const itemData = JSON.parse(JSON.stringify(validationNodes[i].data));
-      itemData.id = ''+itemData.id;
-      const validatorKeys = Object.keys(this.validators);
-      const self = this;
+  validateAllItems(validationNodes: TreeNode[], startIndex = 0): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const promises = [];
+        for (let i = startIndex; i < validationNodes.length; i++) {
+          const itemData = JSON.parse(JSON.stringify(validationNodes[i].data));
+          itemData.id = ''+itemData.id;
+          const validatorKeys = Object.keys(this.validators);
+          const self = this;
 
-      for (let j = 0; j < validatorKeys.length; j++) {
-        const validatorKey = validatorKeys[j];
-        setTimeout(function(itemDataCopy, validatorKeyCopy) {
-          return () => {
-            itemDataCopy.cannoncial = validatorKeyCopy;
-            itemDataCopy.canonicalPathNotation = validatorKeyCopy.startsWith('/') ? validatorKeyCopy.slice(1) : validatorKeyCopy;
-            itemDataCopy.value = itemDataCopy[itemDataCopy.canonicalPathNotation];
-            
-            self.validators[validatorKeyCopy](itemDataCopy, false);
-          };
-        } (itemData, validatorKey), 0);
+          for (let j = 0; j < validatorKeys.length; j++) {
+            const validatorKey = validatorKeys[j];
+            promises.push(new Promise<void>((resolveInner) => {  
+              setTimeout(function(itemDataCopy, validatorKeyCopy) {
+                return () => {
+                  itemDataCopy.cannoncial = validatorKeyCopy;
+                  itemDataCopy.canonicalPathNotation = validatorKeyCopy.startsWith('/') ? validatorKeyCopy.slice(1) : validatorKeyCopy;
+                  itemDataCopy.value = itemDataCopy[itemDataCopy.canonicalPathNotation];
+                  self.validators[validatorKeyCopy](itemDataCopy, false);
+
+                  resolveInner();
+                };
+              } (itemData, validatorKey), 0);
+            }));
+          }
+        }
+        Promise.all(promises)
+               .then(() => resolve());
+      } catch(error) {
+        reject(error);
       }
-    }
+    });
   };
+
+
 
   /**
    * Create a validation object specifically for the 'enableWhen' field validation.

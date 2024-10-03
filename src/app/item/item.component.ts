@@ -354,12 +354,13 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
       case 'initialized':
         this.startSpinner();
-        setTimeout(() => {
-          this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1);
-          setTimeout(() => {
-            this.stopSpinner();
-          }, 10);
-        }, 0);
+        this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1)
+            .then(() => {
+              this.stopSpinner();
+            })
+            .catch(err => {
+              this.stopSpinner();
+            });
         break;
       default:
         break;
