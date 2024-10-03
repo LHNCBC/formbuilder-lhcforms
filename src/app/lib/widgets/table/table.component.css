@@ -45,3 +45,7 @@ th.default-column {
   justify-content: center;
   align-items: center;
 }
+
+td.default-column {
+  padding: .25rem .5rem !important;
+}
