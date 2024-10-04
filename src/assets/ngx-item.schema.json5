@@ -1025,7 +1025,7 @@
           {"field": "valueDate", "col": 9, "nolabel": true},
           {"field": "valueTime", "col": 9, "nolabel": true},
           {"field": "valueString", "col": 9, "nolabel": true},
-          {"field": "valueCoding.display", "title": "Display", "col": 3, "nolabel": true},
+          {"field": "valueCoding.display", "title": "Display", "nolabel": true},
           {"field": "valueCoding.code", "title": "Code", "col": 2, "nolabel": true},
           {"field": "valueCoding.system", "title": "System", "col": 2, "nolabel": true},
           {"field": "valueCoding.__$score", "title": "Score", "col": 2, "nolabel": true},

@@ -37,9 +37,9 @@
             title="Default"
             helpMessage="Pick a default item"
           ></lfb-title>
-          <button type="button" class="btn btn-sm btn-outline-primary p-1 unselect " (click)="clearSelections()">Unselect</button>
+          <button type="button" class="btn btn-sm btn-outline-primary p-1 unselect " (click)="clearSelections()">Clear</button>
         </th>
-        <th *ngIf="!singleItem" class="col-sm-1"></th>
+        <th *ngIf="!singleItem" [ngClass]="{'col-sm-1': id !== 'answerOption', 'col-sm-half': id === 'answerOption', 'action-column': id === 'answerOption'}" ></th>
       </tr>
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
@@ -54,7 +54,8 @@
         <td *ngIf="rowSelectionType === 'checkbox'" class="col-sm-2 text-center align-self-center default-column">
           <input type="checkbox" [id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]" (ngModelChange)="checkboxSelection($event)">
         </td>
-        <td [ngClass]="{'d-none': formProperty.properties.length === 1}" class="col-sm-1 align-middle action-column">
+        <td [ngClass]="{'d-none': formProperty.properties.length === 1, 'col-sm-1': id !== 'answerOption', 'col-sm-half': id === 'answerOption'}"
+            class="align-middle action-column">
           <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
                   [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
                   *ngIf="!(schema.hasOwnProperty('minItems') &&
