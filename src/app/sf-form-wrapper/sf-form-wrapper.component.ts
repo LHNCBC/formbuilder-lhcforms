@@ -182,7 +182,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'aType': aType,
       'op': op,
       'aField': aField,
-      'answerX': answerX
+      'answerX': answerX,
+      'operatorOptions': this.formService.getEnableWhenOperatorListByAnswerType(aType)
     };
 
     return enableWhenObj;
@@ -229,8 +230,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param arrayProperty - Array of form property of the 'enable' field.
    * @param rootProperty - Root form property.
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
-   *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
-   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not 
+   *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
+   *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
+   *                                             options. 
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
    *                                            and not equal to 'exists', and the answer is empty. 
    */
   validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {

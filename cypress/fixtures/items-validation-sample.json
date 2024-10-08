@@ -81,6 +81,11 @@
           "answerInteger": 5
         },
         {
+          "question": "/itm5",
+          "operator": ">",
+          "answerChoice": 6.2
+        },
+        {
           "question": "/itm4",
           "operator": "=",
           "answerString": "abc"

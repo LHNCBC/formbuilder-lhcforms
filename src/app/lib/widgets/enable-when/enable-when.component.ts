@@ -79,44 +79,40 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    * Question implies presence of enableWhen. Highlight other missing fields.
    * @param rowProperty - FormProperty representing a single condition (row).
    * @param field - Property id of the field.
+   * @returns - True if there are no errors, otherwise false.
    */
   isValid(rowProperty: ObjectProperty, field: string): boolean {
     const prop = rowProperty.getProperty(field);
-    const errorType = ["ENABLEWHEN", "INVALID_QUESTION"];
+    const enableWhenErrorPrefix = "ENABLEWHEN";
     const ret = prop._errors?.some((err) => {
-      return errorType.some(errType => err.code?.startsWith(errType));
+      return err.code?.startsWith(enableWhenErrorPrefix);
     });
     return !ret;
   }
 
   /**
-   * Get errors from question[x] form property.
+   * Loop through each of the 'EnableWhen' fields and return any errors.
    * @param rowProperty - Object property representing an enableWhen condition.
-   * @return - Observable<string>
+   * @returns - observable that emits a string created by joining the 'errorMessage' array.
    */
-  getQuestionFieldErrors(rowProperty: ObjectProperty): Observable<string> {
-    let errorMessages: string [] = null;
-    const question = rowProperty.getProperty('question').value;
-    if (question) {
-      const formProperty = rowProperty.getProperty('question');  
-      errorMessages = this.getFieldErrors(formProperty);
-    }
-    return of(errorMessages?.join());
-  }
+  getEnableWhenFieldErrors(rowProperty: ObjectProperty): Observable<string> {
+    let errorMessages: string [] = [];
+    const fields = ["question", "operator", "__$answerType"];
 
-  /**
-   * Get errors from answer[x] form property.
-   * @param rowProperty - Object property representing an enableWhen condition.
-   * @return - Observable<string>
-   */
-  getAnswerFieldErrors(rowProperty: ObjectProperty): Observable<string> {
-    let errorMessages: string [] = null;
-    const answerType = rowProperty.getProperty('__$answerType').value;
-    if(answerType) {
-      const formProperty = rowProperty.getProperty((Util.getAnswerFieldName(answerType)));
-      errorMessages = this.getFieldErrors(formProperty);
+    for (const field of fields) {
+      console.log('getEnableWhenFieldErrors::field - ' + field);
+      const fieldValue = rowProperty.getProperty(field)?.value;
+      if (fieldValue) {
+        const fieldName = (field === '__$answerType') ? Util.getAnswerFieldName(fieldValue) : field;
+        const errors = this.getFieldErrors(rowProperty.getProperty(fieldName));
+        
+        if (errors) {
+          errorMessages.push(...errors);
+          break;
+        }
+      }
     }
-    return of(errorMessages?.join());
+    return of(errorMessages.length ? errorMessages.join() : null);
   }
 
 
@@ -126,7 +122,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    */
   getFieldErrors(fieldProperty: FormProperty): string [] {
     const messages = fieldProperty?._errors?.reduce((acc, error) => {
-      if(error.code?.startsWith('ENABLEWHEN') || error.code?.startsWith('INVALID_QUESTION')) {
+      if(error.code?.startsWith('ENABLEWHEN')) {
         acc.push(error.message);
       }
       return acc;

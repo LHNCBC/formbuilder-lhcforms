@@ -49,16 +49,10 @@
                   matTooltip="Remove" aria-label="Remove"
           >
             <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-          <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getQuestionFieldErrors(rowProperty) | async"
-                  class="btn border-0 p-0 b-0 questionErrors"
-                  [matTooltip]="getQuestionFieldErrors(rowProperty) | async"
-                  [attr.aria-label]="'Error in conditional display condition '+rowNum+': '+(getQuestionFieldErrors(rowProperty) | async)"
-          ><fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon></div>
-
-          <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getAnswerFieldErrors(rowProperty) | async"
-                  class="btn border-0 p-0 b-0 answerXErrors"
-                  [matTooltip]="getAnswerFieldErrors(rowProperty) | async"
-                  [attr.aria-label]="'Error in conditional display condition '+rowNum+': '+(getAnswerFieldErrors(rowProperty) | async)"
+          <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getEnableWhenFieldErrors(rowProperty) | async"
+            class="btn border-0 p-0 b-0 enable-when-errors"
+            [matTooltip]="getEnableWhenFieldErrors(rowProperty) | async"
+            [attr.aria-label]="'Error in conditional display condition '+rowNum+': '+(getEnableWhenFieldErrors(rowProperty) | async)"
           ><fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon></div>
         </td>
       </tr>

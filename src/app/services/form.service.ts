@@ -87,6 +87,46 @@ export class FormService {
   treeNodeStatusMap: TreeNodeStatusMap;
   linkIdTracker:LinkIdTrackerMap = {};
 
+  // All operators
+  operatorOptions: any [] = [
+    {option: 'exists', label: 'Not empty'},
+    {option: 'notexists', label: 'Empty'},
+    {option: '=', label: '='},
+    {option: '!=', label: '!='},
+    {option: '>', label: '>'},
+    {option: '<', label: '<'},
+    {option: '>=', label: '>='},
+    {option: '<=', label: '<='}
+  ];
+
+  // A subset of operators for certain types
+  operatorOptions2: any [] = this.operatorOptions.filter((e) => {
+    return (
+      e.option === 'exists' ||
+      e.option === 'notexists' ||
+      e.option === '=' ||
+      e.option === '!='
+    );
+  });
+
+  // Operators based on type.
+  enableWhenOperatorOptions = {
+    decimal: this.operatorOptions,
+    integer: this.operatorOptions,
+    quantity: this.operatorOptions,
+    date: this.operatorOptions,
+    dateTime: this.operatorOptions,
+    time: this.operatorOptions,
+    string: this.operatorOptions,
+    text: this.operatorOptions,
+    url: this.operatorOptions2,
+    boolean: this.operatorOptions2,
+    choice: this.operatorOptions2,
+    'open-choice': this.operatorOptions2,
+    attachment: this.operatorOptions2,
+    reference: this.operatorOptions2
+  };
+
   constructor(private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
     [{schema: ngxItemSchema as any, layout: itemLayout}, {schema: ngxFlSchema as any, layout: flLayout}].forEach((obj) => {
       if(!obj.schema.definitions) {
@@ -647,6 +687,14 @@ export class FormService {
     return ret;
   }
 
+  /**
+   * Returns a list of EnableWhen operators based on the given answer type.
+   * @param answerType - Type of the source item.
+   * @returns - a list of operators associated with the given answer type.
+   */
+  getEnableWhenOperatorListByAnswerType(answerType: string): any [] {
+    return this.enableWhenOperatorOptions[answerType];
+  }
 
   /**
    * Get sources excluding the branch of a given node.

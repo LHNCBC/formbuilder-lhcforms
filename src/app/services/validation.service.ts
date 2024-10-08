@@ -17,6 +17,7 @@ export interface EnableWhenValidationObject {
   op: EnableWhenFieldValidationObject;
   aField: string;
   answerX: EnableWhenFieldValidationObject;
+  operatorOptions: any [];
 }
 
 @Injectable({
@@ -97,7 +98,8 @@ export class ValidationService {
       'aType': aType,
       'op': this.createEnableWhenFieldValidationObject(enableWhen, 'operator', index),
       'aField': aField,
-      'answerX': this.createEnableWhenFieldValidationObject(enableWhen, aField, index)
+      'answerX': this.createEnableWhenFieldValidationObject(enableWhen, aField, index),
+      'operatorOptions': this.formService.getEnableWhenOperatorListByAnswerType(aType)
     };
     return enableWhenObj;
   }
@@ -257,9 +259,11 @@ export class ValidationService {
    * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
-   *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
-   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty.   
+   *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
+   *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
+   *                                             options. 
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
+   *                                             equal to 'exists', and the answer is empty.   
    */
   validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
@@ -267,10 +271,9 @@ export class ValidationService {
       const aValue = enableWhenObj.answerX?.value;
 
       // Validate whether the  'linkId' specified in the question exists.
-      // If not, then throw the 'INVALID_QUESTION' error.
-      //if (!this.formService.isValidLinkId(q?.value)) {
+      // If not, then throw the 'ENABLEWHEN_INVALID_QUESTION' error.
       if (!enableWhenObj.aType) {
-        const errorCode = 'INVALID_QUESTION';
+        const errorCode = 'ENABLEWHEN_INVALID_QUESTION';
         const err: any = {};
         err.code = errorCode;
         err.path = `#${enableWhenObj.q.canonicalPathNotation}`;
@@ -284,19 +287,37 @@ export class ValidationService {
             enableWhenObj.q.extendErrors(err);
           }
         }
-      } else if(enableWhenObj.answerX && (Util.isEmpty(aValue)) && enableWhenObj.op?.value !== 'exists') {
-        const errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
-        const err: any = {};
-        err.code = errorCode;
-        err.path = `#${enableWhenObj.answerX.canonicalPathNotation}`;
-        err.message = `Answer field is required when you choose an operator other than 'Not empty' or 'Empty'.`;
-        const valStr = JSON.stringify(aValue);
-        err.params = [enableWhenObj.q.value, enableWhenObj.op.value, valStr];
-        errors.push(err);
-        const i = enableWhenObj.answerX._errors?.findIndex((e) => e.code === errorCode);
-        if (isSchemaFormValidation) {
-          if(!(i >= 0)) { // Check if the error is already processed.
-            enableWhenObj.answerX.extendErrors(err);
+      } else {
+        const opExists = enableWhenObj?.op ? enableWhenObj.operatorOptions.some(operatorOption => operatorOption.option === enableWhenObj.op.value) : false;
+        if (!opExists) {
+          const errorCode = 'ENABLEWHEN_INVALID_OPERATOR';
+          const err: any = {};
+          err.code = errorCode;
+          err.path = `#${enableWhenObj.op.canonicalPathNotation}`;
+          err.message = `Invalid operator \'${enableWhenObj.op.value}\' for type \'${enableWhenObj.aType}\'.`;
+          const valStr = JSON.stringify(aValue);
+          err.params = [enableWhenObj.q.value, enableWhenObj.op.value, valStr];
+          errors.push(err);
+          if (isSchemaFormValidation) {
+            const i = enableWhenObj.op._errors?.findIndex((e) => e.code === errorCode);
+            if(!(i >= 0)) { // Check if the error is already processed.
+              enableWhenObj.op.extendErrors(err);
+            }
+          }
+        } else if(enableWhenObj.answerX && (Util.isEmpty(aValue)) && enableWhenObj.op?.value !== 'exists') {
+          const errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
+          const err: any = {};
+          err.code = errorCode;
+          err.path = `#${enableWhenObj.answerX.canonicalPathNotation}`;
+          err.message = `Answer field is required when you choose an operator other than 'Not empty' or 'Empty'.`;
+          const valStr = JSON.stringify(aValue);
+          err.params = [enableWhenObj.q.value, enableWhenObj.op.value, valStr];
+          errors.push(err);
+          if (isSchemaFormValidation) {
+            const i = enableWhenObj.answerX._errors?.findIndex((e) => e.code === errorCode);
+            if(!(i >= 0)) { // Check if the error is already processed.
+              enableWhenObj.answerX.extendErrors(err);
+            }
           }
         }
       }
