@@ -193,8 +193,8 @@ export class ValidationService {
    *            subsequent slashes replaced by periods.
    */
   createCanonicalPathNotation(canonicalPath: string): string {
-    return canonicalPath.replace(/^\/+/, '')
-                        .replace('\//g', '.');
+    return canonicalPath.replace(/^\/+|\/+$/g, '')
+                        .replace(/\//g, '.');
   }
 
   /**
