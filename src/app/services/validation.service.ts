@@ -57,7 +57,7 @@ export class ValidationService {
                 return () => {
                   itemDataCopy.cannoncial = validatorKeyCopy;
                   itemDataCopy.canonicalPathNotation = self.createCanonicalPathNotation(validatorKeyCopy);
-                  itemDataCopy.value = itemDataCopy[itemDataCopy.canonicalPathNotation];
+                  itemDataCopy.value = itemDataCopy[self.getPropertyByCanonicalPathNotation(itemDataCopy.canonicalPathNotation)];
                   self.validators[validatorKeyCopy](itemDataCopy, false);
 
                   resolveInner();
