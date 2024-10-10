@@ -4,19 +4,16 @@
   "status": "draft",
   "item": [
     {
-      "id": 8401403364676,
       "type": "group",
       "linkId": "/itm1",
       "text": "Group Type"
     },
     {
-      "id": 9403615768815,
       "type": "display",
       "linkId": "/itm2",
       "text": "Display Type"
     },
     {
-      "id": 2989273182338,
       "type": "display",
       "linkId": "/itm3",
       "text": "Invalid Display Type",
@@ -30,13 +27,11 @@
       ]
     },
     {
-      "id": 2610581014153,
       "type": "integer",
       "linkId": "/itm4",
       "text": "Integer Type"
     },
     {
-      "id": 4951063278829,
       "type": "choice",
       "linkId": "/itm5",
       "text": "Choice Type",
@@ -65,7 +60,6 @@
       ]
     },
     {
-      "id": 5407448593541,
       "type": "string",
       "linkId": "/itm6",
       "text": "EnableWhen",
@@ -88,30 +82,30 @@
       ]
     },
     {
-      "id": 9530715177203,
       "type": "integer",
       "linkId": "/itm7",
       "text": "Valid LinkId"
     },
     {
-      "id": 168253388918,
       "type": "string",
       "text": "Empty LinkId"
     },
     {
-      "id": 8211651811911,
+      "type": "string",
+      "linkId": "  abc   1233",
+      "text": "Invalid LinkId pattern"
+    }, 
+    {
       "type": "string",
       "linkId": "/sQbMAgt9SavZxxL63WIFBju6Hdwjp3JHyFzXnBKVdLEtCJ71u6TNMhXtznjw9HV9b7N6kY33bLiZMEy7nSCJupWu3MIzFg2PfT4JEEa5VFXk3KgaZypvFH8EGDlxe9bpLoZqbXgxBCQ0iFmG6FKyA1FiuMMtZYoaXHPpJ0M6kbjBbTbmOSrtufcLu1SrN0MN0h30lxak1yNfCjqqlsxdGescju0nu0nJvg6K1Vd5rhBGavjkrBnbDXLrOglYT0gf1HaIBbGGM4C9kO8dTxqBOqg1KHnctpWOL3vc0PIiXB",
       "text": "LinkId Too Long"
     },
     {
-      "id": 6534807293620,
       "type": "string",
       "linkId": "/itm10",
       "text": "Duplicate LinkId Original"
     },
     {
-      "id": 255636003550,
       "type": "string",
       "linkId": "/itm10",
       "text": "Duplicate LinkId"

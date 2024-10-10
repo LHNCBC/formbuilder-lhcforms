@@ -1112,10 +1112,7 @@ describe('Home page', () => {
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
       cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
       cy.questionnaireJSON().then((qJson) => {
-        // Due to the recent change where the id is now a random id instead of a linkId,
-        // the id will have to be removed for comparison with the fixtureJson.
-        const qJsonWithoutField = CypressUtil.omitField(qJson, excludedField);
-        expect(qJsonWithoutField).to.deep.equal(fixtureJson);
+        expect(qJson).to.deep.equal(fixtureJson);
       });
 
       cy.get('@units').clear();
@@ -1229,10 +1226,7 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Form with restrictions');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
-        // Due to the recent change where the id is now a random id instead of a linkId,
-        // the id will have to be removed for comparison with the fixtureJson.
-        const qJsonItemWithoutField = CypressUtil.omitField(qJson.item[0], excludedField);
-        expect(qJsonItemWithoutField).to.deep.equal(fixtureJson.item[0]);
+        expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
       });
     });
 
@@ -1825,10 +1819,7 @@ describe('Home page', () => {
         cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'days');
 
         cy.questionnaireJSON().should((qJson) => {
-          // Due to the recent change where the id is now a random id instead of a linkId,
-          // the id will have to be removed for comparison with the fixtureJson.
-          const qJsonWithoutField = CypressUtil.omitField(qJson, excludedField);
-          expect(qJsonWithoutField.item).to.deep.equal(fixtureJson.item);
+          expect(qJson.item).to.deep.equal(fixtureJson.item);
         });
 
         // Remove
@@ -1895,10 +1886,7 @@ describe('Home page', () => {
           cy.get('[id^="radio_Yes_observationExtract"]').should('be.checked');
 
           cy.questionnaireJSON().should((qJson) => {
-            // Due to the recent change where the id is now a random id instead of a linkId,
-            // the id will have to be removed for comparison with the fixtureJson.
-            const qJsonItemWithoutField = CypressUtil.omitField(qJson.item, excludedField);
-            expect(qJsonItemWithoutField).to.deep.equal(fixtureJson.item);
+            expect(qJson.item).to.deep.equal(fixtureJson.item);
           });
 
           // Remove
@@ -2059,12 +2047,12 @@ describe('Home page', () => {
         .scrollIntoView()
         .clear()
         .type('/54114-4/54139-1');
-      
-      // Error messages on the content panel should go away
-      cy.checkLinkIdErrorIsNotDisplayed();
 
       // The red triangle icons on the tree panel for the child and parent nodes
       // should remained since there is still error at the grandchild node.
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
       cy.getTreeNode('Living?')
         .find('fa-icon#error')
         .should('exist');
@@ -2272,7 +2260,7 @@ describe('Home page', () => {
       });
     });
   });
-  
+
 });
 
 describe('Accepting only LOINC terms of use', () => {

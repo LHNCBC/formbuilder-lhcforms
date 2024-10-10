@@ -24,6 +24,8 @@ export interface EnableWhenValidationObject {
 })
 
 export class ValidationService {
+  static readonly LINKID_PATTERN = /^[^\s]+(\s[^\s]+)*$/;
+
   constructor(private formService: FormService) { }
 
   validators = {
@@ -44,7 +46,7 @@ export class ValidationService {
         const promises = [];
         for (let i = startIndex; i < validationNodes.length; i++) {
           const itemData = JSON.parse(JSON.stringify(validationNodes[i].data));
-          itemData.id = ''+itemData.id;
+          itemData.id = ''+itemData[FormService.TREE_NODE_ID];
           const validatorKeys = Object.keys(this.validators);
           const self = this;
 
@@ -54,7 +56,7 @@ export class ValidationService {
               setTimeout(function(itemDataCopy, validatorKeyCopy) {
                 return () => {
                   itemDataCopy.cannoncial = validatorKeyCopy;
-                  itemDataCopy.canonicalPathNotation = validatorKeyCopy.startsWith('/') ? validatorKeyCopy.slice(1) : validatorKeyCopy;
+                  itemDataCopy.canonicalPathNotation = self.createCanonicalPathNotation(validatorKeyCopy);
                   itemDataCopy.value = itemDataCopy[itemDataCopy.canonicalPathNotation];
                   self.validators[validatorKeyCopy](itemDataCopy, false);
 
@@ -172,6 +174,41 @@ export class ValidationService {
     }
   }
 
+  /**
+   * Validates if the provided input value matches the defined regular expression pattern.
+   * @param pattern - the regular expression pattern to test against the input value. 
+   * @param value - the input value to be validated against the pattern. 
+   * @returns - True if the input value matches the pattern, otherwise false.
+   */
+  isValidPattern(pattern: RegExp, value: string): boolean {
+    return pattern.test(value);
+  }
+
+  /**
+   * Converts a given canonical path into a canonical path notation.
+   * - Removing the leading slash (if present).
+   * - Replacing all subsequent slashes with periods.
+   * @param canonicalPath - the input canonical path string to be be converted.
+   * @returns - the converted canonical path notation with the leading slash removed and
+   *            subsequent slashes replaced by periods.
+   */
+  createCanonicalPathNotation(canonicalPath: string): string {
+    return canonicalPath.replace(/^\/+/, '')
+                        .replace('\//g', '.');
+  }
+
+  /**
+   * Retrieves the last property key from a canonical path notation string.
+   * A canonical path is typically a string with properties separated by dots.
+   * If there are no dots, it returns the string itself as the key.
+   * @param canonicalPathNotation - the dot-separated string representing the path to
+   *                                a nested property.
+   * @returns - property key in the canonical path or the original string if no dots
+   *            are present.
+   */
+  getPropertyByCanonicalPathNotation(canonicalPathNotation: string): string {
+    return (canonicalPathNotation || '').split('.').pop();
+  }
 /** ---------------------------------------------------------------------------------
  *  CUSTOM VALIDATORS
  *  --------------------------------------------------------------------------------- */  
@@ -192,14 +229,14 @@ export class ValidationService {
     if (type !== 'display' && !isSchemaFormValidation)
       return null;
 
-    if (type && type === 'display') {
+    if (type === 'display') {
       if (!validationObj.id) {
         return null;
       }
 
       const node = this.formService.getTreeNodeById(validationObj.id);
 
-      if (node.data?.item && node.data?.item?.length > 0) {
+      if (node.data?.item?.length > 0) {
         const errorCode = 'INVALID_TYPE';
         const err: any = {};
         err.code = errorCode;
@@ -214,7 +251,10 @@ export class ValidationService {
 
     // Update validate status if there are errors or if 'isSchemaFormValidation' is true.
     if (isSchemaFormValidation || errors)
-      this.formService.updateValidationStatus(validationObj.id, validationObj.linkId, validationObj.canonicalPathNotation, errors);
+      this.formService.updateValidationStatus(validationObj.id,
+                                              validationObj.linkId, 
+                                              this.getPropertyByCanonicalPathNotation(validationObj.canonicalPathNotation),
+                                              errors);
 
     return errors;
   }
@@ -307,7 +347,10 @@ export class ValidationService {
 
     // Update validate status if there are errors or if 'isSchemaFormValidation' is true.
     if (isSchemaFormValidation || errors)
-      this.formService.updateValidationStatus(enableWhenObj.id, enableWhenObj.linkId, enableWhenObj.canonicalPathNotation, errors);
+      this.formService.updateValidationStatus(enableWhenObj.id,
+                                              enableWhenObj.linkId,
+                                              this.getPropertyByCanonicalPathNotation(enableWhenObj.canonicalPathNotation),
+                                              errors);
 
     return errors;
   }
@@ -336,7 +379,15 @@ export class ValidationService {
       err.params = [{'linkId': validationObj.prevLinkId, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
       errors.push(err);
     } else {
-      if (this.formService.treeNodeHasDuplicateLinkIdByLinkIdTracker(validationObj.value, validationObj.id)) {
+      if (!this.isValidPattern(ValidationService.LINKID_PATTERN, validationObj.value)) {
+        const errorCode = 'PATTERN';
+        const err: any = {};
+        err.code = errorCode;
+        err.path = `#${validationObj.canonicalPathNotation}`;
+        err.message = `Spaces are not allowed at the beginning or end, and only a single space is allowed between words.`;
+        err.params = [{'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
+        errors.push(err);
+      } else if (this.formService.treeNodeHasDuplicateLinkIdByLinkIdTracker(validationObj.value, validationObj.id)) {
         hasDuplicateError = true;
         
         const errorCode = 'DUPLICATE_LINK_ID';
@@ -346,9 +397,7 @@ export class ValidationService {
         err.message = `Entered linkId is already used.`;
         err.params = [{'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
         errors.push(err);
-      }
-
-      if (validationObj.value.length > 255) {
+      } else if (validationObj.value.length > 255) {
         const errorCode = 'MAX_LENGTH';
         const err: any = {};
         err.code = errorCode;

@@ -145,13 +145,13 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param formProperty - Object form property of the 'enableWhen' field. 
    * @returns - validation object to be used for the validation.
    */
-  createValidationObj(id: number, linkId: string, value: any, formProperty: FormProperty): any {
+  createValidationObj(id: string, linkId: string, value: any, formProperty: FormProperty): any {
     return {
-      'id': ''+id,
+      'id': id,
       'linkId': linkId,
       'value': value,
-      'canonicalPath': formProperty.__canonicalPath,
-      'canonicalPathNotation': formProperty.__canonicalPathNotation
+      'canonicalPath': formProperty._canonicalPath,
+      'canonicalPathNotation': formProperty.canonicalPathNotation
     };
   }
 
@@ -176,7 +176,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
 
     const enableWhenObj: EnableWhenValidationObject = {
-      'id': this.model.id,
+      'id': this.model?.[FormService.TREE_NODE_ID],
       'linkId': linkIdProperty.value,
       'q': q,
       'aType': aType,
@@ -204,7 +204,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     if (!this.model) {
       return null;
     }
-    const nodeId = this.model?.id;
+    const nodeId = this.model?.[FormService.TREE_NODE_ID];
 
     if (!nodeId) {
       return null;
@@ -297,17 +297,18 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       return null;
     }
 
-    const nodeId = this.model.id;
-    const prevLinkId = rootProperty._value['linkId'];
+    const nodeId = this.model?.[FormService.TREE_NODE_ID];
+    const prevLinkId = rootProperty.value['linkId'];
 
     if (!nodeId) {
       return null;
     }
 
+    const propertyName = this.validationService.getPropertyByCanonicalPathNotation(formProperty.canonicalPathNotation);
     if (!prevLinkId && value === '') {
       // Check to see if the node already has errors, otherwise null 
       const nodeStatus = this.formService.getTreeNodeStatusById(nodeId);
-      errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;
+      errors = nodeStatus?.errors?.[propertyName] ?? null;
       return errors;
     }
 
@@ -322,12 +323,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       }
     } else {
       const nodeStatus = this.formService.getTreeNodeStatusById(nodeId);
-      errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;
+      errors = nodeStatus?.errors?.[propertyName] ?? null;
     }
     this.validationErrorsChanged.next(errors);
 
-
-    console.log('sf-form-wrapper::validateLinkId done');
     return errors;
   }
 }

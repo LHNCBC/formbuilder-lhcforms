@@ -455,15 +455,15 @@ Cypress.Commands.add('checkLinkIdErrorIsDisplayed', (errorMessage) => {
   // The link id text input should be outline in red
   cy.editableLinkId()
     .should('have.class', 'invalid');
-  // The error message should be display at the bottom of the text input
+  // The error message should display at the bottom of the text input
   cy.get('small.text-danger')
     .should('be.visible')
     .should('contain.text', errorMessage);
 
   // Error should display at the top of the content and at the bottom.
-  cy.get('mat-sidenav-content ul > li')
-    .should('contain.text', 
-      'Error(s) exist in this item. The resultant form may not render properly.');
+  cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('have.class', 'text-danger');
+  cy.get('mat-sidenav-content > ul > li').should('have.class', 'text-danger');
+  
 });
 
 /**
@@ -478,9 +478,8 @@ Cypress.Commands.add('checkLinkIdErrorIsNotDisplayed', () => {
     .should('not.exist');
 
   // Error should not be displayed at the top of the content and at the bottom.
-  cy.get('mat-sidenav-content ul > li')
-    .should('not.contain.text', 
-      'Error(s) exist in this item. The resultant form may not render properly.');
+  cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('not.have.class', 'text-danger');
+  cy.get('mat-sidenav-content > ul > li').should('not.exist');
 });
 
 /**

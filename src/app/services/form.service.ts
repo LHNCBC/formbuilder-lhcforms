@@ -60,6 +60,7 @@ export type LinkIdTrackerMap = {
 })
 export class FormService {
   static _lformsLoaded$ = new Subject<string>();
+  static readonly TREE_NODE_ID = "__$treeNodeId";
 
   private _loading = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
@@ -314,8 +315,8 @@ export class FormService {
   loadTreeNodeStatusMap(): void {
     const treeNodeStatusMap: TreeNodeStatusMap = {};
     function recurse(node: TreeNode): void {
-      treeNodeStatusMap[node.id.toString()] = {
-        id: node.id,
+      treeNodeStatusMap[node.data[FormService.TREE_NODE_ID]] = {
+        id: node.data[FormService.TREE_NODE_ID],
         linkId: (node.data.linkId) ? node.data.linkId : ''
       }
 
@@ -401,7 +402,7 @@ export class FormService {
     if (this.treeModel) {
       const node = this.treeModel.getFocusedNode();
       if (node)
-        return this.isTreeNodeHasErrorById(node.id.toString(), false);
+        return this.isTreeNodeHasErrorById(node.data[FormService.TREE_NODE_ID], false);
     }
     return false;
   }
@@ -427,8 +428,8 @@ export class FormService {
     let siblingHasError = false;
     if (node.parent && !node.isRoot) {
       siblingHasError = node.parent.children.some((n) => {
-        const siblingIdStr = n.id.toString();
-        return node.id.toString() !== siblingIdStr && this.treeNodeStatusMap[siblingIdStr]['hasError'];
+        const siblingIdStr = n.data[FormService.TREE_NODE_ID];
+        return node.data[FormService.TREE_NODE_ID] !== siblingIdStr && this.treeNodeStatusMap[siblingIdStr]['hasError'];
       });
     }
     return siblingHasError;
@@ -439,7 +440,7 @@ export class FormService {
    * @param node - Ancestor node.
    */
   removeErrorFromAncestorNodes(node: ITreeNode): void {
-    const nodeIdStr = node.id.toString();
+    const nodeIdStr = node.data[FormService.TREE_NODE_ID];
     if (nodeIdStr in this.treeNodeStatusMap) {
       this.treeNodeStatusMap[nodeIdStr]['childHasError'] = false;
     }
@@ -458,7 +459,7 @@ export class FormService {
    * @param node - Ancestor node.
    */
   addErrorForAncestorNodes(node: ITreeNode): void {
-    const nodeIdStr = node.id.toString();
+    const nodeIdStr = node.data[FormService.TREE_NODE_ID];
 
     if (nodeIdStr in this.treeNodeStatusMap) {
       this.treeNodeStatusMap[nodeIdStr]['childHasError'] = true;
@@ -543,7 +544,7 @@ export class FormService {
   loadLinkIdTracker(): void {
     Object.values(this.treeNodeStatusMap).map((node) => {
       const linkId = node.linkId;
-      const nodeId = node.id.toString();
+      const nodeId = node.id;
 
       if (linkId in this.linkIdTracker) {
         if (this.linkIdTracker[linkId].indexOf(nodeId) === -1)
@@ -615,8 +616,8 @@ export class FormService {
   updateLinkIdForLinkIdTracker(prevLinkId: string, newLinkId: string, nodeId: string): void {
     if (nodeId) {
       if (prevLinkId)
-        this.removeLinkIdFromLinkIdTracker(nodeId.toString(), prevLinkId);
-      this.addLinkIdToLinkIdTracker(nodeId.toString(), newLinkId);
+        this.removeLinkIdFromLinkIdTracker(nodeId, prevLinkId);
+      this.addLinkIdToLinkIdTracker(nodeId, newLinkId);
     }
   }
 
@@ -727,7 +728,7 @@ export class FormService {
    * @returns True if the focused node's data contains sub-items. Otherwise false.
    */
   hasSubItems(): boolean {
-    return this.treeModel?.getFocusedNode()?.data?.item ?? false;
+    return (this.treeModel?.getFocusedNode()?.data?.item?.length ?? 0) > 0;
   }
 
   /**
