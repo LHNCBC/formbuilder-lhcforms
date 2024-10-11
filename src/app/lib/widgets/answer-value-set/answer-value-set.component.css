@@ -1,0 +1,80 @@
+.tooltip-inner a:link {
+  color: blue;
+  text-decoration: underline;
+}
+
+.tooltip-inner a:visited {
+  color: purple;
+  text-decoration: underline;
+}
+
+.tooltip-inner a:hover {
+  color: red;
+  text-decoration: underline;
+}
+
+.tooltip-inner {
+  text-align: left;
+}
+
+.custom-tooltip-class {
+  font-size: 13px;
+  font-weight: 400;
+  border: 1px black solid;
+}
+
+.tooltip.show {
+  opacity: 1.0;
+  border-radius: 5px;
+}
+
+.tooltip-inner {
+  background-color: lightyellow;
+  color: black;
+}
+
+.bs-tooltip-auto[data-popper-placement^=bottom] .tooltip-arrow::before,
+.bs-tooltip-bottom .tooltip-arrow::before {
+  border-bottom-color: black  !important;
+}
+
+.bs-tooltip-bottom .tooltip-arrow {
+  top: -8px;
+}
+
+.bs-tooltip-top .tooltip-arrow::before {
+  border-top-color: black  !important;
+}
+
+.bs-tooltip-top .tooltip-arrow {
+  bottom: -8px;
+}
+
+.tooltip .tooltip-arrow {
+  display: block;
+
+  width: var(--bs-tooltip-arrow-width);
+  height: var(--bs-tooltip-arrow-height);
+}
+
+.bs-tooltip-bottom .tooltip-arrow::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    border-width: 0 .4rem .4rem;
+    transform: translateY(2px);
+    border-color: transparent;
+    border-style: solid;
+    border-bottom-color: lightyellow;
+}
+
+.bs-tooltip-top .tooltip-arrow::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  border-width: 0 .4rem .4rem;
+  transform: translateY(-2px) rotate(180deg);
+  border-color: transparent;
+  border-style: solid;
+  border-bottom-color: lightyellow;
+}

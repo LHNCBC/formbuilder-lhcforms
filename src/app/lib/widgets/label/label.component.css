@@ -1,0 +1,46 @@
+label {
+  margin-bottom: 0;
+}
+
+/* allow the tooltip to be scrollable if the content is long */
+.mdc-tooltip__surface {
+  overflow-y:auto !important;
+}
+
+/* tooltip background-color, text color, and font */
+.cdk-overlay-container .mat-mdc-tooltip {
+  --mdc-plain-tooltip-container-color: lightyellow;
+  --mdc-plain-tooltip-supporting-text-color: black;
+  --mdc-plain-tooltip-container-shape: 4px;
+  --mdc-plain-tooltip-supporting-text-line-height: 18px;
+  --mdc-plain-tooltip-supporting-text-size: 12px;
+  --mdc-plain-tooltip-supporting-text-weight: normal;
+}
+
+/* tooltip border */
+.mdc-tooltip {
+  border: 1px black solid;
+  border-radius: 4px;
+}
+
+/* tooltip arrow */
+.mat-mdc-tooltip::before {
+  background-color: lightyellow;
+  border: 1px solid black;
+  height: 12px;
+  width: 10px;
+  rotate: 45deg;
+  right: 50% !important;
+  left: auto !important;
+  transform: translate(4px, -4px);
+}
+
+.mat-mdc-tooltip-panel-above .mat-mdc-tooltip::before {
+  top: auto;
+  bottom: -6px !important;
+}
+
+.mat-mdc-tooltip-panel-below .mat-mdc-tooltip::before {
+  top: -6px !important;
+  bottom: auto;
+}

@@ -36,7 +36,7 @@ test.describe('Open form builder in a new window', async () => {
     const newPage = await pagePromise;
     await newPage.waitForLoadState('domcontentloaded');
     mainPO = new MainPO(newPage);
-    mainPO.clearSession();
+    await mainPO.clearSession();
     await mainPO.loadFLPage();
     await expect(mainPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
   });
@@ -50,23 +50,39 @@ test.describe('Open form builder in a new window', async () => {
     expect(messageData.data.type).toBe('updateQuestionnaire');
     await page.getByRole('button', {name: 'Clear messages'}).click();
     await page.getByRole('button', {name: 'Post questionnaire'}).click();
-    await expect(await mainPO.titleLocator).toHaveValue(initialQTitle);
+    await expect(mainPO.titleLocator).toHaveValue(initialQTitle);
     messageData.data = await getMessage(page, 'updateQuestionnaire');
-    await expect(messageData.data.type).toBe('updateQuestionnaire');
-    await expect(messageData.data.questionnaire.title).toBe(initialQTitle);
+    expect(messageData.data.type).toBe('updateQuestionnaire');
+    expect(messageData.data.questionnaire.title).toBe(initialQTitle);
 
     await page.getByRole('button', {name: 'Clear messages'}).click();
     await mainPO.titleLocator.fill('');
     await mainPO.titleLocator.fill('xxxx');
     messageData.data = await getMessage(page, 'updateQuestionnaire');
-    await expect(messageData.data.questionnaire.title).toBe('xxxx');
+    expect(messageData.data.questionnaire.title).toBe('xxxx');
 
     await page.getByRole('button', {name: 'Clear messages'}).click();
     await mainPO.titleLocator.fill('');
     await mainPO.titleLocator.fill('yyyy');
-    await mainPO.page.getByRole('button', {name: 'Close'}).click();
+    await mainPO.page.getByRole('button', {name: 'Save & Close'}).click();
     messageData.data = await getMessage(page, 'closed');
-    await expect(messageData.data.questionnaire.title).toBe('yyyy');
+    expect(messageData.data.questionnaire.title).toBe('yyyy');
+  });
+
+  test('should demo cancel event', async ({page}): Promise<void> => {
+    const messageData = {data: null};
+
+    messageData.data = await getMessage(page, 'initialized');
+    expect(messageData.data.type).toBe('initialized');
+    messageData.data = await getMessage(page, 'updateQuestionnaire');
+    expect(messageData.data.type).toBe('updateQuestionnaire');
+
+    await mainPO.page.getByRole('button', {name: 'Cancel'}).click();
+    await mainPO.page.getByRole('button', {name: 'No'}).click();
+    await mainPO.page.getByRole('button', {name: 'Cancel'}).click();
+    await mainPO.page.getByRole('button', {name: 'Yes'}).click();
+
+    messageData.data = await getMessage(page, 'canceled');
   });
 
   async function getMessage(page: Page, type: string) {

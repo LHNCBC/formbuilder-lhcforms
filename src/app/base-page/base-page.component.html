@@ -54,9 +54,18 @@
           <button type="button" class="btn btn-secondary"
                   (click)="showPreviewDlg()">Preview</button>
         </div>
-        <div class="btn-group-sm me-2" role="group" aria-label="Close editor">
-          <button type="button" class="btn btn-secondary " (click)="close()">Close</button>
-        </div>
+        @if(openerUrl) {
+          <div class="btn-group-sm me-2" role="group" aria-label="Save and close editor">
+            <button type="button" class="btn btn-secondary " (click)="close()">Save & Close</button>
+          </div>
+          <div class="btn-group-sm me-2" role="group" aria-label="Cancel changes">
+            <button id="cancelButton" type="button" class="btn btn-secondary " (click)="cancel()">Cancel</button>
+          </div>
+        } @else {
+          <div class="btn-group-sm me-2" role="group" aria-label="Close editor">
+            <button type="button" class="btn btn-secondary " (click)="close()">Close</button>
+          </div>
+        }
       </nav>
       <a target="_self" id="exportAnchor" class="d-none">Export</a>
       <input #fileInput class="d-none" type="file" (change)="onFileSelected($event)" (click)="fileInput.value = null;">
@@ -191,3 +200,17 @@
   </div>
 </ng-template>
 
+<ng-template #confirmCancel let-modal>
+  <div role="alertdialog" aria-labelledby="cancelDlgTitle" class="modal-header bg-primary">
+    <h4 id="cancelDlgTitle" class="modal-title text-white">Confirm cancel</h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()">
+    </button>
+  </div>
+  <div class="modal-body">
+    This closes this window without saving your changes. If you are sure, please select Yes. Otherwise, select No to continue the session.
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="modal.close(true)">Yes</button>
+    <button type="button" class="btn btn-primary" (click)="modal.dismiss()">No</button>
+  </div>
+</ng-template>

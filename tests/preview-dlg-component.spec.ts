@@ -1,7 +1,6 @@
 import {test, expect} from '@playwright/test';
 import {MainPO} from "./po/main-po";
-import path from "path";
-import fs from "node:fs/promises";
+import {PWUtils} from "./pw-utils";
 
 test.describe('preview-dlg-component.spec.ts', async () => {
 
@@ -101,26 +100,14 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       const errorPanelLocator = page.locator('div.accordion > div.accordion-item');
       const firstErrorLocator = errorPanelLocator.locator('div.card > ul > li:first-child');
       const secondErrorLocator = errorPanelLocator.locator('div.card > ul > li:nth-child(2)');
-      const fileChooserPromise = page.waitForEvent('filechooser');
       await page.getByLabel('Start from scratch').click();
       await page.getByRole('button', {name: 'Continue'}).click();
-      await page.getByRole('button', { name: 'Import' }).click();
-      await page.getByRole('button', { name: 'Import from file...' }).click();
-      const testFile = path.join(__dirname, '../cypress/fixtures/contained-example.json');
-      const fileJson = JSON.parse(await fs.readFile(testFile, 'utf-8'));
-
-      // Start waiting for file chooser before clicking.
-      const fileChooser = await fileChooserPromise;
-      await fileChooser.setFiles(testFile);
-
-      await expect(page.locator('input#title')).toHaveValue('Contained example');
+      const fileJson = await PWUtils.uploadFile(page, '../cypress/fixtures/contained-example.json');
       await page.getByRole('button', {name: 'Preview'}).click();
-      await page.getByRole('tab',{name: 'View/Validate Questionnaire JSON'}).click();
-
+      await page.getByRole('tab', {name: 'View/Validate Questionnaire JSON'}).click();
       await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
-      let clipboard: string = await page.evaluate('navigator.clipboard.readText()');
-      const json = JSON.parse(clipboard);
-      expect(json.contained).toEqual(fileJson.contained);
+      const fbJson = JSON.parse(await PWUtils.getClipboardContent(page));
+      expect(fbJson.contained).toEqual(fileJson.contained);
 
       const inputEl = page.getByRole('combobox', {name: 'URL of a FHIR server to run the validation'});
       await inputEl.clear();
@@ -133,7 +120,7 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       await expect(noErrorAlertLocator).not.toBeAttached();
 
       await page.getByRole('button', {name: 'Copy validation errors to clipboard'}).click();
-      clipboard = await page.evaluate('navigator.clipboard.readText()');
+      const clipboard = await PWUtils.getClipboardContent(page);
       expect(clipboard).toMatch(/Fatal: Dummy fatal from r4/);
 
       await page.getByRole('button', {name: 'Hide'}).click();

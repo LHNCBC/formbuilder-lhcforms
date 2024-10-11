@@ -83,3 +83,8 @@ mat-tab-group.preview-json-tabs, mat-tab-group.preview-json-tabs mat-tab-header 
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* adjusting the 'help' icon vertical align */
+fa-icon > svg.svg-inline--fa {
+  vertical-align: baseline;
+}

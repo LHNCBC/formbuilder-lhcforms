@@ -2,9 +2,28 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.6.3] 2024-07-10
+## [9.6.6] 2024-09-18
+### Fixed
+- Fixed help item showing as a node in the tree.
+### Added
+- Added support for extensions of rendering styles and rendering xhtml to
+- question text, prefix and help text fields.
+
+## [9.6.5] 2024-09-18
+### Fixed
+- Change protocol of hapi.fhir.org urls to https.
+
+## [9.6.4] 2024-07-10
 ### Added
 - Use $validate API on FHIR server to validate Questionnaire.
+- Added `canceled` event type to messages sent to parent window when using window.open() API.
+
+## [9.6.3] 2024-07-15
+### Fixed
+- Fixed the issue where the 'Terminology server' field was not refreshed when the 'SNOMED answer value set' option was selected and the ECL field changed.
+### Changed
+- Changed tooltip font, background and link colors.
+- Updated the tooltip text to be read by screen reader.
 
 ## [9.6.2] 2024-07-03
 ### Changed

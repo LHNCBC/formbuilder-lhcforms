@@ -1,7 +1,5 @@
 import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
-import path from 'path';
-import fs from 'node:fs/promises';
 import {PWUtils} from "./pw-utils";
 
 test.describe('retain-additional-fields', async () => {
