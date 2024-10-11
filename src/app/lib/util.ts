@@ -19,11 +19,9 @@ export enum FHIR_VERSIONS {
 export type FHIR_VERSION_TYPE = keyof typeof FHIR_VERSIONS;
 export class Util {
   static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
-  static helpItemTemplate = {
-    text: '',  // Update with value from input box.
-    type: 'display',
-    linkId: '', // Update at run time.
-    extension: [{
+  static RENDERING_STYLE_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/rendering-style';
+  static RENDERING_XHTML_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml';
+  static HELP_BUTTON_EXTENSION = {
       url: Util.ITEM_CONTROL_EXT_URL,
       valueCodeableConcept: {
         text: 'Help-Button',
@@ -35,7 +33,13 @@ export class Util {
           }
         ]
       }
-    }]
+  };
+
+  static helpItemTemplate = {
+    // text: '',  Update with value from input box.
+    type: 'display',
+    linkId: '', // Update at run time.
+    extension: [Util.HELP_BUTTON_EXTENSION]
   };
 
   private static _defaultForm = {
@@ -254,7 +258,7 @@ export class Util {
     if(!itemsArray) {
       return -1;
     }
-    return itemsArray?.findIndex((item) => {
+    return itemsArray.findIndex((item) => {
       let ret = false;
       if (item.type === 'display') {
         ret = item.extension?.some((e) => {
@@ -267,30 +271,26 @@ export class Util {
   }
 
   /**
-   * Create help text item. Most of it is boilerplate structure except item.text and item.linkId.
+   * Check for existence of help text values. The values are plain text, and valueStrings from css/xhtml
+   * rendering extensions
    *
-   * @param item - Item for which help text item is created, mainly to help assign linkId.
-   * @param helpText - Help text, typically obtained from user input box.
+   * @param node - fhir.QuestionnaireItem.
    */
-  static createHelpTextItem(item, helpText) {
-    let helpTextItem;
-    if(helpText) {
-      helpTextItem = JSON.parse(JSON.stringify(Util.helpItemTemplate));
-      helpTextItem.linkId = item.linkId + '_helpText';
-      helpTextItem.text = helpText;
-    }
-    return helpTextItem;
+  static hasHelpText(node): boolean {
+    return node?.__$helpText?.text?.trim().length > 0 ||
+      node?.__$helpText?._text?.extension?.some((ext: fhir.Extension) => {
+        return ext.url === Util.RENDERING_XHTML_EXT_URL && ext.valueString?.trim().length > 0;
+      });
   }
-
 
   /**
    * Prunes the questionnaire model using the following conditions:
    * . Removes 'empty' values from the object. Emptiness is defined in Util.isEmpty().
    *   The following are considered empty: undefined, null, {}, [], and  ''.
-   * . Removes any thing with __$* keys.
+   * . Removes anything with __$* keys.
    * . Removes functions.
    * . Converts __$helpText to appropriate FHIR help text item.
-   * . Converts converts enableWhen[x].question object to linkId.
+   * . Converts enableWhen[x].question object to linkId.
    *
    * @param fhirQInternal - Questionnaire object used in the form builder.
    */
@@ -302,20 +302,11 @@ export class Util {
           // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
           this.update(node.filter((e)=>{return e !== null && e !== undefined}));
         }
-        else if (node?.__$helpText?.trim().length > 0) {
-          const index = Util.findItemIndexWithHelpText(node.item);
-          let helpTextItem;
-          if (index < 0) {
-            helpTextItem = Util.createHelpTextItem(node, node.__$helpText.trim());
-            if (!node.item) {
-              node.item = [];
-            }
-            node.item.push(helpTextItem);
-          } else {
-            helpTextItem = node.item[index];
-            helpTextItem.text = node.__$helpText;
+        else if (Util.hasHelpText(node)) {
+          if(!node.item) {
+            node.item = [];
           }
-          // Replace helpText with sub item
+          node.item.push(node.__$helpText);
           delete node.__$helpText;
           this.update(node);
         }

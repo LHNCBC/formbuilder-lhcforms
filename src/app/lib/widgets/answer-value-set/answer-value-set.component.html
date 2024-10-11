@@ -53,7 +53,7 @@
               (ngModelChange)="onVersionUpdate($event)"
               [ngModelOptions]="{standalone: true}"
       >
-        <option value="">Any version</option>
+        <option value="">Default</option>
         <option *ngFor="let ver of snomedEditions?.get(snomedEdition)?.versions" [value]="ver">{{ver}}</option>
       </select>
 

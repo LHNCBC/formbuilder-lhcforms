@@ -18,22 +18,34 @@
                [attr.minLength]="schema.minLength || null"
                [attr.required]="schema.isRequired ? '' : null"
                [lfbDisableControl]="schema.disabled">
-        <div ngbDropdown class="" #myDropdown="ngbDropdown" placement="bottom-right">
-          <button type="button" class="btn btn-sm btn-outline-primary rounded-0 rounded-end" [attr.id]="id+'dropdownButton'" ngbDropdownToggle>{{cssButtonLabel()}}</button>
-          <div ngbDropdownMenu [attr.aria-labelledby]="id+'dropdownButton'" style="{height: 200px; width: 200px}">
-            <form class="p-1" [attr.id]="id+'dropdownForm'">
-              <div>
-                <label [attr.for]="id+'css'" class="text-nowrap">Specify CSS Styles:</label>
-                <textarea
-                  rows="4"
-                  cols="50"
-                  (change)="cssChanged($event.target.value)"
-                  class="form-control"
-                  [attr.id]="id+'css'"
-                >{{cssValue}}</textarea>
-              </div>
-              <button class="btn btn-sm btn-primary" (click)="myDropdown.close()">Close</button>
-            </form>
+        <div ngbDropdown class="" #cssDropdown="ngbDropdown" placement="bottom-right">
+          <button type="button" class="btn btn-sm btn-outline-primary rounded-0" [attr.id]="id+'cssDropdownButton'" ngbDropdownToggle>CSS Styles</button>
+          <div ngbDropdownMenu [attr.aria-labelledby]="id+'cssDropdownButton'" [ngStyle]="{'max-width': '400px', width: '20vw'}">
+            <div class="p-1">
+              <label [attr.for]="id+'css'" class="text-nowrap">Specify CSS Styles:</label>
+              <textarea
+                rows="3"
+                (change)="extChanged($event.target.value, Util.RENDERING_STYLE_EXT_URL)"
+                class="form-control h-auto"
+                [attr.id]="id+'css'"
+              >{{extValObj[Util.RENDERING_STYLE_EXT_URL]}}</textarea>
+            </div>
+            <button class="btn btn-sm btn-primary float-end m-1 mb-0" (click)="cssDropdown.close()">Close</button>
+          </div>
+        </div>
+        <div ngbDropdown class="" #xhtmlDropdown="ngbDropdown" placement="bottom-right">
+          <button type="button" class="btn btn-sm btn-outline-primary rounded-0 rounded-end" [attr.id]="id+'xhtmlDropdownButton'" ngbDropdownToggle>XHTML</button>
+          <div ngbDropdownMenu [attr.aria-labelledby]="id+'xhtmlDropdownButton'" [ngStyle]="{'max-width': '500px', width: '30vw'}">
+            <div class="p-1">
+              <label [attr.for]="id+'xhtml'" class="text-nowrap">Specify XHTML:</label>
+              <textarea
+                rows="5"
+                (change)="extChanged($event.target.value, Util.RENDERING_XHTML_EXT_URL)"
+                class="form-control h-auto"
+                [attr.id]="id+'xhtml'"
+              >{{extValObj[Util.RENDERING_XHTML_EXT_URL]}}</textarea>
+            </div>
+            <button class="btn btn-sm btn-primary float-end m-1 mb-0" (click)="xhtmlDropdown.close()">Close</button>
           </div>
         </div>
       </div>

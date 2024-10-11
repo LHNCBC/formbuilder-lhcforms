@@ -25,7 +25,7 @@ describe('FormService', () => {
   it('should update __$helpText', () => {
     const clonedSample = traverse(sampleJson).clone();
     service.validateFhirQuestionnaire(clonedSample);
-    expect(clonedSample.item[0].__$helpText).toBe(sampleJson.item[0].item[0].text);
+    expect(clonedSample.item[0].__$helpText).toEqual(sampleJson.item[0].item[0]);
     expect(clonedSample.item[0].item).toBeUndefined();
   });
 

@@ -15,23 +15,11 @@ test.describe('retain-additional-fields', async () => {
   });
 
   test('should retain contained field', async ({page}) => {
-    const fileChooserPromise = page.waitForEvent('filechooser');
     await page.getByLabel('Start from scratch').click();
     await page.getByRole('button', {name: 'Continue'}).click();
-    await page.getByRole('button', { name: 'Import' }).click();
-    await page.getByRole('button', { name: 'Import from file...' }).click();
-    const testFile = path.join(__dirname, '../cypress/fixtures/contained-example.json');
-    const fileJson = JSON.parse(await fs.readFile(testFile, 'utf-8'));
-
-    // Start waiting for file chooser before clicking.
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(testFile);
-
+    const fileJson = await PWUtils.uploadFile(page, '../cypress/fixtures/contained-example.json');
     await expect(page.locator('input#title')).toHaveValue('Contained example');
-    await page.getByRole('button', {name: 'Preview'}).click();
-    await page.getByText('View/Validate Questionnaire JSON').click();
-    await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
-    const json = JSON.parse(await PWUtils.getClipboardContent(page));
+    const json = await PWUtils.getQuestionnaireJSON(page, 'R4');
     expect(json.contained).toEqual(fileJson.contained);
   });
 });
