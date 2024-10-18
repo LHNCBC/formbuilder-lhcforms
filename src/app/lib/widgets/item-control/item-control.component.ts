@@ -60,7 +60,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    */
   getItemControl(dataTypeChanged: boolean = false): string {
     const ext = this.getItemControlExtension();
-    const defaultItemControl = (this.dataType === 'group') ? 'list' : 'drop-down';
+    const defaultItemControl = (this.dataType === 'group') ? '' : 'drop-down';
     if (dataTypeChanged)
       return defaultItemControl;
     
@@ -144,13 +144,15 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     }
 
     const ext = this.getItemControlExtension();
-    if(!ext) {
-      this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
-    }
-    else {
-      delete ext.valueCodeableConcept.text;
-      ext.valueCodeableConcept.coding[0].code = option;
-      ext.valueCodeableConcept.coding[0].display = this.optionsObj[option];
+    if (option) {
+      if(!ext) {
+        this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
+      }
+      else {
+        delete ext.valueCodeableConcept.text;
+        ext.valueCodeableConcept.coding[0].code = option;
+        ext.valueCodeableConcept.coding[0].display = this.optionsObj[option];
+      }
     }
   }
 

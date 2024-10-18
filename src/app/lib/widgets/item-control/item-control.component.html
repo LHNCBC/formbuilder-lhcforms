@@ -15,7 +15,7 @@
                  (ngModelChange)="updateItemControlExt($event)"
                  [attr.aria-label]="composeGroupItemControlLabel(opt)" tabindex="0" >
           <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt.enum[0]"
-                 [matTooltip]="((opt.support) ? '(supported): ' : '(not supported): ') + opt.description">
+                 [matTooltip]="((opt.support) ? '(supported in LHC-Forms): ' : '(not supported in LHC-Forms): ') + opt.description">
             {{opt.display}} 
             <span *ngIf="!opt.support" class="not-supported" aria-hidden="true">*</span>
           </label>      

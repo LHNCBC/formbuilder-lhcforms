@@ -1097,7 +1097,7 @@
         {
           'enum': ["page"],
           'display': 'Page',
-          'description': 'A \'page\' group designation indicates that the content within it should be treated as a single logical unit for rendering. When rendering, all enabled items within the page should be displayed simulatenously, while subsequent groups remain hidden until the user moves to their page. Header and footer groups are typically displayed on all pages. However, items positioned before a \'page\' group at the same hierarchical level are considered separate pages.',
+          'description': 'A page group designation indicates that the content within it should be treated as a single logical unit for rendering. When rendering, all enabled items within the page should be displayed simulatenously, while subsequent groups remain hidden until the user moves to their page. Header and footer groups are typically displayed on all pages. However, items positioned before a page group are considered as being on a separate page.',
           'support': false
         },
         {
