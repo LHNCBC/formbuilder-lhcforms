@@ -1208,9 +1208,13 @@ describe('Home page', () => {
 
         // The Data type for the 1st question should be a group
         cy.get('#type').should('contain.value', 'group');
-        // The Group Item Control should be visible and default to 'list'
+        // The Group Item Control should be visible but the default 'list' should no longer be set
+        cy.get(listRadio).should('not.be.checked');
+
+        // Select 'List' Group Item Control
+        cy.get(listBtn).click();
         cy.get(listRadio).should('be.checked');
-        // Extension should not exist
+        // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['list']]);
         });
