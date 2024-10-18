@@ -2,9 +2,22 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.6.4] 2024-07-24
+## [9.6.7] 2024-10-17
 ### Changed
 - Added Group Item Control options.
+
+## [9.6.6] 2024-10-03
+### Changed
+- Split the 'header (group/display)' data type option into separate options.
+
+## [9.6.5] 2024-09-18
+### Fixed
+- Change protocol of hapi.fhir.org urls to https.
+
+## [9.6.4] 2024-07-10
+### Added
+- Use $validate API on FHIR server to validate Questionnaire.
+- Added `canceled` event type to messages sent to parent window when using window.open() API.
 
 ## [9.6.3] 2024-07-15
 ### Fixed

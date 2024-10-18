@@ -84,3 +84,15 @@
 .dropdown-toggle:hover {
   background-color: white;
 }
+
+.not-allowed-tooltip {
+  position: absolute;
+  padding: 5px 10px;
+  background-color: rgb(121, 114, 114);
+  color: white;
+  font-size: 12px;
+  border-radius: 3px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1500 !important;
+}

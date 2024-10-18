@@ -3,8 +3,8 @@
      <mat-icon class="close-icon">close</mat-icon>
    </button>
 </h2>
-<mat-dialog-content class="lfb-mat-tab-content">
-  <mat-tab-group [mat-stretch-tabs]="true">
+<mat-dialog-content #dlgContent class="lfb-mat-tab-content">
+  <mat-tab-group [mat-stretch-tabs]="true" [selectedIndex]="activeTopLevelTabIndex" (selectedIndexChange)="activeTopLevelTabIndex=$event">
     <mat-tab label="View Rendered Form">
       <ng-template matTabContent>
         <div>
@@ -17,21 +17,27 @@
           <small class="float-sm-end fw-bold">LForms version: {{formService.lformsVersion}}</small>
           <div>&nbsp;</div> <!-- Needed to float the above div -->
         </div>
-        <div *ngIf="lformsErrors" class="card bg-danger-subtle text-center">{{lformsErrors}}</div>
+        <ng-container *ngIf="lformsErrors">
+          <div class="card bg-danger-subtle text-center">{{lformsErrors}}</div>
+          <ng-container *ngTemplateOutlet="validations"></ng-container>
+        </ng-container>
         <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options" (onError)="handleLFormsError($event)"></wc-lhc-form>
       </ng-template>
     </mat-tab>
     <mat-tab>
       <ng-template matTabLabel>
-        View Questionnaire JSON
+        View/Validate Questionnaire JSON
       </ng-template>
       <ng-template matTabContent>
-        <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false">
+        <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false"
+                         [(selectedIndex)]="activeJsonTabIndex" (selectedIndexChange)="onJsonVersionSelected($event)">
           <ng-container *ngFor="let fmt of ['R4', 'STU3']">
             <mat-tab>
               <ng-template matTabLabel>{{ fmt }} Version</ng-template>
               <ng-template matTabContent>
-                <pre class="fix-pre {{fmt}}">{{ formService.convertFromR4(data?.questionnaire, fmt) | json }}</pre>
+                <ng-container *ngTemplateOutlet="jsonMenu; context: {$implicit: fmt}"></ng-container>
+                <ng-container *ngTemplateOutlet="validations; context: {$implicit: fmt}"></ng-container>
+                <ng-container *ngTemplateOutlet="jsonQ; context: {$implicit: fmt}"></ng-container>
               </ng-template>
             </mat-tab>
           </ng-container>
@@ -39,8 +45,90 @@
       </ng-template>
     </mat-tab>
   </mat-tab-group>
+  <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
 </mat-dialog-content>
 <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
   <button class="btn btn-primary" (click)="close()">Close</button>
 </mat-dialog-actions>
 
+<ng-template #validations let-fhirVersion>
+  @if(validationErrors[fhirVersion]?.length > 0) {
+    <div ngbAccordion>
+      <div ngbAccordionItem #errorsItem="ngbAccordionItem" [collapsed]="false">
+        <div ngbAccordionHeader class="accordion-button custom-header justify-content-between p-1 bg-primary-subtle">
+          <p class="m-0">Validation errors</p>
+          <div>
+            <button ngbAccordionToggle [attr.title]="errorsItem.collapsed ? 'Show the messages' : 'Hide the messages'" class="btn btn-sm btn-primary">{{errorsItem.collapsed ? 'Show' : 'Hide'}}</button>
+          </div>
+        </div>
+
+        <div ngbAccordionCollapse>
+          <div ngbAccordionBody class="p-0">
+            <ng-template>
+              <div #errorsContainer class="overlay-container">
+                <div class="card bg-danger-subtle p-2 px-3">
+                  <ul>
+                    @for(error of validationErrors[fhirVersion]; track $index) {
+                      <li>{{error}}</li>
+                    }
+                  </ul>
+                </div>
+                <button tabindex="0" class="btn overlay-top-right py-1 pe-2"
+                      title="Copy validation errors to clipboard"
+                      [attr.aria-label]="'Button to copy validation errors to clipboard'"
+                      [cdkCopyToClipboard]="errorsContainer.innerText"
+                ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+  @if(showNoErrorsMsg) {
+    <ngb-alert type="info" class="mb-0" (closed)="showNoErrorsMsg = false">No errors found</ngb-alert>
+  }
+</ng-template>
+
+<ng-template #jsonMenu let-fhirVersion>
+  <div class="input-group p-1">
+    <input
+        placeholder="Enter base url of a FHIR server"
+        aria-label="URL of a FHIR server to run the validation"
+        type="url"
+        class="form-control lf-box-shadow"
+        [(ngModel)]="vServer"
+        [ngbTypeahead]="search"
+        (focus)="focus$.next($any($event).target.value)"
+        (click)="click$.next($any($event).target.value)"
+        (change)="inputUrlErrors = null"
+        #autoCompNgb="ngbTypeahead"
+    />
+    <button type="button" class="btn btn-sm btn-primary"
+              (click)="runValidations(fhirVersion, vServer)">Run Validation</button>
+  </div>
+</ng-template>
+
+<ng-template #jsonQ let-fhirVersion>
+  <div class="overlay-container">
+    <ngx-codemirror
+      (codeMirrorLoaded)="codeMirrorLoaded($event)"
+      [ngModel]="formService.convertFromR4(this.data?.questionnaire, fhirVersion) | json"
+      [options]="{
+        lineNumbers: true,
+        theme: 'idea code-editor',
+        mode: {name: 'application/ld+json'},
+        readOnly: true,
+        lineWrapping: true,
+        foldGutter: true,
+        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
+      }"
+    ></ngx-codemirror>
+    <button tabindex="0" class="btn overlay-top-right me-3"
+            title="Copy questionnaire to clipboard"
+            [attr.aria-label]="'Button to copy questionnaire to clipboard'"
+            [cdkCopyToClipboard]="formService.convertFromR4(data?.questionnaire, fhirVersion) | json"
+      ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
+  </div>
+  <div #jsonContent></div>
+</ng-template>
