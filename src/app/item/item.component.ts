@@ -264,6 +264,11 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.formService.loadLinkIdTracker();
     }, 0);
     this.isViewInited = true;
+
+    const sub = this.formService.validationStatusChanged$.subscribe(() => {
+      this.onValidationErrorsChanged(null);
+    });
+    this.subscriptions.push(sub);
   }
 
   /**
@@ -374,7 +379,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       case 'initialized':
         this.startSpinner();
         this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1)
-            .then(() => {
+            .then((results) => {
               this.stopSpinner();
             })
             .catch(err => {
@@ -525,6 +530,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.addNewItem(position, newItem, contextNode);
     this.treeComponent.treeModel.update();
     this.setFocusedNode(position);
+
+    this.formService.addTreeNodeStatus(newItem[FormService.TREE_NODE_ID], newItem.linkId);
+    this.formService.addLinkIdToLinkIdTracker(newItem[FormService.TREE_NODE_ID], newItem.linkId);
+
     domEvent.stopPropagation();
     dropdown.close();
   }

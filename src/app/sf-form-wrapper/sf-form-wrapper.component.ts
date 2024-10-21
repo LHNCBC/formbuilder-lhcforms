@@ -170,6 +170,12 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       aType = questionItem.data.type;
     }
 
+    // The condition key is used to differentiate between each enableWHen conditions.
+    let condKey = '';
+    if (q._canonicalPath) {
+      const match = q._canonicalPath.match(/enableWhen\/(.*?)\/question/);
+      condKey = match ? match[1] : '';
+    }
     const op = formProperty.getProperty('operator');
     const aField = Util.getAnswerFieldName(aType || 'string');
     const answerX = formProperty.getProperty(aField);
@@ -178,6 +184,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const enableWhenObj: EnableWhenValidationObject = {
       'id': this.model?.[FormService.TREE_NODE_ID],
       'linkId': linkIdProperty.value,
+      'conditionKey': condKey,
       'q': q,
       'aType': aType,
       'op': op,
@@ -266,7 +273,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     }
 
     const enableWhenObj = this.createEnableWhenValidationObj(formProperty);
-    if (!enableWhenObj)
+    if (!enableWhenObj || enableWhenObj.conditionKey === "*")
       return null;
 
     errors = this.validationService.validateEnableWhenSingle(enableWhenObj);
@@ -287,8 +294,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param rootProperty - Root form property
    * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
    *          1. (REQUIRED)          - linkId is empty.
-   *          2. (DUPLICATE_LINK_ID) - duplicate linkId.
-   *          3. (MAX_LENGTH)        - linkId is 255 characters or longer.
+   *          2. (PATTERN)           - linkId does not match the required pattern.
+   *          3. (DUPLICATE_LINK_ID) - duplicate linkId.
+   *          4. (MAX_LENGTH)        - linkId is 255 characters or longer.
    */
   validateLinkId (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];

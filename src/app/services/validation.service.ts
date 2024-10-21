@@ -12,6 +12,7 @@ interface EnableWhenFieldValidationObject {
 export interface EnableWhenValidationObject {
   id: string;
   linkId: string;
+  conditionKey: string;
   q: EnableWhenFieldValidationObject;
   aType: string;
   op: EnableWhenFieldValidationObject;
@@ -40,41 +41,31 @@ export class ValidationService {
    * @param startIndex - starting index for validation.
    * @returns - A promise that resolves when all items have been validated.
    */
-  validateAllItems(validationNodes: TreeNode[], startIndex = 0): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      try {
-        const promises = [];
-        for (let i = startIndex; i < validationNodes.length; i++) {
-          const itemData = JSON.parse(JSON.stringify(validationNodes[i].data));
-          itemData.id = ''+itemData[FormService.TREE_NODE_ID];
-          const validatorKeys = Object.keys(this.validators);
-          const self = this;
+  validateAllItems(validationNodes: TreeNode[], startIndex = 0): Promise<any[]> {
+    const promises = [];
+    const validatorKeys = Object.keys(this.validators);
+    const self = this;
 
-          for (let j = 0; j < validatorKeys.length; j++) {
-            const validatorKey = validatorKeys[j];
-            promises.push(new Promise<void>((resolveInner) => {  
-              setTimeout(function(itemDataCopy, validatorKeyCopy) {
-                return () => {
-                  itemDataCopy.cannoncial = validatorKeyCopy;
-                  itemDataCopy.canonicalPathNotation = self.createCanonicalPathNotation(validatorKeyCopy);
-                  itemDataCopy.value = itemDataCopy[self.getPropertyByCanonicalPathNotation(itemDataCopy.canonicalPathNotation)];
-                  self.validators[validatorKeyCopy](itemDataCopy, false);
+    for (let i = startIndex; i < validationNodes.length; i++) {
+      const itemData = JSON.parse(JSON.stringify(validationNodes[i].data));
+      itemData.id = ''+itemData[FormService.TREE_NODE_ID];
 
-                  resolveInner();
-                };
-              } (itemData, validatorKey), 0);
-            }));
-          }
-        }
-        Promise.all(promises)
-               .then(() => resolve());
-      } catch(error) {
-        reject(error);
+      for (let j = 0; j < validatorKeys.length; j++) {
+        const validatorKey = validatorKeys[j];
+        promises.push(new Promise((resolve) => {
+          setTimeout(() => {
+            itemData.cannoncial = validatorKey;
+            itemData.canonicalPathNotation = self.createCanonicalPathNotation(validatorKey);
+            itemData.value = itemData[self.getPropertyByCanonicalPathNotation(itemData.canonicalPathNotation)];
+            const error = self.validators[validatorKey](itemData, false);
+  
+            resolve( error ? error : {} );
+          }, 0);
+        }));
       }
-    });
+    }
+    return Promise.all(promises);
   };
-
-
 
   /**
    * Create a validation object specifically for the 'enableWhen' field validation.
@@ -95,6 +86,7 @@ export class ValidationService {
     const enableWhenObj: EnableWhenValidationObject = {
       'id': id,
       'linkId': linkId,
+      'conditionKey': '' + index,
       'q': this.createEnableWhenFieldValidationObject(enableWhen, 'question', index),
       'aType': aType,
       'op': this.createEnableWhenFieldValidationObject(enableWhen, 'operator', index),
@@ -136,13 +128,15 @@ export class ValidationService {
     //             - Load the linkIdTracker by the previous linkId.
     // scenario 2: No error and the linkId was not modified (the 'prevLinkId' is undefined. Only the 'newLinkId' (current value) is available). 
     //             - Load the linkIdTracker by the new linkId.
-    // scenario 3: Error(s) and hasDuplicateError.
+    // scenario 3: Error and 'newLinkId' is empty/null
+    //             - Load the linkIdTracker by the previous linkId.
+    // scenario 4: Error(s) and hasDuplicateError.
     //             - The linkIdTracker is updated. Node id is removed from the 'prevLinkId' and add into the 'newLinkId' (which result in having
     //               more than 1 node ids for the same linkId).
     //             - Load the linkIdTracker by the new linkId.
-    // scenario 4: Error(s) and no duplicate (hasDuplicateError is false).
+    // scenario 5: Error(s) and no duplicate (hasDuplicateError is false).
     //             - Load the linkIdTracker by the new linkId.
-    if (!errors && prevLinkId) {
+    if ((!errors && prevLinkId) || (errors && !newLinkId)) {
       nodeIds = this.formService.getNodeIdsByLinkId(prevLinkId);
     } else {
       if (hasDuplicateError)
@@ -174,15 +168,6 @@ export class ValidationService {
     }
   }
 
-  /**
-   * Validates if the provided input value matches the defined regular expression pattern.
-   * @param pattern - the regular expression pattern to test against the input value. 
-   * @param value - the input value to be validated against the pattern. 
-   * @returns - True if the input value matches the pattern, otherwise false.
-   */
-  isValidPattern(pattern: RegExp, value: string): boolean {
-    return pattern.test(value);
-  }
 
   /**
    * Converts a given canonical path into a canonical path notation.
@@ -347,9 +332,8 @@ export class ValidationService {
 
     // Update validate status if there are errors or if 'isSchemaFormValidation' is true.
     if (isSchemaFormValidation || errors)
-      this.formService.updateValidationStatus(enableWhenObj.id,
-                                              enableWhenObj.linkId,
-                                              this.getPropertyByCanonicalPathNotation(enableWhenObj.canonicalPathNotation),
+      this.formService.updateValidationStatus(enableWhenObj.id, enableWhenObj.linkId, 
+                                              `enableWhen_${enableWhenObj.conditionKey}`,
                                               errors);
 
     return errors;
@@ -363,8 +347,9 @@ export class ValidationService {
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
    *          1. (REQUIRED)          - linkId is empty.
-   *          2. (DUPLICATE_LINK_ID) - duplicate linkId.
-   *          3. (MAX_LENGTH)        - linkId is 255 characters or longer.
+   *          2. (PATTERN)           - linkId does not match the required pattern.
+   *          3. (DUPLICATE_LINK_ID) - duplicate linkId.
+   *          4. (MAX_LENGTH)        - linkId is 255 characters or longer.
    */
   validateLinkId(validationObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
@@ -379,7 +364,7 @@ export class ValidationService {
       err.params = [{'linkId': validationObj.prevLinkId, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
       errors.push(err);
     } else {
-      if (!this.isValidPattern(ValidationService.LINKID_PATTERN, validationObj.value)) {
+      if (!ValidationService.LINKID_PATTERN.test(validationObj.value)) {
         const errorCode = 'PATTERN';
         const err: any = {};
         err.code = errorCode;

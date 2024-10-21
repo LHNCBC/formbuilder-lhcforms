@@ -1900,6 +1900,7 @@ describe('Home page', () => {
           });
         });
       });
+
     });
 
   });
@@ -2219,7 +2220,7 @@ describe('Home page', () => {
         .should('have.value', '');
     });
   });
-
+ 
   describe('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
@@ -2262,7 +2263,7 @@ describe('Home page', () => {
   });
 
 });
-
+ 
 describe('Accepting only LOINC terms of use', () => {
   beforeEach(() => {
     cy.loadHomePageWithLoincOnly();

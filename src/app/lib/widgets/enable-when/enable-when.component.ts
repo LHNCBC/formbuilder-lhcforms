@@ -1,10 +1,11 @@
-import {ChangeDetectorRef, Component, DoCheck, ElementRef, OnInit, Renderer2, ViewEncapsulation} from '@angular/core';
+import {ChangeDetectorRef, Component, DoCheck, ElementRef, EventEmitter, OnInit, Output, Renderer2, ViewEncapsulation} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
 import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {Observable, of } from 'rxjs';
+import { FormService } from 'src/app/services/form.service';
 
 @Component({
   selector: 'lfb-enable-when',
@@ -18,7 +19,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   showHeaderFields: any[];
   warningIcon = faExclamationTriangle;
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef, private cdr: ChangeDetectorRef) {
+  constructor(private renderer: Renderer2, private elementRef: ElementRef,
+              private cdr: ChangeDetectorRef, private formService: FormService) {
     super(elementRef, cdr);
   }
 
@@ -90,35 +92,29 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   }
 
   /**
-   * Get errors from question[x] form property.
+   * Loop through each of the 'EnableWhen' fields and return any errors.
    * @param rowProperty - Object property representing an enableWhen condition.
-   * @return - Observable<string>
+   * @returns - observable that emits a string created by joining the 'errorMessage' array.
    */
-  getQuestionFieldErrors(rowProperty: ObjectProperty): Observable<string> {
-    let errorMessages: string [] = null;
-    const question = rowProperty.getProperty('question').value;
-    if (question) {
-      const formProperty = rowProperty.getProperty('question');  
-      errorMessages = this.getFieldErrors(formProperty);
-    }
-    return of(errorMessages?.join());
-  }
+  getEnableWhenFieldErrors(rowProperty: ObjectProperty): Observable<string> {
+    let errorMessages: string [] = [];
+    const fields = ["question", "operator", "__$answerType"];
 
-  /**
-   * Get errors from answer[x] form property.
-   * @param rowProperty - Object property representing an enableWhen condition.
-   * @return - Observable<string>
-   */
-  getAnswerFieldErrors(rowProperty: ObjectProperty): Observable<string> {
-    let errorMessages: string [] = null;
-    const answerType = rowProperty.getProperty('__$answerType').value;
-    if(answerType) {
-      const formProperty = rowProperty.getProperty((Util.getAnswerFieldName(answerType)));
-      errorMessages = this.getFieldErrors(formProperty);
+    for (const field of fields) {
+      const fieldValue = rowProperty.getProperty(field)?.value;
+      if (fieldValue) {
+        const fieldName = (field === '__$answerType') ? Util.getAnswerFieldName(fieldValue) : field;
+        const errors = this.getFieldErrors(rowProperty.getProperty(fieldName));
+        
+        if (errors) {
+          errorMessages.push(...errors);
+          break;
+        }
+      }
     }
-    return of(errorMessages?.join());
-  }
 
+    return of(errorMessages.length ? errorMessages.join() : null);
+  }
 
   /**
    * Collect enablewhen related errors from the field.
@@ -197,4 +193,23 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     }
   }
 
+  /**
+   * Remove the enableWhen error (if found) from the TreeNodeStatusMap.
+   *
+   * After calling the parent class api to delete the enableWhen condition, invoke the
+   * 'updateDeletedEnableWhenValidationStatus' function to also remove the corresponding
+   * enableWhen error (if found) from the TreeNodeStatusMap. In the same function, update
+   * the key indices of any remaining enableWhen errors that require adjustment.
+   *
+   * @param formProperty - The row represented by its form property.
+   */
+  removeItem(formProperty) {
+    const props = this.formProperty.properties as FormProperty [];
+    const propIndex = props.findIndex((e) => e === formProperty);
+    const treeNodeId = this.formProperty.searchProperty(FormService.TREE_NODE_ID).value
+    const linkId = this.formProperty.searchProperty('/linkId').value
+    
+    super.removeItem(formProperty);
+    this.formService.updateDeletedEnableWhenValidationStatus(treeNodeId, propIndex);
+  }
 }
