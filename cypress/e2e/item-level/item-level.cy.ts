@@ -351,7 +351,7 @@ describe('Home page', () => {
         cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
         cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
         cy.get('@moveBtn').should('be.disabled');
-        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{downarrow}{enter}');
+        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{enter}');
 
       });
 
@@ -360,7 +360,7 @@ describe('Home page', () => {
         cy.contains('button', 'Create questions').click();
       });
 
-      it('should move before a target node', () => {
+      it('should move after a target node', () => {
         cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
         cy.get('@moveBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
@@ -369,7 +369,7 @@ describe('Home page', () => {
         cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
       });
 
-      it('should move after a target node', () => {
+      it('should move before a target node', () => {
         cy.get('input[type="radio"][value="BEFORE"]').click();
         cy.get('@moveBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
@@ -407,7 +407,7 @@ describe('Home page', () => {
         cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Copy this item').click();
         cy.get('lfb-node-dialog').contains('button', 'Copy').as('copyBtn');
         cy.get('@copyBtn').should('be.disabled');
-        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{downarrow}{enter}');
+        cy.get('lfb-node-dialog').find('#moveTarget1').click().type('{downarrow}{enter}');
 
       });
 
@@ -416,7 +416,7 @@ describe('Home page', () => {
         cy.contains('button', 'Create questions').click();
       });
 
-      it('should copy before a target node', () => {
+      it('should copy after a target node', () => {
         cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
         cy.get('@copyBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
@@ -425,7 +425,7 @@ describe('Home page', () => {
         cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '5');
       });
 
-      it('should copy after a target node', () => {
+      it('should copy before a target node', () => {
         cy.get('input[type="radio"][value="BEFORE"]').click();
         cy.get('@copyBtn').should('not.be.disabled').click();
         cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '3');
@@ -1350,7 +1350,7 @@ describe('Home page', () => {
 
     xit('should create display type', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header (group/display)');
+      cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
@@ -1361,7 +1361,7 @@ describe('Home page', () => {
       cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
 
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('group');
+        expect(qJson.item[0].type).equal('display');
       });
       cy.get('@item0').dblclick();
       cy.get('@item1').click();
@@ -1371,16 +1371,86 @@ describe('Home page', () => {
       });
     });
 
+    // Skip this test for now as the dragAndDropNode command is not functioning
+    xit('should not be able to drop item on display data type item', () => {
+      cy.get('@type').contains('string');
+      cy.selectDataType('display');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('display');
+      });
+      cy.get('@addNewItem').click();
+
+      cy.contains('.node-content-wrapper span', 'New item 1').as('item1');
+
+      cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
+
+      cy.get('.tree-node').eq(1).should('have.class', 'tree-node-level-1');
+    });
+
+    // Skip this test for now as the dragAndDropNode command is not functioning
+    xit('should be able to drop item on display data type item', () => {
+      cy.get('@type').contains('string');
+      cy.selectDataType('group');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('group');
+      });
+      cy.get('@addNewItem').click();
+
+      cy.contains('.node-content-wrapper span', 'New item 1').as('item1');
+
+      cy.dragAndDropNode('New item 1', 'Item 0'); // TODO - Not working, revisit.
+
+      cy.get('.tree-node').eq(1).should('have.class', 'tree-node-level-2');
+    });
+
+    it('should not display header display data type if item has sub-item', () => {
+      cy.get('@type').contains('string');
+
+      cy.get('#type').then($dataTypeSelect => {
+        cy.wrap($dataTypeSelect)
+          .should('be.visible')
+          .find('option')
+          .contains('group')
+          .should('exist');
+
+        cy.wrap($dataTypeSelect)
+          .find('option')
+          .contains('display')
+          .should('exist');
+      });
+
+      cy.getTreeNode('Item 0').as('contextNode');
+      cy.get('@contextNode').find('span.node-display-prefix').should('have.text', '1');
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+
+      cy.contains('button.dropdown-item', 'Insert a new child item').click();
+      cy.get('#text').should('have.value', 'New item 1');
+      cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1.1');
+
+      cy.get('@contextNode').click();
+      cy.get('#type').focus().then($dataTypeSelect => {
+        cy.wrap($dataTypeSelect)
+          .should('be.visible')
+          .find('option')
+          .contains('group')
+          .should('exist');
+
+        cy.wrap($dataTypeSelect)
+          .find('option')
+          .should('not.contain', 'display');
+      });
+    });
+
     it('should retain header type after switching to another item and switching back', () => {
       cy.get('@type').contains('string');
-      cy.selectDataType('header (group/display)');
+      cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
       cy.get('@addNewItem').click();
       cy.get('@type').contains('string');
       cy.get('@item0').click();
-      cy.get('@type').contains('header (group/display)');
+      cy.get('@type').contains('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
         expect(qJson.item[1].type).equal('string');
@@ -1995,8 +2065,9 @@ describe('Home page', () => {
         });
       });
     });
-  });
 
+  });
+ 
   describe('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
@@ -2024,19 +2095,113 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].type).to.equal('string');
       });
       cy.get('#text').clear().type('xxx');
-      cy.get('#type').select('header (group/display)');
+      cy.get('#type').select('display');
 
       cy.clickTreeNode('My health history');
       cy.getTreeNode('xxx').click({force: true}); // Force through tooltip.
       cy.get('#text').should('have.value', 'xxx');
-      cy.get('#type').should('have.value', '12: group');
+      cy.get('#type').should('have.value', '13: display');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].text).to.equal('xxx');
         expect(qJson.item[0].item[0].type).to.equal('display');
       });
     });
+
+    it('should not display selected node in the target node list', () => {
+      cy.toggleTreeNodeExpansion('Family member health history');
+      // Select the 'Relationship to patient' item and select the 'More options'.
+      cy.getTreeNode('Relationship to patient').as('contextNode');
+      cy.get('@contextNode').click();
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      
+      // Select the 'Move this item' option.
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+      cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+
+      // Search for 'Gender' in the target item. It should not be displayed.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click();
+      cy.get('lfb-node-dialog [role="listbox"]').find('button.dropdown-item').should('not.contain.text', 'Relationship to patient');
+    });
+
+    it('should not be able to move an item to an item of type "display"', () => {
+      cy.toggleTreeNodeExpansion('Family member health history');
+      cy.getTreeNode('Race').click();
+
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Display Data Type');
+      cy.selectDataType('display');
+      cy.getTreeNode('Display Data Type').find('span.node-display-prefix').should('have.text', '2.8');
+
+      // Select the 'Race' item and select the 'More options'.
+      cy.getTreeNode('Race').as('contextNode');
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      // Select the 'Move this item' option.
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+      cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+      // Select target item to be 'Gender' item and it should present with 3 drop locations.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click().type('Gender').should('exist').type('{downarrow}{enter}');
+      cy.get('lfb-node-dialog').find('ul').within(() => {
+        cy.get('li').should('have.length', 3);
+        cy.get('li').eq(0).should('contain.text', 'After the target item.');
+        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+        cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
+      });
+
+      // Re-enter the target to be 'Display Data Type'. Due to the data type, it should 
+      // only present with 2 drop locations.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
+      cy.get('lfb-node-dialog').find('button.dropdown-item').should('exist').should('have.length', 1).click();
+
+      cy.get('lfb-node-dialog').find('ul').within(() => {
+        cy.get('li').should('have.length', 2);
+        cy.get('li').eq(0).should('contain.text', 'After the target item.');
+        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+      });
+
+      // Clear the target again. 3 drop locations should be presented.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear();
+      cy.get('lfb-node-dialog form').click();
+      cy.get('lfb-node-dialog').find('ul').within(() => {
+        cy.get('li').should('have.length', 3);
+        cy.get('li').eq(0).should('contain.text', 'After the target item.');
+        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+        cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
+        // Select the 'As a child of target item.' option.
+        cy.get('li').eq(2).should('contain.text', 'As a child of target item.')
+          .find('input[type="radio"').check();
+
+      });
+      // The 'Display Data Type' item should be excluded from the target item list.
+      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
+      cy.get('lfb-node-dialog').find('button.dropdown-item').should('not.exist');
+    });
+
+    it('should not be able to insert a new child item to an item of type "display"', () => {
+      cy.toggleTreeNodeExpansion('Family member health history');
+      cy.getTreeNode('Race').click();
+
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Display Data Type');
+      cy.selectDataType('display');
+      cy.getTreeNode('Display Data Type').find('span.node-display-prefix').should('have.text', '2.8');
+
+      // Select the 'Race' item and select the 'More options'.
+      cy.getTreeNode('Race').as('contextNode');
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      // One of the option should be 'Insert a new child item.'
+      cy.get('div.dropdown-menu.show').should('contain', 'Insert a new child item');
+      
+      // Select the 'Display Data Type' item and select the 'More options.'
+      cy.getTreeNode('Display Data Type').as('contextNode').click();
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      // Due to the data type 'display', the option 'Insert a new child item.' should be hidden.
+      cy.get('div.dropdown-menu.show').should('not.contain', 'Insert a new child item');
+    });
   });
+
 });
 
 describe('Accepting only LOINC terms of use', () => {
