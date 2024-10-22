@@ -63,6 +63,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   rowSelectionType = null; // 'radio' or 'checkbox'
   rowSelection = false; // If a row selection column is displayed. Default is no column.
 
+  hideHeaderAriaLabel = true;
+
   constructor(private elRef: ElementRef, private cdRef: ChangeDetectorRef) {
     super();
   }
@@ -342,5 +344,33 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * Possible method for handling row selections for checkboxes.
    */
   checkboxSelection(event) {
+  }
+
+  /**
+   * Possible method for handling clear selections for both radio buttons and checkboxes.
+   */
+  clearSelections() {
+  }
+
+  /**
+   * Returns an aria-label string for the 'Clear Selection' button based on the 'rowSelectionType',
+   * indicating whether it is a single selection (radio button) or a multi-selection (checkboxes).
+   * @param col - table column where the button is located.
+   * @returns - a descriptive string to be used as an aria-label for the 'Clear Selection' button.
+   */
+  getClearSelectionLabel(col: number): string {
+    if (this.rowSelectionType === 'radio')
+      return `Column ${col} Clear Selection button - used to clear Default radio button selection.`;
+    else
+      return `Column ${col} Clear Selection button - used to clear Default checkbox selections.`;
+  }
+
+  /**
+   * Updates the aria-hidden attribute for the 'Clear Selection' button based on the provided status.
+   * @param status - If true, set the aria-hidden attribute to true, which making the 'Clear Selection'
+   *                 button aria-label unannounced by the screen reader. 
+   */
+  onHideHeaderAriaLabel(status: boolean): void {
+    this.hideHeaderAriaLabel = status;
   }
 }

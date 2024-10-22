@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.6] 2024-09-27
+### Added
+- Added a reset button for the Answer Choices Default selection.
+
 ## [9.6.5] 2024-09-18
 ### Fixed
 - Change protocol of hapi.fhir.org urls to https.
