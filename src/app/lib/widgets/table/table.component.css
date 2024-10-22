@@ -30,3 +30,49 @@
 .add-button-alert-popover {
   background-color: lightgoldenrodyellow;
 }
+
+button.unselect {
+  margin-top: -3px;
+  border: 0px;
+  font-size: 20px;
+  width: 25px;
+  padding-left: 1px !important;
+  line-height: 0.4;
+  vertical-align: middle;
+  transform: scaleX(-1);
+  font-family: 'Roboto', sans-serif;
+  border-radius: 4px;
+  margin-left: 4px !important;
+}
+
+th.default-column {
+  white-space: nowrap;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 100px;
+}
+
+td.default-column {
+  padding: .25rem .5rem !important;
+  min-width: 100px;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+th.action-column {
+  width: 30px;
+  min-width: 30px;
+}
+
+td.action-column {
+  border-left: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--bs-border-color);
+  width: 30px;
+  min-width: 30px;
+}
+
+.col-sm-half {
+  width: 4.16667%;
+  flex: 0 0  4.16667%;
+  max-width: 4.16667%;
+}

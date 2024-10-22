@@ -313,4 +313,14 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   checkboxSelection(event) {
     this.updateWithCheckboxSelections();
   }
+
+  /**
+   * Clear all selections for the 'Answer Option' checkbox and radio options. 
+   */
+  clearSelections() {
+    this.selectionRadio = -1;
+    this.updateWithRadioSelection();
+    this.selectionCheckbox = [];
+    this.updateWithCheckboxSelections();
+  }
 }
