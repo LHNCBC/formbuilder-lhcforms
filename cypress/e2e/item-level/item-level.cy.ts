@@ -1474,19 +1474,16 @@ describe('Home page', () => {
         cy.get(errorIcon1El).should('not.exist');
 
         cy.get(question2El).should('be.empty');
-        cy.get(errorIcon2El).should('exist');
         cy.get(errorIcon2El)
           .should('have.attr',
                   'aria-label',
                   'Error in conditional display condition 1: Question not found for the linkId \'q11\'.');
 
-        cy.get(errorIcon3El).should('exist');
         cy.get(errorIcon3El)
           .should('have.attr',
                   'aria-label',
                   'Error in conditional display condition 2: Invalid operator \'>\' for type \'choice\'.');
 
-        cy.get(errorIcon4El).should('exist');
         cy.get(errorIcon4El)
           .should('have.attr',
                   'aria-label',
