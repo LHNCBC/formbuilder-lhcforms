@@ -225,23 +225,31 @@ export class Util {
 
 
   /**
-   * Convert lforms units to equivalent FHIR extensions.
+   * Convert lforms units to equivalent FHIR extensions. For quantity type, all
+   * units are converted, and for decimal or integer, only the first unit is converted.
+   *
    * @param units - units in lforms format.
+   * @param dataType - 'quantity' || 'decimal' || 'integer'
    */
-  static convertUnitsToExtensions(units): any [] {
+  static convertUnitsToExtensions(units, dataType: string): any [] {
     if(!units) {
       return null;
     }
     const ret: any [] = [];
-    units.forEach((unit) => {
+    const unitUri = dataType === 'quantity' ?
+      'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption' :
+      'http://hl7.org/fhir/StructureDefinition/questionnaire-unit';
+    units.some((unit) => {
       ret.push({
-        url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit',
+        url: unitUri,
         valueCoding: {
-          code: unit,
+          code: unit.unit,
           system: 'http://unitsofmeasure.org',
-          display: unit
+          display: unit.unit
         }
       });
+      // For quantity convert all units. For decimal or integer pick the first one.
+      return (dataType !== 'quantity');
     });
     return ret;
   }
