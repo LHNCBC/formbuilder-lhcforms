@@ -223,9 +223,4 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
     this.liveAnnouncer.announce('Group item control selection has been cleared.');
   }
-
-  getClearGroupItemControlSelectionLabel(): string {
-    return "Clear group item control selection button is used for clearing the selection.";
-  }
-
 }

@@ -28,7 +28,7 @@
 
   <div *ngIf="dataType === 'group'" class="col-1 action-column">
     <button type="button" class="btn btn-outline-primary p-1 group-item-control-unselect" matTooltip="Clear selection"
-            [attr.aria-label]="getClearGroupItemControlSelectionLabel()"
+            [attr.aria-label]="'Clear group item control selection button is used for clearing the selection.'"
             (click)="clearGroupItemControlSelection()">&#x2326;</button>
   </div>
 
