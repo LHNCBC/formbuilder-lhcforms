@@ -5,6 +5,7 @@ import {FormService} from '../../../services/form.service';
 import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import {Util} from '../../util';
+import {LiveAnnouncer} from "@angular/cdk/a11y";
 
 @Component({
   selector: 'lfb-item-control',
@@ -28,7 +29,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   subscriptions: Subscription [] = [];
   dataType;
 
-  constructor(private extensionsService: ExtensionsService, private formService: FormService, private cdr: ChangeDetectorRef) {
+  constructor(private extensionsService: ExtensionsService, private formService: FormService,
+              private cdr: ChangeDetectorRef, private liveAnnouncer: LiveAnnouncer) {
     super();
   }
 
@@ -52,9 +54,9 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   }
 
   /**
-   * Get the default item control based on the selected data type, or the item control defined in the 
+   * Get the default item control based on the selected data type, or the item control defined in the
    * extension.
-   * @param dataTypeChanged - indicates if there is a change to the data type. True if the 
+   * @param dataTypeChanged - indicates if there is a change to the data type. True if the
    *                          data type changed; otherwise, False.
    * @returns - item control
    */
@@ -63,7 +65,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     const defaultItemControl = (this.dataType === 'group') ? '' : 'drop-down';
     if (dataTypeChanged)
       return defaultItemControl;
-    
+
     return ext ? ext.valueCodeableConcept.coding[0].code : defaultItemControl;
   }
 
@@ -212,4 +214,18 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       label += "Please note that this item control is not supported by the LHC-Forms preview.";
     return label;
   }
+
+  /**
+   * Clear selection for the 'Group Item Control' radio button.
+   */
+  clearGroupItemControlSelection() {
+    this.option = '';
+    this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
+    this.liveAnnouncer.announce('Group item control selection has been cleared.');
+  }
+
+  getClearGroupItemControlSelectionLabel(): string {
+    return "Clear group item control selection button is used for clearing the selection.";
+  }
+
 }

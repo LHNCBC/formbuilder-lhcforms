@@ -1048,7 +1048,7 @@
     },
     "__$itemControlGroup": {
       // Proxy for item control extension.
-      "description": "Choose the type of control for the 'Group' data type. The default is a list. Some item controls are not supported by the LHC-Forms preview, as indicated by the asterisk (*) symbol.",
+      "description": "Choose the type of control for the 'Group' data type. Some item controls are not supported by the LHC-Forms preview, as indicated by the asterisk (*) symbol.",
       "title": "Group Item Control",
       "oneOf": [
         {
@@ -1061,7 +1061,6 @@
           'enum': ["table"],
           'display': 'Vertical Answer Table',
           'description': 'For \'choice\' questions, the table representation should have questions as rows and answers as columns. Ensure option sets are consistent within a group. Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
-          
           'support': true
         },
         {
@@ -1116,8 +1115,8 @@
         "id": "item-control",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-auto btn-group btn-group-sm p-0",
-        "note": "* - not supported by LHC-Forms preview."
+        "controlClasses": "col-9 btn-group btn-group-sm p-0",
+        "note": "- not supported by LHC-Forms preview."
       }
     },
     "__$terminologyServer": {

@@ -708,7 +708,7 @@ describe('Home page', () => {
       cy.get(eclSel).type('123');
       cy.get('@controlDiv').click() // Change on eclSel
       cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
-      
+
       // The terminology server should now have value
       cy.tsUrl().should('have.value', 'https://snowstorm.ihtsdotools.org/fhir');
 
@@ -1101,7 +1101,7 @@ describe('Home page', () => {
               system: 'http://hl7.org/fhir/questionnaire-item-control'
             }]
           }
-        },        
+        },
         'table': {
           url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
           valueCodeableConcept: {
@@ -1195,7 +1195,7 @@ describe('Home page', () => {
         const footerBtn = '[for^="__\\$itemControlGroup\\.footer"]';
         const pageBtn = '[for^="__\\$itemControlGroup\\.page"]';
         const tabContainerBtn = '[for^="__\\$itemControlGroup\\.tab-container"]';
-        
+
         const listRadio = '#__\\$itemControlGroup\\.list';
         const verticalAnsTblRadio = '#__\\$itemControlGroup\\.table';
         const horizontalAnsTblRadio = '#__\\$itemControlGroup\\.htable';
@@ -1278,11 +1278,39 @@ describe('Home page', () => {
         // Select 'Tab Container' Group Item Control
         cy.get(tabContainerBtn).click();
         cy.get(tabContainerRadio).should('be.checked');
-        // Extension should be add
+        // Extension should be added
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['tab-container']]);
         });
       });
+
+      it('should be able to clear group item control selection', () => {
+        const listBtn = '[for^="__\\$itemControlGroup\\.list"]';
+        const listRadio = '#__\\$itemControlGroup\\.list';
+
+        // The Data type for the 1st question should be a group
+        cy.get('#type').should('contain.value', 'group');
+        // The Group Item Control should be visible but there should be no default selection
+        cy.get(listRadio).should('not.be.checked');
+
+        // Select 'List' Group Item Control.
+        cy.get(listBtn).click();
+        cy.get(listRadio).should('be.checked');
+        // Extension should be added.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['list']]);
+        });
+
+        // Clear the group item control selection
+        cy.get('button.group-item-control-unselect').click();
+        // The group item control selection should be unselected
+        cy.get(listRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).undefined;
+        });
+      });
+
     });
 
 
@@ -2210,7 +2238,7 @@ describe('Home page', () => {
     });
 
   });
- 
+
   describe('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
@@ -2257,7 +2285,7 @@ describe('Home page', () => {
       cy.getTreeNode('Relationship to patient').as('contextNode');
       cy.get('@contextNode').click();
       cy.get('@contextNode').find('button.dropdown-toggle').click();
-      
+
       // Select the 'Move this item' option.
       cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
       cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
@@ -2292,7 +2320,7 @@ describe('Home page', () => {
         cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
       });
 
-      // Re-enter the target to be 'Display Data Type'. Due to the data type, it should 
+      // Re-enter the target to be 'Display Data Type'. Due to the data type, it should
       // only present with 2 drop locations.
       cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
       cy.get('lfb-node-dialog').find('button.dropdown-item').should('exist').should('have.length', 1).click();
@@ -2336,7 +2364,7 @@ describe('Home page', () => {
       cy.get('@contextNode').find('button.dropdown-toggle').click();
       // One of the option should be 'Insert a new child item.'
       cy.get('div.dropdown-menu.show').should('contain', 'Insert a new child item');
-      
+
       // Select the 'Display Data Type' item and select the 'More options.'
       cy.getTreeNode('Display Data Type').as('contextNode').click();
       cy.get('@contextNode').find('button.dropdown-toggle').click();

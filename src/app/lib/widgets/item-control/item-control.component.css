@@ -30,7 +30,6 @@
 .vertical-container {
   display: flex;
   flex-direction: column;
-  width: 80%;
   margin: 0;
   padding: 0;
 }
@@ -46,4 +45,22 @@ label.btn {
 
 .not-supported {
   color: red;
+  font-weight: bold;
+}
+
+button.group-item-control-unselect {
+  padding-right:2px !important;
+  border: 0;
+  font-size: 24px;
+  width: 35px;
+  height: 30px;
+  line-height: 0.4;
+  vertical-align: middle;
+  transform: scaleX(-1);
+  font-family: 'Roboto', sans-serif;
+  border-radius: 4px;
+}
+
+.action-column {
+  text-align: center;
 }
