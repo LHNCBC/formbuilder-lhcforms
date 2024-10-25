@@ -1116,7 +1116,7 @@
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-9 btn-group btn-group-sm p-0",
-        "note": "- not supported by LHC-Forms preview."
+        "note": "(1) - not supported by LHC-Forms preview."
       }
     },
     "__$terminologyServer": {

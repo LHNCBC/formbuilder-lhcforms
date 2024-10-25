@@ -43,15 +43,6 @@ label.btn {
   font-weight: bold;
 }
 
-em > sup {
-  color: rgb(25, 135, 84);
-  font-weight: bold;
-}
-
-.not-supported {
-  font-weight: bold;
-}
-
 button.group-item-control-unselect {
   padding-right:2px !important;
   border: 0;

@@ -905,8 +905,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       setTimeout(() => {
         this.liveAnnouncer.announce(this.errorTooltip.dropErrorMessage);
       }, 0);
-    } else
+    } else {
       this.errorTooltip.showTooltip(false);
+    }
 
     return !this.errorTooltip.showDropNotAllowedTooltip;
   }
