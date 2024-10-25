@@ -16,13 +16,13 @@
           <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt.enum[0]"
                 [matTooltip]="((opt.support) ? '' : '(not supported in LHC-Forms): ') + opt.description">
             {{opt.display}}
-            <span *ngIf="!opt.support" class="not-supported" aria-hidden="true">*</span>
+            <sup *ngIf="!opt.support" class="not-supported">*</sup>
           </label>
         </div>
       </ng-container>
     </div>
     <div class="text-container">
-      <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em><span class="not-supported" >*</span> {{formProperty.schema.widget?.note}}</em></small></p>
+      <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em><sup>*</sup> {{formProperty.schema.widget?.note}}</em></small></p>
     </div>
   </div>
 

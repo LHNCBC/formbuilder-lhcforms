@@ -7,7 +7,7 @@
 
 .btn-wrapper {
   display: inline-flex;
-  margin: 0px;
+  margin: 0;
   border: none;
   padding: 0;
 }
@@ -43,8 +43,12 @@ label.btn {
   font-weight: bold;
 }
 
+em > sup {
+  color: rgb(25, 135, 84);
+  font-weight: bold;
+}
+
 .not-supported {
-  color: red;
   font-weight: bold;
 }
 
