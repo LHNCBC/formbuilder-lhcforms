@@ -4,9 +4,10 @@
              [title]="schema.title"
              [helpMessage]="schema.description"
              [ngClass]="labelClasses"
+             [labelId]="'label_'+id"
   ></lfb-label>
   <div [ngClass]="controlClasses">
-    <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+    <div [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="'label_'+id">
       <ng-container *ngFor="let opt of getOptions()">
         <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt" value="{{opt}}" type="radio" [(ngModel)]="option"
                (ngModelChange)="updateItemControlExt($event)">

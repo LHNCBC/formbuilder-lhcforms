@@ -12,7 +12,6 @@ import {StringComponent} from './widgets/string/string.component';
 import {SelectComponent} from './widgets/select/select.component';
 import {CheckboxComponent} from './widgets/checkbox.component/checkbox.component';
 import {IntegerComponent} from './widgets/integer/integer.component';
-import {RadioComponent} from './widgets/radio/radio.component';
 import { Injectable } from '@angular/core';
 import {EnableWhenSourceComponent} from './widgets/enable-when-source/enable-when-source.component';
 import {EnableOperatorComponent} from './widgets/enable-operator/enable-operator.component';
@@ -59,7 +58,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('boolean', CheckboxComponent);
     this.register('integer', IntegerComponent);
     this.register('number', NumberComponent);
-    this.register('radio', RadioComponent);
     this.register('lb-radio', LabelRadioComponent);
     this.register('enable-when', EnableWhenComponent);
     this.register('enable-when-source', EnableWhenSourceComponent);

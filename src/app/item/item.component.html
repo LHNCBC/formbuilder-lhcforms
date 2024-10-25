@@ -117,8 +117,8 @@
   <div class="modal-body">
     <form>
       <div class="form-group">
-        <label for="loincTypeSelect1" class="align-middle">Select LOINC item type:</label>
-        <div class="btn-group" id="loincTypeSelect1">
+        <label for="loincTypeSelect1" class="align-middle" id="loincItemRadioGroupLabel">Select LOINC item type:</label>
+        <div class="btn-group" id="loincTypeSelect1" role="radiogroup" aria-labelledby="loincItemRadioGroupLabel">
           <label *ngFor="let opt of loincTypeOpts" class="btn">
             <input type="radio" name="loincType"
                    [value]="opt.value"

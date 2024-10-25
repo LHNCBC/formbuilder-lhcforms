@@ -7,8 +7,9 @@
                [title]="schema.title"
                [helpMessage]="schema.description"
                [ngClass]="labelClasses"
+               [labelId]="'label_rg_'+id"
     ></lfb-label>
-    <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+    <div [attr.aria-labelledby]="'label_rg_'+id" [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="id">
       <ng-container *ngFor="let option of schema.oneOf">
         <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" name="{{id}}"
                  type="radio" [value]="option.enum[0]" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null" autocomplete="off">

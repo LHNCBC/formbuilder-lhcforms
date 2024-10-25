@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.8] 2024-10-25
+ ### Changed
+- Added aria-labels to radio group elements to improve accessibility.
+
 ## [9.6.7] 2024-10-03
 ### Changed
 - Split the 'header (group/display)' data type option into separate options.
