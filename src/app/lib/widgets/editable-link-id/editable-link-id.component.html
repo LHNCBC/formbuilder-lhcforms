@@ -3,7 +3,7 @@
 <ng-template #editableLinkId>
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
     <lfb-label
-               [for]="linkId"
+               [for]="id"
                [title]="schema.title"
                [helpMessage]="schema.description"
                [ngClass]="labelClasses"
@@ -11,7 +11,7 @@
     ></lfb-label>
     <div class="col p-0" [class.has-error]="errors"
          [class.has-success]="formProperty.valid">
-      <input [name]="name" 
+      <input [name]="name"
              class="form-control form-control-sm"
              [attr.type]="'text'"
              [attr.id]="id"
@@ -30,7 +30,7 @@
           </li>
         </ng-container>
       </ul>
-      
+
       <p #note [attr.id]="'note_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
 
     </div>

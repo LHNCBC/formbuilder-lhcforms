@@ -178,7 +178,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     scrollContainer: document.documentElement // HTML
   };
   errorMessage = 'Error(s) exist in this item. The resultant form may not render properly.';
-  errorMessageLite = 'Error(s) exist in this item.';
+  errorMessageLite = 'Error or errors exist in this item.';
   childErrorMessage = 'A child item or one of its descendants has an error.';
 
   @Input()
@@ -379,12 +379,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       case 'initialized':
         this.startSpinner();
         this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1)
-            .then((results) => {
-              this.stopSpinner();
-            })
-            .catch(err => {
-              this.stopSpinner();
-            });
+          .finally(() => {
+            this.stopSpinner();
+          });
         break;
       default:
         break;
@@ -395,7 +392,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   /**
    * Trigger spinner. It is a modal dialog disabling user actions.
    * Match this with stopSpinner.
-   * 
+   *
    * There are three 'startSpinner' calls in this class. The 'spinnerCounter'
    * increments with each call to track the number of active operations.
    * The spinner is set to display only on the first 'startSpinner' call.
@@ -408,7 +405,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   /**
    * Stop spinner.
-   * 
+   *
    * There are three 'stopSpinner' calls in this class. The 'spinnerCounter'
    * decrements with each call to track the number of active operations.
    * The spinner is set to hide only on the last 'stopSpinner' call.
@@ -421,9 +418,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   /**
    * Set selected node, typically invoked when user clicks a node on the tree.
    * @param node - Selected node.
-   * @param checkForEmptyLinkId - A flg that indiciates whether to validate for an empty 'linkId'. 
+   * @param checkForEmptyLinkId - A flg that indiciates whether to validate for an empty 'linkId'.
    *                              If set to 'true', the function will check if the 'linkId' is empty and
-   *                              assign a default value. If set to 'false', the validation will be skipped.  
+   *                              assign a default value. If set to 'false', the validation will be skipped.
    */
   setNode(node: ITreeNode, checkForEmptyLinkId: boolean = false): void {
     this.startTime = Date.now();
@@ -431,9 +428,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.itemData = this.focusNode ? this.focusNode.data : null;
 
     /*
-      The 'checkForEmptyLinkId' is only set to true when there is a change to the 'linkId' and 
+      The 'checkForEmptyLinkId' is only set to true when there is a change to the 'linkId' and
       only in that situation that the default linkId will be assigned if the 'linkId' is empty.
-      So in the case where the 'linkId' is intentionally blanked out, it will not remain that way 
+      So in the case where the 'linkId' is intentionally blanked out, it will not remain that way
       when the field is in focus again.
     */
     if(this.focusNode?.data && checkForEmptyLinkId
@@ -891,8 +888,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
-   * Add/insert item in the tree. 
-   * 
+   * Add/insert item in the tree.
+   *
    * @param position - ('AFTER' || 'BEFORE' || 'CHILD' )
    * @param newItem - QuestionnaireItem to add.
    * @param targetNode - Context node where the item to add.

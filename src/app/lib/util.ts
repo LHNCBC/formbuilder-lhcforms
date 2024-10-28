@@ -289,10 +289,8 @@ export class Util {
    * . Converts converts enableWhen[x].question object to linkId.
    *
    * @param fhirQInternal - Questionnaire object used in the form builder.
-   * @param excludeCustomFields - array of strings, where each string represents the name of a custom field that should
-   *                              be excluded from deletion from the Questionnaire items. 
    */
-  static convertToQuestionnaireJSON(fhirQInternal, excludeCustomFields: string[] = []) {
+  static convertToQuestionnaireJSON(fhirQInternal) {
     const value = copy(fhirQInternal); // Deep copy. Leave the internal model untouched.
     traverse(value).forEach(function (node) {
       this.before(function () {
@@ -330,7 +328,7 @@ export class Util {
 
       this.after(function () {
         // Remove all custom fields starting with __$ excluding any fields defined in excludeCustomFields array and empty fields.
-        if((this.key?.startsWith('__$') && !excludeCustomFields.includes(this.key || '')) || typeof node === 'function' || Util.isEmpty(node)) {
+        if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
           if (this.notRoot) {
             this.remove(); // Splices off any array elements.
           }
@@ -521,7 +519,7 @@ export class Util {
 
   /**
    * Generates a unique identifier string using UUID v4 format.
-   * 
+   *
    * This function creates a unique identifier in the format of
    * "xxxxxxxx-xxxx-4xxx-xxxx-xxxxxxxxxxxx", consisting of 36 characters,
    * including four hyphens.

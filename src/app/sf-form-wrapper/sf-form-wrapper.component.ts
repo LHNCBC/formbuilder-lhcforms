@@ -142,7 +142,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param id - tree node id.
    * @param linkId - linkId associated with item of the node.
    * @param value - the value of the field to be validated.
-   * @param formProperty - Object form property of the 'enableWhen' field. 
+   * @param formProperty - Object form property of the 'enableWhen' field.
    * @returns - validation object to be used for the validation.
    */
   createValidationObj(id: string, linkId: string, value: any, formProperty: FormProperty): any {
@@ -163,7 +163,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   createEnableWhenValidationObj(formProperty: ObjectProperty): EnableWhenValidationObject {
     const q = formProperty.getProperty('question');
     const questionItem = this.formService.getTreeNodeByLinkId(q.value);
-    
+
     let aType = '';
 
     if (questionItem) {
@@ -207,7 +207,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    */
   validateType(value, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
-    
+
     if (!this.model) {
       return null;
     }
@@ -237,8 +237,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param rootProperty - Root form property.
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
-   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty. 
+   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not
+   *                                            and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
     let errors = null;
@@ -262,8 +262,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param rootProperty - Root form property.
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
-   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty. 
+   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not
+   *                                            and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
@@ -312,9 +312,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       return null;
     }
 
-    const propertyName = this.validationService.getPropertyByCanonicalPathNotation(formProperty.canonicalPathNotation);
+    const propertyName = this.validationService.getLastPathSegment(formProperty.canonicalPathNotation);
     if (!prevLinkId && value === '') {
-      // Check to see if the node already has errors, otherwise null 
+      // Check to see if the node already has errors, otherwise null
       const nodeStatus = this.formService.getTreeNodeStatusById(nodeId);
       errors = nodeStatus?.errors?.[propertyName] ?? null;
       return errors;

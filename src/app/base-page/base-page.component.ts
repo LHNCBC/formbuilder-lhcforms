@@ -95,7 +95,7 @@ export class BasePageComponent implements OnInit {
     this.formSubject.asObservable().pipe(
       debounceTime(500),
       switchMap((fhirQ) => {
-        this.formService.autoSaveForm(Util.convertToQuestionnaireJSON(fhirQ, [FormService.TREE_NODE_ID]));
+        this.formService.autoSaveForm(Util.convertToQuestionnaireJSON(fhirQ));
         return of(fhirQ);
       }),
       takeUntil(this.unsubscribe)
@@ -209,7 +209,7 @@ export class BasePageComponent implements OnInit {
       }
       window.addEventListener('message', msgListener);
       window.addEventListener('beforeunload', (event) => {
-        window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue, [FormService.TREE_NODE_ID])}, this.openerUrl);
+        window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
       });
 
       window.opener.postMessage({type: 'initialized'}, this.openerUrl);
@@ -304,9 +304,6 @@ export class BasePageComponent implements OnInit {
       state = state === 'home' ? 'fl-editor' : state;
       this.formService.setGuidingStep(state);
       this.setQuestionnaire(this.formService.autoLoadForm());
-
-      this.formService.autoLoadTreeNodeStatusMap();
-      this.formService.loadLinkIdTracker();
     }
     else if (this.startOption === 'scratch') {
       this.setStep('fl-editor');

@@ -55,10 +55,10 @@ export class ValidationService {
         promises.push(new Promise((resolve) => {
           setTimeout(() => {
             itemData.cannoncial = validatorKey;
-            itemData.canonicalPathNotation = self.createCanonicalPathNotation(validatorKey);
-            itemData.value = itemData[self.getPropertyByCanonicalPathNotation(itemData.canonicalPathNotation)];
+            itemData.canonicalPathNotation = self.convertToDotNotationPath(validatorKey);
+            itemData.value = itemData[self.getLastPathSegment(itemData.canonicalPathNotation)];
             const error = self.validators[validatorKey](itemData, false);
-  
+
             resolve( error ? error : {} );
           }, 0);
         }));
@@ -95,7 +95,7 @@ export class ValidationService {
     };
     return enableWhenObj;
   }
-  
+
   /**
    * Create sub-field validation object for the EnableWhen field. The includes the sub-field: 'question', 'operator', or 'answer'.
    * @param enableWhenObj - EnableWhen validation object.
@@ -111,13 +111,13 @@ export class ValidationService {
     };
   }
 
-  
+
   /**
    * Handle the 'linkId' validation result by updating the 'linkIdTracker' and the validation status
-   * accordingly, depending on the outcome of the validation. 
+   * accordingly, depending on the outcome of the validation.
    * @param hasDuplicateError - True if there is a duplicate 'linkId', otherwise false.
-   * @param prevLinkId - existing linkId associated with item of the node. 
-   * @param newLinkId - updated linkId associated with item of the node. 
+   * @param prevLinkId - existing linkId associated with item of the node.
+   * @param newLinkId - updated linkId associated with item of the node.
    * @param errors - Array of errors from the validation or null.
    */
   handleLinkIdValidationResult(hasDuplicateError: boolean, prevLinkId: string, nodeId: any, newLinkId: string, errors: any[]): void {
@@ -126,7 +126,7 @@ export class ValidationService {
     // Obtaining nodeIds (should return one or more node ids for the given linkId where multiple node ids indicate a duplication of the linkId.)
     // scenario 1: No error and the linkId value was modified (the 'prevLinkId' and 'newLinkId' are avaiable).
     //             - Load the linkIdTracker by the previous linkId.
-    // scenario 2: No error and the linkId was not modified (the 'prevLinkId' is undefined. Only the 'newLinkId' (current value) is available). 
+    // scenario 2: No error and the linkId was not modified (the 'prevLinkId' is undefined. Only the 'newLinkId' (current value) is available).
     //             - Load the linkIdTracker by the new linkId.
     // scenario 3: Error and 'newLinkId' is empty/null
     //             - Load the linkIdTracker by the previous linkId.
@@ -141,7 +141,7 @@ export class ValidationService {
     } else {
       if (hasDuplicateError)
         this.formService.updateLinkIdForLinkIdTracker(prevLinkId, newLinkId, nodeId);
-      
+
       nodeIds = this.formService.getNodeIdsByLinkId(newLinkId);
     }
 
@@ -150,10 +150,10 @@ export class ValidationService {
     //             - Since there is no longer a duplicate, remove error from both nodes (if block).
     // scenario 2: No errors and nodeIds has more than 3 node ids (more than two duplicates of the same linkId).
     //             - In this case, there is still duplicate nodes. Remove the error from only the current linkId (else block).
-    // scenario 3: Has error(s) and nodeIds has 1 node id. 
+    // scenario 3: Has error(s) and nodeIds has 1 node id.
     //             - Populate the error from the (if block). Could have been done in the (else block) if adding more condition.
-    // scenario 4: Has error(s) and nodeIds has more than 1 node ids (duplicateError).  
-    //             - Populate the error for all nodes. Make sense for 2 node ids. If more than 2, some may already have error populated. 
+    // scenario 4: Has error(s) and nodeIds has more than 1 node ids (duplicateError).
+    //             - Populate the error for all nodes. Make sense for 2 node ids. If more than 2, some may already have error populated.
     if (nodeIds && ((!errors && nodeIds.length < 3) || errors)) {
       nodeIds.forEach(id => {
         const val = (id === nodeId || !prevLinkId) ? newLinkId : prevLinkId;
@@ -170,14 +170,12 @@ export class ValidationService {
 
 
   /**
-   * Converts a given canonical path into a canonical path notation.
-   * - Removing the leading slash (if present).
-   * - Replacing all subsequent slashes with periods.
-   * @param canonicalPath - the input canonical path string to be be converted.
-   * @returns - the converted canonical path notation with the leading slash removed and
-   *            subsequent slashes replaced by periods.
+   * Converts a given canonical path into a dot notation path by removing the
+   * leading slash and replacing all remaining slashes with periods.
+   * @param canonicalPath - the input canonical path string to be converted.
+   * @returns - dot notation path string.
    */
-  createCanonicalPathNotation(canonicalPath: string): string {
+  convertToDotNotationPath(canonicalPath: string): string {
     return canonicalPath.replace(/^\/+|\/+$/g, '')
                         .replace(/\//g, '.');
   }
@@ -191,16 +189,16 @@ export class ValidationService {
    * @returns - property key in the canonical path or the original string if no dots
    *            are present.
    */
-  getPropertyByCanonicalPathNotation(canonicalPathNotation: string): string {
+  getLastPathSegment(canonicalPathNotation: string): string {
     return (canonicalPathNotation || '').split('.').pop();
   }
 /** ---------------------------------------------------------------------------------
  *  CUSTOM VALIDATORS
- *  --------------------------------------------------------------------------------- */  
+ *  --------------------------------------------------------------------------------- */
 
   /**
    * Custom validator for the 'type' (Data Type) field.
-   * @param validationObj - an object that contains field data for validation. 
+   * @param validationObj - an object that contains field data for validation.
    * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the case:
@@ -210,7 +208,7 @@ export class ValidationService {
     let errors: any[] = [];
 
     const type = validationObj.value;
-    
+
     if (type !== 'display' && !isSchemaFormValidation)
       return null;
 
@@ -237,8 +235,8 @@ export class ValidationService {
     // Update validate status if there are errors or if 'isSchemaFormValidation' is true.
     if (isSchemaFormValidation || errors)
       this.formService.updateValidationStatus(validationObj.id,
-                                              validationObj.linkId, 
-                                              this.getPropertyByCanonicalPathNotation(validationObj.canonicalPathNotation),
+                                              validationObj.linkId,
+                                              this.getLastPathSegment(validationObj.canonicalPathNotation),
                                               errors);
 
     return errors;
@@ -247,7 +245,7 @@ export class ValidationService {
 
   /**
    * Custom validator for the 'enableWhen' (Array of conditions) field.
-   * @param validationObj - an object that contains field data for validation. 
+   * @param validationObj - an object that contains field data for validation.
    * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes.
@@ -255,7 +253,7 @@ export class ValidationService {
   validateEnableWhenAll(validationObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
     const enableWhenList = validationObj.value;
-  
+
     if (!validationObj.id || !validationObj.value) {
       return null;
     }
@@ -277,14 +275,14 @@ export class ValidationService {
 
 
   /**
-   * Custom validator for single condition in 'enableWhen' field. 
-   * @param validationObj - an object that contains field data for validation. 
+   * Custom validator for single condition in 'enableWhen' field.
+   * @param validationObj - an object that contains field data for validation.
    * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
-   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty.   
+   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not
+   *                                            and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
@@ -332,17 +330,17 @@ export class ValidationService {
 
     // Update validate status if there are errors or if 'isSchemaFormValidation' is true.
     if (isSchemaFormValidation || errors)
-      this.formService.updateValidationStatus(enableWhenObj.id, enableWhenObj.linkId, 
+      this.formService.updateValidationStatus(enableWhenObj.id, enableWhenObj.linkId,
                                               `enableWhen_${enableWhenObj.conditionKey}`,
                                               errors);
 
     return errors;
   }
-  
+
 
   /**
    * Custom validator for the 'linkId' field.
-   * @param validationObj - an object that contains field data for validation. 
+   * @param validationObj - an object that contains field data for validation.
    * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
@@ -354,7 +352,7 @@ export class ValidationService {
   validateLinkId(validationObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
     let hasDuplicateError = false;
-    
+
     if (!validationObj.value) {
       const errorCode = 'REQUIRED';
       const err: any = {};
@@ -374,7 +372,7 @@ export class ValidationService {
         errors.push(err);
       } else if (this.formService.treeNodeHasDuplicateLinkIdByLinkIdTracker(validationObj.value, validationObj.id)) {
         hasDuplicateError = true;
-        
+
         const errorCode = 'DUPLICATE_LINK_ID';
         const err: any = {};
         err.code = errorCode;
