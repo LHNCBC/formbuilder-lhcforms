@@ -241,6 +241,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   }
 
   /**
+   * Overriding parent method.
+   * 
    * Call the parent class method to delete the enableWhen condition. This method overrides
    * the inherited parent method, originally derived from the 'sf-form' library.
    *
