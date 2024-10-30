@@ -378,6 +378,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
       case 'initialized':
         this.startSpinner();
+        this.formService.clearAutoSavedTreeNodeStatusMap();
+        this.formService.clearLinkIdTracker();
         this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1)
           .finally(() => {
             this.stopSpinner();

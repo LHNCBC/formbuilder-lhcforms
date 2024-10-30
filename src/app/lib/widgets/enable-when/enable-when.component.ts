@@ -208,7 +208,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     const errorMessages = this.getFieldErrors(fieldProperty);
 
     if (errorMessages?.length > 0) {
-      this.enableWhenValidationErrorsObj[`r${rowIndex}`] = errorMessages.join(' ').slice(0, -1) + ` for enableWhen condition ${rowIndex}. `;
+      this.enableWhenValidationErrorsObj[`r${rowIndex}`] = errorMessages.join(' ').slice(0, -1) + ` for enableWhen condition ${rowIndex + 1}. `;
     }
 
     // Set dom attributes after the UI is updated.
@@ -241,12 +241,15 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   }
 
   /**
-   * Delete the enableWhen condition, remove its associated error (if present) from
-   * the TreeNodeStatusMap, and adjust indexes of other enableWhen errors as needed.
+   * Call the parent class method to delete the enableWhen condition. This method overrides
+   * the inherited parent method, originally derived from the 'sf-form' library.
+   *
+   * Once the enableWhen condition is deleted, remove its associated error (if present)
+   * from the TreeNodeStatusMap, and adjust the indexes of other enableWhen errors as needed.
    *
    * @param formProperty - The row represented by its form property.
    */
-  deleteEnableWhenCondition(formProperty) {
+  removeItem(formProperty) {
     const props = this.formProperty.properties as FormProperty [];
     const propIndex = props.findIndex((e) => e === formProperty);
     const treeNodeId = this.formProperty.searchProperty(FormService.TREE_NODE_ID).value

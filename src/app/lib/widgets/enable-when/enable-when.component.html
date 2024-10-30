@@ -50,7 +50,7 @@
           ></lfb-form-element>
         </td>
         <td class="col-sm-1 align-middle action-column p-0 m-0 align-self-center">
-          <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="deleteEnableWhenCondition(rowProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
+          <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="removeItem(rowProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
                   [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
                   matTooltip="Remove" aria-label="Remove"
           >

@@ -328,11 +328,6 @@ export class BasePageComponent implements OnInit {
         });
       }, ()=>{});
     }
-
-    if(this.startOption !== 'from_autosave') {
-      this.formService.clearAutoSavedTreeNodeStatusMap();
-      this.formService.clearLinkIdTracker();
-    }
   }
 
   /**
