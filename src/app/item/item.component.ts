@@ -178,7 +178,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     scrollContainer: document.documentElement // HTML
   };
   errorMessage = 'Error(s) exist in this item. The resultant form may not render properly.';
-  errorMessageLite = 'Error or errors exist in this item.';
+  errorMessageLite = 'One or more errors exist in this item.';
   childErrorMessage = 'A child item or one of its descendants has an error.';
 
   @Input()

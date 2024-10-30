@@ -159,7 +159,7 @@
 
       "widget": {
         "id": "editable-link-id",
-        "note": "* Link Id is mandatory for each item, and must be unique across the questionnaire. If you change it, make sure to update any places in the questionnaire that reference the linkId.",
+        "note": "* Link ID is mandatory for each item, and must be unique across the questionnaire. If you change it, make sure to update any places in the questionnaire that reference the link ID.",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col p-0"
