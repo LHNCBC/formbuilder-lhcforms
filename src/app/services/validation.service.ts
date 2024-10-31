@@ -224,6 +224,7 @@ export class ValidationService {
         const err: any = {};
         err.code = errorCode;
         err.path = `#${validationObj.canonicalPathNotation}`;
+        err.indexPath = Util.getIndexPath(node).join('.');
         err.message = `'${validationObj.value}' data type cannot contain sub-items.`;
         err.params = [{'linkId': validationObj.linkId, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
         errors.push(err);
@@ -289,6 +290,9 @@ export class ValidationService {
     if((enableWhenObj.q?.value?.trim().length > 0) && enableWhenObj.op?.value.length > 0) {
       const aValue = enableWhenObj.answerX?.value;
 
+      const node = this.formService.getTreeNodeById(enableWhenObj.id);
+      const indexPath = Util.getIndexPath(node).join('.');
+
       // Validate whether the  'linkId' specified in the question exists.
       // If not, then throw the 'INVALID_QUESTION' error.
       //if (!this.formService.isValidLinkId(q?.value)) {
@@ -298,6 +302,7 @@ export class ValidationService {
         err.code = errorCode;
         err.path = `#${enableWhenObj.q.canonicalPathNotation}`;
         err.message = `Question not found for the linkId '${enableWhenObj.q.value}'.`;
+        err.indexPath = indexPath;
         const valStr = JSON.stringify(aValue);
         err.params = [enableWhenObj.q.value, enableWhenObj.op.value, valStr];
         errors.push(err);
@@ -312,6 +317,7 @@ export class ValidationService {
         const err: any = {};
         err.code = errorCode;
         err.path = `#${enableWhenObj.answerX.canonicalPathNotation}`;
+        err.indexPath = indexPath;
         err.message = `Answer field is required when you choose an operator other than 'Not empty' or 'Empty'.`;
         const valStr = JSON.stringify(aValue);
         err.params = [enableWhenObj.q.value, enableWhenObj.op.value, valStr];
@@ -353,11 +359,15 @@ export class ValidationService {
     let errors: any[] = [];
     let hasDuplicateError = false;
 
+    const node = this.formService.getTreeNodeById(validationObj.id);
+    const indexPath = Util.getIndexPath(node).join('.');
+
     if (!validationObj.value) {
       const errorCode = 'REQUIRED';
       const err: any = {};
       err.code = errorCode;
       err.path = `#${validationObj.canonicalPathNotation}`;
+      err.indexPath = indexPath;
       err.message = `Link Id is required.`;
       err.params = [{'linkId': validationObj.prevLinkId, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
       errors.push(err);
@@ -367,6 +377,7 @@ export class ValidationService {
         const err: any = {};
         err.code = errorCode;
         err.path = `#${validationObj.canonicalPathNotation}`;
+        err.indexPath = indexPath;
         err.message = `Spaces are not allowed at the beginning or end, and only a single space is allowed between words.`;
         err.params = [{'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
         errors.push(err);
@@ -377,6 +388,7 @@ export class ValidationService {
         const err: any = {};
         err.code = errorCode;
         err.path = `#${validationObj.canonicalPathNotation}`;
+        err.indexPath = indexPath;
         err.message = `Entered linkId is already used.`;
         err.params = [{'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
         errors.push(err);
@@ -385,6 +397,7 @@ export class ValidationService {
         const err: any = {};
         err.code = errorCode;
         err.path = `#${validationObj.canonicalPathNotation}`;
+        err.indexPath = indexPath;
         err.message = `LinkId cannot exceed 255 characters.`;
         err.params = [{'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}];
         errors.push(err);

@@ -11,7 +11,6 @@ import {
   Input,
   OnChanges,
   OnDestroy,
-  OnInit,
   Output,
   SimpleChanges,
   ViewChild
@@ -224,6 +223,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   spinnerCounter = 0;
 
+  validationErrorsAllItemsErrorStr: string;
+
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
    * Wait at least for two characters, 200 millis of inactivity and not the
@@ -378,9 +379,21 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
       case 'initialized':
         this.startSpinner();
+        this.validationErrorsAllItemsErrorStr = '';
         this.formService.clearAutoSavedTreeNodeStatusMap();
         this.formService.clearLinkIdTracker();
         this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1)
+          .then((validationResults) => {
+            const validationErrorIndexPaths = validationResults.filter(result => Array.isArray(result) && result.length > 0)
+                                                               .map(err => Array.isArray(err[0]) ? err[0][0].indexPath : err[0].indexPath);
+            if (validationErrorIndexPaths.length > 0) {
+              if (validationErrorIndexPaths.length === 1) {
+                this.validationErrorsAllItemsErrorStr = `One validation error was found for item with the index path: ${validationErrorIndexPaths[0]}`;
+              } else {
+                this.validationErrorsAllItemsErrorStr = `${validationErrorIndexPaths.length} validation errors were found for items with the following index paths: ${validationErrorIndexPaths.join(', ')}`;
+              }
+            }
+          })
           .finally(() => {
             this.stopSpinner();
           });
@@ -507,6 +520,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.treeComponent.treeModel.focusNextNode();
       this.setNode(this.treeComponent.treeModel.getFocusedNode(), true);
       this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId);
+      //this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId, Util.getIndexPath(this.focusNode).join('.'));
       this.formService.addLinkIdToLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
       this.stopSpinner();
     });
@@ -531,6 +545,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.setFocusedNode(position);
 
     this.formService.addTreeNodeStatus(newItem[FormService.TREE_NODE_ID], newItem.linkId);
+    //this.formService.addTreeNodeStatus(newItem[FormService.TREE_NODE_ID], newItem.linkId, Util.getIndexPath(newItem).join('.'));
     this.formService.addLinkIdToLinkIdTracker(newItem[FormService.TREE_NODE_ID], newItem.linkId);
 
     domEvent.stopPropagation();
@@ -941,6 +956,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (result) {
       this.treeComponent.treeModel.setFocusedNode(result);
       this.formService.addTreeNodeStatus(result.id.toString(), result.data.linkId);
+      //this.formService.addTreeNodeStatus(result.id.toString(), result.data.linkId, Util.getIndexPath(result).join('.'));
       this.formService.addLinkIdToLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
     }
   }
