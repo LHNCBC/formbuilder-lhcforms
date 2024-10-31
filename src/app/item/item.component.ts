@@ -390,7 +390,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
               if (validationErrorIndexPaths.length === 1) {
                 this.validationErrorsAllItemsErrorStr = `One validation error was found for item with the index path: ${validationErrorIndexPaths[0]}`;
               } else {
-                this.validationErrorsAllItemsErrorStr = `${validationErrorIndexPaths.length} validation errors were found for items with the following index paths: ${validationErrorIndexPaths.join(', ')}`;
+                this.validationErrorsAllItemsErrorStr = `${validationErrorIndexPaths.length} validation errors were found for items with the ` +
+                                                        `following index paths: ${validationErrorIndexPaths.slice(0, -1).join(', ')}, and ` +
+                                                        `${validationErrorIndexPaths[validationErrorIndexPaths.length - 1]}`;
               }
             }
           })
