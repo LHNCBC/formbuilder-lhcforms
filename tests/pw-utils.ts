@@ -60,4 +60,17 @@ export class PWUtils {
     }
     return JSON.parse(await fs.readFile(testFile, 'utf-8'));
   }
+
+  /**
+   * Wait for local storage to update.
+   * @param page - Browser page
+   * @param itemKey - window.localStorage item key.
+   * @param valueSubStr - A sub string of item value to match.
+   */
+  static async waitUntilLocalStorageItemIsUpdated(page: Page, itemKey: string, valueSubStr: string) {
+    await page.waitForFunction( ({key, match}) => {
+      const storedValue = window.localStorage.getItem(key)
+      return !!storedValue && storedValue.includes(match);
+    }, {key: itemKey, match: valueSubStr}, {polling: 600});
+  }
 }

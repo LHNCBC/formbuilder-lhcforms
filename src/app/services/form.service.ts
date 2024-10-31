@@ -522,7 +522,8 @@ export class FormService {
    * Retrieve questionnaire from the storage.
    */
   autoLoadForm(): fhir.Questionnaire {
-    return this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
+    const saveQ = this.autoLoad('fhirQuestionnaire');
+    return this.validateFhirQuestionnaire(saveQ) as fhir.Questionnaire;
   }
 
 
