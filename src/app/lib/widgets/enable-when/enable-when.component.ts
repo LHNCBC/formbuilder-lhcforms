@@ -30,9 +30,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   showHeaderFields: any[];
   warningIcon = faExclamationTriangle;
 
-  enableWhenAllValidationErrorsStr: string;
-  enableWhenValidationErrorsObj: any;
   private viewChecked$ = new Subject<void>();
+  awaitingValidation: boolean;
 
   constructor(private renderer: Renderer2, private elementRef: ElementRef,
               private cdr: ChangeDetectorRef, private formService: FormService) {
@@ -42,8 +41,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   ngOnInit() {
     super.ngOnInit();
 
-    this.enableWhenValidationErrorsObj = {};
-    this.enableWhenAllValidationErrorsStr = '';
+    this.awaitingValidation = true;
 
     const definedShowFields = this.formProperty.schema.widget.showFields;
     this.showHeaderFields = this.showFieldNames.map((fName) => {
@@ -57,16 +55,14 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
       return schemaDef;
     });
 
-    // 'viewChecked$' is a Subject that emits events after the
-    // 'ngAfterViewChecked' lifecycle hook is called. This Subject
-    // incorporates a 'debounceTime' which delays the emission of
-    // the last update event. This is meant to minimizing rapid
-    // updates and consolidating error message changes that occurs
-    // during successive view checks.
+    // 'viewChecked$' is a Subject that emits events after the 'ngAfterViewChecked' lifecycle
+    // hook is called. This Subject incorporates a 'debounceTime' which delays the emission of
+    // the last update event. This is meant to minimizing rapid updates and to wait until the
+    // last validation is completed before the screen reader cna read the message.
     this.viewChecked$
       .pipe(debounceTime(300))
       .subscribe(() => {
-        this.enableWhenAllValidationErrorsStr = Object.values(this.enableWhenValidationErrorsObj).join(' ');
+        this.awaitingValidation = false;
         this.cdr.detectChanges();
       });
   }
@@ -207,10 +203,6 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   onError(rowIndex: number, colIndex: number, fieldProperty: FormProperty) {
     const errorMessages = this.getFieldErrors(fieldProperty);
 
-    if (errorMessages?.length > 0) {
-      this.enableWhenValidationErrorsObj[`r${rowIndex}`] = errorMessages.join(' ').slice(0, -1) + ` for enableWhen condition ${rowIndex + 1}. `;
-    }
-
     // Set dom attributes after the UI is updated.
     setTimeout(() => {
       this.setErrorState(!!errorMessages, rowIndex, colIndex);
@@ -242,7 +234,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
 
   /**
    * Overriding parent method.
-   * 
+   *
    * Call the parent class method to delete the enableWhen condition. This method overrides
    * the inherited parent method, originally derived from the 'sf-form' library.
    *
@@ -258,6 +250,17 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
 
     super.removeItem(formProperty);
     this.formService.deleteErrorAndAdjustEnableWhenIndexes(treeNodeId, propIndex);
+  }
+
+  /**
+   * Generates an accessible error message for screen reader users, providing additional
+   * information about the row index where the error occurs.
+   * @param errorMessage - error message string for the enableWhen condition.
+   * @param rowIndex - a number indicating the specific row of the enableWhen condition
+   *                   where the error occurs.
+   */
+  composeAccessibleErrorMessage(errorMessage: string, rowIndex: number): string {
+    return `${errorMessage.slice(0, -1)} for enableWhen condition ${rowIndex + 1}.`;
   }
 
   /**
