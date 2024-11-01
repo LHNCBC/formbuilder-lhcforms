@@ -388,11 +388,11 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
                                                                .map(err => Array.isArray(err[0]) ? err[0][0].indexPath : err[0].indexPath);
             if (validationErrorIndexPaths.length > 0) {
               if (validationErrorIndexPaths.length === 1) {
-                this.validationErrorsAllItemsErrorStr = `One validation error was found for item with the index path: ${validationErrorIndexPaths[0]}`;
+                this.validationErrorsAllItemsErrorStr = `One validation error was found for the item located at position ${validationErrorIndexPaths[0]} in the question tree.`;
               } else {
-                this.validationErrorsAllItemsErrorStr = `${validationErrorIndexPaths.length} validation errors were found for items with the ` +
-                                                        `following index paths: ${validationErrorIndexPaths.slice(0, -1).join(', ')}, and ` +
-                                                        `${validationErrorIndexPaths[validationErrorIndexPaths.length - 1]}`;
+                this.validationErrorsAllItemsErrorStr = `${validationErrorIndexPaths.length} validation errors were found for items located at positions ` +
+                                                        `${validationErrorIndexPaths.slice(0, -1).join(', ')}, and ` +
+                                                        `${validationErrorIndexPaths[validationErrorIndexPaths.length - 1]} in the question tree.`;
               }
             }
           })
