@@ -4,6 +4,7 @@ import {RestrictionsComponent} from '../restrictions/restrictions.component';
 import fhir from 'fhir/r4';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
 import {fhirPrimitives} from '../../../fhir';
+import { FormService } from 'src/app/services/form.service';
 
 /**
  * Used to get acceptance from parent component. The parent should subscribe to service

@@ -82,6 +82,55 @@ export class LinkIdCollection {
   }
 }
 
+export class ErrorTooltip {
+  dropErrorMessage = "Cannot drop into a node of type \'display\' because it cannot contain children.";
+  showDropNotAllowedTooltip = false;
+  tooltipMouseXLoc: number;
+  tooltipMouseYLoc: number;
+  tooltipXOffset: number;
+  tooltipYOffset: number;
+
+  constructor() {
+    this.tooltipMouseXLoc = 0;
+    this.tooltipMouseYLoc = 0;
+    this.tooltipXOffset = -15;
+    this.tooltipYOffset = 20;
+  }
+
+  /**
+   * Controls the visibility of the tooltip.
+   * @param show - A boolean value indicating whether to show (true)
+   *               or hide (false) the tooltip. 
+   */
+  showTooltip(show: boolean) {
+    this.showDropNotAllowedTooltip = show;
+  }
+
+  /**
+   * Updates the position of the tooltip based on the current mouse
+   * cursor location.
+   * @param locX - The current x-coordinate of the mouse cursor.
+   * @param locY - The current y-coordinate of the mouse cursor.
+   */
+  updateTooltipMouseLocation(locX: number, locY: number) {
+    this.tooltipMouseXLoc = locX + this.tooltipXOffset;
+    this.tooltipMouseYLoc = locY + this.tooltipYOffset;
+  }
+
+  /**
+   * Updates the offset location for the tooltip in relation to the
+   * cursor.
+   * @param offsetX - The horizontal offset from the mouse cursor for
+   *                  positioning the tooltip.
+   * @param offsetY - The vertical offset from the mouse cursor for 
+   *                  positioning the tooltip.
+   */
+  updateTooltipOffset(offsetX: number, offsetY: number) {
+    this.tooltipXOffset = offsetX;
+    this.tooltipYOffset = offsetY;
+  }
+};
+
 @Component({
   selector: 'lfb-confirm-dlg',
   template: `
@@ -161,8 +210,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     allowDrag: (node) => {
       return true;
     },
-    allowDrop: (node) => {
-      return true;
+    allowDrop: (node, { parent, index }) => {
+      return this.canDropNode(node, parent);
     },
     // allowDragoverStyling: true,
     levelPadding: 10,
@@ -173,6 +222,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     animateAcceleration: 1.2,
     scrollContainer: document.documentElement // HTML
   };
+  errorTooltip = new ErrorTooltip();
+
   errorMessage = 'Error(s) exist in this item. The resultant form may not render properly.';
   @Input()
   questionnaire: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', item: []};
@@ -837,5 +888,44 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   private createLinkId() {
     return Math.floor(100000000000 + Math.random() * 900000000000).toString();
+  }
+
+  /**
+   * Determines if a dragged node can be dropped onto a target node by checking the target 
+   * node's data type. If the target node's data type is 'display', the drop is not allowed.
+   * In this case, the 'not-allowed' icon and an error tooltip are displayed. Additionally, 
+   * the screen reader announces the message upon mouseup.
+   * @param draggedNode - The node that is being dragged.
+   * @param targetParentNode - The potential parent node where the dragged node may be dropped.
+   * @returns - True if the drop is allowed, otherwise false.
+   */
+  canDropNode(draggedNode, targetParentNode) {
+    this.errorTooltip.showTooltip(false);
+    if (targetParentNode && targetParentNode.data.type === 'display') {
+      this.errorTooltip.showTooltip(true);
+      setTimeout(() => {
+        this.liveAnnouncer.announce(this.errorTooltip.dropErrorMessage);
+      }, 0);
+    }
+    return !this.errorTooltip.showDropNotAllowedTooltip;
+  }
+
+  /**
+   * Handles the 'dragover' event when an item is dragged over a specific element.
+   * Updates the mouse location to ensure the custom tooltip is displayed
+   * correctly under the mouse cursor.
+   * @param event - the 'dragover' event triggered by the mouse.
+   */
+  onMouseDragOver(event: MouseEvent) {
+    this.errorTooltip.updateTooltipMouseLocation(event.pageX, event.pageY);
+  }
+
+  /**
+   * Handles the 'mouseover' event when the mouse hovers over a specific element.
+   * Hides the tooltip that was displayed during the drag process.
+   * @param event - the 'mouseover' event triggered by the mouse.
+   */
+  onMouseOver(event: MouseEvent) {
+    this.errorTooltip.showTooltip(false);
   }
 }

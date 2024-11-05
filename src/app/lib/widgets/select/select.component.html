@@ -11,6 +11,7 @@
             [formControl]="control"
             name="{{name}}"
             [attr.id]="id"
+            (focus)="onSelectFocus()"
             [attr.disabled]="schema.readOnly ? '' : null"
             class="form-select form-select-sm">
       <ng-container *ngIf="schema.oneOf; else use_enum">
