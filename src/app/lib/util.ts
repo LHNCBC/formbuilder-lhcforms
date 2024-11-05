@@ -304,6 +304,7 @@ export class Util {
           this.update(node.filter((e)=>{return e !== null && e !== undefined}));
         }
         else if (Util.hasHelpText(node)) {
+          Util.eliminateEmptyFields(node.__$helpText);
           if(!node.item) {
             node.item = [];
           }
@@ -329,6 +330,29 @@ export class Util {
     return value;
   }
 
+  /**
+   * Remove empty fields from a json object.
+   * @param json - JSON object
+   */
+  static eliminateEmptyFields(json) {
+    traverse(json).forEach(function (node) {
+      this.before(function () {
+        if(node && Array.isArray(node)) {
+          // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
+          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
+        }
+      });
+
+      this.after(function () {
+        // Remove all empty fields.
+        if(typeof node === 'function' || Util.isEmpty(node)) {
+          if (this.notRoot) {
+            this.remove(); // Splices off any array elements.
+          }
+        }
+      });
+    });
+  }
 
   /**
    * Remove the content of target and copy (shallow) source to target.
