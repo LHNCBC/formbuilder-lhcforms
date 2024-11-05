@@ -441,19 +441,6 @@ describe('Home page', () => {
       });
     });
 
-    it('should import help text item', () => {
-      const helpTextFormFilename = 'help-text-sample.json';
-      const helpString = 'testing help text from import';
-      cy.uploadFile(helpTextFormFilename, true);
-      cy.contains('button', 'Edit questions').click();
-      cy.get('@helpText').should('have.value', helpString);
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].item[0].text).equal(helpString);
-        expect(qJson.item[0].item[0].type).equal('display');
-        expect(qJson.item[0].item[0].extension).to.deep.equal(helpTextExtension);
-      });
-    });
-
     it('should restrict to integer input in integer field', () => {
       cy.selectDataType('integer');
       cy.get('[id^="initial.0.valueInteger"]').as('initIntField');
@@ -708,7 +695,7 @@ describe('Home page', () => {
       cy.get(eclSel).type('123');
       cy.get('@controlDiv').click() // Change on eclSel
       cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
-      
+
       // The terminology server should now have value
       cy.tsUrl().should('have.value', 'https://snowstorm.ihtsdotools.org/fhir');
 

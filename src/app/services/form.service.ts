@@ -425,7 +425,7 @@ export class FormService {
     }
 
     jsonObj = this.convertToR4(jsonObj);
-    return this.validateFhirQuestionnaire(jsonObj);
+    return this.updateFhirQuestionnaire(jsonObj);
   }
 
 
@@ -463,12 +463,12 @@ export class FormService {
   }
 
   /**
-   * Possible validation checks.
+   * Possible adjustments to questionnaire.
    *
-   * @param json
+   * @param questionnaire - Input questionnaire
    */
-  validateFhirQuestionnaire(json: any): fhir.Questionnaire {
-    jsonTraverse(json).forEach(function(x) {
+  updateFhirQuestionnaire(questionnaire: fhir.Questionnaire): fhir.Questionnaire {
+    jsonTraverse(questionnaire).forEach(function(x) {
         if (x?.item) {
           // Convert any help text items to __$helpText.
           let htIndex = Util.findItemIndexWithHelpText(x.item);
@@ -484,7 +484,7 @@ export class FormService {
         }
     });
 
-    return json as fhir.Questionnaire;
+    return questionnaire;
   }
 
 
@@ -523,7 +523,7 @@ export class FormService {
    */
   autoLoadForm(): fhir.Questionnaire {
     const saveQ = this.autoLoad('fhirQuestionnaire');
-    return this.validateFhirQuestionnaire(saveQ) as fhir.Questionnaire;
+    return this.updateFhirQuestionnaire(saveQ) as fhir.Questionnaire;
   }
 
 

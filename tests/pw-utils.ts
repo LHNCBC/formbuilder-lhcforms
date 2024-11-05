@@ -2,7 +2,7 @@
  * Util functions for playwright scripts
  */
 
-import {Page} from "@playwright/test";
+import {Locator, Page} from "@playwright/test";
 import fhir from "fhir/r4";
 import path from "path";
 import fs from "node:fs/promises";
@@ -11,6 +11,19 @@ import fs from "node:fs/promises";
  * Class for playwright utilities.
  */
 export class PWUtils {
+
+  static helpTextExtension = [{
+    url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+    valueCodeableConcept: {
+      text: 'Help-Button',
+      coding: [{
+        code: 'help',
+        display: 'Help-Button',
+        system: 'http://hl7.org/fhir/questionnaire-item-control'
+      }]
+    }
+  }];
+
 
   /**
    * Capture clipboard content
@@ -72,5 +85,35 @@ export class PWUtils {
       const storedValue = window.localStorage.getItem(key)
       return !!storedValue && storedValue.includes(match);
     }, {key: itemKey, match: valueSubStr}, {polling: 600});
+  }
+
+  /**
+   * Get tree node identified by matching text of the node.
+   * @param page - Browser page
+   * @param nodeText - Text of the node to match
+   */
+  static async getTreeNode(page: Page, nodeText: string): Promise<Locator> {
+    const tTip = page.locator('div[role="tooltip"]').filter({hasText: nodeText});
+    return page.locator(`div[aria-describedby="${await tTip.getAttribute('id')}"]`);
+  }
+
+  /**
+   * Click the tree node identified by the text of the node.
+   * @param page - Browser page
+   * @param nodeText - Text of the node to match.
+   */
+  static async clickTreeNode(page: Page, nodeText: string) {
+    await (await PWUtils.getTreeNode(page, nodeText)).click();
+  }
+
+  /**
+   * Click the tree node identified by the text of the node and toggle the expand/collapse status.
+   * @param page - Browser page
+   * @param nodeText - Text of the node to match.
+   */
+  static async clickAndToggleTreeNode(page: Page, nodeText: string) {
+    const node = await PWUtils.getTreeNode(page, nodeText);
+    await node.click();
+    await node.locator(`../../../tree-node-expander`).click();
   }
 }

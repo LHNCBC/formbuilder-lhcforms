@@ -152,4 +152,15 @@ test.describe('string-with-css.component.spec.ts', async () => {
     expect(q.item[0].item[0]._text.extension[0].valueString).toEqual('/*Help text: modified CSS*/');
     expect(q.item[0].item[0]._text.extension[1].valueString).toEqual('Help text: modified <b>XHTML</b>');
   });
+
+  test('Bugfix: should detect help text on the second item in the tree', async ({page}) => {
+    await PWUtils.uploadFile(page, 'fixtures/help-text-sample1.json', true);
+    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await PWUtils.clickAndToggleTreeNode(page,'Parent');
+    await PWUtils.clickTreeNode(page, 'First');
+    const inputEl = page.getByLabel('Help text', {exact: true});
+    await expect(inputEl).toHaveValue(/^First item help/);
+    await PWUtils.clickTreeNode(page, 'Second');
+    await expect(inputEl).toHaveValue(/^<code>Text<\/code> instructions,/);
+  });
 });
