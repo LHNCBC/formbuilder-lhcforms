@@ -617,6 +617,71 @@ describe('Home page', () => {
       cy.get('@firstRadioDefault').should('be.checked');
     });
 
+    it('should clear all default selections', () => {
+      const repeatsLabel = 'Allow repeating question?';
+      const sampleFile = 'answer-option-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Answer options form');
+      cy.contains('button', 'Edit questions').click();
+
+      // Switch to second item
+      cy.clickTreeNode('Item 2 with answer option');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption')
+        .find('[id^="radio_answerOption."]').as('firstRadioDefault');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption')
+        .find('[id^="radio_answerOption."]').as('secondRadioDefault');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption')
+        .find('[id^="radio_answerOption."]').as('thirdRadioDefault');
+      // Second item has no defaults
+      cy.get('@firstRadioDefault').should('not.be.checked');
+      cy.get('@secondRadioDefault').should('not.be.checked');
+      cy.get('@thirdRadioDefault').should('not.be.checked');
+
+      // Select third option in second item.
+      cy.get('@thirdRadioDefault').click();
+      cy.get('@thirdRadioDefault').should('be.checked');
+
+      // Click the "Unselect" button to clear selection(s)
+      cy.get('button.unselect').should('exist').click();
+
+      // Items should be unselected.
+      cy.get('@firstRadioDefault').should('not.be.checked');
+      cy.get('@secondRadioDefault').should('not.be.checked');
+      cy.get('@thirdRadioDefault').should('not.be.checked');
+
+      // Set the 'Allow repeating question?' to 'Yes'.
+      cy.booleanFieldClick(repeatsLabel, 'true');
+      cy.getBooleanInput(repeatsLabel, 'true').should('be.checked');
+
+      cy.get('@firstOption')
+        .find('[id^="checkbox_answerOption."]').as('firstCheckboxDefault');
+      cy.get('@secondOption')
+        .find('[id^="checkbox_answerOption."]').as('secondCheckboxDefault');
+      cy.get('@thirdOption')
+        .find('[id^="checkbox_answerOption."]').as('thirdCheckboxDefault');
+
+      // Items should be unchecked.
+      cy.get('@firstCheckboxDefault').should('not.be.checked');
+      cy.get('@secondCheckboxDefault').should('not.be.checked');
+      cy.get('@thirdCheckboxDefault').should('not.be.checked');
+
+      // Select second and third option in second item.
+      cy.get('@secondCheckboxDefault').click();
+      cy.get('@secondCheckboxDefault').should('be.checked');
+      cy.get('@thirdCheckboxDefault').click();
+      cy.get('@thirdCheckboxDefault').should('be.checked');
+
+      // Click the "Unselect" button to clear selection(s)
+      cy.get('button.unselect').should('exist').click();
+
+      // Items should be unchecked.
+      cy.get('@firstCheckboxDefault').should('not.be.checked');
+      cy.get('@secondCheckboxDefault').should('not.be.checked');
+      cy.get('@thirdCheckboxDefault').should('not.be.checked');
+    });
+
     it('should fix initial input box when switched data type from choice to decimal', () => {
       const sampleFile = 'initial-component-bugfix.json';
       let fixtureJson;

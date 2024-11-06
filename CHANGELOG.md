@@ -2,13 +2,17 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.6.7] 2024-10-17
+## [9.6.8] 2024-10-17
 ### Changed
 - Added Group Item Control options.
 
-## [9.6.6] 2024-10-03
+## [9.6.7] 2024-10-03
 ### Changed
 - Split the 'header (group/display)' data type option into separate options.
+
+## [9.6.6] 2024-09-27
+### Added
+- Added a reset button for the Answer Choices Default selection.
 
 ## [9.6.5] 2024-09-18
 ### Fixed

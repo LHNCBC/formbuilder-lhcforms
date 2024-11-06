@@ -32,13 +32,19 @@
             [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
           ></lfb-title>
         </th>
-        <th *ngIf="rowSelectionType === 'radio' || rowSelectionType === 'checkbox'" class="col-sm-2">
+        <th *ngIf="rowSelectionType === 'radio' || rowSelectionType === 'checkbox'" class="col-sm-2 default-column">
           <lfb-title
             title="Default"
             helpMessage="Pick a default item"
+            (focus)="onHideHeaderAriaLabel(false)"
           ></lfb-title>
+          <button type="button" class="btn btn-outline-primary p-1 unselect" matTooltip="Clear selection"
+                  [attr.aria-hidden]="hideHeaderAriaLabel"
+                  [attr.aria-label]="getClearSelectionLabel(getShowTableFields().length + 1)"
+                  (focus)="onHideHeaderAriaLabel(false)"
+                  (click)="clearSelections()">&#x2326;</button>
         </th>
-        <th *ngIf="!singleItem" class="col-sm-1"></th>
+        <th *ngIf="!singleItem" [ngClass]="{'col-sm-1': id !== 'answerOption', 'col-sm-half': id === 'answerOption', 'action-column': id === 'answerOption'}" ></th>
       </tr>
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
@@ -46,14 +52,16 @@
         <td *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
           <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
         </td>
-        <td *ngIf="rowSelectionType === 'radio'" class="col-sm-2 text-center align-self-center">
+        <td *ngIf="rowSelectionType === 'radio'" class="col-sm-2 text-center align-self-center default-column">
           <input type="radio" [id]="'radio_'+itemProperty.canonicalPathNotation" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
-                 [ngModelOptions]="{standalone: true}" name="selectionRadio">
+                 [ngModelOptions]="{standalone: true}" name="selectionRadio"  (focus)="onHideHeaderAriaLabel(true)">
         </td>
-        <td *ngIf="rowSelectionType === 'checkbox'" class="col-sm-2 text-center align-self-center">
-          <input type="checkbox" [id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]" (ngModelChange)="checkboxSelection($event)">
+        <td *ngIf="rowSelectionType === 'checkbox'" class="col-sm-2 text-center align-self-center default-column">
+          <input type="checkbox" [id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]"
+                 (ngModelChange)="checkboxSelection($event)"  (focus)="onHideHeaderAriaLabel(true)">
         </td>
-        <td [ngClass]="{'d-none': formProperty.properties.length === 1}" class="col-sm-1 align-middle action-column">
+        <td [ngClass]="{'d-none': formProperty.properties.length === 1, 'col-sm-1': id !== 'answerOption', 'col-sm-half': id === 'answerOption'}"
+            class="align-middle action-column">
           <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
                   [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
                   *ngIf="!(schema.hasOwnProperty('minItems') &&
