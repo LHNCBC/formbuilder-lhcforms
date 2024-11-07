@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.8] 2024-10-03
+### Changed
+- Change background color of the focused node on the sidebar tree
+
 ## [9.6.7] 2024-10-03
 ### Changed
 - Split the 'header (group/display)' data type option into separate options.

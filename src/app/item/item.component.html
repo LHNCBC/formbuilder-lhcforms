@@ -1,4 +1,4 @@
-<div *ngIf="errorTooltip.showDropNotAllowedTooltip" class="not-allowed-tooltip" 
+<div *ngIf="errorTooltip.showDropNotAllowedTooltip" class="not-allowed-tooltip"
      [ngStyle]="{ top: errorTooltip.tooltipMouseYLoc + 'px', left: errorTooltip.tooltipMouseXLoc + 'px' }">
      {{errorTooltip.dropErrorMessage}}
 </div>
@@ -9,7 +9,7 @@
                                                                       [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage"
           ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></div
           ></div>
-          <span (focusin)="treeInitialFocus($event)" 
+          <span (focusin)="treeInitialFocus($event)"
                 (mouseover)="onMouseOver($event)"
                 (dragover)="onMouseDragOver($event)" >
             <tree-root
@@ -23,8 +23,8 @@
                 <div class="node-wrapper" [style.padding-left]="node.getNodePadding()" role="group">
                   <tree-node-expander [node]="node"></tree-node-expander>
                   <div class="node-content-wrapper"
+                       [class.node-content-wrapper-focused]="node.isFocused && !node.isActive"
                        [class.node-content-wrapper-active]="node.isActive"
-                       [class.node-content-wrapper-focused]="node.isFocused"
                        (click)="node.mouseAction('click', $event)"
                        (dblclick)="node.mouseAction('dblClick', $event)"
                        (contextmenu)="node.mouseAction('contextMenu', $event)"
