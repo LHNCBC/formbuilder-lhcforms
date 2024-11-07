@@ -443,7 +443,7 @@ export class FormService {
     }
 
     jsonObj = this.convertToR4(jsonObj);
-    return this.validateFhirQuestionnaire(jsonObj);
+    return this.updateFhirQuestionnaire(jsonObj);
   }
 
 
@@ -481,30 +481,28 @@ export class FormService {
   }
 
   /**
-   * Possible validation checks.
+   * Possible adjustments to questionnaire.
    *
-   * @param json
+   * @param questionnaire - Input questionnaire
    */
-  validateFhirQuestionnaire(json: any): fhir.Questionnaire {
-    jsonTraverse(json).forEach(function(x) {
-        if (this.key === 'item') {
-          let htIndex = -1;
-          const index = x.findIndex((e) => {
-            htIndex = Util.findItemIndexWithHelpText(e.item);
-            return htIndex >= 0;
-          });
-          if(index >= 0) {
-            const helpText = x[index].item[htIndex].text;
-            x[index].item.splice(htIndex, 1);
-            if(x[index].item.length === 0) {
-              delete x[index].item;
+  updateFhirQuestionnaire(questionnaire: fhir.Questionnaire): fhir.Questionnaire {
+    jsonTraverse(questionnaire).forEach(function(x) {
+        if (x?.item) {
+          // Convert any help text items to __$helpText.
+          let htIndex = Util.findItemIndexWithHelpText(x.item);
+
+          if(htIndex >= 0) {
+            const helpText = x.item[htIndex];
+            jsonTraverse(x).set(['__$helpText'], helpText);
+            x.item.splice(htIndex, 1);
+            if(x.item.length === 0) {
+              delete x.item;
             }
-            jsonTraverse(x[index]).set(['__$helpText'], helpText);
           }
         }
     });
 
-    return json as fhir.Questionnaire;
+    return questionnaire;
   }
 
 
@@ -542,7 +540,8 @@ export class FormService {
    * Retrieve questionnaire from the storage.
    */
   autoLoadForm(): fhir.Questionnaire {
-    return this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
+    const saveQ = this.autoLoad('fhirQuestionnaire');
+    return this.updateFhirQuestionnaire(saveQ) as fhir.Questionnaire;
   }
 
 

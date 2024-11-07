@@ -102,7 +102,6 @@
           {"field": "operator", "col": 7, "nolabel": true},
           {"field": "value", "col": 4, "nolabel": true}
         ]
-
       }
     },
     "maxLength": {
@@ -253,7 +252,7 @@
         "id": "string-with-css",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-3 p-0"
+        "controlClasses": "col p-0"
       }
     },
     "_prefix": {
@@ -1480,15 +1479,94 @@
         "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal' || target.value == 'quantity'"]
       }
     },
+    /** Proxy for help text. Help text is represented by a child item.
+     In form builder, to avoid child item to represent like a child question, the help text child item
+      is converted to a proxy field __$helpText. Its _ element is this:
+    item: [{
+      text: 'Plain help text'
+      type: 'display',
+      extension: [{
+        url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+        valueCodeableConcept: {
+          text: 'Help-Button',
+          coding: [{
+            code: 'help',
+            system: 'http://hl7.org/fhir/questionnaire-item-control'
+          }]
+        }
+      }],
+      // The following _text element is used to specify rendering style and rendering xhtml
+      _text: {
+        extension: [{
+          url: 'http://hl7.org/fhir/StructuredDefinition/rendering-style',
+          valueString: 'css string'
+        },
+        {
+          url: 'http://hl7.org/fhir/StructuredDefinition/rendering-xhtml',
+          valueString: 'xhtml string'
+        }
+      }
+    }]
+    // While input for plain text help is represented by the following __$helpText (string type), the
+    // _text (Element type) of help text item is represented by ___$helpText below
+    */
     "__$helpText": {
       "description": "Text is displayed in a dialog box or similar control if invoked by pushing a button or some other UI-appropriate action to request 'help' for a question, group or the questionnaire as a whole (depending what the text is nested within)",
       "title": "Help text",
-      "type": "string",
+      "type": "object",
+      "properties": {
+        "linkId": {
+          "description": "Help text for question.",
+          "title": "Help text",
+          "pattern": "^[^\\s]+( [^\\s]+)*$",
+          "type": "string",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "type": {
+          "enum": ['display'],
+          "type": "string",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "text": {
+          "description": "Help text for question.",
+          "title": "Help text",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {
+            "id": "string-with-css",
+            "labelPosition": "left",
+            "labelClasses": "col-sm-2 p-0 pe-1",
+            "controlClasses": "col p-0",
+          }
+        },
+        "_text": {
+          "$ref": "#/definitions/Element",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "title": "Extensions for text",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+      },
+      "additionalProperties": true,
       "widget": {
         "id": "help-text",
         "labelPosition": "left",
         "labelClasses": "col-sm-2 p-0 pe-1",
-        "controlClasses": "col-sm form-control form-control-sm p-1"
+        "controlClasses": "col p-0"
       }
     },
     "__$end": {
@@ -1590,7 +1668,7 @@
       ],
       "showFields": [
         {
-          "field": "__$units",
+          "field": "__$helpText",
           "col": 12
         }
       ]

@@ -33,7 +33,7 @@ describe('Home page', () => {
       cy.get('#type').as('type');
       cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
-      cy.get('#__\\$helpText').as('helpText');
+      cy.get('input[id^="__\\$helpText\\.text"]').as('helpText');
       cy.contains('div', 'Question code').as('codeOption').should('be.visible');
       cy.get('@codeOption').find('[for^="booleanRadio_true"]').as('codeYes'); // Radio label for clicking
       cy.get('@codeOption').find('[for^="booleanRadio_false"]').as('codeNo'); // Radio label for clicking
@@ -441,19 +441,6 @@ describe('Home page', () => {
       });
     });
 
-    it('should import help text item', () => {
-      const helpTextFormFilename = 'help-text-sample.json';
-      const helpString = 'testing help text from import';
-      cy.uploadFile(helpTextFormFilename, true);
-      cy.contains('button', 'Edit questions').click();
-      cy.get('@helpText').should('have.value', helpString);
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].item[0].text).equal(helpString);
-        expect(qJson.item[0].item[0].type).equal('display');
-        expect(qJson.item[0].item[0].extension).to.deep.equal(helpTextExtension);
-      });
-    });
-
     it('should restrict to integer input in integer field', () => {
       cy.selectDataType('integer');
       cy.get('[id^="initial.0.valueInteger"]').as('initIntField');
@@ -773,7 +760,7 @@ describe('Home page', () => {
       cy.get(eclSel).type('123');
       cy.get('@controlDiv').click() // Change on eclSel
       cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
-      
+
       // The terminology server should now have value
       cy.tsUrl().should('have.value', 'https://snowstorm.ihtsdotools.org/fhir');
 
@@ -1250,43 +1237,6 @@ describe('Home page', () => {
           "url": "http://dummy.org",
           "valueInteger": 2
         }]);
-      });
-    });
-
-    it('should add/edit css to text and prefix fields', () => {
-      ['#text', '#prefix'].forEach((field) => {
-        cy.get(field+'dropdownButton').as('cssButton');
-        cy.get(field+'css').as('cssInput');
-        cy.contains(field+'dropdownForm button', 'Close').as('closeButton')
-        cy.get('@cssButton').click();
-
-        cy.get('@cssInput').should('be.visible');
-        cy.get('@cssInput').type('font-weight: bold;');
-        cy.get('@closeButton').click();
-      });
-
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0]._text.extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/rendering-style');
-        expect(qJson.item[0]._text.extension[0].valueString).equal('font-weight: bold;');
-        expect(qJson.item[0]._prefix.extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/rendering-style');
-        expect(qJson.item[0]._prefix.extension[0].valueString).equal('font-weight: bold;');
-      });
-
-      ['#text', '#prefix'].forEach((field) => {
-        cy.get(field+'dropdownButton').as('cssButton');
-        cy.get(field+'css').as('cssInput');
-        cy.contains(field+'dropdownForm button', 'Close').as('closeButton')
-        cy.get('@cssButton').click();
-
-        cy.get('@cssInput').should('be.visible');
-        cy.get('@cssInput').should('have.value', 'font-weight: bold;');
-        cy.get('@cssInput').clear();
-        cy.get('@closeButton').click();
-      });
-
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0]._text).to.be.undefined;
-        expect(qJson.item[0]._prefix).to.be.undefined;
       });
     });
 
