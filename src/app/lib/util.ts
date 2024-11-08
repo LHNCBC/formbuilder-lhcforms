@@ -10,6 +10,7 @@ import copy from 'fast-copy';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
 import {fhirPrimitives} from "../fhir";
+declare var LForms: any;
 
 export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
 export enum FHIR_VERSIONS {
@@ -240,12 +241,13 @@ export class Util {
       'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption' :
       'http://hl7.org/fhir/StructureDefinition/questionnaire-unit';
     units.some((unit) => {
+      const display = LForms.ucumPkg.UcumLhcUtils.getInstance().validateUnitString(unit.unit)?.unit?.name || unit.unit;
       ret.push({
         url: unitUri,
         valueCoding: {
           code: unit.unit,
           system: 'http://unitsofmeasure.org',
-          display: unit.unit
+          display: display
         }
       });
       // For quantity convert all units. For decimal or integer pick the first one.
