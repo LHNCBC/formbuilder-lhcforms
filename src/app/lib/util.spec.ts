@@ -59,42 +59,42 @@ describe('Util', () => {
   it('should convert lforms units to FHIR extensions', () => {
     const testCases = [{
       dataType: 'quantity',
-      lformsUnits: [{unit: 'kg'}, {unit: 'lb'}],
+      lformsUnits: [{unit: 'kg'}, {unit: '[lb_av]'}],
       fhirExtensions: [{
         url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption',
         valueCoding: {
           code: 'kg',
           system: 'http://unitsofmeasure.org',
-          display: 'kg'
+          display: 'kilogram'
         }
       }, {
         url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption',
         valueCoding: {
-          code: 'lb',
+          code: '[lb_av]',
           system: 'http://unitsofmeasure.org',
-          display: 'lb'
+          display: 'pound'
         }
       }]
     }, {
       dataType: 'decimal',
-      lformsUnits: [{unit: 'kg'}, {unit: 'lb'}],
+      lformsUnits: [{unit: 'kg'}, {unit: '[lb_av]'}],
       fhirExtensions: [{
         url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit',
         valueCoding: {
           code: 'kg',
           system: 'http://unitsofmeasure.org',
-          display: 'kg'
+          display: 'kilogram'
         }
       }]
     }, {
       dataType: 'integer',
-      lformsUnits: [{unit: 'lb'}, {unit: 'kg'}],
+      lformsUnits: [{unit: '[lb_av]'}, {unit: 'kg'}],
       fhirExtensions: [{
         url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit',
         valueCoding: {
-          code: 'lb',
+          code: '[lb_av]',
           system: 'http://unitsofmeasure.org',
-          display: 'lb'
+          display: 'pound'
         }
       }]
     }];

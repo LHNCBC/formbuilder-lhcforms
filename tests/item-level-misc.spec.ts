@@ -28,6 +28,6 @@ test.describe('item-level fields', async () => {
     await expect(inputEl).toHaveValue('18833-4: Body weight');
     await page.getByRole('button', {name: 'Add'}).click();
 
-    await expect(page.getByLabel('Units', {exact: true})).toHaveValue('kg');
+    await expect(page.getByLabel('Units', {exact: true})).toHaveValue('kilogram');
   });
 });
