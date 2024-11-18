@@ -160,6 +160,7 @@
           class="ms-2 fw-bold btn btn-link"
           (click)="setStep('fl-editor')"
           [class.attention]="!questionnaire?.title"
+          [attr.aria-label]="titleAriaLabel"
   >{{getQuestionnaireTitle()}}</button>
   <lfb-item-component [questionnaire]="questionnaire"
                       (itemChange)="itemComponentChanged($event)"
