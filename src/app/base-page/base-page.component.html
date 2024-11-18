@@ -159,7 +159,8 @@
   <button type="button"
           class="ms-2 fw-bold btn btn-link"
           (click)="setStep('fl-editor')"
-  >{{questionnaire.title}}</button>
+          [class.attention]="!questionnaire?.title"
+  >{{getQuestionnaireTitle()}}</button>
   <lfb-item-component [questionnaire]="questionnaire"
                       (itemChange)="itemComponentChanged($event)"
   ></lfb-item-component>

@@ -687,4 +687,12 @@ export class BasePageComponent implements OnInit {
     }
     return Util.isDefaultForm(storedQ);
   }
+
+  /**
+   * Returns the title of a questionnaire if it exists; otherwise, provides a default name.
+   * @returns - Questionnaire title or "Untitled Form".
+   */
+  getQuestionnaireTitle(): string {
+    return this.questionnaire?.title || "Untitled Form";
+  }
 }
