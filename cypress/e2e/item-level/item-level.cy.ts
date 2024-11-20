@@ -1438,6 +1438,49 @@ describe('Home page', () => {
 
       });
 
+      it('should display validation error message for each of the enableWhen fields', () => {
+        const sampleFile = 'items-validation-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.contains('button', 'Edit questions').click();
+
+        const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
+        const question1El = '[id^="enableWhen.0.question"]';
+        const operator1El = '[id^="enableWhen.0.operator"]';
+        const answer1El = '[id^="enableWhen.0.answer"]';
+        const errorIcon1El = '[id^="enableWhen.0_err"]';
+      
+        const question2El = '[id^="enableWhen.1.question"]';
+        const errorIcon2El = '[id^="enableWhen.1_err"]';
+
+        const errorIcon3El = '[id^="enableWhen.2_err"]';
+
+        const errorIcon4El = '[id^="enableWhen.3_err"]';
+
+        cy.clickTreeNode('EnableWhen');
+
+        cy.get(errorMessageEl).should('exist');
+        
+        cy.get(question1El).should('contain.value', '4 - Integer Type');
+        cy.get(operator1El).should('contain.value', '=');
+        cy.get(answer1El).should('contain.value', '5');
+        cy.get(errorIcon1El).should('not.exist');
+
+        cy.get(question2El).should('be.empty');
+        cy.get(errorIcon2El)
+          .find('small')
+          .should('contain.text', ' Question not found for the linkId \'q11\' for enableWhen condition 2. ');
+
+        cy.get(errorIcon3El)
+          .find('small')
+          .should('contain.text', ' Invalid operator \'>\' for type \'choice\' for enableWhen condition 3. ');
+
+        cy.get(errorIcon4El)
+          .find('small')
+          .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 4. ');
+      });
+
       it('should display lforms errors in preview', () => {
         const sampleFile = 'questionnaire-enableWhen-missing-linkId.json';
         cy.uploadFile(sampleFile, true);
@@ -2330,7 +2373,6 @@ describe('Home page', () => {
       });
     });
   });
-
 });
 
 describe('Accepting only LOINC terms of use', () => {

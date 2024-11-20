@@ -120,12 +120,13 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    * Question implies presence of enableWhen. Highlight other missing fields.
    * @param rowProperty - FormProperty representing a single condition (row).
    * @param field - Property id of the field.
+   * @returns - True if there are no errors, otherwise false.
    */
   isValid(rowProperty: ObjectProperty, field: string): boolean {
     const prop = rowProperty.getProperty(field);
-    const errorType = ["ENABLEWHEN", "INVALID_QUESTION"];
+    const enableWhenErrorPrefix = "ENABLEWHEN";
     const ret = prop._errors?.some((err) => {
-      return errorType.some(errType => err.code?.startsWith(errType));
+      return err.code?.startsWith(enableWhenErrorPrefix);
     });
     return !ret;
   }
@@ -161,7 +162,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    */
   getFieldErrors(fieldProperty: FormProperty): string [] {
     const messages = fieldProperty?._errors?.reduce((acc, error) => {
-      if(error.code?.startsWith('ENABLEWHEN') || error.code?.startsWith('INVALID_QUESTION')) {
+      if(error.code?.startsWith('ENABLEWHEN')) {
         acc.push(error.message);
       }
       return acc;
