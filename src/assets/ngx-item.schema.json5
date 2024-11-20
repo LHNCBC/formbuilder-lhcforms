@@ -1045,6 +1045,79 @@
         "controlClasses": "col-auto btn-group btn-group-sm p-0"
       }
     },
+    "__$itemControlGroup": {
+      // Proxy for item control extension.
+      "description": "Choose the type of control for the 'Group' data type. Some item controls are not supported by the LHC-Forms preview, as indicated by the asterisk (*) symbol.",
+      "title": "Group Item Control",
+      "oneOf": [
+        {
+          'enum': ["list"],
+          'display': 'List',
+          'description': 'Questions within the group should be presented sequentially.',
+          'support': true
+        },
+        {
+          'enum': ["table"],
+          'display': 'Vertical Answer Table',
+          'description': 'For \'choice\' questions, the table representation should have questions as rows and answers as columns. Ensure option sets are consistent within a group. Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
+          'support': true
+        },
+        {
+          'enum': ["htable"],
+          'display': 'Horizontal Answer Table',
+          'description': 'For \'choice\' questions, the table representation should have questions as columns and answers as rows. Ensure option sets are consistent within a group.  Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
+          'support': false
+        },
+        {
+          'enum': ["gtable"],
+          'display': 'Group Table',
+          'description': 'Questions within the group should be presented as columns in the table, with each group repetition forming a new row. This arrangement is suitable for single-answer questions.',
+          'support': true
+        },
+        {
+          'enum': ["grid"],
+          'display': 'Group Grid',
+          'description': 'Within a \'grid\' group, child items of type=\'group\' represents rows. Questions nested within these row groups are arranged as columns. The grid layout may be fully populated or sparse. Questions can support various data types and answer choices.',
+          'support': false
+        },
+        {
+          'enum': ["header"],
+          'display': 'Header',
+          'description': 'The group should always be visible at the top of the form\'s display area.',
+          'support': false
+        },
+        {
+          'enum': ["footer"],
+          'display': 'Footer',
+          'description': 'The group should always be visible at the bottom of the form\'s display area.',
+          'support': false
+        },
+        {
+          'enum': ["page"],
+          'display': 'Page',
+          'description': 'A page group designation indicates that the content within it should be treated as a single logical unit for rendering. When rendering, all enabled items within the page should be displayed simulatenously, while subsequent groups remain hidden until the user moves to their page. Header and footer groups are typically displayed on all pages. However, items positioned before a page group are considered as being on a separate page.',
+          'support': false
+        },
+        {
+          'enum': ["tab-container"],
+          'display': 'Tab Container',
+          'description': 'A group with this designation represents a collection of tabs. All child items must be of type \'group\'. Child groups cannot directly declare item controls. Each child group serves as a tab within the tab container, with its \'item.text\' property used as the tab label.',
+          'support': false
+        }
+      ],
+      "default": "list",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'group'"]
+      },
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-9 btn-group btn-group-sm p-0",
+        "note": "(1) - not supported by LHC-Forms preview."
+      }
+    },
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
       "title": "Terminology server",
@@ -1713,6 +1786,17 @@
       "showFields": [
         {
           "field": "__$itemControl",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$itemControlGroup"
+      ],
+      "showFields": [
+        {
+          "field": "__$itemControlGroup",
           "col": 12
         }
       ]

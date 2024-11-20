@@ -3,13 +3,41 @@
              [for]="id"
              [title]="schema.title"
              [helpMessage]="schema.description"
-             [ngClass]="labelClasses"
-  ></lfb-label>
-  <div [ngClass]="controlClasses">
-    <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+             [ngClass]="labelClasses">
+  </lfb-label>
+  <div *ngIf="dataType === 'group'" [ngClass]="controlClasses+' m-auto ms-0 vertical-container d-flex flex-wrap'" >
+    <div class="m-auto ms-0 btn-container d-flex flex-wrap" role="radiogroup" [attr.aria-label]="schema.title">
+      <ng-container *ngFor="let opt of schema.oneOf">
+        <div class="btn-wrapper" >
+          <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt.enum[0]"
+                 value="{{opt.enum[0]}}" type="radio" [(ngModel)]="option"
+                 (ngModelChange)="updateItemControlExt($event)"
+                 [attr.aria-label]="composeGroupItemControlLabel(opt)" tabindex="0" >
+          <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt.enum[0]"
+                [matTooltip]="((opt.support) ? '' : '(not supported in LHC-Forms): ') + opt.description">
+            {{opt.display}}
+            <sup *ngIf="!opt.support">(1)</sup>
+          </label>
+        </div>
+      </ng-container>
+    </div>
+    <div class="text-container">
+      <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
+    </div>
+  </div>
+
+  <div *ngIf="dataType === 'group'" class="col-1 action-column">
+    <button type="button" class="btn btn-outline-primary p-1 group-item-control-unselect" matTooltip="Clear selection"
+            [attr.aria-label]="'Clear group item control selection button is used for clearing the selection.'"
+            (click)="clearGroupItemControlSelection()">&#x2326;</button>
+  </div>
+
+
+  <div *ngIf="dataType !== 'group'" [ngClass]="controlClasses">
+    <div [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.aria-label]="schema.title">
       <ng-container *ngFor="let opt of getOptions()">
         <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt" value="{{opt}}" type="radio" [(ngModel)]="option"
-               (ngModelChange)="updateItemControlExt($event)">
+        (ngModelChange)="updateItemControlExt($event)">
         <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt">{{optionsObj[opt]}}</label>
       </ng-container>
     </div>
