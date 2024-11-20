@@ -1,10 +1,22 @@
-import {ChangeDetectorRef, Component, DoCheck, ElementRef, OnInit, Renderer2, ViewEncapsulation} from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectorRef,
+  Component,
+  DoCheck,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  Renderer2,
+  ViewEncapsulation
+} from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
 import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
-import {Observable, of } from 'rxjs';
+import {Observable, of, Subject} from 'rxjs';
+import { FormService } from 'src/app/services/form.service';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'lfb-enable-when',
@@ -12,18 +24,25 @@ import {Observable, of } from 'rxjs';
   styleUrls: ['./enable-when.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck {
+export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck, AfterViewChecked, OnDestroy {
 
   showFieldNames: string[] = ['question', 'operator', 'answerString'];
   showHeaderFields: any[];
   warningIcon = faExclamationTriangle;
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef, private cdr: ChangeDetectorRef) {
+  private viewChecked$ = new Subject<void>();
+  awaitingValidation: boolean;
+
+  constructor(private renderer: Renderer2, private elementRef: ElementRef,
+              private cdr: ChangeDetectorRef, private formService: FormService) {
     super(elementRef, cdr);
   }
 
   ngOnInit() {
     super.ngOnInit();
+
+    this.awaitingValidation = true;
+
     const definedShowFields = this.formProperty.schema.widget.showFields;
     this.showHeaderFields = this.showFieldNames.map((fName) => {
 
@@ -36,6 +55,16 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
       return schemaDef;
     });
 
+    // 'viewChecked$' is a Subject that emits events after the 'ngAfterViewChecked' lifecycle
+    // hook is called. This Subject incorporates a 'debounceTime' which delays the emission of
+    // the last update event. This is meant to minimizing rapid updates and to wait until the
+    // last validation is completed before the screen reader cna read the message.
+    this.viewChecked$
+      .pipe(debounceTime(300))
+      .subscribe(() => {
+        this.awaitingValidation = false;
+        this.cdr.detectChanges();
+      });
   }
 
   ngDoCheck() {
@@ -44,6 +73,18 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     }
   }
 
+  /**
+   * Call after the view and its child views has been checked
+   * by the change detection mechanism. The lifecycle hook is
+   * triggered whenever Angular completes a change detection
+   * cycle involving a view.
+   *
+   * The 'viewChecked$' Subject emits each time this function
+   * is called.
+   */
+  ngAfterViewChecked() {
+    this.viewChecked$.next();
+  }
 
   get rowProperties(): ObjectProperty [] {
     return this.formProperty.properties as ObjectProperty[];
@@ -100,21 +141,20 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     const fields = ["question", "operator", "__$answerType"];
 
     for (const field of fields) {
-      console.log('getEnableWhenFieldErrors::field - ' + field);
       const fieldValue = rowProperty.getProperty(field)?.value;
       if (fieldValue) {
         const fieldName = (field === '__$answerType') ? Util.getAnswerFieldName(fieldValue) : field;
         const errors = this.getFieldErrors(rowProperty.getProperty(fieldName));
-        
+
         if (errors) {
           errorMessages.push(...errors);
           break;
         }
       }
     }
+
     return of(errorMessages.length ? errorMessages.join() : null);
   }
-
 
   /**
    * Collect enablewhen related errors from the field.
@@ -159,7 +199,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    * Handle error identified by the table cell co-ordinates.
    * @param rowIndex - tr index of the table
    * @param colIndex - td index of tr
-   * @param formProperty - Form property of the identified field.
+   * @param fieldProperty - Form property of the identified field.
    */
   onError(rowIndex: number, colIndex: number, fieldProperty: FormProperty) {
     const errorMessages = this.getFieldErrors(fieldProperty);
@@ -193,4 +233,41 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     }
   }
 
+  /**
+   * Overriding parent method.
+   *
+   * Call the parent class method to delete the enableWhen condition. This method overrides
+   * the inherited parent method, originally derived from the 'sf-form' library.
+   *
+   * Once the enableWhen condition is deleted, remove its associated error (if present)
+   * from the TreeNodeStatusMap, and adjust the indexes of other enableWhen errors as needed.
+   *
+   * @param formProperty - The row represented by its form property.
+   */
+  removeItem(formProperty) {
+    const props = this.formProperty.properties as FormProperty [];
+    const propIndex = props.findIndex((e) => e === formProperty);
+    const treeNodeId = this.formProperty.searchProperty(FormService.TREE_NODE_ID).value
+
+    super.removeItem(formProperty);
+    this.formService.deleteErrorAndAdjustEnableWhenIndexes(treeNodeId, propIndex);
+  }
+
+  /**
+   * Generates an accessible error message for screen reader users, providing additional
+   * information about the row index where the error occurs.
+   * @param errorMessage - error message string for the enableWhen condition.
+   * @param rowIndex - a number indicating the specific row of the enableWhen condition
+   *                   where the error occurs.
+   */
+  composeAccessibleErrorMessage(errorMessage: string, rowIndex: number): string {
+    return `${errorMessage.slice(0, -1)} for enableWhen condition ${rowIndex + 1}.`;
+  }
+
+  /**
+   * Implement OnDestroy
+   */
+  ngOnDestroy() {
+    this.viewChecked$.complete();
+  }
 }

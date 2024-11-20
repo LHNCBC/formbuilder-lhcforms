@@ -142,16 +142,16 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param id - tree node id.
    * @param linkId - linkId associated with item of the node.
    * @param value - the value of the field to be validated.
-   * @param formProperty - Object form property of the 'enableWhen' field. 
+   * @param formProperty - Object form property of the 'enableWhen' field.
    * @returns - validation object to be used for the validation.
    */
-  createValidationObj(id: number, linkId: string, value: any, formProperty: FormProperty): any {
+  createValidationObj(id: string, linkId: string, value: any, formProperty: FormProperty): any {
     return {
-      'id': ''+id,
+      'id': id,
       'linkId': linkId,
       'value': value,
-      'canonicalPath': formProperty.__canonicalPath,
-      'canonicalPathNotation': formProperty.__canonicalPathNotation
+      'canonicalPath': formProperty._canonicalPath,
+      'canonicalPathNotation': formProperty.canonicalPathNotation
     };
   }
 
@@ -163,21 +163,28 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   createEnableWhenValidationObj(formProperty: ObjectProperty): EnableWhenValidationObject {
     const q = formProperty.getProperty('question');
     const questionItem = this.formService.getTreeNodeByLinkId(q.value);
-    
+
     let aType = '';
 
     if (questionItem) {
       aType = questionItem.data.type;
     }
 
+    // The condition key is used to differentiate between each enableWHen conditions.
+    let condKey = '';
+    if (q._canonicalPath) {
+      const match = q._canonicalPath.match(/enableWhen\/(.*?)\/question/);
+      condKey = match ? match[1] : '';
+    }
     const op = formProperty.getProperty('operator');
     const aField = Util.getAnswerFieldName(aType || 'string');
     const answerX = formProperty.getProperty(aField);
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
 
     const enableWhenObj: EnableWhenValidationObject = {
-      'id': this.model.id,
+      'id': this.model?.[FormService.TREE_NODE_ID],
       'linkId': linkIdProperty.value,
+      'conditionKey': condKey,
       'q': q,
       'aType': aType,
       'op': op,
@@ -201,11 +208,11 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    */
   validateType(value, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
-    
+
     if (!this.model) {
       return null;
     }
-    const nodeId = this.model?.id;
+    const nodeId = this.model?.[FormService.TREE_NODE_ID];
 
     if (!nodeId) {
       return null;
@@ -258,8 +265,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param rootProperty - Root form property.
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
-   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty. 
+   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not
+   *                                            and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
@@ -269,7 +276,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     }
 
     const enableWhenObj = this.createEnableWhenValidationObj(formProperty);
-    if (!enableWhenObj)
+    if (!enableWhenObj || enableWhenObj.conditionKey === "*")
       return null;
 
     errors = this.validationService.validateEnableWhenSingle(enableWhenObj);
@@ -290,8 +297,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param rootProperty - Root form property
    * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
    *          1. (REQUIRED)          - linkId is empty.
-   *          2. (DUPLICATE_LINK_ID) - duplicate linkId.
-   *          3. (MAX_LENGTH)        - linkId is 255 characters or longer.
+   *          2. (PATTERN)           - linkId does not match the required pattern.
+   *          3. (DUPLICATE_LINK_ID) - duplicate linkId.
+   *          4. (MAX_LENGTH)        - linkId is 255 characters or longer.
    */
   validateLinkId (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
@@ -300,17 +308,18 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       return null;
     }
 
-    const nodeId = this.model.id;
-    const prevLinkId = rootProperty._value['linkId'];
+    const nodeId = this.model?.[FormService.TREE_NODE_ID];
+    const prevLinkId = rootProperty.value['linkId'];
 
     if (!nodeId) {
       return null;
     }
 
+    const propertyName = this.validationService.getLastPathSegment(formProperty.canonicalPathNotation);
     if (!prevLinkId && value === '') {
-      // Check to see if the node already has errors, otherwise null 
+      // Check to see if the node already has errors, otherwise null
       const nodeStatus = this.formService.getTreeNodeStatusById(nodeId);
-      errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;
+      errors = nodeStatus?.errors?.[propertyName] ?? null;
       return errors;
     }
 
@@ -325,12 +334,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       }
     } else {
       const nodeStatus = this.formService.getTreeNodeStatusById(nodeId);
-      errors = nodeStatus?.errors?.[formProperty.canonicalPathNotation] ?? null;
+      errors = nodeStatus?.errors?.[propertyName] ?? null;
     }
     this.validationErrorsChanged.next(errors);
 
-
-    console.log('sf-form-wrapper::validateLinkId done');
     return errors;
   }
 }

@@ -39,21 +39,30 @@
         <td *ngFor="let showField of getFields(rowProperty); let colNum = index"
             class="col-sm{{showField.col ? ('-'+showField.col) : ''}} pl-1 pb-1 m-0 align-self-center"
             [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"
-            lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)" (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
+            lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)"
+            (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
         >
-          <lfb-form-element *ngIf="isShow(rowProperty, showField.field)" nolabel="true" [formProperty]="getProperty(rowProperty, showField.field)"></lfb-form-element>
+          <lfb-form-element *ngIf="isShow(rowProperty, showField.field)" nolabel="true"
+                            [formProperty]="getProperty(rowProperty, showField.field)"
+          ></lfb-form-element>
         </td>
         <td class="col-sm-1 align-middle action-column p-0 m-0 align-self-center">
           <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="removeItem(rowProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
                   [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
                   matTooltip="Remove" aria-label="Remove"
           >
-            <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-          <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getEnableWhenFieldErrors(rowProperty) | async"
-            class="btn border-0 p-0 b-0 enable-when-errors"
-            [matTooltip]="getEnableWhenFieldErrors(rowProperty) | async"
-            [attr.aria-label]="'Error in conditional display condition '+rowNum+': '+(getEnableWhenFieldErrors(rowProperty) | async)"
-          ><fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon></div>
+            <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon>
+          </button>
+          <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getEnableWhenFieldErrors(rowProperty) | async as rowErrorMessage"
+               class="btn border-0 p-0 b-0 enable-when-errors"
+               [matTooltip]="rowErrorMessage"
+          >
+            <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
+            <small class="text-danger form-text sr-only" role="alert" *ngIf="!awaitingValidation">
+              {{composeAccessibleErrorMessage(rowErrorMessage, rowNum)}}
+            </small>
+          </div>
+
         </td>
       </tr>
       </tbody>

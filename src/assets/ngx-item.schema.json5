@@ -19,6 +19,14 @@
         "id": "hidden"
       }
     },
+    "__$treeNodeId": {
+      "description": "Internal unique id used to differentiate individual nodes within a tree structure. It is also used for validation error handling.",
+      "title": "Tree Node Id",
+      "type": "string",
+      "widget": {
+        "id": "hidden"
+      }
+    },
     "type": {
       "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.). Header implies group if it has children. No children implies display type",
       "enum": [
@@ -148,11 +156,10 @@
       "description": "An identifier that is unique within the Questionnaire allowing linkage to the equivalent item in a QuestionnaireResponse resource.",
       "type": "string",
       "title": "Link Id",
-      "pattern": "^[^\\s]+( [^\\s]+)*$",
 
       "widget": {
         "id": "editable-link-id",
-        "note": "*LinkId is mandatory for each item, and must be unique across the questionnaire. If you change it, make sure to update any places in the questionnaire that reference the linkId.",
+        "note": "* Link ID is mandatory for each item, and must be unique across the questionnaire. If you change it, make sure to update any places in the questionnaire that reference the link ID.",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col p-0"
@@ -1738,7 +1745,7 @@
       ]
     },
     {
-      "fields": ["id", "extension", "modifierExtension", "definition"]
+      "fields": ["id", "__$treeNodeId", "extension", "modifierExtension", "definition"]
     }
   ],
   "steps": [

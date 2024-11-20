@@ -9,6 +9,7 @@ import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import copy from 'fast-copy';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
+import { v4 as uuidv4 } from 'uuid';
 
 export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
 
@@ -326,7 +327,7 @@ export class Util {
       });
 
       this.after(function () {
-        // Remove all custom fields starting with __$ and empty fields.
+        // Remove all custom fields starting with __$ excluding any fields defined in excludeCustomFields array and empty fields.
         if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
           if (this.notRoot) {
             this.remove(); // Splices off any array elements.
@@ -516,5 +517,15 @@ export class Util {
     return ret;
   }
 
-
+  /**
+   * Generates a unique identifier string using UUID v4 format.
+   *
+   * This function creates a unique identifier in the format of
+   * "xxxxxxxx-xxxx-4xxx-xxxx-xxxxxxxxxxxx", consisting of 36 characters,
+   * including four hyphens.
+   * @returns - A string that represents a UUID v4.
+   */
+  static generateUniqueId(): string {
+    return uuidv4();
+  }
 }

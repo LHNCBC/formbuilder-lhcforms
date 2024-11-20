@@ -11,7 +11,6 @@ import {
   Input,
   OnChanges,
   OnDestroy,
-  OnInit,
   Output,
   SimpleChanges,
   ViewChild
@@ -144,6 +143,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   treeOptions: ITreeOptions = {
     displayField: 'text',
     childrenField: 'item',
+    idField: FormService.TREE_NODE_ID,
     actionMapping: {
       mouse: {
         dblClick: (tree, node, $event) => {
@@ -177,7 +177,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     scrollContainer: document.documentElement // HTML
   };
   errorMessage = 'Error(s) exist in this item. The resultant form may not render properly.';
-  errorMessageLite = 'Error(s) exist in this item.';
+  errorMessageLite = 'One or more errors exist in this item.';
   childErrorMessage = 'A child item or one of its descendants has an error.';
 
   @Input()
@@ -223,6 +223,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   spinnerCounter = 0;
 
+  validationErrorsAllItemsErrorStr: string;
+
   /**
    * A function variable to pass into ng bootstrap typeahead for call back.
    * Wait at least for two characters, 200 millis of inactivity and not the
@@ -263,13 +265,36 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.formService.loadLinkIdTracker();
     }, 0);
     this.isViewInited = true;
+
+    const sub = this.formService.validationStatusChanged$.subscribe(() => {
+      this.onValidationErrorsChanged(null);
+    });
+    this.subscriptions.push(sub);
   }
+
+  /**
+   * Recursively populates each node item in the provided array with a unique node id (if not available).
+   * @param items - An array of Questionnaire items that may contain nested sub-items.
+   */
+  populateTreeNodeIds(items: any[]): void {
+    items.forEach(item => {
+      if (!item[FormService.TREE_NODE_ID]) {
+        item[FormService.TREE_NODE_ID] = Util.generateUniqueId();
+      }
+      if (item.item?.length > 0) {
+        this.populateTreeNodeIds(item.item);
+      }
+    });
+  }
+
 
   ngOnChanges(changes: SimpleChanges) {
     this.itemList = changes.questionnaire.currentValue?.item;
     this.itemList = this.itemList || [];
     if(this.itemList.length === 0) {
-      this.itemList.push({text: 'Item 0', type: 'string'});
+      this.itemList.push({text: 'Item 0', type: 'string', [FormService.TREE_NODE_ID]: Util.generateUniqueId()});
+    } else {
+      this.populateTreeNodeIds(this.itemList);
     }
     if(this.treeComponent?.treeModel) {
       this.treeComponent?.treeModel.update();
@@ -354,13 +379,26 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
       case 'initialized':
         this.startSpinner();
+        this.validationErrorsAllItemsErrorStr = '';
+        this.formService.clearAutoSavedTreeNodeStatusMap();
+        this.formService.clearLinkIdTracker();
         this.validationService.validateAllItems(this.formService.loadValidationNodes(), 1)
-            .then(() => {
-              this.stopSpinner();
-            })
-            .catch(err => {
-              this.stopSpinner();
-            });
+          .then((validationResults) => {
+            const validationErrorIndexPaths = validationResults.filter(result => Array.isArray(result) && result.length > 0)
+                                                               .map(err => Array.isArray(err[0]) ? err[0][0].indexPath : err[0].indexPath);
+            if (validationErrorIndexPaths.length > 0) {
+              if (validationErrorIndexPaths.length === 1) {
+                this.validationErrorsAllItemsErrorStr = `One validation error was found for the item located at position ${validationErrorIndexPaths[0]} in the question tree.`;
+              } else {
+                this.validationErrorsAllItemsErrorStr = `${validationErrorIndexPaths.length} validation errors were found for items located at positions ` +
+                                                        `${validationErrorIndexPaths.slice(0, -1).join(', ')}, and ` +
+                                                        `${validationErrorIndexPaths[validationErrorIndexPaths.length - 1]} in the question tree.`;
+              }
+            }
+          })
+          .finally(() => {
+            this.stopSpinner();
+          });
         break;
       default:
         break;
@@ -371,7 +409,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   /**
    * Trigger spinner. It is a modal dialog disabling user actions.
    * Match this with stopSpinner.
-   * 
+   *
    * There are three 'startSpinner' calls in this class. The 'spinnerCounter'
    * increments with each call to track the number of active operations.
    * The spinner is set to display only on the first 'startSpinner' call.
@@ -384,7 +422,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   /**
    * Stop spinner.
-   * 
+   *
    * There are three 'stopSpinner' calls in this class. The 'spinnerCounter'
    * decrements with each call to track the number of active operations.
    * The spinner is set to hide only on the last 'stopSpinner' call.
@@ -397,9 +435,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   /**
    * Set selected node, typically invoked when user clicks a node on the tree.
    * @param node - Selected node.
-   * @param checkForEmptyLinkId - A flg that indiciates whether to validate for an empty 'linkId'. 
+   * @param checkForEmptyLinkId - A flg that indiciates whether to validate for an empty 'linkId'.
    *                              If set to 'true', the function will check if the 'linkId' is empty and
-   *                              assign a default value. If set to 'false', the validation will be skipped.  
+   *                              assign a default value. If set to 'false', the validation will be skipped.
    */
   setNode(node: ITreeNode, checkForEmptyLinkId: boolean = false): void {
     this.startTime = Date.now();
@@ -407,14 +445,14 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.itemData = this.focusNode ? this.focusNode.data : null;
 
     /*
-      The 'checkForEmptyLinkId' is only set to true when there is a change to the 'linkId' and 
+      The 'checkForEmptyLinkId' is only set to true when there is a change to the 'linkId' and
       only in that situation that the default linkId will be assigned if the 'linkId' is empty.
-      So in the case where the 'linkId' is intentionally blanked out, it will not remain that way 
+      So in the case where the 'linkId' is intentionally blanked out, it will not remain that way
       when the field is in focus again.
     */
     if(this.focusNode?.data && checkForEmptyLinkId
       && (this.focusNode.data.linkId === undefined )) {
-      this.focusNode.data.linkId = this.defaultLinkId(this.focusNode);
+      this.focusNode.data.linkId = this.createLinkId();
     }
     this.treeService.nodeFocus.next(node);
   }
@@ -436,10 +474,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
 
   /**
-   * Create linkId, using a random number generated by the tree.
+   * Returns the tree node id as the default linkId.
    */
   defaultLinkId(node: ITreeNode): string {
-    return '' + node.id;
+    return node.data[FormService.TREE_NODE_ID];
   }
 
 
@@ -464,7 +502,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Handle add item button
    */
   addItem(event): void {
-    this.insertAnItem({text: 'New item ' + this.id++});
+    this.insertAnItem({text: 'New item ' + this.id++, [FormService.TREE_NODE_ID]: Util.generateUniqueId()});
   }
 
   insertAnItem(item, index?: number) {
@@ -484,6 +522,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       this.treeComponent.treeModel.focusNextNode();
       this.setNode(this.treeComponent.treeModel.getFocusedNode(), true);
       this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId);
+      //this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId, Util.getIndexPath(this.focusNode).join('.'));
       this.formService.addLinkIdToLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
       this.stopSpinner();
     });
@@ -497,14 +536,20 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param position - Insertion point.
    */
   onInsertItem(dropdown: NgbDropdown, domEvent: Event, contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
-    const newItem: QuestionnaireItem = {
+    const newItem: any = {
       text: 'New item ' + this.id++,
       type: 'string',
-      linkId: this.createLinkId()
+      linkId: this.createLinkId(),
+      [FormService.TREE_NODE_ID]: Util.generateUniqueId()
     };
     this.addNewItem(position, newItem, contextNode);
     this.treeComponent.treeModel.update();
     this.setFocusedNode(position);
+
+    this.formService.addTreeNodeStatus(newItem[FormService.TREE_NODE_ID], newItem.linkId);
+    //this.formService.addTreeNodeStatus(newItem[FormService.TREE_NODE_ID], newItem.linkId, Util.getIndexPath(newItem).join('.'));
+    this.formService.addLinkIdToLinkIdTracker(newItem[FormService.TREE_NODE_ID], newItem.linkId);
+
     domEvent.stopPropagation();
     dropdown.close();
   }
@@ -660,6 +705,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   addLoincItem(dialogTemplateRef): void {
     this.modalService.open(dialogTemplateRef, {ariaLabelledBy: 'modal-basic-title'}).result.then((autoCompResult) => {
       const subscription = this.getLoincItem(autoCompResult, this.loincType).subscribe((item) => {
+        item[FormService.TREE_NODE_ID] = Util.generateUniqueId();
         this.insertAnItem(item);
         this.loincItem = null;
       });
@@ -861,8 +907,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
-   * Add/insert item in the tree. 
-   * 
+   * Add/insert item in the tree.
+   *
    * @param position - ('AFTER' || 'BEFORE' || 'CHILD' )
    * @param newItem - QuestionnaireItem to add.
    * @param targetNode - Context node where the item to add.
@@ -899,8 +945,11 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     const newItem = copy(nodeData);
     newItem.text = 'Copy of ' + newItem.text;
     traverse(newItem).forEach(node => {
-      if (node && node.linkId) {
-        node.linkId = this.createLinkId();
+      if (node) {
+        if (node.linkId)
+          node.linkId = this.createLinkId();
+        if (node[FormService.TREE_NODE_ID])
+          node[FormService.TREE_NODE_ID] = Util.generateUniqueId();
       }
     });
     this.addNewItem(position, newItem, targetNode);
@@ -909,6 +958,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (result) {
       this.treeComponent.treeModel.setFocusedNode(result);
       this.formService.addTreeNodeStatus(result.id.toString(), result.data.linkId);
+      //this.formService.addTreeNodeStatus(result.id.toString(), result.data.linkId, Util.getIndexPath(result).join('.'));
       this.formService.addLinkIdToLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
     }
   }

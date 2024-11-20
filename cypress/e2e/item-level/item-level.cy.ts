@@ -13,7 +13,7 @@ const excludedField = 'id';
 
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
- 
+
   describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
@@ -1112,10 +1112,7 @@ describe('Home page', () => {
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
       cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
       cy.questionnaireJSON().then((qJson) => {
-        // Due to the recent change where the id is now a random id instead of a linkId,
-        // the id will have to be removed for comparison with the fixtureJson.
-        const qJsonWithoutField = CypressUtil.omitField(qJson, excludedField);
-        expect(qJsonWithoutField).to.deep.equal(fixtureJson);
+        expect(qJson).to.deep.equal(fixtureJson);
       });
 
       cy.get('@units').clear();
@@ -1229,10 +1226,7 @@ describe('Home page', () => {
       cy.get('#title').should('have.value', 'Form with restrictions');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
-        // Due to the recent change where the id is now a random id instead of a linkId,
-        // the id will have to be removed for comparison with the fixtureJson.
-        const qJsonItemWithoutField = CypressUtil.omitField(qJson.item[0], excludedField);
-        expect(qJsonItemWithoutField).to.deep.equal(fixtureJson.item[0]);
+        expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
       });
     });
 
@@ -1475,19 +1469,16 @@ describe('Home page', () => {
 
         cy.get(question2El).should('be.empty');
         cy.get(errorIcon2El)
-          .should('have.attr',
-                  'aria-label',
-                  'Error in conditional display condition 1: Question not found for the linkId \'q11\'.');
+          .find('small')
+          .should('contain.text', ' Question not found for the linkId \'q11\' for enableWhen condition 2. ');
 
         cy.get(errorIcon3El)
-          .should('have.attr',
-                  'aria-label',
-                  'Error in conditional display condition 2: Invalid operator \'>\' for type \'choice\'.');
+          .find('small')
+          .should('contain.text', ' Invalid operator \'>\' for type \'choice\' for enableWhen condition 3. ');
 
         cy.get(errorIcon4El)
-          .should('have.attr',
-                  'aria-label',
-                  'Error in conditional display condition 3: Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\'.');
+          .find('small')
+          .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 4. ');
       });
 
       it('should display lforms errors in preview', () => {
@@ -1871,10 +1862,7 @@ describe('Home page', () => {
         cy.get('[id^="select_observationLinkPeriod"] option:selected').should('have.text', 'days');
 
         cy.questionnaireJSON().should((qJson) => {
-          // Due to the recent change where the id is now a random id instead of a linkId,
-          // the id will have to be removed for comparison with the fixtureJson.
-          const qJsonWithoutField = CypressUtil.omitField(qJson, excludedField);
-          expect(qJsonWithoutField.item).to.deep.equal(fixtureJson.item);
+          expect(qJson.item).to.deep.equal(fixtureJson.item);
         });
 
         // Remove
@@ -1941,10 +1929,7 @@ describe('Home page', () => {
           cy.get('[id^="radio_Yes_observationExtract"]').should('be.checked');
 
           cy.questionnaireJSON().should((qJson) => {
-            // Due to the recent change where the id is now a random id instead of a linkId,
-            // the id will have to be removed for comparison with the fixtureJson.
-            const qJsonItemWithoutField = CypressUtil.omitField(qJson.item, excludedField);
-            expect(qJsonItemWithoutField).to.deep.equal(fixtureJson.item);
+            expect(qJson.item).to.deep.equal(fixtureJson.item);
           });
 
           // Remove
@@ -1959,12 +1944,14 @@ describe('Home page', () => {
         });
       });
     });
-
   });
 
   describe('Item level fields: advanced - Editable Link Id', () => {
     const REQUIRED = 'Link Id is required.';
     const DUPLICATE_LINK_ID =  'Entered linkId is already used.';
+    const MAX_LENGTH = 'LinkId cannot exceed 255 characters.';
+    const PATTERN = 'Spaces are not allowed at the beginning or end, and only a single space is allowed between words.';
+
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
@@ -2015,13 +2002,82 @@ describe('Home page', () => {
         .should('equal', longLinkId.substring(0, linkIdSizeLimit));
     });
 
+    it('should validate the linkId pattern', () => {
+      const invalidPatternError = `Spaces are not allowed at the beginning or end, and only a single space is allowed between words.`;
+
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.2 Name'
+      cy.getTreeNode('Name').click();
+
+      // Go to the link id section
+      cy.editableLinkId().as('linkId');
+
+      cy.get('@linkId')
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54138-3');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter '/test' as linkId
+      cy.get('@linkId')
+        .clear()
+        .type('/test');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter ' /test' as linkId (with leading space)
+      cy.get('@linkId')
+        .clear()
+        .type(' /test');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter '/test ' as linkId (with trailing space)
+      cy.get('@linkId')
+        .clear()
+        .type('/test ');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter ' /test ' as linkId (with leading and trailing spaces)
+      cy.get('@linkId')
+        .clear()
+        .type(' /test ');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter '/te st' as linkId (single space between words)
+      cy.get('@linkId')
+        .clear()
+        .type('/test abc');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter '/test  abc' as linkId (two spaces between words)
+      cy.get('@linkId')
+        .clear()
+        .type('/test  abc');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+    });
+
     it('should required linkId', () => {
       // Click on 2 Family member health history
       cy.toggleTreeNodeExpansion('Family member health history');
 
       // Click on the '2.4 Living?'
       cy.toggleTreeNodeExpansion('Living?');
-      
+
       // Now go to the grandchild node
       cy.getTreeNode('Current Age').click();
 
@@ -2030,7 +2086,7 @@ describe('Home page', () => {
         .scrollIntoView()
         .should('be.visible')
         .should('have.value', '/54114-4/54139-1/54141-7');
-      cy.editableLinkId()  
+      cy.editableLinkId()
         .clear()
         .type('{backspace}');
 
@@ -2054,14 +2110,14 @@ describe('Home page', () => {
       // Click on the '2.4 Living?'
       cy.toggleTreeNodeExpansion('Living?');
       cy.getTreeNode('Living?').click();
-      
+
       // Go to the link id section and enter the duplicate link id
       cy.editableLinkId()
         .scrollIntoView()
         .should('be.visible')
         .should('have.value', '/54114-4/54139-1');
-      
-      cy.editableLinkId()  
+
+      cy.editableLinkId()
         .clear()
         .type('/54114-4');
 
@@ -2079,17 +2135,17 @@ describe('Home page', () => {
       // Now go to the grandchild node
       cy.getTreeNode('Current Age').click();
 
-      // The 'Conditional display' field needs to be filled in to prevent an error. 
+      // The 'Conditional display' field needs to be filled in to prevent an error.
       // (ENABLEWHEN_ANSWER_REQUIRED)
       cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
       cy.get('[id^="enableWhen.0.operator"]').select('Not empty');
-      
+
       // Go to the link id section and enter the duplicate link id
       cy.editableLinkId()
         .scrollIntoView()
         .should('be.visible')
         .should('have.value', '/54114-4/54139-1/54141-7');
-      cy.editableLinkId()  
+      cy.editableLinkId()
         .clear()
         .type('/54114-4');
 
@@ -2105,12 +2161,12 @@ describe('Home page', () => {
         .scrollIntoView()
         .clear()
         .type('/54114-4/54139-1');
-      
-      // Error messages on the content panel should go away
-      cy.checkLinkIdErrorIsNotDisplayed();
 
       // The red triangle icons on the tree panel for the child and parent nodes
       // should remained since there is still error at the grandchild node.
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
       cy.getTreeNode('Living?')
         .find('fa-icon#error')
         .should('exist');
@@ -2151,13 +2207,12 @@ describe('Home page', () => {
       // Go to the grandchild node '2.4.2 Current Age'
       cy.getTreeNode('Current Age').click();
 
-
       // Go to the link id section and enter the duplicate link id
       cy.editableLinkId()
         .scrollIntoView()
         .should('be.visible')
         .should('have.value', '/54114-4/54139-1/54141-7');
-      cy.editableLinkId()  
+      cy.editableLinkId()
         .clear()
         .type('/54114-4/54139-1');
 
@@ -2181,7 +2236,7 @@ describe('Home page', () => {
         .scrollIntoView()
         .should('be.visible')
         .should('have.value', '/54114-4/54139-1/54124-3');
-      cy.editableLinkId()  
+      cy.editableLinkId()
         .clear()
         .type('/54114-4/54139-1');
 
@@ -2193,7 +2248,7 @@ describe('Home page', () => {
         .scrollIntoView()
         .clear()
         .type('/54114-4/54139-1/54141-7');
-      
+
       // Error messages on the content panel should go away
       cy.checkLinkIdErrorIsNotDisplayed();
 
@@ -2201,9 +2256,9 @@ describe('Home page', () => {
       cy.getTreeNode('Current Age')
         .find('fa-icon#error')
         .should('not.exist');
-      
+
       // However, the parent node '2.4 Living?' and grandparent node '2 Family member health history'
-      // should still showing error icon because there is still an error with the node 
+      // should still showing error icon because there is still an error with the node
       // '2.4.3 Cause of Death'
       cy.getTreeNode('Living?')
         .find('fa-icon#error')
@@ -2238,7 +2293,7 @@ describe('Home page', () => {
       // Click on '2 Family member health history'
       cy.getTreeNode('Family member health history').click();
 
-      // Click the 'Add new item' 
+      // Click the 'Add new item'
       cy.contains('button', 'Add new item').click();
       // Click on the new added item
       cy.getTreeNode('New item 1').click();
@@ -2250,7 +2305,7 @@ describe('Home page', () => {
         .clear()
         .type('1');
 
-      // Click the 'Add new item' 
+      // Click the 'Add new item'
       cy.contains('button', 'Add new item').click();
 
       // Click back to 'New item 1'
@@ -2267,7 +2322,7 @@ describe('Home page', () => {
 
       // Click back to 'New item 2'
       cy.getTreeNode('New item 2').click();
-      
+
       // Click back to 'New item 1'
       cy.getTreeNode('New item 1').click();
 

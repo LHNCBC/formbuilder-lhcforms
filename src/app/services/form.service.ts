@@ -39,7 +39,7 @@ export interface ErrorNode {
 }
 
 export interface TreeNodeStatus{
-  id: string;
+  treeNodeId: string;
   linkId: string;
   hasError?: boolean;
   childHasError?: boolean;
@@ -60,6 +60,9 @@ export type LinkIdTrackerMap = {
 })
 export class FormService {
   static _lformsLoaded$ = new Subject<string>();
+  static readonly TREE_NODE_ID = "__$treeNodeId";
+  _validationStatusChanged$: Subject<void> = new Subject<void>();
+
 
   private _loading = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
@@ -255,6 +258,13 @@ export class FormService {
   }
 
   /**
+   * Getter for validation status changed Observable
+   */
+  get validationStatusChanged$(): Observable<void> {
+    return this._validationStatusChanged$.asObservable();
+  }
+
+  /**
    * Getter for form reset Observable
    */
   get formReset$(): Observable<void> {
@@ -348,14 +358,14 @@ export class FormService {
   }
 
   /**
-   * Walk through the treeModel and populate the TreeNodeStatus for each of the 
+   * Walk through the treeModel and populate the TreeNodeStatus for each of the
    * TreeNodes into the TreeNodeStatusMap.
    */
   loadTreeNodeStatusMap(): void {
     const treeNodeStatusMap: TreeNodeStatusMap = {};
     function recurse(node: TreeNode): void {
-      treeNodeStatusMap[node.id.toString()] = {
-        id: node.id,
+      treeNodeStatusMap[node.data[FormService.TREE_NODE_ID]] = {
+        treeNodeId: node.data[FormService.TREE_NODE_ID],
         linkId: (node.data.linkId) ? node.data.linkId : ''
       }
 
@@ -380,13 +390,13 @@ export class FormService {
 
   /**
    * Add Tree Node Status for error tracking when an item is added to the Questionnaire
-   * @param id - tree node id
+   * @param treeNodeId - tree node id
    * @param linkId - linkId associated with item of the node.
    */
-  addTreeNodeStatus(id: string, linkId: string): void {
-    if (!(id in this.treeNodeStatusMap)) {
-      this.treeNodeStatusMap[id] = {
-        id: id,
+  addTreeNodeStatus(treeNodeId: string, linkId: string): void {
+    if (!(treeNodeId in this.treeNodeStatusMap)) {
+      this.treeNodeStatusMap[treeNodeId] = {
+        treeNodeId: treeNodeId,
         linkId: (linkId) ? linkId : ''
       }
     }
@@ -394,37 +404,37 @@ export class FormService {
 
   /**
    * Remove the Tree Node Status from error tracking when the item is deleted.
-   * @param id - tree node id
+   * @param treeNodeId - tree node id
    */
-  deleteTreeNodeStatus(id: string): void {
-    delete this.treeNodeStatusMap[id];
+  deleteTreeNodeStatus(treeNodeId: string): void {
+    delete this.treeNodeStatusMap[treeNodeId];
   }
 
   /**
    * The 'linkId' must be unique within the questionnaire. Check if the edited 'linkId'
    * already exists in the questionnaire using the 'linkIdTracker'.
    * @param newLinkId - linkId associated with item of the node.
-   * @param nodeId - tree node id.
+   * @param treeNodeId - tree node id.
    * @returns true if the edited 'linkId' is not unique, otherwie return false.
    */
-  treeNodeHasDuplicateLinkIdByLinkIdTracker(newLinkId: string, nodeId: string): boolean {
-    if (!nodeId || !this.treeNodeStatusMap)
+  treeNodeHasDuplicateLinkIdByLinkIdTracker(newLinkId: string, treeNodeId: string): boolean {
+    if (!treeNodeId || !this.treeNodeStatusMap)
       return false;
 
-    return (newLinkId in this.linkIdTracker && ( this.linkIdTracker[newLinkId].length > 1 || (this.linkIdTracker[newLinkId].length === 1 && this.linkIdTracker[newLinkId].indexOf(nodeId.toString()) === -1)) );
+    return (newLinkId in this.linkIdTracker && ( this.linkIdTracker[newLinkId].length > 1 || (this.linkIdTracker[newLinkId].length === 1 && this.linkIdTracker[newLinkId].indexOf(treeNodeId.toString()) === -1)) );
   };
 
-  /** 
-   * Check if the tree node for the given id contains an error.
-   * @id - tree node id.
-   * @includeChildNodes - indicates whether to include child nodes in this check.
+  /**
+   * Check if the tree node for the given tree node id contains an error.
+   * @param treeNodeId - tree node id.
+   * @param includeChildNodes - indicates whether to include child nodes in this check.
    * @returns true if the tree node contains error, otherwise false.
    */
-  isTreeNodeHasErrorById(id: string, includeChildNodes: boolean = true): boolean {
-    if (this.treeNodeStatusMap && this.treeNodeStatusMap[id]) {
-      const nodeHasError = ('hasError' in this.treeNodeStatusMap[id]) ? this.treeNodeStatusMap[id]['hasError'] : false;
+  isTreeNodeHasErrorById(treeNodeId: string, includeChildNodes: boolean = true): boolean {
+    if (this.treeNodeStatusMap && this.treeNodeStatusMap[treeNodeId]) {
+      const nodeHasError = ('hasError' in this.treeNodeStatusMap[treeNodeId]) ? this.treeNodeStatusMap[treeNodeId]['hasError'] : false;
       if (includeChildNodes) {
-        const childNodeHasError = ('childHasError' in this.treeNodeStatusMap[id]) ? this.treeNodeStatusMap[id]['childHasError'] : false;
+        const childNodeHasError = ('childHasError' in this.treeNodeStatusMap[treeNodeId]) ? this.treeNodeStatusMap[treeNodeId]['childHasError'] : false;
         return (nodeHasError || childNodeHasError);
       } else {
         return nodeHasError;
@@ -441,34 +451,34 @@ export class FormService {
     if (this.treeModel) {
       const node = this.treeModel.getFocusedNode();
       if (node)
-        return this.isTreeNodeHasErrorById(node.id.toString(), false);
+        return this.isTreeNodeHasErrorById(node.data[FormService.TREE_NODE_ID], false);
     }
     return false;
   }
 
   /**
-   * Return the TreeNodeStatus for the given id.
-   * @param id - tree node id.
+   * Return the TreeNodeStatus for the given tree node id.
+   * @param treeNodeId - tree node id.
    * @returns - TreeNodeStatus object if found, otherwise null.
    */
-  getTreeNodeStatusById(id: string): TreeNodeStatus | null {
-    if (this.treeNodeStatusMap && (id in this.treeNodeStatusMap)) {
-      return this.treeNodeStatusMap[id];
+  getTreeNodeStatusById(treeNodeId: string): TreeNodeStatus | null {
+    if (this.treeNodeStatusMap && (treeNodeId in this.treeNodeStatusMap)) {
+      return this.treeNodeStatusMap[treeNodeId];
     }
     return null;
   }
 
   /**
-   * Check if the sibling nodes contain errors. 
+   * Check if the sibling nodes contain errors.
    * @param node - current tree node
    * @returns true if any of the sibling nodes contain errors, otherwise false.
    */
   siblingHasError(node:ITreeNode): boolean {
     let siblingHasError = false;
-    if (node.parent && !node.isRoot) {
+    if (node.parent && !node.isRoot && node.parent.hasChildren) {
       siblingHasError = node.parent.children.some((n) => {
-        const siblingIdStr = n.id.toString();
-        return node.id.toString() !== siblingIdStr && this.treeNodeStatusMap[siblingIdStr]['hasError'];
+        const siblingIdStr = n.data[FormService.TREE_NODE_ID];
+        return node.data[FormService.TREE_NODE_ID] !== siblingIdStr && (this.treeNodeStatusMap[siblingIdStr]?.hasError ?? false);
       });
     }
     return siblingHasError;
@@ -479,7 +489,7 @@ export class FormService {
    * @param node - Ancestor node.
    */
   removeErrorFromAncestorNodes(node: ITreeNode): void {
-    const nodeIdStr = node.id.toString();
+    const nodeIdStr = node.data[FormService.TREE_NODE_ID];
     if (nodeIdStr in this.treeNodeStatusMap) {
       this.treeNodeStatusMap[nodeIdStr]['childHasError'] = false;
     }
@@ -490,7 +500,7 @@ export class FormService {
       const siblingHasError = this.siblingHasError(node);
       if (!siblingHasError)
         this.removeErrorFromAncestorNodes(node.parent);
-    }    
+    }
   }
 
   /**
@@ -498,7 +508,7 @@ export class FormService {
    * @param node - Ancestor node.
    */
   addErrorForAncestorNodes(node: ITreeNode): void {
-    const nodeIdStr = node.id.toString();
+    const nodeIdStr = node.data[FormService.TREE_NODE_ID];
 
     if (nodeIdStr in this.treeNodeStatusMap) {
       this.treeNodeStatusMap[nodeIdStr]['childHasError'] = true;
@@ -512,54 +522,89 @@ export class FormService {
 
   /**
    * Update validation status to the TreeNodeStatusMap.
-   * @param id - node id
+   * @param treeNodeId - tree node id
    * @param linkId - linkId associated with item of the node.
    * @param fieldName - name of the field being validated.
-   * @param errors - Null, if the validation passes. Set the 'hasError' status to 'false' 
+   * @param errors - Null, if the validation passes. Set the 'hasError' status to 'false'
    *                 and the ancestor nodes' 'chilcHasError' status to 'false'.
    *                 Array of errors if the the validation fails. Set the 'hasError' status
    *                 to 'true' and the ancestor nodes' 'childHasError' status to 'true'.
-   *                 Also stores the array of errors objects. 
+   *                 Also stores the array of errors objects.
    */
-  updateValidationStatus(id: string, linkId: string, fieldName: string, errors: any[]): void {
-    if (!this.treeNodeStatusMap || !this.treeNodeStatusMap[id])
+  updateValidationStatus(treeNodeId: string, linkId: string, fieldName: string, errors: any[]): void {
+    if (!this.treeNodeStatusMap || !this.treeNodeStatusMap[treeNodeId])
       return;
 
-    this.treeNodeStatusMap[id]['linkId'] = linkId;
+    this.treeNodeStatusMap[treeNodeId]['linkId'] = linkId;
     if (errors) {
-      if (!this.treeNodeStatusMap[id]['errors'])
-        this.treeNodeStatusMap[id]['errors'] = {};
-      this.treeNodeStatusMap[id]['errors'][fieldName] = errors;
-      this.treeNodeStatusMap[id]['hasError'] = true;
+      if (!this.treeNodeStatusMap[treeNodeId]['errors'])
+        this.treeNodeStatusMap[treeNodeId]['errors'] = {};
+      this.treeNodeStatusMap[treeNodeId]['errors'][fieldName] = errors;
+      this.treeNodeStatusMap[treeNodeId]['hasError'] = true;
     } else {
-      if (this.treeNodeStatusMap[id]['errors'] && fieldName in this.treeNodeStatusMap[id]['errors']) {
+      if (this.treeNodeStatusMap[treeNodeId]['errors'] && fieldName in this.treeNodeStatusMap[treeNodeId]['errors']) {
         this.liveAnnouncer.announce('Error is resolved for this node.');
-        delete this.treeNodeStatusMap[id]['errors'][fieldName];
+        delete this.treeNodeStatusMap[treeNodeId]['errors'][fieldName];
       }
 
-      this.treeNodeStatusMap[id]['hasError'] = (Object.keys(this.treeNodeStatusMap[id]?.errors ?? {}).length > 0);
+      this.treeNodeStatusMap[treeNodeId]['hasError'] = (Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length > 0);
     }
 
-    const node = this.getTreeNodeById(id);
+    const node = this.getTreeNodeById(treeNodeId);
 
     if (node && node.parent && !node.isRoot) {
       if (errors) {
         this.addErrorForAncestorNodes(node.parent);
 
       } else {
-        // Only remove the error from ancestor nodes if 
+        // Only remove the error from ancestor nodes if
         // - the focus node does not contain errors
-        // - the child nodes do not contain errors 
+        // - the child nodes do not contain errors
         // - the sibling nodes do not contain errors
         const siblingHasError = this.siblingHasError(node);
-        if (!siblingHasError && Object.keys(this.treeNodeStatusMap[id]?.errors ?? {}).length === 0 &&
-            (!('childHasError' in this.treeNodeStatusMap[id]) || !this.treeNodeStatusMap[id]['childHasError']))
+        if (!siblingHasError && Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length === 0 &&
+            (!('childHasError' in this.treeNodeStatusMap[treeNodeId]) || !this.treeNodeStatusMap[treeNodeId]['childHasError']))
           this.removeErrorFromAncestorNodes(node.parent);
       }
     }
-
-    this.autoSaveTreeNodeStatusMap();
   }
+
+  /**
+   * Delete the enableWhen error that matches the given rowIndex and adjusts the indices of the
+   * remaining enableWhen error keys that are greater than the rowIndex from the TreeNodeStatusMap.
+   *
+   * The errors are tracked using the key format 'enableWhen_' + <row index>.  When an enableWhen
+   * is deleted, the existing enableWhen errors may need to be shifted up accordingly.
+   *
+   * @param treeNodeId - tree node id.
+   * @param rowIndex - the row index of the Enable When condition that is being deleted.
+   */
+  deleteErrorAndAdjustEnableWhenIndexes(treeNodeId: string, rowIndex: number): void {
+    if (!this.treeNodeStatusMap || !this.treeNodeStatusMap[treeNodeId])
+      return;
+
+    const fieldName = `enableWhen_${rowIndex}`;
+    if (this.treeNodeStatusMap[treeNodeId]['errors'] && fieldName in this.treeNodeStatusMap[treeNodeId]['errors']) {
+      delete this.treeNodeStatusMap[treeNodeId]['errors'][fieldName];
+    }
+
+    const enableWhenKeys = Object.keys(this.treeNodeStatusMap[treeNodeId]['errors']);
+
+    enableWhenKeys.forEach(ewKey => {
+      const match = ewKey.match(/enableWhen_(\d+)/);
+      const keyIndex = match ? Number(match[1]) : -1;
+
+      if (!isNaN(keyIndex) && keyIndex > rowIndex) {
+        this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex - 1}`] =
+          this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex}`];
+        delete this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex}`];
+      }
+    });
+
+    this.treeNodeStatusMap[treeNodeId]['hasError'] = (Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length > 0);
+    this._validationStatusChanged$.next(null);
+  }
+
 
   /**
    * Remove treeNodeStatusMap from local storage.
@@ -570,20 +615,13 @@ export class FormService {
   }
 
   /**
-   * Save treeNodeStatusMap in local storage.
-   */
-  autoSaveTreeNodeStatusMap() {
-    this.autoSave('treeMap', this.treeNodeStatusMap);
-  }
-
-  /**
-   * Load and initialize the 'linkIdTracker' to track duplicate 
+   * Load and initialize the 'linkIdTracker' to track duplicate
    * 'linkIds' for each tree node.
    */
   loadLinkIdTracker(): void {
     Object.values(this.treeNodeStatusMap).map((node) => {
       const linkId = node.linkId;
-      const nodeId = node.id.toString();
+      const nodeId = node.treeNodeId;
 
       if (linkId in this.linkIdTracker) {
         if (this.linkIdTracker[linkId].indexOf(nodeId) === -1)
@@ -595,9 +633,9 @@ export class FormService {
   }
 
   /**
-   * Retrieve node ids for a specified 'linkId'.
-   * @param linkId - linkId associated with item of the node. 
-   * @returns Array of tree node id(s) if found, otherwise null 
+   * Retrieve tree node ids for a specified 'linkId'.
+   * @param linkId - linkId associated with item of the node.
+   * @returns Array of tree node id(s) if found, otherwise null
    */
   getNodeIdsByLinkId(linkId: string): string[] | null {
     return ((linkId || linkId === '') && linkId in this.linkIdTracker) ? this.linkIdTracker[linkId] : null;
@@ -613,30 +651,30 @@ export class FormService {
   }
 
   /**
-   * Add the 'linkId' and associated node id to the 'linkIdTracker'.
-   * @param id - tree node id.
-   * @param linkId - linkId associated with item of the node. 
+   * Add the 'linkId' and associated tree node id to the 'linkIdTracker'.
+   * @param treeNodeId - tree node id.
+   * @param linkId - linkId associated with item of the node.
    */
-  addLinkIdToLinkIdTracker(id: string, linkId: string): void {
+  addLinkIdToLinkIdTracker(treeNodeId: string, linkId: string): void {
     if (linkId in this.linkIdTracker) {
-      if (this.linkIdTracker[linkId].indexOf(id) === -1)
-        this.linkIdTracker[linkId].push(id);
+      if (this.linkIdTracker[linkId].indexOf(treeNodeId) === -1)
+        this.linkIdTracker[linkId].push(treeNodeId);
     } else {
-      this.linkIdTracker[linkId] = [id];
+      this.linkIdTracker[linkId] = [treeNodeId];
     }
   }
 
   /**
    * Remove the specified 'linkId' from the 'linkIdTracker', but if the 'linkId'
    * corresponds to an array containing multiple ids, only remove the matching
-   * 'id' from the array. 
-   * @param id - tree node id.
-   * @param linkId - linkId associated with item of the node. 
+   * 'treeNodeId' from the array.
+   * @param treeNodeId - tree node id.
+   * @param linkId - linkId associated with item of the node.
    */
-  removeLinkIdFromLinkIdTracker(id: string, linkId: string): void {
+  removeLinkIdFromLinkIdTracker(treeNodeId: string, linkId: string): void {
     if (linkId in this.linkIdTracker) {
       if (this.linkIdTracker[linkId].length > 1) {
-        const index = this.linkIdTracker[linkId].indexOf(id);
+        const index = this.linkIdTracker[linkId].indexOf(treeNodeId);
         if (index > -1) {
           this.linkIdTracker[linkId].splice(index, 1);
         }
@@ -648,15 +686,15 @@ export class FormService {
 
   /**
    * Update the 'linkIdTracker' whenever the 'linkId' value changes.
-   * @param prevLinkId - existing linkId associated with item of the node. 
+   * @param prevLinkId - existing linkId associated with item of the node.
    * @param newLinkId - updated linkId associated with item of the node.
-   * @param nodeId - tree node id
+   * @param treeNodeId - tree node id
    */
-  updateLinkIdForLinkIdTracker(prevLinkId: string, newLinkId: string, nodeId: string): void {
-    if (nodeId) {
+  updateLinkIdForLinkIdTracker(prevLinkId: string, newLinkId: string, treeNodeId: string): void {
+    if (treeNodeId) {
       if (prevLinkId)
-        this.removeLinkIdFromLinkIdTracker(nodeId.toString(), prevLinkId);
-      this.addLinkIdToLinkIdTracker(nodeId.toString(), newLinkId);
+        this.removeLinkIdFromLinkIdTracker(treeNodeId, prevLinkId);
+      this.addLinkIdToLinkIdTracker(treeNodeId, newLinkId);
     }
   }
 
@@ -665,13 +703,6 @@ export class FormService {
    */
   clearLinkIdTracker(): void {
     this.linkIdTracker = {};
-  }
-
-  /**
-   * Retrieve tree from the storage.
-   */
-  autoLoadTreeNodeStatusMap(): TreeNodeStatusMap {
-    return this.treeNodeStatusMap = this.autoLoad('treeMap');
   }
 
   /**
@@ -745,11 +776,11 @@ export class FormService {
 
 
   /**
-   * Get node by its id.
-   * @param id
+   * Get node by its tree node id.
+   * @param treeNodeId
    */
-  getTreeNodeById(id: IDType): ITreeNode {
-    return this.treeModel.getNodeById(id);
+  getTreeNodeById(treeNodeId: IDType): ITreeNode {
+    return this.treeModel.getNodeById(treeNodeId);
   }
 
 
@@ -767,7 +798,7 @@ export class FormService {
    */
   hasExtension(): boolean {
     const ext = this.treeModel?.getFocusedNode()?.data?.extension;
-    return Array.isArray(ext) ? ext.length > 0 : !!ext;
+    return Array.isArray(ext) ? ext.length > 0 : false;
   }
 
   /**
@@ -775,7 +806,7 @@ export class FormService {
    * @returns True if the focused node's data contains sub-items. Otherwise false.
    */
   hasSubItems(): boolean {
-    return this.treeModel?.getFocusedNode()?.data?.item ?? false;
+    return (this.treeModel?.getFocusedNode()?.data?.item?.length ?? 0) > 0;
   }
 
   /**
