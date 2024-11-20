@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.10] 2024-11-20
+### Added
+- Added a message for FHIR server validation.
+
 ## [9.6.9] 2024-10-17
 ### Changed
 - Added Group Item Control options.
