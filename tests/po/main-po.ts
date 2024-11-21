@@ -44,6 +44,16 @@ export class MainPO {
     await this._page.getByRole('button', {name: 'Create questions'}).click();
   }
   /**
+   * Load item level page from scratch.
+   */
+  async cleanLoadILPage() {
+    await this.loadHomePage();
+    await this._page.getByLabel('Start from scratch').click();
+    await this._page.getByRole('button', {name: 'Continue'}).click();
+    await this._page.getByRole('button', {name: 'Create questions'}).click();
+  }
+
+  /**
    * Load the page without accepting SNOMED license.
    */
   async loadHomePageWithLoincOnly() {

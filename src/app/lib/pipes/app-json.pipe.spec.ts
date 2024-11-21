@@ -5,7 +5,12 @@ describe('AppJsonPipe', () => {
   // The pipe ignores __$* keys.
   const obj = {
     linkId: 'l1',
-    __$helpText: 'Help text!',
+    __$helpText: {
+      text: 'Help text!',
+      type: 'display',
+      linkId: 'll1',
+      extension: [Util.HELP_BUTTON_EXTENSION]
+    },
     test: () => {console.log('hi')},
     __$a: {
       __$b: '_b',
@@ -38,7 +43,8 @@ describe('AppJsonPipe', () => {
     const pipe = new AppJsonPipe();
     const helpTextItem = JSON.parse(JSON.stringify(Util.helpItemTemplate));
     helpTextItem.text = 'Help text!';
-    helpTextItem.linkId = 'l1_helpText';
+    helpTextItem.linkId = 'll1';
+    helpTextItem.type = 'display';
     const expected = JSON.parse(pipe.transform(obj));
     expect(expected).toEqual({
       linkId: 'l1',

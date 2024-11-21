@@ -100,7 +100,7 @@ export class ErrorTooltip {
   /**
    * Controls the visibility of the tooltip.
    * @param show - A boolean value indicating whether to show (true)
-   *               or hide (false) the tooltip. 
+   *               or hide (false) the tooltip.
    */
   showTooltip(show: boolean) {
     this.showDropNotAllowedTooltip = show;
@@ -122,7 +122,7 @@ export class ErrorTooltip {
    * cursor.
    * @param offsetX - The horizontal offset from the mouse cursor for
    *                  positioning the tooltip.
-   * @param offsetY - The vertical offset from the mouse cursor for 
+   * @param offsetY - The vertical offset from the mouse cursor for
    *                  positioning the tooltip.
    */
   updateTooltipOffset(offsetX: number, offsetY: number) {
@@ -832,8 +832,8 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
-   * Add/insert item in the tree. 
-   * 
+   * Add/insert item in the tree.
+   *
    * @param position - ('AFTER' || 'BEFORE' || 'CHILD' )
    * @param newItem - QuestionnaireItem to add.
    * @param targetNode - Context node where the item to add.
@@ -891,22 +891,24 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
-   * Determines if a dragged node can be dropped onto a target node by checking the target 
+   * Determines if a dragged node can be dropped onto a target node by checking the target
    * node's data type. If the target node's data type is 'display', the drop is not allowed.
-   * In this case, the 'not-allowed' icon and an error tooltip are displayed. Additionally, 
+   * In this case, the 'not-allowed' icon and an error tooltip are displayed. Additionally,
    * the screen reader announces the message upon mouseup.
    * @param draggedNode - The node that is being dragged.
    * @param targetParentNode - The potential parent node where the dragged node may be dropped.
    * @returns - True if the drop is allowed, otherwise false.
    */
   canDropNode(draggedNode, targetParentNode) {
-    this.errorTooltip.showTooltip(false);
     if (targetParentNode && targetParentNode.data.type === 'display') {
       this.errorTooltip.showTooltip(true);
       setTimeout(() => {
         this.liveAnnouncer.announce(this.errorTooltip.dropErrorMessage);
       }, 0);
+    } else {
+      this.errorTooltip.showTooltip(false);
     }
+
     return !this.errorTooltip.showDropNotAllowedTooltip;
   }
 

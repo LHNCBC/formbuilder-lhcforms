@@ -411,6 +411,7 @@ export class BasePageComponent implements OnInit {
     // configure lforms template options
     const lformsTemplateOptions = {
       options: {
+        allowHTML: true,
         displayScoreWithAnswerText: false // Not show scores
       }
     };
