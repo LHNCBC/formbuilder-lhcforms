@@ -39,6 +39,7 @@ import {ItemControlComponent} from './widgets/item-control/item-control.componen
 import {DateComponent} from './widgets/date/date.component';
 import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
+import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
 import {HelpTextComponent} from "./widgets/help-text/help-text.component";
 
 
@@ -82,5 +83,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('observation-extract', ObservationExtractComponent);
     this.register('quantity-unit', QuantityUnitComponent);
     this.register('terminology-server', TerminologyServerComponent);
+    this.register('editable-link-id', EditableLinkIdComponent);
+
   }
 }

@@ -9,8 +9,11 @@ const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition
 const ucumUrl = 'http://unitsofmeasure.org';
 const snomedEclText =
   '< 429019009 |Finding related to biological sex|';
+const excludedField = 'id';
+
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
+
   describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
@@ -1428,7 +1431,7 @@ describe('Home page', () => {
       cy.get('#type option:selected').should('have.text', 'decimal');
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
       cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
-      cy.questionnaireJSON().should((qJson) => {
+      cy.questionnaireJSON().then((qJson) => {
         expect(qJson).to.deep.equal(fixtureJson);
       });
 
@@ -1786,6 +1789,49 @@ describe('Home page', () => {
         cy.get('[id^="enableWhen.1_remove"]').click();
         cy.get(errorMessageEl).should('not.exist');
 
+      });
+
+      it('should display validation error message for each of the enableWhen fields', () => {
+        const sampleFile = 'items-validation-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.contains('button', 'Edit questions').click();
+
+        const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
+        const question1El = '[id^="enableWhen.0.question"]';
+        const operator1El = '[id^="enableWhen.0.operator"]';
+        const answer1El = '[id^="enableWhen.0.answer"]';
+        const errorIcon1El = '[id^="enableWhen.0_err"]';
+      
+        const question2El = '[id^="enableWhen.1.question"]';
+        const errorIcon2El = '[id^="enableWhen.1_err"]';
+
+        const errorIcon3El = '[id^="enableWhen.2_err"]';
+
+        const errorIcon4El = '[id^="enableWhen.3_err"]';
+
+        cy.clickTreeNode('EnableWhen');
+
+        cy.get(errorMessageEl).should('exist');
+        
+        cy.get(question1El).should('contain.value', '4 - Integer Type');
+        cy.get(operator1El).should('contain.value', '=');
+        cy.get(answer1El).should('contain.value', '5');
+        cy.get(errorIcon1El).should('not.exist');
+
+        cy.get(question2El).should('be.empty');
+        cy.get(errorIcon2El)
+          .find('small')
+          .should('contain.text', ' Question not found for the linkId \'q11\' for enableWhen condition 2. ');
+
+        cy.get(errorIcon3El)
+          .find('small')
+          .should('contain.text', ' Invalid operator \'>\' for type \'choice\' for enableWhen condition 3. ');
+
+        cy.get(errorIcon4El)
+          .find('small')
+          .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 4. ');
       });
 
       it('should display lforms errors in preview', () => {
@@ -2252,6 +2298,393 @@ describe('Home page', () => {
       });
     });
 
+  });
+
+  describe('Item level fields: advanced - Editable Link Id', () => {
+    const REQUIRED = 'Link Id is required.';
+    const DUPLICATE_LINK_ID =  'Entered linkId is already used.';
+    const MAX_LENGTH = 'LinkId cannot exceed 255 characters.';
+    const PATTERN = 'Spaces are not allowed at the beginning or end, and only a single space is allowed between words.';
+
+    beforeEach(() => {
+      const sampleFile = 'USSG-family-portrait.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.loadHomePage();
+      cy.get('input[type="radio"][value="scratch"]').click();
+      cy.get('button').contains('Continue').click();
+      cy.uploadFile(sampleFile, false);
+      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+      cy.contains('button', 'Edit questions').click();
+
+      cy.expandAdvancedFields();
+      cy.tsUrl().should('be.visible'); // Proof of advanced panel expansion
+    });
+
+    afterEach(() => {
+      cy.collapseAdvancedFields();
+    });
+
+    it('should update the link id', () => {
+      // 300 characters long
+      const longLinkId = "/sQbMAgt9SavZxxL63WIFBju6Hdwjp3JHyFzXnBKVdLEtCJ71u6TNMhXt" +
+                          "znjw9HV9b7N6kY33bLiZMEy7nSCJupWu3MIzFg2PfT4JEEa5VFXk3KgaZ" +
+                          "ypvFH8EGDlxe9bpLoZqbXgxBCQ0iFmG6FKyA1FiuMMtZYoaXHPpJ0M6kZ" +
+                          "bjBbTbmOSrtufcLu1SrN0MN0h30lxak1yNfCjqqlsxdGescju0nu0nJvg" +
+                          "6K1Vd5rhBGavjkrBnbDXLrOglYT0gf1HaIBbGGM4C9kO8dTxqBOqg1KHn" +
+                          "ctpWOL3vc0PIiXB";
+      const linkIdSizeLimit = 255;
+
+      cy.editableLinkId()
+        .should('be.visible')
+        .should('have.value', '/54126-8');
+
+      cy.editableLinkId()
+        .clear()
+        .type(longLinkId);
+
+      // Because of size limit, the linkId was truncated
+      // to 255 characters
+      cy.editableLinkId()
+        .invoke('val')
+        .should('not.equal', longLinkId)
+        .its('length')
+        .should('eq', linkIdSizeLimit);
+
+      cy.editableLinkId()
+        .invoke('val')
+        .should('equal', longLinkId.substring(0, linkIdSizeLimit));
+    });
+
+    it('should validate the linkId pattern', () => {
+      const invalidPatternError = `Spaces are not allowed at the beginning or end, and only a single space is allowed between words.`;
+
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.2 Name'
+      cy.getTreeNode('Name').click();
+
+      // Go to the link id section
+      cy.editableLinkId().as('linkId');
+
+      cy.get('@linkId')
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54138-3');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter '/test' as linkId
+      cy.get('@linkId')
+        .clear()
+        .type('/test');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter ' /test' as linkId (with leading space)
+      cy.get('@linkId')
+        .clear()
+        .type(' /test');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter '/test ' as linkId (with trailing space)
+      cy.get('@linkId')
+        .clear()
+        .type('/test ');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter ' /test ' as linkId (with leading and trailing spaces)
+      cy.get('@linkId')
+        .clear()
+        .type(' /test ');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter '/te st' as linkId (single space between words)
+      cy.get('@linkId')
+        .clear()
+        .type('/test abc');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter '/test  abc' as linkId (two spaces between words)
+      cy.get('@linkId')
+        .clear()
+        .type('/test  abc');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+    });
+
+    it('should required linkId', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+
+      // Now go to the grandchild node
+      cy.getTreeNode('Current Age').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()
+        .clear()
+        .type('{backspace}');
+
+      cy.checkLinkIdErrorIsDisplayed(REQUIRED);
+
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+    });
+
+    it('should detect duplicate link id and display error', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+      cy.getTreeNode('Living?').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1');
+
+      cy.editableLinkId()
+        .clear()
+        .type('/54114-4');
+
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
+
+      // The node 'Living?' should display a red triangle icon (error)
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      // In addition, the parent node should also display the red triangle icon as well.
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Now go to the grandchild node
+      cy.getTreeNode('Current Age').click();
+
+      // The 'Conditional display' field needs to be filled in to prevent an error.
+      // (ENABLEWHEN_ANSWER_REQUIRED)
+      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
+      cy.get('[id^="enableWhen.0.operator"]').select('Not empty');
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()
+        .clear()
+        .type('/54114-4');
+
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
+
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the child node.
+      cy.getTreeNode('Living?').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1');
+
+      // The red triangle icons on the tree panel for the child and parent nodes
+      // should remained since there is still error at the grandchild node.
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the grandchild node.
+      cy.getTreeNode('Current Age').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1/54141-7');
+
+      // Error messages on the content panel should go away
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // The red triangle icons on the tree panel for the grandchild, child
+      // and parent nodes should now be hidden.
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('not.exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('not.exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('not.exist');
+    });
+
+    it('should check siblings for error before clearing out errors from ancestor', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Expand the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+
+      // Go to the grandchild node '2.4.2 Current Age'
+      cy.getTreeNode('Current Age').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()
+        .clear()
+        .type('/54114-4/54139-1');
+
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
+
+      // On the Tree panel, the error icon should display on the parent, child, and grandchild
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Go to the sibling node '2.4.1 Date of Birth' and enter the duplicate link id
+      cy.getTreeNode('Date of Birth').click();
+
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54124-3');
+      cy.editableLinkId()
+        .clear()
+        .type('/54114-4/54139-1');
+
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
+
+      // Fix the duplicate link id for the node '2.4.2 Current Age'.
+      cy.getTreeNode('Current Age').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1/54141-7');
+
+      // Error messages on the content panel should go away
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // The red triangle icons on the tree panel for the node '2.4.2 Current Age' should be hidden.
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('not.exist');
+
+      // However, the parent node '2.4 Living?' and grandparent node '2 Family member health history'
+      // should still showing error icon because there is still an error with the node
+      // '2.4.3 Cause of Death'
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the node '2.4.1 Date of Birth'.
+      cy.getTreeNode('Date of Birth').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .type('/54124-3');
+
+      // Error messages on the content panel should go away
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // The red triangle icons on the tree panel for the grandchild, child
+      // and parent nodes should now be hidden.
+      cy.getTreeNode('Date of Birth')
+        .find('fa-icon#error')
+        .should('not.exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('not.exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('not.exist');
+    });
+
+    it('should allow the linkId to be set to empty and remain empty upon gaining focus', () => {
+      // Click on '2 Family member health history'
+      cy.getTreeNode('Family member health history').click();
+
+      // Click the 'Add new item'
+      cy.contains('button', 'Add new item').click();
+      // Click on the new added item
+      cy.getTreeNode('New item 1').click();
+
+      // Go to the link id section and enter 1
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .clear()
+        .type('1');
+
+      // Click the 'Add new item'
+      cy.contains('button', 'Add new item').click();
+
+      // Click back to 'New item 1'
+      cy.getTreeNode('New item 1').click();
+
+      // The linkId should be 1
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('have.value', '1');
+
+      // Clear the value
+      cy.editableLinkId()
+        .clear();
+
+      // Click back to 'New item 2'
+      cy.getTreeNode('New item 2').click();
+
+      // Click back to 'New item 1'
+      cy.getTreeNode('New item 1').click();
+
+      // The linkId should remain empty. It should not get populate with the default linkId.
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('have.value', '');
+    });
   });
 
   describe('Test descendant items and display/group type changes', () => {

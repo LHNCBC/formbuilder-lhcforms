@@ -1,0 +1,119 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "items-validation-sample",
+  "status": "draft",
+  "item": [
+    {
+      "type": "group",
+      "linkId": "/itm1",
+      "text": "Group Type"
+    },
+    {
+      "type": "display",
+      "linkId": "/itm2",
+      "text": "Display Type"
+    },
+    {
+      "type": "display",
+      "linkId": "/itm3",
+      "text": "Invalid Display Type",
+      "item": [
+        {
+          "linkId": "/itm3/subitm0",
+          "text": "Name",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "type": "integer",
+      "linkId": "/itm4",
+      "text": "Integer Type"
+    },
+    {
+      "type": "choice",
+      "linkId": "/itm5",
+      "text": "Choice Type",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11871-3",
+            "display": "Underwear or less"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11872-1",
+            "display": "Street clothes, no shoes"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11873-9",
+            "display": "Street clothes & shoes"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "/itm6",
+      "text": "EnableWhen",
+      "enableWhen": [
+        {
+          "question": "/itm4",
+          "operator": "=",
+          "answerInteger": 5
+        },
+        {
+          "question": "q11",
+          "operator": "=",
+          "answerInteger": 5
+        },
+        {
+          "question": "/itm5",
+          "operator": ">",
+          "answerChoice": 6.2
+        },
+        {
+          "question": "/itm4",
+          "operator": "=",
+          "answerString": "abc"
+        }
+      ]
+    },
+    {
+      "type": "integer",
+      "linkId": "/itm7",
+      "text": "Valid LinkId"
+    },
+    {
+      "type": "string",
+      "text": "Empty LinkId"
+    },
+    {
+      "type": "string",
+      "linkId": "  abc   1233",
+      "text": "Invalid LinkId pattern"
+    }, 
+    {
+      "type": "string",
+      "linkId": "/sQbMAgt9SavZxxL63WIFBju6Hdwjp3JHyFzXnBKVdLEtCJ71u6TNMhXtznjw9HV9b7N6kY33bLiZMEy7nSCJupWu3MIzFg2PfT4JEEa5VFXk3KgaZypvFH8EGDlxe9bpLoZqbXgxBCQ0iFmG6FKyA1FiuMMtZYoaXHPpJ0M6kbjBbTbmOSrtufcLu1SrN0MN0h30lxak1yNfCjqqlsxdGescju0nu0nJvg6K1Vd5rhBGavjkrBnbDXLrOglYT0gf1HaIBbGGM4C9kO8dTxqBOqg1KHnctpWOL3vc0PIiXB",
+      "text": "LinkId Too Long"
+    },
+    {
+      "type": "string",
+      "linkId": "/itm10",
+      "text": "Duplicate LinkId Original"
+    },
+    {
+      "type": "string",
+      "linkId": "/itm10",
+      "text": "Duplicate LinkId"
+    }
+  ]
+}
