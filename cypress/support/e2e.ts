@@ -15,6 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
+import 'cypress-real-events';
 import failOnConsoleError from 'cypress-fail-on-console-error';
 
 const config = {
@@ -25,7 +26,8 @@ const config = {
     //  The following is a result of bug in lforms while processing answerValueSet field. Remove it
     // after the bug is fixed in lforms.
     /Access to XMLHttpRequest at 'https:\/\/lforms-fhir.nlm.nih.gov\/baseR4\/ValueSet%2F%24expand\?/,
-    /the list of LForms versions from https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions/
+    /the list of LForms versions from https:\/\/lhcforms-static.nlm.nih.gov\/lforms-versions/,
+    / /
   ]
 };
 

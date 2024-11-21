@@ -1,5 +1,4 @@
 import {Util} from '../../src/app/lib/util';
-import {ExtensionDefs} from "../../src/app/lib/extension-defs";
 import {JsonPointer} from "json-ptr";
 import {format, parseISO} from 'date-fns';
 
@@ -234,4 +233,14 @@ export class CypressUtil {
     return obj;
   }
  
+  /**
+   * Capture clipboard content.
+   *
+   * @param callback - Callback function providing the content as string to the caller.
+   */
+  static getClipboardContent(callback) {
+    return cy.window().then((win) => {
+      win.navigator.clipboard.readText().then((text) => callback(text));
+    });
+  }
 }

@@ -2,7 +2,6 @@ import { Component, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/co
 import { StringComponent } from '../string/string.component';
 import { Subscription } from 'rxjs';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'lfb-editable-link-id',
@@ -14,8 +13,8 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
   subscriptions: Subscription[] = [];
   errorIcon = faExclamationTriangle;
 
-  constructor(protected liveAnnouncer: LiveAnnouncer) {
-    super(liveAnnouncer);
+  constructor() {
+    super();
   }
 
   /**

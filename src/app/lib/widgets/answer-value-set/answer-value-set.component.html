@@ -19,10 +19,13 @@
 <ng-template #snomed>
   <div class="p-0">
     <div class="row m-0 align-items-center">
-      <label [for]="id+'_ecl'" class="col-3 ps-0 col-form-label">Enter SNOMED ECL
-        <div tabindex="0" class="btn border-0 p-0 b-0" [ngbTooltip]="eclHelp" triggers="manual" [attr.aria-label]="'Tooltip for ECL'"
-             #eclTooltip
-             (click)="eclTooltipOpen()"
+      <label  class="col-3 ps-0 col-form-label">Enter SNOMED ECL
+        <div tabindex="0" class="btn border-0 p-0 b-0" [ngbTooltip]="eclHelp" tooltipClass="custom-tooltip-class"
+            container="body" triggers="manual" [attr.aria-label]="getURLFreeAriaLabel('Tooltip for ECL: ' + eclHelpContent)" tablindex="0"
+            #eclTooltip 
+            (mouseover)="eclTooltipOpen()"
+            (focus)="eclTooltipOpen()"
+            (blur)="eclTooltipClose($event)"
       ><fa-icon [icon]="faInfo" aria-hidden="true"></fa-icon></div>:</label>
       <div class="col input-group input-group-sm px-0">
         <span class="input-group-text">ecl/</span>
@@ -30,7 +33,7 @@
              [name]="name+'_ecl'"
              [ngModel]="snomedFhirVS"
              (ngModelChange)="onEclUpdate($event)"
-             (blur)="onEclBlur($event)"
+             (change)="onEclChange($event)"
              class="col form-control form-control-sm"
              [attr.id]="id+'_ecl'"
              placeholder="Enter SNOMED ECL">
@@ -53,7 +56,7 @@
               (ngModelChange)="onVersionUpdate($event)"
               [ngModelOptions]="{standalone: true}"
       >
-        <option value="">Any version</option>
+        <option value="">Default</option>
         <option *ngFor="let ver of snomedEditions?.get(snomedEdition)?.versions" [value]="ver">{{ver}}</option>
       </select>
 
@@ -74,9 +77,5 @@
 </ng-template>
 
 <ng-template #eclHelp>
-  See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose()"
-                 href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or
-  try the ECL Builder in the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose()"
-                 href="https://browser.ihtsdotools.org/?perspective=full&languages=en">SNOMED CT Browser</a>.
-  In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.
+  <div (mouseleave)="eclTooltipClose($event)" id="eclHelpContent" [innerHtml]="eclHelpContent"></div>
 </ng-template>

@@ -165,9 +165,10 @@ describe('Home page', () => {
       cy.contains('button.dropdown-item', 'Export to file in FHIR R4 format').click();
       cy.readFile('cypress/downloads/Sample-STU3-form.R4.json').then((json) => {
         cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
-        cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
+        cy.contains('.mat-mdc-tab-labels span', 'View/Validate Questionnaire JSON').scrollIntoView().click();
         cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'R4').scrollIntoView().click();
-        cy.get('.preview-json-tabs mat-tab-body.mat-mdc-tab-body-active pre.R4').invoke('text').then((text) => {
+        cy.get('button[title="Copy questionnaire to clipboard"]').first().focus().realClick();
+        CypressUtil.getClipboardContent((text) => {
           const form = JSON.parse(text);
           expect(form.item[0].answerOption.length).to.be.equal(3);
           expect(form).to.be.deep.equal(json);
@@ -197,9 +198,10 @@ describe('Home page', () => {
       cy.contains('button.dropdown-item', 'Export to file in FHIR STU3 format').click();
       cy.readFile('cypress/downloads/Sample-R4-form.STU3.json').then((json) => {
         cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
-        cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
+        cy.contains('.mat-mdc-tab-labels span', 'View/Validate Questionnaire JSON').scrollIntoView().click();
         cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'STU3').scrollIntoView().click();
-        cy.get('.preview-json-tabs mat-tab-body.mat-mdc-tab-body-active pre.STU3').invoke('text').then((text) => {
+        cy.get('button[title="Copy questionnaire to clipboard"]').first().focus().realClick();
+        CypressUtil.getClipboardContent((text) => {
           const form = JSON.parse(text);
           expect(form.item[0].option.length).to.be.equal(3);
           expect(form).to.be.deep.equal(json);
@@ -215,9 +217,10 @@ describe('Home page', () => {
       cy.contains('button.dropdown-item', 'Export to file in LHC-Forms internal (and volatile) format').click();
       cy.readFile('cypress/downloads/Sample-R4-form.LHC-Forms.json').then((json) => {
         cy.contains('#resizableMiddle .navbar button', 'Preview').scrollIntoView().click();
-        cy.contains('.mat-mdc-tab-labels span', 'View Questionnaire JSON').scrollIntoView().click();
+        cy.contains('.mat-mdc-tab-labels span', 'View/Validate Questionnaire JSON').scrollIntoView().click();
         cy.contains('.preview-json-tabs .mat-mdc-tab-labels span', 'R4').scrollIntoView().click();
-        cy.get('.preview-json-tabs mat-tab-body.mat-mdc-tab-body-active pre.R4').invoke('text').then((text) => {
+        cy.get('button[title="Copy questionnaire to clipboard"]').first().focus().realClick();
+        CypressUtil.getClipboardContent((text) => {
           const form = JSON.parse(text);
           expect(form.title).to.be.equal(json.name);
           expect(form.item[0].text).to.be.equal(json.items[0].question);
@@ -324,7 +327,7 @@ describe('Home page', () => {
         },
         {
           fixtureFile: 'initial-sample.STU3.json',
-          serverBaseUrl: 'http://hapi.fhir.org/baseDstu3',
+          serverBaseUrl: 'https://hapi.fhir.org/baseDstu3',
           version: 'STU3',
         }
       ].forEach((testConfig) => {
@@ -594,7 +597,7 @@ describe('Home page', () => {
       cy.contains('button', 'Import').click();
       cy.contains('button', 'Import from a FHIR server...').click();
       cy.contains('div.modal-footer button', 'Add your FHIR server').click();
-      cy.get('#urlInput').as('inputUrl');
+      cy.get('#urlInputId').as('inputUrl');
       cy.contains('button', 'Validate').as('validate');
       cy.contains('lfb-user-server-dlg button', 'Add').as('add');
       cy.contains('lfb-user-server-dlg button', 'Cancel').as('cancel');
@@ -617,7 +620,7 @@ describe('Home page', () => {
       cy.get('@inputUrl').clear();
       cy.get('@inputUrl').type('http://localhost'); // Valid format, but not a FHIR server.
       cy.get('@validate').click();
-      cy.contains('p.text-danger', 'Unable to confirm that that URL is a FHIR server.').should('be.visible', true);
+      cy.contains('p.text-danger', 'Unable to confirm the URL is a FHIR server.').should('be.visible', true);
       cy.get('@add').should('have.attr', 'disabled');
       cy.get('@cancel').click();
     });

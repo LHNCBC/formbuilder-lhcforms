@@ -1,6 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import '~bootstrap/dist/css/bootstrap.min.css';
+@import '~codemirror/lib/codemirror.css';
+@import '~codemirror/theme/idea.css';
+@import '~codemirror/addon/fold/foldgutter.css';
+@import '~codemirror/addon/lint/lint.css';
+
+.cm-s-code-editor {
+  background-color: rgb(248, 249, 250);
+}
+
+ngb-alert.alert .btn-close {
+  padding: .75rem;
+}
+
+ngb-alert.alert {
+  padding: 0.50rem;
+}
 
 .mat-mdc-dialog-container .mdc-dialog__content {
   color: inherit !important;
@@ -15,7 +31,7 @@
 
 
 /* Set the height and line-height of the tab header */
-mat-tab-group.preview-json-tabs mat-tab-header {
+mat-tab-group.preview-json-tabs, mat-tab-group.preview-json-tabs mat-tab-header {
   border-top: lightgrey solid 1px;
   border-bottom: lightgrey solid 1px;
 }
@@ -67,3 +83,8 @@ mat-tab-group.preview-json-tabs mat-tab-header {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* adjusting the 'help' icon vertical align */
+fa-icon > svg.svg-inline--fa {
+  vertical-align: baseline;
+}

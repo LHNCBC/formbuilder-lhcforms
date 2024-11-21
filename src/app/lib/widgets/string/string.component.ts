@@ -1,7 +1,7 @@
 /**
  * Component for general input box
  */
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 
@@ -10,6 +10,8 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   templateUrl: './string.component.html'
 })
 export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
+
+  liveAnnouncer = inject(LiveAnnouncer);
 
   // Replace standard error messages from schema validator with customized messages.
   // Keys are error codes from the validator.
@@ -39,7 +41,7 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
 
   Array = Array; // To use in templates.
 
-  constructor(protected liveAnnouncer: LiveAnnouncer) {
+  constructor() {
     super();
   }
 

@@ -1,11 +1,11 @@
 /**
  * Customized pull down box.
  */
-import {AfterViewInit, Component, Input} from '@angular/core';
+import {AfterViewInit, Component, inject, Input} from '@angular/core';
 import {faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { StringComponent } from '../string/string.component';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { FormService } from '../../../services/form.service';
+import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
   selector: 'lfb-select',
@@ -24,6 +24,8 @@ export class SelectComponent extends StringComponent implements AfterViewInit {
   nolabel = false;
   errorIcon = faExclamationTriangle;
   
+  formService = inject(FormService);
+
   // A mapping for options display string. Typically, the display strings are from schema definition.
   // This map helps to redefine the display string.
   @Input()
@@ -32,10 +34,10 @@ export class SelectComponent extends StringComponent implements AfterViewInit {
   // Options list for the pull down
   allowedOptions: Array<{value: string, label: string}>;
 
-  constructor(protected liveAnnouncer: LiveAnnouncer, protected formService: FormService) {
-    super(liveAnnouncer);
+  constructor() {
+    super();
   }
-  
+
   /**
    * Initialize component, mainly the options list.
    */

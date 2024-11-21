@@ -40,6 +40,8 @@ import {DateComponent} from './widgets/date/date.component';
 import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
 import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
+import {HelpTextComponent} from "./widgets/help-text/help-text.component";
+
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -73,7 +75,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('answer-option', AnswerOptionComponent);
     this.register('answer-option-methods', AnswerOptionMethodsComponent);
     this.register('item-control', ItemControlComponent);
-    this.register('help-text', TextAreaComponent);
+    this.register('help-text', HelpTextComponent);
     this.register('string-with-css', StringWithCssComponent);
     this.register('restrictions', RestrictionsComponent);
     this.register('restrictions-operator', RestrictionsOperatorComponent);

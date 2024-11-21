@@ -6,6 +6,7 @@ import {Directive, Input, OnChanges, SimpleChanges} from '@angular/core';
 import { NgControl } from '@angular/forms';
 
 @Directive({
+  standalone: true,
   selector: '[lfbDisableControl]'
 })
 export class LfbDisableControlDirective implements OnChanges {

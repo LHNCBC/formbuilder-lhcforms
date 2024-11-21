@@ -90,6 +90,9 @@ import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
 import {LabelComponent} from './lib/widgets/label/label.component';
 import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable-link-id.component';
+import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
+import {CodemirrorModule} from "@ctrl/ngx-codemirror";
+import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
 
 @NgModule({
   declarations: [
@@ -140,7 +143,6 @@ import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable
     RestrictionsComponent,
     RestrictionsOperatorComponent,
     ObservationLinkPeriodComponent,
-    LfbDisableControlDirective,
     LfbSpinnerComponent,
     EnableWhenComponent,
     QuantityUnitComponent,
@@ -155,7 +157,8 @@ import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable
     DateComponent,
     TextAreaComponent,
     DatetimeComponent,
-    EditableLinkIdComponent
+    EditableLinkIdComponent,
+    HelpTextComponent
   ],
   imports: [
     BrowserModule,
@@ -164,6 +167,7 @@ import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable
     FontAwesomeModule,
     HttpClientModule,
     LayoutModule,
+    LfbDisableControlDirective,
     MatButtonModule,
     MatCardModule,
     MatExpansionModule,
@@ -186,7 +190,9 @@ import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable
     MatSelectModule,
     MatDialogModule,
     AutoCompleteComponent,
-    LabelComponent
+    LabelComponent,
+    CdkCopyToClipboard,
+    CodemirrorModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry},

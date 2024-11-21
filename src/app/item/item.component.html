@@ -1,10 +1,17 @@
+<div *ngIf="errorTooltip.showDropNotAllowedTooltip" class="not-allowed-tooltip" 
+     [ngStyle]="{ top: errorTooltip.tooltipMouseYLoc + 'px', left: errorTooltip.tooltipMouseXLoc + 'px' }">
+     {{errorTooltip.dropErrorMessage}}
+</div>
+
 <mat-sidenav-container>
         <mat-sidenav #drawer mode="side" opened class="p-1 bg-light" disableClose>
           <div class="sidenav-header p-1">Questions Tree&nbsp;<div tabindex="0" class="btn border-0 p-0 b-0" [matTooltip]="treeHelpMessage"
                                                                       [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage"
           ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></div
           ></div>
-          <span (focusin)="treeInitialFocus($event)">
+          <span (focusin)="treeInitialFocus($event)"
+                (mouseover)="onMouseOver($event)"
+                (dragover)="onMouseDragOver($event)" >
             <tree-root
               #tree
               [nodes]="itemList"
@@ -172,7 +179,7 @@
               (keyup.enter)="onInsertItem(myDrop, $event, node, 'AFTER')"
               (click)="onInsertItem(myDrop, $event, node, 'AFTER')"
       >Insert a new item <b>after</b> this</button>
-      <button ngbDropdownItem role="menuitem"
+      <button ngbDropdownItem role="menuitem" *ngIf="node.data.type !== 'display'"
               (keyup.enter)="onInsertItem(myDrop, $event, node, 'CHILD')"
               (click)="onInsertItem(myDrop, $event, node, 'CHILD')"
       >Insert a new <b>child</b> item</button>

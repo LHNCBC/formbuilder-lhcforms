@@ -1,29 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {StringComponent} from '../string/string.component';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
+import {fhirPrimitives} from '../../../fhir';
 import {Util} from '../../util';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
   selector: 'lfb-string-with-css',
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './string-with-css.component.html'
 })
 export class StringWithCssComponent extends StringComponent implements OnInit {
 
-  static RENDERING_STYLE_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/rendering-style';
-  cssValue: string;
-  // name: string;
-  elementTypeFieldFormProperty: FormProperty;
-  elementTypeFieldValue; any;
+  Util = Util;
+  extValObj = {};
+  elName: string;
+  elementTypeField: fhir.Element;
 
-  extensionTmpl: fhir.Extension = {
-    url: StringWithCssComponent.RENDERING_STYLE_EXT_URL
-  };
-
-
-  constructor(protected liveAnnouncer: LiveAnnouncer) {
-    super(liveAnnouncer);
+  constructor() {
+    super();
+    this.extValObj[Util.RENDERING_STYLE_EXT_URL] = '';
+    this.extValObj[Util.RENDERING_XHTML_EXT_URL] = '';
   }
 
 
@@ -33,61 +29,40 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
   ngOnInit() {
     super.ngOnInit();
     this.name = this.formProperty.canonicalPathNotation;
-    this.elementTypeFieldFormProperty = this.getCorrespondingFieldElementProperty();
-    this.elementTypeFieldValue = this.elementTypeFieldFormProperty?.value;
-    const ext = Util.findExtensionByUrl(this.elementTypeFieldValue?.extension,
-      StringWithCssComponent.RENDERING_STYLE_EXT_URL);
-    this.cssValue = ext?.valueString || '';
+    this.elName = '_' + this.name.replace(/^.*\./, '');
+    this.elementTypeField = this.formProperty.parent.getProperty(this.elName)?.value;
+    if(this.elementTypeField) {
+      [Util.RENDERING_STYLE_EXT_URL, Util.RENDERING_XHTML_EXT_URL].forEach((url) => {
+        const ext = Util.findExtensionByUrl(this.elementTypeField.extension, url);
+        this.extValObj[url] = ext?.valueString || '';
+      });
+    }
   }
 
 
   /**
-   * Handle change of css input
-   * @param cssString - new CSS input
+   * Handle change of css/xhtml extension value input
+   * @param extValue - new extension value
+   * @param extUrl - Util.RENDERING_STYLE_EXT_URL || Util.RENDERING_XHTML_EXT_URL
    */
-  cssChanged(cssString) {
-    const ind = Util.findExtensionIndexByUrl(
-      this.elementTypeFieldValue.extension, StringWithCssComponent.RENDERING_STYLE_EXT_URL);
-    let ext;
-    this.cssValue = cssString.trim();
-    if(this.cssValue) {
+  extChanged(extValue: string, extUrl: fhirPrimitives.url) {
+    const ind = Util.findExtensionIndexByUrl(this.elementTypeField.extension, extUrl);
+    let ext: fhir.Extension;
+    this.extValObj[extUrl] = extValue.trim();
+    if(this.extValObj[extUrl]) {
       if(ind < 0) {
-        ext = Object.assign({}, this.extensionTmpl);
+        ext = {url: extUrl};
+        this.elementTypeField.extension.push(ext);
       }
       else {
-        ext = this.elementTypeFieldValue.extension[ind];
+        ext = this.elementTypeField.extension[ind];
       }
-
-      ext.valueString = this.cssValue;
-      if(!this.elementTypeFieldValue.extension) {
-        this.elementTypeFieldValue.extension = [];
-      }
-      if(this.elementTypeFieldValue.extension.length === 0) {
-        this.elementTypeFieldValue.extension.push(ext);
-      }
+      ext.valueString = this.extValObj[extUrl];
     }
-    else if(ind >= 0) { // Empty value, remove any existing extension.
-      this.elementTypeFieldValue.extension.splice(ind, 1);
+    else if(ind >= 0) { // Empty value, delete the extension.
+      this.elementTypeField.extension.splice(ind, 1);
     }
 
-    this.elementTypeFieldFormProperty.reset(this.elementTypeFieldValue, false);
-  }
-
-
-  /**
-   * Get sibling FHIR element type field of this field. Ex: _text for text, _prefix for prefix.
-   */
-  getCorrespondingFieldElementProperty() {
-    let elName = this.formProperty?.canonicalPathNotation?.replace(/^.*\./, '');
-    elName = elName ? '_' + elName : null;
-    return this.formProperty.parent.getProperty(elName);
-  }
-
-  /**
-   * Create button label based on css content
-   */
-  cssButtonLabel() {
-    const labelPrefix = (this.cssValue && this.cssValue.trim().length > 0) ? 'Edit' : 'Add';
-    return labelPrefix + ' css styles';
+    this.formProperty.parent.getProperty(this.elName)?.reset(this.elementTypeField, false);
   }
 }

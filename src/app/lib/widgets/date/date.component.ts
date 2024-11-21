@@ -3,7 +3,6 @@ import {NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDateStruct} from
 import {StringComponent} from '../string/string.component';
 import {DateUtil} from '../../date-util';
 import {faCalendar} from '@fortawesome/free-solid-svg-icons';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Injectable()
 export class LfbDateAdapter extends NgbDateAdapter<string> {
@@ -53,8 +52,8 @@ export class DateComponent extends StringComponent implements AfterViewInit {
   @ViewChild('d', {read: ElementRef}) inputEl: ElementRef;
 
   calendar = inject(NgbCalendar);
-  constructor(protected liveAnnouncer: LiveAnnouncer) {
-    super(liveAnnouncer);
+  constructor() {
+    super();
     DateComponent.id++;
   }
 

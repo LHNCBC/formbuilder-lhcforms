@@ -1,11 +1,8 @@
 import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {SelectComponent} from '../select/select.component';
 import {RestrictionsComponent} from '../restrictions/restrictions.component';
-import fhir from 'fhir/r4';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
 import {fhirPrimitives} from '../../../fhir';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { FormService } from 'src/app/services/form.service';
 
 /**
  * Used to get acceptance from parent component. The parent should subscribe to service
@@ -35,8 +32,8 @@ export class RestrictionsOperatorComponent extends SelectComponent implements On
   rejectChange = new EventEmitter<{reject: boolean}>();
   @ViewChild('mySelect', {static: true}) mySelect: ElementRef;
 
-  constructor(private operatorService: RestrictionOperatorService, protected liveAnnouncer: LiveAnnouncer, protected formService: FormService) {
-    super(liveAnnouncer, formService);
+  constructor(private operatorService: RestrictionOperatorService) {
+    super();
   }
 
   ngOnInit() {

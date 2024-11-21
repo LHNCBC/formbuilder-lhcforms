@@ -1,5 +1,4 @@
 import {
-  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -54,21 +53,21 @@ export class BasePageComponent implements OnInit {
   @ViewChild('fileInput') fileInputEl: ElementRef;
   @ViewChild('loincSearchDlg') loincSearchDlg: TemplateRef<any>;
   @ViewChild('warnFormLoading') warnFormLoadingDlg: TemplateRef<any>;
+  @ViewChild('confirmCancel') cancelDlg: TemplateRef<any>;
   acceptedTermsOfUse = false;
   acceptedSnomed = false;
   lformsErrorMessage = null;
   // Accepted terms in localstorage expires in a week.
   weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
+  canceledEvent = false;
 
 
   constructor(private formService: FormService,
               private modelService: SharedObjectService,
               private modalService: NgbModal,
-              private activeModal: NgbActiveModal,
               private dataSrv: FetchService,
               public fhirService: FhirService,
               private appJsonPipe: AppJsonPipe,
-              private cdr: ChangeDetectorRef,
               private matDlg: MatDialog
               ) {
     this.acResult = null;
@@ -209,7 +208,15 @@ export class BasePageComponent implements OnInit {
       }
       window.addEventListener('message', msgListener);
       window.addEventListener('beforeunload', (event) => {
-        window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
+
+        const messageObj: any = {};
+        if(this.canceledEvent) {
+          messageObj.type = 'canceled';
+        } else {
+          messageObj.type = 'closed';
+          messageObj.questionnaire = Util.convertToQuestionnaireJSON(this.formValue);
+        }
+        window.opener.postMessage(messageObj, this.openerUrl);
       });
 
       window.opener.postMessage({type: 'initialized'}, this.openerUrl);
@@ -404,6 +411,7 @@ export class BasePageComponent implements OnInit {
     // configure lforms template options
     const lformsTemplateOptions = {
       options: {
+        allowHTML: true,
         displayScoreWithAnswerText: false // Not show scores
       }
     };
@@ -513,7 +521,7 @@ export class BasePageComponent implements OnInit {
    */
   close() {
     if(this.openerUrl) {
-      // window.opener.postMessage({type: 'closed', questionnaire: Util.convertToQuestionnaireJSON(this.formValue)}, this.openerUrl);
+      this.canceledEvent = false;
       window.close();
     }
     else {
@@ -521,6 +529,22 @@ export class BasePageComponent implements OnInit {
       if(!this.isDefaultForm()) {
         this.startOption = 'from_autosave';
       }
+    }
+  }
+
+  /**
+   * Cancel event handler.
+   *
+   * The Cancel button is visible when using window.open() API.
+   */
+  cancel() {
+    if(this.openerUrl) {
+      this.modalService.open(this.cancelDlg).result.then((result) => {
+        if(result) {
+          this.canceledEvent = true;
+          window.close();
+        }
+      });
     }
   }
 
