@@ -2,7 +2,7 @@
  * Util functions for playwright scripts
  */
 
-import {expect, Page} from "@playwright/test";
+import {Locator, Page} from "@playwright/test";
 import path from "path";
 import fs from "node:fs/promises";
 
@@ -47,5 +47,16 @@ export class PWUtils {
     await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
     const fbJson = JSON.parse(await PWUtils.getClipboardContent(page));
     return {fileJson, fbJson};
+  }
+
+  /**
+   * Get a table cell locator.
+   * @param table - Table locator.
+   * @param row - Row number, indexed from 1.
+   * @param column - Column number, indexed from 1
+   * @return Locator - Table cell locator.
+   */
+  static getTableCell(table: Locator, row: number, column: number): Locator {
+    return table.locator(`tbody tr:nth-child(${row}) > td:nth-child(${column})`);
   }
 }

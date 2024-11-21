@@ -11,7 +11,7 @@ test.describe('retain-additional-fields', async () => {
     await page.goto('/');
     mainPO = new MainPO(page);
     await mainPO.clearSession();
-    await mainPO.loadFLPage();
+    await mainPO.loadHomePage();
   });
 
   test('should retain contained field', async ({page}) => {

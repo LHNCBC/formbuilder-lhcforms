@@ -12,8 +12,7 @@ test.describe('preview-dlg-component.spec.ts', async () => {
     test.beforeEach(async ({page}) => {
       await page.goto('/');
       mainPO = new MainPO(page);
-      await mainPO.clearSession();
-      await mainPO.loadFLPage();
+      await mainPO.loadHomePage();
 
       // Set up mocks for http calls.
       // For R4 version

@@ -38,17 +38,17 @@
             helpMessage="Pick a default item"
             (focus)="onHideHeaderAriaLabel(false)"
           ></lfb-title>
-          <button type="button" class="btn btn-outline-primary p-1 unselect" matTooltip="Clear selection"
+          <button type="button" class="btn btn-link p-0 ps-1 border-0" matTooltip="Clear selection"
                   [attr.aria-hidden]="hideHeaderAriaLabel"
                   [attr.aria-label]="getClearSelectionLabel(getShowTableFields().length + 1)"
                   (focus)="onHideHeaderAriaLabel(false)"
-                  (click)="clearSelections()">&#x2326;</button>
+                  (click)="clearSelections()"><div class="m-0 p-0"><i class="material-icons" style="font-size: 20px">backspace</i></div></button>
         </th>
-        <th *ngIf="!singleItem" [ngClass]="{'col-sm-1': id !== 'answerOption', 'col-sm-half': id === 'answerOption', 'action-column': id === 'answerOption'}" ></th>
+        <th *ngIf="includeActionColumn" class="col-sm-half action-column" ></th>
       </tr>
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
-      <tr class="d-flex" *ngFor="let itemProperty of formProperty.properties; index as ind">
+      <tr class="d-flex" *ngFor="let itemProperty of formProperty.properties; index as ind; first as isFirst; last as isLast">
         <td *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
           <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
         </td>
@@ -60,17 +60,9 @@
           <input type="checkbox" [id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]"
                  (ngModelChange)="checkboxSelection($event)"  (focus)="onHideHeaderAriaLabel(true)">
         </td>
-        <td [ngClass]="{'d-none': formProperty.properties.length === 1, 'col-sm-1': id !== 'answerOption', 'col-sm-half': id === 'answerOption'}"
-            class="align-middle action-column">
-          <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
-                  [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
-                  *ngIf="!(schema.hasOwnProperty('minItems') &&
-                               schema.hasOwnProperty('maxItems') &&
-                               schema.minItems === schema.maxItems)"
-                  matTooltip="Remove" aria-label="Remove"
-          >
-            <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-        </td>
+        @if(includeActionColumn) {
+          <ng-container *ngTemplateOutlet="actionColumn; context: {index: ind, first: isFirst, last: isLast}"></ng-container>
+        }
       </tr>
       </tbody>
     </table>
@@ -86,3 +78,41 @@
     </button>
   </div>
 </div>
+
+<ng-template #actionColumn let-index="index" let-first="first" let-last="last">
+  <td class="action-column col-sm-half">
+    <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
+      <button (click)="removeProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
+              [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
+              *ngIf="!(schema.hasOwnProperty('minItems') &&
+                               schema.hasOwnProperty('maxItems') &&
+                               schema.minItems === schema.maxItems)"
+              matTooltip="Remove this row" aria-label="Remove this row"
+      ><fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
+      <ng-container *ngTemplateOutlet="moveActions; context: {index, first, last, disabled: isEmpty(index), isNextEmpty: isNextItemEmpty(index)}"></ng-container>
+    </div>
+  </td>
+</ng-template>
+
+<ng-template #moveActions let-index="index" let-first="first" let-last="last" let-disabled="disabled" let-nextEmpty="isNextEmpty">
+  <div class="ps-1 btn-group btn-group-sm">
+      <button type="button"
+              [disabled]="disabled"
+              matTooltip="Move this row up"
+              aria-label="Move this row up"
+              [ngClass]="{invisible: first}"
+              class="btn btn-link btn-sm p-0 border-0 rounded-0"
+              (click)="onMoveUp(index)">
+        <fa-icon [icon]="faMoveUp"></fa-icon>
+      </button>
+      <button type="button"
+              [disabled]="disabled || nextEmpty"
+              matTooltip="Move this row down"
+              aria-label="Move this row down"
+              [ngClass]="{invisible: last}"
+              class="btn btn-link btn-sm p-0 border-0 rounded-0"
+              (click)="onMoveDown(index)">
+        <fa-icon [icon]="faMoveDown"></fa-icon>
+      </button>
+  </div>
+</ng-template>

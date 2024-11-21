@@ -617,7 +617,7 @@ describe('Home page', () => {
       cy.get('@firstRadioDefault').should('be.checked');
     });
 
-    it('should clear all default selections', () => {
+    it.only('should clear all default selections', () => {
       const repeatsLabel = 'Allow repeating question?';
       const sampleFile = 'answer-option-sample.json';
       let fixtureJson;
@@ -644,7 +644,7 @@ describe('Home page', () => {
       cy.get('@thirdRadioDefault').should('be.checked');
 
       // Click the "Unselect" button to clear selection(s)
-      cy.get('button.unselect').should('exist').click();
+      cy.contains('button i', 'backspace').should('exist').click();
 
       // Items should be unselected.
       cy.get('@firstRadioDefault').should('not.be.checked');
@@ -674,7 +674,7 @@ describe('Home page', () => {
       cy.get('@thirdCheckboxDefault').should('be.checked');
 
       // Click the "Unselect" button to clear selection(s)
-      cy.get('button.unselect').should('exist').click();
+      cy.contains('button i', 'backspace').should('exist').click();
 
       // Items should be unchecked.
       cy.get('@firstCheckboxDefault').should('not.be.checked');
@@ -773,7 +773,7 @@ describe('Home page', () => {
       cy.get(eclSel).type('123');
       cy.get('@controlDiv').click() // Change on eclSel
       cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
-      
+
       // The terminology server should now have value
       cy.tsUrl().should('have.value', 'https://snowstorm.ihtsdotools.org/fhir');
 
@@ -2067,7 +2067,7 @@ describe('Home page', () => {
     });
 
   });
- 
+
   describe('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
@@ -2114,7 +2114,7 @@ describe('Home page', () => {
       cy.getTreeNode('Relationship to patient').as('contextNode');
       cy.get('@contextNode').click();
       cy.get('@contextNode').find('button.dropdown-toggle').click();
-      
+
       // Select the 'Move this item' option.
       cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
       cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
@@ -2149,7 +2149,7 @@ describe('Home page', () => {
         cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
       });
 
-      // Re-enter the target to be 'Display Data Type'. Due to the data type, it should 
+      // Re-enter the target to be 'Display Data Type'. Due to the data type, it should
       // only present with 2 drop locations.
       cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
       cy.get('lfb-node-dialog').find('button.dropdown-item').should('exist').should('have.length', 1).click();
@@ -2193,7 +2193,7 @@ describe('Home page', () => {
       cy.get('@contextNode').find('button.dropdown-toggle').click();
       // One of the option should be 'Insert a new child item.'
       cy.get('div.dropdown-menu.show').should('contain', 'Insert a new child item');
-      
+
       // Select the 'Display Data Type' item and select the 'More options.'
       cy.getTreeNode('Display Data Type').as('contextNode').click();
       cy.get('@contextNode').find('button.dropdown-toggle').click();

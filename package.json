@@ -62,7 +62,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.0",
     "@fullcalendar/core": "^6.1.5",
-    "@lhncbc/ngx-schema-form": "2.11.0-forked2",
+    "@lhncbc/ngx-schema-form": "file:../lhncbc-ngx-schema-form/lhncbc-ngx-schema-form-2.11.0-forked3.tgz",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0",
     "@types/fhir": "^0.0.36",
     "ace-builds": "^1.16.0",

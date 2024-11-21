@@ -7,7 +7,7 @@ test.describe('Window opener notice', async () => {
   test('should not exist if not opened by window.open() call', async ({page}) => {
     await page.goto('/');
     const mainPO = new MainPO(page);
-    await mainPO.loadFLPage();
+    await mainPO.loadHomePage();
     // Note: Trying to assert non-existent element that it should NOT exist.
     // However, after loading main page the element should have been attached,
     // if it was opened by window.open(). So, negative assertion has still some
@@ -36,8 +36,7 @@ test.describe('Open form builder in a new window', async () => {
     const newPage = await pagePromise;
     await newPage.waitForLoadState('domcontentloaded');
     mainPO = new MainPO(newPage);
-    await mainPO.clearSession();
-    await mainPO.loadFLPage();
+    await mainPO.loadHomePage();
     await expect(mainPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
   });
 
