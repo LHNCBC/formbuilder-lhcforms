@@ -15,10 +15,9 @@ import {
   ChangeDetectorRef,
   Component,
   DoCheck,
-  ElementRef,
+  ElementRef, inject,
   OnChanges,
-  OnDestroy,
-  OnInit,
+  OnInit, Renderer2,
   SimpleChanges
 } from '@angular/core';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
@@ -27,7 +26,6 @@ import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Subscription} from 'rxjs';
-import {Form} from "@angular/forms";
 
 @Component({
   selector: 'lfb-table',
@@ -66,7 +64,10 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   hideHeaderAriaLabel = true;
 
-  constructor(private elRef: ElementRef, private cdRef: ChangeDetectorRef) {
+  renderer = inject(Renderer2);
+  cdr = inject(ChangeDetectorRef);
+
+  constructor(private elRef: ElementRef) {
     super();
   }
   /**
@@ -145,7 +146,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
         if(this.rowSelection) {
           this.rowSelectionType = this.singleItem ? 'radio' : 'checkbox';
         }
-        this.cdRef.markForCheck();
+        this.cdr.markForCheck();
       });
       this.subscriptions.push(subscription);
     }
@@ -159,7 +160,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
         else if(newValue && this.rowSelection) {
           this.rowSelectionType = 'checkbox';
         }
-        this.cdRef.markForCheck();
+        this.cdr.markForCheck();
       });
       this.subscriptions.push(subscription);
     }
@@ -172,7 +173,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     subscription = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
       const showFields = this.getShowTableFields();
       this.noHeader = showFields.some((f) => f.noHeader);
-      this.cdRef.markForCheck();
+      this.cdr.markForCheck();
     });
 
     this.subscriptions.push(subscription);
@@ -388,6 +389,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     if(props.length > 1) {
       const deletedProps = props.splice(index, 1);
       props.splice(index - 1, 0, deletedProps[0]);
+      setTimeout(() => {
+        this.getInputElementInTable(index - 1, 0).focus();
+      });
     }
   }
 
@@ -400,6 +404,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     if(props.length > 1) {
       const deletedProps = props.splice(index, 1);
       props.splice(index + 1, 0, deletedProps[0]);
+      setTimeout(() => {
+        this.getInputElementInTable(index + 1, 0).focus();
+      });
     }
   }
 
@@ -423,5 +430,21 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       ret = Util.isEmpty(this.formProperty.properties[index + 1].value);
     }
     return ret;
+  }
+
+  /**
+   * Check if the previous item is empty. Used to disable up arrow.
+   * @param event - Index of the row.
+   */
+  highlight(event: Event) {
+    this.renderer.addClass(event.currentTarget, 'row-highlight');
+  }
+
+  /**
+   * Check if the previous item is empty. Used to disable up arrow.
+   * @param event - Index of the row.
+   */
+  unHighlight(event: Event) {
+    this.renderer.removeClass(event.currentTarget, 'row-highlight');
   }
 }

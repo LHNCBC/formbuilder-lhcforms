@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.10.0] 2024-11-21
+## [9.7.0] 2024-11-21
 ### Added
 - Added feature to re-order answer options in a question item.
 

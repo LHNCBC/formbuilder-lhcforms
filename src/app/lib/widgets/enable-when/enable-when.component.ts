@@ -18,8 +18,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   showHeaderFields: any[];
   warningIcon = faExclamationTriangle;
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef, private cdr: ChangeDetectorRef) {
-    super(elementRef, cdr);
+  constructor(private elementRef: ElementRef) {
+    super(elementRef);
   }
 
   ngOnInit() {
