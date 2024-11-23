@@ -1,0 +1,71 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "title": "CSS styles and XHTML sample",
+  "item": [
+    {
+      "type": "string",
+      "linkId": "1",
+      "text": "Question text: plain text",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "color: red; /*Question text: CSS*/"
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-xhtml",
+            "valueString": "Question text: <b>XHTML</b>"
+          }
+        ]
+      },
+      "prefix": "Prefix: plain text",
+      "_prefix": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "color: red; /*Prefix: CSS*/"
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-xhtml",
+            "valueString": "Prefix: <b>XHTML</b>"
+          }
+        ]
+      },
+      "item": [
+        {
+          "text": "Help text: plain text",
+          "linkId": "helpText1",
+          "type": "display",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "text": "Help-Button",
+                "coding": [
+                  {
+                    "code": "help",
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "display": "Help-Button"
+                  }
+                ]
+              }
+            }
+          ],
+          "_text": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+                "valueString": "color: red; /*Help text: CSS*/"
+              },
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/rendering-xhtml",
+                "valueString": "Help text: <b>XHTML</b>"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

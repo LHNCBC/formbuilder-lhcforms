@@ -2,17 +2,28 @@
  * Customized pull down box.
  */
 import {AfterViewInit, Component, inject, Input} from '@angular/core';
-import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+import {faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+import { StringComponent } from '../string/string.component';
+import { FormService } from '../../../services/form.service';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
-import {FormService} from '../../../services/form.service';
 
 @Component({
   selector: 'lfb-select',
-  templateUrl: './select.component.html'
+  templateUrl: './select.component.html',
+  styles: [`
+    select.invalid {
+      outline:2px solid red;
+    }
+    #error {
+      margin-right: 5px;
+    }
+  `]
 })
-export class SelectComponent extends LfbControlWidgetComponent implements AfterViewInit {
+export class SelectComponent extends StringComponent implements AfterViewInit {
   faInfo = faInfoCircle;
   nolabel = false;
+  errorIcon = faExclamationTriangle;
+  
   formService = inject(FormService);
 
   // A mapping for options display string. Typically, the display strings are from schema definition.
@@ -42,15 +53,6 @@ export class SelectComponent extends LfbControlWidgetComponent implements AfterV
     if(this.schema.widget.addEmptyOption) {
       this.allowedOptions.unshift({value: null, label: 'None'});
     }
-  }
-
-  /**
-   * Recheck the options for the data type. 
-   */
-  onSelectFocus(): void {
-    this.allowedOptions = this.allowedOptions.filter((e) => {
-      return this.isTypeAllowed(e.value);
-    });
   }
 
   /**

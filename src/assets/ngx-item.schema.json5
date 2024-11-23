@@ -19,6 +19,14 @@
         "id": "hidden"
       }
     },
+    "__$treeNodeId": {
+      "description": "Internal unique id used to differentiate individual nodes within a tree structure. It is also used for validation error handling.",
+      "title": "Tree Node Id",
+      "type": "string",
+      "widget": {
+        "id": "hidden"
+      }
+    },
     "type": {
       "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.). Header implies group if it has children. No children implies display type",
       "enum": [
@@ -102,7 +110,6 @@
           {"field": "operator", "col": 7, "nolabel": true},
           {"field": "value", "col": 4, "nolabel": true}
         ]
-
       }
     },
     "maxLength": {
@@ -144,10 +151,16 @@
     },
     "linkId": {
       "description": "An identifier that is unique within the Questionnaire allowing linkage to the equivalent item in a QuestionnaireResponse resource.",
-      "title": "Link id",
-      "pattern": "^[ \\r\\n\\t\\S]+$",
       "type": "string",
-      "widget": {"id": "hidden"}
+      "title": "Link Id",
+
+      "widget": {
+        "id": "editable-link-id",
+        "note": "* Link ID is mandatory for each item, and must be unique across the questionnaire. If you change it, make sure to update any places in the questionnaire that reference the link ID.",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0"
+      }
     },
     "definition": {
       "description": "This element is a URI that refers to an [[[ElementDefinition]]] that provides information about this item, including information that might otherwise be included in the instance of the Questionnaire resource. A detailed description of the construction of the URI is shown in Comments, below. If this element is present then the following element values MAY be derived from the Element Definition if the corresponding elements of this Questionnaire resource instance have no value:\n\n* code (ElementDefinition.code) \n* type (ElementDefinition.type) \n* required (ElementDefinition.min) \n* repeats (ElementDefinition.max) \n* maxLength (ElementDefinition.maxLength) \n* answerValueSet (ElementDefinition.binding)\n* options (ElementDefinition.binding).",
@@ -253,7 +266,7 @@
         "id": "string-with-css",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-3 p-0"
+        "controlClasses": "col p-0"
       }
     },
     "_prefix": {
@@ -1046,6 +1059,79 @@
         "controlClasses": "col-auto btn-group btn-group-sm p-0"
       }
     },
+    "__$itemControlGroup": {
+      // Proxy for item control extension.
+      "description": "Choose the type of control for the 'Group' data type. Some item controls are not supported by the LHC-Forms preview, as indicated by the asterisk (*) symbol.",
+      "title": "Group Item Control",
+      "oneOf": [
+        {
+          'enum': ["list"],
+          'display': 'List',
+          'description': 'Questions within the group should be presented sequentially.',
+          'support': true
+        },
+        {
+          'enum': ["table"],
+          'display': 'Vertical Answer Table',
+          'description': 'For \'choice\' questions, the table representation should have questions as rows and answers as columns. Ensure option sets are consistent within a group. Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
+          'support': true
+        },
+        {
+          'enum': ["htable"],
+          'display': 'Horizontal Answer Table',
+          'description': 'For \'choice\' questions, the table representation should have questions as columns and answers as rows. Ensure option sets are consistent within a group.  Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
+          'support': false
+        },
+        {
+          'enum': ["gtable"],
+          'display': 'Group Table',
+          'description': 'Questions within the group should be presented as columns in the table, with each group repetition forming a new row. This arrangement is suitable for single-answer questions.',
+          'support': true
+        },
+        {
+          'enum': ["grid"],
+          'display': 'Group Grid',
+          'description': 'Within a \'grid\' group, child items of type=\'group\' represents rows. Questions nested within these row groups are arranged as columns. The grid layout may be fully populated or sparse. Questions can support various data types and answer choices.',
+          'support': false
+        },
+        {
+          'enum': ["header"],
+          'display': 'Header',
+          'description': 'The group should always be visible at the top of the form\'s display area.',
+          'support': false
+        },
+        {
+          'enum': ["footer"],
+          'display': 'Footer',
+          'description': 'The group should always be visible at the bottom of the form\'s display area.',
+          'support': false
+        },
+        {
+          'enum': ["page"],
+          'display': 'Page',
+          'description': 'A page group designation indicates that the content within it should be treated as a single logical unit for rendering. When rendering, all enabled items within the page should be displayed simulatenously, while subsequent groups remain hidden until the user moves to their page. Header and footer groups are typically displayed on all pages. However, items positioned before a page group are considered as being on a separate page.',
+          'support': false
+        },
+        {
+          'enum': ["tab-container"],
+          'display': 'Tab Container',
+          'description': 'A group with this designation represents a collection of tabs. All child items must be of type \'group\'. Child groups cannot directly declare item controls. Each child group serves as a tab within the tab container, with its \'item.text\' property used as the tab label.',
+          'support': false
+        }
+      ],
+      "default": "list",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'group'"]
+      },
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-9 btn-group btn-group-sm p-0",
+        "note": "(1) - not supported by LHC-Forms preview."
+      }
+    },
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
       "title": "Terminology server",
@@ -1465,6 +1551,7 @@
         "type": ["$EXP$ target.value != 'display'"]
       }
     },
+
     "__$units": {
       "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
       "title": "Units",
@@ -1480,15 +1567,94 @@
         "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal' || target.value == 'quantity'"]
       }
     },
+    /** Proxy for help text. Help text is represented by a child item.
+     In form builder, to avoid child item to represent like a child question, the help text child item
+      is converted to a proxy field __$helpText. Its _ element is this:
+    item: [{
+      text: 'Plain help text'
+      type: 'display',
+      extension: [{
+        url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+        valueCodeableConcept: {
+          text: 'Help-Button',
+          coding: [{
+            code: 'help',
+            system: 'http://hl7.org/fhir/questionnaire-item-control'
+          }]
+        }
+      }],
+      // The following _text element is used to specify rendering style and rendering xhtml
+      _text: {
+        extension: [{
+          url: 'http://hl7.org/fhir/StructuredDefinition/rendering-style',
+          valueString: 'css string'
+        },
+        {
+          url: 'http://hl7.org/fhir/StructuredDefinition/rendering-xhtml',
+          valueString: 'xhtml string'
+        }
+      }
+    }]
+    // While input for plain text help is represented by the following __$helpText (string type), the
+    // _text (Element type) of help text item is represented by ___$helpText below
+    */
     "__$helpText": {
       "description": "Text is displayed in a dialog box or similar control if invoked by pushing a button or some other UI-appropriate action to request 'help' for a question, group or the questionnaire as a whole (depending what the text is nested within)",
       "title": "Help text",
-      "type": "string",
+      "type": "object",
+      "properties": {
+        "linkId": {
+          "description": "Help text for question.",
+          "title": "Help text",
+          "pattern": "^[^\\s]+( [^\\s]+)*$",
+          "type": "string",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "type": {
+          "enum": ['display'],
+          "type": "string",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "text": {
+          "description": "Help text for question.",
+          "title": "Help text",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {
+            "id": "string-with-css",
+            "labelPosition": "left",
+            "labelClasses": "col-sm-2 p-0 pe-1",
+            "controlClasses": "col p-0",
+          }
+        },
+        "_text": {
+          "$ref": "#/definitions/Element",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "title": "Extensions for text",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+      },
+      "additionalProperties": true,
       "widget": {
         "id": "help-text",
         "labelPosition": "left",
         "labelClasses": "col-sm-2 p-0 pe-1",
-        "controlClasses": "col-sm form-control form-control-sm p-1"
+        "controlClasses": "col p-0"
       }
     },
     "__$end": {
@@ -1590,7 +1756,7 @@
       ],
       "showFields": [
         {
-          "field": "__$units",
+          "field": "__$helpText",
           "col": 12
         }
       ]
@@ -1635,6 +1801,17 @@
       "showFields": [
         {
           "field": "__$itemControl",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$itemControlGroup"
+      ],
+      "showFields": [
+        {
+          "field": "__$itemControlGroup",
           "col": 12
         }
       ]
@@ -1728,7 +1905,7 @@
       ]
     },
     {
-      "fields": ["id", "extension", "modifierExtension", "definition"]
+      "fields": ["id", "__$treeNodeId", "extension", "modifierExtension", "definition"]
     }
   ],
   "steps": [

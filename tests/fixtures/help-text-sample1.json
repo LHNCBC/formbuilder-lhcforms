@@ -1,0 +1,102 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "title": "Help text sample",
+  "item": [
+    {
+      "id": "100",
+      "linkId": "lp1",
+      "text": "Parent",
+      "type": "group",
+      "item": [
+        {
+          "id": "101",
+          "linkId": "l1",
+          "text": "First",
+          "type": "string",
+          "item": [
+            {
+              "text": "First item help, plain text",
+              "type": "display",
+              "linkId": "l1-help",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "text": "Help-Button",
+                    "coding": [
+                      {
+                        "code": "help",
+                        "display": "Help-Button",
+                        "system": "http://hl7.org/fhir/questionnaire-item-control"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "l2",
+          "text": "Second",
+          "type": "string",
+          "item": [
+            {
+              "text": "<code>Text</code> instructions, with a <button class='testButton'>button</button>A plain text instruction on second item. HTML should be escaped.",
+              "type": "display",
+              "linkId": "/54126-8/54131-8-help",
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "text": "Help-Button",
+                    "coding": [
+                      {
+                        "code": "help",
+                        "display": "Help-Button",
+                        "system": "http://hl7.org/fhir/questionnaire-item-control"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "_text": {
+                "extension": [{
+                  "url": "http://hl7.org/fhir/StructureDefinition/rendering-xhtml",
+                  "valueString": "<code>HTML</code> instructions, with a <button class='testButton'>button</button>. Html instruction on second item"
+                }]
+              }
+            }
+          ]
+        },
+        {
+          "text": "A <b>plain</b> text instruction on parent item. HTML should be escaped.",
+          "type": "display",
+          "linkId": "parent-help",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "text": "Help-Button",
+                "coding": [
+                  {
+                    "code": "help",
+                    "display": "Help-Button",
+                    "system": "http://hl7.org/fhir/questionnaire-item-control"
+                  }
+                ]
+              }
+            }
+          ],
+          "_text": {
+            "extension": [{
+              "url": "http://hl7.org/fhir/StructureDefinition/rendering-xhtml",
+              "valueString": "<code>HTML</code> instructions, with a <button class='testButton'>button</button>. Html instruction on parent item"
+            }]
+          }
+        }
+      ]
+    }
+  ]
+}

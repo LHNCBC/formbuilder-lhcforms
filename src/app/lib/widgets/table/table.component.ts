@@ -305,6 +305,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
 
   /**
+   * Overriding parent method.
+   *
    * Remove a given item, i.e. a row in the table.
    *
    * Before calling parent class api to remove the item, we need to do some housekeeping with respect to table's
