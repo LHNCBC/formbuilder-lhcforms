@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.11] 2024-10-24
+### Fixed
+- Fix bug in units when adding a number type question from LOINC.
+
 ## [9.6.10] 2024-11-01
 ### Added
 - Added functionality for item validation and corresponding error display.
