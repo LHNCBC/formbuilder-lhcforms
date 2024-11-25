@@ -40,7 +40,6 @@ import { AppFormElementComponent } from './lib/widgets/form-element/form-element
 import { TitleComponent } from './lib/widgets/title/title.component';
 import { ElementChooserComponent } from './lib/widgets/element-chooser/element-chooser.component';
 import { AutoCompleteComponent } from './lib/widgets/auto-complete/auto-complete.component';
-import { RadioComponent } from './lib/widgets/radio/radio.component';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import {MatSelectModule} from '@angular/material/select';
@@ -110,7 +109,6 @@ import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
     AppFormElementComponent,
     TitleComponent,
     ElementChooserComponent,
-    RadioComponent,
     HeaderComponent,
     FooterComponent,
     EnableWhenSourceComponent,

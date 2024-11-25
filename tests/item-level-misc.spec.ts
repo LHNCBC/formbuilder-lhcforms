@@ -8,14 +8,30 @@ test.describe('item-level fields', async () => {
   test.beforeEach(async ({page}) => {
     await page.goto('/');
     mainPO = new MainPO(page);
-    await mainPO.loadFLPage();
+    await mainPO.loadILPage();
+  });
+
+  test('should show correct units when adding loinc question of a decimal type', async ({page}) => {
+    await page.getByRole('button', {name: 'Add new item from LOINC'}).click();
+    const dlg = page.getByRole('dialog', {name: 'Add LOINC item'});
+    await expect(dlg).toBeVisible();
+    await dlg.getByLabel('Question').click();
+    const inputEl = dlg.getByLabel('Search for a LOINC item:');
+    await inputEl.fill('body weight');
+    await expect(dlg.getByRole('listbox')).toBeVisible();
+    // await inputEl.fill('body weight');
+    await page.keyboard.press('Enter');
+    await expect(inputEl).toHaveValue('18833-4: Body weight');
+    await page.getByRole('button', {name: 'Add'}).click();
+
+    await expect(page.getByLabel('Units', {exact: true})).toHaveValue('kilogram');
   });
 
   test('should import help text item from file and localstorage', async ({page, browser}) => {
     const newHelpText = 'testing help text from localstorage';
     const helpTextInputEl = page.getByLabel('Help text', {exact: true});
     const helpString = /^A <b>plain<\/b> text instruction/;
-    await PWUtils.uploadFile(page, 'fixtures/help-text-sample1.json');
+    await PWUtils.uploadFile(page, 'fixtures/help-text-sample1.json', true);
     await page.getByRole('button', {name: 'Edit questions'}).click();
     await expect(helpTextInputEl).toHaveValue(helpString);
     const qJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
