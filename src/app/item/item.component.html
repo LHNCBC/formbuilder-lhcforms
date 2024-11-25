@@ -9,7 +9,7 @@
                                                                       [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage"
           ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></div
           ></div>
-          <span (focusin)="treeInitialFocus($event)" 
+          <span (focusin)="treeInitialFocus($event)"
                 (mouseover)="onMouseOver($event)"
                 (dragover)="onMouseDragOver($event)" >
             <tree-root
@@ -44,11 +44,15 @@
                 <div [ngClass]="node.nodeClass" class="d-flex" #tooltip="matTooltip" [matTooltip]="node.displayField">
                   <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span>
                   <span aria-hidden="true" class="text-truncate flex-fill node-display-field" [ngClass]="node.nodeClass">{{node.displayField}}</span>
+                  <fa-icon id="error" *ngIf="hasError(node)" [icon]="errorIcon" style="color: red" aria-hidden="!!errors"></fa-icon>&nbsp;
                   <ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container>
                 </div>
               </ng-template>
               <ng-template #loadingTemplate><span></span></ng-template>
             </tree-root>
+            <small class="text-danger form-text sr-only" role="alert" *ngIf="validationErrorsAllItemsErrorStr !== ''" >
+              {{validationErrorsAllItemsErrorStr}}
+            </small>
           </span>
         </mat-sidenav>
         <mat-sidenav-content>
@@ -65,22 +69,27 @@
               <li>
                 The questions are organized in hierarchical tree on the left side. Select the desired item to edit their properties here.
               </li>
-              <li *ngIf="errors$ | async" class="text-danger list-group-item-warning"
+              <li *ngIf="(errors$ | async) || isTreeNodeError" class="text-danger list-group-item-warning"
                   role="region" aria-live="assertive">{{errorMessage}}</li>
+              <li *ngIf="isChildTreeNodeError" class="text-danger list-group-item-warning"
+                  role="region" aria-live="assertive">{{childErrorMessage}}</li>
             </ul>
           </div>
           <hr/>
           <ng-container *ngIf="editType === 'ui'">
             <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
             <lfb-ngx-schema-form #uiEditor [model]="itemData" (valueChange)="itemChanged($event)"
-                                 (errorsChanged)="onErrorsChanged($event)"></lfb-ngx-schema-form>
+                                 (errorsChanged)="onErrorsChanged($event)"
+                                 (validationErrorsChanged)="onValidationErrorsChanged($event)"></lfb-ngx-schema-form>
           </ng-container>
           <ng-container *ngIf="editType === 'json'">
             <lfb-item-json-editor #jsonEditor></lfb-item-json-editor>
           </ng-container>
           <ul>
-            <li *ngIf="errors$ | async" class="text-danger list-group-item-warning"
+            <li *ngIf="(errors$ | async) || isTreeNodeError" class="text-danger list-group-item-warning"
                 aria-hidden="true">{{errorMessage}}</li>
+            <li *ngIf="isChildTreeNodeError" class="text-danger list-group-item-warning"
+                role="region" aria-live="assertive">{{childErrorMessage}}</li>
           </ul>
           <hr/>
           <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with item action buttons">

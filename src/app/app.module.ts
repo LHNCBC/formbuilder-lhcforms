@@ -88,8 +88,10 @@ import { DateComponent } from './lib/widgets/date/date.component';
 import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
 import {LabelComponent} from './lib/widgets/label/label.component';
+import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable-link-id.component';
 import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
 import {CodemirrorModule} from "@ctrl/ngx-codemirror";
+import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
 
 @NgModule({
   declarations: [
@@ -139,7 +141,6 @@ import {CodemirrorModule} from "@ctrl/ngx-codemirror";
     RestrictionsComponent,
     RestrictionsOperatorComponent,
     ObservationLinkPeriodComponent,
-    LfbDisableControlDirective,
     LfbSpinnerComponent,
     EnableWhenComponent,
     QuantityUnitComponent,
@@ -154,40 +155,43 @@ import {CodemirrorModule} from "@ctrl/ngx-codemirror";
     DateComponent,
     TextAreaComponent,
     DatetimeComponent,
+    EditableLinkIdComponent,
+    HelpTextComponent
   ],
-    imports: [
-        BrowserModule,
-        BrowserAnimationsModule,
-        FormsModule,
-        FontAwesomeModule,
-        HttpClientModule,
-        LayoutModule,
-        MatButtonModule,
-        MatCardModule,
-        MatExpansionModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        MatListModule,
-        MatMenuModule,
-        MatRadioModule,
-        MatSidenavModule,
-        MatStepperModule,
-        MatTabsModule,
-        MatToolbarModule,
-        MatTooltipModule,
-        NgbModule,
-        SchemaFormModule.forRoot(),
-        TreeModule,
-        ReactiveFormsModule,
-        MatAutocompleteModule,
-        MatSelectModule,
-        MatDialogModule,
-        AutoCompleteComponent,
-        LabelComponent,
-        CdkCopyToClipboard,
-        CodemirrorModule
-    ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    FormsModule,
+    FontAwesomeModule,
+    HttpClientModule,
+    LayoutModule,
+    LfbDisableControlDirective,
+    MatButtonModule,
+    MatCardModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatListModule,
+    MatMenuModule,
+    MatRadioModule,
+    MatSidenavModule,
+    MatStepperModule,
+    MatTabsModule,
+    MatToolbarModule,
+    MatTooltipModule,
+    NgbModule,
+    SchemaFormModule.forRoot(),
+    TreeModule,
+    ReactiveFormsModule,
+    MatAutocompleteModule,
+    MatSelectModule,
+    MatDialogModule,
+    AutoCompleteComponent,
+    LabelComponent,
+    CdkCopyToClipboard,
+    CodemirrorModule
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry},
     AppJsonPipe]
