@@ -12,7 +12,6 @@ import {ExtensionsService} from '../../../services/extensions.service';
 import {StringComponent} from '../string/string.component';
 import {fhirPrimitives} from '../../../fhir';
 
-
 interface ObservationLinkPeriodExtension {
   url: fhirPrimitives.url,
   valueDuration: {

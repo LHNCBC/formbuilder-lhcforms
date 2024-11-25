@@ -1,0 +1,61 @@
+/* CSS for multi-row buttons */
+.btn-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -1px;
+}
+
+.btn-wrapper {
+  display: inline-flex;
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.btn-wrapper:first-child label {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.btn-wrapper:last-child label {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.text-container {
+  margin: 0;
+  padding: 0;
+}
+
+.vertical-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+label.btn {
+  margin: 0;
+  border-radius: 0;
+}
+
+.btn span.not-supported {
+  font-weight: bold;
+}
+
+button.group-item-control-unselect {
+  padding-right:2px !important;
+  border: 0;
+  font-size: 24px;
+  width: 35px;
+  height: 30px;
+  line-height: 0.4;
+  vertical-align: middle;
+  transform: scaleX(-1);
+  font-family: 'Roboto', sans-serif;
+  border-radius: 4px;
+}
+
+.action-column {
+  text-align: center;
+}

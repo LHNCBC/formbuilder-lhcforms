@@ -49,10 +49,58 @@ describe('Util', () => {
                     `In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.`;
     const target2 = `See the ECL documentation link for more information, or try the ECL Builder in the SNOMED CT Browser link. ` +
                     `In the browser, under the 'Expression Constraint Queries' tab, click the 'ECL Builder' button.`;
-    
+
     expect(Util.removeAnchorTagFromString(str, replaceWith1, 'before')).toBe(target1);
     expect(Util.removeAnchorTagFromString(str, replaceWith2, 'after')).toBe(target2);
     expect(Util.removeAnchorTagFromString(strNoAnchors, replaceWith1, 'before')).toBe(strNoAnchors);
-    
+
+  });
+
+  it('should convert lforms units to FHIR extensions', () => {
+    const testCases = [{
+      dataType: 'quantity',
+      lformsUnits: [{unit: 'kg'}, {unit: '[lb_av]'}],
+      fhirExtensions: [{
+        url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption',
+        valueCoding: {
+          code: 'kg',
+          system: 'http://unitsofmeasure.org',
+          display: 'kilogram'
+        }
+      }, {
+        url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption',
+        valueCoding: {
+          code: '[lb_av]',
+          system: 'http://unitsofmeasure.org',
+          display: 'pound'
+        }
+      }]
+    }, {
+      dataType: 'decimal',
+      lformsUnits: [{unit: 'kg'}, {unit: '[lb_av]'}],
+      fhirExtensions: [{
+        url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit',
+        valueCoding: {
+          code: 'kg',
+          system: 'http://unitsofmeasure.org',
+          display: 'kilogram'
+        }
+      }]
+    }, {
+      dataType: 'integer',
+      lformsUnits: [{unit: '[lb_av]'}, {unit: 'kg'}],
+      fhirExtensions: [{
+        url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit',
+        valueCoding: {
+          code: '[lb_av]',
+          system: 'http://unitsofmeasure.org',
+          display: 'pound'
+        }
+      }]
+    }];
+
+    testCases.forEach((tCase) => {
+      expect(Util.convertUnitsToExtensions(tCase.lformsUnits, tCase.dataType)).toEqual(tCase.fhirExtensions);
+    });
   });
 });

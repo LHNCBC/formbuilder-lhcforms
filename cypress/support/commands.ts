@@ -441,6 +441,50 @@ Cypress.Commands.add('tsUrl', () => {
 });
 
 /**
+ * Get input field for editable link id
+ */
+Cypress.Commands.add('editableLinkId', () => {
+  return cy.get('[id="linkId"]');
+});
+
+/**
+ * Check whether a specific error message is currently displayed in the UI for the linkId field.
+ * @param errorMessage - the error message to validate.
+ */
+Cypress.Commands.add('checkLinkIdErrorIsDisplayed', (errorMessage) => {
+  // The link id text input should be outline in red
+  cy.editableLinkId()
+    .should('have.class', 'invalid');
+     // The error message should display at the bottom of the text input
+  cy.get('lfb-editable-link-id')
+    .find('small.text-danger')
+    .should('be.visible')
+    .should('contain.text', errorMessage);
+
+  // Error should display at the top of the content and at the bottom.
+  cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('have.class', 'text-danger');
+  cy.get('mat-sidenav-content > ul > li').should('have.class', 'text-danger');
+
+});
+
+/**
+ * Check whether the error message for the linkId field is no longer displayed in the UI.
+ */
+Cypress.Commands.add('checkLinkIdErrorIsNotDisplayed', () => {
+  // The link id text input should not have outline in red
+  cy.editableLinkId()
+    .should('not.have.class', 'invalid');
+  // The error message should not be displayed at the bottom of the text input
+  cy.get('lfb-editable-link-id')
+    .find('small.text-danger')
+    .should('not.exist');
+
+  // Error should not be displayed at the top of the content and at the bottom.
+  cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('not.have.class', 'text-danger');
+  cy.get('mat-sidenav-content > ul > li').should('not.exist');
+});
+
+/**
  * Expand advanced panel
  */
 Cypress.Commands.add('expandAdvancedFields',() => {

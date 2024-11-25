@@ -22,7 +22,7 @@ interface UnitExtension {
   template: `
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
       <lfb-label *ngIf="!nolabel"
-                 [for]="id"
+                 [for]="elementId"
                  [title]="schema.title"
                  [helpMessage]="schema.description"
                  [ngClass]="labelWidthClass+' ps-0 pe-1'"
@@ -121,6 +121,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
         }
         else {
           this.autoComp.setFieldVal(dispVal);
+          break;
         }
       }
     });

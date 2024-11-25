@@ -9,11 +9,14 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
     <ng-template #controller>
       <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
         <lfb-label [title]="label"
+                   [for]="'booleanControlled_'+_id"
                    [helpMessage]="helpMessage"
                    [ngClass]="labelClasses"
+                   [labelId]="'label_booleanControlled_'+_id"
         ></lfb-label>
 
-        <div [ngClass]="controlClasses" role="radiogroup" [attr.aria-label]="label">
+        <div [ngClass]="controlClasses" role="radiogroup"
+             [attr.aria-labelledby]="'label_booleanControlled_'+_id" [attr.id]="'booleanControlled_'+_id">
           <ng-container *ngFor="let option of ['No', 'Yes']" >
             <input
               autocomplete="off"

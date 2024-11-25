@@ -13,9 +13,8 @@ import {CommonModule} from '@angular/common';
   selector: 'lfb-label',
   imports: [CommonModule, MatTooltipModule, FontAwesomeModule],
   template: `
-    <label *ngIf="title" [attr.for]="for" class="col-form-label align-self-center p-0"
+    <label *ngIf="title" [attr.for]="for" class="col-form-label align-self-center p-0" [attr.id]="labelId"
     >{{title}}&nbsp;</label><div *ngIf="helpMessage" tabindex="0" class="btn border-0 p-0 b-0" [matTooltip]="helpMessage"
-                            
                             [attr.aria-label]="'Tooltip for '+title+': '+helpMessage"
     ><fa-icon [icon]="helpIcon" aria-hidden="true"></fa-icon></div
     >
@@ -36,5 +35,7 @@ export class LabelComponent {
   for: string;
   @Input()
   labelWidthClass: string;
+  @Input()
+  labelId: string;
   constructor() { }
 }

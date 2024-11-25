@@ -11,7 +11,11 @@
             [formControl]="control"
             name="{{name}}"
             [attr.id]="id"
-            (focus)="onSelectFocus()"
+
+            [ngClass]="{invalid: errors}"
+            [attr.aria-invalid]="errors"
+            (focus)="announceErrors()"
+
             [attr.disabled]="schema.readOnly ? '' : null"
             class="form-select form-select-sm">
       <ng-container *ngIf="schema.oneOf; else use_enum">
@@ -28,11 +32,24 @@
             [formControl]="control"
             name="{{name}}"
             [attr.id]="id"
+
+            [ngClass]="{invalid: errors}"
+            [attr.aria-invalid]="errors"
+            (focus)="announceErrors()"
+
             [attr.disabled]="schema.readOnly ? '' : null">
       <option *ngFor="let option of schema.items.oneOf"
               [ngValue]="option.enum[0]"
               [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
     </select>
+
+    <ng-container *ngFor="let error of errors">
+      <fa-icon id="error" [icon]="errorIcon" style="color: red"></fa-icon>
+      <small *ngIf="formProperty.value && error"
+             class="text-danger form-text" role="alert"
+      >{{error.modifiedMessage || error.originalMessage}}</small>
+    </ng-container>
+
     </div>
     <input *ngIf="schema.readOnly" name="{{name}}" type="hidden" [formControl]="control">
   </div>

@@ -1,14 +1,15 @@
 <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
   <lfb-label *ngIf="!nolabel"
-             [for]="elementId"
+             [for]="'rg_'+elementId"
              [title]="schema.title"
              [helpMessage]="schema.description"
              [ngClass]="labelClasses"
+             [labelId]="'label_rg_'+elementId"
   ></lfb-label>
 
   <div [ngClass]="controlClasses">
 
-    <div class="btn-group btn-group-sm">
+    <div class="btn-group btn-group-sm" role="radiogroup" [attr.id]="'rg_'+elementId" [attr.aria-labelledby]="'label_rg_'+elementId">
       <ng-container *ngFor="let option of ['No', 'Yes']">
         <input type="radio" class="btn-check" name="showOlp"
                [attr.id]="'radio_'+option+'_'+elementId"

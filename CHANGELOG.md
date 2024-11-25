@@ -2,9 +2,31 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.6.8] 2024-10-03
+## [9.6.12] 2024-11-25
 ### Changed
 - Change background color of the focused node on the sidebar tree
+
+## [9.6.11] 2024-11-25
+### Fixed
+- Fix bug in units when adding a number type question from LOINC.
+### Changed
+- Added aria-labels to radio group elements to improve accessibility.
+
+## [9.6.10] 2024-11-01
+### Added
+- Added functionality for item validation and corresponding error display.
+- Added editable link id field.
+
+## [9.6.9] 2024-10-17
+### Changed
+- Added Group Item Control options.
+
+## [9.6.8] 2024-09-18
+### Fixed
+- Fixed help item showing as a node in the tree.
+### Added
+- Added support for extensions of rendering styles and rendering xhtml to
+- question text, prefix and help text fields.
 
 ## [9.6.7] 2024-10-03
 ### Changed
