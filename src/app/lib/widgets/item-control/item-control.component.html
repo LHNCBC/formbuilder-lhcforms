@@ -3,10 +3,11 @@
              [for]="id"
              [title]="schema.title"
              [helpMessage]="schema.description"
-             [ngClass]="labelClasses">
+             [ngClass]="labelClasses"
+             [labelId]="'label_'+id">
   </lfb-label>
   <div *ngIf="dataType === 'group'" [ngClass]="controlClasses+' m-auto ms-0 vertical-container d-flex flex-wrap'" >
-    <div class="m-auto ms-0 btn-container d-flex flex-wrap" role="radiogroup" [attr.aria-label]="schema.title">
+    <div class="m-auto ms-0 btn-container d-flex flex-wrap" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="'label_'+id">
       <ng-container *ngFor="let opt of schema.oneOf">
         <div class="btn-wrapper" >
           <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt.enum[0]"
@@ -34,7 +35,7 @@
 
 
   <div *ngIf="dataType !== 'group'" [ngClass]="controlClasses">
-    <div [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.aria-label]="schema.title">
+    <div [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.aria-labelledby]="'label_'+id">
       <ng-container *ngFor="let opt of getOptions()">
         <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt" value="{{opt}}" type="radio" [(ngModel)]="option"
         (ngModelChange)="updateItemControlExt($event)">

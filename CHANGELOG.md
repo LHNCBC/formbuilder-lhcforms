@@ -5,6 +5,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [9.6.11] 2024-10-24
 ### Fixed
 - Fix bug in units when adding a number type question from LOINC.
+### Changed
+- Added aria-labels to radio group elements to improve accessibility.
 
 ## [9.6.10] 2024-11-01
 ### Added

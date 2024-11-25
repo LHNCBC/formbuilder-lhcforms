@@ -5,8 +5,10 @@
              [title]="schema.title"
              [helpMessage]="schema.description"
              [ngClass]="labelClasses"
+             [labelId]="'label_'+id"
+
   ></lfb-label>
-  <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+  <div [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="'label_'+id">
     <ng-container *ngFor="let option of schema.oneOf">
       <ng-container *ngIf="isSnomedUser || option.enum[0] !== 'snomed-value-set'">
         <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" [attr.name]="id"
