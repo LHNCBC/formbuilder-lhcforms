@@ -15,7 +15,7 @@ import {SharedObjectService} from '../services/shared-object.service';
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-      <lfb-sf-form-wrapper *ngIf="instantiate" [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)"></lfb-sf-form-wrapper>
+      <lfb-sf-form-wrapper *ngIf="instantiate" [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)" (validationErrorsChanged)="onValidationErrorsChange($event)"></lfb-sf-form-wrapper>
     </div>
   `,
   styles: [`
@@ -48,6 +48,8 @@ export class NgxSchemaFormComponent implements OnChanges {
   valueChange = new EventEmitter<any>();
   @Output()
   errorsChanged = new EventEmitter<any[]>();
+  @Output()
+  validationErrorsChanged = new EventEmitter<any[]>();
 
   constructor(private modelService: SharedObjectService, private cdr: ChangeDetectorRef) {
   }
@@ -77,4 +79,12 @@ export class NgxSchemaFormComponent implements OnChanges {
   onErrorsChange(errors) {
     this.errorsChanged.next(errors);
   }
+
+  /**
+   * Handle linkId validationErrorsChanged event from <lfb-sf-form-wrapper>
+   * @param errors - Event object from <lfb-sf-form-wrapper>
+   */
+   onValidationErrorsChange(errors) {
+    this.validationErrorsChanged.next(errors);
+  } 
 }

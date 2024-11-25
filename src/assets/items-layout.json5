@@ -5,7 +5,7 @@
         "showFields": [
           { "field": "text", "col": 12 },
           { "field": "prefix", "col": 12},
-          { "field": "linkId", "col": 12 },
+
           { "field": "__$codeYesNo", "col": 12 },
           { "field": "code", "col": 12 },
           { "field": "__$helpText", "col": 12},
@@ -40,6 +40,7 @@
     "advanced": [
       {
         "showFields": [
+          { "field": "linkId", "col": 12 },
           { "field": "enableWhen", "col": 12 },
           { "field": "enableBehavior", "col": 12 },
           { "field": "__$terminologyServer", "col": 12 },
