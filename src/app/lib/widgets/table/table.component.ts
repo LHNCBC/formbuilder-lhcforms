@@ -389,8 +389,10 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   onMoveUp(index) {
     const props = this.formProperty.properties as FormProperty [];
     if(props.length > 1) {
+      this.changeSelectionOnMove(index, -1);
       const deletedProps = props.splice(index, 1);
       props.splice(index - 1, 0, deletedProps[0]);
+      this.formProperty.updateValueAndValidity();
       setTimeout(() => {
         this.getInputElementInTable(index - 1, 0).focus();
       });
@@ -404,11 +406,34 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   onMoveDown(index) {
     const props = this.formProperty.properties as FormProperty [];
     if(props.length > 1) {
+      this.changeSelectionOnMove(index, 1);
       const deletedProps = props.splice(index, 1);
       props.splice(index + 1, 0, deletedProps[0]);
+      this.formProperty.updateValueAndValidity();
       setTimeout(() => {
         this.getInputElementInTable(index + 1, 0).focus();
       });
+    }
+  }
+
+  /**
+   * Change the selection on move up or down.
+   * @param index - Index of the row.
+   * @param direction - Relative position from the index i.e -1 for up and 1 for down.
+   */
+  changeSelectionOnMove(index: number, direction: number) {
+    if(this.rowSelectionType === 'radio') {
+      if(this.selectionRadio === index) {
+        this.selectionRadio = index + direction;
+      }
+      else if(this.selectionRadio === index + direction) {
+        this.selectionRadio = index;
+      }
+    }
+    else {
+      const thisValue = this.selectionCheckbox[index];
+      this.selectionCheckbox[index] = this.selectionCheckbox[index + direction];
+      this.selectionCheckbox[index + direction] = thisValue;
     }
   }
 

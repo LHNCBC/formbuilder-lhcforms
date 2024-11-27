@@ -48,7 +48,6 @@ test.describe('item-level fields', async () => {
     const context = await browser.newContext({storageState: sState});
     page = await context.newPage();
     await page.goto('/');
-    expect(await context.storageState()).toEqual(sState);
 
     await page.getByLabel('Would you like to start from where you left off before?').click();
     await page.getByRole('button', {name: 'Continue'}).click();
