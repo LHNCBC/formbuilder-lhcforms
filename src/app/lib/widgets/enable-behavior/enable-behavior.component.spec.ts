@@ -6,8 +6,8 @@ xdescribe('EnableBehaviorComponent', () => {
   let component: EnableBehaviorComponent;
   let fixture: ComponentFixture<EnableBehaviorComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ EnableBehaviorComponent ]
     })
     .compileComponents();

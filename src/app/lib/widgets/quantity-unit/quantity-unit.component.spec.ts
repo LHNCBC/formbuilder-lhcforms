@@ -6,8 +6,8 @@ describe('QuantityUnitComponent', () => {
   let component: QuantityUnitComponent;
   let fixture: ComponentFixture<QuantityUnitComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ QuantityUnitComponent ]
     })
     .compileComponents();

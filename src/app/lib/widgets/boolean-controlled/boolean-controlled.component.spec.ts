@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { BooleanControlledComponent } from './boolean-controlled.component';
 import {FormsModule} from '@angular/forms';
@@ -8,7 +8,7 @@ describe('BooleanControlledComponent', () => {
   let component: BooleanControlledComponent;
   let fixture: ComponentFixture<BooleanControlledComponent>;
 
-  beforeEach(async(() => {
+  beforeEach((() => {
     TestBed.configureTestingModule({
       imports: [FormsModule, AppModule],
       declarations: [ BooleanControlledComponent ]

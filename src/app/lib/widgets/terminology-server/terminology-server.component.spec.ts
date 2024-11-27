@@ -7,10 +7,10 @@ xdescribe('TerminologyServerComponent', () => {
   let component: TerminologyServerComponent;
   let fixture: ComponentFixture<TerminologyServerComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       providers: [ExtensionsService],
-      declarations: [ TerminologyServerComponent ]
+      imports: [ TerminologyServerComponent ]
     })
     .compileComponents();
 

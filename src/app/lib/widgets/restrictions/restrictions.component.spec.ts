@@ -6,8 +6,8 @@ xdescribe('RestrictionsComponent', () => {
   let component: RestrictionsComponent;
   let fixture: ComponentFixture<RestrictionsComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ RestrictionsComponent ]
     })
     .compileComponents();

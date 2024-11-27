@@ -2,6 +2,9 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.12] 2024-10-27
+- Fixed intermittent failures of unit tests
+
 ## [9.6.11] 2024-10-24
 ### Fixed
 - Fix bug in units when adding a number type question from LOINC.

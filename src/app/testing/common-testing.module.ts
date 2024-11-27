@@ -71,7 +71,7 @@ export class CommonTestingModule {
   ];
 
   static setUpTestBedConfig = (moduleConfig: any) => {
-    beforeEach(async () => {
+    beforeEach(() => {
       let declarations = CommonTestingModule.commonTestingDeclarations;
       let imports = CommonTestingModule.commonTestingImports;
       let providers = CommonTestingModule.commonTestProviders;
@@ -81,7 +81,7 @@ export class CommonTestingModule {
       const spy = spyOn(FormService.prototype, 'loadLFormsLib');
       spy.and.callFake(() => {return Promise.resolve(LForms.lformsVersion)});
 
-      await TestBed.configureTestingModule({
+      TestBed.configureTestingModule({
         declarations,
         imports,
         providers

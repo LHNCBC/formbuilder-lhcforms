@@ -8,8 +8,8 @@ describe('FhirExportDlgComponent', () => {
   let component: FhirExportDlgComponent;
   let fixture: ComponentFixture<FhirExportDlgComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach( () => {
+    TestBed.configureTestingModule({
       declarations: [ FhirExportDlgComponent ],
       imports: [NgbModule, HttpClientModule],
       providers: [NgbActiveModal]

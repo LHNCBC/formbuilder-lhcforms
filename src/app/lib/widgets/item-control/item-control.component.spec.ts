@@ -6,8 +6,8 @@ describe('ItemControlComponent', () => {
   let component: ItemControlComponent;
   let fixture: ComponentFixture<ItemControlComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ ItemControlComponent ]
     })
     .compileComponents();

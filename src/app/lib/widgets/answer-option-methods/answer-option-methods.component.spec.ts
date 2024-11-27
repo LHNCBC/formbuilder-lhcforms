@@ -6,8 +6,8 @@ describe('LfbAnswerOptionComponent', () => {
   let component: AnswerOptionMethodsComponent;
   let fixture: ComponentFixture<AnswerOptionMethodsComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ AnswerOptionMethodsComponent ]
     })
     .compileComponents();

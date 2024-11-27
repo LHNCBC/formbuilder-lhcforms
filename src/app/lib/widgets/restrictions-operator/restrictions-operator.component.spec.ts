@@ -6,8 +6,8 @@ xdescribe('RestrictionsOperatorComponent', () => {
   let component: RestrictionsOperatorComponent;
   let fixture: ComponentFixture<RestrictionsOperatorComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ RestrictionsOperatorComponent ]
     })
     .compileComponents();

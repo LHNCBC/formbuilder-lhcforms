@@ -1,15 +1,15 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HeaderComponent } from './header.component';
 import {MatIconModule} from '@angular/material/icon';
 import {MatIconTestingModule} from '@angular/material/icon/testing';
-import {MatToolbar, MatToolbarModule} from '@angular/material/toolbar';
+import {MatToolbarModule} from '@angular/material/toolbar';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [ HeaderComponent ],
       imports: [
@@ -19,7 +19,7 @@ describe('HeaderComponent', () => {
       ],
     })
     .compileComponents();
-  }));
+  });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(HeaderComponent);
