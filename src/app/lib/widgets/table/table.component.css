@@ -32,6 +32,10 @@
   background-color: lightgoldenrodyellow;
 }
 
+button.unselect i {
+  font-size: 20px;
+}
+
 th.default-column {
   white-space: nowrap;
   display:flex;

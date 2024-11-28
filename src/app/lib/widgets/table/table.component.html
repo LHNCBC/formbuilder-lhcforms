@@ -38,11 +38,11 @@
             helpMessage="Pick a default item"
             (focus)="onHideHeaderAriaLabel(false)"
           ></lfb-title>
-          <button type="button" class="btn btn-link p-0 ps-1 border-0" matTooltip="Clear selection"
+          <button type="button" class="btn btn-link p-0 ps-1 border-0 unselect" matTooltip="Clear selection"
                   [attr.aria-hidden]="hideHeaderAriaLabel"
                   [attr.aria-label]="getClearSelectionLabel(getShowTableFields().length + 1)"
                   (focus)="onHideHeaderAriaLabel(false)"
-                  (click)="clearSelections()"><div class="m-0 p-0"><i class="material-icons" style="font-size: 20px">backspace</i></div></button>
+                  (click)="clearSelections()"><i class="material-icons align-top">backspace</i></button>
         </th>
         <th *ngIf="includeActionColumn" class="col-sm-half action-column" ></th>
       </tr>
