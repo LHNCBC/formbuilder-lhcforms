@@ -38,8 +38,8 @@ export type DialogMode = 'Move' | 'Insert' | 'Copy';
                  popupClass="add-scrolling"
           >
 
-          <p class="mt-4">Specify drop location:</p>
-          <ul class="list-unstyled ms-5">
+          <p class="mt-4" id="dropLocationRadioGroupLabel">Specify drop location:</p>
+          <ul class="list-unstyled ms-5" aria-labelledby="dropLocationRadioGroupLabel" role="radiogroup">
             <li>
               <label class="btn">
                 <input value="AFTER" type="radio" [(ngModel)]="targetLocation" name="targetLocation" [ngModelOptions]="{standalone: true}">

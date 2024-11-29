@@ -67,7 +67,7 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
     // Read rows from schema layout
     this.basicRows = this.formProperty.schema.formLayout.basic;
     this.advancedRows = this.formProperty.schema.formLayout.advanced;
-    this.collapseAdvanced = !!this.formService[this.widgetId];
+    this.collapseAdvanced = (this.formService.isFocusNodeHasError()) ? false : !!this.formService[this.widgetId];
   }
 
   /**

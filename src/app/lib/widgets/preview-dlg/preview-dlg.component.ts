@@ -130,7 +130,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    */
   handleLFormsError(event) {
     this.lformsErrors = event.detail;
-    this.runValidations('R4', this.vServer);
   }
 
   /**

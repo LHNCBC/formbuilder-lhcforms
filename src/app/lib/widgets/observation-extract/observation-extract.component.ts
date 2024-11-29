@@ -10,15 +10,16 @@ import {fhirPrimitives} from '../../../fhir';
   template: `
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
       <lfb-label *ngIf="!nolabel"
-                 [attr.for]="elementId"
+                 [for]="elementId"
                  [title]="schema.title"
                  [helpMessage]="schema.description"
                  [ngClass]="labelClasses"
+                 [labelId]="'label_rg_'+elementId"
       ></lfb-label>
 
       <div class="{{controlClasses}}">
 
-        <div class="btn-group btn-group-sm" role="group">
+        <div class="btn-group btn-group-sm" role="radiogroup" [attr.aria-labelledby]="'label_rg_'+elementId" [attr.id]="elementId">
           <ng-container *ngFor="let option of ['No', 'Yes']">
             <input type="radio" class="btn-check"
                    name="value"

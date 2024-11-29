@@ -19,6 +19,14 @@
         "id": "hidden"
       }
     },
+    "__$treeNodeId": {
+      "description": "Internal unique id used to differentiate individual nodes within a tree structure. It is also used for validation error handling.",
+      "title": "Tree Node Id",
+      "type": "string",
+      "widget": {
+        "id": "hidden"
+      }
+    },
     "type": {
       "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.). Header implies group if it has children. No children implies display type",
       "enum": [
@@ -143,10 +151,16 @@
     },
     "linkId": {
       "description": "An identifier that is unique within the Questionnaire allowing linkage to the equivalent item in a QuestionnaireResponse resource.",
-      "title": "Link id",
-      "pattern": "^[ \\r\\n\\t\\S]+$",
       "type": "string",
-      "widget": {"id": "hidden"}
+      "title": "Link Id",
+
+      "widget": {
+        "id": "editable-link-id",
+        "note": "* Link ID is mandatory for each item, and must be unique across the questionnaire. If you change it, make sure to update any places in the questionnaire that reference the link ID.",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0"
+      }
     },
     "definition": {
       "description": "This element is a URI that refers to an [[[ElementDefinition]]] that provides information about this item, including information that might otherwise be included in the instance of the Questionnaire resource. A detailed description of the construction of the URI is shown in Comments, below. If this element is present then the following element values MAY be derived from the Element Definition if the corresponding elements of this Questionnaire resource instance have no value:\n\n* code (ElementDefinition.code) \n* type (ElementDefinition.type) \n* required (ElementDefinition.min) \n* repeats (ElementDefinition.max) \n* maxLength (ElementDefinition.maxLength) \n* answerValueSet (ElementDefinition.binding)\n* options (ElementDefinition.binding).",
@@ -1537,6 +1551,7 @@
         "type": ["$EXP$ target.value != 'display'"]
       }
     },
+
     "__$units": {
       "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
       "title": "Units",
@@ -1890,7 +1905,7 @@
       ]
     },
     {
-      "fields": ["id", "extension", "modifierExtension", "definition"]
+      "fields": ["id", "__$treeNodeId", "extension", "modifierExtension", "definition"]
     }
   ],
   "steps": [

@@ -13,8 +13,10 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
       <div class="row">
         <div [ngClass]="schema.widget.labelWidthClass"></div>
         <div [ngClass]="schema.widget.controlWidthClass">
-          <lfb-label [helpMessage]="schema.description" [title]="schema.title"></lfb-label>
-          <div [ngClass]="{row: schema.widget.layout === 'row'}">
+          <lfb-label [helpMessage]="schema.description" [title]="schema.title"
+                     [labelId]="'label_'+id" [for]="id"></lfb-label>
+          <div [ngClass]="{row: schema.widget.layout === 'row'}"
+               role="radiogroup" [attr.aria-labelledby]="'label_'+id" [attr.id]="id">
             <div *ngFor="let option of schema.oneOf">
               <label class="horizontal control-label">
                 <input [formControl]="control" [attr.id]="id + '.' + option.enum[0]"

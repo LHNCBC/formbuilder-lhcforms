@@ -12,8 +12,6 @@ import {
 import {DateComponent} from '../date/date.component';
 import {DateUtil, DateTime} from '../../date-util';
 
-
-
 interface ConfigureDateTime {
   setDateTime(dateTime: DateTime);
 }
