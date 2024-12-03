@@ -14,9 +14,10 @@ window.__karma__.loaded = () => {}
   const loadedVersion = await loadLForms(lfVersions[0]).catch((errorEvent) => {
     const msg = `lformsLoader.loadLForms(${lfVersions[0]}) failed.`;
     console.error(`${Date.now()}: ${msg}`);
-    throw new Error(msg, {cause: errorEvent.error}); // 'error' is an instance of ErrorEvent. 
+    throw new Error(msg, {cause: errorEvent.error}); // 'error' is an instance of ErrorEvent.
   });
 
   console.log(`${Date.now()}: Successfully Loaded LForms libraries - ${loadedVersion}`);
-  window.__karma__.start();
+  setTimeout(() => window.__karma__.start(), 500);
+
 })();

@@ -6,7 +6,7 @@ import {
   SchemaFormModule,
   WidgetRegistry,
 } from '@lhncbc/ngx-schema-form';
-import {HttpClientModule} from '@angular/common/http';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {NoopAnimationsModule} from '@angular/platform-browser/animations';
 import {LayoutModule} from '@angular/cdk/layout';
 import {MatButtonModule} from '@angular/material/button';
@@ -50,7 +50,7 @@ export class CommonTestingModule {
     AppModule,
     SchemaFormModule.forRoot(),
     TreeModule,
-    HttpClientModule,
+    HttpClientTestingModule,
     NoopAnimationsModule,
     LayoutModule,
     MatButtonModule,
