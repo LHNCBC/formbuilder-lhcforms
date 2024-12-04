@@ -18,6 +18,6 @@ window.__karma__.loaded = () => {}
   });
 
   console.log(`${Date.now()}: Successfully Loaded LForms libraries - ${loadedVersion}`);
-  setTimeout(() => window.__karma__.start(), 500);
+  setTimeout(() => window.__karma__.start(), 1000);
 
 })();
