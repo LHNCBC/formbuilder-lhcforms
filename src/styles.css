@@ -88,3 +88,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 fa-icon > svg.svg-inline--fa {
   vertical-align: baseline;
 }
+
+.toggle-children-wrapper {
+  padding: 0;
+  margin-right: 1px;
+}
