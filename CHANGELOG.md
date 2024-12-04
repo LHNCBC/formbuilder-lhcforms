@@ -2,8 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.6.12] 2024-10-27
+## [9.6.13] 2024-12-04
 - Fixed intermittent failures of unit tests
+
+## [9.6.12] 2024-11-20
+### Added
+- Added a message for FHIR server validation.
 
 ## [9.6.11] 2024-10-24
 ### Fixed
