@@ -1841,7 +1841,18 @@ describe('Home page', () => {
         cy.contains('button', 'Edit questions').click();
         cy.contains('button', 'Preview').click();
         cy.get('wc-lhc-form').should('exist').parent().as('tabBody');
-        cy.get('@tabBody').find('.card.bg-danger-subtle').should('be.visible');
+        cy.get('@tabBody').find('.card.bg-danger-subtle').should('be.visible')
+          .within(() => {
+            // Error message returns from LForms.
+            cy.get('.lforms-validation')
+              .should('have.text', 'Question with linkId \'q3\' contains enableWhen pointing to a question with linkId \'q11\' that does not exist.');
+          
+            // The FHIR validation message is shown when an error is detected by LForms. It informs users
+            // that additional validation can be performed against the FHIR server found in the 
+            // 'View/Validate Questionnaire JSON tab'.
+            cy.get('.fhir-validation-msg')
+              .should('have.text', 'Select the \'View/Validate Questionnaire JSON\' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.');
+          });
         cy.contains('mat-dialog-actions button', 'Close').click();
 
         // Delete offending item and assert the error does not exist
