@@ -50,7 +50,7 @@
               </ng-template>
               <ng-template #loadingTemplate><span></span></ng-template>
             </tree-root>
-            <small class="text-danger form-text sr-only" role="alert" *ngIf="validationErrorsAllItemsErrorStr !== ''" >
+            <small class="text-danger form-text cdk-visually-hidden" role="alert" *ngIf="validationErrorsAllItemsErrorStr !== ''" >
               {{validationErrorsAllItemsErrorStr}}
             </small>
           </span>
