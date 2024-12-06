@@ -291,7 +291,7 @@ export class ValidationService {
    */
   validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
-    if((enableWhenObj.q?.value?.trim().length > 0) && enableWhenObj.op?.value.length > 0) {
+    if(enableWhenObj.op?.value.length > 0) {
       const aValue = enableWhenObj.answerX?.value;
 
       const node = this.formService.getTreeNodeById(enableWhenObj.id);
@@ -300,11 +300,15 @@ export class ValidationService {
       // Validate whether the  'linkId' specified in the question exists.
       // If not, then throw the 'ENABLEWHEN_INVALID_QUESTION' error.
       if (!enableWhenObj.aType) {
-        const errorCode = 'ENABLEWHEN_INVALID_QUESTION';
+        const errorCode = (enableWhenObj.q?.value?.trim().length === 0) ?
+                          'ENABLEWHEN_QUESTION_REQUIRED' : 'ENABLEWHEN_INVALID_QUESTION';
+        const errorMsg = (enableWhenObj.q?.value?.trim().length === 0) ?
+                          'Question is required.' :
+                          `Question not found for the linkId '${enableWhenObj.q.value}'.`;
         const err: any = {};
         err.code = errorCode;
         err.path = `#${enableWhenObj.q.canonicalPathNotation}`;
-        err.message = `Question not found for the linkId '${enableWhenObj.q.value}'.`;
+        err.message = errorMsg;
         err.indexPath = indexPath;
         const valStr = JSON.stringify(aValue);
         err.params = [enableWhenObj.q.value, enableWhenObj.op.value, valStr];

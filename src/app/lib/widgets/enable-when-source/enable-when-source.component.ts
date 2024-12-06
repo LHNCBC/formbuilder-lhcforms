@@ -32,6 +32,7 @@ import {Util} from '../../util';
              class="form-control"
              (focus)="focus$.next($any($event).target.value)"
              (click)="click$.next($any($event).target.value)"
+             (focusout)="validateQuestion()"
              (selectItem)="onSelect($event)"
              #instance="ngbTypeahead"
              popupClass="add-scrolling"
@@ -139,4 +140,17 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
     return ret;
   }
 
+  /**
+   * Validates the state of a form property associated with a question model.
+   * If 'this.model' is falsy, it sets 'this.model' to null. It clears the
+   * current value of the form property by setting it to an empty string.
+   * Finally, it triggers re-validation of the form property.
+   */
+  validateQuestion(): void {
+    if (!this.model) {
+      this.model = null;
+      this.formProperty.setValue("", false);
+      this.formProperty.updateValueAndValidity();
+    }
+  }
 }
