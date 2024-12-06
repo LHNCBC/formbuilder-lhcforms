@@ -1,8 +1,8 @@
 <ng-template #controller>
   <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0' : true}">
-    <lfb-label *ngIf="!nolabel" [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelClasses"></lfb-label>
+    <lfb-label *ngIf="!nolabel" [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelClasses" [labelId]="'label'+_id"></lfb-label>
 
-      <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
+      <div [attr.aria-labelledby]="'label'+_id" [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup">
         <ng-container *ngFor="let key of optionsKeys">
           <input type="radio" class="btn-check"
                  [name]="_id"

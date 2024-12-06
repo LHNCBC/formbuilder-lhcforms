@@ -217,7 +217,7 @@ export class FetchService {
     }
     ret.type = Util.getFhirType(datatype);
     if(units) {
-      ret.extension = Util.convertUnitsToExtensions(units);
+      ret.extension = Util.convertUnitsToExtensions(units, ret.type);
     }
     return ret;
   }

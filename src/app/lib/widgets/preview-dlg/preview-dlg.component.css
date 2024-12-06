@@ -26,3 +26,15 @@
 .lf-box-shadow:focus {
   box-shadow: 0 0 0 .25rem rgba(134, 183, 254, .50);
 }
+
+.lforms-validation {
+  margin-top: 5px;
+}
+
+.fhir-validation-msg {
+  margin:30px 10px 10px 10px;
+  padding:10px;
+  text-align:left;
+  border: 1px solid black;
+  border-radius: 4px;
+}

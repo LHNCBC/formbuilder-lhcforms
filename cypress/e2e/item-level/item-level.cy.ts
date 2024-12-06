@@ -9,8 +9,11 @@ const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition
 const ucumUrl = 'http://unitsofmeasure.org';
 const snomedEclText =
   '< 429019009 |Finding related to biological sex|';
+const excludedField = 'id';
+
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
+
   describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
@@ -1130,6 +1133,242 @@ describe('Home page', () => {
       });
     });
 
+    describe('Group item control', () => {
+      beforeEach(() => {
+        const sampleFile = 'USSG-family-portrait.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.loadHomePage();
+        cy.get('input[type="radio"][value="scratch"]').click();
+        cy.get('button').contains('Continue').click();
+        cy.uploadFile(sampleFile, false);
+        cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+        cy.contains('button', 'Edit questions').click();
+      });
+
+      const groupItemControlExtensions = {
+        'list': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'list',
+              display: 'List',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'table': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'table',
+              display: 'Vertical Answer Table',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'htable': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'htable',
+              display: 'Horizontal Answer Table',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'gtable': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'gtable',
+              display: 'Group Table',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'grid': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'grid',
+              display: 'Group Grid',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'header': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'header',
+              display: 'Header',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'footer': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'footer',
+              display: 'Footer',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'page': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'page',
+              display: 'Page',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        },
+        'tab-container': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              code: 'tab-container',
+              display: 'Tab Container',
+              system: 'http://hl7.org/fhir/questionnaire-item-control'
+            }]
+          }
+        }
+      };
+
+      it('should create group item-control extension with autocomplete option', () => {
+        const icgTag = 'lfb-item-control-group';
+        const listBtn = '[for^="__\\$itemControlGroup\\.list"]';
+        const verticalAnsTblBtn = '[for^="__\\$itemControlGroup\\.table"]';
+        const horizontalAnsTblBtn = '[for^="__\\$itemControlGroup\\.htable"]';
+        const groupTblBtn = '[for^="__\\$itemControlGroup\\.gtable"]';
+        const groupGridBtn = '[for^="__\\$itemControlGroup\\.grid"]';
+        const headerBtn = '[for^="__\\$itemControlGroup\\.header"]';
+        const footerBtn = '[for^="__\\$itemControlGroup\\.footer"]';
+        const pageBtn = '[for^="__\\$itemControlGroup\\.page"]';
+        const tabContainerBtn = '[for^="__\\$itemControlGroup\\.tab-container"]';
+
+        const listRadio = '#__\\$itemControlGroup\\.list';
+        const verticalAnsTblRadio = '#__\\$itemControlGroup\\.table';
+        const horizontalAnsTblRadio = '#__\\$itemControlGroup\\.htable';
+        const groupTblRadio = '#__\\$itemControlGroup\\.gtable';
+        const groupGridRadio = '#__\\$itemControlGroup\\.grid';
+        const headerRadio = '#__\\$itemControlGroup\\.header';
+        const footerRadio = '#__\\$itemControlGroup\\.footer';
+        const pageRadio = '#__\\$itemControlGroup\\.page';
+        const tabContainerRadio = '#__\\$itemControlGroup\\.tab-container';
+
+        // The Data type for the 1st question should be a group
+        cy.get('#type').should('contain.value', 'group');
+        // The Group Item Control should be visible but the default 'list' should no longer be set
+        cy.get(listRadio).should('not.be.checked');
+
+        // Select 'List' Group Item Control
+        cy.get(listBtn).click();
+        cy.get(listRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['list']]);
+        });
+
+        // Select 'Vertical Answer Table' Group Item Control
+        cy.get(verticalAnsTblBtn).click();
+        cy.get(verticalAnsTblRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['table']]);
+        });
+
+        // Select 'Horizontal Answer Table' Group Item Control
+        cy.get(horizontalAnsTblBtn).click();
+        cy.get(horizontalAnsTblRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['htable']]);
+        });
+
+        // Select 'Group Table' Group Item Control
+        cy.get(groupTblBtn).click();
+        cy.get(groupTblRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['gtable']]);
+        });
+
+        // Select 'Group Grid' Group Item Control
+        cy.get(groupGridBtn).click();
+        cy.get(groupGridRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['grid']]);
+        });
+
+        // Select 'Header' Group Item Control
+        cy.get(headerBtn).click();
+        cy.get(headerRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['header']]);
+        });
+
+        // Select 'Footer' Group Item Control
+        cy.get(footerBtn).click();
+        cy.get(footerRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['footer']]);
+        });
+
+        // Select 'Page' Group Item Control
+        cy.get(pageBtn).click();
+        cy.get(pageRadio).should('be.checked');
+        // Extension should be add
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['page']]);
+        });
+
+        // Select 'Tab Container' Group Item Control
+        cy.get(tabContainerBtn).click();
+        cy.get(tabContainerRadio).should('be.checked');
+        // Extension should be added
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['tab-container']]);
+        });
+      });
+
+      it('should be able to clear group item control selection', () => {
+        const listBtn = '[for^="__\\$itemControlGroup\\.list"]';
+        const listRadio = '#__\\$itemControlGroup\\.list';
+
+        // The Data type for the 1st question should be a group
+        cy.get('#type').should('contain.value', 'group');
+        // The Group Item Control should be visible but there should be no default selection
+        cy.get(listRadio).should('not.be.checked');
+
+        // Select 'List' Group Item Control.
+        cy.get(listBtn).click();
+        cy.get(listRadio).should('be.checked');
+        // Extension should be added.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['list']]);
+        });
+
+        // Clear the group item control selection
+        cy.get('button.group-item-control-unselect').click();
+        // The group item control selection should be unselected
+        cy.get(listRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).undefined;
+        });
+      });
+
+    });
+
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
@@ -1192,7 +1431,7 @@ describe('Home page', () => {
       cy.get('#type option:selected').should('have.text', 'decimal');
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
       cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
-      cy.questionnaireJSON().should((qJson) => {
+      cy.questionnaireJSON().then((qJson) => {
         expect(qJson).to.deep.equal(fixtureJson);
       });
 
@@ -1552,6 +1791,49 @@ describe('Home page', () => {
 
       });
 
+      it('should display validation error message for each of the enableWhen fields', () => {
+        const sampleFile = 'items-validation-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.contains('button', 'Edit questions').click();
+
+        const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
+        const question1El = '[id^="enableWhen.0.question"]';
+        const operator1El = '[id^="enableWhen.0.operator"]';
+        const answer1El = '[id^="enableWhen.0.answer"]';
+        const errorIcon1El = '[id^="enableWhen.0_err"]';
+      
+        const question2El = '[id^="enableWhen.1.question"]';
+        const errorIcon2El = '[id^="enableWhen.1_err"]';
+
+        const errorIcon3El = '[id^="enableWhen.2_err"]';
+
+        const errorIcon4El = '[id^="enableWhen.3_err"]';
+
+        cy.clickTreeNode('EnableWhen');
+
+        cy.get(errorMessageEl).should('exist');
+        
+        cy.get(question1El).should('contain.value', '4 - Integer Type');
+        cy.get(operator1El).should('contain.value', '=');
+        cy.get(answer1El).should('contain.value', '5');
+        cy.get(errorIcon1El).should('not.exist');
+
+        cy.get(question2El).should('be.empty');
+        cy.get(errorIcon2El)
+          .find('small')
+          .should('contain.text', ' Question not found for the linkId \'q11\' for enableWhen condition 2. ');
+
+        cy.get(errorIcon3El)
+          .find('small')
+          .should('contain.text', ' Invalid operator \'>\' for type \'choice\' for enableWhen condition 3. ');
+
+        cy.get(errorIcon4El)
+          .find('small')
+          .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 4. ');
+      });
+
       it('should display lforms errors in preview', () => {
         const sampleFile = 'questionnaire-enableWhen-missing-linkId.json';
         cy.uploadFile(sampleFile, true);
@@ -1559,7 +1841,18 @@ describe('Home page', () => {
         cy.contains('button', 'Edit questions').click();
         cy.contains('button', 'Preview').click();
         cy.get('wc-lhc-form').should('exist').parent().as('tabBody');
-        cy.get('@tabBody').find('.card.bg-danger-subtle').should('be.visible');
+        cy.get('@tabBody').find('.card.bg-danger-subtle').should('be.visible')
+          .within(() => {
+            // Error message returns from LForms.
+            cy.get('.lforms-validation')
+              .should('have.text', 'Question with linkId \'q3\' contains enableWhen pointing to a question with linkId \'q11\' that does not exist.');
+          
+            // The FHIR validation message is shown when an error is detected by LForms. It informs users
+            // that additional validation can be performed against the FHIR server found in the 
+            // 'View/Validate Questionnaire JSON tab'.
+            cy.get('.fhir-validation-msg')
+              .should('have.text', 'Select the \'View/Validate Questionnaire JSON\' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.');
+          });
         cy.contains('mat-dialog-actions button', 'Close').click();
 
         // Delete offending item and assert the error does not exist
@@ -2017,7 +2310,394 @@ describe('Home page', () => {
     });
 
   });
- 
+
+  describe('Item level fields: advanced - Editable Link Id', () => {
+    const REQUIRED = 'Link Id is required.';
+    const DUPLICATE_LINK_ID =  'Entered linkId is already used.';
+    const MAX_LENGTH = 'LinkId cannot exceed 255 characters.';
+    const PATTERN = 'Spaces are not allowed at the beginning or end, and only a single space is allowed between words.';
+
+    beforeEach(() => {
+      const sampleFile = 'USSG-family-portrait.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.loadHomePage();
+      cy.get('input[type="radio"][value="scratch"]').click();
+      cy.get('button').contains('Continue').click();
+      cy.uploadFile(sampleFile, false);
+      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+      cy.contains('button', 'Edit questions').click();
+
+      cy.expandAdvancedFields();
+      cy.tsUrl().should('be.visible'); // Proof of advanced panel expansion
+    });
+
+    afterEach(() => {
+      cy.collapseAdvancedFields();
+    });
+
+    it('should update the link id', () => {
+      // 300 characters long
+      const longLinkId = "/sQbMAgt9SavZxxL63WIFBju6Hdwjp3JHyFzXnBKVdLEtCJ71u6TNMhXt" +
+                          "znjw9HV9b7N6kY33bLiZMEy7nSCJupWu3MIzFg2PfT4JEEa5VFXk3KgaZ" +
+                          "ypvFH8EGDlxe9bpLoZqbXgxBCQ0iFmG6FKyA1FiuMMtZYoaXHPpJ0M6kZ" +
+                          "bjBbTbmOSrtufcLu1SrN0MN0h30lxak1yNfCjqqlsxdGescju0nu0nJvg" +
+                          "6K1Vd5rhBGavjkrBnbDXLrOglYT0gf1HaIBbGGM4C9kO8dTxqBOqg1KHn" +
+                          "ctpWOL3vc0PIiXB";
+      const linkIdSizeLimit = 255;
+
+      cy.editableLinkId()
+        .should('be.visible')
+        .should('have.value', '/54126-8');
+
+      cy.editableLinkId()
+        .clear()
+        .type(longLinkId);
+
+      // Because of size limit, the linkId was truncated
+      // to 255 characters
+      cy.editableLinkId()
+        .invoke('val')
+        .should('not.equal', longLinkId)
+        .its('length')
+        .should('eq', linkIdSizeLimit);
+
+      cy.editableLinkId()
+        .invoke('val')
+        .should('equal', longLinkId.substring(0, linkIdSizeLimit));
+    });
+
+    it('should validate the linkId pattern', () => {
+      const invalidPatternError = `Spaces are not allowed at the beginning or end, and only a single space is allowed between words.`;
+
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.2 Name'
+      cy.getTreeNode('Name').click();
+
+      // Go to the link id section
+      cy.editableLinkId().as('linkId');
+
+      cy.get('@linkId')
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54138-3');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter '/test' as linkId
+      cy.get('@linkId')
+        .clear()
+        .type('/test');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter ' /test' as linkId (with leading space)
+      cy.get('@linkId')
+        .clear()
+        .type(' /test');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter '/test ' as linkId (with trailing space)
+      cy.get('@linkId')
+        .clear()
+        .type('/test ');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter ' /test ' as linkId (with leading and trailing spaces)
+      cy.get('@linkId')
+        .clear()
+        .type(' /test ');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+
+      // Enter '/te st' as linkId (single space between words)
+      cy.get('@linkId')
+        .clear()
+        .type('/test abc');
+
+      // There should not be an error
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // Enter '/test  abc' as linkId (two spaces between words)
+      cy.get('@linkId')
+        .clear()
+        .type('/test  abc');
+
+      // Should contain PATTER error
+      cy.checkLinkIdErrorIsDisplayed(PATTERN);
+    });
+
+    it('should required linkId', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+
+      // Now go to the grandchild node
+      cy.getTreeNode('Current Age').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()
+        .clear()
+        .type('{backspace}');
+
+      cy.checkLinkIdErrorIsDisplayed(REQUIRED);
+
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+    });
+
+    it('should detect duplicate link id and display error', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click on the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+      cy.getTreeNode('Living?').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1');
+
+      cy.editableLinkId()
+        .clear()
+        .type('/54114-4');
+
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
+
+      // The node 'Living?' should display a red triangle icon (error)
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      // In addition, the parent node should also display the red triangle icon as well.
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Now go to the grandchild node
+      cy.getTreeNode('Current Age').click();
+
+      // The 'Conditional display' field needs to be filled in to prevent an error.
+      // (ENABLEWHEN_ANSWER_REQUIRED)
+      cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
+      cy.get('[id^="enableWhen.0.operator"]').select('Not empty');
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()
+        .clear()
+        .type('/54114-4');
+
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
+
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the child node.
+      cy.getTreeNode('Living?').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1');
+
+      // The red triangle icons on the tree panel for the child and parent nodes
+      // should remained since there is still error at the grandchild node.
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the grandchild node.
+      cy.getTreeNode('Current Age').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1/54141-7');
+
+      // Error messages on the content panel should go away
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // The red triangle icons on the tree panel for the grandchild, child
+      // and parent nodes should now be hidden.
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('not.exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('not.exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('not.exist');
+    });
+
+    it('should check siblings for error before clearing out errors from ancestor', () => {
+      // Click on 2 Family member health history
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Expand the '2.4 Living?'
+      cy.toggleTreeNodeExpansion('Living?');
+
+      // Go to the grandchild node '2.4.2 Current Age'
+      cy.getTreeNode('Current Age').click();
+
+      // Go to the link id section and enter the duplicate link id
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54141-7');
+      cy.editableLinkId()
+        .clear()
+        .type('/54114-4/54139-1');
+
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
+
+      // On the Tree panel, the error icon should display on the parent, child, and grandchild
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Go to the sibling node '2.4.1 Date of Birth' and enter the duplicate link id
+      cy.getTreeNode('Date of Birth').click();
+
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .should('have.value', '/54114-4/54139-1/54124-3');
+      cy.editableLinkId()
+        .clear()
+        .type('/54114-4/54139-1');
+
+      cy.checkLinkIdErrorIsDisplayed(DUPLICATE_LINK_ID);
+
+      // Fix the duplicate link id for the node '2.4.2 Current Age'.
+      cy.getTreeNode('Current Age').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .clear()
+        .type('/54114-4/54139-1/54141-7');
+
+      // Error messages on the content panel should go away
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // The red triangle icons on the tree panel for the node '2.4.2 Current Age' should be hidden.
+      cy.getTreeNode('Current Age')
+        .find('fa-icon#error')
+        .should('not.exist');
+
+      // However, the parent node '2.4 Living?' and grandparent node '2 Family member health history'
+      // should still showing error icon because there is still an error with the node
+      // '2.4.3 Cause of Death'
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('exist');
+
+      // Fix the duplicate link id for the node '2.4.1 Date of Birth'.
+      cy.getTreeNode('Date of Birth').click();
+      cy.editableLinkId()
+        .scrollIntoView()
+        .type('/54124-3');
+
+      // Error messages on the content panel should go away
+      cy.checkLinkIdErrorIsNotDisplayed();
+
+      // The red triangle icons on the tree panel for the grandchild, child
+      // and parent nodes should now be hidden.
+      cy.getTreeNode('Date of Birth')
+        .find('fa-icon#error')
+        .should('not.exist');
+      cy.getTreeNode('Living?')
+        .find('fa-icon#error')
+        .should('not.exist');
+      cy.getTreeNode('Family member health history')
+        .find('fa-icon#error')
+        .should('not.exist');
+    });
+
+    it('should allow the linkId to be set to empty and remain empty upon gaining focus', () => {
+      // Click on '2 Family member health history'
+      cy.getTreeNode('Family member health history').click();
+
+      // Click the 'Add new item'
+      cy.contains('button', 'Add new item').click();
+      // Click on the new added item
+      cy.getTreeNode('New item 1').click();
+
+      // Go to the link id section and enter 1
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .clear()
+        .type('1');
+
+      // Click the 'Add new item'
+      cy.contains('button', 'Add new item').click();
+
+      // Click back to 'New item 1'
+      cy.getTreeNode('New item 1').click();
+
+      // The linkId should be 1
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('have.value', '1');
+
+      // Clear the value
+      cy.editableLinkId()
+        .clear();
+
+      // Click back to 'New item 2'
+      cy.getTreeNode('New item 2').click();
+
+      // Click back to 'New item 1'
+      cy.getTreeNode('New item 1').click();
+
+      // The linkId should remain empty. It should not get populate with the default linkId.
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('have.value', '');
+    });
+  });
+
   describe('Test descendant items and display/group type changes', () => {
     beforeEach(() => {
       const sampleFile = 'USSG-family-portrait.json';
@@ -2064,7 +2744,7 @@ describe('Home page', () => {
       cy.getTreeNode('Relationship to patient').as('contextNode');
       cy.get('@contextNode').click();
       cy.get('@contextNode').find('button.dropdown-toggle').click();
-      
+
       // Select the 'Move this item' option.
       cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
       cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
@@ -2099,7 +2779,7 @@ describe('Home page', () => {
         cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
       });
 
-      // Re-enter the target to be 'Display Data Type'. Due to the data type, it should 
+      // Re-enter the target to be 'Display Data Type'. Due to the data type, it should
       // only present with 2 drop locations.
       cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
       cy.get('lfb-node-dialog').find('button.dropdown-item').should('exist').should('have.length', 1).click();
@@ -2143,7 +2823,7 @@ describe('Home page', () => {
       cy.get('@contextNode').find('button.dropdown-toggle').click();
       // One of the option should be 'Insert a new child item.'
       cy.get('div.dropdown-menu.show').should('contain', 'Insert a new child item');
-      
+
       // Select the 'Display Data Type' item and select the 'More options.'
       cy.getTreeNode('Display Data Type').as('contextNode').click();
       cy.get('@contextNode').find('button.dropdown-toggle').click();

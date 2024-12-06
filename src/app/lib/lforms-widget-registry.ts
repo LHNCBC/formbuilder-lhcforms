@@ -12,7 +12,6 @@ import {StringComponent} from './widgets/string/string.component';
 import {SelectComponent} from './widgets/select/select.component';
 import {CheckboxComponent} from './widgets/checkbox.component/checkbox.component';
 import {IntegerComponent} from './widgets/integer/integer.component';
-import {RadioComponent} from './widgets/radio/radio.component';
 import { Injectable } from '@angular/core';
 import {EnableWhenSourceComponent} from './widgets/enable-when-source/enable-when-source.component';
 import {EnableOperatorComponent} from './widgets/enable-operator/enable-operator.component';
@@ -39,6 +38,7 @@ import {ItemControlComponent} from './widgets/item-control/item-control.componen
 import {DateComponent} from './widgets/date/date.component';
 import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
+import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
 import {HelpTextComponent} from "./widgets/help-text/help-text.component";
 
 
@@ -60,7 +60,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('boolean', CheckboxComponent);
     this.register('integer', IntegerComponent);
     this.register('number', NumberComponent);
-    this.register('radio', RadioComponent);
     this.register('lb-radio', LabelRadioComponent);
     this.register('enable-when', EnableWhenComponent);
     this.register('enable-when-source', EnableWhenSourceComponent);
@@ -82,5 +81,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('observation-extract', ObservationExtractComponent);
     this.register('quantity-unit', QuantityUnitComponent);
     this.register('terminology-server', TerminologyServerComponent);
+    this.register('editable-link-id', EditableLinkIdComponent);
+
   }
 }

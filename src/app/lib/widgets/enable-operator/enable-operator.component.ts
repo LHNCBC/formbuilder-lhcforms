@@ -10,6 +10,7 @@
 
 import {Component, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
+import { FormService } from 'src/app/services/form.service';
 
 @Component({
   selector: 'lfb-enable-operator',
@@ -20,7 +21,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
             name="{{name}}" [attr.id]="id"
             [disabled]="schema.readOnly" class="form-control">
       <ng-container>
-        <option *ngFor="let opt of options[answerType]" [ngValue]="opt.option" >{{opt.label}}</option>
+        <option *ngFor="let opt of selectOptionList" [ngValue]="opt.option" >{{opt.label}}</option>
       </ng-container>
     </select>
   `,
@@ -29,49 +30,13 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 })
 export class EnableOperatorComponent extends LfbControlWidgetComponent implements OnInit {
 
-  // All operators
-  userOptions: any [] = [
-    {option: 'exists', label: 'Not empty'},
-    {option: 'notexists', label: 'Empty'},
-    {option: '=', label: '='},
-    {option: '!=', label: '!='},
-    {option: '>', label: '>'},
-    {option: '<', label: '<'},
-    {option: '>=', label: '>='},
-    {option: '<=', label: '<='}
-  ];
-
-  // A subset of operators for certain types
-  userOptions2: any [] = this.userOptions.filter((e) => {
-    return (
-      e.option === 'exists' ||
-      e.option === 'notexists' ||
-      e.option === '=' ||
-      e.option === '!='
-    );
-  });
-
-  // Operators based on type.
-  options = {
-    decimal: this.userOptions,
-    integer: this.userOptions,
-    quantity: this.userOptions,
-    date: this.userOptions,
-    dateTime: this.userOptions,
-    time: this.userOptions,
-    string: this.userOptions,
-    text: this.userOptions,
-    url: this.userOptions2,
-    boolean: this.userOptions2,
-    choice: this.userOptions2,
-    'open-choice': this.userOptions2,
-    attachment: this.userOptions2,
-    reference: this.userOptions2
-  };
-
   myModel: string;
   answerType: string;
   selectOptionList: any [];
+
+  constructor(private formService: FormService) {
+    super();
+  };
 
   /**
    * Initialize
@@ -91,7 +56,7 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
     this.formProperty.searchProperty('__$answerType').valueChanges.subscribe((val) => {
       this.answerType = val;
       if(this.answerType) {
-        this.selectOptionList = this.options[this.answerType];
+        this.selectOptionList = this.formService.getEnableWhenOperatorListByAnswerType(this.answerType);
         this.myModel = !this.myModel ? this.selectOptionList[0].option : this.myModel;
         setTimeout(() => {
           this.onModelChange(this.myModel);

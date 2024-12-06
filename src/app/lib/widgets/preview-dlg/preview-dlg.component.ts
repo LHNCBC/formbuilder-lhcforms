@@ -48,6 +48,8 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   @ViewChild('errorsItem', { static: false, read: NgbAccordionItem }) errorsItem: NgbAccordionItem;
   showNoErrorsMsg = false;
 
+  fhirValidationMsg = "Select the 'View/Validate Questionnaire JSON' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.";
+
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
 
@@ -128,7 +130,6 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    */
   handleLFormsError(event) {
     this.lformsErrors = event.detail;
-    this.runValidations('R4', this.vServer);
   }
 
   /**
