@@ -2,9 +2,19 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.7.0] 2024-11-21
+## [9.7.0] 2024-12-09
 ### Added
 - Added feature to re-order answer options in a question item.
+### Changed
+- Change background color of the focused node on the sidebar tree.
+
+## [9.6.13] 2024-11-18
+### Changed
+- Display the questionnaire title as 'Untitled Form' if it is empty.
+
+## [9.6.12] 2024-11-20
+### Added
+- Added a message for FHIR server validation.
 
 ## [9.6.11] 2024-10-24
 ### Fixed

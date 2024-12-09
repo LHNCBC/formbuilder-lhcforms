@@ -274,6 +274,14 @@ describe('Home page', () => {
       cy.get('#title').should('have.value','Dummy title');
     });
 
+    it('should display default title', () => {
+      cy.get('#title').should('have.value', 'New Form').clear();
+      cy.contains('button', 'Create questions').click();
+      cy.get('div#resizableMiddle button')
+        .should('contain.text', 'Untitled Form')
+        .should('contain.class', 'attention');
+    });
+
     it('should move to form level fields', () => {
       cy.get('lfb-form-fields > div > div > p').should('have.text', 'Enter basic information about the form.');
     })

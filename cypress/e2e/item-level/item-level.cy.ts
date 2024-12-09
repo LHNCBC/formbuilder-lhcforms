@@ -9,7 +9,6 @@ const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition
 const ucumUrl = 'http://unitsofmeasure.org';
 const snomedEclText =
   '< 429019009 |Finding related to biological sex|';
-const excludedField = 'id';
 
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
@@ -183,7 +182,6 @@ describe('Home page', () => {
       cy.get('@firstItem').should('not.have.class', 'node-content-wrapper-active');
 
       cy.getTreeNode('Second item').parents('div.node-content-wrapper').first().as('secondItem');
-      cy.get('@secondItem').should('have.class', 'node-content-wrapper-focused');
       cy.get('@secondItem').should('have.class', 'node-content-wrapper-active');
     });
 
@@ -1368,7 +1366,6 @@ describe('Home page', () => {
 
     });
 
-
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
@@ -1431,7 +1428,7 @@ describe('Home page', () => {
       cy.get('#type option:selected').should('have.text', 'decimal');
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
       cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
-      cy.questionnaireJSON().then((qJson) => {
+      cy.questionnaireJSON().should((qJson) => {
         expect(qJson).to.deep.equal(fixtureJson);
       });
 
@@ -1841,7 +1838,18 @@ describe('Home page', () => {
         cy.contains('button', 'Edit questions').click();
         cy.contains('button', 'Preview').click();
         cy.get('wc-lhc-form').should('exist').parent().as('tabBody');
-        cy.get('@tabBody').find('.card.bg-danger-subtle').should('be.visible');
+        cy.get('@tabBody').find('.card.bg-danger-subtle').should('be.visible')
+          .within(() => {
+            // Error message returns from LForms.
+            cy.get('.lforms-validation')
+              .should('have.text', 'Question with linkId \'q3\' contains enableWhen pointing to a question with linkId \'q11\' that does not exist.');
+          
+            // The FHIR validation message is shown when an error is detected by LForms. It informs users
+            // that additional validation can be performed against the FHIR server found in the 
+            // 'View/Validate Questionnaire JSON tab'.
+            cy.get('.fhir-validation-msg')
+              .should('have.text', 'Select the \'View/Validate Questionnaire JSON\' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.');
+          });
         cy.contains('mat-dialog-actions button', 'Close').click();
 
         // Delete offending item and assert the error does not exist
