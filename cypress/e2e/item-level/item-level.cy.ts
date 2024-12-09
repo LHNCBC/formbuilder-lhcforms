@@ -9,7 +9,6 @@ const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition
 const ucumUrl = 'http://unitsofmeasure.org';
 const snomedEclText =
   '< 429019009 |Finding related to biological sex|';
-const excludedField = 'id';
 
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
@@ -183,7 +182,6 @@ describe('Home page', () => {
       cy.get('@firstItem').should('not.have.class', 'node-content-wrapper-active');
 
       cy.getTreeNode('Second item').parents('div.node-content-wrapper').first().as('secondItem');
-      cy.get('@secondItem').should('have.class', 'node-content-wrapper-focused');
       cy.get('@secondItem').should('have.class', 'node-content-wrapper-active');
     });
 
@@ -1368,7 +1366,6 @@ describe('Home page', () => {
 
     });
 
-
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
@@ -1431,7 +1428,7 @@ describe('Home page', () => {
       cy.get('#type option:selected').should('have.text', 'decimal');
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
       cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
-      cy.questionnaireJSON().then((qJson) => {
+      cy.questionnaireJSON().should((qJson) => {
         expect(qJson).to.deep.equal(fixtureJson);
       });
 
@@ -1803,7 +1800,7 @@ describe('Home page', () => {
         const operator1El = '[id^="enableWhen.0.operator"]';
         const answer1El = '[id^="enableWhen.0.answer"]';
         const errorIcon1El = '[id^="enableWhen.0_err"]';
-      
+
         const question2El = '[id^="enableWhen.1.question"]';
         const errorIcon2El = '[id^="enableWhen.1_err"]';
 
@@ -1814,7 +1811,7 @@ describe('Home page', () => {
         cy.clickTreeNode('EnableWhen');
 
         cy.get(errorMessageEl).should('exist');
-        
+
         cy.get(question1El).should('contain.value', '4 - Integer Type');
         cy.get(operator1El).should('contain.value', '=');
         cy.get(answer1El).should('contain.value', '5');

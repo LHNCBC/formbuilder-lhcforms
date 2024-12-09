@@ -1,4 +1,4 @@
-<div *ngIf="errorTooltip.showDropNotAllowedTooltip" class="not-allowed-tooltip" 
+<div *ngIf="errorTooltip.showDropNotAllowedTooltip" class="not-allowed-tooltip"
      [ngStyle]="{ top: errorTooltip.tooltipMouseYLoc + 'px', left: errorTooltip.tooltipMouseXLoc + 'px' }">
      {{errorTooltip.dropErrorMessage}}
 </div>
@@ -23,8 +23,8 @@
                 <div class="node-wrapper" [style.padding-left]="node.getNodePadding()" role="group">
                   <tree-node-expander [node]="node"></tree-node-expander>
                   <div class="node-content-wrapper"
+                       [class.node-content-wrapper-focused]="node.isFocused && !node.isActive"
                        [class.node-content-wrapper-active]="node.isActive"
-                       [class.node-content-wrapper-focused]="node.isFocused"
                        (click)="node.mouseAction('click', $event)"
                        (dblclick)="node.mouseAction('dblClick', $event)"
                        (contextmenu)="node.mouseAction('contextMenu', $event)"
@@ -50,7 +50,7 @@
               </ng-template>
               <ng-template #loadingTemplate><span></span></ng-template>
             </tree-root>
-            <small class="text-danger form-text sr-only" role="alert" *ngIf="validationErrorsAllItemsErrorStr !== ''" >
+            <small class="text-danger form-text cdk-visually-hidden" role="alert" *ngIf="validationErrorsAllItemsErrorStr !== ''" >
               {{validationErrorsAllItemsErrorStr}}
             </small>
           </span>

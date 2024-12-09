@@ -12,10 +12,11 @@
   width: 0;
 }
 
-.node-content-wrapper-active,
-.node-content-wrapper-focused {
+.node-content-wrapper-active {
   background-color: lightgrey;
 }
+
+.node-content-wrapper-focused,
 .node-content-wrapper:hover {
   background-color: lightgoldenrodyellow;
 }

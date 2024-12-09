@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.6.14] 2024-12-09
+### Changed
+- Change background color of the focused node on the sidebar tree.
+
 ## [9.6.13] 2024-11-18
 ### Changed
 - Display the questionnaire title as 'Untitled Form' if it is empty.
