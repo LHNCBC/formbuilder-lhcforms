@@ -15,17 +15,13 @@ import {
   ChangeDetectorRef,
   Component,
   DoCheck,
-  ElementRef,
+  ElementRef, inject,
   OnChanges,
-  OnDestroy,
-  OnInit,
+  OnInit, Renderer2,
   SimpleChanges
 } from '@angular/core';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
-import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
-import {faTrash} from '@fortawesome/free-solid-svg-icons';
-import {faAngleDown} from '@fortawesome/free-solid-svg-icons';
-import {faAngleRight} from '@fortawesome/free-solid-svg-icons';
+import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong} from '@fortawesome/free-solid-svg-icons';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
@@ -44,7 +40,10 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   faRemove = faTrash;
   faRight = faAngleRight;
   faDown = faAngleDown;
+  faMoveDown = faDownLong;
+  faMoveUp = faUpLong;
 
+  includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
   noCollapseButton = false;
@@ -65,7 +64,10 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   hideHeaderAriaLabel = true;
 
-  constructor(private elRef: ElementRef, private cdRef: ChangeDetectorRef) {
+  renderer = inject(Renderer2);
+  cdr = inject(ChangeDetectorRef);
+
+  constructor(private elRef: ElementRef) {
     super();
   }
   /**
@@ -75,6 +77,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
+    this.includeActionColumn = (this.formProperty.properties as FormProperty[]).length > 1;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -143,7 +146,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
         if(this.rowSelection) {
           this.rowSelectionType = this.singleItem ? 'radio' : 'checkbox';
         }
-        this.cdRef.markForCheck();
+        this.cdr.markForCheck();
       });
       this.subscriptions.push(subscription);
     }
@@ -157,7 +160,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
         else if(newValue && this.rowSelection) {
           this.rowSelectionType = 'checkbox';
         }
-        this.cdRef.markForCheck();
+        this.cdr.markForCheck();
       });
       this.subscriptions.push(subscription);
     }
@@ -170,7 +173,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     subscription = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
       const showFields = this.getShowTableFields();
       this.noHeader = showFields.some((f) => f.noHeader);
-      this.cdRef.markForCheck();
+      this.cdr.markForCheck();
     });
 
     this.subscriptions.push(subscription);
@@ -312,26 +315,29 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * Before calling parent class api to remove the item, we need to do some housekeeping with respect to table's
    * selection (radio/checkbox) indexes.
    *
-   * @param formProperty - The row represented by its form property.
+   * @param index - Index of the formProperty to be removed from the array.
    */
-  removeItem(formProperty) {
+  removeProperty(index: number) {
     const props = this.formProperty.properties as FormProperty [];
 
-    const propIndex = props.findIndex((e) => e === formProperty);
-    if(propIndex >= 0) {
+    if(index < 0 || index >= props.length) {
+      return;
+    }
+
+    if(index >= 0) {
       if(this.selectionCheckbox.length > 0) {
-        this.selectionCheckbox.splice(propIndex, 1);
+        this.selectionCheckbox.splice(index, 1);
       }
       if(this.selectionRadio >= 0) {
-        if(this.selectionRadio === propIndex) {
+        if(this.selectionRadio === index) {
           this.selectionRadio = -1; // selected row is deleted. No selected radio button.
         }
-        else if (this.selectionRadio > propIndex) {
+        else if (this.selectionRadio > index) {
           this.selectionRadio--;
         }
       }
     }
-    super.removeItem(formProperty);
+    super.removeItem(props[index]);
   }
 
 
@@ -370,9 +376,102 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   /**
    * Updates the aria-hidden attribute for the 'Clear Selection' button based on the provided status.
    * @param status - If true, set the aria-hidden attribute to true, which making the 'Clear Selection'
-   *                 button aria-label unannounced by the screen reader. 
+   *                 button aria-label unannounced by the screen reader.
    */
   onHideHeaderAriaLabel(status: boolean): void {
     this.hideHeaderAriaLabel = status;
+  }
+
+  /**
+   * Handle moving the row up in the table.
+   * @param index - Index of the row to be moved up.
+   */
+  onMoveUp(index) {
+    const props = this.formProperty.properties as FormProperty [];
+    if(props.length > 1) {
+      this.changeSelectionOnMove(index, -1);
+      const deletedProps = props.splice(index, 1);
+      props.splice(index - 1, 0, deletedProps[0]);
+      this.formProperty.updateValueAndValidity();
+      setTimeout(() => {
+        this.getInputElementInTable(index - 1, 0).focus();
+      });
+    }
+  }
+
+  /**
+   * Handle moving the row down in the table.
+   * @param index - Index of the row to be moved down.
+   */
+  onMoveDown(index) {
+    const props = this.formProperty.properties as FormProperty [];
+    if(props.length > 1) {
+      this.changeSelectionOnMove(index, 1);
+      const deletedProps = props.splice(index, 1);
+      props.splice(index + 1, 0, deletedProps[0]);
+      this.formProperty.updateValueAndValidity();
+      setTimeout(() => {
+        this.getInputElementInTable(index + 1, 0).focus();
+      });
+    }
+  }
+
+  /**
+   * Change the selection on move up or down.
+   * @param index - Index of the row.
+   * @param direction - Relative position from the index i.e -1 for up and 1 for down.
+   */
+  changeSelectionOnMove(index: number, direction: number) {
+    if(this.rowSelectionType === 'radio') {
+      if(this.selectionRadio === index) {
+        this.selectionRadio = index + direction;
+      }
+      else if(this.selectionRadio === index + direction) {
+        this.selectionRadio = index;
+      }
+    }
+    else {
+      const thisValue = this.selectionCheckbox[index];
+      this.selectionCheckbox[index] = this.selectionCheckbox[index + direction];
+      this.selectionCheckbox[index + direction] = thisValue;
+    }
+  }
+
+  /**
+   * Check if the field is empty. Used to hide the delete button for the last row.
+   * @param index - Index of the row.
+   */
+  isEmpty(index: number) {
+    const ret = Util.isEmpty(this.formProperty.properties[index].value);
+    return ret;
+  }
+
+  /**
+   * Check if the next item is empty. Used to disable down arrow.
+   * @param index - Index of the row.
+   */
+  isNextItemEmpty(index: number) {
+    const count = (this.formProperty.properties as FormProperty []).length;
+    let ret = false;
+    if(index < count - 1) {
+      ret = Util.isEmpty(this.formProperty.properties[index + 1].value);
+    }
+    return ret;
+  }
+
+  /**
+   * Check if the previous item is empty. Used to disable up arrow.
+   * @param event - Index of the row.
+   */
+  highlight(event: Event) {
+    this.renderer.addClass(event.currentTarget, 'row-highlight');
+  }
+
+  /**
+   * Check if the previous item is empty. Used to disable up arrow.
+   * @param event - Index of the row.
+   */
+  unHighlight(event: Event) {
+    this.renderer.removeClass(event.currentTarget, 'row-highlight');
   }
 }

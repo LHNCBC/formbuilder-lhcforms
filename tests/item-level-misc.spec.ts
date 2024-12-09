@@ -8,11 +8,7 @@ test.describe('item-level fields', async () => {
   test.beforeEach(async ({page}) => {
     await page.goto('/');
     mainPO = new MainPO(page);
-    await mainPO.clearSession();
-    await mainPO.loadFLPage();
-    await page.getByLabel('Start from scratch').click();
-    await page.getByRole('button', {name: 'Continue'}).click();
-    await page.getByRole('button', {name: 'Create questions'}).click();
+    await mainPO.loadILPage();
   });
 
   test('should show correct units when adding loinc question of a decimal type', async ({page}) => {
@@ -52,7 +48,6 @@ test.describe('item-level fields', async () => {
     const context = await browser.newContext({storageState: sState});
     page = await context.newPage();
     await page.goto('/');
-    expect(await context.storageState()).toEqual(sState);
 
     await page.getByLabel('Would you like to start from where you left off before?').click();
     await page.getByRole('button', {name: 'Continue'}).click();

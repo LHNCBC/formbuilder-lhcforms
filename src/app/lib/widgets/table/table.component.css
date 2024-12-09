@@ -15,6 +15,7 @@
 
 .lfb-table {
   margin-bottom: 0;
+  background-color: var(--bs-table-bg);
 }
 .lfb-table th {
   text-align: center;
@@ -31,18 +32,8 @@
   background-color: lightgoldenrodyellow;
 }
 
-button.unselect {
-  margin-top: -3px;
-  border: 0px;
+button.unselect i {
   font-size: 20px;
-  width: 25px;
-  padding-left: 1px !important;
-  line-height: 0.4;
-  vertical-align: middle;
-  transform: scaleX(-1);
-  font-family: 'Roboto', sans-serif;
-  border-radius: 4px;
-  margin-left: 4px !important;
 }
 
 th.default-column {
@@ -59,16 +50,23 @@ td.default-column {
   border-bottom: 1px solid var(--bs-border-color);
 }
 
-th.action-column {
-  width: 30px;
-  min-width: 30px;
+.action-column {
+  min-width: 40px;
+}
+
+.row-highlight {
+  background-color: var(--bs-warning-bg-subtle);
+}
+.lfb-table-row td {
+  background-color: inherit;
+}
+:host ::ng-deep input {
+  background-color: inherit !important;
 }
 
 td.action-column {
   border-left: 1px solid var(--bs-border-color);
   border-bottom: 1px solid var(--bs-border-color);
-  width: 30px;
-  min-width: 30px;
 }
 
 .col-sm-half {

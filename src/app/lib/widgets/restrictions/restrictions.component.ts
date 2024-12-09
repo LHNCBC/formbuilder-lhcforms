@@ -96,9 +96,8 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   constructor(private restrictionOperatorService: RestrictionOperatorService,
               private extensionsService: ExtensionsService,
               private formService: FormService,
-              private elementRef: ElementRef,
-              private cdr: ChangeDetectorRef) {
-    super(elementRef, cdr);
+              private elementRef: ElementRef) {
+    super(elementRef);
   }
 
 

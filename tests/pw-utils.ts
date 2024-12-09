@@ -116,4 +116,15 @@ export class PWUtils {
     await node.click();
     await node.locator(`../../../tree-node-expander`).click();
   }
+
+  /**
+   * Get a table cell locator.
+   * @param table - Table locator.
+   * @param row - Row number, indexed from 1.
+   * @param column - Column number, indexed from 1
+   * @return Locator - Table cell locator.
+   */
+  static getTableCell(table: Locator, row: number, column: number): Locator {
+    return table.locator(`tbody tr:nth-child(${row}) > td:nth-child(${column})`);
+  }
 }
