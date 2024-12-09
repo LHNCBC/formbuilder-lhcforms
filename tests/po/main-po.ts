@@ -35,8 +35,14 @@ export class MainPO {
    */
   async loadFLPage() {
     await this.loadHomePage();
+    await this._page.getByLabel('Start from scratch').click();
+    await this._page.getByRole('button', {name: 'Continue'}).click();
   }
 
+  async loadILPage() {
+    await this.loadFLPage();
+    await this._page.getByRole('button', {name: 'Create questions'}).click();
+  }
   /**
    * Load item level page from scratch.
    */
@@ -113,5 +119,20 @@ export class MainPO {
     });
   }
 
+  /**
+   * Load a table with data.
+   * @param tableData - Data to load in the table.
+   * @param table - Locator for the table.
+   */
+  async loadTable(table: Locator, tableData: string [][]) {
+    for(let i = 0; i < tableData.length; i++) {
+      for(let j = 0; j < tableData[i].length; j++) {
+        await table.locator(`tbody tr:nth-child(${i+1}) td:nth-child(${j+1}) input`).fill(tableData[i][j]);
+      }
+      if(tableData.length - i > 1) {
+        await table.locator('..').getByRole('button', {name: 'Add'}).click();
+      }
+    }
+  }
 
 }

@@ -632,7 +632,7 @@ describe('Home page', () => {
       cy.get('@thirdRadioDefault').should('be.checked');
 
       // Click the "Unselect" button to clear selection(s)
-      cy.get('button.unselect').should('exist').click();
+      cy.contains('button i', 'backspace').should('exist').click();
 
       // Items should be unselected.
       cy.get('@firstRadioDefault').should('not.be.checked');
@@ -662,7 +662,7 @@ describe('Home page', () => {
       cy.get('@thirdCheckboxDefault').should('be.checked');
 
       // Click the "Unselect" button to clear selection(s)
-      cy.get('button.unselect').should('exist').click();
+      cy.contains('button i', 'backspace').should('exist').click();
 
       // Items should be unchecked.
       cy.get('@firstCheckboxDefault').should('not.be.checked');

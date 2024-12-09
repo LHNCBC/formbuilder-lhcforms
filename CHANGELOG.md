@@ -2,7 +2,9 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.6.14] 2024-12-09
+## [9.7.0] 2024-12-09
+### Added
+- Added feature to re-order answer options in a question item.
 ### Changed
 - Change background color of the focused node on the sidebar tree.
 
