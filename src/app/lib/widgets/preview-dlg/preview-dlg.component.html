@@ -18,7 +18,10 @@
           <div>&nbsp;</div> <!-- Needed to float the above div -->
         </div>
         <ng-container *ngIf="lformsErrors">
-          <div class="card bg-danger-subtle text-center">{{lformsErrors}}</div>
+          <div class="card bg-danger-subtle text-center">
+            <div class="lforms-validation">{{lformsErrors}}</div>
+            <div class="fhir-validation-msg">{{fhirValidationMsg}}</div>
+          </div>
           <ng-container *ngTemplateOutlet="validations"></ng-container>
         </ng-container>
         <wc-lhc-form #lhcForm [questionnaire]="data?.questionnaire" [options]="data.lfData.options" (onError)="handleLFormsError($event)"></wc-lhc-form>

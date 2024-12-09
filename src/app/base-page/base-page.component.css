@@ -41,3 +41,7 @@
 .fix-pre {
   margin-top: revert;
 }
+
+.attention {
+  color: rgb(220, 53, 69);
+}
