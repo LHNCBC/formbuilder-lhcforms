@@ -1,12 +1,10 @@
 import {
   AfterViewChecked,
-  ChangeDetectorRef,
   Component,
   DoCheck,
   ElementRef,
   OnDestroy,
   OnInit,
-  Renderer2,
   ViewEncapsulation
 } from '@angular/core';
 import {TableComponent} from '../table/table.component';
@@ -33,9 +31,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
 
-  constructor(private renderer: Renderer2, private elementRef: ElementRef,
-              private cdr: ChangeDetectorRef, private formService: FormService) {
-    super(elementRef, cdr);
+  constructor(private elementRef: ElementRef, private formService: FormService) {
+    super(elementRef);
   }
 
   ngOnInit() {
@@ -242,15 +239,12 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    * Once the enableWhen condition is deleted, remove its associated error (if present)
    * from the TreeNodeStatusMap, and adjust the indexes of other enableWhen errors as needed.
    *
-   * @param formProperty - The row represented by its form property.
+   * @param index - The row represented by its form property.
    */
-  removeItem(formProperty) {
-    const props = this.formProperty.properties as FormProperty [];
-    const propIndex = props.findIndex((e) => e === formProperty);
-    const treeNodeId = this.formProperty.searchProperty(FormService.TREE_NODE_ID).value
-
-    super.removeItem(formProperty);
-    this.formService.deleteErrorAndAdjustEnableWhenIndexes(treeNodeId, propIndex);
+  removeProperty(index: number) {
+    super.removeProperty(index);
+    const treeNodeId = this.formProperty.searchProperty(FormService.TREE_NODE_ID).value;
+    this.formService.deleteErrorAndAdjustEnableWhenIndexes(treeNodeId, index);
   }
 
   /**
