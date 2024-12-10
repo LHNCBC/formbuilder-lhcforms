@@ -6,8 +6,8 @@ describe('DatetimeComponent', () => {
   let component: DatetimeComponent;
   let fixture: ComponentFixture<DatetimeComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ DatetimeComponent ]
     })
     .compileComponents();

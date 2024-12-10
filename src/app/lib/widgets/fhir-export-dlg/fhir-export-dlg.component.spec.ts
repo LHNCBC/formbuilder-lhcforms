@@ -2,16 +2,16 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FhirExportDlgComponent } from './fhir-export-dlg.component';
 import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
-import {HttpClientModule} from '@angular/common/http';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 
 describe('FhirExportDlgComponent', () => {
   let component: FhirExportDlgComponent;
   let fixture: ComponentFixture<FhirExportDlgComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach( () => {
+    TestBed.configureTestingModule({
       declarations: [ FhirExportDlgComponent ],
-      imports: [NgbModule, HttpClientModule],
+      imports: [NgbModule, HttpClientTestingModule],
       providers: [NgbActiveModal]
     })
     .compileComponents();

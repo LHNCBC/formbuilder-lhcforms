@@ -6,8 +6,8 @@ describe('LfbSpinnerComponent', () => {
   let component: LfbSpinnerComponent;
   let fixture: ComponentFixture<LfbSpinnerComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ LfbSpinnerComponent ]
     })
     .compileComponents();

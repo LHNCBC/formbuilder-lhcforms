@@ -6,8 +6,8 @@ describe('ObservationExtractComponent', () => {
   let component: ObservationExtractComponent;
   let fixture: ComponentFixture<ObservationExtractComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ ObservationExtractComponent ]
     })
     .compileComponents();

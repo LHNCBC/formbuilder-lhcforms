@@ -6,8 +6,8 @@ xdescribe('BooleanRadioComponent', () => {
   let component: BooleanRadioComponent;
   let fixture: ComponentFixture<BooleanRadioComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ BooleanRadioComponent ]
     })
     .compileComponents();

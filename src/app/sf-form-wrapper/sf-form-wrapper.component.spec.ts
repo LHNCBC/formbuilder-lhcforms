@@ -9,8 +9,8 @@ xdescribe('SfFormWrapperComponent', () => {
   let component: SfFormWrapperComponent;
   let fixture: ComponentFixture<SfFormWrapperComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ SfFormWrapperComponent, FormComponent ],
       providers: [HttpClient, HttpHandler, ExtensionsService]
     })

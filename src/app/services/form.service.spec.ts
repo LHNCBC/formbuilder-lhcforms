@@ -14,7 +14,7 @@ describe('FormService', () => {
 
   beforeEach(async () => {
     service = await TestBed.inject(FormService);
-    await expect(window['LForms']).toBeDefined();
+    expect(window['LForms']).toBeDefined();
   });
 
   it('should be created', async () => {

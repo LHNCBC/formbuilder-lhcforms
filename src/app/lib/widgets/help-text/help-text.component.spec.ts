@@ -16,8 +16,8 @@ xdescribe('HelpTextComponent', () => {
   let component: HelpTextComponent;
   let fixture: ComponentFixture<HelpTextComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       imports: [HelpTextComponent]
     })
     .compileComponents();

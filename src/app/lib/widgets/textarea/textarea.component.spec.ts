@@ -6,8 +6,8 @@ describe('TextAreaComponent', () => {
   let component: TextAreaComponent;
   let fixture: ComponentFixture<TextAreaComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ TextAreaComponent ]
     })
     .compileComponents();

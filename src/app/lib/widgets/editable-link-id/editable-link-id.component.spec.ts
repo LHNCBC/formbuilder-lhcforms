@@ -7,8 +7,8 @@ describe('EditableLinkIdComponent', () => {
   let component: EditableLinkIdComponent;
   let fixture: ComponentFixture<EditableLinkIdComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
     //  providers: [ExtensionsService],
       providers:[ HttpClient, HttpHandler ],
       declarations: [ EditableLinkIdComponent ]

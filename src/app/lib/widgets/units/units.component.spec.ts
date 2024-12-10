@@ -6,8 +6,8 @@ xdescribe('UnitsComponent', () => {
   let component: UnitsComponent;
   let fixture: ComponentFixture<UnitsComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ UnitsComponent ]
     })
     .compileComponents();

@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MessageDlgComponent } from './message-dlg.component';
-import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 
 describe('MessageDlgComponent', () => {
   let component: MessageDlgComponent;
   let fixture: ComponentFixture<MessageDlgComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ MessageDlgComponent ],
       providers: [NgbActiveModal]
     })

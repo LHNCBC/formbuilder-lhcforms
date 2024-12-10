@@ -7,6 +7,8 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Added feature to re-order answer options in a question item.
 ### Changed
 - Change background color of the focused node on the sidebar tree.
+### Fixed
+- Fixed intermittent failures of unit tests
 
 ## [9.6.13] 2024-11-18
 ### Changed
