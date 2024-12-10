@@ -93,3 +93,7 @@ fa-icon > svg.svg-inline--fa {
   padding: 0;
   margin-right: 1px;
 }
+
+.toggle-children {
+  margin-bottom: 2px;
+}
