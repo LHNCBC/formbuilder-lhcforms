@@ -160,7 +160,7 @@
        (mouseenter)="parentTooltip.hide()"
        (mouseleave)="parentTooltip.show()">
     <button ngbDropdownToggle
-            class="btn btn-sm p-0 border px-1"
+            class="btn btn-sm p-0 border px-1 align-baseline"
             matTooltip="More options"
             [attr.tabindex]="node.isActive ? null : '-1'"
             (keydown.arrowDown)="preventEventPropagation($event)"
