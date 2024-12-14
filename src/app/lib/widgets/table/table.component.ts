@@ -249,6 +249,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param popoverRef - popover reference template.
    */
   addItemWithAlert(popoverRef) {
+    this.isCollapsed = false;
     const items = this.formProperty.properties as [];
     const lastItem = items.length ? items[items.length - 1] : null;
     if(!lastItem || !Util.isEmpty(lastItem.value)) { // If no lastItem or be not empty.

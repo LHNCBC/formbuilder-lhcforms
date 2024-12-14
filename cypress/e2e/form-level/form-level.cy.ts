@@ -643,9 +643,9 @@ describe('Home page', () => {
       cy.contains('p.text-success', 'https://dummyhost.com/baseR4 was verified to be a FHIR server.').should('be.visible', true);
       cy.get('@add').click();
       cy.get('input[type="radio"][name="fhirServer"]').first().should('be.checked');
-      cy.get('lfb-fhir-servers-dlg table tr')
-        .first().get('td')
-        .first().should('have.text', 'https://dummyhost-1.com/baseR4');
+      cy.get('lfb-fhir-servers-dlg table tbody tr')
+        .first().find('td')
+        .first().find('label').should('have.text', 'https://dummyhost-1.com/baseR4');
     });
 
   });

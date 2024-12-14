@@ -60,7 +60,7 @@ export class BasePageComponent implements OnInit {
   // Accepted terms in localstorage expires in a week.
   weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
   canceledEvent = false;
-  titleAriaLabel;
+  titleAriaLabel: string;
 
   constructor(private formService: FormService,
               private modelService: SharedObjectService,
@@ -692,10 +692,9 @@ export class BasePageComponent implements OnInit {
    * Returns the title of a questionnaire if it exists; otherwise, provides a default name.
    * @returns - Questionnaire title or "Untitled Form".
    */
-  getQuestionnaireTitle(): string {
-    this.titleAriaLabel = (this.questionnaire?.title) ?
-      `${this.questionnaire.title} button. Click here to go to the Form-level attribute page.` :
+  getTitleAriaLabel(title: string): string {
+    return (title) ?
+      `${title} button. Click here to go to the Form-level attribute page.` :
       `Untitled Form. The questionnaire title is empty. Click here to return to the Form-level attribute page and enter the title.`;
-    return this.questionnaire?.title || "Untitled Form";
   }
 }

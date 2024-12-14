@@ -1368,7 +1368,7 @@
     }
   ],
   "widget": {
-    "keyField": "resourceType",
+    "keyField": "/resourceType",
     "id": "row-layout"
   }
 }
