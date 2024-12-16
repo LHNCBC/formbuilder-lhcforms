@@ -121,6 +121,10 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
       this.initializing = true;
     });
     this.subscriptions.push(sub);
+
+    // The schema.widget.labelPosition is not populated after the 'Default' column in the table.component.html
+    // has been excluded.
+    this.cdr.detectChanges();
   }
 
 

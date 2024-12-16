@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import {ApplicationRef, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, NgModule} from '@angular/core';
 import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
+import { ExpressionEditorModule, ENVIRONMENT_TOKEN } from '@lhncbc/ngx-expression-editor';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -92,6 +93,12 @@ import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
 import {CodemirrorModule} from "@ctrl/ngx-codemirror";
 import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
 
+import { ValueMethodComponent } from './lib/widgets/value-method/value-method.component';
+import { PickAnswerComponent } from './lib/widgets/pick-answer/pick-answer.component';
+import { ExpressionEditorComponent } from './lib/widgets/expression-editor/expression-editor.component';
+import { ExpressionEditorDlgComponent } from './lib/widgets/expression-editor-dlg/expression-editor-dlg.component';
+import { environment } from '../environments/environment';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -154,7 +161,11 @@ import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
     TextAreaComponent,
     DatetimeComponent,
     EditableLinkIdComponent,
-    HelpTextComponent
+    HelpTextComponent,
+    ValueMethodComponent,
+    PickAnswerComponent,
+    ExpressionEditorComponent,
+    ExpressionEditorDlgComponent
   ],
   imports: [
     BrowserModule,
@@ -188,11 +199,15 @@ import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
     AutoCompleteComponent,
     LabelComponent,
     CdkCopyToClipboard,
-    CodemirrorModule
+    CodemirrorModule,
+    ExpressionEditorModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [{provide: WidgetRegistry, useClass: LformsWidgetRegistry},
-    AppJsonPipe]
+  providers: [
+    {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
+    { provide: ENVIRONMENT_TOKEN, useValue: environment },
+    AppJsonPipe
+  ]
 })
 export class AppModule implements DoBootstrap {
   ngDoBootstrap(appRef: ApplicationRef) {

@@ -2,6 +2,9 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.7.2] 2024-12-21
+### Added
+- Added Value Method field for selecting initial values.
 
 ## [9.7.1] 2024-12-20
 ### Changed

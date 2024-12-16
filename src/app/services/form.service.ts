@@ -63,6 +63,9 @@ export class FormService {
   static readonly TREE_NODE_ID = "__$treeNodeId";
   _validationStatusChanged$: Subject<void> = new Subject<void>();
 
+  static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
+  static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
+  static VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
 
   private _loading = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
@@ -612,6 +615,42 @@ export class FormService {
   clearAutoSavedTreeNodeStatusMap() {
     localStorage.removeItem('treeMap');
     this.treeNodeStatusMap = {};
+  }
+
+  /**
+   * Loop through the array of extensions and filters out extensions that is a Variable, Initial Expression, or Calculated Expression.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions excluding the extensions of type Variable, Initial Expression or Calculated Expression.
+   */
+  removeVariableAndExpressionsExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url !== FormService.VARIABLE && ext.url !== FormService.INITIAL_EXPRESSION && ext.url !== FormService.CALCULATED_EXPRESSION));
+  }
+
+  /**
+   * Loop through the array of extensions and retain only extensions that are a Variable, Initial Expression, or Calculated Expression.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions that are of type Variable, Initial Expression or Calculated Expression.
+   */
+  filterVariableAndExpressionsExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url === FormService.VARIABLE || ext.url === FormService.INITIAL_EXPRESSION || ext.url === FormService.CALCULATED_EXPRESSION));
+  }
+
+  /**
+   * Check whether the provided array of extensions contains the Initial Expression.
+   * @param extensions - array of extensions
+   * @returns - True if the Initial Expression is found and false otherwise.
+   */
+  hasInitialComputeValueExpression(extensions: any): boolean {
+    return extensions.some(ext => (ext.url === FormService.INITIAL_EXPRESSION));
+  }
+
+  /**
+   * Check whether the provided array of extensions contains the Calculated Expression.
+   * @param extensions - array of extensions
+   * @returns - True if the Calculated Expression is found and false otherwise.
+   */
+  hasContinuouslyComputeValueExpression(extensions: any): boolean {
+    return extensions.some(ext => (ext.url === FormService.CALCULATED_EXPRESSION));
   }
 
   /**

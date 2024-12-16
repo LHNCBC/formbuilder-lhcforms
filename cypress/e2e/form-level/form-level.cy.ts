@@ -65,6 +65,7 @@ describe('Home page accept Terms of Use notices', () => {
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
     cy.selectDataType('choice');
+    cy.getComputeInitialValueValueMethodClick();
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]')
       .should('be.visible').and('not.be.checked');

@@ -32,7 +32,7 @@
             [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
           ></lfb-title>
         </th>
-        <th *ngIf="rowSelectionType === 'radio' || rowSelectionType === 'checkbox'" class="col-sm-2 default-column">
+        <th *ngIf="(rowSelectionType === 'radio' || rowSelectionType === 'checkbox')  && id !=='answerOption'" class="col-sm-2 default-column">
           <lfb-title
             title="Default"
             helpMessage="Pick a default item"
@@ -53,17 +53,30 @@
         <td *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
           <lfb-form-element nolabel="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
         </td>
-        <td *ngIf="rowSelectionType === 'radio'" class="col-sm-2 text-center align-self-center default-column">
+        <td *ngIf="rowSelectionType === 'radio' && id !=='answerOption'" class="col-sm-2 text-center align-self-center default-column">
           <input type="radio" [id]="'radio_'+itemProperty.canonicalPathNotation" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
                  [ngModelOptions]="{standalone: true}" name="selectionRadio"  (focus)="onHideHeaderAriaLabel(true)">
         </td>
-        <td *ngIf="rowSelectionType === 'checkbox'" class="col-sm-2 text-center align-self-center default-column">
+        <td *ngIf="rowSelectionType === 'checkbox' && id !=='answerOption'" class="col-sm-2 text-center align-self-center default-column">
           <input type="checkbox" [id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]"
                  (ngModelChange)="checkboxSelection($event)"  (focus)="onHideHeaderAriaLabel(true)">
         </td>
         @if(includeActionColumn) {
           <ng-container *ngTemplateOutlet="actionColumn; context: {index: ind, first: isFirst, last: isLast}"></ng-container>
         }
+<!-- 
+        <td [ngClass]="{'d-none': formProperty.properties.length === 1, 'col-sm-1': id !== 'answerOption', 'col-sm-half': id === 'answerOption'}"
+        class="align-middle action-column">
+          <button (click)="removeItem(itemProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
+              [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
+              *ngIf="!(schema.hasOwnProperty('minItems') &&
+                           schema.hasOwnProperty('maxItems') &&
+                           schema.minItems === schema.maxItems)"
+              matTooltip="Remove" aria-label="Remove"
+          >
+            <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
+        </td>
+ -->
       </tr>
       </tbody>
     </table>

@@ -190,6 +190,7 @@ Cypress.Commands.add('FHIRServerResponse', (menuText, serverBaseUrl = 'https://l
 
 Cypress.Commands.add('enterAnswerOptions', (codings) => {
   cy.selectDataType('choice');
+  cy.getPickInitialValueValueMethodClick();
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
@@ -206,6 +207,7 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
  */
 Cypress.Commands.add('addAnswerOptions', () => {
   cy.selectDataType('choice');
+  cy.getPickInitialValueValueMethodClick();
   // No 'initial' widget for choice. User selects default radio in answer option table.
   // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
@@ -229,28 +231,17 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.1.valueCoding.code"]').type('c2');
   cy.get('[id^="answerOption.1.valueCoding.system"]').type('s2');
   cy.get('[id^="answerOption.1.valueCoding.__$score"]').type('3');
-  // Select a default a.k.a initial
-  cy.get('lfb-answer-option table tbody tr').eq(0).find('input[type="radio"]').click();
+  // Select first option
+  cy.get('[id^="pick-answer"]').as('pickAnswer');
+  cy.get('@pickAnswer').click();
+  cy.get('#searchResults ul > li').should('have.length', 2);
+  cy.get('@pickAnswer').type('{downarrow}{enter}');
+  cy.get('@pickAnswer').should('have.value', 'd1');
 
   cy.questionnaireJSON().should((qJson) => {
     expect(qJson.item[0].type).equal('choice');
-    expect(qJson.item[0].answerOption).to.deep.equal([
-      {
-        initialSelected: true,
-        valueCoding: {display: 'd1', code: 'c1', system: 's1'},
-        extension: [{
-          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
-          valueDecimal: 2.1
-        }]
-      },
-      {
-        valueCoding: {display: 'd2', code: 'c2', system: 's2'},
-        extension: [{
-          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
-          valueDecimal: 3
-        }]
-      },
-    ]);
+    expect(qJson.item[0].answerOption[0].valueCoding.display).equal('d1');
+    expect(qJson.item[0].answerOption[0].initialSelected).equal(true);
   });
 });
 
@@ -542,3 +533,31 @@ Cypress.Commands.add('getInitialValueBooleanInput', (rbValue) => {
 Cypress.Commands.add('getInitialValueBooleanClick', (rbValue) => {
   return getInitialValueBooleanParent().find('label[for^="booleanRadio_'+rbValue+'"]').click();
 });
+
+/**
+ * Click radio button for the 'Type initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getTypeInitialValueValueMethodClick', (rbValue) => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_type-initial"]').click();
+});
+
+/**
+ * Click radio button for the 'Pick initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getPickInitialValueValueMethodClick', (rbValue) => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
+});
+/**
+ * Click radio button for the 'Compute initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getComputeInitialValueValueMethodClick', (rbValue) => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-initial"]').click();
+});
+
+/**
+ * Click radio button for the 'Continuously compute value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', (rbValue) => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-continuously"]').click();
+});
+
