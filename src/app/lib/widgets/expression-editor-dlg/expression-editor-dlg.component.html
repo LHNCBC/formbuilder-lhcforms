@@ -1,0 +1,27 @@
+<lhc-expression-editor
+  [fhirQuestionnaire]="questionnaire"
+  [itemLinkId]="linkId"
+  [submitButtonName]="'Save'"
+  [titleName]="'Expression Editor'"
+  [expressionLabel]="'Output Expression'"
+  [expressionUri]="expressionUri"
+  [userExpressionChoices]="userExpressionChoices"
+  [lhcStyle]="{
+    buttonPrimary: { backgroundColor: '#0d6efd', color: 'white', fontSize: '.875rem' },
+    buttonSecondary: { backgroundColor: 'rgb(240, 240, 240)', color: 'black', fontSize: '.875rem' },
+    buttonTertiary: { backgroundColor: 'rgb(25, 135, 8)', color: 'white', fontSize: '.875rem' },
+    input: { backgroundColor: '#ffe', fontSize: '.875rem' },
+    select: { backgroundColor: '#ffe', fontSize: '.875rem' },
+    titleBar: {
+      padding: '10px 20px 10px 20px',
+      height: '20px',
+      backgroundColor: 'rgb(50, 98, 149)',
+      color: 'white',
+      verticalAlign: 'middle',
+      fontSize: '1rem'
+    }
+  }"
+  [doNotAskToCalculateScore]="'false'"
+  (save)="onSaveRuleEditor($event)"
+  (cancel)="closeRuleEditorDialog()">
+</lhc-expression-editor>

@@ -41,6 +41,11 @@ import {DatetimeComponent} from './widgets/datetime/datetime.component';
 import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
 import {HelpTextComponent} from "./widgets/help-text/help-text.component";
 
+import { ValueMethodComponent } from './widgets/value-method/value-method.component';
+import { PickAnswerComponent } from './widgets/pick-answer/pick-answer.component';
+import { ExpressionEditorComponent } from './widgets/expression-editor/expression-editor.component';
+import { ExpressionEditorDlgComponent } from './widgets/expression-editor-dlg/expression-editor-dlg.component';
+
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -82,6 +87,9 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('quantity-unit', QuantityUnitComponent);
     this.register('terminology-server', TerminologyServerComponent);
     this.register('editable-link-id', EditableLinkIdComponent);
-
+    this.register('value-method', ValueMethodComponent);
+    this.register('pick-answer', PickAnswerComponent);
+    this.register('expression-editor', ExpressionEditorComponent);
+    this.register('expression-editor-dlg', ExpressionEditorDlgComponent);
   }
 }

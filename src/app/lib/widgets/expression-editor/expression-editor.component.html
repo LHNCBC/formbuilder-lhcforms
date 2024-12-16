@@ -1,0 +1,20 @@
+<div [ngClass]="{'row': true, 'm-0': true}">
+  <lfb-label *ngIf="!nolabel"
+             [attr.for]="elementId"
+             [title]="schema.title"
+             [helpMessage]="schema.description"
+             class="col-2 ps-0 pe-1 ng-star-inserted"
+             [ngClass]="labelClasses"
+  ></lfb-label>
+
+  <div [ngClass]="controlClasses" class="col p-0">
+    <div class="input-group">
+      <input id="outputExpression" readonly [(ngModel)]="expression" *ngIf="schema.widget.showExpression" type="text" [formControl]="control" class="grayed-out form-control form-control-sm" />
+
+      <button id="updateExpression" (click)="updateAnswerExpression()" class="btn btn-sm btn-outline-primary rounded-0 rounded-end">
+        Expression Editor
+      </button>
+    </div>
+  </div>
+</div>
+

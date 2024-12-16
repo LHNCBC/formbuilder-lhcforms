@@ -263,6 +263,7 @@ describe('Home page', () => {
         cy.uploadFile(importFile, true);
         cy.contains('button', 'Edit questions').click();
 
+        cy.getTypeInitialValueValueMethodClick();
         cy.getInitialValueBooleanInput('null').should('be.checked');
         cy.getBooleanInput(readOnlyLabel, 'true').should('be.checked');
         cy.getBooleanInput(requiredLabel, 'false').should('be.checked');
@@ -444,6 +445,7 @@ describe('Home page', () => {
 
     it('should restrict to integer input in integer field', () => {
       cy.selectDataType('integer');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueInteger"]').as('initIntField');
       cy.get('@initIntField').clear().type('abc').should('have.value', '');
       cy.get('@initIntField').clear().type('12abc').should('have.value', '12');
@@ -457,6 +459,7 @@ describe('Home page', () => {
 
     it('should restrict to decimal input in number field', () => {
       cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueDecimal"]').as('initNumberField');
       cy.get('@initNumberField').clear().type('abc').should('have.value', '');
       cy.get('@initNumberField').clear().type('12abc').should('have.value', '12');
@@ -472,6 +475,7 @@ describe('Home page', () => {
 
     it('should add initial values', () => {
       cy.selectDataType('string');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueString"]').type('initial string');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('string');
@@ -528,46 +532,35 @@ describe('Home page', () => {
       cy.get('@firstOption').find('td:nth-child(2) input').should('have.value', 'a');
       cy.get('@firstOption').find('td:nth-child(3) input').should('have.value', 's');
       cy.get('@firstOption').find('td:nth-child(4) input').should('have.value', '1');
-      cy.get('@firstOption').find('td:nth-child(5) input').should('be.visible').and('not.be.checked');
+
       cy.get('@secondOption').find('td:nth-child(1) input').should('have.value', 'd2');
       cy.get('@secondOption').find('td:nth-child(2) input').should('have.value', 'b');
       cy.get('@secondOption').find('td:nth-child(3) input').should('have.value', 's');
-      cy.get('@secondOption').find('td:nth-child(4) input').as('secondScore')
-        .should('have.value', '2');
-      cy.get('@secondOption').find('td:nth-child(5) input').as('secondDefaultRadio')
-        .should('be.visible').and('be.checked');
+      cy.get('@secondOption').find('td:nth-child(4) input').as('secondScore');
+      cy.get('@secondScore').should('have.value', '2');
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('have.value', 'd2');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
       });
+      cy.get('@secondScore').clear();
+      cy.get('@secondScore').type('22{enter}');
 
-      cy.get('@secondScore').clear().type('22');
       cy.get('lfb-answer-option table+button').click();
       cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption').should('be.visible');
       cy.get('@thirdOption').find('td:nth-child(1) input').type('d3');
       cy.get('@thirdOption').find('td:nth-child(2) input').type('c');
       cy.get('@thirdOption').find('td:nth-child(3) input').type('s');
       cy.get('@thirdOption').find('td:nth-child(4) input').type('33');
-      cy.get('@thirdOption').find('td:nth-child(5) input').as('thirdDefaultRadio').click();
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').clear().type('d3{enter}');
 
-      const ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].answerOption).to.deep.equal([
-          {
-            valueCoding: {display: 'd1', code: 'a', system: 's'},
-            extension: [{url: ORDINAL_URI, valueDecimal: 1}]
-          },
-          {
-            valueCoding: {display: 'd2', code: 'b', system: 's'},
-            extension: [{url: ORDINAL_URI, valueDecimal: 22}]
-          },
-          {
-            valueCoding: {display: 'd3', code: 'c', system: 's'},
-            extension: [{url: ORDINAL_URI, valueDecimal: 33}],
-            initialSelected: true
-          },
-       ]);
-      });
+        expect(qJson.item[0].answerOption[2].valueCoding.display).equal('d3');
+        expect(qJson.item[0].answerOption[2].initialSelected).equal(true);
+      })
     });
 
     it('should fix a bug in messing up default selections when switched to another node', () => {
@@ -577,32 +570,36 @@ describe('Home page', () => {
       cy.uploadFile(sampleFile, true);
       cy.get('#title').should('have.value', 'Answer options form');
       cy.contains('button', 'Edit questions').click();
-      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption')
-        .find('[id^="radio_answerOption."]').as('firstRadioDefault');
-      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption')
-        .find('[id^="radio_answerOption."]').as('secondRadioDefault');
+
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption');
 
       // First item's default is second option
-      cy.get('@secondRadioDefault').should('be.checked');
+      cy.get('[id^="pick-answer_"]').as('pickAnswer1');
+      cy.get('@pickAnswer1').should('have.value', 'd2');
+
       // Switch to second item
       cy.clickTreeNode('Item 2 with answer option');
-      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption')
-        .find('[id^="radio_answerOption."]').as('thirdRadioDefault');
-      // Second item has no defaults
-      cy.get('@firstRadioDefault').should('not.be.checked');
-      cy.get('@secondRadioDefault').should('not.be.checked');
-      cy.get('@thirdRadioDefault').should('not.be.checked');
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption');
+      cy.get('[id^="pick-answer_"]').as('pickAnswer2');
+      cy.get('@pickAnswer2').should('be.empty');
 
       // Select first option in second item.
-      cy.get('@firstRadioDefault').click();
+      cy.get('@pickAnswer2').click().type('d11{downarrow}{enter}');
+      cy.get('@pickAnswer2').should('have.value', 'd11');
+ 
       // Switch to first item
       cy.clickTreeNode('Item with answer option');
       // First item's default should be intact.
-      cy.get('@secondRadioDefault').should('be.checked');
+      cy.get('[id^="pick-answer_"]').as('pickAnswer1');
+      cy.get('@pickAnswer1').should('have.value', 'd2');
+
       // Switch to second item
       cy.clickTreeNode('Item 2 with answer option');
       // Second item's default is first option.
-      cy.get('@firstRadioDefault').should('be.checked');
+      cy.get('[id^="pick-answer_"]').as('pickAnswer2');
+      cy.get('@pickAnswer2').should('have.value', 'd11');
     });
 
     it('should clear all default selections', () => {
@@ -616,58 +613,83 @@ describe('Home page', () => {
 
       // Switch to second item
       cy.clickTreeNode('Item 2 with answer option');
-      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption')
-        .find('[id^="radio_answerOption."]').as('firstRadioDefault');
-      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption')
-        .find('[id^="radio_answerOption."]').as('secondRadioDefault');
-      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption')
-        .find('[id^="radio_answerOption."]').as('thirdRadioDefault');
-      // Second item has no defaults
-      cy.get('@firstRadioDefault').should('not.be.checked');
-      cy.get('@secondRadioDefault').should('not.be.checked');
-      cy.get('@thirdRadioDefault').should('not.be.checked');
+
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
+      
+      cy.get('#pick-answer_2').as('pickAnswer2');
+      cy.get('@pickAnswer2').click();
+      // No initial value was selected, so there should still be three options available.
+      cy.get('#searchResults ul > li').should('have.length', 3);
 
       // Select third option in second item.
-      cy.get('@thirdRadioDefault').click();
-      cy.get('@thirdRadioDefault').should('be.checked');
+      cy.get('@pickAnswer2').type('{downarrow}{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer2').should('have.value', 'd31');
+      cy.get('#searchResults ul > li').should('have.length', 3);
 
-      // Click the "Unselect" button to clear selection(s)
-      cy.contains('button i', 'backspace').should('exist').click();
+      // Clear the selection.
+      cy.get('@pickAnswer2').clear().type('{enter}').should('be.empty');
 
       // Items should be unselected.
-      cy.get('@firstRadioDefault').should('not.be.checked');
-      cy.get('@secondRadioDefault').should('not.be.checked');
-      cy.get('@thirdRadioDefault').should('not.be.checked');
+      cy.get('#searchResults ul > li').should('have.length', 3);
 
       // Set the 'Allow repeating question?' to 'Yes'.
       cy.booleanFieldClick(repeatsLabel, 'true');
       cy.getBooleanInput(repeatsLabel, 'true').should('be.checked');
 
-      cy.get('@firstOption')
-        .find('[id^="checkbox_answerOption."]').as('firstCheckboxDefault');
-      cy.get('@secondOption')
-        .find('[id^="checkbox_answerOption."]').as('secondCheckboxDefault');
-      cy.get('@thirdOption')
-        .find('[id^="checkbox_answerOption."]').as('thirdCheckboxDefault');
-
       // Items should be unchecked.
-      cy.get('@firstCheckboxDefault').should('not.be.checked');
-      cy.get('@secondCheckboxDefault').should('not.be.checked');
-      cy.get('@thirdCheckboxDefault').should('not.be.checked');
+      cy.get('#searchResults ul > li').should('have.length', 3);
 
       // Select second and third option in second item.
-      cy.get('@secondCheckboxDefault').click();
-      cy.get('@secondCheckboxDefault').should('be.checked');
-      cy.get('@thirdCheckboxDefault').click();
-      cy.get('@thirdCheckboxDefault').should('be.checked');
-
-      // Click the "Unselect" button to clear selection(s)
-      cy.contains('button i', 'backspace').should('exist').click();
-
-      // Items should be unchecked.
-      cy.get('@firstCheckboxDefault').should('not.be.checked');
-      cy.get('@secondCheckboxDefault').should('not.be.checked');
-      cy.get('@thirdCheckboxDefault').should('not.be.checked');
+      cy.get('@pickAnswer2').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer2').type('{enter}');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[1].answerOption).to.deep.equal(
+          [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                  "valueDecimal": 10
+                }
+              ],
+              "valueCoding": {
+                "system": "s1",
+                "code": "a1",
+                "display": "d11"
+              }
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                  "valueDecimal": 20
+                }
+              ],
+              "valueCoding": {
+                "system": "s1",
+                "code": "b1",
+                "display": "d21"
+              },
+              "initialSelected": true
+            },
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                  "valueDecimal": 30
+                }
+              ],
+              "valueCoding": {
+                "system": "s1",
+                "code": "c1",
+                "display": "d31"
+              },
+              "initialSelected": true
+            }
+          ]
+        );
+      });
     });
 
     it('should fix initial input box when switched data type from choice to decimal', () => {
@@ -686,8 +708,9 @@ describe('Home page', () => {
       cy.get('@type').find(':selected').should('have.text', 'choice');
       cy.get('[id^="answerOption."]').should('be.visible');
       cy.get('[id^="initial"]').should('not.exist');
-      cy.get('[id^="radio_answerOption.1"]').should('be.checked', true);
+      cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'Answer 2');
       cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="answerOption."]').should('not.exist');
       cy.get('[id^="initial.0.valueDecimal"]').should('be.visible').type('1.2');
       cy.questionnaireJSON().should((qJson) => {
@@ -697,6 +720,7 @@ describe('Home page', () => {
 
     it('should create answerValueSet', () => {
       cy.selectDataType('choice');
+      cy.getPickInitialValueValueMethodClick();
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
       cy.get('#answerValueSet_non-snomed').should('not.exist');
@@ -744,6 +768,7 @@ describe('Home page', () => {
     it('should create SNOMED CT answerValueSet', () => {
       const eclSel = '#answerValueSet_ecl';
       cy.selectDataType('choice');
+      cy.getPickInitialValueValueMethodClick();
       cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
       cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
       cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod').click();
@@ -857,7 +882,6 @@ describe('Home page', () => {
       cy.get('@version').should('not.exist');
       cy.get('#answerValueSet_non-snomed').should('not.exist');
 
-
       cy.clickTreeNode('Item with SNOMED');
       cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
       cy.clickTreeNode('Item with answer option');
@@ -957,6 +981,7 @@ describe('Home page', () => {
 
         cy.get(icTag).should('not.exist'); // Datatype is other than choice, open-choice
         cy.selectDataType('open-choice');
+        cy.getPickInitialValueValueMethodClick();
         cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
         cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
         cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod');
@@ -1369,6 +1394,7 @@ describe('Home page', () => {
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').last().as('units');
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
@@ -1393,6 +1419,7 @@ describe('Home page', () => {
     it('should display decimal/integer units', () => {
       cy.get('[id^="units"]').should('not.exist');
       cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').last().as('units');
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
@@ -1678,6 +1705,7 @@ describe('Home page', () => {
 
     it('should create quantity type with initial quantity unit', () => {
       cy.selectDataType('quantity');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('@type').contains('quantity');
       cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('123');
       cy.get('[id^="initial.0.valueQuantity.unit"]')
@@ -2016,6 +2044,7 @@ describe('Home page', () => {
 
       it('should show answer column if there is an answer option in any row of conditional display', () => {
         cy.selectDataType('choice');
+        cy.getPickInitialValueValueMethodClick();
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
@@ -2126,6 +2155,7 @@ describe('Home page', () => {
 
       it('should display the tree hierarchy sequence number concatenated with the item text ', () => {
         cy.selectDataType('decimal');
+        cy.getTypeInitialValueValueMethodClick();
         cy.contains('Add new item').scrollIntoView().click();
         cy.get('#text').should('have.value', 'New item 1');
 
@@ -2138,6 +2168,7 @@ describe('Home page', () => {
 
       it('should fix a bug showing answer field when source item is decimal and operator is other than exists', () => {
         cy.selectDataType('decimal');
+        cy.getTypeInitialValueValueMethodClick();
         cy.contains('Add new item').scrollIntoView().click();
         cy.get('#text').should('have.value', 'New item 1');
 
@@ -2161,6 +2192,7 @@ describe('Home page', () => {
 
       it('should support source item with answerValueSet in conditional display', () => {
         cy.selectDataType('choice');
+        cy.getPickInitialValueValueMethodClick();
         cy.get('label[for^="__\\$answerOptionMethods_value-set"]').click();
         cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
         cy.tsUrl().scrollIntoView().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
@@ -2194,6 +2226,7 @@ describe('Home page', () => {
 
       it('should support source item with SNOMED answerValueSet in conditional display', () => {
         cy.selectDataType('choice');
+        cy.getPickInitialValueValueMethodClick();
         cy.get('label[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
         cy.get('#answerValueSet_ecl').type(snomedEclText);
         cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
@@ -2981,6 +3014,419 @@ describe('Home page', () => {
     });
   });
 
+  describe('Value method', () => {
+    beforeEach(() => {
+      const sampleFile = 'value-methods-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.loadHomePage();
+      cy.get('input[type="radio"][value="scratch"]').click();
+      cy.get('button').contains('Continue').click();
+      cy.uploadFile(sampleFile, false);
+      cy.get('#title').should('have.value', 'value-methods-sample');
+      cy.contains('button', 'Edit questions').click();
+
+      cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
+      cy.get('@valueMethod').find('[for^="__$valueMethod_compute-initial"]').as('computeInitial'); // Radio label for clicking
+      cy.get('@valueMethod').find('[for^="__$valueMethod_compute-continuously"]').as('computeContinuously'); // Radio label for clicking
+      cy.get('@valueMethod').find('[for^="__$valueMethod_none"]').as('none'); // Radio label for clicking
+
+      cy.get('@valueMethod').find('[id^="__$valueMethod_compute-initial"]').as('computeInitialRadio'); // Radio input for assertions
+      cy.get('@valueMethod').find('[id^="__$valueMethod_compute-continuously"]').as('computeContinuouslyRadio'); // Radio input for assertions
+      cy.get('@valueMethod').find('[id^="__$valueMethod_none"]').as('noneRadio'); // Radio input for assertions
+
+      cy.contains('div', 'Allow repeating question').as('repeatOption').should('be.visible');
+      cy.get('@repeatOption').find('[for^="booleanRadio_true"]').as('repeatYes'); // Radio label for clicking
+      cy.get('@repeatOption').find('[for^="booleanRadio_false"]').as('repeatNo'); // Radio label for clicking
+      cy.get('@repeatOption').find('[for^="booleanRadio_null"]').as('repeatUnspecified'); // Radio label for clicking
+
+      cy.get('@repeatOption').find('[id^="booleanRadio_true"]').as('repeatYesRadio'); // Radio input for assertions
+      cy.get('@repeatOption').find('[id^="booleanRadio_false"]').as('repeatNoRadio'); // Radio input for assertions
+      cy.get('@repeatOption').find('[id^="booleanRadio_null"]').as('repeatUnspecifiedRadio'); // Radio input for assertions
+    });
+ 
+    it('should load and display correct value method options', () => {
+      // Type Initial Value (Single)
+      cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+      cy.get('#type').should('have.value', '2: integer');
+      cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+      cy.get('[id^="initial.0.valueInteger"]').should('exist').should('be.visible').should('have.value', 6);
+      cy.get('@repeatNoRadio').should('be.visible').and('be.checked');
+      
+      // Type Initial Value (Multiple)
+      cy.clickTreeNode('Type Initial Value (Multiple)');
+      cy.get('#type').should('have.value', '2: integer');
+      cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+      cy.get('[id^="initial.0.valueInteger"]').should('exist').should('be.visible').should('have.value', 2);
+      cy.get('[id^="initial.1.valueInteger"]').should('exist').should('be.visible').should('have.value', 6);
+      cy.get('@repeatYesRadio').should('be.visible').and('be.checked');      
+      
+      // Pick Initial Value (Single)
+      cy.clickTreeNode('Pick Initial Value (Single)');
+      cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
+      cy.get('#type').should('have.value', '9: choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+      cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'Street clothes, no shoes');
+      cy.get('@repeatNoRadio').should('be.visible').and('be.checked');      
+
+      // Pick Initial Value (Multiple)
+      cy.clickTreeNode('Pick Initial Value (Multiple)');
+      cy.get('#type').should('have.value', '9: choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+      cy.get('lfb-pick-answer span.autocomp_selected li').as('pickInitialValues');
+      cy.get("@pickInitialValues") .eq(0).should('contain.text', 'Street clothes, no shoes');
+      cy.get("@pickInitialValues") .eq(1).should('contain.text', 'Street clothes & shoes');
+      cy.get('@repeatYesRadio').should('be.visible').and('be.checked');  
+      
+      // Compute Initial Value
+      cy.clickTreeNode('Compute Initial Value');
+      cy.get('#type').should('have.value', '9: choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
+      cy.get('lfb-expression-editor input#outputExpression').should('contain.value', '%a + %b');
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');        
+
+      // Continuously Compute Value
+      cy.clickTreeNode('Continuously Compute Value');
+      cy.get('#type').should('have.value', '9: choice');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
+      cy.get('lfb-expression-editor input#outputExpression').should('contain.value', '%a + %b + %c');
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');    
+
+      // Need to do the None
+      cy.clickTreeNode('None');
+      cy.get('@noneRadio').should('be.visible').and('be.checked');
+      // The 'Initial value' section should be hidden
+      cy.get('lfb-table').should('not.exist');
+      // The 'Pick Initial value' section should be hidden
+      cy.get('lfb-pick-answer').should('not.exist');
+      // The 'Expression' section should be hidden
+      cy.get('lfb-expression-editor').should('not.exist');
+    });
+
+    it('should type initial values', () => {
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Type initial values');
+      cy.selectDataType('integer');
+      // Select 'Type Initial' option for 'Value method' field
+      cy.getTypeInitialValueValueMethodClick();
+
+      cy.get('[id^="initial.0.valueInteger"]').type('3{enter}');
+
+      // Set the 'Repeats' option to yes.
+      cy.get('@repeatYes').click();
+
+      cy.contains('button', 'Add another value').as('addInitialValueButton');
+      cy.get('@addInitialValueButton').click();
+      cy.get('[id^="initial.1.valueInteger"]').type('4{enter}');
+      cy.get('@addInitialValueButton').click();
+      cy.get('[id^="initial.2.valueInteger"]').type('5{enter}');      
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[7].initial).to.deep.equal([
+          {
+            "valueInteger": 3
+          },
+          {
+            "valueInteger": 4
+          },
+          {
+            "valueInteger": 5
+          }
+        ]);
+      });
+    });
+
+    it('should pick initial values', () => {
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Pick initial values');
+      cy.selectDataType('choice');
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('exist').should('be.visible');
+
+      cy.get('@pickAnswer').should('have.class', 'invalid');
+      // The error message should display at the bottom of the text input
+      cy.get('lfb-pick-answer')
+        .find('small.text-danger')
+        .should('be.visible')
+        .should('contain.text', "Answer choices must be populated.");
+    
+      // Error should display at the top of the content and at the bottom.
+      cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('have.class', 'text-danger');
+      cy.get('mat-sidenav-content > ul > li').should('have.class', 'text-danger');
+      
+      // Answer Option field is empty. Add 3 options.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('[id^="answerOption.0.valueCoding.display"]').type('Example 1');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').type('MD11871-1');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.1.valueCoding.display"]').type('Example 2');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').type('MD11871-2');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.2.valueCoding.display"]').type('Example 3');
+      cy.get('[id^="answerOption.2.valueCoding.code"]').type('MD11871-3');
+      cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
+      cy.get('[id^="answerOption.2.valueCoding.__$score"]').click();
+
+      // The error on the Pick Answer field should go away
+      cy.get('@pickAnswer').should('not.have.class', 'invalid');
+
+      // Select 'Example 2' option
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer').should('have.value', 'Example 2');
+
+      // Set the 'Repeats' option to yes.
+      cy.get('@repeatYes').click();
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+
+      // Select 1st and 3rd options
+      cy.get('@pickAnswer').type('Example 1{downarrow}{enter}');
+      cy.get('@pickAnswer').clear().type('Example 3{downarrow}{enter}');
+
+      cy.get('lfb-pick-answer span.autocomp_selected > ul > li').as('pickAnswerSelection');
+      cy.get('@pickAnswerSelection').should('have.length', 2);
+      cy.get('@pickAnswerSelection').eq(0).should('contain.text', 'Example 1');
+      cy.get('@pickAnswerSelection').eq(1).should('contain.text', 'Example 3');
+      
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[7].type).equal('choice');
+        expect(qJson.item[7].answerOption[0].valueCoding.display).equal('Example 1');
+        expect(qJson.item[7].answerOption[0].initialSelected).equal(true);
+        expect(qJson.item[7].answerOption[2].valueCoding.display).equal('Example 3');
+        expect(qJson.item[7].answerOption[2].initialSelected).equal(true);
+      });
+    });
+
+    it('should create Initial compute value expression', () => {
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Compute initial value expression');
+      cy.selectDataType('integer');
+
+      cy.get('@computeInitial').should('be.visible').click();
+      cy.get('lfb-expression-editor input#outputExpression').should('be.empty');
+      cy.get('button#updateExpression').click();
+      cy.get('lhc-expression-editor').shadow().within(() => {
+        cy.get('#expression-editor-base-dialog').should('exist');
+
+        // Variables section
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('#variables-section .variable-row').should('have.length', 0);
+
+        // Add a new variable 'a'
+        cy.get('#add-variable').click();
+        cy.get('#variables-section .variable-row').should('have.length', 1);
+        cy.get('#variable-label-0').clear().type('a');
+        cy.get('#variable-type-0').select('Easy Path Expression');
+        cy.get('#simple-expression-0').type('1');
+
+        // Add a new variable 'b'
+        cy.get('#add-variable').click();
+        cy.get('#variables-section .variable-row').should('have.length', 2);
+        cy.get('#variable-label-1').clear().type('b');
+        cy.get('#variable-type-1').select('Easy Path Expression');
+        cy.get('#simple-expression-1').type('2');
+
+        // Output expression 
+        cy.get('#simple-expression-final').clear().type('a + b');
+        cy.get('lhc-syntax-preview>div>div>pre').should('not.have.text', 'Not valid');
+
+        // Save (Export) should output the questionnaire for the given Variable Type
+        cy.get('#export').click();
+      });
+      cy.get('lfb-expression-editor input#outputExpression').should('have.value', '%a + %b');
+
+      // need to check the JSON
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[7].extension).to.deep.equal([
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "a",
+              "language": "text/fhirpath",
+              "expression": "1",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "1"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "b",
+              "language": "text/fhirpath",
+              "expression": "2",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "2"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "%a + %b"
+            }
+          }
+        ]);
+      });
+
+      // Go back to the Expression Editor to check that the settings are still correct.
+      cy.get('button#updateExpression').click();
+      cy.get('lhc-expression-editor').shadow().within(() => {
+        // Variables section
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('#variables-section .variable-row').should('have.length', 2);
+
+        cy.get('#variable-label-0').should('have.value', 'a');
+        cy.get('#variable-type-0').should('have.value', 'simple');
+        cy.get('#simple-expression-0').should('have.value', '1');
+
+        cy.get('#variable-label-1').should('have.value', 'b');
+        cy.get('#variable-type-1').should('have.value', 'simple');
+        cy.get('#simple-expression-1').should('have.value', '2');        
+      });
+
+    });
+
+    it('should create Continuously compute value expression', () => {
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Continuously compute value expression');
+      cy.selectDataType('integer');
+
+      cy.get('@computeContinuously').should('be.visible').click();
+      cy.get('lfb-expression-editor input#outputExpression').should('be.empty');
+      cy.get('button#updateExpression').click();
+      cy.get('lhc-expression-editor').shadow().within(() => {
+        cy.get('#expression-editor-base-dialog').should('exist');
+
+        // Variables section
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('#variables-section .variable-row').should('have.length', 0);
+
+        // Add a new variable 'a'
+        cy.get('#add-variable').click();
+        cy.get('#variables-section .variable-row').should('have.length', 1);
+        cy.get('#variable-label-0').clear().type('a');
+        cy.get('#variable-type-0').select('Easy Path Expression');
+        cy.get('#simple-expression-0').type('1');
+
+        // Add a new variable 'b'
+        cy.get('#add-variable').click();
+        cy.get('#variables-section .variable-row').should('have.length', 2);
+        cy.get('#variable-label-1').clear().type('b');
+        cy.get('#variable-type-1').select('Easy Path Expression');
+        cy.get('#simple-expression-1').type('2');
+
+        // Output expression 
+        cy.get('#simple-expression-final').clear().type('a + b');
+        cy.get('lhc-syntax-preview>div>div>pre').should('not.have.text', 'Not valid');
+
+        // Save (Export) should output the questionnaire for the given Variable Type
+        cy.get('#export').click();
+      });
+      cy.get('lfb-expression-editor input#outputExpression').should('have.value', '%a + %b');
+
+      // need to check the JSON
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[7].extension).to.deep.equal([
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "a",
+              "language": "text/fhirpath",
+              "expression": "1",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "1"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "b",
+              "language": "text/fhirpath",
+              "expression": "2",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "2"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "%a + %b"
+            }
+          }
+        ]);
+      });
+
+      // Go back to the Expression Editor to check that the settings are still correct.
+      cy.get('button#updateExpression').click();
+      cy.get('lhc-expression-editor').shadow().within(() => {
+        // Variables section
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('#variables-section .variable-row').should('have.length', 2);
+
+        cy.get('#variable-label-0').should('have.value', 'a');
+        cy.get('#variable-type-0').should('have.value', 'simple');
+        cy.get('#simple-expression-0').should('have.value', '1');
+
+        cy.get('#variable-label-1').should('have.value', 'b');
+        cy.get('#variable-type-1').should('have.value', 'simple');
+        cy.get('#simple-expression-1').should('have.value', '2');        
+      });
+
+    });
+  });
 });
 
 describe('Accepting only LOINC terms of use', () => {
@@ -2994,6 +3440,7 @@ describe('Accepting only LOINC terms of use', () => {
   });
   it('should not display SNOMED option in answerValueSet', () => {
     cy.selectDataType('choice');
+    cy.getPickInitialValueValueMethodClick();
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
     // SNOMED radio should not exist

@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.7.4] 2024-12-21
+### Added
+- Added Value Method field for selecting initial values.
+
 ## [9.7.3] 2024-12-11
 ### Changed
 - Added validation and error handling for invalid enableWhen question.
