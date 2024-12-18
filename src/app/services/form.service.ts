@@ -898,8 +898,7 @@ export class FormService {
       }
     }
 
-    jsonObj = this.convertToR4(jsonObj);
-    return this.updateFhirQuestionnaire(jsonObj);
+    return this.convertToR4(jsonObj);
   }
 
 
@@ -996,8 +995,7 @@ export class FormService {
    * Retrieve questionnaire from the storage.
    */
   autoLoadForm(): fhir.Questionnaire {
-    const saveQ = this.autoLoad('fhirQuestionnaire');
-    return this.updateFhirQuestionnaire(saveQ) as fhir.Questionnaire;
+    return this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
   }
 
 
