@@ -1681,9 +1681,9 @@
         ]
       }
     },
-    "__$initialExpression": {
-      "description": "Initial expression.",
-      "title": "Expression",
+    "__$variable": {
+      "description": "Use to store values derived from calculations, references to other answers, or external data.",
+      "title": "Item Variables",
       "type": "array",
       "items": {
         "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
@@ -1775,6 +1775,121 @@
         "additionalProperties": false,
         "type": "object"
       },
+      "widget": {
+        "id": "variable",
+        "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+        "showExpression": false,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: false,
+          itemVariablesSection: true,
+          outputExpressionSection: false
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 ",
+        "addButtonLabel": "Add/edit variables",
+        "showHeaderFields": [
+          {"field": "valueExpression.properties.name", "nolabel": true, "col": 2, "title": "Name"},
+          {"field": "valueExpression.properties.extension", "nolabel": true, "col": 3, "title": "Type"},
+          {"field": "valueExpression.properties.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"},
+        ],
+        "showDataFields": [
+          {"field": "valueExpression.name", "nolabel": true, "col": 2, "title": "Name"},
+          {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
+          {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
+        ]
+      }
+    },
+    "__$initialExpression": {
+      "description": "Initial expression.",
+      "title": "Expression",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
+          "properties": {
+            "id": {
+              "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+              "pattern": "^[ \\r\\n\\t\\S]+$",
+              "type": "string"
+            },
+            "description": {
+              "description": "A brief, natural language description of the condition that effectively communicates the intended semantics.",
+              "pattern": "^[ \\r\\n\\t\\S]+$",
+              "type": "string"
+            },
+            "name": {
+              "description": "A short name assigned to the expression to allow for multiple reuse of the expression in the context where it is defined.",
+              "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
+              "type": "string"
+            },
+            "language": {
+              "description": "The media type of the language for the expression.",
+              "enum": [
+                "text/cql",
+                "text/fhirpath",
+                "application/x-fhir-query"
+              ],
+              "type": "string"
+            },
+            "expression": {
+              "description": "An expression in the specified language that returns a value.",
+              "pattern": "^[ \\r\\n\\t\\S]+$",
+              "type": "string"
+            },
+            "reference": {
+              "description": "A URI that defines where the expression is found.",
+              "pattern": "^\\S*$",
+              "type": "string"
+            },
+            "extension": {
+              "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+              "items": {
+                "$ref": "#/definitions/Extension"
+              },
+              "type": "array",
+              "widget": {
+                "id": "hidden"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "type": "object"
+        }
+      },
       "visibleIf": {
         "__$valueMethod": ["compute-initial"]
       },
@@ -1786,6 +1901,12 @@
           { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
         ],
         "showExpression": true,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: true,
+          itemVariablesSection: true,
+          outputExpressionSection: true
+        },
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col form-control form-control-sm"
@@ -1794,96 +1915,91 @@
     "__$calculatedExpression": {
       "description": "Initial expression.",
       "title": "Expression",
-      "type": "array",
-      "items": {
-        "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
-        "properties": {
-          "id": {
-            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-            "title": "Id",
-            "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string",
-            "widget": {"id": "hidden"}
-          },
-          "url": {
-            "description": "A location where the data can be accessed.",
-            "pattern": "^\\S*$",
-            "type": "string"
-          },
-          "extension": {
-            "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
-            "items": {
-              "$ref": "#/definitions/Extension"
-            },
-            "type": "array",
-            "title": "Extension",
-            "widget": {
-              "id": "hidden"
-            }
-          },
-          "valueString": {
-            "description": "A potential answer that's allowed as the answer to this question.",
-            "pattern": "^[ \\r\\n\\t\\S]+$",
-            "type": "string",
-            "title": "Value string",
-            "visibleIf": {
-              "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
-            }
-          },
-          "valueExpression": {
-            "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-            "properties": {
-              "id": {
-                "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "description": {
-                "description": "A brief, natural language description of the condition that effectively communicates the intended semantics.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "name": {
-                "description": "A short name assigned to the expression to allow for multiple reuse of the expression in the context where it is defined.",
-                "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
-                "type": "string"
-              },
-              "language": {
-                "description": "The media type of the language for the expression.",
-                "enum": [
-                  "text/cql",
-                  "text/fhirpath",
-                  "application/x-fhir-query"
-                ],
-                "type": "string"
-              },
-              "expression": {
-                "description": "An expression in the specified language that returns a value.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "reference": {
-                "description": "A URI that defines where the expression is found.",
-                "pattern": "^\\S*$",
-                "type": "string"
-              },
-              "extension": {
-                "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
-                "items": {
-                  "$ref": "#/definitions/Extension"
-                },
-                "type": "array",
-                "widget": {
-                  "id": "hidden"
-                }
-              }
-            },
-            "additionalProperties": false,
-            "type": "object"
-          },
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
         },
-        "additionalProperties": false,
-        "type": "object"
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
+          "properties": {
+            "id": {
+              "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+              "pattern": "^[ \\r\\n\\t\\S]+$",
+              "type": "string"
+            },
+            "description": {
+              "description": "A brief, natural language description of the condition that effectively communicates the intended semantics.",
+              "pattern": "^[ \\r\\n\\t\\S]+$",
+              "type": "string"
+            },
+            "name": {
+              "description": "A short name assigned to the expression to allow for multiple reuse of the expression in the context where it is defined.",
+              "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
+              "type": "string"
+            },
+            "language": {
+              "description": "The media type of the language for the expression.",
+              "enum": [
+                "text/cql",
+                "text/fhirpath",
+                "application/x-fhir-query"
+              ],
+              "type": "string"
+            },
+            "expression": {
+              "description": "An expression in the specified language that returns a value.",
+              "pattern": "^[ \\r\\n\\t\\S]+$",
+              "type": "string"
+            },
+            "reference": {
+              "description": "A URI that defines where the expression is found.",
+              "pattern": "^\\S*$",
+              "type": "string"
+            },
+            "extension": {
+              "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+              "items": {
+                "$ref": "#/definitions/Extension"
+              },
+              "type": "array",
+              "widget": {
+                "id": "hidden"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "type": "object"
+        },
       },
       "visibleIf": {
         "__$valueMethod": ["compute-continuously"]
@@ -1896,6 +2012,12 @@
           { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
         ],
         "showExpression": true,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: true,
+          itemVariablesSection: true,
+          outputExpressionSection: true
+        },
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col form-control form-control-sm"
@@ -2250,7 +2372,18 @@
           "col": 12
         }
       ]
-    },    
+    },
+    {
+      "fields": [
+        "__$variable"
+      ],
+      "showFields": [
+        {
+          "field": "__$variable",
+          "col": 12
+        }
+      ]
+    },
     {
       "fields": [
         "__$initialExpression"

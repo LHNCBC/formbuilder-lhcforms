@@ -105,7 +105,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       if (!this.answerOptionDisplays || this.answerOptionDisplays.length !== ansOpts.length) {
         changed = true;
       } else {
-        const changed = this.answerOptionProp.some((ansOptProp, idx) => ansOptProp.valueCoding?.display !== ansOpts[idx].valueCoding?.display ||
+        changed = this.answerOptionProp.some((ansOptProp, idx) => ansOptProp.valueCoding?.display !== ansOpts[idx].valueCoding?.display ||
                                                                   ansOptProp.valueCoding?.code !== ansOpts[idx].valueCoding?.code ||
                                                                   ansOptProp.valueCoding?.system !== ansOpts[idx].valueCoding?.system ||
                                                                   ansOptProp.valueCoding?.score !== ansOpts[idx].valueCoding?.score);

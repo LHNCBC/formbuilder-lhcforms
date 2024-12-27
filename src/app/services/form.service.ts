@@ -66,6 +66,7 @@ export class FormService {
   static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
   static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
   static VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
+  static CUSTOM_EXT_VARIABLE_TYPE = 'http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type';
 
   private _loading = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
@@ -618,21 +619,62 @@ export class FormService {
   }
 
   /**
-   * Loop through the array of extensions and filters out extensions that is a Variable, Initial Expression, or Calculated Expression.
+   * Loop through the array of extensions and filters out extensions that is a Variable.
    * @param extensions - array of extensions
-   * @returns - returns the array of extensions excluding the extensions of type Variable, Initial Expression or Calculated Expression.
+   * @returns - returns the array of extensions excluding the extensions of type Variable.
    */
-  removeVariableAndExpressionsExtensions(extensions: any): any {
-    return extensions.filter(ext => (ext.url !== FormService.VARIABLE && ext.url !== FormService.INITIAL_EXPRESSION && ext.url !== FormService.CALCULATED_EXPRESSION));
+  removeVariablesExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url !== FormService.VARIABLE));
   }
 
   /**
-   * Loop through the array of extensions and retain only extensions that are a Variable, Initial Expression, or Calculated Expression.
+   * Loop through the array of extensions and filters out extensions that is an Initial Expression, or Calculated Expression.
    * @param extensions - array of extensions
-   * @returns - returns the array of extensions that are of type Variable, Initial Expression or Calculated Expression.
+   * @returns - returns the array of extensions excluding the extensions of type Initial Expression or Calculated Expression.
    */
-  filterVariableAndExpressionsExtensions(extensions: any): any {
-    return extensions.filter(ext => (ext.url === FormService.VARIABLE || ext.url === FormService.INITIAL_EXPRESSION || ext.url === FormService.CALCULATED_EXPRESSION));
+  removeExpressionsExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url !== FormService.INITIAL_EXPRESSION && ext.url !== FormService.CALCULATED_EXPRESSION));
+  }
+
+  /**
+   * Loop through the array of extensions and retain only extensions that is a Variable.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions that is of type Variable.
+   */
+  filterVariableExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url === FormService.VARIABLE));
+  }
+
+  /**
+   * Return the expression url based on the type of the expression.
+   * @param expressionType - Initial expression or calculated expression.
+   * @returns - expression url.
+   */
+  getUrlByType(expressionType: string): string {
+    return (expressionType === "__$initialExpression") ? FormService.INITIAL_EXPRESSION : FormService.CALCULATED_EXPRESSION;
+  }
+
+  /**
+   * Return the expression extension based on the type of the expression. If multiple extensions
+   * are found, the calculated expression takes precedence.
+   * @param extensions - array of extensions.
+   * @param expressionType - Initial expression or calculated expression.
+   * @returns - expression extension.
+   */
+  getExpressionsExtensionByType(extensions: any, expressionType: string): any {
+    let expression = null;
+
+    for (const ext of extensions) {
+      if (ext.url === FormService.CALCULATED_EXPRESSION) {
+        ext.url = this.getUrlByType(expressionType);
+        return ext;
+      } else if (ext.url === FormService.INITIAL_EXPRESSION && !expression) {
+        expression = ext;
+        expression.url = this.getUrlByType(expressionType);
+      }
+
+    }
+    return expression;
   }
 
   /**
