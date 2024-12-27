@@ -693,9 +693,12 @@ export class BasePageComponent implements OnInit {
    * @returns - Questionnaire title or "Untitled Form".
    */
   getQuestionnaireTitle(): string {
-    this.titleAriaLabel = (this.questionnaire?.title) ?
-      `${this.questionnaire.title} button. Click here to go to the Form-level attribute page.` :
-      `Untitled Form. The questionnaire title is empty. Click here to return to the Form-level attribute page and enter the title.`;
+    setTimeout(() => {
+      this.titleAriaLabel = (this.questionnaire?.title) ?
+        `${this.questionnaire.title} button. Click here to go to the Form-level attribute page.` :
+        `Untitled Form. The questionnaire title is empty. Click here to return to the Form-level attribute page and enter the title.`;
+    });
+
     return this.questionnaire?.title || "Untitled Form";
   }
 }

@@ -10,6 +10,7 @@
           { "field": "code", "col": 12 },
           { "field": "__$helpText", "col": 12},
           { "field": "type", "col": 12 },
+          { "field": "__$variable", "col": 12 },
           { "field": "__$answerOptionMethods", "col": 12 },
           { "field": "answerValueSet", "col": 12 },
           { "field": "answerOption", "title": "Answer choices", "col": 12 },

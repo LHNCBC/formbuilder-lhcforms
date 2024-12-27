@@ -83,15 +83,7 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
         const pickInitial = this.formProperty.findRoot().getProperty('__$pickInitial').value;
         
         const initialExpression = this.formProperty.findRoot().getProperty('__$initialExpression').value;
-        const calculatedExpression = this.formProperty.findRoot().getProperty('__$calculatedExpression').value
-
-        if (this.formService.hasInitialComputeValueExpression(extension) && (!initialExpression || initialExpression.length === 0)) {
-          this.formProperty.findRoot().getProperty('__$initialExpression').setValue(this.formService.filterVariableAndExpressionsExtensions(extension), false);
-        } else if (this.formService.hasContinuouslyComputeValueExpression(extension) && (!calculatedExpression || calculatedExpression.length === 0)) {
-          this.formProperty.findRoot().getProperty('__$calculatedExpression').setValue(this.formService.filterVariableAndExpressionsExtensions(extension), false);
-        }
-
-        this.formProperty.findRoot().getProperty('extension').setValue(this.formService.removeVariableAndExpressionsExtensions(extension), false);
+        const calculatedExpression = this.formProperty.findRoot().getProperty('__$calculatedExpression').value;
       }
     });
   }

@@ -9,12 +9,23 @@
 
   <div [ngClass]="controlClasses" class="col p-0">
     <div class="input-group">
-      <input id="outputExpression" readonly [(ngModel)]="expression" *ngIf="schema.widget.showExpression" type="text" [formControl]="control" class="grayed-out form-control form-control-sm" />
-
-      <button id="updateExpression" (click)="updateAnswerExpression()" class="btn btn-sm btn-outline-primary rounded-0 rounded-end">
-        Expression Editor
-      </button>
+      <textarea
+        readonly
+        aria-label="FHIRPath"
+        id="outputExpression"
+        [(ngModel)]="expression"
+        class="flex-item textarea"
+        [formControl]="control"
+        class="grayed-out form-control form-control-sm"
+        *ngIf="schema.widget.showExpression" 
+      ></textarea>
     </div>
+    <button id="editExpression" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button" style="width:100%"
+            triggers="manual" placement="bottom top"
+            popoverClass=""
+    >
+      <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> Create/edit expression
+    </button>
   </div>
 </div>
 

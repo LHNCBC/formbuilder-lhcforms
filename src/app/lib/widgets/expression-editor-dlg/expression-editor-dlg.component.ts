@@ -10,6 +10,8 @@ export class ExpressionEditorDlgComponent {
   expressionUri: string;
   userExpressionChoices: string;
   questionnaire:any;
+  // Display the Expression Editor sections
+  display: any;
 
   constructor(private activeModal: NgbActiveModal) {};
 

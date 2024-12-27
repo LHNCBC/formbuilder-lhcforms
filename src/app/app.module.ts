@@ -97,6 +97,8 @@ import { ValueMethodComponent } from './lib/widgets/value-method/value-method.co
 import { PickAnswerComponent } from './lib/widgets/pick-answer/pick-answer.component';
 import { ExpressionEditorComponent } from './lib/widgets/expression-editor/expression-editor.component';
 import { ExpressionEditorDlgComponent } from './lib/widgets/expression-editor-dlg/expression-editor-dlg.component';
+
+import { VariableComponent } from './lib/widgets/variable/variable.component';
 import { environment } from '../environments/environment';
 
 @NgModule({
@@ -165,7 +167,8 @@ import { environment } from '../environments/environment';
     ValueMethodComponent,
     PickAnswerComponent,
     ExpressionEditorComponent,
-    ExpressionEditorDlgComponent
+    ExpressionEditorDlgComponent,
+    VariableComponent
   ],
   imports: [
     BrowserModule,

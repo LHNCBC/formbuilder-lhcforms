@@ -1,0 +1,28 @@
+.lfb-table {
+  margin-bottom: 0;
+  background-color: var(--bs-table-bg);
+}
+
+.lfb-table th {
+  text-align: center;
+}
+
+.lfb-table th, .lfb-table td {
+  padding: 0;
+}
+
+.lfb-table-row td {
+  background-color: inherit;
+}
+
+:host ::ng-deep input {
+  background-color: inherit !important;
+}
+
+td {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-sm);
+  padding: 3px 3px 3px 3px !important;
+  min-height: 30px;
+  height: auto;
+}
