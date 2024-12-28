@@ -266,6 +266,10 @@ export class BasePageComponent implements OnInit {
    */
   setQuestionnaire(questionnaire) {
     this.questionnaire = questionnaire;
+    this.titleAriaLabel = (this.questionnaire?.title) ?
+                          `${this.questionnaire.title} button. Click here to go to the Form-level attribute page.` :
+                          `Untitled Form. The questionnaire title is empty. Click here to return to the Form-level attribute page and enter the title.`;
+
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, questionnaire);
     this.formFields = Object.assign({}, questionnaire);
@@ -693,11 +697,6 @@ export class BasePageComponent implements OnInit {
    * @returns - Questionnaire title or "Untitled Form".
    */
   getQuestionnaireTitle(): string {
-    setTimeout(() => {
-      this.titleAriaLabel = (this.questionnaire?.title) ?
-        `${this.questionnaire.title} button. Click here to go to the Form-level attribute page.` :
-        `Untitled Form. The questionnaire title is empty. Click here to return to the Form-level attribute page and enter the title.`;
-    });
 
     return this.questionnaire?.title || "Untitled Form";
   }
