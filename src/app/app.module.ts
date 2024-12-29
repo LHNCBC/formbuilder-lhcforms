@@ -80,6 +80,7 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
+import { DecimalDirective } from './lib/directives/decimal.directive';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
@@ -155,6 +156,7 @@ import { environment } from '../environments/environment';
     NodeDialogComponent,
     NumberComponent,
     IntegerDirective,
+    DecimalDirective,
     AnswerOptionMethodsComponent,
     ObservationExtractComponent,
     AnswerValueSetComponent,
