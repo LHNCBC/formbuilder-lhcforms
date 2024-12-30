@@ -21,7 +21,7 @@
   </div>
 
   <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
-    <table class="table table-borderless table-sm lfb-table" *ngIf="+formProperty.value.length > 0">
+    <table class="table table-borderless table-sm lfb-table">
       <thead class="table-active">
         <tr class="d-flex">
           <th *ngFor="let showHeaderField of getVariableFieldsStructure(true)" class="col-sm{{showHeaderField.col ? ('-'+showHeaderField.col) : ''}}" scope="col">
@@ -30,7 +30,7 @@
               [helpMessage]="getVariableProperty(formProperty.schema.items.properties, showHeaderField.field, true)"
             ></lfb-title>
           </th>
-          <th *ngIf="includeActionColumn" class="col-sm-1 action-column" ></th>
+          <th class="col-sm-1 action-column" ></th>
         </tr>
       </thead>
 
