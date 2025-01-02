@@ -32,7 +32,7 @@ import {Util} from '../../util';
              class="form-control"
              (focus)="focus$.next($any($event).target.value)"
              (click)="click$.next($any($event).target.value)"
-             (focusout)="validateQuestion()"
+             (change)="validateQuestion()"
              (selectItem)="onSelect($event)"
              #instance="ngbTypeahead"
              popupClass="add-scrolling"
@@ -98,6 +98,8 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
         // Set answer type input
         this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
       }
+    } else if (value === "" && '__$answerType' in this.formProperty.parent.value) {
+      this.validateQuestion();
     }
   }
 
@@ -151,6 +153,16 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
       this.model = null;
       this.formProperty.setValue("", false);
       this.formProperty.updateValueAndValidity();
+
+      // Aside from clearing the question, also clear the 'operator' and the answer.
+      this.formProperty.parent.getProperty('operator').setValue('', false);
+
+      const answerType = this.formProperty.parent.getProperty('__$answerType').value;
+
+      if (answerType !== "choice" && answerType !== "open-choice") {
+        const answerKeyName = Util.getAnswerFieldName(answerType);
+        this.formProperty.parent.getProperty(answerKeyName).setValue('', false);
+      }
     }
   }
 }
