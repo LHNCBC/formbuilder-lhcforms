@@ -2,6 +2,9 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.7.2] 2025-01-06
+### Changed
+- Updated README.md
 
 ## [9.7.1] 2024-12-20
 ### Changed

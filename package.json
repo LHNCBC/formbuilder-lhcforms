@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "9.7.1",
+  "version": "9.7.2",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
