@@ -20,7 +20,6 @@ import {MatInput} from '@angular/material/input';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
-import {ItemJsonEditorComponent} from '../lib/widgets/item-json-editor/item-json-editor.component';
 import {NgbActiveModal, NgbDropdown, NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
@@ -181,7 +180,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   nodeMenuIcon = faEllipsisH;
 
   @ViewChild('tree') treeComponent: TreeComponent;
-  @ViewChild('jsonEditor') jsonItemEditor: ItemJsonEditorComponent;
   @ViewChild('uiEditor') uiItemEditor: NgxSchemaFormComponent;
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
@@ -236,7 +234,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Output()
   itemChange = new EventEmitter<any []>();
   isTreeExpanded = false;
-  editType = 'ui';
   itemEditorSchema: any;
   editor = 'ngx';
   loincType = LoincItemType.PANEL;
@@ -528,14 +525,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    */
   defaultLinkId(node: ITreeNode): string {
     return node.data[FormService.TREE_NODE_ID];
-  }
-
-
-  /**
-   * Toggle between ui and json
-   */
-  toggleEditType(event) {
-    this.editType = this.editType === 'json' ? 'ui' : 'json';
   }
 
 

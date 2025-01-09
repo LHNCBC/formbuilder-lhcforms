@@ -27,7 +27,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSchemaFormComponent } from './ngx-schema-form/ngx-schema-form.component';
 import { TreeModule } from '@bugsplat/angular-tree-component';
-import { ItemJsonEditorComponent } from './lib/widgets/item-json-editor/item-json-editor.component';
 import { GridComponent } from './lib/widgets/grid.component/grid.component';
 import { TableComponent } from './lib/widgets/table/table.component';
 import { LformsWidgetRegistry} from './lib/lforms-widget-registry';
@@ -99,7 +98,6 @@ import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
     NgxSchemaFormComponent,
     ItemComponent,
     ConfirmDlgComponent,
-    ItemJsonEditorComponent,
     GridComponent,
     TableComponent,
     StringComponent,
