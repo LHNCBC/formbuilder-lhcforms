@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.0] 2025-01-09
+### Added
+- Added R5 features
+
 ## [9.7.2] 2024-12-10
 ### Added
 - Added meta.tag field to form level attributes.

@@ -34,7 +34,7 @@
       <ng-template matTabContent>
         <mat-tab-group class="preview-json-tabs bg-light" [mat-stretch-tabs]="false"
                          [(selectedIndex)]="activeJsonTabIndex" (selectedIndexChange)="onJsonVersionSelected($event)">
-          <ng-container *ngFor="let fmt of ['R4', 'STU3']">
+          <ng-container *ngFor="let fmt of ['R5', 'R4', 'STU3']">
             <mat-tab>
               <ng-template matTabLabel>{{ fmt }} Version</ng-template>
               <ng-template matTabContent>

@@ -24,16 +24,17 @@ xdescribe('TestingService', () => {
     propertyBindingRegistrySpyObj.getPropertyBindingsVisibility.and.returnValue(new PropertyBindings());
     */
     TestBed.configureTestingModule({
+      imports: [SchemaFormModule.forRoot()],
       providers: [
-        SchemaFormModule.forRoot(),
         FormPropertyFactory,
         FormService,
         SchemaValidatorFactory,
         ValidatorRegistry,
-        ExpressionCompilerFactory
+        ExpressionCompilerFactory,
+        LogService
       ]
     });
-    service = TestBed.inject(TestingService);
+    service = TestBed.inject<TestingService>(TestingService);
   });
 
   it('should create TestingService', () => {

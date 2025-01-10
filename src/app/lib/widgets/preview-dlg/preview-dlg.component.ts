@@ -36,7 +36,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
-  format: FHIR_VERSION_TYPE = 'R4';
+  format: FHIR_VERSION_TYPE = 'R5';
   activeTopLevelTabIndex = 0;
   activeJsonTabIndex = 0;
   lformsErrors: string;
@@ -120,7 +120,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * Access different versions of questionnaire.
    * @param version - 'STU3' | 'R4' and other defined version types in LForms.
    */
-  getQuestionnaire(version = 'R4') {
+  getQuestionnaire(version = 'R5') {
     return this.formService.convertFromR4(this.data.questionnaire, version);
   }
 

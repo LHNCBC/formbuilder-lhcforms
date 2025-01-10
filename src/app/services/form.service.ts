@@ -124,8 +124,7 @@ export class FormService {
     text: this.operatorOptions,
     url: this.operatorOptions2,
     boolean: this.operatorOptions2,
-    choice: this.operatorOptions2,
-    'open-choice': this.operatorOptions2,
+    coding: this.operatorOptions2,
     attachment: this.operatorOptions2,
     reference: this.operatorOptions2
   };
@@ -891,7 +890,7 @@ export class FormService {
 
     if(jsonObj.resourceType !== 'Questionnaire') {
       if (!!jsonObj.name) {
-        jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R4', jsonObj);
+        jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R5', jsonObj);
       }
       else {
         throw new Error('Not a valid questionnaire');
@@ -911,8 +910,8 @@ export class FormService {
   convertToR4(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
     let ret = fhirQ;
     const fhirVersion = LForms.Util.guessFHIRVersion(fhirQ);
-    if(fhirVersion !== 'R4') {
-      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, 'R4',
+    if(fhirVersion !== 'R5') {
+      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, 'R5',
         LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
     }
     return ret;
@@ -928,7 +927,7 @@ export class FormService {
     let ret = fhirQ;
     if (version === 'LHC-Forms') {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
-    } else if (version !== 'R4') {
+    } else {
       ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, version,
         LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
     }
@@ -963,6 +962,13 @@ export class FormService {
             if(x.item.length === 0) {
               delete x.item;
             }
+          }
+        }
+        if(x?.answerOption || x?.answerValueSet || x?.answerConstraint) {
+          x.__$isAnswerList = true;
+          // Handle missing answerConstraint for R4 and below.
+          if(x.type === 'open-choice' && !x.answerConstraint) {
+            x.answerConstraint = 'optionsOrType';
           }
         }
     });

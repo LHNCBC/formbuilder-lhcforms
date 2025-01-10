@@ -31,8 +31,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
 
-  constructor(private elementRef: ElementRef, private formService: FormService) {
-    super(elementRef);
+  constructor(private formService: FormService) {
+    super();
   }
 
   ngOnInit() {

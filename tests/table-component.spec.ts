@@ -23,7 +23,10 @@ test.describe('Table component', async () => {
   test('should display actions of remove, move up/down of rows with radio selection', async ({page}) => {
     const mainPO = new MainPO(page);
 
-    await page.selectOption('#type', {label: 'choice'});
+    await page.selectOption('#type', {label: 'coding'});
+    await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
+    await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restricted to the list').click();
+
     const table = page.locator('lfb-answer-option table');
     // Load a table with data
     await mainPO.loadTable(table, tableData);
@@ -143,7 +146,9 @@ test.describe('Table component', async () => {
     const mainPO = new MainPO(page);
 
     const table = page.locator('lfb-answer-option table');
-    await page.selectOption('#type', {label: 'choice'});
+    await page.selectOption('#type', {label: 'coding'});
+    await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
+    await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restricted to the list').click();
     // await page.getByLabel('Allow repeating question?').getByText('Yes').click();
     await page.getByRole('radiogroup', {name: 'Allow repeating question?'}).getByText('Yes').click();
     // Load a table with data

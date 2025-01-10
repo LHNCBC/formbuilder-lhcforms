@@ -64,7 +64,9 @@ describe('Home page accept Terms of Use notices', () => {
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
-    cy.selectDataType('choice');
+    cy.selectDataType('coding');
+    cy.booleanFieldClick('Create answer list', 'true');
+    cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]')
       .should('be.visible').and('not.be.checked');
@@ -82,7 +84,9 @@ describe('Home page accept Terms of Use notices', () => {
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
-    cy.selectDataType('choice');
+    cy.selectDataType('coding');
+    cy.booleanFieldClick('Create answer list', 'true');
+    cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.visible').and('not.be.checked');
     cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('not.exist');

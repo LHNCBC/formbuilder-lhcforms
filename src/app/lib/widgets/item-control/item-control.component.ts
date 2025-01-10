@@ -98,8 +98,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     sub = this.formProperty.searchProperty('/type').valueChanges.subscribe((type) => {
       const changed = !(this.dataType === type);
       this.dataType = type;
-      // If type is not choice, cleanup the extension.
-      if (type !== 'choice' && type !== 'open-choice' && type !== 'group') {
+      // If type is not coding, cleanup the extension.
+      if (type !== 'coding' && type !== 'group') {
         this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
       } else {
         this.option = this.getItemControl(changed);

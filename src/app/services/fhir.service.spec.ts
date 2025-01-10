@@ -7,22 +7,46 @@ import {fhirclient} from 'fhirclient/lib/types';
 import RequestOptions = fhirclient.RequestOptions;
 import {TestUtil} from '../testing/util';
 import {CommonTestingModule} from '../testing/common-testing.module';
+import {FormService} from "./form.service";
+
+/**
+ * Create spy on http requests of fhirClient.
+ * @param fhirClient - fhirClient object.
+ * @param reqOptions - http request options
+ * @param returnValue - Mocked return value.
+ * @param resolveFlag - Reject or resolve the promise.
+ */
+const createSpy = (fhirClient, reqOptions, returnValue: any, resolveFlag: boolean) => {
+  return spyOn(fhirClient, 'request')
+    .and.callFake((requestOptions: RequestOptions): Promise<any> => {
+      return new Promise<any>((resolve, reject) => {
+        try {
+          Object.keys(reqOptions).forEach((k) => {
+            if(k === 'body') {
+              // BOdy strings are not going to match. Convert to objects and compare.
+              expect(JSON.parse(<string>requestOptions[k])).toEqual(JSON.parse(<string>reqOptions[k]));
+            } else {
+              expect(requestOptions[k]).toEqual(reqOptions[k]);
+            }
+          });
+          if(resolveFlag) {
+            resolve(returnValue);
+          }
+          else {
+            reject(returnValue);
+          }
+        }
+        catch(error) {
+          throw error;
+        }
+      });
+    });
+}
 
 describe('FhirService', () => {
   let service: FhirService;
-  const dummyQ: fhir.Questionnaire = {resourceType: 'Questionnaire', status: 'draft', id: '12345-6'};
-
-  const testResource: fhir.Questionnaire = {
-    resourceType: 'Questionnaire',
-    status: 'draft',
-    id: '12345',
-    title: 'Mock questionnaire',
-    date: '2021-01-01',
-    item: [{
-      linkId: 'abc',
-      type: 'string'
-    }]
-  };
+  let formService: FormService;
+  let dummyQ: fhir.Questionnaire;
 
   CommonTestingModule.setUpTestBedConfig({
     imports: [ HttpClientTestingModule ]
@@ -30,6 +54,8 @@ describe('FhirService', () => {
 
   beforeEach(() => {
     service = TestBed.inject(FhirService);
+    formService = TestBed.inject(FormService);
+    dummyQ = formService.convertFromR4({resourceType: 'Questionnaire', status: 'draft', id: '12345-6'}, service.getFhirServer().version);
   });
 
   it('should create this service', () => {
@@ -46,12 +72,12 @@ describe('FhirService', () => {
       .withArgs({url: 'Questionnaire/12345-6?_format=application/fhir+json'})
       .and.returnValue(Promise.resolve(dummyQ));
     service.read('12345-6').subscribe({next: (q) => {
-      expect(q).toBe(dummyQ);
+      expect(reqSpy).toHaveBeenCalled();
+      expect(q).toEqual(dummyQ);
       done();
     }, error: (error) => {
       done.fail(error);
     }});
-    expect(reqSpy).toHaveBeenCalled();
   });
 
   it('should read() fail', (done) => {
@@ -61,10 +87,10 @@ describe('FhirService', () => {
     service.read('UNKNOWN').subscribe({next: (q) => {
       done.fail('Not expected to resolve!');
     }, error: (error) => {
+      expect(reqSpy).toHaveBeenCalled();
       expect(error.status).toBe(404);
       done();
     }});
-    expect(reqSpy).toHaveBeenCalled();
   });
 
   it('should search()', (done) => {
@@ -92,87 +118,79 @@ describe('FhirService', () => {
       });
 
     service.search('dummySearchTerm', 'dummyField').subscribe({next: (bundle) => {
-      expect(bundle).toBe(dummyBundle);
+      expect(reqSpy).toHaveBeenCalled();
+      expect(bundle).toEqual(dummyBundle);
       done();
     }, error: (error) => {
       done.fail(error);
     }});
-    expect(reqSpy).toHaveBeenCalled();
   });
 
   it('Should create() fail', (done) => {
-    const reqSpy = spyOn(service.getSmartClient(), 'request')
-      .withArgs({
-        url: 'Questionnaire',
-        method: 'POST',
-        body: JSON.stringify(dummyQ),
-        headers: {'content-type': 'application/json'}
-      })
-      .and.returnValue(Promise.reject({status: 400, statusText: 'Bad Request'}));
+    const reqSpy = createSpy(service.getSmartClient(), {
+      url: 'Questionnaire',
+      method: 'POST',
+      body: JSON.stringify(dummyQ),
+      headers: {'content-type': 'application/json'}
+    }, {status: 400, statusText: 'Bad Request'}, false);
+
     service.create(JSON.stringify(dummyQ), null).subscribe({next: (q) => {
       done.fail('Not expected to resolve!');
     }, error: (error) => {
+      expect(reqSpy).toHaveBeenCalled();
       expect(error.status).toBe(400);
       done();
     }});
-    expect(reqSpy).toHaveBeenCalled();
   });
 
   it('Should create()', (done) => {
-    const reqSpy = spyOn(service.getSmartClient(), 'request')
-      .withArgs({
-        url: 'Questionnaire',
-        method: 'POST',
-        body: JSON.stringify(dummyQ),
-        headers: {'content-type': 'application/json'}
-      })
-      .and.returnValue(Promise.resolve(dummyQ));
+    const reqSpy = createSpy(service.getSmartClient(), {
+      url: 'Questionnaire',
+      method: 'POST',
+      body: JSON.stringify(dummyQ),
+      headers: {'content-type': 'application/json'}
+    }, dummyQ, true);
 
     service.create(JSON.stringify(dummyQ), null).subscribe({next: (q) => {
-      expect(q).toBe(dummyQ);
+      expect(reqSpy).toHaveBeenCalled();
+      expect(q).toEqual(dummyQ);
       done();
     }, error: (error) => {
       done.fail(error);
     }});
-    expect(reqSpy).toHaveBeenCalled();
   });
 
   it('Should update() fail', (done) => {
-    const reqSpy = spyOn(service.getSmartClient(), 'request')
-      .withArgs({
+    const reqSpy = createSpy(service.getSmartClient(), {
         url: 'Questionnaire/12345-6',
         method: 'PUT',
         body: JSON.stringify(dummyQ),
         headers: {'content-type': 'application/json'}
-      })
-      .and.returnValue(Promise.reject({status: 400, statusText: 'Bad Request'})); // Test rejection
+      }, {status: 400, statusText: 'Bad Request'}, false); // Test rejection
 
     service.update(JSON.stringify(dummyQ), null).subscribe({next: (q) => {
       done.fail('Not expected to resolve!');
     }, error: (error) => {
+        expect(reqSpy).toHaveBeenCalled();
         expect(error.status).toBe(400);
         done();
       }});
-
-    expect(reqSpy).toHaveBeenCalled();
   });
 
   it('Should update()', (done) => {
-    const reqSpy = spyOn(service.getSmartClient(), 'request')
-      .withArgs({
+    const reqSpy = createSpy(service.getSmartClient(), {
         url: 'Questionnaire/12345-6',
         method: 'PUT',
         body: JSON.stringify(dummyQ),
         headers: {'content-type': 'application/json'}
-      })
-      .and.returnValue(Promise.resolve(dummyQ));
+      }, dummyQ, true);
 
     service.update(JSON.stringify(dummyQ), null).subscribe({next: (q) => {
-      expect(q).toBe(dummyQ);
+      expect(reqSpy).toHaveBeenCalled();
+      expect(q).toEqual(dummyQ);
       done();
     }, error: (error) => {
       done.fail(error);
     }});
-    expect(reqSpy).toHaveBeenCalled();
   });
 });

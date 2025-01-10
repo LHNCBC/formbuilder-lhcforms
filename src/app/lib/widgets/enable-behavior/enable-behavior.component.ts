@@ -40,6 +40,8 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 export class EnableBehaviorComponent extends LfbControlWidgetComponent {
   displayTexts = {
     all: 'All conditions are true',
-    any: 'Any condition is true'
+    any: 'Any condition is true',
+    hidden: 'Hide',
+    protected: 'Show as protected'
   }
 }

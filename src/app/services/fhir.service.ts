@@ -44,10 +44,18 @@ export class FhirService {
                     // x-target-fhir-endpoint
        basicAuth:   // Optional basic authentication string to be assigned to
                     // x-target-fhir-server-authorization header.
-       version:     // FHIR version, ex: STU3, R4 ...
+       version:     // FHIR version, ex: STU3, R4, R5 ...
    }
   */
   fhirServerList: FHIRServer[] = [
+
+    {
+      id: 5,
+      displayName: 'NLM HAPI FHIR Server - R5',
+      endpoint: 'https://lforms-fhir.nlm.nih.gov/baseR5',
+      desc: 'NLM Test Server (R5 Resources)',
+      version: 'R5'
+    },
     {
       id: 4,
       displayName: 'NLM HAPI FHIR Server - R4',
@@ -304,7 +312,7 @@ export class FhirService {
   /**
    * Get the last used server. The last in the list is assumed to be last used.
    *
-   * @param fhirVersion - R4|STU3 etc.
+   * @param fhirVersion - R5|R4|STU3 etc.
    *
    * @returns - The url of the last used server.
    */
@@ -402,7 +410,7 @@ export class FhirService {
 
   /**
    * Run validations on a given server and version, with input questionnaire to validate.
-   * @param version - Supported version - R4|STU3
+   * @param version - Supported version - R5|R4|STU3
    * @param url - URL object representing the server and any search parameters.
    * @param questionnaire - fhir.Questionnaire to validate.
    *

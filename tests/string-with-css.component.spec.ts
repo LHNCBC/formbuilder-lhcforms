@@ -89,7 +89,7 @@ test.describe('string-with-css.component.spec.ts', async () => {
       await inputGroup.getByLabel('Specify XHTML').fill(fieldLabel + '<b>XHTML</b> text');
       await dropdown.getByRole('button', {name: 'Close'}).click();
       await expect(dropdown).not.toBeVisible();
-      const q = await PWUtils.getQuestionnaireJSON(page, 'R4');
+      const q = await PWUtils.getQuestionnaireJSON(page, 'R5');
       let item = q.item[0];
 
       if(fieldLabel === 'Help text') {
@@ -131,7 +131,8 @@ test.describe('string-with-css.component.spec.ts', async () => {
   test('should import items with CSS styles, XHTML, and help text', async ({page}) => {
 
     const fileJson = await PWUtils.uploadFile(page, 'fixtures/css-xhtml-sample.json', true);
-    let q = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    let q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    delete q.meta; // remove generated content.
     expect(q).toEqual(fileJson);
     await page.getByRole('button', {name: 'Edit questions'}).click();
 
@@ -139,7 +140,7 @@ test.describe('string-with-css.component.spec.ts', async () => {
     await assertInputs(page, 'Prefix');
     await assertInputs(page, 'Help text');
 
-    q = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    q = await PWUtils.getQuestionnaireJSON(page, 'R5');
     expect(q.item[0].text).toEqual('Question text: modified plain text');
     expect(q.item[0]._text.extension[0].valueString).toEqual('/*Question text: modified CSS*/');
     expect(q.item[0]._text.extension[1].valueString).toEqual('Question text: modified <b>XHTML</b>');

@@ -189,7 +189,9 @@ Cypress.Commands.add('FHIRServerResponse', (menuText, serverBaseUrl = 'https://l
 });
 
 Cypress.Commands.add('enterAnswerOptions', (codings) => {
-  cy.selectDataType('choice');
+  cy.selectDataType('coding');
+  cy.booleanFieldClick('Create answer list', 'true');
+  cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
@@ -205,8 +207,10 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
  * Create a sample answer option list.
  */
 Cypress.Commands.add('addAnswerOptions', () => {
-  cy.selectDataType('choice');
-  // No 'initial' widget for choice. User selects default radio in answer option table.
+  cy.selectDataType('coding');
+  cy.booleanFieldClick('Create answer list', 'true');
+  cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+  // No 'initial' widget for coding. User selects default radio in answer option table.
   // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
   cy.get('[id^="answerOption.0.valueCoding.code"]').type('c1');
@@ -214,7 +218,8 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.0.valueCoding.__$score"]').type('2.1');
 
   cy.questionnaireJSON().should((qJson) => {
-    expect(qJson.item[0].type).equal('choice');
+    expect(qJson.item[0].type).equal('coding');
+    expect(qJson.item[0].answerConstraint).equal('optionsOnly');
     expect(qJson.item[0].answerOption[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
     expect(qJson.item[0].answerOption[0].extension).to.deep.equal([{
       url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
@@ -233,7 +238,8 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('lfb-answer-option table tbody tr').eq(0).find('input[type="radio"]').click();
 
   cy.questionnaireJSON().should((qJson) => {
-    expect(qJson.item[0].type).equal('choice');
+    expect(qJson.item[0].type).equal('coding');
+    expect(qJson.item[0].answerConstraint).equal('optionsOnly');
     expect(qJson.item[0].answerOption).to.deep.equal([
       {
         initialSelected: true,

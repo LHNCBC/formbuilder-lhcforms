@@ -1,5 +1,5 @@
 /**
- * Answer coding component for enableWhen. The component is used for answer type choice for
+ * Answer coding component for enableWhen. The component is used for answer type coding for
  * selecting codes to satisfy a condition.
  */
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
@@ -106,7 +106,7 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     }
     const answerType = this.formProperty.searchProperty('__$answerType').value;
 
-    if (answerType === 'choice' || answerType === 'open-choice') {
+    if (answerType === 'coding') {
       const sourceNode = this.formService.getTreeNodeByLinkId(sourceLinkId);
       const answerValueSet = sourceNode?.data?.answerValueSet?.trim();
       this.autoComplete = !!answerValueSet;

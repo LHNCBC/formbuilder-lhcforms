@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TreeModule} from '@bugsplat/angular-tree-component';
 import {
   ISchema,
-  SchemaFormModule,
+  SchemaFormModule, WidgetFactory,
   WidgetRegistry,
 } from '@lhncbc/ngx-schema-form';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
@@ -64,6 +64,7 @@ export class CommonTestingModule {
   static commonTestingDeclarations: any [] = [];
 
   static commonTestProviders: any [] = [
+    WidgetFactory,
     {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
     NgbActiveModal,
     FormService,

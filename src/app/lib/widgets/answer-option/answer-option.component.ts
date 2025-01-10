@@ -26,9 +26,9 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
   initializing = false;
 
-  constructor(private treeService: TreeService, private elementRef: ElementRef,
+  constructor(private treeService: TreeService,
               private formService: FormService) {
-    super(elementRef);
+    super();
   }
 
   /**

@@ -1,7 +1,6 @@
 /**
  * A utility class
  */
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
@@ -11,10 +10,12 @@ import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
 import {v4 as uuidv4} from 'uuid';
 import {fhirPrimitives} from "../fhir";
+import {PropertyGroup} from "@lhncbc/ngx-schema-form";
 declare var LForms: any;
 
 export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
 export enum FHIR_VERSIONS {
+  R5,
   R4,
   STU3
 }
@@ -61,8 +62,7 @@ export class Util {
     time: 'answerTime',
     string: 'answerString',
     text: 'answerString',
-    choice: 'answerCoding',
-    'open-choice': 'answerCoding',
+    coding: 'answerCoding',
     quantity: 'answerQuantity',
     reference: 'answerReference'
   };
@@ -98,15 +98,21 @@ export class Util {
   /**
    * Identify if a particular widget under the group is visible.
    *
-   * @param group - Group property of the widget
-   * @param propertyId - It is '.' delimited property name of its descendants.
+   * @param formProperty - FormProperty of the widget. If it is not of PropertyGroup type,
+   * or no property id is specified, its own visibility is returned.
+   *
+   * @param propertyId - (Optional) It is '.' delimited property name of its descendant.
+   *
+   * @return boolean - Visibility of the desired widget.
    */
-  static isVisible(group: PropertyGroup, propertyId: string) {
-    const path = propertyId.split('.');
-    let visible = group.visible;
-    for (let i = 0; i < path.length && visible; i++) {
-      group = group.getProperty(path[i]);
-      visible = group.visible;
+  static isVisible(formProperty: PropertyGroup, propertyId?: string) {
+    let visible = formProperty.visible;
+    if(formProperty instanceof PropertyGroup && propertyId) {
+      const path = propertyId.split('.');
+      for (let i = 0; i < path.length && visible; i++) {
+        formProperty = formProperty.getProperty(path[i]);
+        visible = formProperty.visible;
+      }
     }
     return visible;
 
@@ -220,10 +226,8 @@ export class Util {
         ret = 'quantity';
         break;
       case 'CNE':
-        ret = 'choice';
-        break;
       case 'CWE':
-        ret = 'open-choice';
+        ret = 'coding';
         break;
     }
     return ret;
@@ -314,7 +318,7 @@ export class Util {
           // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
           this.update(node.filter((e)=>{return e !== null && e !== undefined}));
         }
-        else if (Util.hasHelpText(node)) {
+        if (Util.hasHelpText(node)) {
           Util.eliminateEmptyFields(node.__$helpText);
           if(!node.item) {
             node.item = [];
@@ -323,8 +327,11 @@ export class Util {
           delete node.__$helpText;
           this.update(node);
         }
+        if(node && (!node.answerOption || Util.isEmpty(node.answerOption)) && !node.answerValueSet) {
+          delete node.answerConstraint;
+        }
         // Internally the question is target TreeNode. Change that to node's linkId.
-        else if (this.key === 'question' && typeof node?.data === 'object') {
+        if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);
         }
       });

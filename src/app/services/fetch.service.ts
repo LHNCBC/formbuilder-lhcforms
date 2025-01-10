@@ -12,6 +12,7 @@ import SNOMED_CT_Editions from '../../assets/SNOMED_CT_Editions.json';
 declare var LForms: any;
 
 enum JsonFormatType {
+  R5 = 'R5',
   R4 = 'R4',
   STU3 = 'STU3',
   LFORMS = 'lforms'
@@ -74,7 +75,7 @@ export class FetchService {
     return this.http.get<fhir.Questionnaire>(FetchService.loincFormsUrl + '?loinc_num=' + loincNum,{responseType: 'json'})
       .pipe(
         map((response: any) => {
-          return LForms.Util.getFormFHIRData('Questionnaire', 'R4', response);
+          return LForms.Util.getFormFHIRData('Questionnaire', 'R5', response);
         }),
         catchError((error) => {console.log(`Loading loinc form ${loincNum}`, error); return of([]); })
       );
@@ -182,7 +183,7 @@ export class FetchService {
         items: [convertedLFormsItem]
       };
       // const fhirQ = fhir.SDC.convertLFormsToQuestionnaire(wrapperLForm);
-      const fhirQ = LForms.Util.getFormFHIRData('Questionnaire', 'R4', wrapperLForm);
+      const fhirQ = LForms.Util.getFormFHIRData('Questionnaire', 'R5', wrapperLForm);
       return fhirQ.item[0]; // It is just one item in item array.
     }));
   }
