@@ -121,12 +121,12 @@ export class FhirService {
      * @param id - Id of the resource.
      * @returns - An http promise
      */
-    read(id): Observable<fhir.Resource> {
-      return this.promiseToObservable(this.smartClient.request<fhir.Resource>({
+    read(id): Observable<fhir.Questionnaire> {
+      return this.promiseToObservable(this.smartClient.request<fhir.Questionnaire>({
         url: 'Questionnaire/'+id+'?_format=application/fhir+json',
         // headers: this.config.headers
-      })).pipe(map((res: fhir.Resource) => {
-        return this.formService.convertToR4(res as fhir.Questionnaire);
+      })).pipe(map((res: fhir.Questionnaire) => {
+        return this.formService.convertToR4(res);
       }));
     };
 
@@ -147,7 +147,7 @@ export class FhirService {
      *
      * @param searchStr - A search term to search FHIR resources
      * @param searchField - Field to search, should be a valid searchable field. Refer to FHIR REST API for list of fields.
-     * @param otherQueryParams? - (Optional) Any additional or overriding query parameters to send to FHIR server.
+     * @param otherQueryParams - (Optional) Any additional or overriding query parameters to send to FHIR server.
      * @returns Http promise
      */
     search(searchStr: string, searchField?: string, otherQueryParams?: any): Observable<fhir.Bundle> {

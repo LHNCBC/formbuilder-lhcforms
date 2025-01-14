@@ -2,6 +2,18 @@
   "resourceType": "Questionnaire",
   "status": "draft",
   "title": "Help text sample",
+  "meta": {
+    "tag": [
+      {
+        "code": "a",
+        "display": "A",
+        "system": "http://a.org"
+      },
+      {
+        "code": "lformsVersion: xxx"
+      }
+    ]
+  },
   "item": [
     {
       "id": "100",

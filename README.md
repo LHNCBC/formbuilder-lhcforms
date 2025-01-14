@@ -31,9 +31,9 @@ and to make changes and test them.
 - `npm run test` # runs the unit tests and e2e tests. The e2e tests are written
 in [Cypress](https://www.cypress.io) and [Playwright](https://playwright.dev) frameworks.
 
-If you are planning to contribute new functionality back to us, please
-coordinate with us, so that the new code is in the right places, and so that
-you don't accidentally add something that we are also working on.
+If you plan to contribute new functionality, please coordinate with us to
+ensure the new code is correctly integrated and to avoid duplicating efforts
+on features we may also be developing.
 
 ## Application Programming Interface (API)
 The form builder is an application. However, it is possible to control it via
