@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FhirServersDlgComponent } from './fhir-servers-dlg.component';
 import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {FormsModule} from '@angular/forms';
-import {HttpClientModule} from '@angular/common/http';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {CommonTestingModule} from '../../../testing/common-testing.module';
 
 describe('FhirServersDlgComponent', () => {
@@ -12,7 +12,7 @@ describe('FhirServersDlgComponent', () => {
 
   CommonTestingModule.setUpTestBedConfig({
     declarations: [ FhirServersDlgComponent ],
-    imports: [NgbModule, FormsModule, HttpClientModule],
+    imports: [NgbModule, FormsModule, HttpClientTestingModule],
     providers: [NgbActiveModal]
   });
 

@@ -7,8 +7,8 @@ xdescribe('ObservationLinkPeriodComponent', () => {
   let component: ObservationLinkPeriodComponent;
   let fixture: ComponentFixture<ObservationLinkPeriodComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       providers: [ExtensionsService],
       declarations: [ ObservationLinkPeriodComponent ]
     })

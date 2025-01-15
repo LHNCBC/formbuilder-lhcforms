@@ -6,8 +6,8 @@ describe('StringWithCssComponent', () => {
   let component: StringWithCssComponent;
   let fixture: ComponentFixture<StringWithCssComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ StringWithCssComponent ]
     })
     .compileComponents();

@@ -2,6 +2,8 @@
 .node-content-wrapper {
   width: 100%;
   background-color: whitesmoke;
+  padding: 0;
+  margin-left: 4px;
 }
 
 /*
@@ -12,10 +14,11 @@
   width: 0;
 }
 
-.node-content-wrapper-active,
-.node-content-wrapper-focused {
+.node-content-wrapper-active {
   background-color: lightgrey;
 }
+
+.node-content-wrapper-focused,
 .node-content-wrapper:hover {
   background-color: lightgoldenrodyellow;
 }

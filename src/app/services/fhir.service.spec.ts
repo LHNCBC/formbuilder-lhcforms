@@ -6,7 +6,6 @@ import { FhirService } from './fhir.service';
 import {fhirclient} from 'fhirclient/lib/types';
 import RequestOptions = fhirclient.RequestOptions;
 import {TestUtil} from '../testing/util';
-import {FormService} from './form.service';
 import {CommonTestingModule} from '../testing/common-testing.module';
 
 describe('FhirService', () => {
@@ -29,7 +28,7 @@ describe('FhirService', () => {
     imports: [ HttpClientTestingModule ]
   });
 
-  beforeEach(async () => {
+  beforeEach(() => {
     service = TestBed.inject(FhirService);
   });
 
@@ -59,12 +58,12 @@ describe('FhirService', () => {
     const reqSpy = spyOn(service.getSmartClient(), 'request')
       .withArgs({url: 'Questionnaire/UNKNOWN?_format=application/fhir+json'})
       .and.returnValue(Promise.reject({status: 404, statusText: 'Not found'}));
-    service.read('UNKNOWN').subscribe((q) => {
+    service.read('UNKNOWN').subscribe({next: (q) => {
       done.fail('Not expected to resolve!');
-    }, (error) => {
+    }, error: (error) => {
       expect(error.status).toBe(404);
       done();
-    });
+    }});
     expect(reqSpy).toHaveBeenCalled();
   });
 
@@ -92,12 +91,12 @@ describe('FhirService', () => {
         });
       });
 
-    service.search('dummySearchTerm', 'dummyField').subscribe((bundle) => {
+    service.search('dummySearchTerm', 'dummyField').subscribe({next: (bundle) => {
       expect(bundle).toBe(dummyBundle);
       done();
-    }, (error) => {
+    }, error: (error) => {
       done.fail(error);
-    });
+    }});
     expect(reqSpy).toHaveBeenCalled();
   });
 
@@ -110,12 +109,12 @@ describe('FhirService', () => {
         headers: {'content-type': 'application/json'}
       })
       .and.returnValue(Promise.reject({status: 400, statusText: 'Bad Request'}));
-    service.create(JSON.stringify(dummyQ), null).subscribe((q) => {
+    service.create(JSON.stringify(dummyQ), null).subscribe({next: (q) => {
       done.fail('Not expected to resolve!');
-    }, (error) => {
+    }, error: (error) => {
       expect(error.status).toBe(400);
       done();
-    });
+    }});
     expect(reqSpy).toHaveBeenCalled();
   });
 
@@ -129,12 +128,12 @@ describe('FhirService', () => {
       })
       .and.returnValue(Promise.resolve(dummyQ));
 
-    service.create(JSON.stringify(dummyQ), null).subscribe((q) => {
+    service.create(JSON.stringify(dummyQ), null).subscribe({next: (q) => {
       expect(q).toBe(dummyQ);
       done();
-    }, (error) => {
+    }, error: (error) => {
       done.fail(error);
-    });
+    }});
     expect(reqSpy).toHaveBeenCalled();
   });
 
@@ -148,12 +147,12 @@ describe('FhirService', () => {
       })
       .and.returnValue(Promise.reject({status: 400, statusText: 'Bad Request'})); // Test rejection
 
-    service.update(JSON.stringify(dummyQ), null).subscribe((q) => {
+    service.update(JSON.stringify(dummyQ), null).subscribe({next: (q) => {
       done.fail('Not expected to resolve!');
-    }, (error) => {
-      expect(error.status).toBe(400);
-      done();
-    });
+    }, error: (error) => {
+        expect(error.status).toBe(400);
+        done();
+      }});
 
     expect(reqSpy).toHaveBeenCalled();
   });
@@ -168,12 +167,12 @@ describe('FhirService', () => {
       })
       .and.returnValue(Promise.resolve(dummyQ));
 
-    service.update(JSON.stringify(dummyQ), null).subscribe((q) => {
+    service.update(JSON.stringify(dummyQ), null).subscribe({next: (q) => {
       expect(q).toBe(dummyQ);
       done();
-    }, (error) => {
+    }, error: (error) => {
       done.fail(error);
-    });
+    }});
     expect(reqSpy).toHaveBeenCalled();
   });
 });

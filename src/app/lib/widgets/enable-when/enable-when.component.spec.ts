@@ -6,8 +6,8 @@ describe('EnableWhenComponent', () => {
   let component: EnableWhenComponent;
   let fixture: ComponentFixture<EnableWhenComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach( () => {
+    TestBed.configureTestingModule({
       declarations: [ EnableWhenComponent ]
     })
     .compileComponents();

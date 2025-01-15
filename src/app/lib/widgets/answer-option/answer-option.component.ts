@@ -26,9 +26,9 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
   initializing = false;
 
-  constructor(private treeService: TreeService, private elementRef: ElementRef, private cdr: ChangeDetectorRef,
+  constructor(private treeService: TreeService, private elementRef: ElementRef,
               private formService: FormService) {
-    super(elementRef, cdr);
+    super(elementRef);
   }
 
   /**
@@ -315,7 +315,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   }
 
   /**
-   * Clear all selections for the 'Answer Option' checkbox and radio options. 
+   * Clear all selections for the 'Answer Option' checkbox and radio options.
    */
   clearSelections() {
     this.selectionRadio = -1;

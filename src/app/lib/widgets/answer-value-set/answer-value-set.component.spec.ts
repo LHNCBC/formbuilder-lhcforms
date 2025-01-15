@@ -6,8 +6,8 @@ describe('AnswerValueSetComponent', () => {
   let component: AnswerValueSetComponent;
   let fixture: ComponentFixture<AnswerValueSetComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  beforeEach(() => {
+    TestBed.configureTestingModule({
       declarations: [ AnswerValueSetComponent ]
     })
     .compileComponents();

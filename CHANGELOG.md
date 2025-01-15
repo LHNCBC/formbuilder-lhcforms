@@ -2,9 +2,26 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.6.13] 2024-12-06
+## [9.7.2] 2024-12-06
 ### Changed
 - Added validation and error handling for invalid enableWhen question.
+
+## [9.7.1] 2024-12-20
+### Changed
+- Remove unused ItemJsonEditorComponent.
+
+## [9.7.0] 2024-12-09
+### Added
+- Added feature to re-order answer options in a question item.
+### Changed
+- Change background color of the focused node on the sidebar tree.
+### Fixed
+- Fixed intermittent failures of unit tests
+- Fixed alignment of node with children in the sidebar tree.
+
+## [9.6.13] 2024-11-18
+### Changed
+- Display the questionnaire title as 'Untitled Form' if it is empty.
 
 ## [9.6.12] 2024-11-20
 ### Added

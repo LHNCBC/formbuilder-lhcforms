@@ -1,5 +1,5 @@
 import {ComponentFixture, ComponentFixtureAutoDetect, TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 
 import { AutoCompleteComponent } from './auto-complete.component';
 import {CommonTestingModule} from '../../../testing/common-testing.module';
@@ -7,15 +7,10 @@ import {CommonTestingModule} from '../../../testing/common-testing.module';
 describe('AutoCompleteComponent', () => {
   let component: AutoCompleteComponent;
   let fixture: ComponentFixture<AutoCompleteComponent>;
-  let httpTestingController: HttpTestingController;
 
   CommonTestingModule.setUpTestBedConfig({
     imports: [HttpClientTestingModule],
     providers: [{provide: ComponentFixtureAutoDetect, useValue: true}]
-  });
-
-  beforeEach(async() => {
-    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
   beforeEach(() => {
