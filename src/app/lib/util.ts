@@ -327,9 +327,6 @@ export class Util {
           delete node.__$helpText;
           this.update(node);
         }
-        if(node && (!node.answerOption || Util.isEmpty(node.answerOption)) && !node.answerValueSet) {
-          delete node.answerConstraint;
-        }
         // Internally the question is target TreeNode. Change that to node's linkId.
         if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);

@@ -509,7 +509,7 @@ describe('Home page', () => {
 
       cy.selectDataType('coding');
       cy.booleanFieldClick('Create answer list', 'true');
-      cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+      cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
       cy.get('[id^="initial"]').should('not.exist');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('coding');
@@ -705,7 +705,7 @@ describe('Home page', () => {
     it('should create answerValueSet', () => {
       cy.selectDataType('coding');
       cy.booleanFieldClick('Create answer list', 'true');
-      cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+      cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
       cy.get('#answerValueSet_non-snomed').should('not.exist');
@@ -756,7 +756,7 @@ describe('Home page', () => {
       const eclSel = '#answerValueSet_ecl';
       cy.selectDataType('coding');
       cy.booleanFieldClick('Create answer list', 'true');
-      cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+      cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
       cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
       cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
       cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod').click();
@@ -1880,7 +1880,7 @@ describe('Home page', () => {
       it('should show answer column if there is an answer option in any row of conditional display', () => {
         cy.selectDataType('coding');
         cy.booleanFieldClick('Create answer list', 'true');
-        cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+        cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
@@ -2026,7 +2026,7 @@ describe('Home page', () => {
       it('should support source item with answerValueSet in conditional display', () => {
         cy.selectDataType('coding');
         cy.booleanFieldClick('Create answer list', 'true');
-        cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+        cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
         cy.get('label[for^="__\\$answerOptionMethods_value-set"]').click();
         cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
         cy.tsUrl().scrollIntoView().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
@@ -2061,7 +2061,7 @@ describe('Home page', () => {
       it('should support source item with SNOMED answerValueSet in conditional display', () => {
         cy.selectDataType('coding');
         cy.booleanFieldClick('Create answer list', 'true');
-        cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+        cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
         cy.get('label[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
         cy.get('#answerValueSet_ecl').type(snomedEclText);
         cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
@@ -2863,7 +2863,7 @@ describe('Accepting only LOINC terms of use', () => {
   it('should not display SNOMED option in answerValueSet', () => {
     cy.selectDataType('coding');
     cy.booleanFieldClick('Create answer list', 'true');
-    cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+    cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
     // SNOMED radio should not exist

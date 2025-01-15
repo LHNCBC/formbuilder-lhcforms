@@ -873,7 +873,7 @@
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-auto ps-0 btn-group btn-group-sm",
         "labels": {
-          "optionsOnly": "Restricted to the list",
+          "optionsOnly": "Restrict to the list",
           "optionsOrType": "Allow off list",
           "optionsOrString": "Allow free text"
         }

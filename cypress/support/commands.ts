@@ -191,7 +191,7 @@ Cypress.Commands.add('FHIRServerResponse', (menuText, serverBaseUrl = 'https://l
 Cypress.Commands.add('enterAnswerOptions', (codings) => {
   cy.selectDataType('coding');
   cy.booleanFieldClick('Create answer list', 'true');
-  cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+  cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
@@ -209,7 +209,7 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
 Cypress.Commands.add('addAnswerOptions', () => {
   cy.selectDataType('coding');
   cy.booleanFieldClick('Create answer list', 'true');
-  cy.booleanFieldClick('Answer constraint', 'Restricted to the list');
+  cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
   // No 'initial' widget for coding. User selects default radio in answer option table.
   // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');

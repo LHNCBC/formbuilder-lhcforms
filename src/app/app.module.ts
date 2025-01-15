@@ -91,6 +91,7 @@ import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable
 import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
 import {CodemirrorModule} from "@ctrl/ngx-codemirror";
 import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
+import {Util} from "./lib/util";
 
 @NgModule({
   declarations: [
@@ -199,10 +200,12 @@ export class AppModule implements DoBootstrap {
     // bootstrap AppComponent ourselves
     appRef.bootstrap(AppComponent)
     // @ts-ignore
-    if (window.Cypress) {
+    if (window.Cypress || window.navigator.webdriver) {
       // and save the application reference!
       // @ts-ignore
-      window.appRef = appRef
+      window.appRef = appRef;
+      window['basePageComponent'] = (<AppComponent> appRef.components[0].instance).basePageComponent;
+      window['fbUtil'] = Util;
     }
   }
 }

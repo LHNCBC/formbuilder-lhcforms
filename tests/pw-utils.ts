@@ -24,6 +24,21 @@ export class PWUtils {
     }
   }];
 
+  /**
+   * Capture Questionnaire JSON using internal code, by passing the UI actions.
+   * Use for quick verification of JSON output to speed up the tests.
+   * @return Promise of questionnaire JSON.
+   */
+  static async getQuestionnaireJSONWithoutUI(page: Page, format: String): Promise<any> {
+    return await page.evaluate( (format) => {
+      const app = window['appRef'];
+      // app.tick();
+      const basePageComponent = window['basePageComponent'];
+      const form = basePageComponent.formValue;
+      return basePageComponent.formService.convertFromR4(window['fbUtil'].convertToQuestionnaireJSON(form), format);
+    }, format);
+  }
+
 
   /**
    * Capture clipboard content
