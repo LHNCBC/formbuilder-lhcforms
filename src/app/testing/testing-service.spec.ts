@@ -8,7 +8,6 @@ import {
   ValidatorRegistry
 } from '@lhncbc/ngx-schema-form';
 import {FormService} from '../services/form.service';
-// import {PropertyBindings} from '@lhncbc/ngx-schema-form/lib/property-binding-registry';
 
 xdescribe('TestingService', () => {
   let service: TestingService;
