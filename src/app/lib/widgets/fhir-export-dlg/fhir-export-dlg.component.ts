@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, inject, Input} from '@angular/core';
 import {FhirService, FHIRServer} from '../../../services/fhir.service';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject} from 'rxjs';
@@ -26,12 +26,13 @@ export class FhirExportDlgComponent {
   @Input()
   questionnaire: any;
 
+  fhirService = inject(FhirService);
   // State of the component.
   private _state: State = {
     fhirServer: this.fhirService.getFhirServer()
   };
 
-  constructor(public fhirService: FhirService, private activeModal: NgbActiveModal) {
+  constructor(private activeModal: NgbActiveModal) {
   }
 
   // Getters and setters

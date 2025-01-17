@@ -14,9 +14,8 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
 import {GuidingStep, Util} from '../lib/util';
-import {ArrayProperty, FormComponent} from '@lhncbc/ngx-schema-form';
+import {PropertyGroup, ArrayProperty, FormComponent} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
-import {PropertyGroup} from '@lhncbc/ngx-schema-form';
 
 /**
  * Use provider factory to inject extensions service for form level fields. There is one extensionsService provided in root of the

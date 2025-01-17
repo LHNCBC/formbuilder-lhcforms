@@ -107,7 +107,8 @@ export class Util {
    */
   static isVisible(formProperty: PropertyGroup, propertyId?: string) {
     let visible = formProperty.visible;
-    if(formProperty instanceof PropertyGroup && propertyId) {
+    // formProperty.getProperty => formProperty is PropertyGroup
+    if(formProperty.getProperty && propertyId) {
       const path = propertyId.split('.');
       for (let i = 0; i < path.length && visible; i++) {
         formProperty = formProperty.getProperty(path[i]);
