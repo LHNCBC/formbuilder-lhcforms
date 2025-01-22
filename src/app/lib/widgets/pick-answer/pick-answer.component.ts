@@ -4,13 +4,13 @@ import Def from 'autocomplete-lhc';
 import {BehaviorSubject, debounceTime, distinctUntilChanged, of, startWith, Subscription} from 'rxjs';
 import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 
-import {HttpClient, HttpResponse, HttpParams} from "@angular/common/http";
+import { HttpParams } from "@angular/common/http";
 import { FormService } from 'src/app/services/form.service';
+import { AnswerOptionService } from 'src/app/services/answer-option.service';
 
 @Component({
   selector: 'lfb-pick-answer',
-  templateUrl: './pick-answer.component.html',
-  styleUrl: './pick-answer.component.css'
+  templateUrl: './pick-answer.component.html'
 })
 
 export class PickAnswerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy{
@@ -50,7 +50,9 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       .set('_elements', 'fhirVersion,implementation') // Gives a small response. Is this reliable?
   };
 
-  constructor( private cdr: ChangeDetectorRef, private formService: FormService) {
+  constructor( private cdr: ChangeDetectorRef,
+               private formService: FormService,
+               private answerOptionService: AnswerOptionService) {
     super();
   }
 
@@ -69,7 +71,6 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
 
     this.itemId = this.formProperty.findRoot().getProperty('id').value;
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
-    const sourceNode = this.formService.getTreeNodeByLinkId(this.linkId);
   }
 
   /**
@@ -108,7 +109,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
         changed = this.answerOptionProp.some((ansOptProp, idx) => ansOptProp.valueCoding?.display !== ansOpts[idx].valueCoding?.display ||
                                                                   ansOptProp.valueCoding?.code !== ansOpts[idx].valueCoding?.code ||
                                                                   ansOptProp.valueCoding?.system !== ansOpts[idx].valueCoding?.system ||
-                                                                  ansOptProp.valueCoding?.score !== ansOpts[idx].valueCoding?.score);
+                                                                  ansOptProp.valueCoding?.__$score !== ansOpts[idx].valueCoding?.__$score);
       }
 
       if (changed) {
@@ -140,8 +141,10 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       if (changeRequired) {
         if (this.isRepeating !== undefined) {
           this.resetAutocomplete();
-          this.resetPickAnswer();
-          this.resetAnswerOptionsSelections();
+          if (!this.isAnswerOptionPropEmpty()) {
+            this.resetPickAnswer();
+            this.resetAnswerOptionsSelections();
+          }
         }
 
         this.isRepeating = isRepeating;
@@ -241,6 +244,25 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
   }
 
   /**
+   * Check if answerOptionProp is empty.
+   * @returns - true if empty, false otherwise.
+   */
+  isAnswerOptionPropEmpty(): boolean {
+    if (!this.answerOptionProp || this.answerOptionProp.length === 0) {
+      return true;
+    }
+
+    if (this.answerOptionProp.length === 1) {
+      const option = this.answerOptionProp[0].valueCoding;
+      if (!option.display && !option.code && !option.system && !option.__$score) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Iterates through the list of answer options and reset their selection state. If
    * any option was previously marked as selected, it will be updated to an unselected
    * state.
@@ -262,6 +284,18 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       "repeats": this.isRepeating,
       "selectedAnswers": selectedAnswers
     };
+  }
+
+  /**
+   * Create a map of answer options with their selection state.
+   * @returns - An array with index as key and boolean as value indicating selection state.
+   */
+  createAnswerOptionSelectionMap(): boolean[] {
+    const selectionMap: boolean[] = [];
+    this.answerOptionProp.forEach((option, index) => {
+      selectionMap[index] = !!option.initialSelected;
+    });
+    return selectionMap;
   }
 
   /**
@@ -302,18 +336,25 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
           if (changed || this.isRepeating) {
             const selectedAnswers = this.answerOptionProp.filter((answerOption) => answerOption.initialSelected);
 
-            this.formProperty.findRoot().getProperty('answerOption').setValue(this.answerOptionProp, true);
+            // Rather than updating the "AnswerOptions" field with the selected answer
+            // which caused the AnswerOptions to be refresed when nothing was changed,
+            // using the answerOptionService to notify the selection state changes instead.
+            if (this.isRepeating) {
+              const checkboxSelection = this.createAnswerOptionSelectionMap();
+              this.answerOptionService.setCheckboxSelection(checkboxSelection);
+            } else {
+              this.answerOptionService.setRadioSelection(optionIdx)
+            }
             this.formProperty.setValue(this.createPickAnswer(selectedAnswers), false);
+
           }
-        } else if (ansOptMthd === "snomed-value-set" || ansOptMthd === "value-set") {
-
-        } else if (ansOptMthd === "answer-expression") {
-
         }
       } else if (res?.input_method === "typed" && res?.val_typed_in === "") {
-        // Clear autocomplete
-        this.resetPickAnswer();
-        this.resetAnswerOptionsSelections();
+        if (!this.isAnswerOptionPropEmpty()) {
+          // Clear autocomplete
+          this.resetPickAnswer();
+          this.resetAnswerOptionsSelections();
+        }
       }
     });
   }

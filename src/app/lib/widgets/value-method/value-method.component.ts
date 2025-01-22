@@ -40,10 +40,17 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       
       const initial = this.formProperty.findRoot().getProperty('initial').value;
       const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
+      const answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
 
       let hasPickSelection = false;
       if (this.displayPickInitial) {
         hasPickSelection = answerOptions.some(opt => "initialSelected" in opt);
+      }
+
+      let hasAnswerValuetSetURL = false;
+      const valueSetUrl = this.formProperty.searchProperty('answerValueSet').value;
+      if(valueSetUrl?.length > 0) {
+        hasAnswerValuetSetURL = true;
       }
 
       // Determine which Value Method option to select based on the available data. 
@@ -51,7 +58,10 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       if (this.displayTypeInitial && initial?.length > 0) {
           this.control.setValue("type-initial", { emitEvent: true });
           this.formProperty.setValue("type-initial", false);
-      } else if (this.displayPickInitial && answerOptions?.length > 0 && hasPickSelection) {
+      } else if ((this.displayPickInitial && answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
+                 (this.displayPickInitial && (answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && hasAnswerValuetSetURL)
+                )
+      {
             this.control.setValue("pick-initial", { emitEvent: true });
             this.formProperty.setValue("pick-initial", false);
       } else {

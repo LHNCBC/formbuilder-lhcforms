@@ -125,12 +125,21 @@ export class MainPO {
    * @param table - Locator for the table.
    */
   async loadTable(table: Locator, tableData: string [][]) {
-    for(let i = 0; i < tableData.length; i++) {
-      for(let j = 0; j < tableData[i].length; j++) {
-        await table.locator(`tbody tr:nth-child(${i+1}) td:nth-child(${j+1}) input`).fill(tableData[i][j]);
+    for(let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
+      for(let colIndex = 0; colIndex < tableData[rowIndex].length; colIndex++) {
+        await table.locator(`tbody tr:nth-child(${rowIndex+1}) td:nth-child(${colIndex+1}) input`).fill(tableData[rowIndex][colIndex]);
       }
-      if(tableData.length - i > 1) {
+      if(tableData.length - rowIndex > 1) {
         await table.locator('..').getByRole('button', {name: 'Add'}).click();
+        // Added check to wait for the row to be added.
+        const rows = table.locator(`tbody tr`);
+        await expect(rows).toHaveCount(rowIndex + 2);
+      } else {
+        // Added check to wait for the last cell of the last row to be added.
+        const lastRow = table.locator('tbody tr').last();
+        const lastCell = lastRow.locator('td input').last();
+        const lastCellValue = await lastCell.inputValue();
+        await expect(lastCell).toHaveValue(tableData[rowIndex][tableData[rowIndex].length - 1], { timeout: 1000});
       }
     }
   }
