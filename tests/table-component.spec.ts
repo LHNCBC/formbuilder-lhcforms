@@ -145,15 +145,17 @@ test.describe('Table component', async () => {
   test('should display actions of remove, move up/down of rows with checkbox selections', async ({page}) => {
     const mainPO = new MainPO(page);
 
-    const table = page.locator('lfb-answer-option table');
     await page.selectOption('#type', {label: 'choice'});
     // await page.getByLabel('Allow repeating question?').getByText('Yes').click();
     await page.getByRole('radiogroup', {name: 'Allow repeating question?'}).getByText('Yes').click();
+    
+    // Click on the Value Method - Pick Initial option
+    await page.locator('[for*="valueMethod_pick-initial"]').click();
+    
+    const table = page.locator('lfb-answer-option table');
     // Load a table with data
     await mainPO.loadTable(table, tableData);
 
-    // Click on the Value Method - Pick Initial option
-    await page.locator('[for*="valueMethod_pick-initial"]').click();
     // The Pick Initial drop-down is displayed
     const pickInitial = page.locator('lfb-pick-answer >> input[type="text"]');
     await pickInitial.click();

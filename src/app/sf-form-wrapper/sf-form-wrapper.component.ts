@@ -205,7 +205,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @returns - true if the Answer Option array is empty or contain one empty item, otherwise false.
    */
   isEmptyAnswerOption(ansOpts: any): boolean {
-    if (!ansOpts) {
+    if (!ansOpts || ansOpts.length === 0) {
       return true;
     }
     if (ansOpts.length > 1)

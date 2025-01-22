@@ -10,8 +10,9 @@ import {
 import {TableComponent} from '../table/table.component';
 import fhir from 'fhir/r4';
 import {TreeService} from '../../../services/tree.service';
-import {Subscription} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
+import { AnswerOptionService } from 'src/app/services/answer-option.service';
 
 @Component({
   selector: 'lfb-answer-option',
@@ -26,8 +27,10 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
   initializing = false;
 
-  constructor(private treeService: TreeService, private elementRef: ElementRef,
-              private formService: FormService) {
+  constructor(private treeService: TreeService,
+              private elementRef: ElementRef,
+              private formService: FormService,
+              private answerOptionService: AnswerOptionService) {
     super(elementRef);
   }
 
@@ -122,6 +125,20 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     });
     this.subscriptions.push(sub);
 
+    // Subscribe to single selection (repeats = false) by the "Pick Initial" field.
+    sub = this.answerOptionService.radioSelection$.subscribe((selection) => {
+      this.selectionRadio = selection;
+      this.updateWithRadioSelection();
+    });
+    this.subscriptions.push(sub);
+
+    // Subscribe to multiple selections (repeats = true) by the "Pick Initial" field.
+    sub = this.answerOptionService.checkboxSelection$.subscribe((selection) => {
+      this.selectionCheckbox = selection;
+      this.updateWithCheckboxSelections();
+    });
+    this.subscriptions.push(sub);
+    
     // The schema.widget.labelPosition is not populated after the 'Default' column in the table.component.html
     // has been excluded.
     this.cdr.detectChanges();
