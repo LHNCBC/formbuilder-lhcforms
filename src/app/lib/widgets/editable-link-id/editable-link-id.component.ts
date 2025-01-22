@@ -5,8 +5,7 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'lfb-editable-link-id',
-  templateUrl: './editable-link-id.component.html',
-  styleUrl: './editable-link-id.component.css'
+  templateUrl: './editable-link-id.component.html'
 })
 export class EditableLinkIdComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
   linkId;
