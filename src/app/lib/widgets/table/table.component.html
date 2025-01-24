@@ -45,6 +45,7 @@
                   (click)="clearSelections()"><i class="material-icons align-top">backspace</i></button>
         </th>
         <th *ngIf="includeActionColumn" class="col-sm-half action-column" ></th>
+        <th *ngIf="includeErrorColumn" class="col-sm-quarter error-column" ></th>
       </tr>
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
@@ -63,6 +64,9 @@
         </td>
         @if(includeActionColumn) {
           <ng-container *ngTemplateOutlet="actionColumn; context: {index: ind, first: isFirst, last: isLast}"></ng-container>
+        }
+        @if(includeErrorColumn) {
+          <ng-container *ngTemplateOutlet="errorColumn; context: {index: ind}"></ng-container>
         }
 <!-- 
         <td [ngClass]="{'d-none': formProperty.properties.length === 1, 'col-sm-1': id !== 'answerOption', 'col-sm-half': id === 'answerOption'}"
@@ -94,7 +98,7 @@
 </div>
 
 <ng-template #actionColumn let-index="index" let-first="first" let-last="last">
-  <td class="action-column col-sm-half">
+  <td class="action-column col-sm-half center">
     <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
       <button (click)="removeProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
               [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
@@ -129,4 +133,17 @@
         <fa-icon [icon]="faMoveDown"></fa-icon>
       </button>
   </div>
+</ng-template>
+
+<ng-template #errorColumn let-index="index">
+  <td class="error-column col-sm-quarter center">
+    <span tabindex="0" *ngIf="getFieldErrorsByIndex(index) | async as rowErrorMessage" [attr.id]="formProperty.canonicalPathNotation+'.'+index+'.err'" 
+      class="btn border-0 p-0 b-0 errors" [matTooltip]="rowErrorMessage"
+    >
+      <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
+      <small class="text-danger form-text sr-only" role="alert">
+        {{rowErrorMessage}}
+      </small>
+    </span>
+  </td>
 </ng-template>

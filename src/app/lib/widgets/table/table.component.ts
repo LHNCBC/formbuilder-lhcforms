@@ -22,10 +22,11 @@ import {
 } from '@angular/core';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong} from '@fortawesome/free-solid-svg-icons';
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
-import {Subscription} from 'rxjs';
+import {Observable, of, Subscription} from 'rxjs';
+import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'lfb-table',
@@ -33,7 +34,7 @@ import {Subscription} from 'rxjs';
   styleUrls: ['./table.component.css']
 })
 export class TableComponent extends LfbArrayWidgetComponent implements OnInit, AfterViewInit, DoCheck, OnChanges {
-
+  errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
   static seqNum = 0;
   // Icons for buttons.
   faAdd = faPlusCircle;
@@ -42,7 +43,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   faDown = faAngleDown;
   faMoveDown = faDownLong;
   faMoveUp = faUpLong;
+  warningIcon = faExclamationTriangle;
+  includeErrorColumn = false;
+  showErrorTypeList = [];
+  showErrorObject;
 
+  dataType = "string";
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
@@ -112,8 +118,27 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     }
     this.selectionRadio = -1;
     this.selectionCheckbox = [];
-  }
 
+    this.handleErrorColumnVisibility(widget);
+  }
+  
+  /**
+   * Manages the visibility of the error column based on the schema.widget configuration for
+   * the given property.
+   * @param widget - The widget configuration for the property.
+   */
+  handleErrorColumnVisibility(widget: any): void {
+    this.dataType = this.formProperty.findRoot().getProperty('type').value;
+    this.showErrorTypeList = widget?.showErrorTypeList || [];
+  
+    if (this.showErrorTypeList.length) {
+      this.includeErrorColumn = this.showErrorTypeList.some(errorType => 
+        errorType.type === this.dataType
+      );
+  
+      this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
+    }
+  }
 
   /**
    * Initialize setting up observers.
@@ -473,5 +498,64 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   unHighlight(event: Event) {
     this.renderer.removeClass(event.currentTarget, 'row-highlight');
+  }
+
+  /**
+   * Retrieves the error messages for the given row index.
+   * @param index - Index of the row.
+   * @returns - observable that emits a string created by joining the 'errorMessage' array.
+   */
+  getFieldErrorsByIndex(index: number): Observable<string> {
+    const rowProperty = this.formProperty.properties[index] as ObjectProperty;
+    return this.getRowPropertyFieldErrors(rowProperty);
+  }
+
+  /**
+   * Loop through each of the 'property' fields and return any errors. This refers to 
+   * any 'property' fields that display in a table structure.
+   * @param rowProperty - Object property.
+   * @returns - observable that emits a string created by joining the 'errorMessage' array.
+   */
+  getRowPropertyFieldErrors(rowProperty: ObjectProperty): Observable<string> {
+    let errorMessages: string [] = [];
+    const fields = this.showErrorObject.properties;
+
+    for (const field of fields) {
+      const fieldValue = rowProperty.getProperty(field)?.value;
+      if (fieldValue || fieldValue === null) {
+        const fieldName = field;
+        const errors = this.getFieldErrors(rowProperty.getProperty(fieldName));
+
+        if (errors) {
+          errorMessages.push(...errors);
+          break;
+        }
+      }
+    }
+
+    return of(errorMessages.length ? errorMessages.join() : null);
+  }
+
+  /**
+   * Collect field related errors based on the specified error codes.
+   * @param fieldProperty - FormProperty representing the field.
+   * @returns - Array of error messages or null.
+   */
+  getFieldErrors(fieldProperty: FormProperty): string [] {
+    const codes = this.showErrorObject.codes;
+    const messages = fieldProperty?._errors?.reduce((acc, error) => {
+      if (codes.includes(error.code)) {
+        acc.push(error.message);
+      }
+      return acc;
+    }, []);
+    return messages?.length ? messages : null;
+  }
+
+  /**
+   * Get the row properties.
+   */
+  get rowProperties(): ObjectProperty [] {
+    return this.formProperty.properties as ObjectProperty[];
   }
 }

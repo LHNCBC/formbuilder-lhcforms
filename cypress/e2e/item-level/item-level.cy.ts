@@ -451,10 +451,26 @@ describe('Home page', () => {
       cy.get('@initIntField').clear().type('12abc').should('have.value', '12');
       cy.get('@initIntField').clear().type('3.4').should('have.value', '34');
       cy.get('@initIntField').clear().type('-5.6').should('have.value', '-56');
-      cy.get('@initIntField').clear().type('-0').should('have.value', '-0');
-      cy.get('@initIntField').clear().type('-2-4-').should('have.value', '-24');
+      cy.get('@initIntField').clear().type('-0').should('have.value', '0');
+
+      // Invalid integer is no longer getting corrected. Error is displayed instead. 
+      cy.get('@initIntField').clear().type('-2-4-').should('have.value', '-2-4-');
+      cy.get('lfb-initial-number input[id^="initial.0.valueInteger"]').should('contain.class', 'invalid');
+      cy.get('span[id="initial.0.err"] > small').should('contain.text', 'Invalid integer value.');
+
       cy.get('@initIntField').clear().type('24e1').should('have.value', '241');
       cy.get('@initIntField').clear().type('-24E1').should('have.value', '-241');
+
+      // Value should be stored as integer -241 (not string) in the JSON
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial).to.deep.equal(
+          [
+            {
+              "valueInteger": -241
+            }
+          ]
+        )
+      });      
     });
 
     it('should restrict to decimal input in number field', () => {
@@ -466,7 +482,31 @@ describe('Home page', () => {
       cy.get('@initNumberField').clear().type('3.4').should('have.value', '3.4');
       cy.get('@initNumberField').clear().type('-5.6').should('have.value', '-5.6');
       cy.get('@initNumberField').clear().type('-7.8ab').should('have.value', '-7.8');
-      cy.get('@initNumberField').clear().type('-xy0.9ab').should('have.value', '-0.9');
+      cy.get('@initNumberField').clear().type('-xy0.9ab').should('have.value', '0.9');
+      
+      cy.get('@initNumberField').clear().type('-').should('have.value', '-');
+      cy.get('lfb-initial-number input[id^="initial.0.valueDecimal"]').should('contain.class', 'invalid');
+      cy.get('span[id="initial.0.err"] > small').should('contain.text', 'Invalid decimal value.');
+
+      cy.get('@initNumberField').clear().type('.').should('have.value', '.');
+      cy.get('lfb-initial-number input[id^="initial.0.valueDecimal"]').should('contain.class', 'invalid');
+      cy.get('span[id="initial.0.err"] > small').should('contain.text', 'Invalid decimal value.');
+
+      cy.get('@initNumberField').clear().type('e').should('have.value', 'e');
+      cy.get('lfb-initial-number input[id^="initial.0.valueDecimal"]').should('contain.class', 'invalid');
+      cy.get('span[id="initial.0.err"] > small').should('contain.text', 'Invalid decimal value.');
+
+      // Value should be stored as decimal 0.9 (not string) in the JSON
+      cy.get('@initNumberField').clear().type('-xy0.9ab').should('have.value', '0.9');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial).to.deep.equal(
+          [
+            {
+              "valueDecimal": 0.9
+            }
+          ]
+        )
+      });
     });
 
     it('should add answer-option', () => {

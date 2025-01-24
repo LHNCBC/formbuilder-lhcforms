@@ -27,7 +27,9 @@ export interface EnableWhenValidationObject {
 
 export class ValidationService {
   static readonly LINKID_PATTERN = /^[^\s]+(\s[^\s]+)*$/;
-
+  static readonly INITIAL_DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$/;
+  static readonly INITIAL_INTEGER = /^-?([0]|([1-9][0-9]*))$/;
+  
   constructor(private formService: FormService) { }
 
   validators = {
@@ -432,5 +434,91 @@ export class ValidationService {
 
     return errors;
   };
+
+
+  /**
+   * Custom validator for the 'Initial' field (array of inittial values), specifically targeting the
+   * 'integer' and 'decimal' data types.
+   * @param validationObj - an object that contains field data for validation.
+   * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
+   *                                 or a validation for all items (false).
+   * @returns Array of errors if validation fails, or null if it passes.
+   */
+  validateInitialAll(validationObj: any, isSchemaFormValidation = true): any[] | null {
+    let errors: any[] = [];
+
+    const node = this.formService.getTreeNodeById(validationObj.id);
+    const dataType = node.data?.type;
+
+    // Only going to validate 'integer' and 'decimal' data types for now.
+    if (dataType !== 'integer' && dataType !== 'decimal') {
+      return null;
+    }
+
+    const initialList = validationObj.value;
+
+    if (!validationObj.id || !validationObj.value) {
+      return null;
+    }
+
+    initialList.forEach((initial) => {
+      if (!initial)
+        return null;
+
+      const error = this.validateInitialSingle(initial, dataType, isSchemaFormValidation);
+      if (error) {
+        errors = errors || []
+        errors.push(error)
+      }
+    });
+
+    return errors;
+  };
+
+  /**
+   * Custom validator for single initial value in the 'Initial' field, specifically targeting the
+   * 'integer' and 'decimal' data types.
+   * @param validationObj - an object that contains field data for validation.
+   * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
+   *                                 or a validation for all items (false).
+   * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
+   *          1. (PATTERN) - The entered value does not match the required 'integer' or 'decimal' format pattern.
+   */  
+  validateInitialSingle(initialObj: any, dataType: string, isSchemaFormValidation = true): any[] | null {
+    let errors: any[] = [];
+    let errorMessage: string;
+    let validationResult: boolean;
+
+    if (initialObj.value || initialObj.value === null) {
+      if (initialObj.dataType === "decimal") {
+        validationResult = ValidationService.INITIAL_DECIMAL.test(initialObj.value);
+        errorMessage = `Invalid decimal value.`;
+      } else if (initialObj.dataType === "integer") {
+        validationResult = ValidationService.INITIAL_INTEGER.test(initialObj.value);
+        errorMessage = `Invalid integer value.`;
+      }
+
+      if (!validationResult) {
+        const errorCode = 'PATTERN';
+        const err: any = {};
+        err.code = errorCode;
+        err.path = `#${initialObj.canonicalPath}`;
+        err.message = errorMessage;
+        errors.push(err);
+      }
+    }
+
+    if (!errors.length) {
+      errors = null;
+    }
+
+    // Update validate status if there are errors or if 'isSchemaFormValidation' is true.
+    if (isSchemaFormValidation || errors)
+      this.formService.updateValidationStatus(initialObj.id, initialObj.linkId,
+                                              `${initialObj.canonicalPathNotation}`,
+                                              errors);
+
+    return errors;
+  }
 }
 
