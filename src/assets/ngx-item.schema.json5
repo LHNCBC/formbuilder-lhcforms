@@ -1247,20 +1247,24 @@
           },
           "valueDecimal": {
             "description": "The actual value to for an initial answer.",
-            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$",
-            "type": "number",
+            "type": "string",
             "title": "Value decimal",
             "visibleIf": {
               "/type": ["decimal"]
+            },
+            "widget": {
+              "id": "initial-number"
             }
           },
           "valueInteger": {
             "description": "The actual value to for an initial answer.",
-            "pattern": "^-?([0]|([1-9][0-9]*))$",
-            "type": "integer",
+            "type": "string",
             "title": "Value integer",
             "visibleIf": {
               "/type": ["integer"]
+            },
+            "widget": {
+              "id": "initial-number"
             }
           },
           "valueDate": {
@@ -1576,6 +1580,10 @@
           {"field": "valueQuantity.value","title": "Value", "col": 4, "nolabel": true},
           {"field": "valueQuantity.unit", "title": "Unit", "col": 7, "nolabel": true},
           {"field": "valueReference", "noHeader": true, "nolabel": true}
+        ],
+        "showErrorTypeList": [
+          { "type": "decimal", "properties": ["valueDecimal"], "codes": ["PATTERN"] },
+          { "type": "integer", "properties": ["valueInteger"], "codes": ["PATTERN"] }
         ]
       }
     },

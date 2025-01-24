@@ -80,7 +80,6 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
-import { DecimalDirective } from './lib/directives/decimal.directive';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
@@ -100,6 +99,9 @@ import { ExpressionEditorComponent } from './lib/widgets/expression-editor/expre
 import { ExpressionEditorDlgComponent } from './lib/widgets/expression-editor-dlg/expression-editor-dlg.component';
 
 import { VariableComponent } from './lib/widgets/variable/variable.component';
+import { InitialNumberDirective } from './lib/directives/initial-number.directive';
+import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
+
 import { environment } from '../environments/environment';
 
 @NgModule({
@@ -156,7 +158,6 @@ import { environment } from '../environments/environment';
     NodeDialogComponent,
     NumberComponent,
     IntegerDirective,
-    DecimalDirective,
     AnswerOptionMethodsComponent,
     ObservationExtractComponent,
     AnswerValueSetComponent,
@@ -170,7 +171,9 @@ import { environment } from '../environments/environment';
     PickAnswerComponent,
     ExpressionEditorComponent,
     ExpressionEditorDlgComponent,
-    VariableComponent
+    VariableComponent,
+    InitialNumberDirective,
+    InitialNumberComponent
   ],
   imports: [
     BrowserModule,

@@ -1,16 +1,14 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
   OnInit
 } from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import fhir from 'fhir/r4';
 import {TreeService} from '../../../services/tree.service';
-import {Subject, Subscription} from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
 

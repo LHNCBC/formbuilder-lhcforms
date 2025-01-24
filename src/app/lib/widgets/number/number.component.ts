@@ -17,7 +17,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
                    [helpMessage]="schema.description"
                    [ngClass]="labelWidthClass + ' ps-0 pe-1'"
         ></lfb-label>
-        <input lfbDecimal [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
+        <input [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
                [attr.id]="id"
                class="form-control {{controlWidthClass}}" [formControl]="control"
                type="number" [attr.min]="schema.minimum" [attr.max]="schema.maximum" step="any"

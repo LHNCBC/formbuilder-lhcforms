@@ -46,6 +46,7 @@ import { PickAnswerComponent } from './widgets/pick-answer/pick-answer.component
 import { ExpressionEditorComponent } from './widgets/expression-editor/expression-editor.component';
 import { ExpressionEditorDlgComponent } from './widgets/expression-editor-dlg/expression-editor-dlg.component';
 import { VariableComponent } from './widgets/variable/variable.component';
+import { InitialNumberComponent } from './widgets/initial-number/initial-number.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -92,5 +93,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('expression-editor', ExpressionEditorComponent);
     this.register('expression-editor-dlg', ExpressionEditorDlgComponent);
     this.register('variable', VariableComponent);
+    this.register('initial-number', InitialNumberComponent);
   }
 }
