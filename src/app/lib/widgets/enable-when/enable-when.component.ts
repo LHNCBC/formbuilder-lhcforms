@@ -19,7 +19,7 @@ import { debounceTime } from 'rxjs/operators';
 @Component({
   selector: 'lfb-enable-when',
   templateUrl: './enable-when.component.html',
-  styleUrls: ['./enable-when.component.css'],
+  styleUrls: ['../table/table.component.css', './enable-when.component.css'],
   encapsulation: ViewEncapsulation.None
 })
 export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck, AfterViewChecked, OnDestroy {
