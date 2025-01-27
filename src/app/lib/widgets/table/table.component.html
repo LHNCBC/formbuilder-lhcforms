@@ -94,6 +94,12 @@
     >
       <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
     </button>
+       
+    <div class="mt-2" *ngIf="tableStatus" role="alert">
+      <fa-icon [icon]="warningIcon" [ngStyle]="getStatusStyle()" aria-hidden="true"></fa-icon>
+      <span class="ms-2" [ngClass]="getStatusClass()">{{tableStatus.message}}</span>
+    </div>
+
   </div>
 </div>
 

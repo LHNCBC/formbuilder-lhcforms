@@ -27,6 +27,7 @@ import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import { TableService, TableStatus } from 'src/app/services/table.service';
 
 @Component({
   selector: 'lfb-table',
@@ -49,6 +50,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   showErrorObject;
 
   dataType = "string";
+  answerOptionMethod = "answer-option";
+
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
@@ -72,6 +75,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   renderer = inject(Renderer2);
   cdr = inject(ChangeDetectorRef);
+  tableService = inject(TableService);
+
+  tableStatus: TableStatus;
 
   constructor(private elRef: ElementRef) {
     super();
@@ -145,6 +151,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   ngAfterViewInit() {
     super.ngAfterViewInit();
+    this.answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
     const singleItemEnableSource = this.formProperty.schema.widget ?
       this.formProperty.schema.widget.singleItemEnableSource : null;
     const multipleSelectionEnableSource = this.formProperty.schema.widget ?
@@ -207,6 +214,52 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(newValue);
     });
     this.subscriptions.push(subscription);
+
+    subscription = this.tableService.tableStatusChanged$.subscribe((newValue: TableStatus) => {
+      this.tableStatus = newValue;
+      this.cdr.markForCheck();
+    });
+    this.subscriptions.push(subscription)
+  }
+
+  /**
+   * Get the style for the table row based on the table status.
+   * @returns - An object containing the CSS styles.
+   */
+  getStatusStyle() {
+    if (!this.tableStatus) {
+      return {};
+    }
+
+    switch (this.tableStatus.type) {
+      case 'error':
+        return { color: 'red' };
+      case 'warning':
+        return { color: 'darkorange' };
+      default:
+        return { color: 'black' };
+    }
+  }
+
+  /**
+   * Get the CSS class for the table row based on the table status.
+   * @returns - A string containing the CSS class.
+   */
+  getStatusClass() {
+    if (!this.tableStatus) {
+      return '';
+    }
+
+    switch (this.tableStatus.type) {
+      case 'error':
+        return 'text-danger';
+      case 'warning':
+        return 'text-warning';
+      case 'success':
+        return 'text-success';
+      default:
+        return '';
+    }
   }
 
   /**

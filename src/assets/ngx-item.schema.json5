@@ -1421,7 +1421,10 @@
               "display": {
                 "description": "A representation of the meaning of the code in the system, following the rules of the system.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "answer-value-set-coding-display"
+                }
               },
               "userSelected": {
                 "description": "Indicates that this coding was chosen by a user directly - e.g. off a pick list of available items (codes or displays).",
@@ -1432,7 +1435,7 @@
             "additionalProperties": false,
             "type": "object",
             "visibleIf": {
-              "/__$answerOptionMethods": ["answer-option"]
+              "/__$answerOptionMethods": ["answer-option", "snomed-value-set", "value-set"]
             },
             "widget": {
               "id": "hidden"
@@ -1549,12 +1552,29 @@
       "type": "array",
       "title": "Initial value",
       "visibleIf": {
-        "allOf": [
+        "oneOf": [
           {
-            "/type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'choice' && target.value != 'open-choice'"]
+            "allOf": [
+              {
+                "/type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'choice' && target.value != 'open-choice'"]
+              },
+              {
+                "__$valueMethod":  ["type-initial"]
+              }
+            ]
           },
           {
-            "__$valueMethod":  ["type-initial"]
+            "allOf": [
+              {
+                "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+              },
+              {
+                "__$valueMethod":  ["pick-initial"]
+              },
+              {
+                "/__$answerOptionMethods": ["snomed-value-set", "value-set"]
+              }
+            ]
           }
         ]
       },
@@ -1655,14 +1675,7 @@
       "type": "object",
       "title": "Pick Initial value",
       "visibleIf": {
-        "allOf": [
-          {
-            "__$valueMethod":  ["pick-initial"]
-          },
-          {
-            "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option'"]
-          }
-        ],
+        "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option'"]
       },
       "widget": {
         "id": "pick-answer",

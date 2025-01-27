@@ -101,6 +101,7 @@ import { ExpressionEditorDlgComponent } from './lib/widgets/expression-editor-dl
 import { VariableComponent } from './lib/widgets/variable/variable.component';
 import { InitialNumberDirective } from './lib/directives/initial-number.directive';
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
+import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 
 import { environment } from '../environments/environment';
 
@@ -173,7 +174,8 @@ import { environment } from '../environments/environment';
     ExpressionEditorDlgComponent,
     VariableComponent,
     InitialNumberDirective,
-    InitialNumberComponent
+    InitialNumberComponent,
+    AnswerValueSetCodingDisplayComponent
   ],
   imports: [
     BrowserModule,

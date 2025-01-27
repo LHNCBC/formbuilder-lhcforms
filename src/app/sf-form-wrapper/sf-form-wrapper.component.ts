@@ -406,20 +406,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       err.path = `#/__$pickInitial`;
       err.message = `Answer choices must be populated.`;
       errors.push(err);
-    } else if (asMethod === "snomed-value-set" && !answerValueSetUri) {
-      const errorCode = 'SNOMED_ANSWER_VALUE_SET_URI_REQUIRED';
-      const err: any = {};
-      err.code = errorCode;
-      err.path = `#/__$pickInitial`;
-      err.message = `SNOMED answer value set URI is required.`;
-      errors.push(err);
-    } else if (asMethod === "value-set" && !answerValueSetUri) {
-      const errorCode = 'ANSWER_VALUE_SET_URI_REQUIRED';
-      const err: any = {};
-      err.code = errorCode;
-      err.path = `#/__$pickInitial`;
-      err.message = `Answer value set URI is required.`;
-      errors.push(err);
     }
 
     if(errors.length) {
