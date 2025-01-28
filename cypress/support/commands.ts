@@ -190,8 +190,8 @@ Cypress.Commands.add('FHIRServerResponse', (menuText, serverBaseUrl = 'https://l
 
 Cypress.Commands.add('enterAnswerOptions', (codings) => {
   cy.selectDataType('coding');
-  cy.booleanFieldClick('Create answer list', 'true');
-  cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
+  cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+  cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
@@ -208,8 +208,8 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
  */
 Cypress.Commands.add('addAnswerOptions', () => {
   cy.selectDataType('coding');
-  cy.booleanFieldClick('Create answer list', 'true');
-  cy.booleanFieldClick('Answer constraint', 'Restrict to the list');
+  cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+  cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
   // No 'initial' widget for coding. User selects default radio in answer option table.
   // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
@@ -218,11 +218,12 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.0.valueCoding.__$score"]').type('2.1');
 
   cy.questionnaireJSON().should((qJson) => {
+    console.log(JSON.stringify(qJson, null, 2));
     expect(qJson.item[0].type).equal('coding');
     expect(qJson.item[0].answerConstraint).equal('optionsOnly');
     expect(qJson.item[0].answerOption[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
     expect(qJson.item[0].answerOption[0].extension).to.deep.equal([{
-      url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+      url: 'http://hl7.org/fhir/StructureDefinition/itemWeight',
       valueDecimal: 2.1
     }]);
   });
@@ -245,14 +246,14 @@ Cypress.Commands.add('addAnswerOptions', () => {
         initialSelected: true,
         valueCoding: {display: 'd1', code: 'c1', system: 's1'},
         extension: [{
-          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          url: 'http://hl7.org/fhir/StructureDefinition/itemWeight',
           valueDecimal: 2.1
         }]
       },
       {
         valueCoding: {display: 'd2', code: 'c2', system: 's2'},
         extension: [{
-          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          url: 'http://hl7.org/fhir/StructureDefinition/itemWeight',
           valueDecimal: 3
         }]
       },
@@ -505,10 +506,33 @@ Cypress.Commands.add('collapseAdvancedFields',() => {
 });
 
 /**
- * Click a radio button identified by field label and value of the radio button.
+ * Click a boolean value radio button identified by field label and value of the radio button.
  */
 Cypress.Commands.add('booleanFieldClick', (fieldLabel, rbValue) => {
   return cy.getBooleanFieldParent(fieldLabel).find('label[for^="booleanRadio_'+rbValue+'"]').click();
+});
+
+/**
+ * Get a radio button identified by the label of the group and the label of the radio button.
+ *
+ * Use radio input element to make assertions on input status, such as selected or not. It is not
+ * suitable for mouse actions as it is hidden from mouse-pointer. Instead use its label to perform
+ * mouse actions.
+*/
+
+Cypress.Commands.add('getRadioButton', (groupLabel, rLabel) => {
+  return cy.getRadioButtonLabel(groupLabel, rLabel).invoke('attr', 'for').then((id) => {
+    return cy.get('#'+id);
+  }).should('have.attr', 'type', 'radio');
+  // Confirm the radio input and return its label for mouse actions.
+});
+
+/**
+ * Get the label of radio input identified by the label of the field and the label of the radio button.
+ */
+Cypress.Commands.add('getRadioButtonLabel', (fieldLabel, radioLabel) => {
+  const radioGroup = cy.get('lfb-label label').contains(fieldLabel).parent().next();
+  return radioGroup.find('label').contains(radioLabel);
 });
 
 /**

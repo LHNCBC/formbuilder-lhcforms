@@ -92,6 +92,33 @@
         "type": "object"
       },
       "visibleIf": {
+        "oneOf": [
+          // When no answer list, show for these types.
+          {
+            "allOf": [
+              {
+                "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url'"]
+              },
+              {
+                "__$isAnswerList": ["$EXP$ target.value == false || target.value == undefined"]
+              }
+            ],
+          },
+          // For answer list, exclude showing for optionsOnly constraint.
+          {
+            "allOf": [
+              {
+                "type": ["$EXP$ target.value != 'coding'"]
+              },
+              {
+                "__$isAnswerList": [true]
+              },
+              {
+                "answerConstraint": ["$EXP$ target.value == 'optionsOrType' || target.value == 'optionsOrString'"]
+              }
+            ],
+          }
+        ],
         "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url'"]
       },
       "widget": {
@@ -117,14 +144,7 @@
       "pattern": "^-?([0]|([1-9][0-9]*))$",
       "type": "number",
       "visibleIf": {
-        allOf: [
-          {
-            "type": ["$EXP$ target.value == 'boolean' || target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'coding'"]
-          },
-          {
-            "answerConstraint": ["$EXP$ target.value != 'optionsOnly'"]
-          }
-        ],
+        "__$restrictions": ["$ANY$"]
       },
       "widget": {
         "id": "hidden",
@@ -835,14 +855,7 @@
       "default": "answer-option",
       "type": "string",
       "visibleIf": {
-        "allOf": [
-          {
-            "__$isAnswerList": [true]
-          },
-          {
-            "type": ["$EXP$ target.value == 'coding'"],
-          }
-        ]
+        "__$isAnswerList": [true]
       },
       "widget": {
         "id": "answer-option-methods",
@@ -1080,7 +1093,7 @@
       "type": "array",
       "title": "Answer choices",
       "visibleIf": {
-        "/__$isAnswerList": [true]
+        "__$answerOptionMethods": ["answer-option"]
       },
       "widget": {
         "id": "answer-option",

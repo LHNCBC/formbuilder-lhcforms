@@ -612,4 +612,32 @@ export class Util {
 
     return str.replace(regex, replacement);
   }
+
+  /**
+   * Detect FHIR version of a resource. Uses LForms library, which currently supports Questionnaire and
+   * QuestionnaireResponse.
+   *
+   * @param resource - FHIR Resource to examine. In form builder it is almost always Questionnaire.
+   * @return - Detected FHIR version such as STU3, R4, R5 etc., or null if fails to detect.
+   */
+  static detectFHIRVersion(resource: fhir.Resource): string {
+    let ret: string = LForms.Util.detectFHIRVersion(resource);
+    if(!ret) {
+      ret = LForms.Util.guessFHIRVersion(resource);
+    }
+    return ret;
+  }
+  /**
+   * Convert a given questionnaire to R5 version. R5 is also internal format.
+   * Other formats are converted to internal format using LForms library when loading an external form.
+   *
+   * @param initialQ - A given questionnaire. Could be STU3, R4, R5 etc.
+   * @param version - A valid versions string, i.e. STU3|R4|R5 etc.
+   */
+  static convertQuestionnaire(initialQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
+    let ret = initialQ;
+      ret = LForms.Util.getFormFHIRData(initialQ.resourceType, version,
+        LForms.Util.convertFHIRQuestionnaireToLForms(initialQ));
+    return ret;
+  }
 }

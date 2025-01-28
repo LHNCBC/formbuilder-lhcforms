@@ -104,7 +104,7 @@ export class FhirService {
       let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
       this.assignPublisher(res, userProfile);
 
-      res = this.formService.convertFromR4(res, this.getFhirServer().version);
+      res = this.formService.convertFromR5(res, this.getFhirServer().version);
       return this.promiseToObservable(this.smartClient.create(res));
     };
 
@@ -119,7 +119,7 @@ export class FhirService {
     update(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
       let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
       this.assignPublisher(res, userProfile);
-      res = this.formService.convertFromR4(res, this.getFhirServer().version);
+      res = this.formService.convertFromR5(res, this.getFhirServer().version);
       return this.promiseToObservable(this.smartClient.update(res));
     };
 
@@ -134,7 +134,7 @@ export class FhirService {
         url: 'Questionnaire/'+id+'?_format=application/fhir+json',
         // headers: this.config.headers
       })).pipe(map((res: fhir.Questionnaire) => {
-        return this.formService.convertToR4(res);
+        return this.formService.convertToR5(res);
       }));
     };
 

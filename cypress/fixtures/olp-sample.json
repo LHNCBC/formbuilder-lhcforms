@@ -2,6 +2,11 @@
   "resourceType": "Questionnaire",
   "title": "Form with observation link period",
   "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
   "item": [
     {
       "extension": [

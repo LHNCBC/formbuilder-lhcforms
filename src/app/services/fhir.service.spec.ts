@@ -55,7 +55,7 @@ describe('FhirService', () => {
   beforeEach(() => {
     service = TestBed.inject(FhirService);
     formService = TestBed.inject(FormService);
-    dummyQ = formService.convertFromR4({resourceType: 'Questionnaire', status: 'draft', id: '12345-6'}, service.getFhirServer().version);
+    dummyQ = formService.convertFromR5({resourceType: 'Questionnaire', status: 'draft', id: '12345-6', item: []}, service.getFhirServer().version);
   });
 
   it('should create this service', () => {
@@ -73,6 +73,7 @@ describe('FhirService', () => {
       .and.returnValue(Promise.resolve(dummyQ));
     service.read('12345-6').subscribe({next: (q) => {
       expect(reqSpy).toHaveBeenCalled();
+      delete q.meta; // Meta is generated in LForms conversion, ignore.
       expect(q).toEqual(dummyQ);
       done();
     }, error: (error) => {

@@ -132,7 +132,6 @@ test.describe('string-with-css.component.spec.ts', async () => {
 
     const fileJson = await PWUtils.uploadFile(page, 'fixtures/css-xhtml-sample.json', true);
     let q = await PWUtils.getQuestionnaireJSON(page, 'R5');
-    delete q.meta; // remove generated content.
     expect(q).toEqual(fileJson);
     await page.getByRole('button', {name: 'Edit questions'}).click();
 

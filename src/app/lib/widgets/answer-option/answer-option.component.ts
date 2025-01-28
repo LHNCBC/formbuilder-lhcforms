@@ -22,6 +22,7 @@ import { FormService } from 'src/app/services/form.service';
 export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
+  static ITEM_WEIGHT_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
 
   // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
   initializing = false;
@@ -132,7 +133,10 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     let changed = false;
     answerOptions?.forEach((option) => {
       if(option.valueCoding) {
-        const scoreExt = option.extension?.find(ext => ext.url === AnswerOptionComponent.ORDINAL_URI);
+        const scoreExt = option.extension?.find((ext) => {
+          return ext.url === AnswerOptionComponent.ORDINAL_URI ||
+            ext.url === AnswerOptionComponent.ITEM_WEIGHT_URI;
+        });
         const score = option.valueCoding.__$score !== undefined ? option.valueCoding.__$score : null;
         const newVal = scoreExt && scoreExt.valueDecimal !== undefined ? scoreExt.valueDecimal : null;
         if(score !== newVal) {
@@ -220,14 +224,17 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   updateScoreExtensions(options) {
     let changed = false;
     options?.forEach((option) => {
-      const i = option.extension?.findIndex((ext) => ext.url === AnswerOptionComponent.ORDINAL_URI);
+      const i = option.extension?.findIndex((ext) => {
+        return ext.url === AnswerOptionComponent.ORDINAL_URI ||
+          ext.url === AnswerOptionComponent.ITEM_WEIGHT_URI;
+      });
       const valueDecimal = i >= 0 ? option.extension[i].valueDecimal : null;
       const score = option.valueCoding?.__$score !== undefined ? option.valueCoding?.__$score : null;
       let updated = false;
       if(valueDecimal !== score) {
         const isAdd = score !== null; // True is add, false is remove.
         if(isAdd && i < 0) {
-          const scoreExt = {url: AnswerOptionComponent.ORDINAL_URI, valueDecimal: score};
+          const scoreExt = {url: AnswerOptionComponent.ITEM_WEIGHT_URI, valueDecimal: score};
           option.extension = option.extension || [];
           option.extension.push(scoreExt);
           updated = true;

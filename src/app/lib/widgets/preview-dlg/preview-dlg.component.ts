@@ -121,7 +121,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * @param version - 'STU3' | 'R4' and other defined version types in LForms.
    */
   getQuestionnaire(version = 'R5') {
-    return this.formService.convertFromR4(this.data.questionnaire, version);
+    return this.formService.convertFromR5(this.data.questionnaire, version);
   }
 
   /**

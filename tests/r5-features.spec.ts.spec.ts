@@ -32,7 +32,7 @@ test.describe('r5-features.spec.ts', async () => {
 
       for(const constraintType of Object.keys(constraintLabels)) {
         await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText(constraintLabels[constraintType]).click();
-        let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        let q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
         expect(q.item[0].type).toBe(listType);
         expect(q.item[0].answerConstraint).toBe(constraintType);
       }
@@ -69,7 +69,7 @@ test.describe('r5-features.spec.ts', async () => {
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(2) input')).toHaveValue('c3');
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(3) input')).toHaveValue('s3');
 
-    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
     expect(q.item[0].answerConstraint).toEqual('optionsOrType');
     expect(q.item[0].type).toEqual('integer');
     expect(q.item[1].answerConstraint).toEqual('optionsOrString');
@@ -103,7 +103,7 @@ test.describe('r5-features.spec.ts', async () => {
 
     for(const opt of Object.keys(disabledDisplayLabels)) {
       await page.getByRole('radiogroup', {name: 'Hide or show this item when'}).getByText(disabledDisplayLabels[opt]).click();
-      const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      const q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
       expect(q.item[1].disabledDisplay).toBe(opt);
     }
   });
@@ -120,7 +120,7 @@ test.describe('r5-features.spec.ts', async () => {
     await PWUtils.clickTreeNode(page, 'Target 2');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 2');
     await expect(page.getByRole('radiogroup', {name: 'Hide or show this item when'}).getByText('Show as protected')).toBeChecked();
-    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
     expect(q.item[1].disabledDisplay).toBe('hidden');
     expect(q.item[2].disabledDisplay).toBe('protected');
   });

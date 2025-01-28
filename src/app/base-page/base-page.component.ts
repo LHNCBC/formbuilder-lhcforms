@@ -437,7 +437,7 @@ export class BasePageComponent implements OnInit {
    * 'R4' is assumed if not specified.
    */
   saveToFile(exportVersion = 'R5') {
-    const questionnaire = this.formService.convertFromR4(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
+    const questionnaire = this.formService.convertFromR5(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
     const content = this.toString(questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
     const formName = questionnaire.title;

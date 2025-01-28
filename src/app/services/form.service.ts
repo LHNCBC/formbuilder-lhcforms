@@ -890,46 +890,44 @@ export class FormService {
 
     if(jsonObj.resourceType !== 'Questionnaire') {
       if (!!jsonObj.name) {
-        jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R5', jsonObj);
+        jsonObj = LForms.Util.getFormFHIRData('Questionnaire', 'R5', jsonObj);
       }
       else {
         throw new Error('Not a valid questionnaire');
       }
     }
 
-    return this.convertToR4(jsonObj);
+    return this.convertToR5(jsonObj);
   }
 
 
   /**
-   * Convert a given questionniare to R4 version. R4 is also internal format.
+   * Convert a given questionnaire to R5 version. R5 is also internal format.
    * Other formats are converted to internal format using LForms library when loading an external form.
    *
-   * @param fhirQ - A given questionnaire. Could be STU3, R4 etc.
+   * @param fhirQ - A given questionnaire. Could be STU3, R4, R5 etc.
    */
-  convertToR4(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
+  convertToR5(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
     let ret = fhirQ;
-    const fhirVersion = LForms.Util.guessFHIRVersion(fhirQ);
+    const fhirVersion = Util.detectFHIRVersion(fhirQ);
     if(fhirVersion !== 'R5') {
-      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, 'R5',
-        LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
+      ret = Util.convertQuestionnaire(fhirQ, 'R5');
     }
     return ret;
   }
 
   /**
-   * Convert R4, which is default internal format, to other formats such as STU3.
+   * Convert from R5, which is default internal format, to other formats such as STU3.
    *
    * @param fhirQ - Given questionnaire.
    * @param version -  desired format, such as STU3
    */
-  convertFromR4(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
+  convertFromR5(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
     let ret = fhirQ;
     if (version === 'LHC-Forms') {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
-    } else {
-      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, version,
-        LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
+    } else if (version !== 'R5') {
+      ret = Util.convertQuestionnaire(fhirQ, 'R5');
     }
     return ret;
   }
@@ -964,12 +962,8 @@ export class FormService {
             }
           }
         }
-        if(x?.answerOption || x?.answerValueSet || x?.answerConstraint) {
+        if(x?.answerOption || x?.type === 'coding' || x?.answerValueSet || x?.answerConstraint) {
           x.__$isAnswerList = true;
-          // Handle missing answerConstraint for R4 and below.
-          if(x.type === 'open-choice' && !x.answerConstraint) {
-            x.answerConstraint = 'optionsOrType';
-          }
         }
     });
 
