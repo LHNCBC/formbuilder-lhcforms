@@ -124,4 +124,18 @@ test.describe('r5-features.spec.ts', async () => {
     expect(q.item[1].disabledDisplay).toBe('hidden');
     expect(q.item[2].disabledDisplay).toBe('protected');
   });
+
+  test('should import R4 version from local storage', async ({page}) => {
+    await page.goto('/');
+    const json = await PWUtils.readJSONFile('fixtures/local-storage-mock.R4.json');
+    await page.evaluate((mockQ) => {
+      window.localStorage.removeItem('state');
+      window.localStorage.setItem('fhirQuestionnaire', JSON.stringify(mockQ));
+    }, json);
+    await page.getByLabel('Would you like to start from where you left off before?').click();
+    await page.getByRole('button', {name: 'Continue'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
+    });
+
 });

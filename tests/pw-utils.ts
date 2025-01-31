@@ -142,4 +142,13 @@ export class PWUtils {
   static getTableCell(table: Locator, row: number, column: number): Locator {
     return table.locator(`tbody tr:nth-child(${row}) > td:nth-child(${column})`);
   }
+
+  /**
+   * Read json file and return a promise of JSON object.
+   * @param relativeFilePath - File path of the file.
+   */
+  static async readJSONFile(relativeFilePath: string): Promise<Object> {
+    const testFile = path.join(__dirname, relativeFilePath);
+    return JSON.parse(await fs.readFile(testFile, 'utf-8'));
+  }
 }

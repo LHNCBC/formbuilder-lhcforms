@@ -1,0 +1,121 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "R4 questionnaire from local storage",
+  "status": "draft",
+  "item": [
+    {
+      "text": "Item with answer option and initial",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "font-weight: bold"
+          }
+        ]
+      },
+      "prefix": "1.",
+      "_prefix": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "font-style: italic"
+          }
+        ]
+      },
+      "linkId": "1",
+      "type": "choice",
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 1
+            }
+          ],
+          "valueCoding": {
+            "system": "s",
+            "code": "a",
+            "display": "d1"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 2
+            }
+          ],
+          "valueCoding": {
+            "system": "s",
+            "code": "b",
+            "display": "d2"
+          },
+          "initialSelected": true
+        }
+      ]
+    },
+    {
+      "text": "Item 2 with answer option and initial",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "font-weight: bold"
+          }
+        ]
+      },
+      "prefix": "2.",
+      "_prefix": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/rendering-style",
+            "valueString": "font-style: italic"
+          }
+        ]
+      },
+      "linkId": "2",
+      "type": "choice",
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 10
+            }
+          ],
+          "valueCoding": {
+            "system": "s1",
+            "code": "a1",
+            "display": "d11"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 20
+            }
+          ],
+          "valueCoding": {
+            "system": "s1",
+            "code": "b1",
+            "display": "d21"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 30
+            }
+          ],
+          "valueCoding": {
+            "system": "s1",
+            "code": "c1",
+            "display": "d31"
+          }
+        }
+      ]
+    }
+  ]
+}
