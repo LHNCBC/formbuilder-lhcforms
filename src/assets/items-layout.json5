@@ -16,6 +16,7 @@
           { "field": "answerOption", "title": "Answer choices", "col": 12 },
           { "field": "__$itemControl", "col": 12 },
           { "field": "__$itemControlGroup", "col": 12 },
+          { "field": "__$itemControlDisplay", "col": 12 },          
           { "field": "__$units", "col": 12 }
         ]
       },

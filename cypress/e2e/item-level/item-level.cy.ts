@@ -1283,6 +1283,9 @@ describe('Home page', () => {
         // Select 'Horizontal Answer Table' Group Item Control
         cy.get(horizontalAnsTblBtn).click();
         cy.get(horizontalAnsTblRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(horizontalAnsTblBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['htable']]);
@@ -1299,6 +1302,9 @@ describe('Home page', () => {
         // Select 'Group Grid' Group Item Control
         cy.get(groupGridBtn).click();
         cy.get(groupGridRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(groupGridBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['grid']]);
@@ -1307,6 +1313,9 @@ describe('Home page', () => {
         // Select 'Header' Group Item Control
         cy.get(headerBtn).click();
         cy.get(headerRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(headerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['header']]);
@@ -1315,6 +1324,9 @@ describe('Home page', () => {
         // Select 'Footer' Group Item Control
         cy.get(footerBtn).click();
         cy.get(footerRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(footerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['footer']]);
@@ -1323,6 +1335,9 @@ describe('Home page', () => {
         // Select 'Page' Group Item Control
         cy.get(pageBtn).click();
         cy.get(pageRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(pageBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['page']]);
@@ -1331,6 +1346,9 @@ describe('Home page', () => {
         // Select 'Tab Container' Group Item Control
         cy.get(tabContainerBtn).click();
         cy.get(tabContainerRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(tabContainerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be added
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['tab-container']]);
@@ -1355,7 +1373,7 @@ describe('Home page', () => {
         });
 
         // Clear the group item control selection
-        cy.get('button.group-item-control-unselect').click();
+        cy.get('button.item-control-unselect').click();
         // The group item control selection should be unselected
         cy.get(listRadio).should('not.be.checked');
         // Extension should be removed.
@@ -1364,6 +1382,242 @@ describe('Home page', () => {
         });
       });
 
+    });
+
+    describe('Display item control', () => {
+      beforeEach(() => {
+        const sampleFile = 'display-item-control-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.loadHomePage();
+        cy.get('input[type="radio"][value="scratch"]').click();
+        cy.get('button').contains('Continue').click();
+        cy.uploadFile(sampleFile, false);
+        cy.get('#title').should('have.value', 'Display item control sample form');
+        cy.contains('button', 'Edit questions').click();
+      });
+
+      const displayItemControlExtensions = {
+        'inline': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "inline",
+              "display": "In-line"
+            }]
+          }
+        },
+        'prompt': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "prompt",
+              "display": "Prompt"
+            }]
+          }
+        },
+        'unit': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "unit",
+              "display": "Unit"
+            }]
+          }
+        },
+        'lower': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "lower",
+              "display": "Lower-bound"
+            }]
+          }
+        },
+        'upper': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "upper",
+              "display": "Upper-bound"
+            }]
+          }
+        },
+        'flyover': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "flyover",
+              "display": "Fly-over"
+            }]
+          }
+        },
+        'legal': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "legal",
+              "display": "Legal-Button"
+            }]
+          }
+        }
+      };
+
+      it('should display Display item-control extension', () => {
+        const lowerBtn = '[for^="__\\$itemControlDisplay\\.lower"]';
+        const upperBtn = '[for^="__\\$itemControlDisplay\\.upper"]';
+        const flyoverBtn = '[for^="__\\$itemControlDisplay\\.flyover"]';
+        const legalBtn = '[for^="__\\$itemControlDisplay\\.legal"]';
+ 
+        const inlineRadio = '#__\\$itemControlDisplay\\.inline';
+        const promptRadio = '#__\\$itemControlDisplay\\.prompt';
+        const unitRadio = '#__\\$itemControlDisplay\\.unit';
+        const lowerRadio = '#__\\$itemControlDisplay\\.lower';
+        const upperRadio = '#__\\$itemControlDisplay\\.upper';
+        const flyoverRadio = '#__\\$itemControlDisplay\\.flyover';
+        const legalRadio = '#__\\$itemControlDisplay\\.legal';
+
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'In-line' Display Item Control should be selected.
+        cy.get(inlineRadio).should('be.checked');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([displayItemControlExtensions['inline']]);
+        });
+        // Clear the display item control selection
+        cy.get('button.item-control-unselect').click();
+        // The display item control selection should be unselected
+        cy.get(inlineRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).undefined;
+        });
+
+        cy.clickTreeNode('Prompt display item control - deprecated');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Prompt' Display Item Control is deprecated and should not be visible.
+        cy.get(promptRadio).should('not.exist');
+        // Should display deprecated message.
+        cy.get('p[id^="deprecated_hint___$itemControlDisplay"]')
+          .should('exist')
+          .should ('contain.text', '* This item has a selected item control that is deprecated and is not included in this list of item controls.');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[1].extension).to.deep.equal([displayItemControlExtensions['prompt']]);
+        });
+        // Clear the display item control selection
+        cy.get('button.item-control-unselect').click();
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[1].extension).undefined;
+        });
+
+        cy.clickTreeNode('Unit display item control - deprecated');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Unit' Display Item Control is deprecated and should not be visible.
+        cy.get(unitRadio).should('not.exist');
+        // Should display deprecated message.
+        cy.get('p[id^="deprecated_hint___$itemControlDisplay"]')
+          .should('exist')
+          .should ('contain.text', '* This item has a selected item control that is deprecated and is not included in this list of item controls.');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[2].extension).to.deep.equal([displayItemControlExtensions['unit']]);
+        });
+        // Clear the display item control selection
+        cy.get('button.item-control-unselect').click();
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[2].extension).undefined;
+        });
+
+        cy.clickTreeNode('Lower-bound display item control');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Lower-bound' Display Item Control should be selected.
+        cy.get(lowerRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(lowerBtn).find('sup').should('exist').should('contain.text', '(1)');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[3].extension).to.deep.equal([displayItemControlExtensions['lower']]);
+        });
+        // Clear the display item control selection
+        cy.get('button.item-control-unselect').click();
+        // The display item control selection should be unselected
+        cy.get(lowerRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[3].extension).undefined;
+        });
+
+        cy.clickTreeNode('Upper-bound display item control');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Upper-bound' Display Item Control should be selected.
+        cy.get(upperRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(upperBtn).find('sup').should('exist').should('contain.text', '(1)');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[4].extension).to.deep.equal([displayItemControlExtensions['upper']]);
+        });
+        // Clear the display item control selection
+        cy.get('button.item-control-unselect').click();
+        // The display item control selection should be unselected
+        cy.get(upperRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[4].extension).undefined;
+        });
+
+        cy.clickTreeNode('Fly-over display item control');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Fly-over' Display Item Control should be selected.
+        cy.get(flyoverRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(flyoverBtn).find('sup').should('exist').should('contain.text', '(1)');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[5].extension).to.deep.equal([displayItemControlExtensions['flyover']]);
+        });
+        // Clear the display item control selection
+        cy.get('button.item-control-unselect').click();
+        // The display item control selection should be unselected
+        cy.get(flyoverRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[5].extension).undefined;
+        });
+
+        cy.clickTreeNode('Legal-button display item control');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Legal-button' Display Item Control should be selected.
+        cy.get(legalRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(legalBtn).find('sup').should('exist').should('contain.text', '(1)');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[6].extension).to.deep.equal([displayItemControlExtensions['legal']]);
+        });
+        // Clear the display item control selection
+        cy.get('button.item-control-unselect').click();
+        // The display item control selection should be unselected
+        cy.get(legalRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[6].extension).undefined;
+        });
+      });
     });
 
     it('should display quantity units', () => {
