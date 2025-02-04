@@ -102,6 +102,9 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     this.answerOptions = [];
     this.autoComplete = false;
     if (!sourceLinkId) {
+      // reset the model and value if the linkId is not available
+      this.model = {};
+      this.formProperty.reset(this.model, false);
       return;
     }
     const answerType = this.formProperty.searchProperty('__$answerType').value;

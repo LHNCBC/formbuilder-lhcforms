@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.7.3] 2025-01-06
+## [9.7.4] 2025-01-06
 ### Changed
 - Updated README.md
+
+## [9.7.3] 2024-12-11
+### Changed
+- Added validation and error handling for invalid enableWhen question.
 
 ## [9.7.2] 2024-12-10
 ### Added
