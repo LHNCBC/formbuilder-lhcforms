@@ -15,7 +15,7 @@
   },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port ${npm_package_config_devPort} -c development formbuilder-lhcforms",
+    "start": "ng serve --port ${npm_package_config_devPort} -c development",
     "start-public": "node ./bin/start-public.js",
     "install-and-build": "npm install && npm run clean-build",
     "clean-build": "ng cache clean && npm ci && npm run build",
