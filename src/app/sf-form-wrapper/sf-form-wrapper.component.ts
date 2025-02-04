@@ -514,7 +514,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     validationObj['dataType'] = dataType;
     validationObj['conditionKey'] = condKey;
 
-    errors = this.validationService.validateInitialSingle(validationObj, dataType);
+    errors = this.validationService.validateInitialSingle(validationObj);
 
     if(errors && errors.length) {
       formProperty.extendErrors(errors);

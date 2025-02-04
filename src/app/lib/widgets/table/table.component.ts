@@ -48,7 +48,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   showErrorTypeList = [];
   showErrorObject;
 
-  dataType = "string";
+  //dataType = "string";
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
@@ -128,15 +128,18 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param widget - The widget configuration for the property.
    */
   handleErrorColumnVisibility(widget: any): void {
-    this.dataType = this.formProperty.findRoot().getProperty('type').value;
-    this.showErrorTypeList = widget?.showErrorTypeList || [];
-  
-    if (this.showErrorTypeList.length) {
-      this.includeErrorColumn = this.showErrorTypeList.some(errorType => 
-        errorType.type === this.dataType
-      );
-  
-      this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
+    const dataType = this.formProperty.findRoot().getProperty('type');
+
+    if (dataType) {
+      this.showErrorTypeList = widget?.showErrorTypeList || [];
+    
+      if (this.showErrorTypeList.length) {
+        this.includeErrorColumn = this.showErrorTypeList.some(errorType => 
+          errorType.type === dataType.value
+        );
+    
+        this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === dataType.value);
+      }
     }
   }
 

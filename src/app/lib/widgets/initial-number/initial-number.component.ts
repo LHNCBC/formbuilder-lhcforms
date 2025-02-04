@@ -1,10 +1,7 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy } from '@angular/core';
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import { SharedObjectService } from 'src/app/services/shared-object.service';
-import { HighlightSpanKind } from 'typescript';
-import { isThisISOWeek } from 'date-fns';
 
 
 @Component({
@@ -84,10 +81,18 @@ export class InitialNumberComponent extends LfbControlWidgetComponent implements
           }
         }
       } else {
+        const inputValue = this.control.value;
+        const dataType = this.formProperty.findRoot().getProperty('type').value;
         if (this.formProperty.value) {
-          const value = parseFloat(this.formProperty.value);
+          let value;
+          if (dataType === "decimal") {
+            value = parseFloat(this.formProperty.value);
+          } else {
+            value = parseInt(this.formProperty.value);   
+          }
           if (!isNaN(value)) {
             this.formProperty.setValue(value, false);
+            this.control.setValue(inputValue, { emitEvent: false });
           }
         }
       }

@@ -8,8 +8,8 @@ export class InitialNumberDirective {
   @Input() propType: string = '';
   @Output() validationResult = new EventEmitter<any [] | null>();
 
-  private allowedDecimalKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', 'e', 'E', 'Backspace', 'Delete'];
-  private allowedIntegerKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '+', 'Backspace', 'Delete'];
+  private allowedDecimalKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', 'e', 'E', 'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'];
+  private allowedIntegerKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '+', 'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'];
 
   /**
    * Restrict key inputs for 'integer' or 'decimal' data types.

@@ -467,7 +467,8 @@ export class ValidationService {
       if (!initial)
         return null;
 
-      const error = this.validateInitialSingle(initial, dataType, isSchemaFormValidation);
+      initial['dataType'] = dataType;
+      const error = this.validateInitialSingle(initial, isSchemaFormValidation);
       if (error) {
         errors = errors || []
         errors.push(error)
@@ -480,13 +481,13 @@ export class ValidationService {
   /**
    * Custom validator for single initial value in the 'Initial' field, specifically targeting the
    * 'integer' and 'decimal' data types.
-   * @param validationObj - an object that contains field data for validation.
+   * @param initialObj - an object that contains field data for validation.
    * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (PATTERN) - The entered value does not match the required 'integer' or 'decimal' format pattern.
    */  
-  validateInitialSingle(initialObj: any, dataType: string, isSchemaFormValidation = true): any[] | null {
+  validateInitialSingle(initialObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
     let errorMessage: string;
     let validationResult: boolean;
@@ -495,6 +496,14 @@ export class ValidationService {
       if (initialObj.dataType === "decimal") {
         validationResult = ValidationService.INITIAL_DECIMAL.test(initialObj.value);
         errorMessage = `Invalid decimal value.`;
+
+        if (initialObj.value && initialObj.value.toString().startsWith('.') && initialObj.value.length > 1 && initialObj.value.indexOf('.', 1) === -1) {
+
+          const value = parseFloat(initialObj.value);
+          if (!isNaN(value)) {
+            validationResult = true;
+          }
+        }
       } else if (initialObj.dataType === "integer") {
         validationResult = ValidationService.INITIAL_INTEGER.test(initialObj.value);
         errorMessage = `Invalid integer value.`;
