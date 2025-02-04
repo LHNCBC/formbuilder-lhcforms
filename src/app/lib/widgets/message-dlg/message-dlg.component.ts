@@ -11,6 +11,7 @@ export enum MessageType {
 }
 
 @Component({
+  standalone: false,
   selector: 'lfb-message-dlg',
   template: `
       <div class="modal-header bg-primary">

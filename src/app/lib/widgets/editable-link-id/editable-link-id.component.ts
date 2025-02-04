@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
+  standalone: false,
   selector: 'lfb-editable-link-id',
   templateUrl: './editable-link-id.component.html',
   styleUrl: './editable-link-id.component.css'
@@ -46,7 +47,7 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
           return acc;
         }, errorsObj);
         this.errors = Object.values(errorsObj).map((e: any) => {
-            const modifiedMessage = null;  
+            const modifiedMessage = null;
           return {code: e.code, originalMessage: e.message, modifiedMessage};
         });
       }

@@ -111,6 +111,7 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
 }
 
 @Component({
+  standalone: false,
   selector: 'lfb-datetime',
   templateUrl: './datetime.component.html',
   styleUrls: ['./datetime.component.css'],

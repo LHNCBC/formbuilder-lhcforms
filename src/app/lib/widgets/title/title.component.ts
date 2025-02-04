@@ -5,6 +5,7 @@ import { Component, Input } from '@angular/core';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
+  standalone: false,
   selector: 'lfb-title',
   template: `
     <span *ngIf="title" class="horizontal control-label">

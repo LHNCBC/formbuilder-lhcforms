@@ -5,6 +5,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
  * Component to handle number/decimal type.
  */
 @Component({
+  standalone: false,
   selector: 'lfb-number-widget',
   template: `
     <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"

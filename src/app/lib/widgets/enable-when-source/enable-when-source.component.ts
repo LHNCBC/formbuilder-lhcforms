@@ -11,6 +11,7 @@ import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {Util} from '../../util';
 @Component({
+  standalone: false,
   selector: 'lfb-choice',
   template: `
     <ng-template #rt let-r="result" let-t="term">

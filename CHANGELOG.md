@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.7.3] 2025-02-03
+### Changed
+- Upgraded to angular19
+
 ## [9.7.2] 2024-12-10
 ### Added
 - Added meta.tag field to form level attributes.

@@ -11,6 +11,7 @@ import {AutoCompleteOptions} from '../auto-complete/auto-complete.component';
 declare var LForms: any;
 
 @Component({
+  standalone: false,
   selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">

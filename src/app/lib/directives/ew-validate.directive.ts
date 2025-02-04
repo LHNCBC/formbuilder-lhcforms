@@ -8,6 +8,7 @@ import {Subscription} from 'rxjs';
  * question, operator, and answer[x] fields.
  */
 @Directive({
+  standalone: false,
   selector: '[lfbEWValidate]'
 })
 export class EwValidateDirective implements OnChanges, OnDestroy {

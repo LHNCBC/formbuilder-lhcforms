@@ -13,6 +13,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 import { FormService } from 'src/app/services/form.service';
 
 @Component({
+  standalone: false,
   selector: 'lfb-enable-operator',
   template: `
     <select #mySelect

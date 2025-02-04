@@ -12,6 +12,7 @@ import {
 import {SharedObjectService} from '../services/shared-object.service';
 
 @Component({
+  standalone: false,
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
@@ -86,5 +87,5 @@ export class NgxSchemaFormComponent implements OnChanges {
    */
    onValidationErrorsChange(errors) {
     this.validationErrorsChanged.next(errors);
-  } 
+  }
 }
