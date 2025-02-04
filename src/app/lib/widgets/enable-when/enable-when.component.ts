@@ -140,7 +140,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
 
     for (const field of fields) {
       const fieldValue = rowProperty.getProperty(field)?.value;
-      if (fieldValue) {
+      if (fieldValue || (!fieldValue && field === "question")) {
         const fieldName = (field === '__$answerType') ? Util.getAnswerFieldName(fieldValue) : field;
         const errors = this.getFieldErrors(rowProperty.getProperty(fieldName));
 
