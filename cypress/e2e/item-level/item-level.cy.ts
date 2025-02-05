@@ -1358,6 +1358,8 @@ describe('Home page', () => {
       it('should be able to clear group item control selection', () => {
         const listBtn = '[for^="__\\$itemControlGroup\\.list"]';
         const listRadio = '#__\\$itemControlGroup\\.list';
+        const unspecifiedBtn = '[for^="__\\$itemControlGroup\\.unspecified"]';
+        const unspecifiedRadio = '#__\\$itemControlGroup\\.unspecified';
 
         // The Data type for the 1st question should be a group
         cy.get('#type').should('contain.value', 'group');
@@ -1373,9 +1375,8 @@ describe('Home page', () => {
         });
 
         // Clear the group item control selection
-        cy.get('button.item-control-unselect').click();
-        // The group item control selection should be unselected
-        cy.get(listRadio).should('not.be.checked');
+        cy.get(unspecifiedBtn).click();
+        cy.get(unspecifiedRadio).should('be.checked');
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).undefined;
@@ -1471,10 +1472,12 @@ describe('Home page', () => {
       };
 
       it('should display Display item-control extension', () => {
+        const inlineBtn = '[for^="__\\$itemControlDisplay\\.inline"]';
         const lowerBtn = '[for^="__\\$itemControlDisplay\\.lower"]';
         const upperBtn = '[for^="__\\$itemControlDisplay\\.upper"]';
         const flyoverBtn = '[for^="__\\$itemControlDisplay\\.flyover"]';
         const legalBtn = '[for^="__\\$itemControlDisplay\\.legal"]';
+        const unspecifiedBtn = '[for^="__\\$itemControlDisplay\\.unspecified"]';
  
         const inlineRadio = '#__\\$itemControlDisplay\\.inline';
         const promptRadio = '#__\\$itemControlDisplay\\.prompt';
@@ -1483,6 +1486,7 @@ describe('Home page', () => {
         const upperRadio = '#__\\$itemControlDisplay\\.upper';
         const flyoverRadio = '#__\\$itemControlDisplay\\.flyover';
         const legalRadio = '#__\\$itemControlDisplay\\.legal';
+        const unspecifiedRadio = '#__\\$itemControlDisplay\\.unspecified';
 
         // The Data type should be a display.
         cy.get('#type').should('contain.value', 'display');
@@ -1492,9 +1496,9 @@ describe('Home page', () => {
           expect(qJson.item[0].extension).to.deep.equal([displayItemControlExtensions['inline']]);
         });
         // Clear the display item control selection
-        cy.get('button.item-control-unselect').click();
-        // The display item control selection should be unselected
-        cy.get(inlineRadio).should('not.be.checked');
+        cy.get(unspecifiedBtn).click();
+        cy.get(unspecifiedRadio).should('be.checked');
+
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).undefined;
@@ -1508,15 +1512,18 @@ describe('Home page', () => {
         // Should display deprecated message.
         cy.get('p[id^="deprecated_hint___$itemControlDisplay"]')
           .should('exist')
-          .should ('contain.text', '* This item has a selected item control that is deprecated and is not included in this list of item controls.');
+          .should ('contain.text', '* \'Prompt\' item control is deprecated and is not presented in this list of item controls.');
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[1].extension).to.deep.equal([displayItemControlExtensions['prompt']]);
         });
-        // Clear the display item control selection
-        cy.get('button.item-control-unselect').click();
-        // Extension should be removed.
+        // Select 'inline' item control
+        cy.get(inlineBtn).click();
+        cy.get(inlineRadio).should('be.checked');
+        // The deprecated warning message should not be visible.
+        cy.get('p[id^="deprecated_hint___$itemControlDisplay"]')
+          .should('not.exist');
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[1].extension).undefined;
+          expect(qJson.item[1].extension).to.deep.equal([displayItemControlExtensions['inline']]);
         });
 
         cy.clickTreeNode('Unit display item control - deprecated');
@@ -1527,12 +1534,12 @@ describe('Home page', () => {
         // Should display deprecated message.
         cy.get('p[id^="deprecated_hint___$itemControlDisplay"]')
           .should('exist')
-          .should ('contain.text', '* This item has a selected item control that is deprecated and is not included in this list of item controls.');
+          .should ('contain.text', '* \'Unit\' item control is deprecated and is not presented in this list of item controls.');
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[2].extension).to.deep.equal([displayItemControlExtensions['unit']]);
         });
         // Clear the display item control selection
-        cy.get('button.item-control-unselect').click();
+        cy.get(unspecifiedBtn).click();
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[2].extension).undefined;
@@ -1549,9 +1556,9 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[3].extension).to.deep.equal([displayItemControlExtensions['lower']]);
         });
-        // Clear the display item control selection
-        cy.get('button.item-control-unselect').click();
-        // The display item control selection should be unselected
+        // Clear the display item control selection.
+        cy.get(unspecifiedBtn).click();
+        // The display item control selection should be unselected.
         cy.get(lowerRadio).should('not.be.checked');
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {
@@ -1569,9 +1576,9 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[4].extension).to.deep.equal([displayItemControlExtensions['upper']]);
         });
-        // Clear the display item control selection
-        cy.get('button.item-control-unselect').click();
-        // The display item control selection should be unselected
+        // Clear the display item control selection.
+        cy.get(unspecifiedBtn).click();
+        // The display item control selection should be unselected.
         cy.get(upperRadio).should('not.be.checked');
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {
@@ -1589,9 +1596,9 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[5].extension).to.deep.equal([displayItemControlExtensions['flyover']]);
         });
-        // Clear the display item control selection
-        cy.get('button.item-control-unselect').click();
-        // The display item control selection should be unselected
+        // Clear the display item control selection.
+        cy.get(unspecifiedBtn).click();
+        // The display item control selection should be unselected.
         cy.get(flyoverRadio).should('not.be.checked');
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {
@@ -1609,9 +1616,9 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[6].extension).to.deep.equal([displayItemControlExtensions['legal']]);
         });
-        // Clear the display item control selection
-        cy.get('button.item-control-unselect').click();
-        // The display item control selection should be unselected
+        // Clear the display item control selection.
+        cy.get(unspecifiedBtn).click();
+        // The display item control selection should be unselected.
         cy.get(legalRadio).should('not.be.checked');
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {

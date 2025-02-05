@@ -31,6 +31,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
   hasCodeSystemItemControl = false;
   isItemControlDeprecated = false;
+  deprecatedMessage = '';
 
   constructor(private extensionsService: ExtensionsService, private formService: FormService,
               private cdr: ChangeDetectorRef, private liveAnnouncer: LiveAnnouncer) {
@@ -181,6 +182,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
     const ext = this.getItemControlExtension();
     if (option) {
+      this.isItemControlDeprecated = this.checkDeprecatedItemControl(option);
+
       if(!ext) {
         this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
       }
@@ -254,9 +257,22 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    */
   clearExtensionItemControlSelection() {
     this.option = '';
+    this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
     this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
 
     const type = this.dataType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
     this.liveAnnouncer.announce(`${type} item control selection has been cleared.`);
-  }  
+  }
+
+  /**
+   * Set the deprecated message for the deprecated item control.
+   */
+  composeDeprecatedMessage(): string {
+    const optionDisplay = this.formProperty.schema.oneOf.find((itemControl) => itemControl.enum[0] === this.option)?.display || '';
+    const deprecatedNote = this.formProperty.schema.widget.deprecatedNote;
+    if (deprecatedNote && optionDisplay) {
+      return deprecatedNote.replace('${deprecatedItemControl}', optionDisplay);
+    }
+    return '';
+  }
 }
