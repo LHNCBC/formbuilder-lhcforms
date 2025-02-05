@@ -134,7 +134,17 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       const inputEl = page.getByRole('combobox', {name: 'URL of a FHIR server to run the validation'});
       await inputEl.clear();
       expect(await page.getByRole('listbox').isVisible()).toBe(true);
+      // Default is R4
       // Should show validation errors
+      await inputEl.fill('https://b.com/r4');
+      await page.getByRole('button', {name: 'Run Validation'}).click();
+      expect(await firstErrorLocator.innerText()).toMatch(/Error: Dummy error from r4/);
+      expect(await errorPanelLocator.isVisible()).toBe(true);
+      await expect(noErrorAlertLocator).not.toBeAttached();
+
+      // R5 version
+      await page.getByRole('tab',{name: 'R5 Version'}).click();
+
       await inputEl.fill('https://a.com/r5');
       await page.getByRole('button', {name: 'Run Validation'}).click();
       expect(await firstErrorLocator.innerText()).toMatch(/Fatal: Dummy fatal from r5/);
@@ -158,17 +168,6 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       await page.getByRole('button', {name: 'Run Validation'}).click();
       await expect(noErrorAlertLocator).toBeAttached();
       await expect(errorPanelLocator).not.toBeAttached();
-
-      // R4 version
-      await page.getByRole('tab',{name: 'R4 Version'}).click();
-
-      await inputEl.clear();
-
-      await inputEl.fill('https://b.com/r4');
-      await page.getByRole('button', {name: 'Run Validation'}).click();
-      expect(await firstErrorLocator.innerText()).toMatch(/Error: Dummy error from r4/);
-      expect(await errorPanelLocator.isVisible()).toBe(true);
-      await expect(noErrorAlertLocator).not.toBeAttached();
 
       // STU3 version
       await page.getByRole('tab',{name: 'STU3 Version'}).click();

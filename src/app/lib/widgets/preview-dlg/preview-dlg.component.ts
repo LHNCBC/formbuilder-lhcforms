@@ -36,9 +36,9 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
-  format: FHIR_VERSION_TYPE = 'R5';
+  format: FHIR_VERSION_TYPE = 'R4'; // Current default for preview.
   activeTopLevelTabIndex = 0;
-  activeJsonTabIndex = 0;
+  activeJsonTabIndex = 1;
   lformsErrors: string;
   inputUrlErrors: string;
   validationErrors: {FHIR_VERSION_TYPE?: string[]} = {};
@@ -99,7 +99,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.activeTopLevelTabIndex = 0;
-    this.activeJsonTabIndex = 0;
+    this.activeJsonTabIndex = 1;
     this.vServer = this.fhirService.getLastUsedValidationServer(this.format);
   }
 

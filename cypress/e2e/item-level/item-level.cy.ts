@@ -1849,6 +1849,158 @@ describe('Home page', () => {
           .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 4. ');
       });
 
+      it('should clear invalid question field on focusout for new enableWhen condition', () => {
+        const sampleFile = 'items-validation-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.contains('button', 'Edit questions').click();
+
+        const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
+
+        cy.clickTreeNode('Integer Type');
+
+        // Insert a valid enableWhen condition
+        // Select question '3.1 Name'
+        cy.get('[id^="enableWhen.0.question"]').type('{enter}');
+        cy.get('[id^="enableWhen.0.operator"]').select('=');
+        cy.get('[id^="enableWhen.0.answerString"]').type('Joe');
+        // There should be no error
+        cy.get('[id^="enableWhen.0_err"]').should('not.exist');
+
+        // Add another enableWhen condition
+        cy.contains('button', 'Add another condition').click();
+
+        cy.get('[id^="enableWhen.1.question"]').type('invalid question');
+        cy.get('ngb-typeahead-window').should('not.exist');
+        // Hit the tab key from the question field. Validation should be triggered, but 
+        // no error should occur, as this represents a new condition where the 'enableWhen'
+        // condition has not yet been added to the item.
+        cy.get('[id^="enableWhen.1.question"]').trigger('keyup', {key: 'Tab'});
+
+        // B/c the question is invalid, it should be cleared out
+        cy.get('[id^="enableWhen.1.question"]').should('be.empty');
+        cy.get('[id^="enableWhen.1_err"]').should('not.exist');
+
+        // Verify the questionnaire JSON.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item.length).equal(12);
+          // Verify enableWhen construct.
+          expect(qJson.item[3].enableWhen.length).equal(1);
+          expect(qJson.item[3].enableWhen[0].question).equal(qJson.item[2].item[0].linkId);
+          expect(qJson.item[3].enableWhen[0].operator).equal('=');
+          expect(qJson.item[3].enableWhen[0].answerString).equal('Joe');
+        });     
+      });
+
+      it('should display an error on invalid question field on focusout for an existing enableWhen condition', () => {
+        const sampleFile = 'items-validation-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.contains('button', 'Edit questions').click();
+
+        const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
+
+        cy.clickTreeNode('Integer Type');
+
+        // Insert a valid enableWhen condition
+        // Select question '3.1 Name'
+        cy.get('[id^="enableWhen.0.question"]').type('{enter}');
+        cy.get('[id^="enableWhen.0.operator"]').select('=');
+        cy.get('[id^="enableWhen.0.answerString"]').type('Joe');
+        // There should be no error
+        cy.get('[id^="enableWhen.0_err"]').should('not.exist');
+
+        // Add another enableWhen condition
+        cy.contains('button', 'Add another condition').click();
+
+        cy.get('[id^="enableWhen.1.question"]').type('{enter}');
+        cy.get('[id^="enableWhen.1.operator"]').select('=');
+        cy.get('[id^="enableWhen.1.answerString"]').type('David');
+
+        // Add another enableWhen condition (different type)
+        cy.contains('button', 'Add another condition').click();
+
+        cy.get('[id^="enableWhen.2.question"]').type('{downarrow}{enter}');
+        cy.get('[id^="enableWhen.2.operator"]').select('=');
+        cy.get('[id^="enableWhen.2.answerCoding"]').select('Street clothes, no shoes (LA11872-1)');
+        
+        // Verify the questionnaire JSON.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item.length).equal(12);
+          // Verify enableWhen construct.
+          expect(qJson.item[3].enableWhen.length).equal(3);
+          expect(qJson.item[3].enableWhen[0].question).equal(qJson.item[2].item[0].linkId);
+          expect(qJson.item[3].enableWhen[0].operator).equal('=');
+          expect(qJson.item[3].enableWhen[0].answerString).equal('Joe');
+
+          expect(qJson.item[3].enableWhen[1].question).equal(qJson.item[2].item[0].linkId);
+          expect(qJson.item[3].enableWhen[1].operator).equal('=');
+          expect(qJson.item[3].enableWhen[1].answerString).equal('David');
+
+          expect(qJson.item[3].enableWhen[2].question).equal(qJson.item[4].linkId);
+          expect(qJson.item[3].enableWhen[2].operator).equal('=');
+          expect(qJson.item[3].enableWhen[2].answerCoding.display).equal('Street clothes, no shoes');
+        });
+
+        // Change the 2nd enableWhen Question to an invalid one.
+        cy.get('[id^="enableWhen.1.question"]').clear().type('invalid question');
+        cy.get('ngb-typeahead-window').should('not.exist');
+        cy.get('[id^="enableWhen.1.operator"]').focus();
+        // B/c the question is invalid, it should be cleared out
+        cy.get('[id^="enableWhen.1.question"]').should('be.empty');
+        // Since this enableWhen condition is in the item, the error message should be displayed
+        cy.get('[id^="enableWhen.1_err"]').should('exist');
+        cy.get('[id^="enableWhen.1_err"]')
+          .find('small')
+          .should('contain.text', ' Question not found for the linkId \'\' for enableWhen condition 2. ');
+
+        // Change the 3rd enableWhen Question to an invalid one.
+        cy.get('[id^="enableWhen.2.question"]').clear().type('invalid question2');
+        cy.get('ngb-typeahead-window').should('not.exist');
+        cy.get('[id^="enableWhen.2.operator"]').focus();
+        // B/c the question is invalid, it should be cleared out
+        cy.get('[id^="enableWhen.2.question"]').should('be.empty');
+        // Since this enableWhen condition is in the item, the error message should be displayed
+        cy.get('[id^="enableWhen.2_err"]').should('exist');
+        cy.get('[id^="enableWhen.2_err"]')
+          .find('small')
+          .should('contain.text', ' Question not found for the linkId \'\' for enableWhen condition 3. ');
+
+        // Verify the questionnaire JSON.
+        cy.questionnaireJSON().should((qJson) => {
+          // There should be only one enableWhen condition in the JSON. The two invalid conditions
+          // should be excluded.
+          console.log('Questionnaire - ' + JSON.stringify(qJson, null, 5));
+          expect(qJson.item[3].enableWhen.length).equal(1);
+          expect(qJson.item[3].enableWhen[0].question).equal(qJson.item[2].item[0].linkId);
+          expect(qJson.item[3].enableWhen[0].operator).equal('=');
+        });
+
+        // Click on another item
+        cy.clickTreeNode('Valid LinkId');
+
+        // Click back to the 'Interger Type' item
+        cy.clickTreeNode('Integer Type');
+
+        // Confirm that the 2nd enableWhen question does not get reverted back to the original value
+        cy.get('[id^="enableWhen.1.question"]').should('be.empty');
+        // Since this enableWhen condition is in the item, the error message should be displayed
+        cy.get('[id^="enableWhen.1_err"]').should('exist');
+        cy.get('[id^="enableWhen.1_err"]')
+          .find('small')
+          .should('contain.text', ' Question not found for the linkId \'\' for enableWhen condition 2. ');
+
+        // Confirm that the 3rd enableWhen question does not get reverted back to the original value
+        cy.get('[id^="enableWhen.2.question"]').should('be.empty');
+        // Since this enableWhen condition is in the item, the error message should be displayed
+        cy.get('[id^="enableWhen.2_err"]').should('exist');
+        cy.get('[id^="enableWhen.2_err"]')
+          .find('small')
+          .should('contain.text', ' Question not found for the linkId \'\' for enableWhen condition 3. ');
+      });
+
       it('should display lforms errors in preview', () => {
         const sampleFile = 'questionnaire-enableWhen-missing-linkId.json';
         cy.uploadFile(sampleFile, true);

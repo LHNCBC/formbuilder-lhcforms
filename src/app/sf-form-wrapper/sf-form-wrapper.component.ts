@@ -177,6 +177,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     }
     const op = formProperty.getProperty('operator');
     const aField = Util.getAnswerFieldName(aType || 'string');
+    const answerType = formProperty.getProperty('__$answerType').value;
     const answerX = formProperty.getProperty(aField);
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
 
@@ -186,6 +187,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'conditionKey': condKey,
       'q': q,
       'aType': aType,
+      'answerTypeProperty': formProperty.getProperty('__$answerType').value,
       'op': op,
       'aField': aField,
       'answerX': answerX,

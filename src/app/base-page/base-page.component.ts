@@ -103,8 +103,15 @@ export class BasePageComponent implements OnInit {
     });
 
     formService.guidingStep$.subscribe((step: GuidingStep) => {this.guidingStep = step;});
-    FormService.lformsLoaded$.subscribe({error: (error) => {
-      this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
+    FormService.lformsLoaded$.subscribe({
+      next: (lformsVersion) => {
+        if(this.openerUrl) {
+          // Send the message to window opener after the LForms is loaded.
+          window.opener.postMessage({type: 'initialized'}, this.openerUrl);
+        }
+      },
+      error: (error) => {
+        this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
     }});
   }
 
@@ -218,8 +225,6 @@ export class BasePageComponent implements OnInit {
         }
         window.opener.postMessage(messageObj, this.openerUrl);
       });
-
-      window.opener.postMessage({type: 'initialized'}, this.openerUrl);
     }
   }
 
