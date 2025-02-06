@@ -136,6 +136,12 @@ test.describe('r5-features.spec.ts', async () => {
     await page.getByRole('button', {name: 'Continue'}).click();
     await page.getByRole('button', {name: 'Edit questions'}).click();
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
+
+    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    const helpString = /^A plain text instruction/;
+    await expect(page.getByLabel('Help text', {exact: true})).toHaveValue(helpString);
+    const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(qJson.item[0].item[0].text).toMatch(helpString);
   });
 
   test('should export to R4 and STU3 versions', async ({page}) => {

@@ -270,8 +270,8 @@ export class BasePageComponent implements OnInit {
    * @param questionnaire - Input FHIR questionnaire
    */
   setQuestionnaire(questionnaire: fhir.Questionnaire) {
-    const q = this.formService.updateFhirQuestionnaire(questionnaire);
-    this.questionnaire = this.formService.convertToR5(q);
+    const q = this.formService.convertToR5(questionnaire);
+    this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
     this.formFields = Object.assign({}, this.questionnaire);

@@ -52,6 +52,28 @@
           },
           "initialSelected": true
         }
+      ],
+      "item": [
+        {
+          "text": "A plain text instruction on parent item.",
+          "type": "display",
+          "linkId": "1-help",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "text": "Help-Button",
+                "coding": [
+                  {
+                    "code": "help",
+                    "display": "Help-Button",
+                    "system": "http://hl7.org/fhir/questionnaire-item-control"
+                  }
+                ]
+              }
+            }
+          ]
+        }
       ]
     },
     {
