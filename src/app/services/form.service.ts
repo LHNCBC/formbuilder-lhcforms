@@ -927,7 +927,7 @@ export class FormService {
     if (version === 'LHC-Forms') {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
     } else if (version !== 'R5') {
-      ret = Util.convertQuestionnaire(fhirQ, 'R5');
+      ret = Util.convertQuestionnaire(fhirQ, version);
     }
     return ret;
   }

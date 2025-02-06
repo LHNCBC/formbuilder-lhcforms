@@ -112,7 +112,7 @@ test.describe('Table component', async () => {
     await expect(PWUtils.getTableCell(table, 3, 6).locator(moveDownLoc)).toBeEnabled();
     await expect(PWUtils.getTableCell(table, 4, 6).locator(moveUpLoc)).toBeEnabled();
 
-    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerOption).toEqual([
       {
         valueCoding: {display: '2a', code: '2b', system: '2c'},
@@ -157,7 +157,7 @@ test.describe('Table component', async () => {
     await PWUtils.getTableCell(table, 1, 5).locator('input').click();
     await PWUtils.getTableCell(table, 4, 5).locator('input').click();
 
-    let q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+    let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerOption).toEqual([
       {
         valueCoding: {display: '1a', code: '1b', system: '1c'},
@@ -195,7 +195,7 @@ test.describe('Table component', async () => {
     await PWUtils.getTableCell(table, 4, 6).locator(moveUpLoc).click();
     await PWUtils.getTableCell(table, 2, 6).locator(moveDownLoc).click();
 
-    q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+    q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerOption).toEqual([
       {
         valueCoding: {display: '2a', code: '2b', system: '2c'},

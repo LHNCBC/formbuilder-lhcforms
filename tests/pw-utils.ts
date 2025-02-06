@@ -29,7 +29,7 @@ export class PWUtils {
    * Use for quick verification of JSON output to speed up the tests.
    * @return Promise of questionnaire JSON.
    */
-  static async getQuestionnaireJSONWithoutUI(page: Page, format = 'R5'): Promise<any> {
+  static async getQuestionnaireJSONWithoutUI(page: Page, format = 'R4'): Promise<any> {
     return await page.evaluate( (format) => {
       const app = window['appRef'];
       // app.tick();
@@ -55,7 +55,7 @@ export class PWUtils {
    * @param page - Browser page
    * @param version - questionnaire json version.
    */
-  static async getQuestionnaireJSON (page: Page, version = 'R5'): Promise<fhir.Questionnaire> {
+  static async getQuestionnaireJSON (page: Page, version = 'R4'): Promise<fhir.Questionnaire> {
     await page.getByRole('button', {name: 'Preview'}).click();
     await page.getByText('View/Validate Questionnaire JSON').click();
     await page.getByText(version + ' Version').click();

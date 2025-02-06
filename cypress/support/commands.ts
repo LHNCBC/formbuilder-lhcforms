@@ -52,7 +52,7 @@ Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
 Cypress.Commands.add('goToHomePage', () => {
   CypressUtil.mockLFormsLoader();
   cy.visit('/');
-  cy.window().should('have.property', 'LForms');
+  cy.window({timeout: 60000}).should('have.property', 'LForms');
 });
 
 

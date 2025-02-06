@@ -32,7 +32,7 @@ test.describe('r5-features.spec.ts', async () => {
 
       for(const constraintType of Object.keys(constraintLabels)) {
         await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText(constraintLabels[constraintType]).click();
-        let q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+        let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(q.item[0].type).toBe(listType);
         expect(q.item[0].answerConstraint).toBe(constraintType);
       }
@@ -69,7 +69,7 @@ test.describe('r5-features.spec.ts', async () => {
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(2) input')).toHaveValue('c3');
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(3) input')).toHaveValue('s3');
 
-    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerConstraint).toEqual('optionsOrType');
     expect(q.item[0].type).toEqual('integer');
     expect(q.item[1].answerConstraint).toEqual('optionsOrString');
@@ -103,7 +103,7 @@ test.describe('r5-features.spec.ts', async () => {
 
     for(const opt of Object.keys(disabledDisplayLabels)) {
       await page.getByRole('radiogroup', {name: 'Hide or show this item when'}).getByText(disabledDisplayLabels[opt]).click();
-      const q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(q.item[1].disabledDisplay).toBe(opt);
     }
   });
@@ -120,7 +120,7 @@ test.describe('r5-features.spec.ts', async () => {
     await PWUtils.clickTreeNode(page, 'Target 2');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 2');
     await expect(page.getByRole('radiogroup', {name: 'Hide or show this item when'}).getByText('Show as protected')).toBeChecked();
-    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[1].disabledDisplay).toBe('hidden');
     expect(q.item[2].disabledDisplay).toBe('protected');
   });
@@ -136,6 +136,37 @@ test.describe('r5-features.spec.ts', async () => {
     await page.getByRole('button', {name: 'Continue'}).click();
     await page.getByRole('button', {name: 'Edit questions'}).click();
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
-    });
+  });
+
+  test('should export to R4 and STU3 versions', async ({page}) => {
+    const fileJson = await PWUtils.uploadFile(page, 'fixtures/answer-constraint-sample.json', true);
+    await page.getByRole('button', {name: 'Edit questions'}).click();
+
+    // R4
+    const q4 = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+
+    expect(q4.item[0].answerConstraint).toBeUndefined();
+    expect(q4.item[0].type).toEqual('integer');
+    expect(q4.item[0].answerOption).toEqual(fileJson.item[0].answerOption);
+    expect(q4.item[1].answerConstraint).toBeUndefined();
+    expect(q4.item[1].type).toEqual('string');
+    expect(q4.item[1].answerOption).toEqual(fileJson.item[1].answerOption);
+    expect(q4.item[2].answerConstraint).toBeUndefined();
+    expect(q4.item[2].type).toEqual('choice');
+    expect(q4.item[2].answerOption).toEqual(fileJson.item[2].answerOption);
+
+    // STU3
+    const q3 = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'STU3');
+
+    expect(q3.item[0].answerConstraint).toBeUndefined();
+    expect(q3.item[0].type).toEqual('integer');
+    expect(q3.item[0].option).toEqual(fileJson.item[0].answerOption);
+    expect(q3.item[1].answerConstraint).toBeUndefined();
+    expect(q3.item[1].type).toEqual('string');
+    expect(q3.item[1].option).toEqual(fileJson.item[1].answerOption);
+    expect(q3.item[2].answerConstraint).toBeUndefined();
+    expect(q3.item[2].type).toEqual('choice');
+    expect(q3.item[2].option).toEqual(fileJson.item[2].answerOption);
+  });
 
 });
