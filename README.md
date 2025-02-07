@@ -31,10 +31,6 @@ instructions are for those who are familiar with Linux systems.
     nvm install <version>
     nvm use <version>
     ```
-  - Set the `PATH` environment variable:
-    ```bash
-    export PATH=$PATH:$(npm bin -g)
-    ```
 
 2. **Clone the repository**:
   - Clone the repository from GitHub and navigate to its directory:
@@ -47,10 +43,6 @@ instructions are for those who are familiar with Linux systems.
   - Run the following command to install the necessary dependencies:
     ```bash
     npm ci
-    ```
-  - Adjust your `PATH` to include `node_modules/.bin`:
-    ```bash
-    export PATH=$PATH:./node_modules/.bin
     ```
 
 4. **Build the application**:
@@ -80,7 +72,7 @@ instructions are for those who are familiar with Linux systems.
     ```
   - The e2e tests are written using Cypress and Playwright frameworks. Make sure you have the necessary dependencies installed for these frameworks.
 
-7. **Contributing**:
+## **Contributing**:
   - If you plan to contribute new functionality, it is important to coordinate with the maintainers to ensure proper integration and to avoid duplicating efforts. Reach out to the maintainers for guidance on contributing.
 
 If you encounter any issues during the installation or setup process, consult the project's documentation or reach out to the maintainers for further assistance.
