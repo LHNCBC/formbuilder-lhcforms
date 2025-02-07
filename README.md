@@ -70,7 +70,6 @@ instructions are for those who are familiar with Linux systems.
     ```bash
     npm run test
     ```
-  - The e2e tests are written using Cypress and Playwright frameworks. Make sure you have the necessary dependencies installed for these frameworks.
 
 ## **Contributing**:
   - If you plan to contribute new functionality, it is important to coordinate with the maintainers to ensure proper integration and to avoid duplicating efforts. Reach out to the maintainers for guidance on contributing.
