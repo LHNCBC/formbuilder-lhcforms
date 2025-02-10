@@ -56,9 +56,12 @@ test.describe('Table component', async () => {
     // The Pick Initial drop-down is displayed, select the '2a'
     const pickInitial = page.locator('lfb-pick-answer >> input[type="text"]');
     await pickInitial.click();
+    const initialValues = await page.locator('#completionOptions > ul > li');
+    await expect(initialValues).toHaveCount(4);
     await pickInitial.press('ArrowDown');
     await pickInitial.press('ArrowDown');
     await pickInitial.press('Enter');
+    await expect(pickInitial).toHaveValue('2a');
 
     await PWUtils.getTableCell(table, 2, 5).locator(moveUpLoc).click();
 
