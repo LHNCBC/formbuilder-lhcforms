@@ -14,9 +14,5 @@ PATH=~/${LFORMS_NODE}/bin:/bin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/etc
 # Identify directory of this source and set node_modules/.bin to PATH
 dir=$(cd $(dirname ${BASH_SOURCE}); pwd)
 
-if [[ -e "$dir/node_modules" ]]
-then
-  PATH=${dir}/node_modules/.bin:${PATH}
-fi
 umask 0022
 
