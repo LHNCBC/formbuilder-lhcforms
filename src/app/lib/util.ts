@@ -311,8 +311,10 @@ export class Util {
     traverse(value).forEach(function (node) {
       this.before(function () {
         if(node && Array.isArray(node)) {
-          // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
-          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
+          // There is a bug in one of the package which caused issue if there is objects with empty fields in the array.
+          // The array index is not updated properly which caused an error. This is a work-around to clean up the empty fields.
+          Util.eliminateEmptyFields(node);
+          this.update(node);
         }
         else if (Util.hasHelpText(node)) {
           Util.eliminateEmptyFields(node.__$helpText);
@@ -333,6 +335,7 @@ export class Util {
         // Remove all custom fields starting with __$ excluding any fields defined in excludeCustomFields array and empty fields.
         if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
           if (this.notRoot) {
+            console.log('DEBUG::util::convertToQuestionnaireJSON::after node is removed - ', node);
             this.remove(); // Splices off any array elements.
           }
         }
