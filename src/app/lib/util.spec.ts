@@ -103,4 +103,37 @@ describe('Util', () => {
       expect(Util.convertUnitsToExtensions(tCase.lformsUnits, tCase.dataType)).toEqual(tCase.fhirExtensions);
     });
   });
+
+  fit('should convert R5 features to R4', () => {
+    const testCases: any [] = [
+      {
+        convertTo: 'R4',
+        questionnaire: {
+          resourceType: 'Questionnaire',
+          status: 'draft',
+          item: [
+            {
+              linkId: '1',
+              type: 'coding',
+              answerOption: [
+                {code: 'c1', display: 'd1', system: 's1'}
+              ],
+              answerConstraint: 'optionsOrType'
+            }
+          ]
+        },
+        assertions: {
+          type: 'choice',
+        }
+      }
+    ];
+
+    testCases.forEach((tCase) => {
+      const convertedQ = Util.convertQuestionnaire(tCase.questionnaire, tCase.convertTo);
+      const assertions = Object.keys(tCase.assertions);
+      assertions.forEach(assertion => {
+        expect(convertedQ.item[0][assertion]).toEqual(tCase.assertions[assertion]);
+      });
+    });
+  });
 });
