@@ -92,53 +92,35 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
         this.formProperty.setValue(val, false);
 
         const exts = this.formProperty.findRoot().getProperty('extension').value;
-        console.log('DEBUG::value-method::ExtAfter - ', exts);
 
         if ((val === "compute-initial" || val === "compute-continuously") && this.formService.isFocusNodeHasError()) {
           // Check to see if this item has an error. This is the case where users is switching between 
           // Value Method options. The 'Type initial value' or 'Pick initial value' may have validation 
           // errors. But the 'Compute initial value' or 'Continuously compute value' do not have validation.
           // Therefore, if there is an error, it needs to be cleared out.
-          //if (this.formService.isFocusNodeHasError()) {
-            //const nodeId = this.model?.[FormService.TREE_NODE_ID];
-            //console.log('NodeId - ', nodeId);
-            const node  = this.formService.getTreeNodeByLinkId(this.linkId);
-            console.log('Node - ', node);
-            console.log('node id - ', node.id, "--", node.data.treeNodeId, "---", node.data.__$treeNodeId);
-            this.formService.updateValidationStatus(node.data.__$treeNodeId, this.linkId, "*", null);
-            this.formService._validationStatusChanged$.next(null);
-          //}
-
+          const node  = this.formService.getTreeNodeByLinkId(this.linkId);
+          this.formService.updateValidationStatus(node.data.__$treeNodeId, this.linkId, "*", null);
+          this.formService._validationStatusChanged$.next(null);
         }
-
 
         if (val === "pick-initial" || val === "type-initial") {
           const updatedExts = this.formService.removeExpressionsExtensions(exts);
           if (updatedExts.length !== exts.length) {
-            console.log('DEBUG::value-method::extension - ', updatedExts );
             this.formProperty.findRoot().getProperty('extension').setValue(updatedExts, false);
           }
         } else if (val === "compute-initial") {
           const initialExpression = this.formProperty.findRoot().getProperty('__$initialExpression').value;
           if (!this.formService.hasInitialComputeValueExpression(exts) && initialExpression) {
             exts.push(initialExpression);
-            console.log('DEBUG::value-method::extension2 - ', exts );
             this.formProperty.findRoot().getProperty('extension').setValue(exts, false);
           }
-
-          console.log('Compute Initial - ', this.formProperty.findRoot().getProperty('__$initialExpression').value);
         } else if (val === "compute-continuously") {
-
           const calculatedExpression = this.formProperty.findRoot().getProperty('__$calculatedExpression').value;
           if (!this.formService.hasContinuouslyComputeValueExpression(exts) && calculatedExpression) {
             exts.push(calculatedExpression);
-            console.log('DEBUG::value-method::extension3 - ', exts );
             this.formProperty.findRoot().getProperty('extension').setValue(exts, false);
           }
-
-          console.log('Compute Continuously - ', this.formProperty.findRoot().getProperty('__$calculatedExpression').value);
         }
-
       }
     });
   }

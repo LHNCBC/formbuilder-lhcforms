@@ -99,8 +99,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   ngOnInit() {
     super.ngOnInit();
     const widget = this.formProperty.schema.widget;
-    //this.dataType = this.formProperty.findRoot().getProperty('type').value;
-
     this.addButtonLabel = widget && widget.addButtonLabel
       ? widget.addButtonLabel : 'Add';
 
@@ -130,9 +128,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param widget - The widget configuration for the property.
    */
   handleErrorColumnVisibility(widget: any): void {
-    //const dataType = this.formProperty.findRoot().getProperty('type');
-console.log('table::handleErrorColumnVisibility');
-
     if (this.dataType) {
       this.showErrorTypeList = widget?.showErrorTypeList || [];
     
