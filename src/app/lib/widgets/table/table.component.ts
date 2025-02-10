@@ -48,7 +48,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   showErrorTypeList = [];
   showErrorObject;
 
-  //dataType = "string";
+  dataType = "string";
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
@@ -99,6 +99,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   ngOnInit() {
     super.ngOnInit();
     const widget = this.formProperty.schema.widget;
+    //this.dataType = this.formProperty.findRoot().getProperty('type').value;
+
     this.addButtonLabel = widget && widget.addButtonLabel
       ? widget.addButtonLabel : 'Add';
 
@@ -128,17 +130,18 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param widget - The widget configuration for the property.
    */
   handleErrorColumnVisibility(widget: any): void {
-    const dataType = this.formProperty.findRoot().getProperty('type');
+    //const dataType = this.formProperty.findRoot().getProperty('type');
+console.log('table::handleErrorColumnVisibility');
 
-    if (dataType) {
+    if (this.dataType) {
       this.showErrorTypeList = widget?.showErrorTypeList || [];
     
       if (this.showErrorTypeList.length) {
         this.includeErrorColumn = this.showErrorTypeList.some(errorType => 
-          errorType.type === dataType.value
+          errorType.type === this.dataType
         );
     
-        this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === dataType.value);
+        this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
       }
     }
   }
@@ -208,6 +211,13 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
     subscription = this.formProperty.valueChanges.subscribe((newValue) => {
       this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(newValue);
+
+      const widget = this.formProperty.schema.widget;
+      const type = this.formProperty.findRoot().getProperty('type');
+      if (type) {
+        this.dataType = type.value;
+        this.handleErrorColumnVisibility(widget);
+      }
     });
     this.subscriptions.push(subscription);
   }
