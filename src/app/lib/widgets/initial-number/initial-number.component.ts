@@ -2,6 +2,7 @@ import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy } from '
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
 import { Subscription } from 'rxjs';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
+import { FormService } from 'src/app/services/form.service';
 
 
 @Component({
@@ -38,6 +39,7 @@ export class InitialNumberComponent extends LfbControlWidgetComponent implements
   errorIcon = faExclamationTriangle;
   errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
   cdr = inject(ChangeDetectorRef);
+  formService = inject(FormService);
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
@@ -77,6 +79,11 @@ export class InitialNumberComponent extends LfbControlWidgetComponent implements
               this.cdr.markForCheck();
 
               this.control.setValue(originalValue, { emitEvent: false });
+            } else if (!this.formService.isFocusNodeHasError()) {
+              // This field contains error but the tree node does not. This may have occurred when users
+              // togggle between "Type initial value" and "Compute initial value" or 
+              // "Continuously compute value" options. So in this case, will trigger the validation again.
+              this.formProperty.setValue(originalValue, false);
             }
           }
         }

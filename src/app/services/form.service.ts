@@ -549,6 +549,9 @@ export class FormService {
       if (this.treeNodeStatusMap[treeNodeId]['errors'] && fieldName in this.treeNodeStatusMap[treeNodeId]['errors']) {
         this.liveAnnouncer.announce('Error is resolved for this node.');
         delete this.treeNodeStatusMap[treeNodeId]['errors'][fieldName];
+      } else if (fieldName === "*") {
+        // clear all error for the given treeNodeId.
+        this.treeNodeStatusMap[treeNodeId]['errors'] = {};
       }
 
       this.treeNodeStatusMap[treeNodeId]['hasError'] = (Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length > 0);
