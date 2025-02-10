@@ -71,7 +71,7 @@ instructions are for those who are familiar with Linux systems.
     npm run test
     ```
 
-## **Contributing**:
+## **Contributing**
   - If you plan to contribute new functionality, it is important to coordinate with the maintainers to ensure proper integration and to avoid duplicating efforts. Reach out to the maintainers for guidance on contributing.
 
 If you encounter any issues during the installation or setup process, consult the project's documentation or reach out to the maintainers for further assistance.

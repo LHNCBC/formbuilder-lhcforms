@@ -14,6 +14,7 @@
     "devPort": "9030"
   },
   "scripts": {
+    "ng": "npx ng",
     "start": "npx ng serve --port ${npm_package_config_devPort} -c development",
     "start-public": "node ./bin/start-public.js",
     "install-and-build": "npm install && npm run clean-build",
