@@ -497,7 +497,8 @@ export class ValidationService {
         validationResult = ValidationService.INITIAL_DECIMAL.test(initialObj.value);
         errorMessage = `Invalid decimal value.`;
 
-        if (initialObj.value && initialObj.value.toString().startsWith('.') && initialObj.value.length > 1 && initialObj.value.indexOf('.', 1) === -1) {
+        if (initialObj.value && ((initialObj.value.toString().startsWith('.') && initialObj.value.length > 1 && initialObj.value.indexOf('.', 1) === -1) ||
+                                 initialObj.value.toString().startsWith('-.'))) {
 
           const value = parseFloat(initialObj.value);
           if (!isNaN(value)) {
