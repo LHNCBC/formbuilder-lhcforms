@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.7.4] 2025-02-03
+## [9.7.5] 2025-02-03
 ### Changed
 - Upgraded to angular19
+
+## [9.7.4] 2025-01-06
+### Changed
+- Updated README.md
 
 ## [9.7.3] 2024-12-11
 ### Changed
