@@ -117,7 +117,7 @@ describe('Util', () => {
               linkId: '1',
               type: 'coding',
               answerOption: [
-                {code: 'c1', display: 'd1', system: 's1'}
+                {valueCoding: {code: 'c1', display: 'd1', system: 's1'}}
               ],
               answerConstraint: 'optionsOrType'
             }
