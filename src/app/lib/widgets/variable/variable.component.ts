@@ -3,10 +3,11 @@ import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import { FormService } from '../../../services/form.service';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { ExpressionEditorDlgComponent } from '../expression-editor-dlg/expression-editor-dlg.component';
-import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {TableComponent} from '../table/table.component';
+import { ExtensionsService } from 'src/app/services/extensions.service';
+
 @Component({
   selector: 'lfb-variable',
 
@@ -28,7 +29,6 @@ export class VariableComponent extends TableComponent implements OnInit {
   resultExtensions: any;
 
   buttonName: string;
-  subscriptions: Subscription[] = [];
 
   /**
    * Invoke super constructor.
@@ -39,6 +39,7 @@ export class VariableComponent extends TableComponent implements OnInit {
     private modalService: NgbModal,
     public cdr: ChangeDetectorRef,
     private modelService: SharedObjectService,
+    private extensionsService: ExtensionsService,
     private elementRef: ElementRef) {
     super(elementRef);
   }
@@ -46,12 +47,17 @@ export class VariableComponent extends TableComponent implements OnInit {
   ngOnInit(): void {
     super.ngOnInit();
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
-    this.modelService.questionnaire$.subscribe((questionnaire) => {
+    const sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
     });
+    this.subscriptions.push(sub);
 
-    const extensions = this.formProperty.findRoot().getProperty('extension').value;
-    this.formProperty.setValue(this.formService.filterVariableExtensions(extensions), false);
+    const extensions = this.formProperty.findRoot().getProperty('extension');
+    if (extensions && extensions?.value.length > 0) {
+      this.extensionsService.setExtensions(extensions);
+    }
+    const variablesExtension = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE) ?? [];
+    this.formProperty.setValue(variablesExtension, false);
   }
 
   /**
@@ -59,7 +65,7 @@ export class VariableComponent extends TableComponent implements OnInit {
    * @param extensions - Item's extension.
    */
   getVariableType(extensions: any): string {
-    const match = extensions.find((ext) => ext.url === FormService.CUSTOM_EXT_VARIABLE_TYPE);
+    const match = extensions.find((ext) => ext.url === ExtensionsService.CUSTOM_EXT_VARIABLE_TYPE);
     return this.variableTypeMapping[match?.valueString] ?? "Unknown";
   }
 
@@ -68,14 +74,18 @@ export class VariableComponent extends TableComponent implements OnInit {
    * @param items - FHIR questionnaire item array
    * @param linkId - linkId of question where to extract expression
    */
-  extractExtension(items, linkId): fhir.Extension []|null {
+  extractVariableExtensions(items, linkId): fhir.Extension []|null {
     for (const item of items) {
       if (item.linkId === linkId && item.extension) {
-        return item.extension
+        const variableExtensions = item.extension.filter(ext => ext.url === ExtensionsService.VARIABLE);
+        if (variableExtensions.length > 0) {
+          return variableExtensions;
+        }
       } else if (item.item) {
-        const extension = this.extractExtension(item.item, linkId);
-        if (extension !== null)
+        const extension = this.extractVariableExtensions(item.item, linkId);
+        if (extension !== null) {
           return extension;
+        }
       }
     }
 
@@ -127,8 +137,7 @@ export class VariableComponent extends TableComponent implements OnInit {
     const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
     if (itemIndex > -1) {
       if (this.formProperty.value) {
-        currentExtArray =this.formService.removeVariablesExtensions(this.questionnaire.item[itemIndex].extension);
-        this.questionnaire.item[itemIndex].extension = [...currentExtArray, ...this.formProperty.value];
+        this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;
       }
     }
     const modalRef = this.modalService.open(ExpressionEditorDlgComponent, modalConfig);
@@ -140,14 +149,11 @@ export class VariableComponent extends TableComponent implements OnInit {
       // Result returning from the Rule Editor is the whole questionnaire.
       // Rule Editor returns false in the case changes were cancelled.
       if (result) {
-        this.resultExtensions = this.extractExtension(result.item, this.linkId);
-
-        const tmp = this.formService.filterVariableExtensions(this.resultExtensions);
-        this.formProperty.setValue(tmp, false);
-
+        this.resultExtensions = this.extractVariableExtensions(result.item, this.linkId);
+        this.formProperty.setValue(this.resultExtensions, false);
+        this.extensionsService.replaceExtensions(ExtensionsService.VARIABLE, this.resultExtensions);
         this.cdr.detectChanges();
-
-        this.formProperty.findRoot().getProperty('extension').setValue([...currentExtArray, ...tmp], false);
+        this.formProperty.findRoot().getProperty('extension').setValue(this.extensionsService.extensionsProp.value, false);
       }
     });
   }
@@ -158,20 +164,9 @@ export class VariableComponent extends TableComponent implements OnInit {
    */
   deleteVariable(index: number) {
     let currentExtArray;
-    currentExtArray = this.formService.removeVariablesExtensions(this.formProperty.findRoot().getProperty('extension').value);
-    this.formProperty.value.splice(index, 1);
-    this.formProperty.findRoot().getProperty('extension').setValue([...currentExtArray, ...this.formProperty.value], false);
-  }
-
-  /**
-   * Clean up before destroy.
-   * Unsubscribe all subscriptions.
-   */
-  ngOnDestroy() {
-    this.subscriptions.forEach((s) => {
-      if(s) {
-        s.unsubscribe();
-      }
-    });
+    const tmpt = this.extensionsService.removeExtensionByUrlAtIndex(ExtensionsService.VARIABLE, index);
+    const variablesExtension = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE) ?? [];
+    this.formProperty.setValue(variablesExtension, false);
+    this.cdr.markForCheck();
   }
 }

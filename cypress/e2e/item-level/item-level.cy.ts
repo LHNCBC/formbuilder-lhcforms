@@ -452,11 +452,7 @@ describe('Home page', () => {
       cy.get('@initIntField').clear().type('3.4').should('have.value', '34');
       cy.get('@initIntField').clear().type('-5.6').should('have.value', '-56');
       cy.get('@initIntField').clear().type('-0').should('have.value', '-0');
-
-      // Invalid integer is no longer getting corrected. Error is displayed instead. 
-      cy.get('@initIntField').clear().type('-2-4-').should('have.value', '-2-4-');
-      cy.get('lfb-initial-number input[id^="initial.0.valueInteger"]').should('contain.class', 'invalid');
-      cy.get('span[id="initial.0.err"] > small').should('contain.text', 'Invalid integer value.');
+      cy.get('@initIntField').clear().type('-2-4-').should('have.value', '-24');
 
       cy.get('@initIntField').clear().type('24e1').should('have.value', '241');
       cy.get('@initIntField').clear().type('-24E1').should('have.value', '-241');
@@ -483,7 +479,7 @@ describe('Home page', () => {
       cy.get('@initNumberField').clear().type('-5.6').should('have.value', '-5.6');
       cy.get('@initNumberField').clear().type('-7.8ab').should('have.value', '-7.8');
       cy.get('@initNumberField').clear().type('-xy0.9ab').should('have.value', '-0.9');
-      
+
       cy.get('@initNumberField').clear().type('-').should('have.value', '-');
       cy.get('lfb-initial-number input[id^="initial.0.valueDecimal"]').should('contain.class', 'invalid');
       cy.get('span[id="initial.0.err"] > small').should('contain.text', 'Invalid decimal value.');
@@ -496,7 +492,7 @@ describe('Home page', () => {
       cy.get('lfb-initial-number input[id^="initial.0.valueDecimal"]').should('contain.class', 'invalid');
       cy.get('span[id="initial.0.err"] > small').should('contain.text', 'Invalid decimal value.');
 
-      // Value should be stored as decimal 0.9 (not string) in the JSON
+      // Value should be stored as decimal -0.9 in the JSON
       cy.get('@initNumberField').clear().type('-xy0.9ab').should('have.value', '-0.9');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial).to.deep.equal(
@@ -508,7 +504,7 @@ describe('Home page', () => {
         )
       });
 
-      // Value should be stored as decimal .9 (not string) in the JSON
+      // Value should be stored as decimal 0.9 in the JSON
       cy.get('@initNumberField').clear().type('.9').should('have.value', '.9');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial).to.deep.equal(
@@ -520,7 +516,19 @@ describe('Home page', () => {
         )
       });
 
-      // Value should be stored as decimal .9 (not string) in the JSON
+      // Value should be stored as decimal -0.9 in the JSON
+      cy.get('@initNumberField').clear().type('-.9').should('have.value', '-.9');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial).to.deep.equal(
+          [
+            {
+              "valueDecimal": -0.9
+            }
+          ]
+        )
+      });
+      
+      // Value should be stored as decimal 200 in the JSON
       cy.get('@initNumberField').clear().type('2e2').should('have.value', '2e2');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial).to.deep.equal(
@@ -532,7 +540,7 @@ describe('Home page', () => {
         )
       });
 
-      // Value should be stored as decimal .9 (not string) in the JSON
+      // Value should be stored as decimal 2.1 in the JSON
       cy.get('@initNumberField').clear().type('2.100').should('have.value', '2.100');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial).to.deep.equal(
@@ -634,8 +642,50 @@ describe('Home page', () => {
       cy.get('@pickAnswer').clear().type('d3{enter}');
 
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].answerOption[2].valueCoding.display).equal('d3');
-        expect(qJson.item[0].answerOption[2].initialSelected).equal(true);
+        expect(qJson.item[0].answerOption).to.deep.equal(
+          [
+            {
+              "valueCoding": {
+                "code": "a",
+                "display": "d1",
+                "system": "s"
+              },
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                  "valueDecimal": 1
+                }
+              ]
+            },
+            {
+              "valueCoding": {
+                "code": "b",
+                "display": "d2",
+                "system": "s"
+              },
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                  "valueDecimal": 22
+                }
+              ]
+            },
+            {
+              "valueCoding": {
+                "code": "c",
+                "display": "d3",
+                system: 's'
+              },
+              initialSelected: true,
+              extension: [
+                {
+                  url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+                  valueDecimal: 33
+                }
+              ]
+            }
+          ]
+        );
       })
     });
 
@@ -2058,7 +2108,6 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           // There should be only one enableWhen condition in the JSON. The two invalid conditions
           // should be excluded.
-          console.log('Questionnaire - ' + JSON.stringify(qJson, null, 5));
           expect(qJson.item[3].enableWhen.length).equal(1);
           expect(qJson.item[3].enableWhen[0].question).equal(qJson.item[2].item[0].linkId);
           expect(qJson.item[3].enableWhen[0].operator).equal('=');

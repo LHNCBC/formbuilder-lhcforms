@@ -1,13 +1,13 @@
 import { Component, Input, OnInit, AfterViewInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
 import { FormControl } from '@angular/forms';
-import { FormService } from '../../../services/form.service';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { ExpressionEditorDlgComponent } from '../expression-editor-dlg/expression-editor-dlg.component';
 import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
+import { ExtensionsService } from 'src/app/services/extensions.service';
 
 @Component({
   selector: 'lfb-expression-editor',
@@ -33,12 +33,11 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   /**
    * Invoke super constructor.
    *
-   * @param formService - Inject form service
    */
-  constructor(private formService: FormService,
-              private modalService: NgbModal,
+  constructor(private modalService: NgbModal,
               private cdr: ChangeDetectorRef,
-              private modelService: SharedObjectService) {
+              private modelService: SharedObjectService,
+              private extensionsService: ExtensionsService) {
     super();
   }
 
@@ -53,6 +52,11 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
     this.itemId = this.formProperty.findRoot().getProperty('id').value;
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
     this.valueMethod = this.formProperty.findRoot().getProperty('__$valueMethod').value;
+
+    const extensions = this.formProperty.findRoot().getProperty('extension');
+    if (extensions && extensions?.value.length > 0) {
+      this.extensionsService.setExtensions(extensions);
+    }
   };
 
   ngAfterViewInit(): void {
@@ -60,19 +64,27 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
     this.name = this.formProperty.canonicalPathNotation;
 
     if ('extension' in item) {
-      const exp = this.formService.getExpressionsExtensionByType(item.extension, this.name);
+      const exp = this.extensionsService.getFirstExtensionByUrl(this.getUrlByType(this.name)) ?? null;
       if (exp) {
         this.expression = exp.valueExpression.expression;
         this.formProperty.setValue(exp, false);
       }
     } else if (this.formProperty.value) {
-      const ext = this.formService.getExpressionsExtensionByType(this.formProperty.value, this.name);
+      const ext = this.extensionsService.getFirstExtensionByUrl(this.getUrlByType(this.name)) ?? null;
       const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
-      const sourceExtArray = this.formService.removeExpressionsExtensions(this.questionnaire.item[itemIndex].extension);
       this.expression = ext?.valueExpression?.expression;
-      this.questionnaire.item[itemIndex].extension = [...sourceExtArray, ...this.formProperty.value];
+      this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;
       this.formProperty.findRoot().getProperty('extension').setValue(this.questionnaire.item[itemIndex].extension, false);
     }
+  }
+
+  /**
+   * Return the expression url based on the type of the expression.
+   * @param expressionType - Initial expression or calculated expression.
+   * @returns - expression url.
+   */
+  getUrlByType(expressionType: string): string {
+    return (expressionType === "__$initialExpression") ? ExtensionsService.INITIAL_EXPRESSION : ExtensionsService.CALCULATED_EXPRESSION;
   }
 
   /**
@@ -83,7 +95,7 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   extractExtension(items, linkId): fhir.Extension []|null {
     for (const item of items) {
       if (item.linkId === linkId && item.extension) {
-        return item.extension
+        return item.extension.filter(ext => ext.url)
       } else if (item.item) {
         const extension = this.extractExtension(item.item, linkId);
         if (extension !== null)
@@ -129,9 +141,8 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
     };
     const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
     if (itemIndex > -1) {
-      if (this.formProperty.value) {
-        const currentExtArray =this.formService.removeExpressionsExtensions(this.questionnaire.item[itemIndex].extension);
-        this.questionnaire.item[itemIndex].extension = [...currentExtArray, this.formProperty.value];
+      if (this.formProperty.value?.valueExpression?.expression) {
+        this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;
       }
     }
     const modalRef = this.modalService.open(ExpressionEditorDlgComponent, modalConfig);
@@ -146,11 +157,10 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
         const resultExtensions = this.extractExtension(result.item, this.linkId);
         const resultExtension:any = this.extractExpression(this.schema.widget.expressionUri, result.item, this.linkId);
 
-        const tmp = this.formService.getExpressionsExtensionByType(resultExtensions, this.name);
-
-        const variables = this.formService.filterVariableExtensions(resultExtensions);
-        this.formProperty.setValue(tmp, false);
+        this.extensionsService.extensionsProp.reset(resultExtensions, false);
+        const variables = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE);
         this.expression = resultExtension?.valueExpression?.expression;
+        this.formProperty.setValue(resultExtension, false);
 
         this.cdr.detectChanges();
 

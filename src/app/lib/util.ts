@@ -335,7 +335,6 @@ export class Util {
         // Remove all custom fields starting with __$ excluding any fields defined in excludeCustomFields array and empty fields.
         if(this.key?.startsWith('__$') || typeof node === 'function' || Util.isEmpty(node)) {
           if (this.notRoot) {
-            console.log('DEBUG::util::convertToQuestionnaireJSON::after node is removed - ', node);
             this.remove(); // Splices off any array elements.
           }
         }

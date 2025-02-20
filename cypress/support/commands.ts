@@ -239,9 +239,37 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('@pickAnswer').should('have.value', 'd1');
 
   cy.questionnaireJSON().should((qJson) => {
-    expect(qJson.item[0].type).equal('choice');
-    expect(qJson.item[0].answerOption[0].valueCoding.display).equal('d1');
-    expect(qJson.item[0].answerOption[0].initialSelected).equal(true);
+    expect(qJson.item[0].answerOption).to.deep.equal(
+      [
+        {
+            "extension": [
+                {
+                    "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                    "valueDecimal": 2.1
+                }
+            ],
+            "valueCoding": {
+                "system": "s1",
+                "code": "c1",
+                "display": "d1"
+            },
+            "initialSelected": true
+        },
+        {
+            "extension": [
+                {
+                    "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                    "valueDecimal": 3
+                }
+            ],
+            "valueCoding": {
+                "system": "s2",
+                "code": "c2",
+                "display": "d2"
+            }
+        }
+      ]
+    );
   });
 });
 
