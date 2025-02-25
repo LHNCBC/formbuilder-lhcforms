@@ -6,6 +6,7 @@ import {LiveAnnouncer} from '@angular/cdk/a11y';
  * It is intended to be used on <input type="number"> element.
  */
 @Directive({
+  standalone: false,
   selector: '[lfbInteger]'
 })
 export class IntegerDirective {

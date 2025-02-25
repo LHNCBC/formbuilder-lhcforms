@@ -27,6 +27,7 @@ export interface PreviewData {
 }
 
 @Component({
+  standalone: false,
   selector: 'lfb-preview-dlg',
   templateUrl: './preview-dlg.component.html',
   encapsulation: ViewEncapsulation.None,

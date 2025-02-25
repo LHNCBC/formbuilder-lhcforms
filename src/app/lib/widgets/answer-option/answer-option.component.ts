@@ -14,6 +14,7 @@ import {Subscription} from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 
 @Component({
+  standalone: false,
   selector: 'lfb-answer-option',
   templateUrl: '../table/table.component.html',
   styleUrls: ['../table/table.component.css', './answer-option.component.css'],

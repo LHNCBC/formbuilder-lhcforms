@@ -30,6 +30,7 @@ import {SharedObjectService} from '../services/shared-object.service';
 type ExportType = 'CREATE' | 'UPDATE';
 
 @Component({
+  standalone: false,
   selector: 'lfb-base-page',
   templateUrl: './base-page.component.html',
   styleUrls: ['./base-page.component.css'],

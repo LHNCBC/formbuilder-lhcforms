@@ -28,6 +28,7 @@ import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.comp
 import {Subscription} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'lfb-table',
   templateUrl: './table.component.html', // Use separate files for possible reuse from a derived class
   styleUrls: ['./table.component.css']

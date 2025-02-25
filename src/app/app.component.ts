@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import {NgbDatepickerConfig} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
+  standalone: false,
   selector: 'lfb-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']

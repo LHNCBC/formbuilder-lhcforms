@@ -8,6 +8,7 @@ import {Util} from '../../util';
 import {LiveAnnouncer} from "@angular/cdk/a11y";
 
 @Component({
+  standalone: false,
   selector: 'lfb-item-control',
   templateUrl: './item-control.component.html',
   styleUrls: ['./item-control.component.css'],

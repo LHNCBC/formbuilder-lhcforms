@@ -37,6 +37,7 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter {
 
 
 @Component({
+  standalone: false,
   selector: 'lfb-date',
   templateUrl: './date.component.html',
   styleUrls: ['./date.component.css'],

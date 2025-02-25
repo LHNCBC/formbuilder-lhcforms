@@ -8,6 +8,7 @@ import { FormService } from '../../../services/form.service';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
+  standalone: false,
   selector: 'lfb-select',
   templateUrl: './select.component.html',
   styles: [`
@@ -23,7 +24,7 @@ export class SelectComponent extends StringComponent implements AfterViewInit {
   faInfo = faInfoCircle;
   nolabel = false;
   errorIcon = faExclamationTriangle;
-  
+
   formService = inject(FormService);
 
   // A mapping for options display string. Typically, the display strings are from schema definition.
@@ -80,7 +81,7 @@ export class SelectComponent extends StringComponent implements AfterViewInit {
    *   - If the 'validateType' flag is not set.
    *   - If the 'validateType' flag is set and the option is not equal to 'display'.
    *   - If the 'validateType' flag is set, the option is equal to 'display', and the item does not
-   *     have sub-items. 
+   *     have sub-items.
    * @param opt - data type option.
    * @returns True if the data type option should be included in the allowedOptions drop-down list
    */

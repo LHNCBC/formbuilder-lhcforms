@@ -14,6 +14,7 @@ enum ExportType {
 }
 
 @Component({
+  standalone: false,
   selector: 'lfb-fhir-export-dlg',
   templateUrl: './fhir-export-dlg.component.html',
   styleUrls: ['./fhir-export-dlg.component.css']

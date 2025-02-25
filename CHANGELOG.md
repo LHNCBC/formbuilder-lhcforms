@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.7.6] 2025-02-20
+### Changed
+- Upgraded to angular19
+
 ## [9.7.5] 2025-01-31
 ### Added
 - Added item control list for display data type.

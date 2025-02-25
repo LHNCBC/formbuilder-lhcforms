@@ -6,6 +6,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 @Component({
+  standalone: false,
   selector: 'lfb-string',
   templateUrl: './string.component.html'
 })

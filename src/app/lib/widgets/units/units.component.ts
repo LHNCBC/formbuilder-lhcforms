@@ -18,6 +18,7 @@ interface UnitExtension {
 }
 
 @Component({
+  standalone: false,
   selector: 'lfb-units',
   template: `
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">

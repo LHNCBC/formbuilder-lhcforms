@@ -2,6 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import {WidgetChooserComponent} from '@lhncbc/ngx-schema-form';
 
 @Component({
+  standalone: false,
   selector: 'lfb-element-chooser',
   template: `<div #target></div>`,
   styles: []

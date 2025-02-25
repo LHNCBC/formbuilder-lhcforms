@@ -20,6 +20,7 @@ import { ValidationService, EnableWhenValidationObject } from '../services/valid
  * This class is intended to isolate customization of sf-form instance.
  */
 @Component({
+  standalone: false,
   selector: 'lfb-sf-form-wrapper',
   templateUrl: './sf-form-wrapper.component.html',
   styleUrls: ['./sf-form-wrapper.component.css'],
@@ -241,9 +242,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
    *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
-   *                                             options. 
-   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty. 
+   *                                             options.
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
+   *                                            and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
     let errors = null;
