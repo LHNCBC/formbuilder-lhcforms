@@ -15,6 +15,7 @@ import { FormService } from 'src/app/services/form.service';
 import { debounceTime } from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'lfb-enable-when',
   templateUrl: './enable-when.component.html',
   styleUrls: ['../table/table.component.css', './enable-when.component.css'],

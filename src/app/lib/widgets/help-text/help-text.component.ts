@@ -7,6 +7,7 @@ import fhir from "fhir/r4";
 type InputType = 'plain' | 'xhtml';
 
 @Component({
+  standalone: false,
   selector: 'lfb-help-text',
   template: `<lfb-form-element [formProperty]="formProperty.searchProperty('/__$helpText/text')"></lfb-form-element>`
 })

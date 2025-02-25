@@ -9,6 +9,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import {Util} from '../util';
 
 @Pipe({
+  standalone: false,
   name: 'appJson'
 })
 export class AppJsonPipe implements PipeTransform {

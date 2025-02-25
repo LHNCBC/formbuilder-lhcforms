@@ -19,6 +19,7 @@ import { ValidationService, EnableWhenValidationObject } from '../services/valid
  * This class is intended to isolate customization of sf-form instance.
  */
 @Component({
+  standalone: false,
   selector: 'lfb-sf-form-wrapper',
   templateUrl: './sf-form-wrapper.component.html',
   styleUrls: ['./sf-form-wrapper.component.css'],

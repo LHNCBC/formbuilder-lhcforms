@@ -5,6 +5,7 @@ import {GridComponent} from '../grid.component/grid.component';
  *
  */
 @Component({
+  standalone: false,
   selector: 'lfb-left-label-form-group',
   template: `
       <div class="form-group row" *ngFor="let field of getShowFields()">

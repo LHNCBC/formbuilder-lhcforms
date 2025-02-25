@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
+  standalone: false,
   selector: 'lfb-loinc-notice',
   templateUrl: './loinc-notice.component.html',
   styleUrls: ['./loinc-notice.component.css']

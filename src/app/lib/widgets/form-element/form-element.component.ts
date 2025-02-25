@@ -7,6 +7,7 @@ import { Widget } from '@lhncbc/ngx-schema-form';
 
 
 @Component({
+  standalone: false,
   selector: 'lfb-form-element',
   template: `
     <div *ngIf="formProperty.visible"

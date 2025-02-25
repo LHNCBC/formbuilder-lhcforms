@@ -6,6 +6,7 @@ import { Component } from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
+  standalone: false,
   selector: 'lfb-integer-widget',
   template: `
     <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"

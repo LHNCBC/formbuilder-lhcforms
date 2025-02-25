@@ -130,6 +130,7 @@ export class ErrorTooltip {
 };
 
 @Component({
+  standalone: false,
   selector: 'lfb-confirm-dlg',
   template: `
     <div class="modal-header bg-primary">
@@ -165,6 +166,7 @@ export class ConfirmDlgComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'lfb-item-component',
   templateUrl: './item.component.html',
   styleUrls: ['./item.component.css'],

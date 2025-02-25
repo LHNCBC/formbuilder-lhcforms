@@ -12,6 +12,7 @@ import {FormService} from '../../../services/form.service';
  * Combines maxLength field which is part of standard FHIR with SDC extensions.
  */
 @Component({
+  standalone: false,
   selector: 'lfb-restrictions',
   templateUrl: '../table/table.component.html',
   styleUrls: ['../table/table.component.css'],

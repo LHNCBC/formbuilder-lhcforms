@@ -8,6 +8,7 @@ import {faAngleDown, faAngleUp} from '@fortawesome/free-solid-svg-icons';
 import {FormService} from '../../../services/form.service';
 
 @Component({
+  standalone: false,
   selector: 'lfb-row-layout',
   template: `
     <div *ngFor="let row of basicRows">

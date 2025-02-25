@@ -1200,10 +1200,75 @@
         "id": "item-control",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-9 btn-group btn-group-sm p-0",
+        "controlClasses": "col-10 btn-group btn-group-sm p-0",
         "note": "(1) - not supported by LHC-Forms preview."
       }
     },
+    "__$itemControlDisplay": {
+      // Proxy for item control extension.
+      "description": "Choose the type of control for the 'Display' data type. Some item controls are not supported by the LHC-Forms preview, as indicated by the asterisk (1) symbol.",
+      "title": "Display Item Control",
+      "oneOf": [
+        {
+          'enum': ["inline"],
+          'display': 'In-line',
+          'description': 'The display item is rendered as a paragraph positioned sequentially among its sibling items (default behavior).',
+          'support': true
+        },
+        {
+          'enum': ["prompt"],
+          'display': 'Prompt',
+            'description': 'Text is shown directly below or within the answer-entry area of the containing question item, usually as a guide for what to enter.',
+          'support': false,
+          'deprecated': true
+        },
+        {
+          'enum': ["unit"],
+          'display': 'Unit',
+            'description': 'The display item is shown next to the answer area of the parent question, usually to indicate a unit of measure.',
+          'support': false,
+          'deprecated': true
+        },
+        {
+          'enum': ["lower"],
+          'display': 'Lower-bound',
+            'description': 'The display item is rendered to the left of the answer choices or a scaling control for the parent question, indicating the meaning of the \'lower\' bound, e.g., \'Strongly disagree\'.',
+          'support': false
+        },
+        {
+          'enum': ["upper"],
+          'display': 'Upper-bound',
+          'description': 'The display item is rendered to the right of the answer choices or a scaling control for the parent question item, indicating the meaning of the \'upper\' bound, e.g., \'Strongly agree\'.',
+          'support': false
+        },
+        {
+          'enum': ["flyover"],
+          'display': 'Fly-over',
+          'description': 'The display item appears temporarily when the mouse hovers over the text of the containing item.',
+          'support': false
+        },
+        {
+          'enum': ["legal"],
+          'display': 'Legal-Button',
+          'description': 'The display item is shown in a dialog box or similar control when a button or other UI element is used to request legal information for a question, group, or the entire questionnaire, depending on where the display item is nested.',
+          'support': false
+        }
+      ],
+      "default": "inline",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'display'"]
+      },
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 btn-group btn-group-sm p-0",
+        "note": "(1) - not supported by LHC-Forms preview.",
+        "deprecatedNote": "* '${deprecatedItemControl}' item control is deprecated and is not presented in this list of item controls." 
+      }
+    },
+
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
       "title": "Terminology server",
@@ -1937,6 +2002,17 @@
         }
       ]
     },
+    {
+      "fields": [
+        "__$itemControlDisplay"
+      ],
+      "showFields": [
+        {
+          "field": "__$itemControlDisplay",
+          "col": 12
+        }
+      ]
+    },    
     {
       "fields": [
         "__$terminologyServer"

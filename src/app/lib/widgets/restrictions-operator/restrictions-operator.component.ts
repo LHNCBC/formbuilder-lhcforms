@@ -19,6 +19,7 @@ export interface AcceptChange {
  * Restriction pull down list. Operates based data type selected.
  */
 @Component({
+  standalone: false,
   selector: 'lfb-restrictions-operator',
   templateUrl: './restrictions-operator.component.html',
   styleUrls: ['./restrictions-operator.component.css']

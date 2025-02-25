@@ -23,6 +23,7 @@ import {FhirService} from '../services/fhir.service';
 declare var LForms: any;
 
 @Component({
+  standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sf-test',
   template: `

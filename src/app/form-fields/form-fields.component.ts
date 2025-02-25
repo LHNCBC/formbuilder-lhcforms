@@ -29,6 +29,7 @@ function configExtensionsServiceFactory(formService: FormService): ExtensionsSer
   return formService.formLevelExtensionService;
 }
 @Component({
+  standalone: false,
   selector: 'lfb-form-fields',
   template: `
     <div class="card-body content">

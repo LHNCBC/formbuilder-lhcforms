@@ -5,6 +5,7 @@ import {UnitsComponent} from '../units/units.component';
 declare var LForms: any;
 
 @Component({
+  standalone: false,
   selector: 'lfb-quantity-unit',
   templateUrl: './quantity-unit.component.html',
   styleUrls: ['./quantity-unit.component.css']

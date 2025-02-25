@@ -19,6 +19,7 @@ interface SearchField {
   searchFieldPlaceholder: string
 }
 @Component({
+  standalone: false,
   selector: 'lfb-fhir-search-dlg',
   styles: [`
     .result-item:hover {
