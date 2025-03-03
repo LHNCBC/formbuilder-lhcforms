@@ -11,6 +11,7 @@ import {DateUtil} from './date-util';
 import {v4 as uuidv4} from 'uuid';
 import {fhirPrimitives} from "../fhir";
 import {PropertyGroup} from "@lhncbc/ngx-schema-form";
+import { convert } from 'questionnaire-version-converter';
 declare var LForms: any;
 
 export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
@@ -631,7 +632,7 @@ export class Util {
     return ret;
   }
   /**
-   * Convert a given questionnaire to R5 version. R5 is also internal format.
+   * Convert a given questionnaire to desired version. R5 is also the internal format.
    * Other formats are converted to internal format using LForms library when loading an external form.
    *
    * @param initialQ - A given questionnaire. Could be STU3, R4, R5 etc.
@@ -639,8 +640,15 @@ export class Util {
    */
   static convertQuestionnaire(initialQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
     let ret = initialQ;
+    const v = Util.detectFHIRVersion(initialQ);
+    if(v !== version) {
+      const resp: any = convert(initialQ, v, version);
+      ret = resp.data;
+      /*
       ret = LForms.Util.getFormFHIRData(initialQ.resourceType, version,
-        LForms.Util.convertFHIRQuestionnaireToLForms(initialQ));
+          LForms.Util.convertFHIRQuestionnaireToLForms(initialQ));
+      */
+    }
     return ret;
   }
 }
