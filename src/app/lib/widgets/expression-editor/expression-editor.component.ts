@@ -62,31 +62,43 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   ngAfterViewInit(): void {
     const item = this.formProperty.findRoot().value;
     this.name = this.formProperty.canonicalPathNotation;
+    const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
 
     if ('extension' in item) {
-      const exp = this.extensionsService.getFirstExtensionByUrl(this.getUrlByType(this.name)) ?? null;
+      const exp = this.extensionsService.getFirstExtensionByUrl(ExtensionsService.INITIAL_EXPRESSION) ||
+                  this.extensionsService.getFirstExtensionByUrl(ExtensionsService.CALCULATED_EXPRESSION);
       if (exp) {
         this.expression = exp.valueExpression.expression;
         this.formProperty.setValue(exp, false);
+
+        this.updateOutputExtensionUrl(exp, itemIndex);
       }
-    } else if (this.formProperty.value) {
-      const ext = this.extensionsService.getFirstExtensionByUrl(this.getUrlByType(this.name)) ?? null;
-      const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
-      this.expression = ext?.valueExpression?.expression;
+    } 
+  }
+
+  /**
+   * Update the output extension url of a questionnaire item based on the selected value method.
+   * @param extension - the current extension object that needs to be updated.
+   * @param itemIndex - the index of the item in the questionnaire that is being updated.
+   */
+  updateOutputExtensionUrl(extension: any, itemIndex: any): void {
+    if (this.getUrlByValueMethod(this.valueMethod) !== extension.url) {
+      const newOutputExtension = { ...extension };
+      newOutputExtension.url = this.getUrlByValueMethod(this.valueMethod);
+
+      this.extensionsService.replaceExtensions(extension.url, [newOutputExtension]);
       this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;
-      this.formProperty.findRoot().getProperty('extension').setValue(this.questionnaire.item[itemIndex].extension, false);
     }
   }
 
   /**
-   * Return the expression url based on the type of the expression.
-   * @param expressionType - Initial expression or calculated expression.
+   * Return the expression url based on the value method.
+   * @param valueMethod - "compute-initial" or "compute-continuously".
    * @returns - expression url.
    */
-  getUrlByType(expressionType: string): string {
-    return (expressionType === "__$initialExpression") ? ExtensionsService.INITIAL_EXPRESSION : ExtensionsService.CALCULATED_EXPRESSION;
+  getUrlByValueMethod(valueMethod: string): string {
+    return (valueMethod === "compute-initial") ? ExtensionsService.INITIAL_EXPRESSION : ExtensionsService.CALCULATED_EXPRESSION;
   }
-
   /**
    * Get extension
    * @param items - FHIR questionnaire item array
@@ -155,12 +167,12 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
       // Rule Editor returns false in the case changes were cancelled.
       if (result) {
         const resultExtensions = this.extractExtension(result.item, this.linkId);
-        const resultExtension:any = this.extractExpression(this.schema.widget.expressionUri, result.item, this.linkId);
-
         this.extensionsService.extensionsProp.reset(resultExtensions, false);
         const variables = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE);
-        this.expression = resultExtension?.valueExpression?.expression;
-        this.formProperty.setValue(resultExtension, false);
+
+        const outputExtension = this.extensionsService.getFirstExtensionByUrl(this.getUrlByValueMethod(this.valueMethod));
+        this.expression = outputExtension?.valueExpression?.expression;
+        this.formProperty.setValue(outputExtension, false);
 
         this.cdr.detectChanges();
 

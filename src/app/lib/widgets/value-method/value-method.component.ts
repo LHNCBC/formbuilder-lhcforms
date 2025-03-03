@@ -108,18 +108,6 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
           if (updatedExts.length !== exts.length) {
             this.formProperty.findRoot().getProperty('extension').setValue(updatedExts, false);
           }
-        } else if (val === "compute-initial") {
-          const initialExpression = this.formProperty.findRoot().getProperty('__$initialExpression').value;
-          if (!this.formService.hasInitialComputeValueExpression(exts) && initialExpression) {
-            exts.push(initialExpression);
-            this.formProperty.findRoot().getProperty('extension').setValue(exts, false);
-          }
-        } else if (val === "compute-continuously") {
-          const calculatedExpression = this.formProperty.findRoot().getProperty('__$calculatedExpression').value;
-          if (!this.formService.hasContinuouslyComputeValueExpression(exts) && calculatedExpression) {
-            exts.push(calculatedExpression);
-            this.formProperty.findRoot().getProperty('extension').setValue(exts, false);
-          }
         }
       }
     });
