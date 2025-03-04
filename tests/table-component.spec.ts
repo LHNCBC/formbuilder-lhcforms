@@ -162,13 +162,28 @@ test.describe('Table component', async () => {
     // The Pick Initial drop-down is displayed
     const pickInitial = page.locator('lfb-pick-answer >> input[type="text"]');
     await pickInitial.click();
+
+    const autoCompInitials = page.locator('span#completionOptions > ul > li')
+    await expect(autoCompInitials).toHaveCount(4);
+
     // Select '1a'
     await pickInitial.press('ArrowDown');
     await pickInitial.press('Enter');
+
+    let pickInitials = page.locator('span.autocomp_selected > ul > li');
+    await expect(pickInitials).toHaveCount(1);
+    await expect(pickInitials.nth(0)).toHaveText('×1a');
+
     // Select '4a'
+    await pickInitial.click();
     await pickInitial.press('ArrowDown');
     await pickInitial.press('ArrowDown');
     await pickInitial.press('Enter');
+
+    pickInitials = page.locator('span.autocomp_selected > ul > li');
+    await expect(pickInitials).toHaveCount(2);
+    await expect(pickInitials.nth(0)).toHaveText('×1a');
+    await expect(pickInitials.nth(1)).toHaveText('×4a');
 
     let q = await PWUtils.getQuestionnaireJSON(page, 'R4');
     expect(q.item[0].answerOption).toEqual([

@@ -140,6 +140,8 @@ export class MainPO {
         const lastCell = lastRow.locator('td input').last();
         const lastCellValue = await lastCell.inputValue();
         await expect(lastCell).toHaveValue(tableData[rowIndex][tableData[rowIndex].length - 1], { timeout: 1000});
+
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
   }
