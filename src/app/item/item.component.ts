@@ -263,7 +263,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   loadingTime = 0.0;
   startTime = Date.now();
   devMode = !environment.production;
-  contextMenuActive = false;
   treeFirstFocus = false;
 
   isViewInited = false;
@@ -852,9 +851,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param open - True is opened, false is closed
    */
   handleContextMenuOpen(open: boolean) {
-    this.contextMenuActive = open;
     if(open) {
-      this.liveAnnouncer.announce(`Use up or down arrow keys to navigate the menu items`);
+      setTimeout(() => {
+        this.liveAnnouncer.announce(`Use tab and then up or down arrow keys to navigate the menu items`);
+      }, 1000);
     }
   }
 
