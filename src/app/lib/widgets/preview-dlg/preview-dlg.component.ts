@@ -39,7 +39,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
   format: FHIR_VERSION_TYPE = 'R4'; // Current default for preview.
   activeTopLevelTabIndex = 0;
-  activeJsonTabIndex = 1;
+  activeJsonTabIndex: 0|1|2 = FHIR_VERSIONS.R4;
   lformsErrors: string;
   inputUrlErrors: string;
   validationErrors: {FHIR_VERSION_TYPE?: string[]} = {};
@@ -48,6 +48,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   @ViewChild('autoCompNgb', { static: false, read: NgbTypeahead }) autoCompNgb: NgbTypeahead;
   @ViewChild('errorsItem', { static: false, read: NgbAccordionItem }) errorsItem: NgbAccordionItem;
   showNoErrorsMsg = false;
+  codeMirrorModel: string = '';
 
   fhirValidationMsg = "Select the 'View/Validate Questionnaire JSON' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.";
 
@@ -100,8 +101,8 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.activeTopLevelTabIndex = 0;
-    this.activeJsonTabIndex = 1;
-    this.vServer = this.fhirService.getLastUsedValidationServer(this.format);
+    this.activeJsonTabIndex = FHIR_VERSIONS.R4;
+    this.onJsonVersionSelected(this.activeJsonTabIndex);
   }
 
   close() {
@@ -112,9 +113,10 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * Update format and server based on version tab selected.
    * @param ngEvent - Angular event
    */
-  onJsonVersionSelected(ngEvent: 0|1) {
+  onJsonVersionSelected(ngEvent: 0|1|2) {
     this.format = FHIR_VERSIONS[ngEvent] as FHIR_VERSION_TYPE;
     this.vServer = this.fhirService.getLastUsedValidationServer(this.format);
+    this.codeMirrorModel = JSON.stringify(this.getQuestionnaire(this.format), null, 2);
   }
 
   /**

@@ -116,7 +116,7 @@
   <div class="overlay-container">
     <ngx-codemirror
       (codeMirrorLoaded)="codeMirrorLoaded($event)"
-      [ngModel]="formService.convertFromR5(this.data?.questionnaire, fhirVersion) | json"
+      [ngModel]="codeMirrorModel"
       [options]="{
         lineNumbers: true,
         theme: 'idea code-editor',
@@ -130,7 +130,7 @@
     <button tabindex="0" class="btn overlay-top-right me-3"
             title="Copy questionnaire to clipboard"
             [attr.aria-label]="'Button to copy questionnaire to clipboard'"
-            [cdkCopyToClipboard]="formService.convertFromR5(data?.questionnaire, fhirVersion) | json"
+            [cdkCopyToClipboard]="codeMirrorModel"
       ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
   </div>
   <div #jsonContent></div>
