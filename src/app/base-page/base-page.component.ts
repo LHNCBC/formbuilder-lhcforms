@@ -691,6 +691,8 @@ export class BasePageComponent implements OnInit {
     const storedQ = this.formService.autoLoadForm();
     if(storedQ) {
       storedQ.item = storedQ.item || [];
+      storedQ.meta = storedQ.meta || {};
+      storedQ.meta.profile = storedQ.meta.profile || [Util.R5_PROFILE_URL];
     }
     return Util.isDefaultForm(storedQ);
   }

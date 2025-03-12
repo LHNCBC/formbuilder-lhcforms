@@ -47,10 +47,14 @@ export class Util {
     extension: [Util.HELP_BUTTON_EXTENSION]
   };
 
+  static R5_PROFILE_URL = 'http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire';
   private static _defaultForm = {
     resourceType: 'Questionnaire',
     title: 'New Form',
     status: 'draft',
+    meta: {
+      profile: [Util.R5_PROFILE_URL]
+    },
     item: []
   };
 
@@ -622,7 +626,7 @@ export class Util {
    * @return - Detected FHIR version such as STU3, R4, R5 etc., or null if fails to detect.
    */
   static detectFHIRVersion(resource: fhir.Resource): string {
-    if(this.isDefaultForm(resource as fhir.Questionnaire)) {
+    if(Util.isDefaultForm(resource as fhir.Questionnaire)) {
       return 'R5';
     }
     let ret: string = LForms.Util.detectFHIRVersion(resource);
