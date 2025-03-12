@@ -72,7 +72,7 @@ export class FetchService {
     const options: any = {observe: 'body', responseType: 'json'};
     options.params = new HttpParams().set('loinc_num', loincNum);
 
-    return this.http.get<fhir.Questionnaire>(FetchService.loincFormsUrl + '?loinc_num=' + loincNum,{responseType: 'json'})
+    return this.http.get<fhir.Questionnaire>(FetchService.loincFormsUrl, options)
       .pipe(
         map((response: any) => {
           return LForms.Util.getFormFHIRData('Questionnaire', 'R5', response);
