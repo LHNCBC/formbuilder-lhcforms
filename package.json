@@ -117,7 +117,7 @@
     "karma-jasmine": "~4.0.2",
     "karma-jasmine-html-reporter": "^1.7.0",
     "postcss": "^8.3.0",
-    "start-server-and-test": "2.0.3",
+    "start-server-and-test": "^2.0.10",
     "ts-node": "~9.1.1",
     "typescript": "^5.4.5"
   }
