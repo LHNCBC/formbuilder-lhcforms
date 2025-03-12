@@ -105,7 +105,7 @@ describe('Util', () => {
   });
 
   // TODO - Uncomment after conversion is fixed.
-  xit('should convert R5 features to R4', () => {
+  it('should convert R5 features to R4', () => {
     const testCases: any [] = [
       {
         convertTo: 'R4',
@@ -124,7 +124,7 @@ describe('Util', () => {
           ]
         },
         assertions: {
-          type: 'choice',
+          type: 'open-choice',
         }
       }
     ];
