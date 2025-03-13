@@ -1700,9 +1700,7 @@ describe('Home page', () => {
           cy.wrap($el).invoke('attr', 'placeholder').should('eq', expectedPlaceholders[index]);
         });
 
-        cy.get('lhc-item lhc-item-question textarea').should('have.attr', 'placeholder', 'Max 100 characters.')
-        //  .should('have.attr', 'placeholder', )
-
+        cy.get('lhc-item lhc-item-question textarea').should('have.attr', 'placeholder', 'Max 100 characters.');
       });
 
       it('should update entry format placeholder for different data types', () => {
