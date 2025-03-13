@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [9.7.7] 2025-03-04
+### Changed
+- Fixed an accessibility issue.
+
 ## [9.7.6] 2025-02-20
 ### Changed
 - Upgraded to angular19

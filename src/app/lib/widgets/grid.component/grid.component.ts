@@ -66,7 +66,13 @@ export class GridComponent extends ObjectWidget {
     ret = !ret ? fieldset.fields.map((e) => ({field: e})) : ret;
     ret = ret.filter((field) => {
       const propId = typeof field === 'string' ? field : typeof field === 'object' ? field.field : null;
-      return Util.isVisible(this.formProperty, propId);
+      let bool = false;
+      if(propId === null) {
+        bool = false;
+      } else {
+        bool = Util.isVisible(this.formProperty, propId);
+      }
+      return bool;
     });
     return ret;
   }

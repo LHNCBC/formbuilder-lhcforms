@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "9.7.6",
+  "version": "9.7.7",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -117,7 +117,7 @@
     "karma-jasmine": "~4.0.2",
     "karma-jasmine-html-reporter": "^1.7.0",
     "postcss": "^8.3.0",
-    "start-server-and-test": "2.0.3",
+    "start-server-and-test": "^2.0.10",
     "ts-node": "~9.1.1",
     "typescript": "^5.4.5"
   }

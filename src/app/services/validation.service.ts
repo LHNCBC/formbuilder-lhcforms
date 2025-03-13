@@ -280,19 +280,19 @@ export class ValidationService {
 
   /**
    * Custom validator for single condition in 'enableWhen' field.
-   * @param validationObj - an object that contains field data for validation.
+   * @param enableWhenObj - an object that contains field data for validation.
    * @param isSchemaFormValidation - indicates whether this is a specific schema form validation (true)
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
    *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
-   *                                             options. 
-   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
-   *                                             equal to 'exists', and the answer is empty.   
+   *                                             options.
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
+   *                                             equal to 'exists', and the answer is empty.
    */
   validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
-    if(enableWhenObj.op?.value.length > 0 || (!enableWhenObj.aType && enableWhenObj?.answerTypeProperty)) {
+    if(enableWhenObj?.op?.value?.length > 0 || (!enableWhenObj?.aType && enableWhenObj?.answerTypeProperty)) {
       const aValue = enableWhenObj.answerX?.value;
 
       const node = this.formService.getTreeNodeById(enableWhenObj.id);
