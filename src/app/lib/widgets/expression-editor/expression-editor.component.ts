@@ -72,8 +72,10 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
         this.formProperty.setValue(exp, false);
 
         this.updateOutputExtensionUrl(exp, itemIndex);
+      } else if (this.formProperty.value) {
+        this.expression = this.formProperty.value?.valueExpression?.expression;
       }
-    } 
+    }
   }
 
   /**
