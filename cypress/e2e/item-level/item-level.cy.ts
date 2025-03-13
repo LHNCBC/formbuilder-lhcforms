@@ -4,6 +4,7 @@ import {Util} from '../../../src/app/lib/util';
 import {CypressUtil} from '../../support/cypress-util';
 import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 
+const entryFormatUrl = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
 const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
 const ucumUrl = 'http://unitsofmeasure.org';
@@ -1623,6 +1624,246 @@ describe('Home page', () => {
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[6].extension).undefined;
+        });
+      });
+    });
+
+    describe('Entry format extension', () => {
+      beforeEach(() => {
+        const sampleFile = 'entry-format-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.loadHomePage();
+        cy.get('input[type="radio"][value="scratch"]').click();
+        cy.get('button').contains('Continue').click();
+        cy.uploadFile(sampleFile, false);
+        cy.get('#title').should('have.value', 'Entry format extension');
+        cy.contains('button', 'Edit questions').click();
+      });
+
+      it('should display entry format placeholder for different data types', () => {
+        cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
+        
+        // Decimal data type
+        cy.get('#text').should('have.value', 'Decimal data type');
+        cy.get('#type').should('contain.value', 'decimal');
+        cy.get('[id="__$entryFormat"]').should('have.value', '#,###.##');
+
+        // Integer data type
+        cy.getTreeNode('Integer data type').click();
+        cy.get('#text').should('have.value', 'Integer data type');
+        cy.get('#type').should('contain.value', 'integer');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'nnn');
+
+        // Date data type
+        cy.getTreeNode('Date data type').click();
+        cy.get('#text').should('have.value', 'Date data type');
+        cy.get('#type').should('contain.value', 'date');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'YY/MM/DD');
+
+        // Datetime data type
+        cy.getTreeNode('Datetime data type').click();
+        cy.get('#text').should('have.value', 'Datetime data type');
+        cy.get('#type').should('contain.value', 'dateTime');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'YY/MM/DD hh:mm:ss');        
+
+        // Time data type
+        cy.getTreeNode('Time data type').click();
+        cy.get('#text').should('have.value', 'Time data type');
+        cy.get('#type').should('contain.value', 'time');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'hh:mm:ss');
+
+        // String data type
+        cy.getTreeNode('String data type').click();
+        cy.get('#text').should('have.value', 'String data type');
+        cy.get('#type').should('contain.value', 'string');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'nnn-nnn-nnn');
+
+        // Text data type
+        cy.getTreeNode('Text data type').click();
+        cy.get('#text').should('have.value', 'Text data type');
+        cy.get('#type').should('contain.value', 'text');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'Max 100 characters.');
+
+        // URL data type
+        cy.getTreeNode('URL data type').click();
+        cy.get('#text').should('have.value', 'URL data type');
+        cy.get('#type').should('contain.value', 'url');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'https://your-site.com');
+
+        // Invoke preview.
+        cy.contains('button', 'Preview').click();
+
+        // Each item should have placeholder populated
+        const expectedPlaceholders = ["#,###.##", "nnn", "YY/MM/DD", "YY/MM/DD hh:mm:ss", "hh:mm:ss", "nnn-nnn-nnn", "https://your-site.com"];
+        cy.get('lhc-item lhc-item-question input').each(($el, index) => {
+          cy.wrap($el).invoke('attr', 'placeholder').should('eq', expectedPlaceholders[index]);
+        });
+
+        cy.get('lhc-item lhc-item-question textarea').should('have.attr', 'placeholder', 'Max 100 characters.')
+        //  .should('have.attr', 'placeholder', )
+
+      });
+
+      it('should update entry format placeholder for different data types', () => {
+        cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
+        
+        // Decimal data type
+        cy.get('#text').should('have.value', 'Decimal data type');
+        cy.get('[id="__$entryFormat"]').clear().type('##.##');
+
+        // Integer data type
+        cy.getTreeNode('Integer data type').click();
+        cy.get('#text').should('have.value', 'Integer data type');
+        cy.get('[id="__$entryFormat"]').clear().type('n');
+
+        // Date data type
+        cy.getTreeNode('Date data type').click();
+        cy.get('#text').should('have.value', 'Date data type');
+        cy.get('[id="__$entryFormat"]').clear().type('YYYY');
+
+        // Datetime data type
+        cy.getTreeNode('Datetime data type').click();
+        cy.get('#text').should('have.value', 'Datetime data type');
+        cy.get('[id="__$entryFormat"]').clear().type('YYYY hh:mm:ss');      
+
+        // Time data type
+        cy.getTreeNode('Time data type').click();
+        cy.get('#text').should('have.value', 'Time data type');
+        cy.get('[id="__$entryFormat"]').clear().type('hh:mm');
+
+        // String data type
+        cy.getTreeNode('String data type').click();
+        cy.get('#text').should('have.value', 'String data type');
+        cy.get('[id="__$entryFormat"]').clear().type('nnn-nnn');
+
+        // Text data type
+        cy.getTreeNode('Text data type').click();
+        cy.get('#text').should('have.value', 'Text data type');
+        cy.get('[id="__$entryFormat"]').clear().type('Max 200 characters.');
+
+        // URL data type
+        cy.getTreeNode('URL data type').click();
+        cy.get('#text').should('have.value', 'URL data type');
+        cy.get('[id="__$entryFormat"]').clear().type('https://my-site.com');
+
+        // Invoke preview.
+        cy.contains('button', 'Preview').click();
+
+        // Each item should have placeholder populated
+        const expectedPlaceholders = ["##.##", "n", "YYYY", "YYYY hh:mm:ss", "hh:mm", "nnn-nnn", "https://my-site.com"];
+        cy.get('lhc-item lhc-item-question input').each(($el, index) => {
+          cy.wrap($el).invoke('attr', 'placeholder').should('eq', expectedPlaceholders[index]);
+        });
+
+        cy.get('lhc-item lhc-item-question textarea').should('have.attr', 'placeholder', 'Max 200 characters.')
+      });
+
+      it('should remove entry format placeholder for different data types', () => {
+        cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].type).equal('decimal');
+          expect(qJson.item[0].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "#,###.##"
+          });
+          expect(qJson.item[1].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "nnn"
+          });
+          expect(qJson.item[2].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "YY/MM/DD"
+          });
+          expect(qJson.item[3].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "YY/MM/DD hh:mm:ss"
+          });
+          expect(qJson.item[4].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "hh:mm:ss"
+          });
+          expect(qJson.item[5].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "nnn-nnn-nnn"
+          });
+          expect(qJson.item[6].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "Max 100 characters."
+          });
+          expect(qJson.item[7].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "https://your-site.com"
+          });
+        });
+
+        // Decimal data type
+        cy.get('#text').should('have.value', 'Decimal data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
+        // Integer data type
+        cy.getTreeNode('Integer data type').click();
+        cy.get('#text').should('have.value', 'Integer data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
+        // Date data type
+        cy.getTreeNode('Date data type').click();
+        cy.get('#text').should('have.value', 'Date data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
+        // Datetime data type
+        cy.getTreeNode('Datetime data type').click();
+        cy.get('#text').should('have.value', 'Datetime data type');
+        cy.get('[id="__$entryFormat"]').clear();      
+
+        // Time data type
+        cy.getTreeNode('Time data type').click();
+        cy.get('#text').should('have.value', 'Time data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
+        // String data type
+        cy.getTreeNode('String data type').click();
+        cy.get('#text').should('have.value', 'String data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
+        // Text data type
+        cy.getTreeNode('Text data type').click();
+        cy.get('#text').should('have.value', 'Text data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
+        // URL data type
+        cy.getTreeNode('URL data type').click();
+        cy.get('#text').should('have.value', 'URL data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
+        // Invoke preview.
+        cy.contains('button', 'Preview').click();
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].type).equal('decimal');
+          expect(qJson.item[0].extension).undefined;
+        
+          expect(qJson.item[1].type).equal('integer');
+          expect(qJson.item[1].extension).undefined;
+
+          expect(qJson.item[2].type).equal('date');
+          expect(qJson.item[2].extension).undefined;
+
+          expect(qJson.item[3].type).equal('dateTime');
+          expect(qJson.item[3].extension).undefined;
+
+          expect(qJson.item[4].type).equal('time');
+          expect(qJson.item[4].extension).undefined;
+
+          expect(qJson.item[5].type).equal('string');
+          expect(qJson.item[5].extension).undefined;
+        
+          expect(qJson.item[6].type).equal('text');
+          expect(qJson.item[6].extension).undefined;
+
+          expect(qJson.item[7].type).equal('url');
+          expect(qJson.item[7].extension).undefined;
         });
       });
     });

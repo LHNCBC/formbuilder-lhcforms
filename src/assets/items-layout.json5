@@ -10,6 +10,7 @@
           { "field": "code", "col": 12 },
           { "field": "__$helpText", "col": 12},
           { "field": "type", "col": 12 },
+          { "field": "__$entryFormat", "col": 12},
           { "field": "initial", "title": "Default value", "col": 12 },
           { "field": "__$answerOptionMethods", "col": 12 },
           { "field": "answerValueSet", "col": 12 },

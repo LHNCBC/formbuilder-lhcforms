@@ -91,6 +91,7 @@ import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable
 import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
 import {CodemirrorModule} from "@ctrl/ngx-codemirror";
 import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
+import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
 
 @NgModule({
   declarations: [
@@ -154,7 +155,8 @@ import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
     TextAreaComponent,
     DatetimeComponent,
     EditableLinkIdComponent,
-    HelpTextComponent
+    HelpTextComponent,
+    EntryFormatComponent
   ],
   imports: [
     BrowserModule,

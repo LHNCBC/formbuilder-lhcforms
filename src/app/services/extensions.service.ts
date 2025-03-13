@@ -18,6 +18,8 @@ import {fhirPrimitives} from '../fhir';
 // @ts-ignore
 export class ExtensionsService {
   static __ID = 0;
+  static ENTRY_FORMAT = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
+
   _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
   _propertyMap: Map<fhirPrimitives.url, FormProperty []> = new Map();
@@ -146,6 +148,47 @@ export class ExtensionsService {
     }
   }
 
+  /**
+   * Replace extensions for the given url.
+   * @param extUrl - Url to identify the extension.
+   * @param newExtensionsJSON - New extensions to replace with.
+   */
+  replaceExtensions(extUrl: fhirPrimitives.url, newExtensionsJSON: any): void {
+    const originalExtensions = this.extensionsProp.value;
+
+    // If there are no original extensions, assign the new one.
+    if (!originalExtensions.length) {
+      this.extensionsProp.reset(newExtensionsJSON, false);
+      return;
+    }
+
+    // Find the start and end indexes of the consecutive block of variable extensions.
+    let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
+    if (startIndex === -1) {
+      this.extensionsProp.reset([
+        ...newExtensionsJSON, ...originalExtensions
+      ]);
+      return;
+    };
+
+    let endIndex = startIndex;
+    while ((endIndex + 1) < originalExtensions.length && originalExtensions[endIndex].url === extUrl) {
+      endIndex++;
+    }
+
+    if (endIndex > startIndex) {
+      // Replace the original extensions with the new ones.
+      this.extensionsProp.reset([
+        ...originalExtensions.slice(0, startIndex),
+        ...newExtensionsJSON,
+        ...originalExtensions.slice(endIndex)
+      ]);
+    } else {
+      this.extensionsProp.reset([
+        ...newExtensionsJSON
+      ]);
+    }
+  }
 
   /**
    * Remove the first extension that matches a criteria. A callback method 'match` is called for each extension

@@ -61,6 +61,20 @@
       },
       "default": "string"
     },
+    "__$entryFormat": {
+      "description": "The entry format extension provides a human-readable hint about the expected format of user input. It serves as a guide but does not enforce validation.",
+      "title": "Entry format",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'date' || target.value == 'dateTime' || target.value == 'time' || target.value == 'string' || target.value == 'text' || target.value == 'url'"]
+      },
+      "widget": {
+        "id": "entry-format",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 p-0" 
+      }      
+    },
     "__$restrictions": {
       "description": "Choose to add value restrictions to the input.",
       "title": "Restrictions",
@@ -1921,6 +1935,17 @@
       "showFields": [
         {
           "field": "initial",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$entryFormat"
+      ],
+      "showFields": [
+        {
+          "field": "__$entryFormat",
           "col": 12
         }
       ]

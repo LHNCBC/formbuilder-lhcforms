@@ -1,0 +1,95 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Entry format extension",
+  "status": "draft",
+  "item": [
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "#,###.##"
+        }
+      ],
+      "linkId": "786054795312",
+      "text": "Decimal data type"
+    },
+    {
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "nnn"
+        }
+      ],
+      "linkId": "870385275357",
+      "text": "Integer data type"
+    },
+    {
+      "type": "date",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "YY/MM/DD"
+        }
+      ],
+      "linkId": "875265684478",
+      "text": "Date data type"
+    },
+    {
+      "type": "dateTime",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "YY/MM/DD hh:mm:ss"
+        }
+      ],
+      "linkId": "784082815055",
+      "text": "Datetime data type"
+    },
+    {
+      "type": "time",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "hh:mm:ss"
+        }
+      ],
+      "linkId": "623441215345",
+      "text": "Time data type"
+    },
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "nnn-nnn-nnn"
+        }
+      ],
+      "linkId": "287846010727",
+      "text": "String data type"
+    },
+    {
+      "type": "text",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "Max 100 characters."
+        }
+      ],
+      "linkId": "412481280267",
+      "text": "Text data type"
+    },
+    {
+      "type": "url",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "https://your-site.com"
+        }
+      ],
+      "linkId": "644870509058",
+      "text": "URL data type"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+<input *ngIf="schema.widget.id ==='hidden'; else entryFormat"
+       name="{{name}}" type="hidden" [formControl]="control">
+<ng-template #entryFormat>
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelClasses"
+               class="form-label"
+    ></lfb-label>
+    <div class="col p-0" [class.has-error]="errors"
+         [class.has-success]="formProperty.valid">
+      <input [name]="name"
+             class="form-control form-control-sm"
+             [attr.type]="'text'"
+             [attr.id]="id"
+             maxlength="255"
+             [ngClass]="{invalid: errors}"
+             [attr.aria-invalid]="errors"
+             (focus)="announceErrors()"
+             [formControl]="control">
+    </div>
+  </div>
+</ng-template>
+
