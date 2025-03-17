@@ -73,9 +73,29 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
 
         this.updateOutputExtensionUrl(exp, itemIndex);
       } else if (this.formProperty.value) {
-        this.expression = this.formProperty.value?.valueExpression?.expression;
+        const outputExpression = this.getOutputExpressionFromFormProperty();
+        if (!this.extensionsService.isEmptyValueExpression(outputExpression)) {
+          this.expression = outputExpression?.valueExpression?.expression;
+          const outputExpressionExtension = { ...outputExpression};
+          outputExpressionExtension.url = this.getUrlByValueMethod(this.valueMethod); 
+
+          this.extensionsService.insertExtensionAfterURL(ExtensionsService.VARIABLE, [outputExpressionExtension]);
+        }
       }
     }
+  }
+
+  /**
+   * Fetches the 'initial expression' from the FormProperty. If it is empty, returns the 'calculated expression' instead. 
+   * @returns - the output expression from either the 'initial expression' or the 'calculated expression'.
+   */
+  getOutputExpressionFromFormProperty(): any {
+    let outputExpression = this.formProperty.findRoot().getProperty('__$initialExpression').value;
+    if (this.extensionsService.isEmptyValueExpression(outputExpression)) {
+      outputExpression = this.formProperty.findRoot().getProperty('__$calculatedExpression').value;
+    }
+
+    return outputExpression;
   }
 
   /**
@@ -84,9 +104,10 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
    * @param itemIndex - the index of the item in the questionnaire that is being updated.
    */
   updateOutputExtensionUrl(extension: any, itemIndex: any): void {
-    if (this.getUrlByValueMethod(this.valueMethod) !== extension.url) {
+    const outputExpressionUrl = this.getUrlByValueMethod(this.valueMethod);
+    if (outputExpressionUrl !== extension.url) {
       const newOutputExtension = { ...extension };
-      newOutputExtension.url = this.getUrlByValueMethod(this.valueMethod);
+      newOutputExtension.url = outputExpressionUrl;
 
       this.extensionsService.replaceExtensions(extension.url, [newOutputExtension]);
       this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;

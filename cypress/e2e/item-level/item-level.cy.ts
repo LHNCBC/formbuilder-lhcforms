@@ -3864,6 +3864,356 @@ describe('Home page', () => {
         cy.get('input#simple-expression-1').should('have.value', '2');
       });
     });
+
+    it('should retain value or expression when switching between value methods', () => {
+      // Add a new item under the 'Race' item of data type 'display'.
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Test switching value methods');
+      cy.selectDataType('decimal');
+
+      cy.get('@computeInitial').should('be.visible').click();
+      cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
+      cy.get('button#editExpression').click();
+      cy.get('lhc-expression-editor').shadow().within(() => {
+        cy.get('#expression-editor-base-dialog').should('exist');
+
+        // Variables section
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('#variables-section .variable-row').should('have.length', 0);
+
+        // Add a new variable 'a'
+        cy.get('#add-variable').click();
+        cy.get('#variables-section .variable-row').should('have.length', 1);
+        cy.get('#variable-label-0').clear().type('a');
+        cy.get('#variable-type-0').select('Easy Path Expression');
+        cy.get('input#simple-expression-0').type('1');
+
+        // Add a new variable 'b'
+        cy.get('#add-variable').click();
+        cy.get('#variables-section .variable-row').should('have.length', 2);
+        cy.get('#variable-label-1').clear().type('b');
+        cy.get('#variable-type-1').select('Easy Path Expression');
+        cy.get('input#simple-expression-1').type('2');
+
+        // Output expression 
+        cy.get('textarea#final-expression').clear().type('%a + %b');
+        cy.get('lhc-syntax-preview>div>div>pre').should('not.have.text', 'Not valid');
+
+        // Save (Export) should output the questionnaire for the given Variable Type
+        cy.get('#export').click();
+      });
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+
+      // need to check the JSON
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[7].extension).to.deep.equal([
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "a",
+              "language": "text/fhirpath",
+              "expression": "1",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "1"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "b",
+              "language": "text/fhirpath",
+              "expression": "2",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "2"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "%a + %b"
+            }
+          }
+        ]);
+      });
+
+      // Select 'Type Initial' option for 'Value method' field
+      // -----------------------------------------------------
+      cy.getTypeInitialValueValueMethodClick();
+
+      cy.get('[id^="initial.0.valueDecimal"]').type('33{enter}'); 
+
+      cy.questionnaireJSON().should((qJson) => {
+        // Initial value should have value 33
+        expect(qJson.item[7].initial).to.deep.equal([
+          {
+            "valueDecimal": 33
+          }
+        ]);
+
+        // The 'Initial expression' should be removed.
+        expect(qJson.item[7].extension).to.deep.equal([
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "a",
+              "language": "text/fhirpath",
+              "expression": "1",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "1"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "b",
+              "language": "text/fhirpath",
+              "expression": "2",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "2"
+                }
+              ]
+            }
+          }
+        ]);
+      });
+
+      // Select 'Continuously compute value' option for 'Value method' field
+      // -------------------------------------------------------------------
+      cy.getComputeContinuouslyValueValueMethodClick();
+
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+
+      
+      cy.questionnaireJSON().should((qJson) => {
+        // The 'initial' section should be removed.
+        expect(qJson.item[7].initial).to.not.exist;
+
+        // The output expression should get added back.
+        // The output expression should show the URL as 'Calculated expression'
+        expect(qJson.item[7].extension).to.deep.equal([
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "a",
+              "language": "text/fhirpath",
+              "expression": "1",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "1"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "b",
+              "language": "text/fhirpath",
+              "expression": "2",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "2"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "%a + %b"
+            }
+          }
+        ]);
+      });
+
+      // Select 'Initial compute value' option for 'Value method' field
+      // ---------------------------------------------------------------
+      cy.getComputeInitialValueValueMethodClick();
+
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+
+      
+      cy.questionnaireJSON().should((qJson) => {
+        // The output expression should show the URL as 'Initial expression'
+        expect(qJson.item[7].extension[2]).to.deep.equal(
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "%a + %b"
+            }
+          }
+        );
+      });
+
+      // Select 'Pick initial value' option for 'Value method' field
+      // ---------------------------------------------------------------
+      // Switch to data type 'choice'
+      cy.selectDataType('choice');
+      cy.getPickInitialValueValueMethodClick();
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('exist').should('be.visible');
+
+      cy.get('@pickAnswer').should('have.class', 'invalid');
+      // The error message should display at the bottom of the text input
+      cy.get('lfb-pick-answer')
+        .find('small.text-danger')
+        .should('be.visible')
+        .should('contain.text', "Answer choices must be populated.");
+    
+      // Error should display at the top of the content and at the bottom.
+      cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('have.class', 'text-danger');
+      cy.get('mat-sidenav-content > ul > li').should('have.class', 'text-danger');
+      
+      // Answer Option field is empty. Add 3 options.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('[id^="answerOption.0.valueCoding.display"]').type('Example 1');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').type('MD11871-1');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.1.valueCoding.display"]').type('Example 2');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').type('MD11871-2');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.2.valueCoding.display"]').type('Example 3');
+      cy.get('[id^="answerOption.2.valueCoding.code"]').type('MD11871-3');
+      cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
+      cy.get('[id^="answerOption.2.valueCoding.__$score"]').click();
+
+      // The error on the Pick Answer field should go away
+      cy.get('@pickAnswer').should('not.have.class', 'invalid');
+
+      // Select 'Example 2' option
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer').should('have.value', 'Example 2');
+    
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[7].type).equal('choice');
+        expect(qJson.item[7].answerOption[0].valueCoding.display).equal('Example 1');
+        expect(qJson.item[7].answerOption[0].initialSelected).to.not.exist;
+        expect(qJson.item[7].answerOption[1].valueCoding.display).equal('Example 2');
+        expect(qJson.item[7].answerOption[1].initialSelected).equal(true);
+        expect(qJson.item[7].answerOption[2].valueCoding.display).equal('Example 3');
+        expect(qJson.item[7].answerOption[2].initialSelected).to.not.exist;
+      });
+
+      // Select 'Continuously compute value' option for 'Value method' field
+      // -------------------------------------------------------------------
+      cy.getComputeContinuouslyValueValueMethodClick();
+
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+
+      cy.questionnaireJSON().should((qJson) => {
+        // The 'initial' section should be removed.
+        expect(qJson.item[7].initial).to.not.exist;
+
+        // The output expression should get added back.
+        // The output expression should show the URL as 'Calculated expression'
+        expect(qJson.item[7].extension).to.deep.equal([
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "a",
+              "language": "text/fhirpath",
+              "expression": "1",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "1"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "b",
+              "language": "text/fhirpath",
+              "expression": "2",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "2"
+                }
+              ]
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "%a + %b"
+            }
+          },
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://hl7.org/fhir/questionnaire-item-control",
+                  "code": "drop-down",
+                  "display": "Drop down"
+                }
+              ]
+            }
+          }
+        ]);
+      });
+    });
   });
 });
 

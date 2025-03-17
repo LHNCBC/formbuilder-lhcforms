@@ -210,6 +210,45 @@ export class ExtensionsService {
     ]);
   }
 
+  /**
+   * Replace extensions for the given url.
+   * @param extUrl - Url to identify the extension.
+   * @param newExtensionsJSON - New extensions to replace with.
+   */
+  insertExtensionAfterURL(extUrl: fhirPrimitives.url, newExtensionsJSON: any): void {
+    const originalExtensions = this.extensionsProp.value;
+
+    // If there are no original extensions, assign the new one.
+    if (!originalExtensions.length) {
+      this.extensionsProp.reset(newExtensionsJSON, false);
+      return;
+    }
+
+    // Find the start and end indexes of the consecutive block of variable extensions.
+    const indexFromEnd = originalExtensions.slice().reverse().findIndex((ext) => ext.url === extUrl);
+    if (indexFromEnd === -1) {
+      this.extensionsProp.reset([...originalExtensions, ...newExtensionsJSON,]);
+      return;
+    };
+
+    const startIndex = originalExtensions.length - indexFromEnd;
+
+    // Replace the original extensions with the new ones.
+    this.extensionsProp.reset([
+      ...originalExtensions.slice(0, startIndex),
+      ...newExtensionsJSON,
+      ...originalExtensions.slice(startIndex)
+    ]);
+  }
+
+  /**
+   * The function checks if either 'url' or 'valueExpression.expression' is missing or empty.
+   * @param valueExpression - input object that may contain 'url' and 'valueExpression.expression'
+   * @return - True if either or both 'url' or 'valueExpression.expression' are missing or empty, otherwise false.
+   */
+  isEmptyValueExpression(valueExpression: any): boolean {
+    return !(valueExpression?.url && valueExpression?.valueExpression?.expression);
+  }
   
   /**
    * Remove the first extension that matches a criteria. A callback method 'match` is called for each extension
