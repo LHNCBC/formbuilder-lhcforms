@@ -110,7 +110,7 @@ export class Util {
    *
    * @return boolean - Visibility of the desired widget.
    */
-  static isVisible(formProperty: PropertyGroup, propertyId?: string) {
+  static isVisible(formProperty: PropertyGroup, propertyId?: string): boolean {
     let visible = formProperty.visible;
     // formProperty.getProperty => formProperty is PropertyGroup
     if(formProperty.getProperty && propertyId) {
