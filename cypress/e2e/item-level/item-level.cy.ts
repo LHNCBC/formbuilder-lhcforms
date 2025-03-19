@@ -13,6 +13,10 @@ const snomedEclText =
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
 
+  beforeEach(() => {
+    cy.loadHomePage();
+  });
+
   describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
@@ -27,7 +31,6 @@ describe('Home page', () => {
     }];
 
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.contains('button', 'Create questions').click();
@@ -1154,10 +1157,7 @@ describe('Home page', () => {
         const sampleFile = 'USSG-family-portrait.json';
         let fixtureJson;
         cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-        cy.loadHomePage();
-        cy.get('input[type="radio"][value="scratch"]').click();
-        cy.get('button').contains('Continue').click();
-        cy.uploadFile(sampleFile, false);
+        cy.uploadFile(sampleFile, true);
         cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
         cy.contains('button', 'Edit questions').click();
       });
@@ -1408,10 +1408,7 @@ describe('Home page', () => {
         const sampleFile = 'display-item-control-sample.json';
         let fixtureJson;
         cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-        cy.loadHomePage();
-        cy.get('input[type="radio"][value="scratch"]').click();
-        cy.get('button').contains('Continue').click();
-        cy.uploadFile(sampleFile, false);
+        cy.uploadFile(sampleFile, true);
         cy.get('#title').should('have.value', 'Display item control sample form');
         cy.contains('button', 'Edit questions').click();
       });
@@ -1496,7 +1493,6 @@ describe('Home page', () => {
         const flyoverBtn = '[for^="__\\$itemControlDisplay\\.flyover"]';
         const legalBtn = '[for^="__\\$itemControlDisplay\\.legal"]';
         const unspecifiedBtn = '[for^="__\\$itemControlDisplay\\.unspecified"]';
- 
         const inlineRadio = '#__\\$itemControlDisplay\\.inline';
         const promptRadio = '#__\\$itemControlDisplay\\.prompt';
         const unitRadio = '#__\\$itemControlDisplay\\.unit';
@@ -2151,7 +2147,7 @@ describe('Home page', () => {
           expect(qJson.item[3].enableWhen[0].question).equal(qJson.item[2].item[0].linkId);
           expect(qJson.item[3].enableWhen[0].operator).equal('=');
           expect(qJson.item[3].enableWhen[0].answerString).equal('Joe');
-        });     
+        });
       });
 
       it('should display an error on invalid question field on focusout for an existing enableWhen condition', () => {
@@ -2186,7 +2182,6 @@ describe('Home page', () => {
         cy.get('[id^="enableWhen.2.question"]').type('{downarrow}{enter}');
         cy.get('[id^="enableWhen.2.operator"]').select('=');
         cy.get('[id^="enableWhen.2.answerCoding"]').select('Street clothes, no shoes (LA11872-1)');
-        
         // Verify the questionnaire JSON.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item.length).equal(12);
@@ -2754,7 +2749,6 @@ describe('Home page', () => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.uploadFile(sampleFile, false);

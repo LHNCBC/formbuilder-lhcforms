@@ -4,10 +4,6 @@ import {CypressUtil} from '../../support/cypress-util'
 import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 
 describe('Home page accept Terms of Use notices', () => {
-  before(() => {
-    cy.clearSession();
-  });
-
   beforeEach(CypressUtil.mockSnomedEditions);
 
   afterEach(() => {
@@ -116,7 +112,6 @@ describe('Home page', () => {
 
   describe('Home page import options', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="existing"]').click();
     });
 
@@ -157,7 +152,6 @@ describe('Home page', () => {
 
   describe('Home page export options', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="existing"]').click();
       CypressUtil.deleteDownloadsFolder();
     });
@@ -238,7 +232,6 @@ describe('Home page', () => {
 
   describe('Form level fields', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.resetForm();
@@ -609,7 +602,6 @@ describe('Home page', () => {
 
   describe('User specified FHIR server dialog', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.contains('button', 'Continue').click();
       cy.contains('button', 'Import').click();
       cy.contains('button', 'Import from a FHIR server...').click();
@@ -661,7 +653,6 @@ describe('Home page', () => {
 
   describe('Warning dialog when replacing current form', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.contains('button', 'Continue').click();
       cy.resetForm();
