@@ -24,7 +24,9 @@ test.describe('form-level fields', async () => {
     await mainPO.loadTable(tableLoc, tableData);
 
     const q = await PWUtils.getQuestionnaireJSON(page, 'R4');
-    expect(q.meta.tag).toStrictEqual([{
+    // Ignore the generated tag.
+    const inputTags = q.meta.tag.filter((e, i) => i < 4);
+    expect(inputTags).toStrictEqual([{
       display: '1a',
       code: '1b',
       system: '1c'
@@ -43,13 +45,15 @@ test.describe('form-level fields', async () => {
     }]);
   });
 
-  test('should import questionnaire with tags', async ({page, browser}) => {
+  test('should import questionnaire with tags', async ({page}) => {
     const q = await PWUtils.uploadFile(page, 'fixtures/fl-tag-sample.json');
     await mainPO.page.getByRole('button', {name: 'Advanced fields'}).click();
     const rows = await page.locator('lfb-table')
       .filter({has: page.getByLabel('Tags')}).locator( 'table > tbody > tr').all();
     expect(rows.length).toBe(3);
     const qJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
-    expect(qJson.meta.tag).toStrictEqual(q.meta.tag);
+    // Ignore the generated tag.
+    const inputTags = qJson.meta.tag.filter((e, i) => i < 3);
+    expect(inputTags).toStrictEqual(q.meta.tag);
   });
 });

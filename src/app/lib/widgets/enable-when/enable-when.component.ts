@@ -2,16 +2,14 @@ import {
   AfterViewChecked,
   Component,
   DoCheck,
-  ElementRef,
   OnDestroy,
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
-import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {Observable, of, Subject} from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 import { debounceTime } from 'rxjs/operators';
@@ -32,8 +30,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
 
-  constructor(private elementRef: ElementRef, private formService: FormService) {
-    super(elementRef);
+  constructor(private formService: FormService) {
+    super();
   }
 
   ngOnInit() {

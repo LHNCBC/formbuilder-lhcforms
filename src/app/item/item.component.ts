@@ -744,6 +744,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.modalService.open(dialogTemplateRef, {ariaLabelledBy: 'modal-basic-title'}).result.then((autoCompResult) => {
       const subscription = this.getLoincItem(autoCompResult, this.loincType).subscribe((item) => {
         item[FormService.TREE_NODE_ID] = Util.generateUniqueId();
+        this.formService.updateFhirQuestionnaire(item);
         this.insertAnItem(item);
         this.loincItem = null;
       });

@@ -18,14 +18,14 @@ export class CypressUtil {
    * Get output json of questionnaire from application model.
    * @returns {Cypress.Chainable<JQuery<E>>}
    */
-  static getQuestionnaireJSON(format = 'R4') {
+  static getQuestionnaireJSON(format = 'R5') {
     // @ts-ignore
     let formService;
     return CypressUtil.getBasePageComponent().its('formService').then((service) => {
       formService = service;
       return CypressUtil.getBasePageComponent().its('formValue');
     }).then((form) => {
-      return cy.wrap(formService.convertFromR4(Util.convertToQuestionnaireJSON(form), format));
+      return cy.wrap(formService.convertFromR5(Util.convertToQuestionnaireJSON(form), format));
     });
   }
 
@@ -232,7 +232,7 @@ export class CypressUtil {
     }
     return obj;
   }
- 
+
   /**
    * Capture clipboard content.
    *

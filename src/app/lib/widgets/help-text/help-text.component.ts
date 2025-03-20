@@ -1,14 +1,7 @@
-import {AfterViewInit, Component, ElementRef, OnChanges, OnInit, Query, ViewChild} from '@angular/core';
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {LabelComponent} from "../label/label.component";
-import {CommonModule, NgForOf, NgIf} from "@angular/common";
-import {TextAreaComponent} from "../textarea/textarea.component";
-import {NgbDropdownModule, NgbNavModule} from "@ng-bootstrap/ng-bootstrap";
-import {FormProperty, SchemaFormModule} from "@lhncbc/ngx-schema-form";
-import {PropertyGroup} from "@lhncbc/ngx-schema-form/lib/model";
+import {AfterViewInit, Component, OnInit} from '@angular/core';
+import {FormProperty} from "@lhncbc/ngx-schema-form";
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
 import {Util} from "../../util";
-import {AppFormElementComponent} from "../form-element/form-element.component";
 import fhir from "fhir/r4";
 
 type InputType = 'plain' | 'xhtml';

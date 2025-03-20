@@ -14,10 +14,9 @@ import {CommonModule} from '@angular/common';
   imports: [CommonModule, MatTooltipModule, FontAwesomeModule],
   template: `
     <label *ngIf="title" [attr.for]="for" class="col-form-label align-self-center p-0" [attr.id]="labelId"
-    >{{title}}&nbsp;</label><div *ngIf="helpMessage" tabindex="0" class="btn border-0 p-0 b-0" [matTooltip]="helpMessage"
-                            [attr.aria-label]="'Tooltip for '+title+': '+helpMessage"
-    ><fa-icon [icon]="helpIcon" aria-hidden="true"></fa-icon></div
-    >
+    >{{title}}&nbsp;<div *ngIf="helpMessage" tabindex="0" class="btn border-0 p-0 b-0" [matTooltip]="helpMessage"
+                          [attr.aria-label]="'Tooltip for '+title+': '+helpMessage"
+    ><fa-icon [icon]="helpIcon" aria-hidden="true"></fa-icon></div></label>
   `,
   styleUrls: ['./label.component.css'],
   encapsulation: ViewEncapsulation.None

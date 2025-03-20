@@ -1,8 +1,8 @@
 /**
  * Customize layout of form-element from ngx-schema-form
  */
-import {Component, OnInit, OnChanges, Input, OnDestroy, SimpleChanges, DoCheck} from '@angular/core';
-import { FormElementComponent} from '@lhncbc/ngx-schema-form';
+import {Component, Input} from '@angular/core';
+import {FormElementComponent} from '@lhncbc/ngx-schema-form';
 import { Widget } from '@lhncbc/ngx-schema-form';
 
 
@@ -22,7 +22,8 @@ import { Widget } from '@lhncbc/ngx-schema-form';
         (widgetInstanciated)="onWidgetInstanciated($event)"
         [widgetInfo]="formProperty.schema.widget">
       </lfb-element-chooser>
-      <sf-form-element-action *ngFor="let button of buttons" [button]="button" [formProperty]="formProperty"></sf-form-element-action>
+      <sf-form-element-action *ngFor="let button of buttons" [button]="button"
+                              [formProperty]="formProperty"></sf-form-element-action>
     </div>
   `,
   styles: []

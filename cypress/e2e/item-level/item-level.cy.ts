@@ -103,7 +103,8 @@ describe('Home page', () => {
       cy.get('#acSearchBoxId').type('vital signs assess');
       cy.get('ngb-typeahead-window button').first().click();
       cy.contains('ngb-modal-window div.modal-dialog button', 'Add').click();
-      cy.get('#type option:selected').should('have.text', 'choice');
+      cy.get('#type option:selected').should('have.text', 'coding');
+      cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
 
       cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Within Defined Limits');
       cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA25085-4');
@@ -508,10 +509,13 @@ describe('Home page', () => {
         expect(qJson.item[0].initial[0].valueInteger).not.undefined;
       });
 
-      cy.selectDataType('choice');
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
       cy.get('[id^="initial"]').should('not.exist');
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].type).equal('coding');
+        expect(qJson.item[0].answerConstraint).equal('optionsOnly');
         expect(qJson.item[0].initial).to.be.undefined;
       });
 
@@ -553,20 +557,20 @@ describe('Home page', () => {
       cy.get('@thirdOption').find('td:nth-child(4) input').type('33');
       cy.get('@thirdOption').find('td:nth-child(5) input').as('thirdDefaultRadio').click();
 
-      const ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
+      const SCORE_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal([
           {
             valueCoding: {display: 'd1', code: 'a', system: 's'},
-            extension: [{url: ORDINAL_URI, valueDecimal: 1}]
+            extension: [{url: SCORE_URI, valueDecimal: 1}]
           },
           {
             valueCoding: {display: 'd2', code: 'b', system: 's'},
-            extension: [{url: ORDINAL_URI, valueDecimal: 22}]
+            extension: [{url: SCORE_URI, valueDecimal: 22}]
           },
           {
             valueCoding: {display: 'd3', code: 'c', system: 's'},
-            extension: [{url: ORDINAL_URI, valueDecimal: 33}],
+            extension: [{url: SCORE_URI, valueDecimal: 33}],
             initialSelected: true
           },
        ]);
@@ -643,8 +647,8 @@ describe('Home page', () => {
       cy.get('@thirdRadioDefault').should('not.be.checked');
 
       // Set the 'Allow repeating question?' to 'Yes'.
-      cy.booleanFieldClick(repeatsLabel, 'true');
-      cy.getBooleanInput(repeatsLabel, 'true').should('be.checked');
+      cy.getRadioButtonLabel(repeatsLabel, 'Yes').click();
+      cy.getRadioButton(repeatsLabel, 'Yes').should('be.checked');
 
       cy.get('@firstOption')
         .find('[id^="checkbox_answerOption."]').as('firstCheckboxDefault');
@@ -673,7 +677,7 @@ describe('Home page', () => {
       cy.get('@thirdCheckboxDefault').should('not.be.checked');
     });
 
-    it('should fix initial input box when switched data type from choice to decimal', () => {
+    it('should fix initial input box when switched data type from coding to decimal', () => {
       const sampleFile = 'initial-component-bugfix.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
@@ -686,7 +690,8 @@ describe('Home page', () => {
 
       cy.toggleTreeNodeExpansion('Group item 1');
       cy.getTreeNode('Choice item 1.1').click();
-      cy.get('@type').find(':selected').should('have.text', 'choice');
+      cy.get('@type').find(':selected').should('have.text', 'coding');
+      cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
       cy.get('[id^="answerOption."]').should('be.visible');
       cy.get('[id^="initial"]').should('not.exist');
       cy.get('[id^="radio_answerOption.1"]').should('be.checked', true);
@@ -699,7 +704,9 @@ describe('Home page', () => {
     });
 
     it('should create answerValueSet', () => {
-      cy.selectDataType('choice');
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
       cy.get('#answerValueSet_non-snomed').should('not.exist');
@@ -733,7 +740,14 @@ describe('Home page', () => {
       cy.uploadFile('answer-value-set-sample.json', true);
       cy.get('#title').should('have.value', 'Answer value set form');
       cy.contains('button', 'Edit questions').click();
-      cy.get('#type option:selected').should('have.text', 'choice');
+      cy.get('#type option:selected').should('have.text', 'coding');
+      cy.get('lfb-label')
+        .filter(':contains("Create answer list")')
+        .parent()
+        .find('label:contains("Yes")')
+        .prev('input[type="radio"]')
+        .should('be.checked');
+      // cy.get('[id^="answerConstraint_optionsOnly"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
       cy.get('lfb-answer-option').should('not.exist');
@@ -746,7 +760,9 @@ describe('Home page', () => {
 
     it('should create SNOMED CT answerValueSet', () => {
       const eclSel = '#answerValueSet_ecl';
-      cy.selectDataType('choice');
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
       cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
       cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
       cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod').click();
@@ -958,8 +974,10 @@ describe('Home page', () => {
         const dropDownRadio = '#__\\$itemControl\\.drop-down';
         const checkboxRadio = '#__\\$itemControl\\.check-box';
 
-        cy.get(icTag).should('not.exist'); // Datatype is other than choice, open-choice
-        cy.selectDataType('open-choice');
+        cy.get(icTag).should('not.exist'); // Datatype is other than coding
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Allow free text').click();
         cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
         cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
         cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod');
@@ -1047,7 +1065,7 @@ describe('Home page', () => {
         cy.get(checkboxBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[0].type).equal('choice');
+          expect(qJson.item[0].type).equal('coding');
           expect(qJson.item[0].text).equal('Answer option dropdown');
           expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
         });
@@ -1062,7 +1080,7 @@ describe('Home page', () => {
         cy.get(checkboxBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[1].type).equal('choice');
+          expect(qJson.item[1].type).equal('coding');
           expect(qJson.item[1].text).equal('Answer option radio-button');
           expect(qJson.item[1].extension).to.deep.equal([itemControlExtensions['radio-button']]);
         });
@@ -1077,7 +1095,7 @@ describe('Home page', () => {
         cy.get(acBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[2].type).equal('choice');
+          expect(qJson.item[2].type).equal('coding');
           expect(qJson.item[2].text).equal('Answer option check-box');
           expect(qJson.item[2].repeats).equal(true);
           expect(qJson.item[2].extension).to.deep.equal([itemControlExtensions['check-box']]);
@@ -1094,7 +1112,7 @@ describe('Home page', () => {
         cy.get(checkboxBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[3].type).equal('choice');
+          expect(qJson.item[3].type).equal('coding');
           expect(qJson.item[3].text).equal('Valueset autocomplete');
           expect(qJson.item[3].extension[1]).to.deep.equal(itemControlExtensions.autocomplete);
         });
@@ -1110,7 +1128,7 @@ describe('Home page', () => {
         cy.get(checkboxBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[4].type).equal('choice');
+          expect(qJson.item[4].type).equal('coding');
           expect(qJson.item[4].text).equal('Valueset radio-button');
           expect(qJson.item[4].extension[1]).to.deep.equal(itemControlExtensions['radio-button']);
         });
@@ -1126,7 +1144,7 @@ describe('Home page', () => {
         cy.get(radioBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[5].type).equal('choice');
+          expect(qJson.item[5].type).equal('coding');
           expect(qJson.item[5].text).equal('Valueset check-box');
           expect(qJson.item[5].repeats).equal(true);
           expect(qJson.item[5].extension[1]).to.deep.equal(itemControlExtensions['check-box']);
@@ -2081,7 +2099,7 @@ describe('Home page', () => {
 
         cy.get(errorIcon3El)
           .find('small')
-          .should('contain.text', ' Invalid operator \'>\' for type \'choice\' for enableWhen condition 3. ');
+          .should('contain.text', ' Invalid operator \'>\' for type \'coding\' for enableWhen condition 3. ');
 
         cy.get(errorIcon4El)
           .find('small')
@@ -2251,9 +2269,9 @@ describe('Home page', () => {
             // Error message returns from LForms.
             cy.get('.lforms-validation')
               .should('have.text', 'Question with linkId \'q3\' contains enableWhen pointing to a question with linkId \'q11\' that does not exist.');
-          
+
             // The FHIR validation message is shown when an error is detected by LForms. It informs users
-            // that additional validation can be performed against the FHIR server found in the 
+            // that additional validation can be performed against the FHIR server found in the
             // 'View/Validate Questionnaire JSON tab'.
             cy.get('.fhir-validation-msg')
               .should('have.text', 'Select the \'View/Validate Questionnaire JSON\' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.');
@@ -2271,7 +2289,9 @@ describe('Home page', () => {
       });
 
       it('should show answer column if there is an answer option in any row of conditional display', () => {
-        cy.selectDataType('choice');
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
@@ -2339,7 +2359,6 @@ describe('Home page', () => {
       });
 
       it('should work with operator exists value in conditional display', () => {
-        // cy.selectDataType('choice');
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
@@ -2416,7 +2435,9 @@ describe('Home page', () => {
       });
 
       it('should support source item with answerValueSet in conditional display', () => {
-        cy.selectDataType('choice');
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
         cy.get('label[for^="__\\$answerOptionMethods_value-set"]').click();
         cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
         cy.tsUrl().scrollIntoView().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
@@ -2449,7 +2470,9 @@ describe('Home page', () => {
       });
 
       it('should support source item with SNOMED answerValueSet in conditional display', () => {
-        cy.selectDataType('choice');
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
         cy.get('label[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
         cy.get('#answerValueSet_ecl').type(snomedEclText);
         cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
@@ -3134,7 +3157,7 @@ describe('Home page', () => {
       cy.clickTreeNode('My health history');
       cy.getTreeNode('xxx').click({force: true}); // Force through tooltip.
       cy.get('#text').should('have.value', 'xxx');
-      cy.get('#type').should('have.value', '13: display');
+      cy.get('#type').should('have.value', '12: display');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].text).to.equal('xxx');
@@ -3248,7 +3271,9 @@ describe('Accepting only LOINC terms of use', () => {
     cy.get('button').contains('Create questions').click();
   });
   it('should not display SNOMED option in answerValueSet', () => {
-    cy.selectDataType('choice');
+    cy.selectDataType('coding');
+    cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+    cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
     // SNOMED radio should not exist

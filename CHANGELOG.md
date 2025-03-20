@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.0] 2025-01-09
+### Added
+- Added R5 features
+
 ## [9.7.7] 2025-03-04
 ### Changed
 - Fixed an accessibility issue.
