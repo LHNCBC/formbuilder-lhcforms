@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.1] 2025-03-20
+### Fixed
+- Avoid angular@19.2.x versions in the dependency tree
+
 ## [10.0.0] 2025-01-09
 ### Added
 - Added R5 features
