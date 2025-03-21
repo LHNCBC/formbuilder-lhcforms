@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "10.0.0",
+  "version": "10.0.1",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -45,13 +45,13 @@
   "dependencies": {
     "@angular-builders/custom-webpack": "^19.0.0",
     "@angular/animations": "~19.1.4",
-    "@angular/cdk": "^19.1.2",
+    "@angular/cdk": "~19.1.2",
     "@angular/common": "~19.1.4",
     "@angular/compiler": "~19.1.4",
-    "@angular/core": "^19.1.4",
+    "@angular/core": "~19.1.4",
     "@angular/forms": "~19.1.4",
     "@angular/localize": "~19.1.4",
-    "@angular/material": "^19.1.2",
+    "@angular/material": "~19.1.2",
     "@angular/platform-browser": "~19.1.4",
     "@angular/platform-browser-dynamic": "~19.1.4",
     "@angular/router": "~19.1.4",
@@ -86,12 +86,13 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-eslint/builder": "19.0.2",
-    "@angular-eslint/eslint-plugin": "19.0.2",
-    "@angular-eslint/eslint-plugin-template": "19.0.2",
-    "@angular-eslint/schematics": "19.0.2",
-    "@angular-eslint/template-parser": "19.0.2",
-    "@angular/cli": "^19.1.5",
+    "@angular-devkit/build-angular": "~19.1.9",
+    "@angular-eslint/builder": "~19.1.0",
+    "@angular-eslint/eslint-plugin": "~19.1.0",
+    "@angular-eslint/eslint-plugin-template": "~19.1.0",
+    "@angular-eslint/schematics": "~19.1.0",
+    "@angular-eslint/template-parser": "~19.1.0",
+    "@angular/cli": "~19.1.5",
     "@angular/compiler-cli": "~19.1.4",
     "@angular/language-service": "~19.1.4",
     "@cypress/schematic": "^2.5.1",
@@ -112,14 +113,29 @@
     "jasmine-spec-reporter": "~7.0.0",
     "json-pointer": "^0.6.1",
     "jsonpointer": "^5.0.1",
-    "karma": "^6.4.1",
+    "karma": "~6.4.1",
     "karma-chrome-launcher": "~3.1.1",
     "karma-coverage-istanbul-reporter": "~3.0.3",
     "karma-jasmine": "~4.0.2",
-    "karma-jasmine-html-reporter": "^1.7.0",
+    "karma-jasmine-html-reporter": "~1.7.0",
     "postcss": "^8.3.0",
     "start-server-and-test": "^2.0.10",
     "ts-node": "~9.1.1",
     "typescript": "^5.4.5"
+  },
+  "overrides": {
+    "@angular-builders/custom-webpack": {
+      "@angular-devkit/core": "~19.1.0",
+      "@angular-devkit/build-angular": "~19.1.0"
+    },
+    "@angular-devkit/architect": {
+      "@angular-devkit/core": "~19.1.0"
+    },
+    "@angular-eslint/builder": {
+      "@angular-devkit/core": "~19.1.0"
+    },
+    "@angular-eslint/schematics": {
+      "@angular-devkit/schematics": "~19.1.0"
+    }
   }
 }
