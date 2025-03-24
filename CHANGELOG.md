@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.2] 2025-03-24
+### Fixed
+- Fixed a playwright test.
+
 ## [10.0.1] 2025-03-20
 ### Fixed
 - Avoid angular@19.2.x versions in the dependency tree
