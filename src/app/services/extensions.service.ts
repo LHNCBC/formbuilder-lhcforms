@@ -197,7 +197,7 @@ export class ExtensionsService {
       return;
     };
 
-    let endIndex = startIndex;
+    let endIndex = startIndex + 1;
     while (endIndex < originalExtensions.length && originalExtensions[endIndex].url === extUrl) {
       endIndex++;
     }

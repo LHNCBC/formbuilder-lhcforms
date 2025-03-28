@@ -53,10 +53,6 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
     this.valueMethod = this.formProperty.findRoot().getProperty('__$valueMethod').value;
 
-    const extensions = this.formProperty.findRoot().getProperty('extension');
-    if (extensions && extensions?.value.length > 0) {
-      this.extensionsService.setExtensions(extensions);
-    }
   };
 
   ngAfterViewInit(): void {

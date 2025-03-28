@@ -52,10 +52,6 @@ export class VariableComponent extends TableComponent implements OnInit {
     });
     this.subscriptions.push(sub);
 
-    const extensions = this.formProperty.findRoot().getProperty('extension');
-    if (extensions && extensions?.value.length > 0) {
-      this.extensionsService.setExtensions(extensions);
-    }
     const variablesExtension = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE) ?? [];
     this.formProperty.setValue(variablesExtension, false);
   }
