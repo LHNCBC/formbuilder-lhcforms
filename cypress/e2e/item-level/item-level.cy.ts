@@ -3452,6 +3452,132 @@ describe('Home page', () => {
         cy.get('input#simple-expression-2').should('have.value', '3'); 
       });
     });
+
+    it('should display variables that were added indepently from the expression', () => {
+      cy.clickTreeNode('Type Initial Value (Single)');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Compute initial value expression');
+      cy.selectDataType('integer');
+
+      cy.get('@computeInitial').should('be.visible').click();
+      cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
+      cy.get('button#editExpression').click();
+      cy.get('lhc-expression-editor').shadow().within(() => {
+        cy.get('#expression-editor-base-dialog').should('exist');
+
+        // Variables section
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('#variables-section .variable-row').should('have.length', 0);
+
+        // Output expression 
+        cy.get('textarea#final-expression').clear().type('1 + 2');
+
+        // Save (Export) should output the questionnaire for the given Variable Type
+        cy.get('#export').click();
+      });
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '1 + 2');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[1].extension).to.deep.equal([
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "1 + 2"
+            }
+          }
+        ]);
+      });
+
+      // Add variable 'a' via the 'Item variables' section
+      cy.get('button#editVariables').click();
+      cy.get('lhc-expression-editor').shadow().within(() => {
+        cy.get('#expression-editor-base-dialog').should('exist');
+
+        // Variables section
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('#variables-section .variable-row').should('have.length', 0);
+
+        // Add a new variable 'a'
+        cy.get('#add-variable').click();
+        cy.get('#variables-section .variable-row').should('have.length', 1);
+        cy.get('#variable-label-0').clear().type('a');
+        cy.get('#variable-type-0').select('Easy Path Expression');
+        cy.get('input#simple-expression-0').type('30');
+
+        // Save (Export) should output the questionnaire for the given Variable Type
+        cy.get('#export').click();
+      });
+      
+      // Item variables section should now show 2 variables that were created in the Expression Editor
+      cy.get('lfb-variable table > tbody > tr').should('have.length', 1);
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+      cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'a');
+      cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
+      cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', '30');
+
+      // Click the 'Create/edit expression' again
+      cy.get('button#editExpression').click();
+      cy.get('lhc-expression-editor').shadow().within(() => {
+        // Variables section should show variable 'a' that was created prior.
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('#variables-section .variable-row').should('have.length', 1);
+
+        cy.get('#variable-label-0').should('have.value', 'a');
+        cy.get('#variable-type-0').should('have.value', 'simple');
+        cy.get('input#simple-expression-0').should('have.value', '30');
+
+        // Update the Output expression to include variable 'a'
+        cy.get('textarea#final-expression').clear().type('1 + 2 + %a');
+
+        // Save (Export) should output the questionnaire for the given Variable Type
+        cy.get('#export').click();
+      });
+
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '1 + 2 + %a');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[1].extension).to.deep.equal([
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/variable",
+            "valueExpression": {
+              "name": "a",
+              "language": "text/fhirpath",
+              "expression": "30",
+              "extension": [
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                  "valueString": "simple"
+                },
+                {
+                  "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                  "valueString": "30"
+                }
+              ]
+            }
+          },          
+          {
+            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+            "valueExpression": {
+              "language": "text/fhirpath",
+              "expression": "1 + 2 + %a"
+            }
+          }
+        ]);
+      });
+
+      
+      // Click the 'Preview' button to see the initial value
+      cy.contains('button', 'Preview').click();
+      cy.get('wc-lhc-form').should('exist')
+        .within(() => {
+          // The initial value should show 33
+          cy.get('lhc-input > input')
+            .eq(1)
+            .should('have.value', '33');
+        
+        });
+    });
   });
 
   describe('Value method', () => {

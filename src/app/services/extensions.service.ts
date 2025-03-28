@@ -193,7 +193,7 @@ export class ExtensionsService {
     // Find the start and end indexes of the consecutive block of variable extensions.
     let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
     if (startIndex === -1) {
-      this.extensionsProp.properties = [...newExtensionsJSON, ...originalExtensions];
+      this.extensionsProp.reset([...newExtensionsJSON, ...originalExtensions]);
       return;
     };
 
