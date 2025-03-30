@@ -43,7 +43,7 @@ label.btn {
   font-weight: bold;
 }
 
-button.group-item-control-unselect {
+button.item-control-unselect {
   padding-right:2px !important;
   border: 0;
   font-size: 24px;

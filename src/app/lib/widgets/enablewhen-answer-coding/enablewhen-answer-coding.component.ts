@@ -1,5 +1,5 @@
 /**
- * Answer coding component for enableWhen. The component is used for answer type choice for
+ * Answer coding component for enableWhen. The component is used for answer type coding for
  * selecting codes to satisfy a condition.
  */
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
@@ -11,6 +11,7 @@ import {AutoCompleteOptions} from '../auto-complete/auto-complete.component';
 declare var LForms: any;
 
 @Component({
+  standalone: false,
   selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
@@ -109,7 +110,7 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     }
     const answerType = this.formProperty.searchProperty('__$answerType').value;
 
-    if (answerType === 'choice' || answerType === 'open-choice') {
+    if (answerType === 'coding') {
       const sourceNode = this.formService.getTreeNodeByLinkId(sourceLinkId);
       const answerValueSet = sourceNode?.data?.answerValueSet?.trim();
       this.autoComplete = !!answerValueSet;

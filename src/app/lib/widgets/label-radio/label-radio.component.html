@@ -18,7 +18,7 @@
       <ng-container *ngFor="let option of schema.enum">
         <input [attr.id]="id + '_' + option" [formControl]="control" class="btn-check" name="{{id}}"
                  type="radio" [value]="option" [attr.disabled]="(schema.readOnly) ? '' : null" autocomplete="off">
-        <label class="btn btn-outline-success" [attr.for]="id + '_' + option"><span class="ms-1 me-3">{{option}}</span></label>
+        <label class="btn btn-outline-success" [attr.for]="id + '_' + option"><span class="ms-1 me-3">{{labels[option]}}</span></label>
       </ng-container>
     </div>
   </div>

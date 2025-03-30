@@ -7,6 +7,7 @@ import { FormControl } from '@angular/forms';
 import { InitialNumberDirective } from '../../directives/initial-number.directive';
 
 @Component({
+  standalone: false,
   selector: 'lfb-initial-number',
   template: `
     <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"

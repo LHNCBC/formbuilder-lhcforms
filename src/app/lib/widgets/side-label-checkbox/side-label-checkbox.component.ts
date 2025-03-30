@@ -6,6 +6,7 @@ import {CheckboxWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
+  standalone: false,
   selector: 'lfb-side-label-checkbox',
   template: `<div *ngIf="schema.type !== 'array'" class="widget row m-0">
       <label *ngIf="!nolabel && schema.title" [attr.for]="id" class="form-check-label {{labelWidthClass}}">

@@ -22,13 +22,14 @@ import {
 } from '@angular/core';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong} from '@fortawesome/free-solid-svg-icons';
-import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
+  standalone: false,
   selector: 'lfb-table',
   templateUrl: './table.component.html', // Use separate files for possible reuse from a derived class
   styleUrls: ['./table.component.css']
@@ -72,8 +73,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   renderer = inject(Renderer2);
   cdr = inject(ChangeDetectorRef);
+  elementRef = inject(ElementRef);
 
-  constructor(private elRef: ElementRef) {
+  constructor() {
     super();
   }
   /**
@@ -252,16 +254,18 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   /**
-   * Search for formProperty based on '.' delimited property ids.
+   * Search for formProperty based on '.' delimited property ids, if
    *
-   * @param parentProperty -
-   * @param propertyId -
+   * @param property - Proper
+   * @param descendantId - optional property id of a descendant property.
    */
-  getProperty(parentProperty: PropertyGroup, propertyId: string) {
-    const path = propertyId.split('.');
-    let p = parentProperty;
-    for (const id of path) {
-      p = p.getProperty(id);
+  getProperty(property: FormProperty, descendantId?: string) {
+    let p = property;
+    if(p instanceof PropertyGroup && descendantId) {
+      const path = descendantId?.split('.');
+      for (const id of path) {
+        p = (p as PropertyGroup).getProperty(id);
+      }
     }
     return p;
   }
@@ -306,7 +310,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param col - Column index of the cell.
    */
   getInputElementInTable(row, col) {
-    return this.elRef.nativeElement.querySelector('tbody')
+    return this.elementRef.nativeElement.querySelector('tbody')
       .querySelectorAll('tr')[row]
       .querySelectorAll('td')[col]
       .querySelector('input,select');

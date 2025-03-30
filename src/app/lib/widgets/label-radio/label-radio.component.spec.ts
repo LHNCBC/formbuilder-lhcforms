@@ -1,9 +1,7 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LabelRadioComponent } from './label-radio.component';
 import {CommonTestingModule, TestComponent} from '../../../testing/common-testing.module';
 import {By} from '@angular/platform-browser';
-import {DebugElement} from '@angular/core';
 import {ISchema} from '@lhncbc/ngx-schema-form';
 
 const schema: ISchema = {

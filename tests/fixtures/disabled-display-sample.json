@@ -1,0 +1,48 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "title": "Disable display sample",
+  "item": [
+    {
+      "linkId": "101",
+      "text": "Source",
+      "type": "string"
+    },
+    {
+      "linkId": "102",
+      "text": "Target 1",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "101",
+          "operator": "=",
+          "answerString": "t1"
+        },
+        {
+          "question": "101",
+          "operator": "=",
+          "answerString": "tt1"
+        }
+      ],
+      "disabledDisplay": "hidden"
+    },
+    {
+      "linkId": "103",
+      "text": "Target 2",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "101",
+          "operator": "=",
+          "answerString": "t2"
+        },
+        {
+          "question": "101",
+          "operator": "=",
+          "answerString": "tt2"
+        }
+      ],
+      "disabledDisplay": "protected"
+    }
+  ]
+}

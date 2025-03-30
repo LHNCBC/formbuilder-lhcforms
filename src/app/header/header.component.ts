@@ -6,6 +6,7 @@ import appVersion from '../../assets/version.json';
 
 
 @Component({
+  standalone: false,
   selector: 'lfb-header',
   template: `
     <nav id="header" class="ps-0 pe-0 d-flex">

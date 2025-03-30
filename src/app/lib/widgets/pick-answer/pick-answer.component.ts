@@ -9,6 +9,7 @@ import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
 
 @Component({
+  standalone: false,
   selector: 'lfb-pick-answer',
   templateUrl: './pick-answer.component.html'
 })

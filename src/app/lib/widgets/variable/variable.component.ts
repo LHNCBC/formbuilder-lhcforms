@@ -9,8 +9,8 @@ import {TableComponent} from '../table/table.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 
 @Component({
+  standalone: false,
   selector: 'lfb-variable',
-
   templateUrl: './variable.component.html',
   styleUrl: './variable.component.css'
 })
@@ -39,9 +39,8 @@ export class VariableComponent extends TableComponent implements OnInit {
     private modalService: NgbModal,
     public cdr: ChangeDetectorRef,
     private modelService: SharedObjectService,
-    private extensionsService: ExtensionsService,
-    private elementRef: ElementRef) {
-    super(elementRef);
+    private extensionsService: ExtensionsService) {
+    super();
   }
 
   ngOnInit(): void {

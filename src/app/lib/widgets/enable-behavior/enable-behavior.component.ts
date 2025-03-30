@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 @Component({
+  standalone: false,
   selector: 'lfb-enable-behavior',
   template: `
     <input *ngIf="schema.widget.id ==='hidden'; else displayTemplate"
@@ -40,6 +41,8 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
 export class EnableBehaviorComponent extends LfbControlWidgetComponent {
   displayTexts = {
     all: 'All conditions are true',
-    any: 'Any condition is true'
+    any: 'Any condition is true',
+    hidden: 'Hide',
+    protected: 'Show as protected'
   }
 }

@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
 
 @Component({
+  standalone: false,
   selector: 'lfb-value-method',
   templateUrl: './value-method.component.html'
 })

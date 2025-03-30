@@ -8,7 +8,6 @@ import {
   ValidatorRegistry
 } from '@lhncbc/ngx-schema-form';
 import {FormService} from '../services/form.service';
-// import {PropertyBindings} from '@lhncbc/ngx-schema-form/lib/property-binding-registry';
 
 xdescribe('TestingService', () => {
   let service: TestingService;
@@ -24,16 +23,17 @@ xdescribe('TestingService', () => {
     propertyBindingRegistrySpyObj.getPropertyBindingsVisibility.and.returnValue(new PropertyBindings());
     */
     TestBed.configureTestingModule({
+      imports: [SchemaFormModule.forRoot()],
       providers: [
-        SchemaFormModule.forRoot(),
         FormPropertyFactory,
         FormService,
         SchemaValidatorFactory,
         ValidatorRegistry,
-        ExpressionCompilerFactory
+        ExpressionCompilerFactory,
+        LogService
       ]
     });
-    service = TestBed.inject(TestingService);
+    service = TestBed.inject<TestingService>(TestingService);
   });
 
   it('should create TestingService', () => {

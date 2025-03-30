@@ -1,0 +1,75 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "title": "Answer constraints sample",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "linkId": "101",
+      "text": "Integer type, optionsOrType",
+      "type": "integer",
+      "answerConstraint": "optionsOrType",
+      "answerOption": [
+        {
+          "valueInteger": 1
+        },
+        {
+          "valueInteger": 2
+        },
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "102",
+      "text": "String type, optionsOrString",
+      "type": "string",
+      "answerConstraint": "optionsOrString",
+      "answerOption": [
+        {
+          "valueString": "first"
+        },
+        {
+          "valueString": "second"
+        },
+        {
+          "valueString": "third"
+        }
+      ]
+    },
+    {
+      "linkId": "103",
+      "text": "Coding type, optionsOnly",
+      "type": "coding",
+      "answerConstraint": "optionsOnly",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "display": "First coding",
+            "code": "c1",
+            "system": "s1"
+          }
+        },
+        {
+          "valueCoding": {
+            "display": "Second coding",
+            "code": "c2",
+            "system": "s2"
+          }
+        },
+        {
+          "valueCoding": {
+            "display": "Third coding",
+            "code": "c3",
+            "system": "s3"
+          }
+        }
+      ]
+    }
+  ]
+}

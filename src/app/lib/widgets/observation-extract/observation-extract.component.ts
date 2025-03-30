@@ -6,6 +6,7 @@ import {BooleanRadioComponent} from '../boolean-radio/boolean-radio.component';
 import {fhirPrimitives} from '../../../fhir';
 
 @Component({
+  standalone: false,
   selector: 'lfb-observation-extract',
   template: `
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">

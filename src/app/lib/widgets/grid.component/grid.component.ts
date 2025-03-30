@@ -8,6 +8,7 @@ import {Util} from '../../util';
  * A component to layout multiple fields in horizontal layout using bootstrap grid
  */
 @Component({
+  standalone: false,
   selector: 'lfb-grid',
   template: `
     <div *ngFor="let fieldset of formProperty.schema.fieldsets">
@@ -65,7 +66,13 @@ export class GridComponent extends ObjectWidget {
     ret = !ret ? fieldset.fields.map((e) => ({field: e})) : ret;
     ret = ret.filter((field) => {
       const propId = typeof field === 'string' ? field : typeof field === 'object' ? field.field : null;
-      return Util.isVisible(this.formProperty, propId);
+      let bool = false;
+      if(propId === null) {
+        bool = false;
+      } else {
+        bool = Util.isVisible(this.formProperty, propId);
+      }
+      return bool;
     });
     return ret;
   }

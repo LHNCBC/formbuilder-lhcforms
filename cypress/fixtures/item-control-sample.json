@@ -2,16 +2,21 @@
   "resourceType": "Questionnaire",
   "title": "Item control sample form",
   "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
   "item": [
     {
-      "type": "choice",
+      "type": "coding",
       "linkId": "3802912299620",
       "text": "Answer option dropdown",
       "answerOption": [
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 11
             }
           ],
@@ -25,7 +30,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 12
             }
           ],
@@ -38,7 +43,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 13
             }
           ],
@@ -51,7 +56,7 @@
       ]
     },
     {
-      "type": "choice",
+      "type": "coding",
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -72,7 +77,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 21
             }
           ],
@@ -85,7 +90,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 22
             }
           ],
@@ -99,7 +104,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 23
             }
           ],
@@ -112,7 +117,7 @@
       ]
     },
     {
-      "type": "choice",
+      "type": "coding",
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -134,7 +139,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 31
             }
           ],
@@ -147,7 +152,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 32
             }
           ],
@@ -161,7 +166,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 33
             }
           ],
@@ -175,7 +180,7 @@
       ]
     },
     {
-      "type": "choice",
+      "type": "coding",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
@@ -199,7 +204,7 @@
       "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/ucum&count=4"
     },
     {
-      "type": "choice",
+      "type": "coding",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
@@ -223,7 +228,7 @@
       "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/hcpcs&count=4"
     },
     {
-      "type": "choice",
+      "type": "coding",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",

@@ -1,5 +1,4 @@
 import {
-  async,
   ComponentFixture,
   fakeAsync,
   flush,
@@ -7,12 +6,9 @@ import {
 } from '@angular/core/testing';
 
 import { FhirSearchDlgComponent } from './fhir-search-dlg.component';
-import {NgbActiveModal, NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../../../testing/common-testing.module';
 import {TestUtil} from '../../../testing/util';
-import {BasePageComponent} from '../../../base-page/base-page.component';
 import {of} from 'rxjs';
-import {ChangeDetectionStrategy} from '@angular/core';
 
 describe('FhirSearchDlgComponent', () => {
   let component: FhirSearchDlgComponent;

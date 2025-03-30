@@ -7,6 +7,7 @@ import { Renderer2 } from '@angular/core';
  * It is intended to be used on <input type="number"> element.
  */
 @Directive({
+  standalone: false,
   selector: '[lfbInteger]'
 })
 export class IntegerDirective {

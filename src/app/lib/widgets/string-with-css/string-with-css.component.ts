@@ -5,6 +5,7 @@ import {fhirPrimitives} from '../../../fhir';
 import {Util} from '../../util';
 
 @Component({
+  standalone: false,
   selector: 'lfb-string-with-css',
   encapsulation: ViewEncapsulation.None,
   templateUrl: './string-with-css.component.html'
