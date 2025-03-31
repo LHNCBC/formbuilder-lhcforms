@@ -1086,14 +1086,7 @@
             "pattern": "^true|false$",
             "type": "boolean",
             "visibleIf": {
-              "allOf": [
-                {
-                  "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
-                },
-                {
-                  "/__$valueMethod": ["$EXP$ target.value == 'pick-initial' || target.value == ''  || target.value == null || target.value == undefined"]
-                }
-              ]
+              "/type": ["$EXP$ target.value == 'integer' || target.value == 'date' || target.value == 'time'|| target.value == 'string' || target.value == 'text' || target.value == 'coding'"]
             },
             "widget": {"id": "hidden"}
           }
@@ -1297,7 +1290,7 @@
       "description": "Specify how the question obtains its initial values.",
       "title": "Value method",
       "visibleIf": {
-        "/type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
+        "/type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'boolean'"]
       },
       "oneOf": [
         {

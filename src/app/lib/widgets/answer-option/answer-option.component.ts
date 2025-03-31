@@ -149,20 +149,28 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   setAnswerOptions(answerOptions: any []) {
     let changed = false;
-    answerOptions?.forEach((option) => {
-      if(option.valueCoding) {
-        const scoreExt = option.extension?.find((ext) => {
-          return ext.url === AnswerOptionComponent.ORDINAL_URI ||
-            ext.url === AnswerOptionComponent.ITEM_WEIGHT_URI;
-        });
-        const score = option.valueCoding.__$score !== undefined ? option.valueCoding.__$score : null;
-        const newVal = scoreExt && scoreExt.valueDecimal !== undefined ? scoreExt.valueDecimal : null;
-        if(score !== newVal) {
-          option.valueCoding.__$score = newVal;
-          changed = true;
+
+    const type = this.formProperty.findRoot().getProperty('type').value;
+
+    // Answer options can now be of different data types. Scoring is only applicable
+    // to 'valueCoding' (data type = coding).
+    if (type === "coding") {
+      answerOptions?.forEach((option) => {
+        if(option.valueCoding) {
+          const scoreExt = option.extension?.find((ext) => {
+            return ext.url === AnswerOptionComponent.ORDINAL_URI ||
+              ext.url === AnswerOptionComponent.ITEM_WEIGHT_URI;
+          });
+          const score = option.valueCoding.__$score !== undefined ? option.valueCoding.__$score : null;
+          const newVal = scoreExt && scoreExt.valueDecimal !== undefined ? scoreExt.valueDecimal : null;
+          if(score !== newVal) {
+            option.valueCoding.__$score = newVal;
+            changed = true;
+          }
         }
-      }
-    });
+      });
+    } 
+
     if(changed) {
       // This triggers valueChanges event on all observers.
       this.formProperty.setValue(answerOptions, false);

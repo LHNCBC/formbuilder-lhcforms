@@ -9,7 +9,7 @@ import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widge
   templateUrl: './value-method.component.html'
 })
 export class ValueMethodComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
-  type;
+  type = "string";
   linkId: string;
   answerOptions;
   subscriptions: Subscription[] = [];
@@ -18,6 +18,8 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
   displayPickInitial = true;
 
   currentValueMethod: string;
+
+  valueMethodOptions: any[];
 
   constructor(private formService: FormService) {
     super();
@@ -36,17 +38,17 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
     super.ngAfterViewInit();
     let sub: Subscription;
 
-    sub = this.formProperty.searchProperty('type').valueChanges.subscribe((typeVal) => {
-      this.type = typeVal;
-      this.displayTypeInitial = (typeVal !== 'group' && typeVal !== 'display' && typeVal !== 'choice' && typeVal !== 'open-choice');
-      this.displayPickInitial = (typeVal === 'choice' || typeVal === 'open-choice');
+    sub = this.formProperty.searchProperty('__$isAnswerList').valueChanges.subscribe((isAnswerListVal) => {
+      const isAnswerList = isAnswerListVal;
+      this.displayPickInitial = isAnswerList;
+      this.displayTypeInitial = !this.displayPickInitial;
       
       const initial = this.formProperty.findRoot().getProperty('initial').value;
       const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
       const answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
 
       let hasPickSelection = false;
-      if (this.displayPickInitial) {
+      if (isAnswerList) {
         hasPickSelection = answerOptions.some(opt => "initialSelected" in opt);
       }
 
@@ -58,13 +60,17 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
 
       // Determine which Value Method option to select based on the available data. 
       // Default to 'None' if didn't meet the conditions.
-      if (this.displayTypeInitial && initial?.length > 0) {
+      if (!isAnswerList || isAnswerList === false) {
+        if (this.type === 'coding') {
+          this.control.setValue("none", { emitEvent: true });
+          this.formProperty.setValue("none", false);  
+        } else {
           this.control.setValue("type-initial", { emitEvent: true });
           this.formProperty.setValue("type-initial", false);
-      } else if ((this.displayPickInitial && answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
-                 (this.displayPickInitial && (answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && hasAnswerValuetSetURL)
-                )
-      {
+        }
+      } else if (isAnswerList &&
+                  ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
+                  ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && hasAnswerValuetSetURL))) {
         this.control.setValue("pick-initial", { emitEvent: true });
         this.formProperty.setValue("pick-initial", false);
       } else {
@@ -80,6 +86,25 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
         } else {
           this.control.setValue("none", { emitEvent: true });
           this.formProperty.setValue("none", false);  
+        }
+      }
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.formProperty.searchProperty('type').valueChanges.subscribe((typeVal) => {
+      this.type = typeVal;
+      this.valueMethodOptions = this.formProperty.schema.oneOf;
+        
+      if (typeVal === "boolean" || typeVal === "decimal" || typeVal === "dateTime" || typeVal === "url" || typeVal === "quantity" || typeVal === "group" || typeVal === "display") {
+        this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
+      } else if (typeVal === "coding" && this.displayTypeInitial) {
+        this.valueMethodOptions = this.valueMethodOptions.slice(1);
+        this.control.setValue("none", { emitEvent: true });
+        this.formProperty.setValue("none", false);  
+      } else {
+        const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
+        if (answerOptions && answerOptions.length > 0) {
+          this.formProperty.searchProperty('__$isAnswerList').setValue(true, false);
         }
       }
     });

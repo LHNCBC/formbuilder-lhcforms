@@ -25,6 +25,8 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
   answerOptionProp;
   answerOptionDisplays;
   answerValueSets;
+  type;
+  valueFieldName;
 
   opts: any = {
     maxSelect: 1
@@ -72,6 +74,12 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
 
     this.itemId = this.formProperty.findRoot().getProperty('id').value;
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
+
+    const initialObj = {
+      "repeats": this.isRepeating,
+      "selectedAnswers": []
+    };
+    this.formProperty.setValue(initialObj, false);
   }
 
   /**
@@ -80,6 +88,12 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
    */
   ngAfterViewInit(): void {
     let sub: Subscription;
+
+    sub = this.formProperty.findRoot().getProperty('type').valueChanges.subscribe((type) => {
+      this.type = type;
+      this.valueFieldName = this.getValueFieldName(this.type);
+    });
+    this.subscriptions.push(sub);
 
     // 'Answer list source' field
     // Three possible values: answer-option, snomed-valueset, and value-set
@@ -99,31 +113,40 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       // To trigger the validation for answer Options.
       this.formProperty.updateValueAndValidity(true);
 
-      // filtering out the empty row
-      ansOpts = ansOpts.filter((ansOpt) => 'display' in ansOpt.valueCoding);
+      // Added support for other data types.
+      if (this.type === 'coding') {
+        ansOpts = ansOpts.filter((ansOpt) => 'display' in ansOpt.valueCoding);
+      } else {
+        ansOpts = ansOpts.filter((ansOpt) => this.valueFieldName in ansOpt);
+      }
 
       let changed = false;
       // The reason why ansOpt is not used is b/c it may only have one of the options
       if (!this.answerOptionDisplays || this.answerOptionDisplays.length !== ansOpts.length) {
         changed = true;
       } else {
-        changed = this.answerOptionProp.some((ansOptProp, idx) => ansOptProp.valueCoding?.display !== ansOpts[idx].valueCoding?.display ||
-                                                                  ansOptProp.valueCoding?.code !== ansOpts[idx].valueCoding?.code ||
-                                                                  ansOptProp.valueCoding?.system !== ansOpts[idx].valueCoding?.system ||
-                                                                  ansOptProp.valueCoding?.__$score !== ansOpts[idx].valueCoding?.__$score);
+        if (this.type === 'coding') {
+          changed = this.answerOptionProp.some((ansOptProp, idx) => ansOptProp.valueCoding?.display !== ansOpts[idx].valueCoding?.display ||
+                                                                    ansOptProp.valueCoding?.code !== ansOpts[idx].valueCoding?.code ||
+                                                                    ansOptProp.valueCoding?.system !== ansOpts[idx].valueCoding?.system ||
+                                                                    ansOptProp.valueCoding?.__$score !== ansOpts[idx].valueCoding?.__$score);
+        } else {
+          changed = this.answerOptionProp.some((ansOptProp, idx) => ansOptProp[this.valueFieldName] !== ansOpts[idx][this.valueFieldName]);
+          
+        }
       }
 
       if (changed) {
         this.answerOptionProp = ansOpts;
 
-        this.setAnswerOptionDisplays(this.answerOptionProp);
+        this.setAnswerOptionDisplaysByType(this.answerOptionProp, this.type);
         this.updateLoadingStatus('Loading...');
         this.resetAutocomplete();
 
         if (this.formProperty?.value && this.formProperty.value.selectedAnswers.length > 0) {
-          this.setPreselectedOptions(this.formProperty?.value.selectedAnswers, true);
+          this.setPreselectedOptionsByType(this.formProperty?.value.selectedAnswers, this.type, true);
         } else {
-          this.setPreselectedOptions(this.answerOptionProp, false);
+          this.setPreselectedOptionsByType(this.answerOptionProp, this.type, false);
           const selectedAnswers = this.answerOptionProp.filter((answerOption) => answerOption.initialSelected);
 
           this.formProperty.setValue(this.createPickAnswer(selectedAnswers), false);
@@ -142,10 +165,6 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       if (changeRequired) {
         if (this.isRepeating !== undefined) {
           this.resetAutocomplete();
-          if (!this.isAnswerOptionPropEmpty()) {
-            this.resetPickAnswer();
-            this.resetAnswerOptionsSelections();
-          }
         }
 
         this.isRepeating = isRepeating;
@@ -186,32 +205,66 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
   }
 
   /**
-   * Create the 'answerOptionDisplays' to hold the display field values of the Answer Options.
-   * This is used to generate the autocomplete drop-down list.
-   * @param answerOptionProp - array of Answer Options.
+   * Returns the name of the value field for a given FHIR data type.
+   * @param type - one of the fhir data types.
+   * @returns - a field name in the format 'value' + CamelCase(type).
    */
-  setAnswerOptionDisplays(answerOptionProp: any ): void {
-    this.answerOptionDisplays = (answerOptionProp) ?
-                         answerOptionProp.filter(answer => "display" in answer.valueCoding)
-                                         .map(answer => answer?.valueCoding?.display) :
-                         [];
+  getValueFieldName(type: string): string {
+    if (type === "text") {
+      type = "string";
+    }
+    return 'value' + type.charAt(0).toUpperCase() + type.slice(1);
   }
 
   /**
-   * 
-   * @param selectedAnswers 
-   * @param fromFormProperty 
+   * Create the 'answerOptionDisplays' to hold the display field values of the Answer Options, determined
+   * by data type. This is used to generate the autocomplete drop-down list.
+   * @param answerOptionProp - array of Answer Options.
+   * @param type - one of the fhir data types.
    */
-  setPreselectedOptions(selectedAnswers: any, fromFormProperty = false): void {
+  setAnswerOptionDisplaysByType(answerOptionProp: any, type: string ): void {
+    if (type === "coding") {
+      this.answerOptionDisplays = (answerOptionProp) ?
+                                    answerOptionProp.filter(answer => "display" in answer.valueCoding)
+                                                    .map(answer => answer?.valueCoding?.display) :
+                                    [];
+    } else {
+      if (this.valueFieldName) {
+        this.answerOptionDisplays = (answerOptionProp) ?
+                                      answerOptionProp.filter(answer => this.valueFieldName in answer)
+                                                      .map(answer => String(answer[this.valueFieldName] ?? '')) :
+                                      [];
+      } else {
+        this.answerOptionDisplays = [];
+      }
+    }
+  }
+
+  /**
+   * Set preselected options for Autocomplete based on data type.
+   * @param selectedAnswers - array of selected options.
+   * @param fromFormProperty - True if selected options are from the Form Property (current session data).
+   *                           False if the data comes from 'answerOptions'.
+   */
+  setPreselectedOptionsByType(selectedAnswers: any, type: string, fromFormProperty = false): void {
     if (selectedAnswers) {
       for (let i=0, len=selectedAnswers.length; i<len; ++i) {
         if ((fromFormProperty === false && selectedAnswers[i].initialSelected) || (fromFormProperty)){
-          const dispVal = selectedAnswers[i].valueCoding.display || selectedAnswers[i].valueCoding.code;
-          this.autoComplete.storeSelectedItem(dispVal, selectedAnswers[i].valueCoding.code);
-          if(this.isRepeating) {
-            this.autoComplete.addToSelectedArea(dispVal);
+          let dispVal = '';
+          if (type === "coding") {
+            dispVal = selectedAnswers[i]?.valueCoding?.display || selectedAnswers[i]?.valueCoding?.code;
+            if (dispVal) {
+              this.autoComplete.storeSelectedItem(dispVal ?? '', selectedAnswers[i].valueCoding.code);
+            }
           } else {
-            this.autoComplete.setFieldVal(dispVal);
+            dispVal = selectedAnswers[i][this.valueFieldName];
+            this.autoComplete.storeSelectedItem(String(dispVal ?? ''), dispVal);
+          }
+
+          if(this.isRepeating) {
+            this.autoComplete.addToSelectedArea(String(dispVal ?? ''));
+          } else {
+            this.autoComplete.setFieldVal(String(dispVal ?? ''));
             break;
           }
         }
@@ -233,47 +286,31 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
   }
 
   /**
-   * Reset the formProperty.value selectedAnswers to clear any data selection. 
-   */
-  resetPickAnswer() {
-    const pickAnswer = {
-      "repeats": this.isRepeating,
-      "selectedAnswers": []
-    };
-
-    this.formProperty.setValue(pickAnswer, false);
-  }
-
-  /**
-   * Check if answerOptionProp is empty.
+   * Check if answerOptionProp is empty for the data type.
+   * @param type - one of the fhir data types.
    * @returns - true if empty, false otherwise.
    */
-  isAnswerOptionPropEmpty(): boolean {
+  isAnswerOptionPropEmptyForType(type: string): boolean {
     if (!this.answerOptionProp || this.answerOptionProp.length === 0) {
       return true;
     }
 
     if (this.answerOptionProp.length === 1) {
-      const option = this.answerOptionProp[0].valueCoding;
-      if (!option.display && !option.code && !option.system && !option.__$score) {
-        return true;
+      if (type === 'coding') {
+        const option = this.answerOptionProp[0].valueCoding;
+        if (!option.display && !option.code && !option.system && !option.__$score) {
+          return true;
+        }
+      } else {
+        if (!this.answerOptionProp[0][this.valueFieldName]) {
+          return true;
+        }
       }
     }
 
     return false;
   }
 
-  /**
-   * Iterates through the list of answer options and reset their selection state. If
-   * any option was previously marked as selected, it will be updated to an unselected
-   * state.
-   */
-  resetAnswerOptionsSelections() {
-    if (this.answerOptionProp) {
-      this.answerOptionProp.forEach((ansOpt) => delete ansOpt.initialSelected);
-    }
-    this.formProperty.findRoot().getProperty('answerOption').setValue(this.answerOptionProp, false);
-  }
 
   /**
    * Create Pick Answer object to be stored in the formProperty.value
@@ -349,12 +386,6 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
             this.formProperty.setValue(this.createPickAnswer(selectedAnswers), false);
 
           }
-        }
-      } else if (res?.input_method === "typed" && res?.val_typed_in === "") {
-        if (!this.isAnswerOptionPropEmpty()) {
-          // Clear autocomplete
-          this.resetPickAnswer();
-          this.resetAnswerOptionsSelections();
         }
       }
     });

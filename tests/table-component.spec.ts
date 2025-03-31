@@ -161,7 +161,6 @@ test.describe('Table component', async () => {
     // Click on the Value Method - Pick Initial option
     await page.locator('[for*="valueMethod_pick-initial"]').click();
     
-    const table = page.locator('lfb-answer-option table');
     // Load a table with data
     await mainPO.loadTable(table, tableData);
 

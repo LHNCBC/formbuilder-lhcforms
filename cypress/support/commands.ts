@@ -236,6 +236,7 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.1.valueCoding.system"]').type('s2');
   cy.get('[id^="answerOption.1.valueCoding.__$score"]').type('3');
   // Select first option
+  cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
   cy.get('[id^="pick-answer"]').as('pickAnswer');
   cy.get('@pickAnswer').click();
   cy.get('#searchResults ul > li').should('have.length', 2);
