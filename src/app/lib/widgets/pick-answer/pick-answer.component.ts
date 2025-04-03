@@ -3,7 +3,7 @@ import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-wid
 import Def from 'autocomplete-lhc';
 import {BehaviorSubject, debounceTime, distinctUntilChanged, of, startWith, Subscription} from 'rxjs';
 import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
-
+import {Util} from '../../util';
 import { HttpParams } from "@angular/common/http";
 import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
@@ -91,7 +91,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
 
     sub = this.formProperty.findRoot().getProperty('type').valueChanges.subscribe((type) => {
       this.type = type;
-      this.valueFieldName = this.getValueFieldName(this.type);
+      this.valueFieldName = Util.getValueDataTypeName(this.type);
     });
     this.subscriptions.push(sub);
 
@@ -202,18 +202,6 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
    */
   setAutocompleteOption(isRepeat: boolean): void {
     this.opts.maxSelect = isRepeat ? '*' : 1;
-  }
-
-  /**
-   * Returns the name of the value field for a given FHIR data type.
-   * @param type - one of the fhir data types.
-   * @returns - a field name in the format 'value' + CamelCase(type).
-   */
-  getValueFieldName(type: string): string {
-    if (type === "text") {
-      type = "string";
-    }
-    return 'value' + type.charAt(0).toUpperCase() + type.slice(1);
   }
 
   /**

@@ -657,4 +657,17 @@ export class Util {
     }
     return ret;
   }
+
+
+  /**
+   * Returns the name of the value field for a given FHIR data type.
+   * @param type - one of the fhir data types.
+   * @returns - a field name in the format 'value' + CamelCase(type).
+   */
+  static getValueDataTypeName(type: string): string {
+    if (type === "text") {
+      type = "string";
+    }
+    return 'value' + type.charAt(0).toUpperCase() + type.slice(1);
+  }
 }
