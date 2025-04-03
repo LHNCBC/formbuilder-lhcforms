@@ -261,6 +261,47 @@ describe('Home page', () => {
           expect(json.item[0].repeats).toBeUndefined();
         });
       });
+
+      it('should import items with boolean fields', () => {
+        const importFile = 'boolean-fields-sample.json';
+        cy.uploadFile(importFile, true);
+        cy.contains('button', 'Edit questions').click();
+
+        cy.getPickInitialValueValueMethodClick();
+        cy.getInitialValueBooleanInput('null').should('be.checked');
+        cy.getBooleanInput(readOnlyLabel, 'true').should('be.checked');
+        cy.getBooleanInput(requiredLabel, 'false').should('be.checked');
+        cy.getBooleanInput(repeatsLabel, 'null').should('be.checked');
+
+        cy.getTreeNode('Item 1').click();
+
+        cy.getInitialValueBooleanInput('true').should('be.checked');
+        cy.getBooleanInput(readOnlyLabel, 'false').should('be.checked');
+        cy.getBooleanInput(requiredLabel, 'true').should('be.checked');
+        cy.getBooleanInput(repeatsLabel, 'false').should('be.checked');
+
+        cy.getTreeNode('Item 2').click();
+
+        cy.getInitialValueBooleanInput('false').should('be.checked');
+        cy.getBooleanInput(readOnlyLabel, 'null').should('be.checked');
+        cy.getBooleanInput(requiredLabel, 'null').should('be.checked');
+        cy.getBooleanInput(repeatsLabel, 'true').should('be.checked');
+
+        cy.questionnaireJSON((json) => {
+          expect(json.item[0].initial[0].valueBoolean).toBeUndefined();
+          expect(json.item[0].readOnly).toBeTruthy();
+          expect(json.item[0].required).toBeFalsy();
+          expect(json.item[0].repeats).toBeUndefined();
+          expect(json.item[1].initial[0].valueBoolean).toBeTruthy();
+          expect(json.item[1].readOnly).toBeFalsy();
+          expect(json.item[1].required).toBeTruthy();
+          expect(json.item[1].repeats).toBeFalsy();
+          expect(json.item[2].initial[0].valueBoolean).toBeFalsy();
+          expect(json.item[2].readOnly).toBeUndefined();
+          expect(json.item[2].required).toBeUndefined();
+          expect(json.item[2].repeats).toBeTruthy();
+        });
+      });
     });
 
     describe('Insert new item using sidebar tree node context menu', () => {
