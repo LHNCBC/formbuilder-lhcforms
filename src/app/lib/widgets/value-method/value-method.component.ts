@@ -63,7 +63,7 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       if (!isAnswerList || isAnswerList === false) {
         if (this.type === 'coding') {
           this.control.setValue("none", { emitEvent: true });
-          this.formProperty.setValue("none", false);  
+          this.formProperty.setValue("none", false);
         } else {
           this.control.setValue("type-initial", { emitEvent: true });
           this.formProperty.setValue("type-initial", false);
@@ -95,12 +95,16 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       this.type = typeVal;
       this.valueMethodOptions = this.formProperty.schema.oneOf;
         
-      if (typeVal === "boolean" || typeVal === "decimal" || typeVal === "dateTime" || typeVal === "url" || typeVal === "quantity" || typeVal === "group" || typeVal === "display") {
+      if (typeVal === "decimal" || typeVal === "dateTime" || typeVal === "url" || typeVal === "quantity" || typeVal === "group" || typeVal === "display") {
         this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
       } else if (typeVal === "coding" && this.displayTypeInitial) {
         this.valueMethodOptions = this.valueMethodOptions.slice(1);
         this.control.setValue("none", { emitEvent: true });
-        this.formProperty.setValue("none", false);  
+        this.formProperty.setValue("none", false);
+      } else if (typeVal === "boolean") {
+        this.valueMethodOptions = this.valueMethodOptions.slice(1);
+        this.control.setValue("pick-initial", { emitEvent: true });
+        this.formProperty.setValue("pick-initial", false);
       } else {
         const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
         if (answerOptions && answerOptions.length > 0) {

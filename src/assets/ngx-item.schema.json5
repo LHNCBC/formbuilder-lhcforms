@@ -1290,7 +1290,7 @@
       "description": "Specify how the question obtains its initial values.",
       "title": "Value method",
       "visibleIf": {
-        "/type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'boolean'"]
+        "/type": ["$EXP$ target.value != 'group' && target.value != 'display' "]
       },
       "oneOf": [
         {
@@ -1690,7 +1690,21 @@
       "type": "array",
       "title": "Initial value",
       "visibleIf": {
-        "__$valueMethod":  ["type-initial"]
+        "oneOf": [
+          {
+            "__$valueMethod":  ["type-initial"]
+          },
+          {
+            "allOf": [
+              {
+                "__$valueMethod":  ["pick-initial"]
+              },
+              {
+                "type": ["boolean"]
+              }
+            ]
+          }
+        ]
       },
       "widget": {
         "id": "table",
