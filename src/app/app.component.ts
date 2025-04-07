@@ -1,12 +1,15 @@
-import {Component} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {NgbDatepickerConfig} from '@ng-bootstrap/ng-bootstrap';
+import {BasePageComponent} from "./base-page/base-page.component";
 
 @Component({
+  standalone: false,
   selector: 'lfb-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  @ViewChild('basePage') basePageComponent: BasePageComponent;
   title = 'formbuilder-lhcforms';
   constructor(private dateConfig: NgbDatepickerConfig) {
     const today = new Date();

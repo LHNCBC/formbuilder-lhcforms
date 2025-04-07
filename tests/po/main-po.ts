@@ -127,7 +127,9 @@ export class MainPO {
   async loadTable(table: Locator, tableData: string [][]) {
     for(let rowIndex = 0; rowIndex < tableData.length; rowIndex++) {
       for(let colIndex = 0; colIndex < tableData[rowIndex].length; colIndex++) {
-        await table.locator(`tbody tr:nth-child(${rowIndex+1}) td:nth-child(${colIndex+1}) input`).fill(tableData[rowIndex][colIndex]);
+        const locator = table.locator(`tbody tr:nth-child(${rowIndex+1}) td:nth-child(${colIndex+1}) input`);
+        await expect(locator).toBeEditable({editable: true, timeout: 30000});
+        await locator.fill(tableData[rowIndex][colIndex]);
       }
       if(tableData.length - rowIndex > 1) {
         await table.locator('..').getByRole('button', {name: 'Add'}).click();

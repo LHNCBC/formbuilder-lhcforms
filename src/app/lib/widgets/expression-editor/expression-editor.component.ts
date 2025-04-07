@@ -10,6 +10,7 @@ import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 
 @Component({
+  standalone: false,
   selector: 'lfb-expression-editor',
   templateUrl: './expression-editor.component.html',
   styleUrl: './expression-editor.component.css'

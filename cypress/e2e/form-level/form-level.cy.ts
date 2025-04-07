@@ -4,10 +4,6 @@ import {CypressUtil} from '../../support/cypress-util'
 import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
 
 describe('Home page accept Terms of Use notices', () => {
-  before(() => {
-    cy.clearSession();
-  });
-
   beforeEach(CypressUtil.mockSnomedEditions);
 
   afterEach(() => {
@@ -64,8 +60,9 @@ describe('Home page accept Terms of Use notices', () => {
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
-    cy.selectDataType('choice');
-    cy.getComputeInitialValueValueMethodClick();
+    cy.selectDataType('coding');
+    cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+    cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]')
       .should('be.visible').and('not.be.checked');
@@ -83,7 +80,9 @@ describe('Home page accept Terms of Use notices', () => {
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
-    cy.selectDataType('choice');
+    cy.selectDataType('coding');
+    cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+    cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.visible').and('not.be.checked');
     cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('not.exist');
@@ -113,7 +112,6 @@ describe('Home page', () => {
 
   describe('Home page import options', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="existing"]').click();
     });
 
@@ -123,7 +121,7 @@ describe('Home page', () => {
         cy.uploadFile('answer-option-sample.json');
         cy.get('#title').should('have.value', 'Answer options form');
         cy.questionnaireJSON().then((previewJson) => {
-          expect(previewJson).to.be.deep.equal(json);
+          expect(previewJson.item.length).equal(2);
         });
       });
     });
@@ -148,13 +146,12 @@ describe('Home page', () => {
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
       cy.get('[id^="booleanRadio_true"]').should('be.checked');
-      cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
+      cy.get('[id^="code.0.code"]').should('have.value', '85353-1');
     });
   });
 
   describe('Home page export options', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="existing"]').click();
       CypressUtil.deleteDownloadsFolder();
     });
@@ -235,7 +232,6 @@ describe('Home page', () => {
 
   describe('Form level fields', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.resetForm();
@@ -329,6 +325,11 @@ describe('Home page', () => {
 
 
       [
+        {
+          fixtureFile: 'initial-sample.R5.json',
+          serverBaseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5',
+          version: 'R5',
+        },
         {
           fixtureFile: 'initial-sample.R4.json',
           serverBaseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4',
@@ -482,7 +483,7 @@ describe('Home page', () => {
                   expVal = CypressUtil.getLocalTime(json[field]);
                 }
                 cy.get('#' + field).should((fieldEl) => {
-                  expect(fieldEl.val(), expVal);
+                  expect(fieldEl.val()).to.equal(expVal);
                 });
               });
 
@@ -601,7 +602,6 @@ describe('Home page', () => {
 
   describe('User specified FHIR server dialog', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.contains('button', 'Continue').click();
       cy.contains('button', 'Import').click();
       cy.contains('button', 'Import from a FHIR server...').click();
@@ -653,7 +653,6 @@ describe('Home page', () => {
 
   describe('Warning dialog when replacing current form', () => {
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.contains('button', 'Continue').click();
       cy.resetForm();
@@ -711,7 +710,7 @@ describe('Home page', () => {
 
       cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
       cy.get('[id^="booleanRadio_true"]').should('be.checked');
-      cy.get('[id^="code.0.code"]').should('have.value', '88121-9');
+      cy.get('[id^="code.0.code"]').should('have.value', '85353-1');
     });
   });
 

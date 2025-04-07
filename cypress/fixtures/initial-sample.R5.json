@@ -1,0 +1,211 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "R5 form sample",
+  "status": "draft",
+  "item": [
+    {
+      "type": "string",
+      "linkId": "822683260269",
+      "text": "string item",
+      "initial": [
+        {
+          "valueString": "abc"
+        }
+      ]
+    },
+    {
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "cm",
+            "display": "centimeter"
+          }
+        }
+      ],
+      "linkId": "2471664492721",
+      "text": "Integer item",
+      "initial": [
+        {
+          "valueInteger": 123
+        }
+      ]
+    },
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "m",
+            "display": "meter"
+          }
+        }
+      ],
+      "linkId": "552780393029",
+      "text": "Decimal item",
+      "initial": [
+        {
+          "valueDecimal": 1.23
+        }
+      ]
+    },
+    {
+      "type": "boolean",
+      "linkId": "9956956191919",
+      "text": "Boolean item",
+      "initial": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "type": "date",
+      "linkId": "9954813920955",
+      "text": "Date item",
+      "initial": [
+        {
+          "valueDate": "2020-01-01"
+        }
+      ]
+    },
+    {
+      "type": "dateTime",
+      "linkId": "8896223581093",
+      "text": "Date time item",
+      "initial": [
+        {
+          "valueDateTime": "2020-01-01T10:10:10Z"
+        }
+      ]
+    },
+    {
+      "type": "time",
+      "linkId": "7839333050479",
+      "text": "Time item",
+      "initial": [
+        {
+          "valueTime": "10:10:10"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "linkId": "3932483469610",
+      "text": "Text item",
+      "initial": [
+        {
+          "valueString": "Initial text "
+        }
+      ]
+    },
+    {
+      "type": "url",
+      "linkId": "2069763091652",
+      "text": "Url item",
+      "initial": [
+        {
+          "valueUri": "http://hl7.org"
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "7693426920862",
+      "text": "Choice item",
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 1
+            }
+          ],
+          "valueCoding": {
+            "system": "s1",
+            "code": "c1",
+            "display": "d1"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 2
+            }
+          ],
+          "valueCoding": {
+            "system": "s2",
+            "code": "c2",
+            "display": "d2"
+          },
+          "initialSelected": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 3
+            }
+          ],
+          "valueCoding": {
+            "system": "s3",
+            "code": "c3",
+            "display": "d3"
+          }
+        }
+      ],
+      "answerConstraint": "optionsOnly"
+    },
+    {
+      "type": "quantity",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "m",
+            "display": "meter"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "[ft_i]",
+            "display": "foot"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "[in_i]",
+            "display": "inch"
+          }
+        }
+      ],
+      "linkId": "9704408582171",
+      "text": "Quantity item",
+      "initial": [
+        {
+          "valueQuantity": {
+            "value": 1.2345,
+            "unit": "yard",
+            "system": "http://unitsofmeasure.org",
+            "code": "[yd_i]"
+          }
+        }
+      ]
+    },
+    {
+      "type": "display",
+      "linkId": "7976657892293",
+      "text": "Header item"
+    }
+  ]
+}

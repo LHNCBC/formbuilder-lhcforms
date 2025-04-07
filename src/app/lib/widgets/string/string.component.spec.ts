@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { StringComponent } from './string.component';
 import {CommonTestingModule} from '../../../testing/common-testing.module';

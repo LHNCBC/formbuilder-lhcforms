@@ -6,6 +6,7 @@ import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
+  standalone: false,
   selector: 'lfb-control-widget',
   template: `
   `,

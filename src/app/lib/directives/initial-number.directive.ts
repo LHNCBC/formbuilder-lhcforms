@@ -3,6 +3,7 @@ import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { FormProperty } from '@lhncbc/ngx-schema-form';
 
 @Directive({
+  standalone: false,
   selector: '[lfbInitialNumber]',
   providers: [
     {

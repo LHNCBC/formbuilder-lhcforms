@@ -1,12 +1,11 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
-import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
+import {AfterViewInit, Component} from '@angular/core';
 import {UnitsComponent} from '../units/units.component';
 // import Def from 'autocomplete-lhc';
 
 declare var LForms: any;
 
 @Component({
+  standalone: false,
   selector: 'lfb-quantity-unit',
   templateUrl: './quantity-unit.component.html',
   styleUrls: ['./quantity-unit.component.css']

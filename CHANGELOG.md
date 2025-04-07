@@ -2,9 +2,37 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.7.4] 2024-12-21
+## [10.0.3] 2024-12-21
 ### Added
 - Added Value Method field for selecting initial values.
+
+## [10.0.2] 2025-03-24
+### Fixed
+- Fixed a playwright test.
+
+## [10.0.1] 2025-03-20
+### Fixed
+- Avoid angular@19.2.x versions in the dependency tree
+
+## [10.0.0] 2025-01-09
+### Added
+- Added R5 features
+
+## [9.7.7] 2025-03-04
+### Changed
+- Fixed an accessibility issue.
+
+## [9.7.6] 2025-02-20
+### Changed
+- Upgraded to angular19
+
+## [9.7.5] 2025-01-31
+### Added
+- Added item control list for display data type.
+
+## [9.7.4] 2025-01-06
+### Changed
+- Updated README.md
 
 ## [9.7.3] 2024-12-11
 ### Changed

@@ -1,12 +1,7 @@
 {
   "resourceType": "Questionnaire",
-  "title": "Answer options form",
+  "title": "R4 questionnaire from local storage",
   "status": "draft",
-  "meta": {
-    "profile": [
-      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
-    ]
-  },
   "item": [
     {
       "text": "Item with answer option and initial",
@@ -28,12 +23,12 @@
         ]
       },
       "linkId": "1",
-      "type": "coding",
+      "type": "choice",
       "answerOption": [
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
               "valueDecimal": 1
             }
           ],
@@ -46,7 +41,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
               "valueDecimal": 2
             }
           ],
@@ -56,6 +51,28 @@
             "display": "d2"
           },
           "initialSelected": true
+        }
+      ],
+      "item": [
+        {
+          "text": "A plain text instruction on parent item.",
+          "type": "display",
+          "linkId": "1-help",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "text": "Help-Button",
+                "coding": [
+                  {
+                    "code": "help",
+                    "display": "Help-Button",
+                    "system": "http://hl7.org/fhir/questionnaire-item-control"
+                  }
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -79,12 +96,12 @@
         ]
       },
       "linkId": "2",
-      "type": "coding",
+      "type": "choice",
       "answerOption": [
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
               "valueDecimal": 10
             }
           ],
@@ -97,7 +114,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
               "valueDecimal": 20
             }
           ],
@@ -110,7 +127,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
               "valueDecimal": 30
             }
           ],

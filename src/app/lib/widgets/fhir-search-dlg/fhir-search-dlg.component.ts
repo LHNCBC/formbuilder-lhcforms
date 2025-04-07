@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {FhirService, FHIRServer} from '../../../services/fhir.service';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import fhir from 'fhir/r4';
@@ -19,6 +19,7 @@ interface SearchField {
   searchFieldPlaceholder: string
 }
 @Component({
+  standalone: false,
   selector: 'lfb-fhir-search-dlg',
   styles: [`
     .result-item:hover {
@@ -60,6 +61,7 @@ export class FhirSearchDlgComponent {
     {field: 'name:contains', display: 'Form name only', searchFieldPlaceholder: 'Search form name'}
   ];
 
+  fhirService = inject(FhirService);
   /**
    * Define a structure to associate search parameters on the page.
    * @private
@@ -70,7 +72,7 @@ export class FhirSearchDlgComponent {
     fhirServer: this.fhirService.getFhirServer()
   };
 
-  constructor(public fhirService: FhirService, private activeModal: NgbActiveModal) {
+  constructor(private activeModal: NgbActiveModal) {
     // Set up search pipeline
     this._search$.pipe(
       tap(() => this._loading$.next(true)),

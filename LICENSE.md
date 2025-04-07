@@ -2,7 +2,7 @@
 
 Licensing and Copyright Notice and Terms of Use
 
-Owner Notice: This software (including any associated website-service or
+Owner Notice: This software, including any associated website-service or
 downloadable source (code) was developed by the Lister Hill National Center
 for Biomedical Communications (LHNCBC), a research and development division
 of the U.S. National Library of Medicine (NLM), with the permission and based

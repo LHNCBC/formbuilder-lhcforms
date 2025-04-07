@@ -9,6 +9,7 @@ import {Util} from '../lib/util';
 export type DialogMode = 'Move' | 'Insert' | 'Copy';
 
 @Component({
+  standalone: false,
   selector: 'lfb-node-dialog',
   template: `
     <div class="modal-header bg-primary">

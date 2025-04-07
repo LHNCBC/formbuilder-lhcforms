@@ -4,6 +4,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'lfb-boolean-controlled',
   template: `
     <ng-template #controller>

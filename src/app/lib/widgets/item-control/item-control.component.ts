@@ -8,6 +8,7 @@ import {Util} from '../../util';
 import {LiveAnnouncer} from "@angular/cdk/a11y";
 
 @Component({
+  standalone: false,
   selector: 'lfb-item-control',
   templateUrl: './item-control.component.html',
   styleUrls: ['./item-control.component.css'],
@@ -29,6 +30,10 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   subscriptions: Subscription [] = [];
   dataType;
 
+  hasCodeSystemItemControl = false;
+  isItemControlDeprecated = false;
+  deprecatedMessage = '';
+
   constructor(private extensionsService: ExtensionsService, private formService: FormService,
               private cdr: ChangeDetectorRef, private liveAnnouncer: LiveAnnouncer) {
     super();
@@ -43,14 +48,31 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   }
 
   /**
-   * Compose a Group Item Control object from the schema.
+   * Compose Item Control object from the schema.
    */
-  composeGroupItemControlObject() {
+  composeCodeSystemItemControlObject() {
     if (this.formProperty?.schema?.oneOf) {
-      this.formProperty.schema.oneOf.forEach((groupItemControl) => {
-        this.optionsObj[groupItemControl.enum[0]] = groupItemControl.display;
+      this.formProperty.schema.oneOf.forEach((itemControl) => {
+        this.optionsObj[itemControl.enum[0]] = itemControl.display;
       });
     }
+  }
+
+  /**
+   * Retrieves item controls that are marked as deprecated. The function iterates through
+   * the schema.oneOf array and extracts the enum values of the deprecated item controls.
+   * @returns - list of deprecated item control code values.
+   */
+  extractDeprecatedItemControls(): string[] {
+    const deprecatedControls: string[] = [];
+    if (this.formProperty?.schema?.oneOf) {
+      this.formProperty.schema.oneOf.forEach((itemControl) => {
+        if (!!itemControl?.deprecated) {
+          deprecatedControls.push(itemControl.enum[0]);
+        }
+      });
+    }
+    return deprecatedControls;
   }
 
   /**
@@ -62,11 +84,21 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    */
   getItemControl(dataTypeChanged: boolean = false): string {
     const ext = this.getItemControlExtension();
-    const defaultItemControl = (this.dataType === 'group') ? '' : 'drop-down';
+    const defaultItemControl = (this.dataType === 'group' || this.dataType === 'display') ? '' : 'drop-down';
     if (dataTypeChanged)
       return defaultItemControl;
 
     return ext ? ext.valueCodeableConcept.coding[0].code : defaultItemControl;
+  }
+
+  /**
+   * Check if a given item control is present in the list of deprecated item controls.
+   * @returns - True if the item control is deprecated; otherwise, False.
+   */
+  checkDeprecatedItemControl(itemControl: string): boolean {
+    const deprecatedItemControls = this.extractDeprecatedItemControls();
+
+    return deprecatedItemControls.includes(itemControl);
   }
 
   /**
@@ -78,7 +110,11 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.isRepeat = !!this.formProperty.searchProperty('/repeats').value;
     this.answerMethod = this.formProperty.searchProperty('/__$answerOptionMethods').value;
 
-    this.composeGroupItemControlObject();
+    this.hasCodeSystemItemControl = (this.formProperty?.schema?.oneOf && this.formProperty.schema.oneOf.length > 0);
+    if (this.hasCodeSystemItemControl) {
+      this.composeCodeSystemItemControlObject();
+      this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
+    }
   }
 
   /**
@@ -98,8 +134,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     sub = this.formProperty.searchProperty('/type').valueChanges.subscribe((type) => {
       const changed = !(this.dataType === type);
       this.dataType = type;
-      // If type is not choice, cleanup the extension.
-      if (type !== 'choice' && type !== 'open-choice' && type !== 'group') {
+      // If type is not coding, cleanup the extension.
+      if (type !== 'coding' && type !== 'group' && type !== 'display') {
         this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
       } else {
         this.option = this.getItemControl(changed);
@@ -147,6 +183,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
     const ext = this.getItemControlExtension();
     if (option) {
+      this.isItemControlDeprecated = this.checkDeprecatedItemControl(option);
+
       if(!ext) {
         this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
       }
@@ -204,23 +242,38 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   }
 
   /**
-   * Compose the Group item control label to be announced by the screen reader.
+   * Compose the item control label to be announced by the screen reader.
    * @param opt - JSON schema
    * @returns - text to be read by the screen reader.
    */
-  composeGroupItemControlLabel(opt: any): string {
-    let label = `Group item control ${opt.display}. ${opt.description}  `;
+  composeCodeSystemItemControlLabel(opt: any): string {
+    let label = `Item control ${opt.display}. ${opt.description}  `;
     if (!opt.support)
       label += "Please note that this item control is not supported by the LHC-Forms preview.";
     return label;
   }
 
   /**
-   * Clear selection for the 'Group Item Control' radio button.
+   * Clear extension for the 'Item Control' radio button.
    */
-  clearGroupItemControlSelection() {
+  clearExtensionItemControlSelection() {
     this.option = '';
+    this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
     this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
-    this.liveAnnouncer.announce('Group item control selection has been cleared.');
+
+    const type = this.dataType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    this.liveAnnouncer.announce(`${type} item control selection has been cleared.`);
+  }
+
+  /**
+   * Set the deprecated message for the deprecated item control.
+   */
+  composeDeprecatedMessage(): string {
+    const optionDisplay = this.formProperty.schema.oneOf.find((itemControl) => itemControl.enum[0] === this.option)?.display || '';
+    const deprecatedNote = this.formProperty.schema.widget.deprecatedNote;
+    if (deprecatedNote && optionDisplay) {
+      return deprecatedNote.replace('${deprecatedItemControl}', optionDisplay);
+    }
+    return '';
   }
 }

@@ -30,6 +30,7 @@ import {SharedObjectService} from '../services/shared-object.service';
 type ExportType = 'CREATE' | 'UPDATE';
 
 @Component({
+  standalone: false,
   selector: 'lfb-base-page',
   templateUrl: './base-page.component.html',
   styleUrls: ['./base-page.component.css'],
@@ -103,8 +104,15 @@ export class BasePageComponent implements OnInit {
     });
 
     formService.guidingStep$.subscribe((step: GuidingStep) => {this.guidingStep = step;});
-    FormService.lformsLoaded$.subscribe({error: (error) => {
-      this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
+    FormService.lformsLoaded$.subscribe({
+      next: (lformsVersion) => {
+        if(this.openerUrl) {
+          // Send the message to window opener after the LForms is loaded.
+          window.opener.postMessage({type: 'initialized'}, this.openerUrl);
+        }
+      },
+      error: (error) => {
+        this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
     }});
   }
 
@@ -218,8 +226,6 @@ export class BasePageComponent implements OnInit {
         }
         window.opener.postMessage(messageObj, this.openerUrl);
       });
-
-      window.opener.postMessage({type: 'initialized'}, this.openerUrl);
     }
   }
 
@@ -265,7 +271,8 @@ export class BasePageComponent implements OnInit {
    * @param questionnaire - Input FHIR questionnaire
    */
   setQuestionnaire(questionnaire: fhir.Questionnaire) {
-    this.questionnaire = this.formService.updateFhirQuestionnaire(questionnaire);
+    const q = this.formService.convertToR5(questionnaire);
+    this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
     this.formFields = Object.assign({}, this.questionnaire);
@@ -436,8 +443,8 @@ export class BasePageComponent implements OnInit {
    * @exportVersion - One of the defined version types: 'STU3' || 'R4' || 'R5'
    * 'R4' is assumed if not specified.
    */
-  saveToFile(exportVersion = 'R4') {
-    const questionnaire = this.formService.convertFromR4(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
+  saveToFile(exportVersion = 'R5') {
+    const questionnaire = this.formService.convertFromR5(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
     const content = this.toString(questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
     const formName = questionnaire.title;
@@ -684,6 +691,8 @@ export class BasePageComponent implements OnInit {
     const storedQ = this.formService.autoLoadForm();
     if(storedQ) {
       storedQ.item = storedQ.item || [];
+      storedQ.meta = storedQ.meta || {};
+      storedQ.meta.profile = storedQ.meta.profile || [Util.R5_PROFILE_URL];
     }
     return Util.isDefaultForm(storedQ);
   }

@@ -4,6 +4,11 @@
   "name": "Name - Sample for boolean field value",
   "title": "Title - Sample for boolean field value",
   "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
   "item": [
     {
       "linkId": "item0",

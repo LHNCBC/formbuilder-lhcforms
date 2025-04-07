@@ -13,6 +13,10 @@ const snomedEclText =
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
 
+  beforeEach(() => {
+    cy.loadHomePage();
+  });
+
   describe('Item level fields', () => {
     const helpTextExtension = [{
       url: Util.ITEM_CONTROL_EXT_URL,
@@ -27,7 +31,6 @@ describe('Home page', () => {
     }];
 
     beforeEach(() => {
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.contains('button', 'Create questions').click();
@@ -100,7 +103,8 @@ describe('Home page', () => {
       cy.get('#acSearchBoxId').type('vital signs assess');
       cy.get('ngb-typeahead-window button').first().click();
       cy.contains('ngb-modal-window div.modal-dialog button', 'Add').click();
-      cy.get('#type option:selected').should('have.text', 'choice');
+      cy.get('#type option:selected').should('have.text', 'coding');
+      cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
 
       cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Within Defined Limits');
       cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', 'LA25085-4');
@@ -263,7 +267,7 @@ describe('Home page', () => {
         cy.uploadFile(importFile, true);
         cy.contains('button', 'Edit questions').click();
 
-        cy.getTypeInitialValueValueMethodClick();
+        cy.getPickInitialValueValueMethodClick();
         cy.getInitialValueBooleanInput('null').should('be.checked');
         cy.getBooleanInput(readOnlyLabel, 'true').should('be.checked');
         cy.getBooleanInput(requiredLabel, 'false').should('be.checked');
@@ -593,10 +597,13 @@ describe('Home page', () => {
         expect(qJson.item[0].initial[0].valueInteger).not.undefined;
       });
 
-      cy.selectDataType('choice');
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
       cy.get('[id^="initial"]').should('not.exist');
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].type).equal('choice');
+        expect(qJson.item[0].type).equal('coding');
+        expect(qJson.item[0].answerConstraint).equal('optionsOnly');
         expect(qJson.item[0].initial).to.be.undefined;
       });
 
@@ -622,6 +629,7 @@ describe('Home page', () => {
       cy.get('@secondOption').find('td:nth-child(3) input').should('have.value', 's');
       cy.get('@secondOption').find('td:nth-child(4) input').as('secondScore');
       cy.get('@secondScore').should('have.value', '2');
+      cy.getPickInitialValueValueMethodClick();      
       cy.get('[id^="pick-answer_"]').as('pickAnswer');
       cy.get('@pickAnswer').should('have.value', 'd2');
 
@@ -641,52 +649,24 @@ describe('Home page', () => {
       cy.get('#searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').clear().type('d3{enter}');
 
+      const SCORE_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].answerOption).to.deep.equal(
-          [
-            {
-              "valueCoding": {
-                "code": "a",
-                "display": "d1",
-                "system": "s"
-              },
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
-                  "valueDecimal": 1
-                }
-              ]
-            },
-            {
-              "valueCoding": {
-                "code": "b",
-                "display": "d2",
-                "system": "s"
-              },
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
-                  "valueDecimal": 22
-                }
-              ]
-            },
-            {
-              "valueCoding": {
-                "code": "c",
-                "display": "d3",
-                system: 's'
-              },
-              initialSelected: true,
-              extension: [
-                {
-                  url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
-                  valueDecimal: 33
-                }
-              ]
-            }
-          ]
-        );
-      })
+        expect(qJson.item[0].answerOption).to.deep.equal([
+          {
+            valueCoding: {display: 'd1', code: 'a', system: 's'},
+            extension: [{url: SCORE_URI, valueDecimal: 1}]
+          },
+          {
+            valueCoding: {display: 'd2', code: 'b', system: 's'},
+            extension: [{url: SCORE_URI, valueDecimal: 22}]
+          },
+          {
+            valueCoding: {display: 'd3', code: 'c', system: 's'},
+            extension: [{url: SCORE_URI, valueDecimal: 33}],
+            initialSelected: true
+          },
+       ]);
+      });
     });
 
     it('should fix a bug in messing up default selections when switched to another node', () => {
@@ -701,6 +681,7 @@ describe('Home page', () => {
       cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption');
 
       // First item's default is second option
+      cy.getPickInitialValueValueMethodClick();
       cy.get('[id^="pick-answer_"]').as('pickAnswer1');
       cy.get('@pickAnswer1').should('have.value', 'd2');
 
@@ -718,12 +699,14 @@ describe('Home page', () => {
       // Switch to first item
       cy.clickTreeNode('Item with answer option');
       // First item's default should be intact.
+      cy.getPickInitialValueValueMethodClick();
       cy.get('[id^="pick-answer_"]').as('pickAnswer1');
       cy.get('@pickAnswer1').should('have.value', 'd2');
 
       // Switch to second item
       cy.clickTreeNode('Item 2 with answer option');
       // Second item's default is first option.
+      cy.getPickInitialValueValueMethodClick();
       cy.get('[id^="pick-answer_"]').as('pickAnswer2');
       cy.get('@pickAnswer2').should('have.value', 'd11');
     });
@@ -760,8 +743,8 @@ describe('Home page', () => {
       cy.get('#searchResults ul > li').should('have.length', 3);
 
       // Set the 'Allow repeating question?' to 'Yes'.
-      cy.booleanFieldClick(repeatsLabel, 'true');
-      cy.getBooleanInput(repeatsLabel, 'true').should('be.checked');
+      cy.getRadioButtonLabel(repeatsLabel, 'Yes').click();
+      cy.getRadioButton(repeatsLabel, 'Yes').should('be.checked');
 
       // Items should be unchecked.
       cy.get('#searchResults ul > li').should('have.length', 3);
@@ -775,7 +758,7 @@ describe('Home page', () => {
             {
               "extension": [
                 {
-                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                  "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
                   "valueDecimal": 10
                 }
               ],
@@ -788,7 +771,7 @@ describe('Home page', () => {
             {
               "extension": [
                 {
-                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                  "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
                   "valueDecimal": 20
                 }
               ],
@@ -802,7 +785,7 @@ describe('Home page', () => {
             {
               "extension": [
                 {
-                  "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+                  "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
                   "valueDecimal": 30
                 }
               ],
@@ -818,7 +801,7 @@ describe('Home page', () => {
       });
     });
 
-    it('should fix initial input box when switched data type from choice to decimal', () => {
+    it('should fix initial input box when switched data type from coding to decimal', () => {
       const sampleFile = 'initial-component-bugfix.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
@@ -831,7 +814,8 @@ describe('Home page', () => {
 
       cy.toggleTreeNodeExpansion('Group item 1');
       cy.getTreeNode('Choice item 1.1').click();
-      cy.get('@type').find(':selected').should('have.text', 'choice');
+      cy.get('@type').find(':selected').should('have.text', 'coding');
+      cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
       cy.get('[id^="answerOption."]').should('be.visible');
       cy.get('[id^="initial"]').should('not.exist');
       cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'Answer 2');
@@ -845,8 +829,9 @@ describe('Home page', () => {
     });
 
     it('should create answerValueSet', () => {
-      cy.selectDataType('choice');
-      cy.getPickInitialValueValueMethodClick();
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
       cy.get('#answerValueSet_non-snomed').should('not.exist');
@@ -880,7 +865,14 @@ describe('Home page', () => {
       cy.uploadFile('answer-value-set-sample.json', true);
       cy.get('#title').should('have.value', 'Answer value set form');
       cy.contains('button', 'Edit questions').click();
-      cy.get('#type option:selected').should('have.text', 'choice');
+      cy.get('#type option:selected').should('have.text', 'coding');
+      cy.get('lfb-label')
+        .filter(':contains("Create answer list")')
+        .parent()
+        .find('label:contains("Yes")')
+        .prev('input[type="radio"]')
+        .should('be.checked');
+      // cy.get('[id^="answerConstraint_optionsOnly"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
       cy.get('lfb-answer-option').should('not.exist');
@@ -893,8 +885,9 @@ describe('Home page', () => {
 
     it('should create SNOMED CT answerValueSet', () => {
       const eclSel = '#answerValueSet_ecl';
-      cy.selectDataType('choice');
-      cy.getPickInitialValueValueMethodClick();
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
       cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
       cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
       cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod').click();
@@ -1105,9 +1098,10 @@ describe('Home page', () => {
         const dropDownRadio = '#__\\$itemControl\\.drop-down';
         const checkboxRadio = '#__\\$itemControl\\.check-box';
 
-        cy.get(icTag).should('not.exist'); // Datatype is other than choice, open-choice
-        cy.selectDataType('open-choice');
-        cy.getPickInitialValueValueMethodClick();
+        cy.get(icTag).should('not.exist'); // Datatype is other than coding
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Allow free text').click();
         cy.get('[for^="__\\$answerOptionMethods_value-set"]').as('nonSnomedMethod');
         cy.get('[for^="__\\$answerOptionMethods_answer-option"]').as('answerOptionMethod');
         cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod');
@@ -1195,7 +1189,7 @@ describe('Home page', () => {
         cy.get(checkboxBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[0].type).equal('choice');
+          expect(qJson.item[0].type).equal('coding');
           expect(qJson.item[0].text).equal('Answer option dropdown');
           expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
         });
@@ -1210,7 +1204,7 @@ describe('Home page', () => {
         cy.get(checkboxBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[1].type).equal('choice');
+          expect(qJson.item[1].type).equal('coding');
           expect(qJson.item[1].text).equal('Answer option radio-button');
           expect(qJson.item[1].extension).to.deep.equal([itemControlExtensions['radio-button']]);
         });
@@ -1225,7 +1219,7 @@ describe('Home page', () => {
         cy.get(acBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[2].type).equal('choice');
+          expect(qJson.item[2].type).equal('coding');
           expect(qJson.item[2].text).equal('Answer option check-box');
           expect(qJson.item[2].repeats).equal(true);
           expect(qJson.item[2].extension).to.deep.equal([itemControlExtensions['check-box']]);
@@ -1242,7 +1236,7 @@ describe('Home page', () => {
         cy.get(checkboxBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[3].type).equal('choice');
+          expect(qJson.item[3].type).equal('coding');
           expect(qJson.item[3].text).equal('Valueset autocomplete');
           expect(qJson.item[3].extension[1]).to.deep.equal(itemControlExtensions.autocomplete);
         });
@@ -1258,7 +1252,7 @@ describe('Home page', () => {
         cy.get(checkboxBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[4].type).equal('choice');
+          expect(qJson.item[4].type).equal('coding');
           expect(qJson.item[4].text).equal('Valueset radio-button');
           expect(qJson.item[4].extension[1]).to.deep.equal(itemControlExtensions['radio-button']);
         });
@@ -1274,7 +1268,7 @@ describe('Home page', () => {
         cy.get(radioBtn).should('not.exist');
 
         cy.questionnaireJSON().should((qJson) => {
-          expect(qJson.item[5].type).equal('choice');
+          expect(qJson.item[5].type).equal('coding');
           expect(qJson.item[5].text).equal('Valueset check-box');
           expect(qJson.item[5].repeats).equal(true);
           expect(qJson.item[5].extension[1]).to.deep.equal(itemControlExtensions['check-box']);
@@ -1287,10 +1281,7 @@ describe('Home page', () => {
         const sampleFile = 'USSG-family-portrait.json';
         let fixtureJson;
         cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-        cy.loadHomePage();
-        cy.get('input[type="radio"][value="scratch"]').click();
-        cy.get('button').contains('Continue').click();
-        cy.uploadFile(sampleFile, false);
+        cy.uploadFile(sampleFile, true);
         cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
         cy.contains('button', 'Edit questions').click();
       });
@@ -1434,6 +1425,9 @@ describe('Home page', () => {
         // Select 'Horizontal Answer Table' Group Item Control
         cy.get(horizontalAnsTblBtn).click();
         cy.get(horizontalAnsTblRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(horizontalAnsTblBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['htable']]);
@@ -1450,6 +1444,9 @@ describe('Home page', () => {
         // Select 'Group Grid' Group Item Control
         cy.get(groupGridBtn).click();
         cy.get(groupGridRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(groupGridBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['grid']]);
@@ -1458,6 +1455,9 @@ describe('Home page', () => {
         // Select 'Header' Group Item Control
         cy.get(headerBtn).click();
         cy.get(headerRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(headerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['header']]);
@@ -1466,6 +1466,9 @@ describe('Home page', () => {
         // Select 'Footer' Group Item Control
         cy.get(footerBtn).click();
         cy.get(footerRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(footerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['footer']]);
@@ -1474,6 +1477,9 @@ describe('Home page', () => {
         // Select 'Page' Group Item Control
         cy.get(pageBtn).click();
         cy.get(pageRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(pageBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['page']]);
@@ -1482,6 +1488,9 @@ describe('Home page', () => {
         // Select 'Tab Container' Group Item Control
         cy.get(tabContainerBtn).click();
         cy.get(tabContainerRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(tabContainerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be added
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['tab-container']]);
@@ -1491,6 +1500,8 @@ describe('Home page', () => {
       it('should be able to clear group item control selection', () => {
         const listBtn = '[for^="__\\$itemControlGroup\\.list"]';
         const listRadio = '#__\\$itemControlGroup\\.list';
+        const unspecifiedBtn = '[for^="__\\$itemControlGroup\\.unspecified"]';
+        const unspecifiedRadio = '#__\\$itemControlGroup\\.unspecified';
 
         // The Data type for the 1st question should be a group
         cy.get('#type').should('contain.value', 'group');
@@ -1506,15 +1517,252 @@ describe('Home page', () => {
         });
 
         // Clear the group item control selection
-        cy.get('button.group-item-control-unselect').click();
-        // The group item control selection should be unselected
-        cy.get(listRadio).should('not.be.checked');
+        cy.get(unspecifiedBtn).click();
+        cy.get(unspecifiedRadio).should('be.checked');
         // Extension should be removed.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).undefined;
         });
       });
 
+    });
+
+    describe('Display item control', () => {
+      beforeEach(() => {
+        const sampleFile = 'display-item-control-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.get('#title').should('have.value', 'Display item control sample form');
+        cy.contains('button', 'Edit questions').click();
+      });
+
+      const displayItemControlExtensions = {
+        'inline': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "inline",
+              "display": "In-line"
+            }]
+          }
+        },
+        'prompt': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "prompt",
+              "display": "Prompt"
+            }]
+          }
+        },
+        'unit': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "unit",
+              "display": "Unit"
+            }]
+          }
+        },
+        'lower': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "lower",
+              "display": "Lower-bound"
+            }]
+          }
+        },
+        'upper': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "upper",
+              "display": "Upper-bound"
+            }]
+          }
+        },
+        'flyover': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "flyover",
+              "display": "Fly-over"
+            }]
+          }
+        },
+        'legal': {
+          url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
+          valueCodeableConcept: {
+            coding: [{
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "legal",
+              "display": "Legal-Button"
+            }]
+          }
+        }
+      };
+
+      it('should display Display item-control extension', () => {
+        const inlineBtn = '[for^="__\\$itemControlDisplay\\.inline"]';
+        const lowerBtn = '[for^="__\\$itemControlDisplay\\.lower"]';
+        const upperBtn = '[for^="__\\$itemControlDisplay\\.upper"]';
+        const flyoverBtn = '[for^="__\\$itemControlDisplay\\.flyover"]';
+        const legalBtn = '[for^="__\\$itemControlDisplay\\.legal"]';
+        const unspecifiedBtn = '[for^="__\\$itemControlDisplay\\.unspecified"]';
+        const inlineRadio = '#__\\$itemControlDisplay\\.inline';
+        const promptRadio = '#__\\$itemControlDisplay\\.prompt';
+        const unitRadio = '#__\\$itemControlDisplay\\.unit';
+        const lowerRadio = '#__\\$itemControlDisplay\\.lower';
+        const upperRadio = '#__\\$itemControlDisplay\\.upper';
+        const flyoverRadio = '#__\\$itemControlDisplay\\.flyover';
+        const legalRadio = '#__\\$itemControlDisplay\\.legal';
+        const unspecifiedRadio = '#__\\$itemControlDisplay\\.unspecified';
+
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'In-line' Display Item Control should be selected.
+        cy.get(inlineRadio).should('be.checked');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).to.deep.equal([displayItemControlExtensions['inline']]);
+        });
+        // Clear the display item control selection
+        cy.get(unspecifiedBtn).click();
+        cy.get(unspecifiedRadio).should('be.checked');
+
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension).undefined;
+        });
+
+        cy.clickTreeNode('Prompt display item control - deprecated');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Prompt' Display Item Control is deprecated and should not be visible.
+        cy.get(promptRadio).should('not.exist');
+        // Should display deprecated message.
+        cy.get('p[id^="deprecated_hint___$itemControlDisplay"]')
+          .should('exist')
+          .should ('contain.text', '* \'Prompt\' item control is deprecated and is not presented in this list of item controls.');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[1].extension).to.deep.equal([displayItemControlExtensions['prompt']]);
+        });
+        // Select 'inline' item control
+        cy.get(inlineBtn).click();
+        cy.get(inlineRadio).should('be.checked');
+        // The deprecated warning message should not be visible.
+        cy.get('p[id^="deprecated_hint___$itemControlDisplay"]')
+          .should('not.exist');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[1].extension).to.deep.equal([displayItemControlExtensions['inline']]);
+        });
+
+        cy.clickTreeNode('Unit display item control - deprecated');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Unit' Display Item Control is deprecated and should not be visible.
+        cy.get(unitRadio).should('not.exist');
+        // Should display deprecated message.
+        cy.get('p[id^="deprecated_hint___$itemControlDisplay"]')
+          .should('exist')
+          .should ('contain.text', '* \'Unit\' item control is deprecated and is not presented in this list of item controls.');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[2].extension).to.deep.equal([displayItemControlExtensions['unit']]);
+        });
+        // Clear the display item control selection
+        cy.get(unspecifiedBtn).click();
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[2].extension).undefined;
+        });
+
+        cy.clickTreeNode('Lower-bound display item control');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Lower-bound' Display Item Control should be selected.
+        cy.get(lowerRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(lowerBtn).find('sup').should('exist').should('contain.text', '(1)');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[3].extension).to.deep.equal([displayItemControlExtensions['lower']]);
+        });
+        // Clear the display item control selection.
+        cy.get(unspecifiedBtn).click();
+        // The display item control selection should be unselected.
+        cy.get(lowerRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[3].extension).undefined;
+        });
+
+        cy.clickTreeNode('Upper-bound display item control');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Upper-bound' Display Item Control should be selected.
+        cy.get(upperRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(upperBtn).find('sup').should('exist').should('contain.text', '(1)');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[4].extension).to.deep.equal([displayItemControlExtensions['upper']]);
+        });
+        // Clear the display item control selection.
+        cy.get(unspecifiedBtn).click();
+        // The display item control selection should be unselected.
+        cy.get(upperRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[4].extension).undefined;
+        });
+
+        cy.clickTreeNode('Fly-over display item control');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Fly-over' Display Item Control should be selected.
+        cy.get(flyoverRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(flyoverBtn).find('sup').should('exist').should('contain.text', '(1)');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[5].extension).to.deep.equal([displayItemControlExtensions['flyover']]);
+        });
+        // Clear the display item control selection.
+        cy.get(unspecifiedBtn).click();
+        // The display item control selection should be unselected.
+        cy.get(flyoverRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[5].extension).undefined;
+        });
+
+        cy.clickTreeNode('Legal-button display item control');
+        // The Data type should be a display.
+        cy.get('#type').should('contain.value', 'display');
+        // The 'Legal-button' Display Item Control should be selected.
+        cy.get(legalRadio).should('be.checked');
+        // The button label should display superscript (1) indicating that the item control is not supported
+        // by LForms Preview.
+        cy.get(legalBtn).find('sup').should('exist').should('contain.text', '(1)');
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[6].extension).to.deep.equal([displayItemControlExtensions['legal']]);
+        });
+        // Clear the display item control selection.
+        cy.get(unspecifiedBtn).click();
+        // The display item control selection should be unselected.
+        cy.get(legalRadio).should('not.be.checked');
+        // Extension should be removed.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[6].extension).undefined;
+        });
+      });
     });
 
     it('should display quantity units', () => {
@@ -1978,7 +2226,7 @@ describe('Home page', () => {
 
         cy.get(errorIcon3El)
           .find('small')
-          .should('contain.text', ' Invalid operator \'>\' for type \'choice\' for enableWhen condition 3. ');
+          .should('contain.text', ' Invalid operator \'>\' for type \'coding\' for enableWhen condition 3. ');
 
         cy.get(errorIcon4El)
           .find('small')
@@ -2026,7 +2274,7 @@ describe('Home page', () => {
           expect(qJson.item[3].enableWhen[0].question).equal(qJson.item[2].item[0].linkId);
           expect(qJson.item[3].enableWhen[0].operator).equal('=');
           expect(qJson.item[3].enableWhen[0].answerString).equal('Joe');
-        });     
+        });
       });
 
       it('should display an error on invalid question field on focusout for an existing enableWhen condition', () => {
@@ -2061,7 +2309,6 @@ describe('Home page', () => {
         cy.get('[id^="enableWhen.2.question"]').type('{downarrow}{enter}');
         cy.get('[id^="enableWhen.2.operator"]').select('=');
         cy.get('[id^="enableWhen.2.answerCoding"]').select('Street clothes, no shoes (LA11872-1)');
-        
         // Verify the questionnaire JSON.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item.length).equal(12);
@@ -2148,9 +2395,9 @@ describe('Home page', () => {
             // Error message returns from LForms.
             cy.get('.lforms-validation')
               .should('have.text', 'Question with linkId \'q3\' contains enableWhen pointing to a question with linkId \'q11\' that does not exist.');
-          
+
             // The FHIR validation message is shown when an error is detected by LForms. It informs users
-            // that additional validation can be performed against the FHIR server found in the 
+            // that additional validation can be performed against the FHIR server found in the
             // 'View/Validate Questionnaire JSON tab'.
             cy.get('.fhir-validation-msg')
               .should('have.text', 'Select the \'View/Validate Questionnaire JSON\' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.');
@@ -2168,8 +2415,9 @@ describe('Home page', () => {
       });
 
       it('should show answer column if there is an answer option in any row of conditional display', () => {
-        cy.selectDataType('choice');
-        cy.getPickInitialValueValueMethodClick();
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
@@ -2237,7 +2485,6 @@ describe('Home page', () => {
       });
 
       it('should work with operator exists value in conditional display', () => {
-        // cy.selectDataType('choice');
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
@@ -2316,8 +2563,9 @@ describe('Home page', () => {
       });
 
       it('should support source item with answerValueSet in conditional display', () => {
-        cy.selectDataType('choice');
-        cy.getPickInitialValueValueMethodClick();
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
         cy.get('label[for^="__\\$answerOptionMethods_value-set"]').click();
         cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
         cy.tsUrl().scrollIntoView().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
@@ -2350,8 +2598,9 @@ describe('Home page', () => {
       });
 
       it('should support source item with SNOMED answerValueSet in conditional display', () => {
-        cy.selectDataType('choice');
-        cy.getPickInitialValueValueMethodClick();
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
         cy.get('label[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
         cy.get('#answerValueSet_ecl').type(snomedEclText);
         cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
@@ -2628,7 +2877,6 @@ describe('Home page', () => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.uploadFile(sampleFile, false);
@@ -3037,7 +3285,7 @@ describe('Home page', () => {
       cy.clickTreeNode('My health history');
       cy.getTreeNode('xxx').click({force: true}); // Force through tooltip.
       cy.get('#text').should('have.value', 'xxx');
-      cy.get('#type').should('have.value', '13: display');
+      cy.get('#type').should('have.value', '12: display');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].text).to.equal('xxx');
@@ -3630,7 +3878,7 @@ describe('Home page', () => {
       // Pick Initial Value (Single)
       cy.clickTreeNode('Pick Initial Value (Single)');
       cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
-      cy.get('#type').should('have.value', '9: choice');
+      cy.get('#type').should('have.value', '9: coding');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
       cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'Street clothes, no shoes');
@@ -3638,7 +3886,7 @@ describe('Home page', () => {
 
       // Pick Initial Value (Multiple)
       cy.clickTreeNode('Pick Initial Value (Multiple)');
-      cy.get('#type').should('have.value', '9: choice');
+      cy.get('#type').should('have.value', '9: coding');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
       cy.get('lfb-pick-answer span.autocomp_selected li').as('pickInitialValues');
@@ -3648,7 +3896,7 @@ describe('Home page', () => {
       
       // Compute Initial Value
       cy.clickTreeNode('Compute Initial Value');
-      cy.get('#type').should('have.value', '9: choice');
+      cy.get('#type').should('have.value', '9: coding');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
       cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b');
@@ -3656,21 +3904,18 @@ describe('Home page', () => {
 
       // Continuously Compute Value
       cy.clickTreeNode('Continuously Compute Value');
-      cy.get('#type').should('have.value', '9: choice');
+      cy.get('#type').should('have.value', '9: coding');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
       cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b + %c');
       cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');    
 
-      // Need to do the None
+      // In the case, no data was provided, it is no longer default to None value method. 
+      // 'Type initial value' is now a default.
       cy.clickTreeNode('None');
-      cy.get('@noneRadio').should('be.visible').and('be.checked');
-      // The 'Initial value' section should be hidden
-      cy.get('lfb-table').should('not.exist');
-      // The 'Pick Initial value' section should be hidden
-      cy.get('lfb-pick-answer').should('not.exist');
-      // The 'Expression' section should be hidden
-      cy.get('lfb-expression-editor').should('not.exist');
+      cy.get('@noneRadio').should('be.visible').and('not.be.checked');
+      cy.get('#type').should('have.value', '2: integer');
+      cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
     });
 
     it('should type initial values', () => {
@@ -3713,7 +3958,10 @@ describe('Home page', () => {
       cy.clickTreeNode('None');
       cy.contains('Add new item').scrollIntoView().click();
       cy.get('#text').clear().type('Pick initial values');
-      cy.selectDataType('choice');
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
       cy.getPickInitialValueValueMethodClick();
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
@@ -3771,7 +4019,7 @@ describe('Home page', () => {
       cy.get('@pickAnswerSelection').eq(1).should('contain.text', 'Example 3');
       
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[7].type).equal('choice');
+        expect(qJson.item[7].type).equal('coding');
         expect(qJson.item[7].answerOption[0].valueCoding.display).equal('Example 1');
         expect(qJson.item[7].answerOption[0].initialSelected).equal(true);
         expect(qJson.item[7].answerOption[2].valueCoding.display).equal('Example 3');
@@ -4217,8 +4465,11 @@ describe('Home page', () => {
 
       // Select 'Pick initial value' option for 'Value method' field
       // ---------------------------------------------------------------
-      // Switch to data type 'choice'
-      cy.selectDataType('choice');
+      // Switch to data type 'coding'
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
       cy.getPickInitialValueValueMethodClick();
 
       cy.get('[id^="pick-answer_"]').as('pickAnswer');
@@ -4260,7 +4511,7 @@ describe('Home page', () => {
       cy.get('@pickAnswer').should('have.value', 'Example 2');
     
       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[7].type).equal('choice');
+        expect(qJson.item[7].type).equal('coding');
         expect(qJson.item[7].answerOption[0].valueCoding.display).equal('Example 1');
         expect(qJson.item[7].answerOption[0].initialSelected).to.not.exist;
         expect(qJson.item[7].answerOption[1].valueCoding.display).equal('Example 2');
@@ -4353,8 +4604,9 @@ describe('Accepting only LOINC terms of use', () => {
     cy.get('button').contains('Create questions').click();
   });
   it('should not display SNOMED option in answerValueSet', () => {
-    cy.selectDataType('choice');
-    cy.getPickInitialValueValueMethodClick();
+    cy.selectDataType('coding');
+    cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+    cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
     cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
     // SNOMED radio should not exist

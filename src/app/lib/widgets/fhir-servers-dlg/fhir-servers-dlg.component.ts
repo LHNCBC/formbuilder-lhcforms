@@ -7,6 +7,7 @@ import {FHIRServer, FhirService} from '../../../services/fhir.service';
 import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/user-specified-server-dlg.component';
 
 @Component({
+  standalone: false,
   selector: 'lfb-fhir-servers-dlg',
   template: `
     <div role="dialog" aria-labelledby="serverDlgTitle" aria-describedby="ServerListCaption">
