@@ -52,6 +52,8 @@ Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
 Cypress.Commands.add('goToHomePage', () => {
   CypressUtil.mockLFormsLoader();
   cy.visit('/');
+  cy.wait('@lformsVersions');
+  cy.wait("@lformsLib");
   cy.window({timeout: 60000}).should('have.property', 'LForms');
 });
 

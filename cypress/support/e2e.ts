@@ -17,6 +17,7 @@
 import './commands';
 import 'cypress-real-events';
 import failOnConsoleError from 'cypress-fail-on-console-error';
+import installLogsCollector from 'cypress-terminal-report/src/installLogsCollector';
 
 const config = {
   consoleMessages: [
@@ -31,5 +32,6 @@ const config = {
   ]
 };
 
+installLogsCollector();
 failOnConsoleError(config);
 

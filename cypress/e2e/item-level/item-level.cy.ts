@@ -2130,7 +2130,7 @@ describe('Home page', () => {
 
         cy.get('[id^="enableWhen.1.question"]').type('invalid question');
         cy.get('ngb-typeahead-window').should('not.exist');
-        // Hit the tab key from the question field. Validation should be triggered, but 
+        // Hit the tab key from the question field. Validation should be triggered, but
         // no error should occur, as this represents a new condition where the 'enableWhen'
         // condition has not yet been added to the item.
         cy.get('[id^="enableWhen.1.question"]').trigger('keyup', {key: 'Tab'});
@@ -3130,7 +3130,6 @@ describe('Home page', () => {
       const sampleFile = 'USSG-family-portrait.json';
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.loadHomePage();
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.uploadFile(sampleFile, false);
