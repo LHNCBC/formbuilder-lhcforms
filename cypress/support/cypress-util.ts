@@ -4,6 +4,7 @@ import {format, parseISO} from 'date-fns';
 
 export class CypressUtil {
 
+  public static HTTP_REQ_TIMEOUT = 20000;
   static lformsLibs = new Map();
   /**
    * Access base page component
@@ -180,6 +181,7 @@ export class CypressUtil {
       console.log(`Loading from cache: ${req.url}`);
       req.reply(CypressUtil.lformsLibs.get(req.url));
     } else {
+      req.timeout = CypressUtil.HTTP_REQ_TIMEOUT;
       req.continue((resp) => {
         if (resp.statusCode >= 400) {
           // Console.error statement should trigger failure of the test.
