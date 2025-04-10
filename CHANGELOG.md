@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.3] 2025-04-10
+### Fixed
+- Removed encoding of answerValueSet for SNOMED.
+
 ## [10.0.2] 2025-03-24
 ### Fixed
 - Fixed a playwright test.
