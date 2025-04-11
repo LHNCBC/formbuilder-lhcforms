@@ -5,6 +5,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [10.0.3] 2025-04-10
 ### Fixed
 - Removed encoding of answerValueSet for SNOMED.
+- Changed default output of questionnaire to R4, when [using window api](/API.md)
 
 ## [10.0.2] 2025-03-24
 ### Fixed
