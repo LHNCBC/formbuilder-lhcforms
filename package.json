@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "10.0.2",
+  "version": "10.0.3",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -108,6 +108,7 @@
     "cypress": "^13.6.4",
     "cypress-fail-on-console-error": "^4.0.2",
     "cypress-real-events": "^1.13.0",
+    "cypress-terminal-report": "^7.1.0",
     "eslint": "^8.57.0",
     "jasmine-core": "^4.6.0",
     "jasmine-spec-reporter": "~7.0.0",

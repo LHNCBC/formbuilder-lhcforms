@@ -20,6 +20,7 @@ describe('Home page accept Terms of Use notices', () => {
         }).as('loadingError');
 
       cy.visit('/'); // Avoid goToHomePage(), which intercepts lforms loading calls of its own.
+      cy.wait("@loadingError");
       cy.acceptAllTermsOfUse();
       cy.get('.card').as('errorCard').contains('.card-header', 'Error', {timeout: 10000});
       cy.get('@errorCard').find('.card-body').should('include.text', 'Encountered an error which causes');

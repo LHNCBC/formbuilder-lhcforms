@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.3] 2025-04-07
+### Fixed
+- Refactored loading of LForms in mockLFormsLoader() to address random cypress test failures.
+Added detailed log statements when the tests fail.
+
 ## [10.0.2] 2025-03-24
 ### Fixed
 - Fixed a playwright test.
