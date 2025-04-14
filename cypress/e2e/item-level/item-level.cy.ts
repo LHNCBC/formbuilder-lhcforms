@@ -779,7 +779,7 @@ describe('Home page', () => {
       cy.get('@controlDiv').find('span.text-break').should('not.exist');
       cy.get(eclSel).type('123');
       cy.get('@controlDiv').click() // Change on eclSel
-      cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl%2F123');
+      cy.get('@controlDiv').find('span.text-break').should('contain.text', 'fhir_vs=ecl/123');
 
       // The terminology server should now have value
       cy.tsUrl().should('have.value', 'https://snowstorm.ihtsdotools.org/fhir');
@@ -787,7 +787,7 @@ describe('Home page', () => {
       // Preserve ecl edited in non-snomed input box
       cy.get('@nonSnomedMethod').click();
       cy.get('#answerValueSet_ecl').should('not.exist');
-      cy.get('#answerValueSet_non-snomed').as('asInput').should('be.visible').should('contain.value', 'fhir_vs=ecl%2F123');
+      cy.get('#answerValueSet_non-snomed').as('asInput').should('be.visible').should('contain.value', 'fhir_vs=ecl/123');
       cy.get('@asInput').type('_extra_chars');
       cy.get('@snomedMethod').click();
       cy.get(eclSel).should('have.value', '123_extra_chars');
@@ -799,7 +799,7 @@ describe('Home page', () => {
       cy.get(eclSel).should('have.value', '123_extra_chars');
 
       cy.questionnaireJSON().should((q) => {
-        expect(q.item[0].answerValueSet).contain('fhir_vs=ecl%2F123_extra_chars');
+        expect(q.item[0].answerValueSet).contain('fhir_vs=ecl/123_extra_chars');
         expect(q.item[0].answerOption).to.be.undefined;
         const extUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
         expect(CypressUtil.getExtensions(q.item[0], extUrl)).to.deep.equal([{
@@ -839,7 +839,7 @@ describe('Home page', () => {
     });
 
     it('should import a form with an item having SNOMED CT answerValueSet', () => {
-      const encodedUriPart = 'fhir_vs='+encodeURIComponent('ecl/' + snomedEclText);
+      const encodedUriPart = 'fhir_vs=ecl/' + snomedEclText;
 
       cy.uploadFile('snomed-answer-value-set-sample.json', true);
       cy.get('#title').should('have.value', 'SNOMED answer value set form');

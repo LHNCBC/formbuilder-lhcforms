@@ -2,8 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.0.3] 2025-04-07
+## [10.0.3] 2025-04-10
 ### Fixed
+- Removed encoding of answerValueSet for SNOMED.
+- Changed default output of questionnaire to R4, when [using window api](/API.md)
 - Refactored loading of LForms in mockLFormsLoader() to address random cypress test failures.
 Added detailed log statements when the tests fail.
 
