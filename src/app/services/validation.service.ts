@@ -28,7 +28,9 @@ export interface EnableWhenValidationObject {
 
 export class ValidationService {
   static readonly LINKID_PATTERN = /^[^\s]+(\s[^\s]+)*$/;
-
+  static readonly INITIAL_DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$/;
+  static readonly INITIAL_INTEGER = /^-?([0]|([1-9][0-9]*))$/;
+  
   constructor(private formService: FormService) { }
 
   validators = {
@@ -434,5 +436,7 @@ export class ValidationService {
 
     return errors;
   };
+
+
 }
 

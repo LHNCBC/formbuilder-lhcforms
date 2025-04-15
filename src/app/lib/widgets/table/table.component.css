@@ -62,13 +62,46 @@ td.default-column {
   background-color: inherit !important;
 }
 
+/* Hide borders for the action column */
 td.action-column {
-  border-left: 1px solid var(--bs-border-color);
-  border-bottom: 1px solid var(--bs-border-color);
+  margin-left: 4px;
+  border-left: 0px;
+  border-bottom: 0px;
 }
 
 .col-sm-half {
   width: 4.16667%;
   flex: 0 0  4.16667%;
   max-width: 4.16667%;
+}
+
+.col-sm-quarter {
+  width: 2.08333%;
+  flex: 0 0  2.08333%;
+  max-width: 2.08333%;
+}
+
+/* Hide borders for the error column. */
+td.error-column {
+  min-width: 20px;
+  margin-top: 5px;
+  border-left: 0px;
+  border-bottom: 0px;
+}
+
+/* Center the error icon */
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Move the add button down 2px */
+.array-add-button {
+  margin-top: 2px;
+}
+
+/* Separate each row by 2px */
+tr {
+  margin-bottom: 2px;
 }

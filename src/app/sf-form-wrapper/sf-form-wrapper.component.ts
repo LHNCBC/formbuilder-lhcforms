@@ -52,7 +52,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     '/type': this.validateType.bind(this),
     '/enableWhen': this.validateEnableWhenAll.bind(this),
     '/enableWhen/*': this.validateEnableWhenSingle.bind(this),
-    '/linkId': this.validateLinkId.bind(this)
+    '/linkId': this.validateLinkId.bind(this),
+    '/__$pickInitial': this.validatePickInitial.bind(this)
   };
 
   mySchema: any = {properties: {}};
@@ -199,6 +200,22 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   }
 
   /**
+   * Determines whether the provided array of answer options contains data. The array may
+   * contain an empty object; therefore, it is necessary to validate the 'display' and
+   * 'code' fields. 
+   * @param ansOpts - An array of Answer Options objects
+   * @returns - true if the Answer Option array is empty or contain one empty item, otherwise false.
+   */
+  isEmptyAnswerOption(ansOpts: any): boolean {
+    if (!ansOpts || ansOpts.length === 0) {
+      return true;
+    }
+    if (ansOpts.length > 1)
+      return false;
+    return ansOpts.some(ansOpt => !(ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
+  }
+
+  /**
    * Custom validator wrapper for the 'type' field in ngx-schema-form. Creates a validation object using data
    * from the 'value', and 'formProperty' and then invokes the actual validation function provided by
    * the 'ValidationService'.
@@ -266,9 +283,11 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param formProperty - Object form property of the condition.
    * @param rootProperty - Root form property.
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
-   *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
-   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not
-   *                                            and not equal to 'exists', and the answer is empty.
+   *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
+   *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
+   *                                             options. 
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
+   *                                            and not equal to 'exists', and the answer is empty. 
    */
   validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
@@ -342,4 +361,82 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     return errors;
   }
+
+  /**
+   * Custom validator for the 'Pick initial' option in the Value Method. This validates data requirements
+   * for each of the 'Answer list source' field: 'answer-option', 'snomed-value-set', and 'value-set'.
+   * @param value - not used.
+   * @param formProperty - Object form property of the '__$pickInitial' field. 
+   * @param rootProperty - Root form property. 
+   * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
+   *          1. (ANSWER_OPTION_REQUIRED)               - 'Answer options' option is selected, but 'Answer choices' is
+   *                                                      empty and needs to be poulated.
+   *          2. (SNOMED_ANSWER_VALUE_SET_URI_REQUIRED) - 'SNOMED answer value set' option is selected, requiring the
+   *                                                      answer value set URI.
+   *          3. (ANSWER_VALUE_SET_URI_REQUIRED)        - 'Answer value set URI' option is selected, requiring both the
+   *                                                      'Answer value set' and 'Terminology server' fields.
+   */
+  validatePickInitial (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
+    let errors: any[] = [];
+
+    if (!this.model) {
+      return null;
+    }
+    const nodeId = this.model?.[FormService.TREE_NODE_ID];
+
+    if (!nodeId) {
+      return null;
+    }
+
+    const node = this.formService.getTreeNodeById(nodeId);
+    const linkId = node.data.linkId;
+
+    const asMethod = formProperty.findRoot().getProperty("__$answerOptionMethods").value;
+    // Answer Choices shows up with Answer Option Method = "answer-option" and 
+    const ansOpts = formProperty.findRoot().getProperty("answerOption").value;
+
+    // Answer Value Set field shows up when the Answer Option Method = "value-set" or "snomed-value-set"
+    const answerValueSetUri = formProperty.findRoot().getProperty("answerValueSet").value;
+
+    const valueMethod = formProperty.findRoot().getProperty("__$valueMethod").value;
+
+    if (asMethod === "answer-option" && valueMethod === "pick-initial" && this.isEmptyAnswerOption(ansOpts)) {
+      const errorCode = 'ANSWER_OPTION_REQUIRED';
+      const err: any = {};
+      err.code = errorCode;
+      err.path = `#/__$pickInitial`;
+      err.message = `Answer choices must be populated.`;
+      errors.push(err);
+    } else if (asMethod === "snomed-value-set" && !answerValueSetUri) {
+      const errorCode = 'SNOMED_ANSWER_VALUE_SET_URI_REQUIRED';
+      const err: any = {};
+      err.code = errorCode;
+      err.path = `#/__$pickInitial`;
+      err.message = `SNOMED answer value set URI is required.`;
+      errors.push(err);
+    } else if (asMethod === "value-set" && !answerValueSetUri) {
+      const errorCode = 'ANSWER_VALUE_SET_URI_REQUIRED';
+      const err: any = {};
+      err.code = errorCode;
+      err.path = `#/__$pickInitial`;
+      err.message = `Answer value set URI is required.`;
+      errors.push(err);
+    }
+
+    if(errors.length) {
+      formProperty.extendErrors(errors);
+    }
+    else {
+      errors = null;
+    }
+
+    this.formService.updateValidationStatus(nodeId,
+                                            linkId,
+                                            this.validationService.getLastPathSegment(formProperty.canonicalPathNotation),
+                                            errors);
+
+    this.validationErrorsChanged.next(errors);
+    return errors;
+  }
+
 }

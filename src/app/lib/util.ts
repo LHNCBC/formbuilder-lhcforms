@@ -321,8 +321,10 @@ export class Util {
     traverse(value).forEach(function (node) {
       this.before(function () {
         if(node && Array.isArray(node)) {
-          // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
-          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
+          // There is a bug in one of the package which caused issue if there is objects with empty fields in the array.
+          // The array index is not updated properly which caused an error. This is a work-around to clean up the empty fields.
+          Util.eliminateEmptyFields(node);
+          this.update(node);
         }
         if (Util.hasHelpText(node)) {
           Util.eliminateEmptyFields(node.__$helpText);
@@ -657,6 +659,18 @@ export class Util {
       ret = resp.data;
     }
     return ret;
+  }
+
+  /**
+   * Returns the name of the value field for a given FHIR data type.
+   * @param type - one of the fhir data types.
+   * @returns - a field name in the format 'value' + CamelCase(type).
+   */
+  static getValueDataTypeName(type: string): string {
+    if (type === "text") {
+      type = "string";
+    }
+    return 'value' + type.charAt(0).toUpperCase() + type.slice(1);
   }
 
   /**

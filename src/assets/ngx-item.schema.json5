@@ -1084,7 +1084,11 @@
             "description": "Indicates whether the answer value is selected when the list of possible answers is initially shown.",
             "title": "Initial selected",
             "pattern": "^true|false$",
-            "type": "boolean"
+            "type": "boolean",
+            "visibleIf": {
+              "/type": ["$EXP$ target.value == 'integer' || target.value == 'date' || target.value == 'time'|| target.value == 'string' || target.value == 'text' || target.value == 'coding'"]
+            },
+            "widget": {"id": "hidden"}
           }
         },
         "additionalProperties": false,
@@ -1093,7 +1097,14 @@
       "type": "array",
       "title": "Answer choices",
       "visibleIf": {
-        "__$answerOptionMethods": ["answer-option"]
+        "allOf": [
+          {
+            "/__$answerOptionMethods": ["answer-option"]
+          },
+          {
+            "__$valueMethod": ["$EXP$ target.value != 'compute-initial' && target.value != 'compute-continuously' "]
+          }
+        ]
       },
       "widget": {
         "id": "answer-option",
@@ -1282,7 +1293,47 @@
         "controlClasses": "col p-0"
       }
     },
-
+    "__$valueMethod": {
+      "description": "Specify how the question obtains its initial values.",
+      "title": "Value method",
+      "visibleIf": {
+        "/type": ["$EXP$ target.value != 'group' && target.value != 'display' "]
+      },
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["type-initial"],
+          "title": "Type initial value"
+        },
+        {
+          "type": "string",
+          "enum": ["pick-initial"],
+          "title": "Pick initial value"
+        },
+        {
+          "type": "string",
+          "enum": ["compute-initial"],
+          "title": "Compute initial value"
+        },
+        {
+          "type": "string",
+          "enum": ["compute-continuously"],
+          "title": "Continuously compute value"
+        },
+        {
+          "type": "string",
+          "enum": ["none"],
+          "title": "None"
+        }
+      ],
+      "type": "string",
+      "widget": {
+        "id": "value-method",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0"
+      }
+    },
     "initial": {
       "description": "One or more values that should be pre-populated in the answer when initially rendering the questionnaire for user input.",
       "items": {
@@ -1338,6 +1389,9 @@
             "title": "Value decimal",
             "visibleIf": {
               "/type": ["decimal"]
+            },
+            "widget": {
+              "id": "initial-number"
             }
           },
           "valueInteger": {
@@ -1347,6 +1401,9 @@
             "title": "Value integer",
             "visibleIf": {
               "/type": ["integer"]
+            },
+            "widget": {
+              "id": "initial-number"
             }
           },
           "valueDate": {
@@ -1640,7 +1697,21 @@
       "type": "array",
       "title": "Initial value",
       "visibleIf": {
-        "/type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'coding'"]
+        "oneOf": [
+          {
+            "__$valueMethod":  ["type-initial"]
+          },
+          {
+            "allOf": [
+              {
+                "__$valueMethod":  ["pick-initial"]
+              },
+              {
+                "type": ["boolean"]
+              }
+            ]
+          }
+        ]
       },
       "widget": {
         "id": "table",
@@ -1664,7 +1735,345 @@
           {"field": "valueQuantity.value","title": "Value", "col": 4, "nolabel": true},
           {"field": "valueQuantity.unit", "title": "Unit", "col": 7, "nolabel": true},
           {"field": "valueReference", "noHeader": true, "nolabel": true}
+        ],
+        "showErrorTypeList": [
+          { "type": "decimal", "properties": ["valueDecimal"], "codes": ["PATTERN"] },
+          { "type": "integer", "properties": ["valueInteger"], "codes": ["PATTERN"] }
         ]
+      }
+    },
+    "__$pickInitial": {
+      "description": "One of the permitted answers for a \"choice\" or \"open-choice\" question.",
+      "properties": {
+        "repeats": {
+          "description": "An indication, if true, that the item may occur multiple times in the response, collecting multiple answers for questions or multiple sets of answers for groups.",
+          "title": "Allow repeating question?",
+          "pattern": "^true|false$",
+          "type": "boolean",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "selectedAnswers": {
+          "type": "array",
+          "title": "Pick Initial value",
+          "items": {
+            "properties": {
+              "extension": {
+                "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+                "items": {
+                  "$ref": "#/definitions/Extension"
+                },
+                "type": "array",
+                "title": "Extension",
+                "widget": {
+                  "id": "hidden"
+                }
+              },
+              "valueCoding": {
+                "description": "A potential answer that's allowed as the answer to this question.",
+                "title": "Value coding",
+                "properties": {
+                  "system": {
+                    "description": "The identification of the code system that defines the meaning of the symbol in the code.",
+                    "pattern": "^\\S*$",
+                    "type": "string"
+                  },
+                  "code": {
+                    "description": "A symbol in syntax defined by the system. The symbol may be a predefined code or an expression in a syntax defined by the coding system (e.g. post-coordination).",
+                    "pattern": "^[^\\s]+(\\s[^\\s]+)*$",
+                    "type": "string"
+                  },
+                  "display": {
+                    "description": "A representation of the meaning of the code in the system, following the rules of the system.",
+                    "pattern": "^[ \\r\\n\\t\\S]+$",
+                    "type": "string"
+                  },
+                  "userSelected": {
+                    "description": "Indicates that this coding was chosen by a user directly - e.g. off a pick list of available items (codes or displays).",
+                    "pattern": "^true|false$",
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false,
+                "type": "object",
+                "visibleIf": {
+                  "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+                }
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
+          },
+        }
+      },
+      "type": "object",
+      "title": "Pick Initial value",
+      "visibleIf": {
+        "allOf": [
+          {
+            "__$valueMethod":  ["pick-initial"]
+          },
+          {
+            "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option'"]
+          }
+        ],
+      },
+      "widget": {
+        "id": "pick-answer",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0",
+        "addButtonLabel": "Add another value",
+        "singleItemEnableSource": "repeats"
+      }
+    },
+    "__$variable": {
+      "description": "Use to store values derived from calculations, references to other answers, or external data.",
+      "title": "Item Variables",
+      "type": "array",
+      "items": {
+        "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
+        "properties": {
+          "id": {
+            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+            "title": "Id",
+            "pattern": "^[ \\r\\n\\t\\S]+$",
+            "type": "string",
+            "widget": {"id": "hidden"}
+          },
+          "url": {
+            "description": "A location where the data can be accessed.",
+            "pattern": "^\\S*$",
+            "type": "string"
+          },
+          "extension": {
+            "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+            "items": {
+              "$ref": "#/definitions/Extension"
+            },
+            "type": "array",
+            "title": "Extension",
+            "widget": {
+              "id": "hidden"
+            }
+          },
+          "valueString": {
+            "description": "A potential answer that's allowed as the answer to this question.",
+            "pattern": "^[ \\r\\n\\t\\S]+$",
+            "type": "string",
+            "title": "Value string",
+            "visibleIf": {
+              "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+            }
+          },
+          "valueExpression": {
+            "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
+            "properties": {
+              "id": {
+                "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+                "pattern": "^[ \\r\\n\\t\\S]+$",
+                "type": "string"
+              },
+              "description": {
+                "description": "A brief, natural language description of the condition that effectively communicates the intended semantics.",
+                "pattern": "^[ \\r\\n\\t\\S]+$",
+                "type": "string"
+              },
+              "name": {
+                "description": "A short name assigned to the expression to allow for multiple reuse of the expression in the context where it is defined.",
+                "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
+                "type": "string"
+              },
+              "language": {
+                "description": "The media type of the language for the expression.",
+                "enum": [
+                  "text/cql",
+                  "text/fhirpath",
+                  "application/x-fhir-query"
+                ],
+                "type": "string"
+              },
+              "expression": {
+                "description": "An expression in the specified language that returns a value.",
+                "pattern": "^[ \\r\\n\\t\\S]+$",
+                "type": "string"
+              },
+              "reference": {
+                "description": "A URI that defines where the expression is found.",
+                "pattern": "^\\S*$",
+                "type": "string"
+              },
+              "extension": {
+                "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+                "items": {
+                  "$ref": "#/definitions/Extension"
+                },
+                "type": "array",
+                "widget": {
+                  "id": "hidden"
+                }
+              }
+            },
+            "additionalProperties": false,
+            "type": "object"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      "widget": {
+        "id": "variable",
+        "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+        "showExpression": false,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: false,
+          itemVariablesSection: true,
+          outputExpressionSection: false
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 ",
+        "addButtonLabel": "Add/edit variables",
+        "showHeaderFields": [
+          {"field": "valueExpression.properties.name", "nolabel": true, "col": 2, "title": "Name"},
+          {"field": "valueExpression.properties.extension", "nolabel": true, "col": 3, "title": "Type"},
+          {"field": "valueExpression.properties.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"},
+        ],
+        "showDataFields": [
+          {"field": "valueExpression.name", "nolabel": true, "col": 2, "title": "Name"},
+          {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
+          {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
+        ]
+      }
+    },
+    "__$initialExpression": {
+      "description": "Initial expression.",
+      "title": "Expression",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
+      },
+      "visibleIf": {
+        "__$valueMethod": ["compute-initial"]
+      },
+      "widget": {
+        "id": "expression-editor",
+        "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+        "userExpressionChoices": [
+          { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
+          { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
+        ],
+        "showExpression": true,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: true,
+          itemVariablesSection: true,
+          outputExpressionSection: true
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col form-control form-control-sm"
+      }
+    },
+    "__$calculatedExpression": {
+      "description": "Initial expression.",
+      "title": "Expression",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
+      },
+      "visibleIf": {
+        "__$valueMethod": ["compute-continuously"]
+      },
+      "widget": {
+        "id": "expression-editor",
+        "expressionUri": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+        "userExpressionChoices": [
+          { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
+          { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
+        ],
+        "showExpression": true,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: true,
+          itemVariablesSection: true,
+          outputExpressionSection: true
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col form-control form-control-sm"
       }
     },
     "__$observationLinkPeriod": {
@@ -2037,11 +2446,66 @@
     },
     {
       "fields": [
+        "__$valueMethod"
+      ],
+      "showFields": [
+        {
+          "field": "__$valueMethod",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
         "initial"
       ],
       "showFields": [
         {
           "field": "initial",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$pickInitial"
+      ],
+      "showFields": [
+        {
+          "field": "__$pickInitial",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$variable"
+      ],
+      "showFields": [
+        {
+          "field": "__$variable",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$initialExpression"
+      ],
+      "showFields": [
+        {
+          "field": "__$initialExpression",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$calculatedExpression"
+      ],
+      "showFields": [
+        {
+          "field": "__$calculatedExpression",
           "col": 12
         }
       ]

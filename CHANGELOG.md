@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.4] 2024-04-15
+### Added
+- Added Value Method field for selecting initial values.
+
 ## [10.0.3] 2025-04-10
 ### Fixed
 - Removed encoding of answerValueSet for SNOMED.

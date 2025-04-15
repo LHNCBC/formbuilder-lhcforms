@@ -1,5 +1,6 @@
 import {Directive, ElementRef, HostListener} from '@angular/core';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
+import { Renderer2 } from '@angular/core';
 
 /**
  * A directive to restrict input to integer characters.
@@ -15,8 +16,15 @@ export class IntegerDirective {
    * Constructor
    * @param hostEl - Host element
    * @param liveAnnouncer - Angular Live Announcer service
+   * @param renderer - service to interact with the DOM
    */
-  constructor(private hostEl: ElementRef, public liveAnnouncer: LiveAnnouncer) {
+  constructor(private hostEl: ElementRef, public liveAnnouncer: LiveAnnouncer, private renderer: Renderer2) {
+  }
+
+  @HostListener('focusout', ['$event'])
+  onFocusOut(event: FocusEvent): void {
+    const el = (event.target as HTMLInputElement);
+    this.renderer.setProperty(this.hostEl.nativeElement, 'value', el.value);
   }
 
   /**
@@ -39,6 +47,13 @@ export class IntegerDirective {
   @HostListener('keydown', ['$event'])
   onKeydown(event: KeyboardEvent) {
     let announce = false;
+    const el = (event.target as HTMLInputElement);
+    // Handle numbers that has leading 0.
+    // For example: 00000, 000123
+    if (el.value.startsWith('0') && el.value.length >= 1 && event.key !== 'Delete' && event.key !== 'Backspace') {
+      event.preventDefault();
+    }
+
     if (
       event.key === '.' ||
       event.key.toLowerCase() === 'e' ||
