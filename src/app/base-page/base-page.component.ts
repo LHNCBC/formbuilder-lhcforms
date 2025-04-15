@@ -21,7 +21,7 @@ import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-serv
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import {PreviewDlgComponent} from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
-import {GuidingStep, Util} from '../lib/util';
+import {GuidingStep, Util, FHIR_VERSION_TYPE} from '../lib/util';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
@@ -147,7 +147,7 @@ export class BasePageComponent implements OnInit {
     }
 
     if(window.opener) {
-      this.formService.windowOpenerUrl = this.parseOpenerUrl(window.location);
+      this.parseOpenerUrl(window.location);
     }
     this.addWindowListeners();
   }
@@ -168,7 +168,8 @@ export class BasePageComponent implements OnInit {
     const pathname = location?.pathname.replace(/^\/+/, '').toLowerCase();
     if(pathname === 'window-open') {
       const params = new URLSearchParams(location.search);
-      ret = params.get('referrer');
+      this.formService.windowOpenerFhirVersion = params.get('fhirVersion');
+      this.formService.windowOpenerUrl = params.get('referrer');
     }
     return ret;
   }

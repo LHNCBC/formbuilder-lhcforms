@@ -112,10 +112,14 @@ prevent accessing the information, so the caller needs to provide the
 `window.location.href` as a`referrer` parameter in the url to establish the
 communication. The pathname to provide the url parameter is `/window-open`.
 
+A new http parameter `fhirVersion` is introduced to request a particular version of
+questionnaire. The permitted values are `STU3`, `R4`, and `R5`. Any unrecognized
+versions will be ignored. The default output is `R4`.
+
 Here is an example:
 
 ```
-const fbWin = window.open(fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href), 'formBuilderWindow');
+const fbWin = window.open(fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href)+'&fhirVersion=R5', 'formBuilderWindow');
 ```
 
 Use `fbWin.postMessage` to send the `initialQuestionnaire` message to the child

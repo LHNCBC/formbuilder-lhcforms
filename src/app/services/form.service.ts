@@ -26,11 +26,12 @@ import ngxFlSchema from '../../assets/ngx-fl.schema.json5';
 import flLayout from '../../assets/fl-fields-layout.json5';
 // @ts-ignore
 import itemEditorSchema from '../../assets/item-editor.schema.json5';
-import {GuidingStep, Util} from '../lib/util';
+import {GuidingStep, Util, FHIR_VERSIONS, FHIR_VERSION_TYPE} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { toUpper } from 'cypress/types/lodash';
 
 declare var LForms: any;
 
@@ -87,6 +88,7 @@ export class FormService {
   _lformsVersion = '';
   _lformsErrorMessage = null;
   _windowOpenerUrl: string = null;
+  _windowOpenerFhirVersion: FHIR_VERSION_TYPE = "R4";
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
@@ -232,6 +234,22 @@ export class FormService {
 
   set windowOpenerUrl(url: string) {
     this._windowOpenerUrl = url;
+  }
+
+  get windowOpenerFhirVersion(): FHIR_VERSION_TYPE {
+    return this._windowOpenerFhirVersion;
+  }
+
+  /**
+   * Setter
+   * Set if the input is a valid version, otherwise ignore.
+   */
+  set windowOpenerFhirVersion(version: string) {
+    const v = version?.toUpperCase() as FHIR_VERSION_TYPE;
+    this._windowOpenerFhirVersion =
+      FHIR_VERSIONS[v] !== undefined
+        ? v
+        : this._windowOpenerFhirVersion;
   }
 
   get lformsVersion(): string {
@@ -1080,6 +1098,11 @@ export class FormService {
    */
   notifyWindowOpener(data: any) {
     if(this._windowOpenerUrl) {
+      // Return the data in the requested format
+      data.questionnaire = this.convertFromR5(
+        data.questionnaire,
+        this._windowOpenerFhirVersion
+      );
       window.opener.postMessage(data, this._windowOpenerUrl);
     }
   }

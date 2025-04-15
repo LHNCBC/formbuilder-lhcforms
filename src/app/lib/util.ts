@@ -649,15 +649,17 @@ export class Util {
     const v = Util.detectFHIRVersion(initialQ);
     if(v !== version) {
       const resp: any = convert(initialQ, v, version);
+      // Remove tags added by the converter.
+      Util.removeElementsFromArray(resp?.data?.meta?.tag, (tag: fhir.Coding) => {
+        return (/^lhc-qnvconv-(STU3|R4|R5|R6)-to-(STU3|R4|R5|R6)$/i.test(tag?.code));
+      });
+      if(resp?.data?.meta?.tag && resp.data.meta.tag.length === 0) {
+        delete resp.data.meta.tag;
+      }
       ret = resp.data;
-      /*
-      ret = LForms.Util.getFormFHIRData(initialQ.resourceType, version,
-          LForms.Util.convertFHIRQuestionnaireToLForms(initialQ));
-      */
     }
     return ret;
   }
-
 
   /**
    * Returns the name of the value field for a given FHIR data type.
@@ -669,5 +671,19 @@ export class Util {
       type = "string";
     }
     return 'value' + type.charAt(0).toUpperCase() + type.slice(1);
+  }
+
+  /**
+   * Remove elements based on the boolean value returned by the callback.
+   *
+   * @param arr - Array to prune
+   * @param callback - Truthy call back. The function will be passed the element and its index in the array.
+   */
+  static removeElementsFromArray(arr: any [], callback) {
+    for(let i = arr?.length - 1; arr && i >= 0; i--) {
+      if(callback(arr[i], i)) {
+        arr.splice(i, 1);
+      }
+    }
   }
 }

@@ -16,9 +16,8 @@ test.describe('Window opener notice', async () => {
   });
 });
 
-test.describe('Open form builder in a new window', async () => {
+test.describe('Cancel event', async () => {
   let mainPO: MainPO;
-
 
   test.beforeEach(async ({page}) => {
     page.on('console', msg => {
@@ -32,40 +31,12 @@ test.describe('Open form builder in a new window', async () => {
 
     await page.goto('/tests/window-open-test.html');
     const pagePromise = page.context().waitForEvent('page');
-    await page.getByRole('button', {name: 'Open form builder'}).click();
+    await page.getByRole('button', {name: `Open form builder (Default)`}).click();
     const newPage = await pagePromise;
     await newPage.waitForLoadState('domcontentloaded');
     mainPO = new MainPO(newPage);
     await mainPO.loadHomePage();
     await expect(mainPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
-  });
-
-  test('should open form builder in a new window', async ({page}) => {
-    const initialQTitle = 'Form loaded from window-open-test.html';
-    const messageData = {data: null};
-    messageData.data = await getMessage(page, 'initialized');
-    expect(messageData.data.type).toBe('initialized');
-    messageData.data = await getMessage(page, 'updateQuestionnaire');
-    expect(messageData.data.type).toBe('updateQuestionnaire');
-    await page.getByRole('button', {name: 'Clear messages'}).click();
-    await page.getByRole('button', {name: 'Post questionnaire'}).click();
-    await expect(mainPO.titleLocator).toHaveValue(initialQTitle);
-    messageData.data = await getMessage(page, 'updateQuestionnaire');
-    expect(messageData.data.type).toBe('updateQuestionnaire');
-    expect(messageData.data.questionnaire.title).toBe(initialQTitle);
-
-    await page.getByRole('button', {name: 'Clear messages'}).click();
-    await mainPO.titleLocator.fill('');
-    await mainPO.titleLocator.fill('xxxx');
-    messageData.data = await getMessage(page, 'updateQuestionnaire');
-    expect(messageData.data.questionnaire.title).toBe('xxxx');
-
-    await page.getByRole('button', {name: 'Clear messages'}).click();
-    await mainPO.titleLocator.fill('');
-    await mainPO.titleLocator.fill('yyyy');
-    await mainPO.page.getByRole('button', {name: 'Save & Close'}).click();
-    messageData.data = await getMessage(page, 'closed');
-    expect(messageData.data.questionnaire.title).toBe('yyyy');
   });
 
   test('should demo cancel event', async ({page}): Promise<void> => {
@@ -84,7 +55,9 @@ test.describe('Open form builder in a new window', async () => {
     messageData.data = await getMessage(page, 'canceled');
   });
 
-  async function getMessage(page: Page, type: string) {
+});
+
+async function getMessage(page: Page, type: string) {
     let ret = null;
     const eventElementMap = {
       initialized: '#initW',
@@ -100,6 +73,63 @@ test.describe('Open form builder in a new window', async () => {
     }
 
     return ret;
-  }
-});
+}
 
+test.describe('Open form builder in a new window', async () => {
+  let mainPO: MainPO;
+
+  [
+    {fhirVersion: 'Default', expectedProfile: 'http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire'},
+    {fhirVersion: 'STU3', expectedProfile: 'http://hl7.org/fhir/3.0/StructureDefinition/Questionnaire'},
+    {fhirVersion: 'R4', expectedProfile: 'http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire'},
+    {fhirVersion: 'R5', expectedProfile: 'http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire'}
+  ].forEach(({fhirVersion, expectedProfile}) => {
+    test(`should return ${fhirVersion} questionnaire`, async ({page}) => {
+
+      page.on('console', msg => {
+        if(msg.type() === 'error') {
+          console.error(msg.text());
+        }
+        else {
+          console.log(msg.text());
+        }
+      });
+
+      await page.goto('/tests/window-open-test.html');
+      const pagePromise = page.context().waitForEvent('page');
+      await page.getByRole('button', {name: `Open form builder (${fhirVersion})`}).click();
+      const newPage = await pagePromise;
+      await newPage.waitForLoadState('domcontentloaded');
+      mainPO = new MainPO(newPage);
+      await mainPO.loadHomePage();
+      await expect(mainPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
+
+      const initialQTitle = 'Form loaded from window-open-test.html';
+      const messageData = {data: null};
+      messageData.data = await getMessage(page, 'initialized');
+      expect(messageData.data.type).toBe('initialized');
+      messageData.data = await getMessage(page, 'updateQuestionnaire');
+      expect(messageData.data.type).toBe('updateQuestionnaire');
+      await page.getByRole('button', {name: 'Clear messages'}).click();
+      await page.getByRole('button', {name: 'Post questionnaire'}).click();
+      await expect(mainPO.titleLocator).toHaveValue(initialQTitle);
+      messageData.data = await getMessage(page, 'updateQuestionnaire');
+      expect(messageData.data.type).toBe('updateQuestionnaire');
+      expect(messageData.data.questionnaire.title).toBe(initialQTitle);
+      expect(messageData.data.questionnaire.meta.profile[0]).toBe(expectedProfile);
+
+      await page.getByRole('button', {name: 'Clear messages'}).click();
+      await mainPO.titleLocator.fill('');
+      await mainPO.titleLocator.fill('xxxx');
+      messageData.data = await getMessage(page, 'updateQuestionnaire');
+      expect(messageData.data.questionnaire.title).toBe('xxxx');
+
+      await page.getByRole('button', {name: 'Clear messages'}).click();
+      await mainPO.titleLocator.fill('');
+      await mainPO.titleLocator.fill('yyyy');
+      await mainPO.page.getByRole('button', {name: 'Save & Close'}).click();
+      messageData.data = await getMessage(page, 'closed');
+      expect(messageData.data.questionnaire.title).toBe('yyyy');
+    });
+  });
+});
