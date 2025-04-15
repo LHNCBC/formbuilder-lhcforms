@@ -1097,7 +1097,14 @@
       "type": "array",
       "title": "Answer choices",
       "visibleIf": {
-        "__$answerOptionMethods": ["answer-option"]
+        "allOf": [
+          {
+            "/__$answerOptionMethods": ["answer-option"]
+          },
+          {
+            "__$valueMethod": ["$EXP$ target.value != 'compute-initial' && target.value != 'compute-continuously' "]
+          }
+        ]
       },
       "widget": {
         "id": "answer-option",
