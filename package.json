@@ -62,7 +62,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fullcalendar/core": "^6.1.15",
-    "@lhncbc/ngx-expression-editor": "file:../../re_3266_upgrade_angular_19_4/rule-editor/ngx-expression-editor-3.2.0.tgz",
+    "@lhncbc/expression-editor": "^3.2.1",
     "@lhncbc/ngx-schema-form": "2.13.1-forked",
     "@ng-bootstrap/ng-bootstrap": "^18.0.0",
     "@types/fhir": "^0.0.36",
@@ -140,7 +140,7 @@
     "@angular-eslint/schematics": {
       "@angular-devkit/schematics": "~19.1.0"
     },
-    "@lhncbc/ngx-expression-editor": {
+    "@lhncbc/expression-editor": {
       "@angular/animations": "~19.1.0",
       "@angular/cdk": "~19.1.0",
       "@angular/common": "~19.1.0",

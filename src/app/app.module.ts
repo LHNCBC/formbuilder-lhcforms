@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import {ApplicationRef, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, NgModule} from '@angular/core';
 import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
-import { ExpressionEditorModule, ENVIRONMENT_TOKEN } from '@lhncbc/ngx-expression-editor';
+import { ExpressionEditorModule, ENVIRONMENT_TOKEN } from '@lhncbc/expression-editor';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
