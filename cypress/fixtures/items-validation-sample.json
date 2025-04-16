@@ -2,6 +2,11 @@
   "resourceType": "Questionnaire",
   "title": "items-validation-sample",
   "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
   "item": [
     {
       "type": "group",
@@ -32,7 +37,7 @@
       "text": "Integer Type"
     },
     {
-      "type": "choice",
+      "type": "coding",
       "linkId": "/itm5",
       "text": "Choice Type",
       "answerOption": [
@@ -99,7 +104,7 @@
       "type": "string",
       "linkId": "  abc   1233",
       "text": "Invalid LinkId pattern"
-    }, 
+    },
     {
       "type": "string",
       "linkId": "/sQbMAgt9SavZxxL63WIFBju6Hdwjp3JHyFzXnBKVdLEtCJ71u6TNMhXtznjw9HV9b7N6kY33bLiZMEy7nSCJupWu3MIzFg2PfT4JEEa5VFXk3KgaZypvFH8EGDlxe9bpLoZqbXgxBCQ0iFmG6FKyA1FiuMMtZYoaXHPpJ0M6kbjBbTbmOSrtufcLu1SrN0MN0h30lxak1yNfCjqqlsxdGescju0nu0nJvg6K1Vd5rhBGavjkrBnbDXLrOglYT0gf1HaIBbGGM4C9kO8dTxqBOqg1KHnctpWOL3vc0PIiXB",

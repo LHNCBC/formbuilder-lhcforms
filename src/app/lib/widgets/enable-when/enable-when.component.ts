@@ -2,24 +2,23 @@ import {
   AfterViewChecked,
   Component,
   DoCheck,
-  ElementRef,
   OnDestroy,
   OnInit,
   ViewEncapsulation
 } from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
-import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {Observable, of, Subject} from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 import { debounceTime } from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'lfb-enable-when',
   templateUrl: './enable-when.component.html',
-  styleUrls: ['./enable-when.component.css'],
+  styleUrls: ['../table/table.component.css', './enable-when.component.css'],
   encapsulation: ViewEncapsulation.None
 })
 export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck, AfterViewChecked, OnDestroy {
@@ -31,8 +30,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
 
-  constructor(private elementRef: ElementRef, private formService: FormService) {
-    super(elementRef);
+  constructor(private formService: FormService) {
+    super();
   }
 
   ngOnInit() {
@@ -139,7 +138,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
 
     for (const field of fields) {
       const fieldValue = rowProperty.getProperty(field)?.value;
-      if (fieldValue) {
+      if (fieldValue || (!fieldValue && field === "question")) {
         const fieldName = (field === '__$answerType') ? Util.getAnswerFieldName(fieldValue) : field;
         const errors = this.getFieldErrors(rowProperty.getProperty(fieldName));
 

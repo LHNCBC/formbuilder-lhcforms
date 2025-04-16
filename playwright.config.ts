@@ -17,6 +17,8 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
+
+
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
@@ -30,7 +32,6 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    permissions: ['clipboard-read']
   },
 
   /* Configure projects for major browsers */
@@ -68,7 +69,12 @@ export default defineConfig({
     // },
     {
       name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
+      use: {
+        channel: 'chrome',
+        contextOptions: {
+          permissions: ['clipboard-read']
+        }
+      },
     },
   ],
 

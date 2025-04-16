@@ -26,11 +26,12 @@ import ngxFlSchema from '../../assets/ngx-fl.schema.json5';
 import flLayout from '../../assets/fl-fields-layout.json5';
 // @ts-ignore
 import itemEditorSchema from '../../assets/item-editor.schema.json5';
-import {GuidingStep, Util} from '../lib/util';
+import {GuidingStep, Util, FHIR_VERSIONS, FHIR_VERSION_TYPE} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { toUpper } from 'cypress/types/lodash';
 
 declare var LForms: any;
 
@@ -87,6 +88,7 @@ export class FormService {
   _lformsVersion = '';
   _lformsErrorMessage = null;
   _windowOpenerUrl: string = null;
+  _windowOpenerFhirVersion: FHIR_VERSION_TYPE = "R4";
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
@@ -128,8 +130,7 @@ export class FormService {
     text: this.operatorOptions,
     url: this.operatorOptions2,
     boolean: this.operatorOptions2,
-    choice: this.operatorOptions2,
-    'open-choice': this.operatorOptions2,
+    coding: this.operatorOptions2,
     attachment: this.operatorOptions2,
     reference: this.operatorOptions2
   };
@@ -233,6 +234,22 @@ export class FormService {
 
   set windowOpenerUrl(url: string) {
     this._windowOpenerUrl = url;
+  }
+
+  get windowOpenerFhirVersion(): FHIR_VERSION_TYPE {
+    return this._windowOpenerFhirVersion;
+  }
+
+  /**
+   * Setter
+   * Set if the input is a valid version, otherwise ignore.
+   */
+  set windowOpenerFhirVersion(version: string) {
+    const v = version?.toUpperCase() as FHIR_VERSION_TYPE;
+    this._windowOpenerFhirVersion =
+      FHIR_VERSIONS[v] !== undefined
+        ? v
+        : this._windowOpenerFhirVersion;
   }
 
   get lformsVersion(): string {
@@ -549,6 +566,9 @@ export class FormService {
       if (this.treeNodeStatusMap[treeNodeId]['errors'] && fieldName in this.treeNodeStatusMap[treeNodeId]['errors']) {
         this.liveAnnouncer.announce('Error is resolved for this node.');
         delete this.treeNodeStatusMap[treeNodeId]['errors'][fieldName];
+      } else if (fieldName === "*") {
+        // clear all error for the given treeNodeId.
+        this.treeNodeStatusMap[treeNodeId]['errors'] = {};
       }
 
       this.treeNodeStatusMap[treeNodeId]['hasError'] = (Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length > 0);
@@ -972,47 +992,44 @@ export class FormService {
 
     if(jsonObj.resourceType !== 'Questionnaire') {
       if (!!jsonObj.name) {
-        jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R4', jsonObj);
+        jsonObj = LForms.Util.getFormFHIRData('Questionnaire', 'R5', jsonObj);
       }
       else {
         throw new Error('Not a valid questionnaire');
       }
     }
 
-    jsonObj = this.convertToR4(jsonObj);
-    return this.updateFhirQuestionnaire(jsonObj);
+    return this.convertToR5(jsonObj);
   }
 
 
   /**
-   * Convert a given questionniare to R4 version. R4 is also internal format.
+   * Convert a given questionnaire to R5 version. R5 is also internal format.
    * Other formats are converted to internal format using LForms library when loading an external form.
    *
-   * @param fhirQ - A given questionnaire. Could be STU3, R4 etc.
+   * @param fhirQ - A given questionnaire. Could be STU3, R4, R5 etc.
    */
-  convertToR4(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
+  convertToR5(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
     let ret = fhirQ;
-    const fhirVersion = LForms.Util.guessFHIRVersion(fhirQ);
-    if(fhirVersion !== 'R4') {
-      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, 'R4',
-        LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
+    const fhirVersion = Util.detectFHIRVersion(fhirQ);
+    if(fhirVersion !== 'R5') {
+      ret = Util.convertQuestionnaire(fhirQ, 'R5');
     }
     return ret;
   }
 
   /**
-   * Convert R4, which is default internal format, to other formats such as STU3.
+   * Convert from R5, which is default internal format, to other formats such as STU3.
    *
    * @param fhirQ - Given questionnaire.
    * @param version -  desired format, such as STU3
    */
-  convertFromR4(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
+  convertFromR5(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
     let ret = fhirQ;
     if (version === 'LHC-Forms') {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
-    } else if (version !== 'R4') {
-      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, version,
-        LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
+    } else if (version !== 'R5') {
+      ret = Util.convertQuestionnaire(fhirQ, version);
     }
     return ret;
   }
@@ -1023,6 +1040,16 @@ export class FormService {
    * @param questionnaire - Input questionnaire
    */
   updateFhirQuestionnaire(questionnaire: fhir.Questionnaire): fhir.Questionnaire {
+
+    // Remove any meta.tag.code generated by LForms.
+    if(questionnaire.meta?.tag) {
+      questionnaire.meta.tag = questionnaire.meta.tag.filter((tag) => {
+        return ! /^\s*lformsVersion\s*:/i.test(tag.code);
+      });
+      if(questionnaire.meta.tag.length === 0) {
+        delete questionnaire.meta.tag;
+      }
+    }
     jsonTraverse(questionnaire).forEach(function(x) {
         if (x?.item) {
           // Convert any help text items to __$helpText.
@@ -1036,6 +1063,9 @@ export class FormService {
               delete x.item;
             }
           }
+        }
+        if(x?.answerOption || x?.type === 'coding' || x?.answerValueSet || x?.answerConstraint) {
+          x.__$isAnswerList = true;
         }
     });
 
@@ -1068,6 +1098,11 @@ export class FormService {
    */
   notifyWindowOpener(data: any) {
     if(this._windowOpenerUrl) {
+      // Return the data in the requested format
+      data.questionnaire = this.convertFromR5(
+        data.questionnaire,
+        this._windowOpenerFhirVersion
+      );
       window.opener.postMessage(data, this._windowOpenerUrl);
     }
   }
@@ -1077,8 +1112,7 @@ export class FormService {
    * Retrieve questionnaire from the storage.
    */
   autoLoadForm(): fhir.Questionnaire {
-    const saveQ = this.autoLoad('fhirQuestionnaire');
-    return this.updateFhirQuestionnaire(saveQ) as fhir.Questionnaire;
+    return this.autoLoad('fhirQuestionnaire') as fhir.Questionnaire;
   }
 
 

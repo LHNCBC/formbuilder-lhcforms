@@ -1,5 +1,6 @@
-import {ComponentFixture, ComponentFixtureAutoDetect, TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {ComponentFixture, TestBed} from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 import { AutoCompleteComponent } from './auto-complete.component';
 import {CommonTestingModule} from '../../../testing/common-testing.module';
@@ -9,8 +10,10 @@ describe('AutoCompleteComponent', () => {
   let fixture: ComponentFixture<AutoCompleteComponent>;
 
   CommonTestingModule.setUpTestBedConfig({
-    imports: [HttpClientTestingModule],
-    providers: [{provide: ComponentFixtureAutoDetect, useValue: true}]
+    providers: [
+      provideHttpClient(),
+      provideHttpClientTesting()
+    ]
   });
 
   beforeEach(() => {
@@ -36,6 +39,7 @@ describe('AutoCompleteComponent', () => {
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     // @ts-ignore
     expect(component).toBeTruthy();
   });

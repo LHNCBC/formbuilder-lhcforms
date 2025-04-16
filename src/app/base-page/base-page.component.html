@@ -9,7 +9,8 @@
             Export
           </button>
           <div class="dropdown-menu" ngbDropdownMenu>
-            <button ngbDropdownItem (click)="saveToFile()">Export to file in FHIR R4 format</button>
+            <button ngbDropdownItem (click)="saveToFile()">Export to file in FHIR R5 format</button>
+            <button ngbDropdownItem (click)="saveToFile('R4')">Export to file in FHIR R4 format</button>
             <button ngbDropdownItem (click)="saveToFile('STU3')">Export to file in FHIR STU3 format</button>
             <button ngbDropdownItem (click)="saveToFile('LHC-Forms')">Export to file in LHC-Forms internal (and volatile) format</button>
             <button ngbDropdownItem (click)="exportToServer('CREATE')">Create a new questionnaire on a FHIR server...</button>
@@ -160,8 +161,8 @@
           class="ms-2 fw-bold btn btn-link"
           (click)="setStep('fl-editor')"
           [class.attention]="!questionnaire?.title"
-          [attr.aria-label]="titleAriaLabel"
-  >{{getQuestionnaireTitle()}}</button>
+          [attr.aria-label]="getTitleAriaLabel(questionnaire?.title)"
+  >{{questionnaire?.title || 'Untitled Form'}}</button>
   <lfb-item-component [questionnaire]="questionnaire"
                       (itemChange)="itemComponentChanged($event)"
   ></lfb-item-component>

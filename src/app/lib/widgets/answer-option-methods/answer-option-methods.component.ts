@@ -8,6 +8,7 @@ import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {Subscription} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'lfb-answer-option-methods',
   templateUrl: './answer-option-methods.component.html'
 })

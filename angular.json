@@ -136,21 +136,21 @@
         "serve": {
           "builder": "@angular-builders/custom-webpack:dev-server",
           "options": {
-            "browserTarget": "formbuilder-lhcforms:build"
+            "buildTarget": "formbuilder-lhcforms:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "formbuilder-lhcforms:build:production"
+              "buildTarget": "formbuilder-lhcforms:build:production"
             },
             "development": {
-              "browserTarget": "formbuilder-lhcforms:build:development"
+              "buildTarget": "formbuilder-lhcforms:build:development"
             },
             "e2e-dev": {
-              "browserTarget": "formbuilder-lhcforms:build:development",
+              "buildTarget": "formbuilder-lhcforms:build:development",
               "port": 9031
             },
             "e2e-prod": {
-              "browserTarget": "formbuilder-lhcforms:build:prod_with_test_html",
+              "buildTarget": "formbuilder-lhcforms:build:prod_with_test_html",
               "port": 9031
             }
           },
@@ -159,7 +159,7 @@
         "extract-i18n": {
           "builder": "@angular-builders/custom-webpack:extract-i18n",
           "options": {
-            "browserTarget": "formbuilder-lhcforms:build"
+            "buildTarget": "formbuilder-lhcforms:build"
           }
         },
         "test": {

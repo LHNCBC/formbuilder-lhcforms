@@ -4,11 +4,13 @@ import { Subscription } from 'rxjs';
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
 
 @Component({
+  standalone: false,
   selector: 'lfb-value-method',
   templateUrl: './value-method.component.html'
 })
 export class ValueMethodComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
-  type;
+  type = "string";
+  linkId: string;
   answerOptions;
   subscriptions: Subscription[] = [];
 
@@ -16,6 +18,8 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
   displayPickInitial = true;
 
   currentValueMethod: string;
+
+  valueMethodOptions: any[];
 
   constructor(private formService: FormService) {
     super();
@@ -27,23 +31,24 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
   ngOnInit(): void {
     super.ngOnInit();
     this.currentValueMethod = this.formProperty.value;
+    this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
   }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
     let sub: Subscription;
 
-    sub = this.formProperty.searchProperty('type').valueChanges.subscribe((typeVal) => {
-      this.type = typeVal;
-      this.displayTypeInitial = (typeVal !== 'group' && typeVal !== 'display' && typeVal !== 'choice' && typeVal !== 'open-choice');
-      this.displayPickInitial = (typeVal === 'choice' || typeVal === 'open-choice');
+    sub = this.formProperty.searchProperty('__$isAnswerList').valueChanges.subscribe((isAnswerListVal) => {
+      const isAnswerList = isAnswerListVal;
+      this.displayPickInitial = isAnswerList;
+      this.displayTypeInitial = !this.displayPickInitial;
       
       const initial = this.formProperty.findRoot().getProperty('initial').value;
       const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
       const answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
 
       let hasPickSelection = false;
-      if (this.displayPickInitial) {
+      if (isAnswerList) {
         hasPickSelection = answerOptions.some(opt => "initialSelected" in opt);
       }
 
@@ -55,15 +60,19 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
 
       // Determine which Value Method option to select based on the available data. 
       // Default to 'None' if didn't meet the conditions.
-      if (this.displayTypeInitial && initial?.length > 0) {
+      if (!isAnswerList || isAnswerList === false) {
+        if (this.type === 'coding') {
+          this.control.setValue("none", { emitEvent: true });
+          this.formProperty.setValue("none", false);
+        } else {
           this.control.setValue("type-initial", { emitEvent: true });
           this.formProperty.setValue("type-initial", false);
-      } else if ((this.displayPickInitial && answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
-                 (this.displayPickInitial && (answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && hasAnswerValuetSetURL)
-                )
-      {
-            this.control.setValue("pick-initial", { emitEvent: true });
-            this.formProperty.setValue("pick-initial", false);
+        }
+      } else if (isAnswerList &&
+                  ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
+                  ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && hasAnswerValuetSetURL))) {
+        this.control.setValue("pick-initial", { emitEvent: true });
+        this.formProperty.setValue("pick-initial", false);
       } else {
         const formPropertyExtensions = this.formProperty.findRoot().getProperty('extension').value;
         const expression = formPropertyExtensions.filter(ext => ext.url === FormService.INITIAL_EXPRESSION || ext.url === FormService.CALCULATED_EXPRESSION);
@@ -82,6 +91,29 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
     });
     this.subscriptions.push(sub);
 
+    sub = this.formProperty.searchProperty('type').valueChanges.subscribe((typeVal) => {
+      this.type = typeVal;
+      this.valueMethodOptions = this.formProperty.schema.oneOf;
+        
+      if (typeVal === "decimal" || typeVal === "dateTime" || typeVal === "url" || typeVal === "quantity" || typeVal === "group" || typeVal === "display") {
+        this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
+      } else if (typeVal === "coding" && this.displayTypeInitial) {
+        this.valueMethodOptions = this.valueMethodOptions.slice(1);
+        this.control.setValue("none", { emitEvent: true });
+        this.formProperty.setValue("none", false);
+      } else if (typeVal === "boolean") {
+        this.valueMethodOptions = this.valueMethodOptions.slice(1);
+        this.control.setValue("pick-initial", { emitEvent: true });
+        this.formProperty.setValue("pick-initial", false);
+      } else {
+        const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
+        if (answerOptions && answerOptions.length > 0) {
+          this.formProperty.searchProperty('__$isAnswerList').setValue(true, false);
+        }
+      }
+    });
+    this.subscriptions.push(sub);
+
     sub = this.formProperty.valueChanges.subscribe((val) => {
       const changed = val !== this.currentValueMethod;
 
@@ -89,11 +121,24 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
         this.currentValueMethod = val;
         this.formProperty.setValue(val, false);
 
-        const extension = this.formProperty.findRoot().getProperty('extension').value;
-        const pickInitial = this.formProperty.findRoot().getProperty('__$pickInitial').value;
-        
-        const initialExpression = this.formProperty.findRoot().getProperty('__$initialExpression').value;
-        const calculatedExpression = this.formProperty.findRoot().getProperty('__$calculatedExpression').value;
+        const exts = this.formProperty.findRoot().getProperty('extension').value;
+
+        if ((val === "compute-initial" || val === "compute-continuously") && this.formService.isFocusNodeHasError()) {
+          // Check to see if this item has an error. This is the case where users is switching between 
+          // Value Method options. The 'Type initial value' or 'Pick initial value' may have validation 
+          // errors. But the 'Compute initial value' or 'Continuously compute value' do not have validation.
+          // Therefore, if there is an error, it needs to be cleared out.
+          const node  = this.formService.getTreeNodeByLinkId(this.linkId);
+          this.formService.updateValidationStatus(node.data.__$treeNodeId, this.linkId, "*", null);
+          this.formService._validationStatusChanged$.next(null);
+        }
+
+        if (val === "pick-initial" || val === "type-initial") {
+          const updatedExts = this.formService.removeExpressionsExtensions(exts);
+          if (updatedExts.length !== exts.length) {
+            this.formProperty.findRoot().getProperty('extension').setValue(updatedExts, false);
+          }
+        }
       }
     });
   }

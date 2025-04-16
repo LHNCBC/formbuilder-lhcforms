@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
+  standalone: false,
   selector: 'lfb-expression-editor-dlg',
   templateUrl: './expression-editor-dlg.component.html'
 })

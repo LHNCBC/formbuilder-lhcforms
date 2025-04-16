@@ -1,0 +1,34 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "title": "Questionnaire with meta.tag",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ],
+    "tag": [
+      {
+        "system": "http://example1.org/codes/tags",
+        "code": "example-tag1",
+        "display": "Example Tag 1"
+      },
+      {
+        "system": "http://example2.org/codes/tags",
+        "code": "example-tag2",
+        "display": "Example Tag 2"
+      },
+      {
+        "system": "http://example3.org/codes/tags",
+        "code": "example-tag3",
+        "display": "Example Tag 3"
+      }
+    ]
+  },
+  "item": [
+    {
+      "type": "string",
+      "linkId": "1",
+      "text": "Question text: plain text"
+    }
+  ]
+}

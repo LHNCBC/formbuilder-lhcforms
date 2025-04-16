@@ -23,7 +23,10 @@ test.describe('Table component', async () => {
   test('should display actions of remove, move up/down of rows with radio selection', async ({page}) => {
     const mainPO = new MainPO(page);
 
-    await page.selectOption('#type', {label: 'choice'});
+    await page.selectOption('#type', {label: 'coding'});
+    await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
+    await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list').click();
+
     const table = page.locator('lfb-answer-option table');
     // Load a table with data
     await mainPO.loadTable(table, tableData);
@@ -56,9 +59,12 @@ test.describe('Table component', async () => {
     // The Pick Initial drop-down is displayed, select the '2a'
     const pickInitial = page.locator('lfb-pick-answer >> input[type="text"]');
     await pickInitial.click();
+    const initialValues = await page.locator('#completionOptions > ul > li');
+    await expect(initialValues).toHaveCount(4);
     await pickInitial.press('ArrowDown');
     await pickInitial.press('ArrowDown');
     await pickInitial.press('Enter');
+    await expect(pickInitial).toHaveValue('2a');
 
     await PWUtils.getTableCell(table, 2, 5).locator(moveUpLoc).click();
 
@@ -112,12 +118,12 @@ test.describe('Table component', async () => {
     await expect(PWUtils.getTableCell(table, 3, 5).locator(moveDownLoc)).toBeEnabled();
     await expect(PWUtils.getTableCell(table, 4, 5).locator(moveUpLoc)).toBeEnabled();
 
-    const q = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerOption).toEqual([
       {
         valueCoding: {display: '2a', code: '2b', system: '2c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 2
         }],
         initialSelected: true
@@ -125,14 +131,14 @@ test.describe('Table component', async () => {
       {
         valueCoding: {display: '1a', code: '1b', system: '1c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 1
         }]
       },
       {
         valueCoding: {display: '4a', code: '4b', system: '4c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 4
         }]
       },
@@ -145,34 +151,51 @@ test.describe('Table component', async () => {
   test('should display actions of remove, move up/down of rows with checkbox selections', async ({page}) => {
     const mainPO = new MainPO(page);
 
-    await page.selectOption('#type', {label: 'choice'});
+    const table = page.locator('lfb-answer-option table');
+    await page.selectOption('#type', {label: 'coding'});
+    await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
+    await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list').click();
     // await page.getByLabel('Allow repeating question?').getByText('Yes').click();
     await page.getByRole('radiogroup', {name: 'Allow repeating question?'}).getByText('Yes').click();
     
     // Click on the Value Method - Pick Initial option
     await page.locator('[for*="valueMethod_pick-initial"]').click();
     
-    const table = page.locator('lfb-answer-option table');
     // Load a table with data
     await mainPO.loadTable(table, tableData);
 
     // The Pick Initial drop-down is displayed
     const pickInitial = page.locator('lfb-pick-answer >> input[type="text"]');
     await pickInitial.click();
+
+    const autoCompInitials = page.locator('span#completionOptions > ul > li')
+    await expect(autoCompInitials).toHaveCount(4);
+
     // Select '1a'
     await pickInitial.press('ArrowDown');
     await pickInitial.press('Enter');
+
+    let pickInitials = page.locator('span.autocomp_selected > ul > li');
+    await expect(pickInitials).toHaveCount(1);
+    await expect(pickInitials.nth(0)).toHaveText('×1a');
+
     // Select '4a'
+    await pickInitial.click();
     await pickInitial.press('ArrowDown');
     await pickInitial.press('ArrowDown');
     await pickInitial.press('Enter');
 
-    let q = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    pickInitials = page.locator('span.autocomp_selected > ul > li');
+    await expect(pickInitials).toHaveCount(2);
+    await expect(pickInitials.nth(0)).toHaveText('×1a');
+    await expect(pickInitials.nth(1)).toHaveText('×4a');
+
+    let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerOption).toEqual([
       {
         valueCoding: {display: '1a', code: '1b', system: '1c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 1
         }],
         initialSelected: true
@@ -180,21 +203,21 @@ test.describe('Table component', async () => {
       {
         valueCoding: {display: '2a', code: '2b', system: '2c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 2
         }]
       },
       {
         valueCoding: {display: '3a', code: '3b', system: '3c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 3
         }]
       },
       {
         valueCoding: {display: '4a', code: '4b', system: '4c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 4
         }],
         initialSelected: true
@@ -205,19 +228,19 @@ test.describe('Table component', async () => {
     await PWUtils.getTableCell(table, 4, 5).locator(moveUpLoc).click();
     await PWUtils.getTableCell(table, 2, 5).locator(moveDownLoc).click();
 
-    q = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerOption).toEqual([
       {
         valueCoding: {display: '2a', code: '2b', system: '2c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 2
         }]
       },
       {
         valueCoding: {display: '4a', code: '4b', system: '4c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 4
         }],
         initialSelected: true
@@ -225,7 +248,7 @@ test.describe('Table component', async () => {
       {
         valueCoding: {display: '1a', code: '1b', system: '1c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 1
         }],
         initialSelected: true
@@ -233,7 +256,7 @@ test.describe('Table component', async () => {
       {
         valueCoding: {display: '3a', code: '3b', system: '3c'},
         extension: [{
-          url: "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+          url: "http://hl7.org/fhir/StructureDefinition/itemWeight",
           valueDecimal: 3
         }]
       },

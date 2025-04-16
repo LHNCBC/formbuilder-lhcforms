@@ -10,6 +10,7 @@ import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
 import {Util} from '../../util';
 
 @Component({
+  standalone: false,
   selector: 'lfb-answer-value-set',
   encapsulation: ViewEncapsulation.None,
   templateUrl: './answer-value-set.component.html',
@@ -21,7 +22,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   static snomedTerminologyServer = 'https://snowstorm.ihtsdotools.org/fhir';
   static snomedTSHint = 'Note that this option also sets the terminology server option below (under "Advanced fields").';
   static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields).';
-  
+
   eclHelpContent = `See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
                    `href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or ` +
                    `try the ECL Builder in the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
@@ -113,8 +114,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     // this.snomedFhirVS = args.ecl;
     if(this.snomedFhirVS && this.snomedEdition) {
       const ecl = this.eclPrefixRE.test(this.snomedFhirVS) ? this.snomedFhirVS : 'ecl/' + this.snomedFhirVS;
-      this.url.searchParams.set('fhir_vs', ecl);
-      snomedUrl = this.url.toString();
+      snomedUrl = this.url.toString()+'?fhir_vs='+ecl;
     }
     this.snomedUrl = snomedUrl;
     this.formProperty.setValue(snomedUrl, false);
@@ -233,6 +233,6 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    * @returns - string with the anchor tags removed.
    */
   getURLFreeAriaLabel(input: string): string {
-    return Util.removeAnchorTagFromString(input, 'Link:', 'before'); 
+    return Util.removeAnchorTagFromString(input, 'Link:', 'before');
   }
 }

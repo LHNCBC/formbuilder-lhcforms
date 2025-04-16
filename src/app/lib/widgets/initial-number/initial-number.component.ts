@@ -1,18 +1,16 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
-import { SharedObjectService } from 'src/app/services/shared-object.service';
-import { HighlightSpanKind } from 'typescript';
-import { isThisISOWeek } from 'date-fns';
-
+import { FormService } from 'src/app/services/form.service';
+import { FormControl } from '@angular/forms';
+import { InitialNumberDirective } from '../../directives/initial-number.directive';
 
 @Component({
+  standalone: false,
   selector: 'lfb-initial-number',
   template: `
-    <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
-           name="{{name}}" type="hidden" [formControl]="control">
-    <ng-template #notHiddenFieldBlock>
+
       <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}" [class.has-error]="errors">
         <lfb-label *ngIf="!nolabel"
                    [for]="id"
@@ -20,28 +18,40 @@ import { isThisISOWeek } from 'date-fns';
                    [helpMessage]="schema.description"
                    [ngClass]="labelWidthClass + ' ps-0 pe-1'"
         ></lfb-label>
-        <input lfbInitialNumber [propType]="propType"
+        <input lfbInitialNumber [propType]="propType" [formProperty]="formProperty"
                [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
                [attr.id]="id"
                class="form-control {{controlWidthClass}}" [formControl]="control"
-               type="text" [attr.min]="schema.minimum" [attr.max]="schema.maximum" step="any"
+               type="text"
                [attr.placeholder]="schema.placeholder"
                [ngClass]="{invalid: errors}"
-               [attr.aria-invalid]="errors"
-               [attr.maxLength]="schema.maxLength || null"
-               [attr.minLength]="schema.minLength || null">
+               [attr.aria-invalid]="errors">
       </div>
-    </ng-template>
+
   `
 })
 
-export class InitialNumberComponent extends LfbControlWidgetComponent implements AfterViewInit, OnDestroy {
+export class InitialNumberComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild(InitialNumberDirective) customInput!: InitialNumberDirective;
   propType;
+  linkId: string;
+  control = new FormControl(null);
   subscriptions: Subscription[] = [];
   errorIcon = faExclamationTriangle;
   errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
   cdr = inject(ChangeDetectorRef);
+  formService = inject(FormService);
 
+  /**
+   * Initialize
+   */
+  ngOnInit(): void {
+    this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
+  }
+
+  /**
+   * Setup required observers
+   */
   ngAfterViewInit() {
     super.ngAfterViewInit();
     this.propType = this.formProperty.path.split('/').pop();
@@ -50,7 +60,6 @@ export class InitialNumberComponent extends LfbControlWidgetComponent implements
 
     sub = this.formProperty.errorsChanges.subscribe((errors) => {
       this.errors = null;
-      
       if(errors?.length) {
         const errorsObj = {};
         errors.reduce((acc: {[key: string]: any}, error: any) => {
@@ -71,24 +80,24 @@ export class InitialNumberComponent extends LfbControlWidgetComponent implements
           // In the case of an error, the UI should still display the invalid number (decimal/integer) value.
           // But the value should not be removed from the formProperty.
           if (this.errors) {
-            const originalValue = this.control.value;
-            if (this.control.dirty && this.control.touched) {
-              this.control.markAsUntouched();
-              this.control.markAsPristine();
-
-              this.formProperty.setValue(null, false);
-              this.cdr.markForCheck();
-
-              this.control.setValue(originalValue, { emitEvent: false });
-            }
+            const node  = this.formService.getTreeNodeByLinkId(this.linkId);
+            this.formService.updateValidationStatus(node.data.__$treeNodeId, this.linkId, this.formProperty.canonicalPathNotation, this.errors);
+            this.formService._validationStatusChanged$.next(null);
           }
         }
       } else {
-        if (this.formProperty.value) {
-          const value = parseFloat(this.formProperty.value);
-          if (!isNaN(value)) {
-            this.formProperty.setValue(value, false);
-          }
+        const inputValue = this.control.value;
+
+        // Clear the error message
+        const node  = this.formService.getTreeNodeByLinkId(this.linkId);
+        this.formService.updateValidationStatus(node.data.__$treeNodeId, this.linkId, this.formProperty.canonicalPathNotation, null);
+        this.formService._validationStatusChanged$.next(null);
+
+        // If the data is loaded from the file, then update the UI.
+        if (this.customInput && inputValue && this.customInput.value === '') {
+          setTimeout(() => {
+            this.customInput.value = this.control.value;
+          });
         }
       }
     });

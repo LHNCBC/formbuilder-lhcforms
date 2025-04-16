@@ -1,7 +1,6 @@
 /**
  * A utility class
  */
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import traverse from 'traverse';
 import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
@@ -11,10 +10,13 @@ import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
 import {v4 as uuidv4} from 'uuid';
 import {fhirPrimitives} from "../fhir";
+import {PropertyGroup} from "@lhncbc/ngx-schema-form";
+import { convert } from 'questionnaire-version-converter';
 declare var LForms: any;
 
 export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
 export enum FHIR_VERSIONS {
+  R5,
   R4,
   STU3
 }
@@ -45,10 +47,14 @@ export class Util {
     extension: [Util.HELP_BUTTON_EXTENSION]
   };
 
+  static R5_PROFILE_URL = 'http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire';
   private static _defaultForm = {
     resourceType: 'Questionnaire',
     title: 'New Form',
     status: 'draft',
+    meta: {
+      profile: [Util.R5_PROFILE_URL]
+    },
     item: []
   };
 
@@ -61,8 +67,7 @@ export class Util {
     time: 'answerTime',
     string: 'answerString',
     text: 'answerString',
-    choice: 'answerCoding',
-    'open-choice': 'answerCoding',
+    coding: 'answerCoding',
     quantity: 'answerQuantity',
     reference: 'answerReference'
   };
@@ -98,15 +103,22 @@ export class Util {
   /**
    * Identify if a particular widget under the group is visible.
    *
-   * @param group - Group property of the widget
-   * @param propertyId - It is '.' delimited property name of its descendants.
+   * @param formProperty - FormProperty of the widget. If it is not of PropertyGroup type,
+   * or no property id is specified, its own visibility is returned.
+   *
+   * @param propertyId - (Optional) It is '.' delimited property name of its descendant.
+   *
+   * @return boolean - Visibility of the desired widget.
    */
-  static isVisible(group: PropertyGroup, propertyId: string) {
-    const path = propertyId.split('.');
-    let visible = group.visible;
-    for (let i = 0; i < path.length && visible; i++) {
-      group = group.getProperty(path[i]);
-      visible = group.visible;
+  static isVisible(formProperty: PropertyGroup, propertyId?: string): boolean {
+    let visible = formProperty.visible;
+    // formProperty.getProperty => formProperty is PropertyGroup
+    if(formProperty.getProperty && propertyId) {
+      const path = propertyId.split('.');
+      for (let i = 0; i < path.length && visible; i++) {
+        formProperty = formProperty.getProperty(path[i]);
+        visible = formProperty.visible;
+      }
     }
     return visible;
 
@@ -220,10 +232,8 @@ export class Util {
         ret = 'quantity';
         break;
       case 'CNE':
-        ret = 'choice';
-        break;
       case 'CWE':
-        ret = 'open-choice';
+        ret = 'coding';
         break;
     }
     return ret;
@@ -311,10 +321,12 @@ export class Util {
     traverse(value).forEach(function (node) {
       this.before(function () {
         if(node && Array.isArray(node)) {
-          // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
-          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
+          // There is a bug in one of the package which caused issue if there is objects with empty fields in the array.
+          // The array index is not updated properly which caused an error. This is a work-around to clean up the empty fields.
+          Util.eliminateEmptyFields(node);
+          this.update(node);
         }
-        else if (Util.hasHelpText(node)) {
+        if (Util.hasHelpText(node)) {
           Util.eliminateEmptyFields(node.__$helpText);
           if(!node.item) {
             node.item = [];
@@ -324,7 +336,7 @@ export class Util {
           this.update(node);
         }
         // Internally the question is target TreeNode. Change that to node's linkId.
-        else if (this.key === 'question' && typeof node?.data === 'object') {
+        if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);
         }
       });
@@ -606,5 +618,72 @@ export class Util {
     }
 
     return str.replace(regex, replacement);
+  }
+
+  /**
+   * Detect FHIR version of a resource. Uses LForms library, which currently supports Questionnaire and
+   * QuestionnaireResponse.
+   *
+   * @param resource - FHIR Resource to examine. In form builder it is almost always Questionnaire.
+   * @return - Detected FHIR version such as STU3, R4, R5 etc., or null if fails to detect.
+   */
+  static detectFHIRVersion(resource: fhir.Resource): string {
+    if(Util.isDefaultForm(resource as fhir.Questionnaire)) {
+      return 'R5';
+    }
+    let ret: string = LForms.Util.detectFHIRVersion(resource);
+    if(!ret) {
+      ret = LForms.Util.guessFHIRVersion(resource);
+    }
+    return ret;
+  }
+  /**
+   * Convert a given questionnaire to desired version. R5 is also the internal format.
+   * Other formats are converted to internal format using LForms library when loading an external form.
+   *
+   * @param initialQ - A given questionnaire. Could be STU3, R4, R5 etc.
+   * @param version - A valid versions string, i.e. STU3|R4|R5 etc.
+   */
+  static convertQuestionnaire(initialQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
+    let ret = initialQ;
+    const v = Util.detectFHIRVersion(initialQ);
+    if(v !== version) {
+      const resp: any = convert(initialQ, v, version);
+      // Remove tags added by the converter.
+      Util.removeElementsFromArray(resp?.data?.meta?.tag, (tag: fhir.Coding) => {
+        return (/^lhc-qnvconv-(STU3|R4|R5|R6)-to-(STU3|R4|R5|R6)$/i.test(tag?.code));
+      });
+      if(resp?.data?.meta?.tag && resp.data.meta.tag.length === 0) {
+        delete resp.data.meta.tag;
+      }
+      ret = resp.data;
+    }
+    return ret;
+  }
+
+  /**
+   * Returns the name of the value field for a given FHIR data type.
+   * @param type - one of the fhir data types.
+   * @returns - a field name in the format 'value' + CamelCase(type).
+   */
+  static getValueDataTypeName(type: string): string {
+    if (type === "text") {
+      type = "string";
+    }
+    return 'value' + type.charAt(0).toUpperCase() + type.slice(1);
+  }
+
+  /**
+   * Remove elements based on the boolean value returned by the callback.
+   *
+   * @param arr - Array to prune
+   * @param callback - Truthy call back. The function will be passed the element and its index in the array.
+   */
+  static removeElementsFromArray(arr: any [], callback) {
+    for(let i = arr?.length - 1; arr && i >= 0; i--) {
+      if(callback(arr[i], i)) {
+        arr.splice(i, 1);
+      }
+    }
   }
 }

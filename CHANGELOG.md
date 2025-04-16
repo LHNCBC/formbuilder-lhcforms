@@ -2,10 +2,56 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.7.2] 2024-12-21
+## [10.0.5] 2025-04-16
+### Added
+- Added initial values for SNOMED and non-SNOMED answer value sets.
+
+## [10.0.4] 2025-04-15
 ### Added
 - Added Value Method field for selecting initial values.
-- Added initial values for SNOMED and non-SNOMED answer value sets.
+
+## [10.0.3] 2025-04-10
+### Fixed
+- Removed encoding of answerValueSet for SNOMED.
+- Changed default output of questionnaire to R4, when [using window api](/API.md)
+- Refactored loading of LForms in mockLFormsLoader() to address random cypress test failures.
+Added detailed log statements when the tests fail.
+
+## [10.0.2] 2025-03-24
+### Fixed
+- Fixed a playwright test.
+
+## [10.0.1] 2025-03-20
+### Fixed
+- Avoid angular@19.2.x versions in the dependency tree
+
+## [10.0.0] 2025-01-09
+### Added
+- Added R5 features
+
+## [9.7.7] 2025-03-04
+### Changed
+- Fixed an accessibility issue.
+
+## [9.7.6] 2025-02-20
+### Changed
+- Upgraded to angular19
+
+## [9.7.5] 2025-01-31
+### Added
+- Added item control list for display data type.
+
+## [9.7.4] 2025-01-06
+### Changed
+- Updated README.md
+
+## [9.7.3] 2024-12-11
+### Changed
+- Added validation and error handling for invalid enableWhen question.
+
+## [9.7.2] 2024-12-10
+### Added
+- Added meta.tag field to form level attributes.
 
 ## [9.7.1] 2024-12-20
 ### Changed

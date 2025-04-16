@@ -1,14 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  ValidatorRegistry
-} from '@lhncbc/ngx-schema-form/lib/';
-
-import {
-  ZSchemaValidatorFactory
-} from '@lhncbc/ngx-schema-form/lib/schemavalidatorfactory';
-import { JEXLExpressionCompilerFactory } from '@lhncbc/ngx-schema-form/lib/expression-compiler-factory';
-import {ISchema} from '@lhncbc/ngx-schema-form';
-import { DefaultLogService } from '@lhncbc/ngx-schema-form';
 
 import { HelpTextComponent } from './help-text.component';
 

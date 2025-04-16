@@ -44,10 +44,18 @@ export class FhirService {
                     // x-target-fhir-endpoint
        basicAuth:   // Optional basic authentication string to be assigned to
                     // x-target-fhir-server-authorization header.
-       version:     // FHIR version, ex: STU3, R4 ...
+       version:     // FHIR version, ex: STU3, R4, R5 ...
    }
   */
   fhirServerList: FHIRServer[] = [
+
+    {
+      id: 5,
+      displayName: 'NLM HAPI FHIR Server - R5',
+      endpoint: 'https://lforms-fhir.nlm.nih.gov/baseR5',
+      desc: 'NLM Test Server (R5 Resources)',
+      version: 'R5'
+    },
     {
       id: 4,
       displayName: 'NLM HAPI FHIR Server - R4',
@@ -96,7 +104,7 @@ export class FhirService {
       let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
       this.assignPublisher(res, userProfile);
 
-      res = this.formService.convertFromR4(res, this.getFhirServer().version);
+      res = this.formService.convertFromR5(res, this.getFhirServer().version);
       return this.promiseToObservable(this.smartClient.create(res));
     };
 
@@ -111,7 +119,7 @@ export class FhirService {
     update(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
       let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
       this.assignPublisher(res, userProfile);
-      res = this.formService.convertFromR4(res, this.getFhirServer().version);
+      res = this.formService.convertFromR5(res, this.getFhirServer().version);
       return this.promiseToObservable(this.smartClient.update(res));
     };
 
@@ -121,12 +129,12 @@ export class FhirService {
      * @param id - Id of the resource.
      * @returns - An http promise
      */
-    read(id): Observable<fhir.Resource> {
-      return this.promiseToObservable(this.smartClient.request<fhir.Resource>({
+    read(id): Observable<fhir.Questionnaire> {
+      return this.promiseToObservable(this.smartClient.request<fhir.Questionnaire>({
         url: 'Questionnaire/'+id+'?_format=application/fhir+json',
         // headers: this.config.headers
-      })).pipe(map((res: fhir.Resource) => {
-        return this.formService.convertToR4(res as fhir.Questionnaire);
+      })).pipe(map((res: fhir.Questionnaire) => {
+        return this.formService.convertToR5(res);
       }));
     };
 
@@ -147,7 +155,7 @@ export class FhirService {
      *
      * @param searchStr - A search term to search FHIR resources
      * @param searchField - Field to search, should be a valid searchable field. Refer to FHIR REST API for list of fields.
-     * @param otherQueryParams? - (Optional) Any additional or overriding query parameters to send to FHIR server.
+     * @param otherQueryParams - (Optional) Any additional or overriding query parameters to send to FHIR server.
      * @returns Http promise
      */
     search(searchStr: string, searchField?: string, otherQueryParams?: any): Observable<fhir.Bundle> {
@@ -304,7 +312,7 @@ export class FhirService {
   /**
    * Get the last used server. The last in the list is assumed to be last used.
    *
-   * @param fhirVersion - R4|STU3 etc.
+   * @param fhirVersion - R5|R4|STU3 etc.
    *
    * @returns - The url of the last used server.
    */
@@ -402,7 +410,7 @@ export class FhirService {
 
   /**
    * Run validations on a given server and version, with input questionnaire to validate.
-   * @param version - Supported version - R4|STU3
+   * @param version - Supported version - R5|R4|STU3
    * @param url - URL object representing the server and any search parameters.
    * @param questionnaire - fhir.Questionnaire to validate.
    *

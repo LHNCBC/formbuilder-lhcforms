@@ -24,6 +24,7 @@ interface ObservationLinkPeriodExtension {
 
 
 @Component({
+  standalone: false,
   selector: 'lfb-observation-link-period',
   templateUrl: './observation-link-period.component.html'
 })

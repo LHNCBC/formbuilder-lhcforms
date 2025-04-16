@@ -70,6 +70,9 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
   removed = new EventEmitter<fhir.Coding>();
   @Output()
   selected = new EventEmitter<fhir.Coding>();
+  @Output()
+  typed_in = new EventEmitter<fhir.Coding>();
+
   @ViewChild('ac') acElementRef: ElementRef;
   el: HTMLInputElement;
   autoComp: any;
@@ -129,6 +132,7 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
           this.selected.emit(coding);
         }
       }
+      this.typed_in.emit(data.val_typed_in);      
     });
   }
 

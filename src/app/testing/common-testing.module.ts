@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TreeModule} from '@bugsplat/angular-tree-component';
 import {
   ISchema,
-  SchemaFormModule,
+  SchemaFormModule, WidgetFactory,
   WidgetRegistry,
 } from '@lhncbc/ngx-schema-form';
 import {HttpClientTestingModule} from '@angular/common/http/testing';
@@ -23,6 +23,7 @@ import {FhirService} from '../services/fhir.service';
 declare var LForms: any;
 
 @Component({
+  standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sf-test',
   template: `
@@ -64,6 +65,7 @@ export class CommonTestingModule {
   static commonTestingDeclarations: any [] = [];
 
   static commonTestProviders: any [] = [
+    WidgetFactory,
     {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
     NgbActiveModal,
     FormService,

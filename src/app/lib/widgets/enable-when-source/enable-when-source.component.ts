@@ -11,6 +11,7 @@ import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {Util} from '../../util';
 @Component({
+  standalone: false,
   selector: 'lfb-choice',
   template: `
     <ng-template #rt let-r="result" let-t="term">
@@ -32,6 +33,7 @@ import {Util} from '../../util';
              class="form-control"
              (focus)="focus$.next($any($event).target.value)"
              (click)="click$.next($any($event).target.value)"
+             (change)="validateQuestion()"
              (selectItem)="onSelect($event)"
              #instance="ngbTypeahead"
              popupClass="add-scrolling"
@@ -97,6 +99,8 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
         // Set answer type input
         this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
       }
+    } else if (value === "" && '__$answerType' in this.formProperty.parent.value) {
+      this.validateQuestion();
     }
   }
 
@@ -139,4 +143,27 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
     return ret;
   }
 
+  /**
+   * Validates the state of a form property associated with a question model.
+   * If 'this.model' is falsy, it sets 'this.model' to null. It clears the
+   * current value of the form property by setting it to an empty string.
+   * Finally, it triggers re-validation of the form property.
+   */
+  validateQuestion(): void {
+    if (!this.model) {
+      this.model = null;
+      this.formProperty.setValue("", false);
+      this.formProperty.updateValueAndValidity();
+
+      // Aside from clearing the question, also clear the 'operator' and the answer.
+      this.formProperty.parent.getProperty('operator').setValue('', false);
+
+      const answerType = this.formProperty.parent.getProperty('__$answerType').value;
+
+      if (answerType !== "coding") {
+        const answerKeyName = Util.getAnswerFieldName(answerType);
+        this.formProperty.parent.getProperty(answerKeyName).setValue('', false);
+      }
+    }
+  }
 }

@@ -8,6 +8,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {Subscription} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'lfb-array-widget',
   template: `
   `,

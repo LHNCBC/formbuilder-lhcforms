@@ -20,9 +20,8 @@ import {
   OnInit, Renderer2,
   SimpleChanges
 } from '@angular/core';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong} from '@fortawesome/free-solid-svg-icons';
-import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
@@ -30,6 +29,7 @@ import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import { TableService, TableStatus } from 'src/app/services/table.service';
 
 @Component({
+  standalone: false,
   selector: 'lfb-table',
   templateUrl: './table.component.html', // Use separate files for possible reuse from a derived class
   styleUrls: ['./table.component.css']
@@ -78,8 +78,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   tableService = inject(TableService);
 
   tableStatus: TableStatus;
+  elementRef = inject(ElementRef);
 
-  constructor(private elRef: ElementRef) {
+  constructor() {
     super();
   }
   /**
@@ -126,6 +127,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     this.selectionCheckbox = [];
 
     this.handleErrorColumnVisibility(widget);
+
+    this.tableService.setTableStatusChanged(null);
   }
   
   /**
@@ -134,15 +137,16 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param widget - The widget configuration for the property.
    */
   handleErrorColumnVisibility(widget: any): void {
-    this.dataType = this.formProperty.findRoot().getProperty('type').value;
-    this.showErrorTypeList = widget?.showErrorTypeList || [];
-  
-    if (this.showErrorTypeList.length) {
-      this.includeErrorColumn = this.showErrorTypeList.some(errorType => 
-        errorType.type === this.dataType
-      );
-  
-      this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
+    if (this.dataType) {
+      this.showErrorTypeList = widget?.showErrorTypeList || [];
+    
+      if (this.showErrorTypeList.length) {
+        this.includeErrorColumn = this.showErrorTypeList.some(errorType => 
+          errorType.type === this.dataType
+        );
+    
+        this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
+      }
     }
   }
 
@@ -151,7 +155,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
+    this.answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods')?.value;
+
     const singleItemEnableSource = this.formProperty.schema.widget ?
       this.formProperty.schema.widget.singleItemEnableSource : null;
     const multipleSelectionEnableSource = this.formProperty.schema.widget ?
@@ -212,6 +217,13 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
     subscription = this.formProperty.valueChanges.subscribe((newValue) => {
       this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(newValue);
+
+      const widget = this.formProperty.schema.widget;
+      const type = this.formProperty.findRoot().getProperty('type');
+      if (type) {
+        this.dataType = type.value;
+        this.handleErrorColumnVisibility(widget);
+      }
     });
     this.subscriptions.push(subscription);
 
@@ -297,16 +309,18 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   /**
-   * Search for formProperty based on '.' delimited property ids.
+   * Search for formProperty based on '.' delimited property ids, if
    *
-   * @param parentProperty -
-   * @param propertyId -
+   * @param property - Proper
+   * @param descendantId - optional property id of a descendant property.
    */
-  getProperty(parentProperty: PropertyGroup, propertyId: string) {
-    const path = propertyId.split('.');
-    let p = parentProperty;
-    for (const id of path) {
-      p = p.getProperty(id);
+  getProperty(property: FormProperty, descendantId?: string) {
+    let p = property;
+    if(p instanceof PropertyGroup && descendantId) {
+      const path = descendantId?.split('.');
+      for (const id of path) {
+        p = (p as PropertyGroup).getProperty(id);
+      }
     }
     return p;
   }
@@ -327,6 +341,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param popoverRef - popover reference template.
    */
   addItemWithAlert(popoverRef) {
+    this.isCollapsed = false;
     const items = this.formProperty.properties as [];
     const lastItem = items.length ? items[items.length - 1] : null;
     if(!lastItem || !Util.isEmpty(lastItem.value)) { // If no lastItem or be not empty.
@@ -350,7 +365,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param col - Column index of the cell.
    */
   getInputElementInTable(row, col) {
-    return this.elRef.nativeElement.querySelector('tbody')
+    return this.elementRef.nativeElement.querySelector('tbody')
       .querySelectorAll('tr')[row]
       .querySelectorAll('td')[col]
       .querySelector('input,select');

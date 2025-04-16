@@ -9,9 +9,8 @@ import {
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
-import {ArrayProperty, FormComponent, FormProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormComponent, FormProperty, PropertyGroup, ObjectProperty} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
-import {ObjectProperty} from '@lhncbc/ngx-schema-form/lib/model';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
 import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
@@ -20,6 +19,7 @@ import { ValidationService, EnableWhenValidationObject } from '../services/valid
  * This class is intended to isolate customization of sf-form instance.
  */
 @Component({
+  standalone: false,
   selector: 'lfb-sf-form-wrapper',
   templateUrl: './sf-form-wrapper.component.html',
   styleUrls: ['./sf-form-wrapper.component.css'],
@@ -53,11 +53,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     '/enableWhen': this.validateEnableWhenAll.bind(this),
     '/enableWhen/*': this.validateEnableWhenSingle.bind(this),
     '/linkId': this.validateLinkId.bind(this),
-    '/__$pickInitial': this.validatePickInitial.bind(this),
-    // Currently not used.
-    //'/initial': this.validateInitialAll.bind(this),
-    '/initial/*/valueDecimal': this.validateInitialSingle.bind(this),
-    '/initial/*/valueInteger': this.validateInitialSingle.bind(this)
+    '/__$pickInitial': this.validatePickInitial.bind(this)
   };
 
   mySchema: any = {properties: {}};
@@ -183,6 +179,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     }
     const op = formProperty.getProperty('operator');
     const aField = Util.getAnswerFieldName(aType || 'string');
+    const answerType = formProperty.getProperty('__$answerType').value;
     const answerX = formProperty.getProperty(aField);
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
 
@@ -192,6 +189,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'conditionKey': condKey,
       'q': q,
       'aType': aType,
+      'answerTypeProperty': formProperty.getProperty('__$answerType').value,
       'op': op,
       'aField': aField,
       'answerX': answerX,
@@ -260,9 +258,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
    *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
-   *                                             options. 
-   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty. 
+   *                                             options.
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
+   *                                            and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
     let errors = null;
@@ -368,12 +366,15 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * Custom validator for the 'Pick initial' option in the Value Method. This validates data requirements
    * for each of the 'Answer list source' field: 'answer-option', 'snomed-value-set', and 'value-set'.
    * @param value - not used.
-   * @param formProperty - Object form property of the 'linkId' field. 
+   * @param formProperty - Object form property of the '__$pickInitial' field. 
    * @param rootProperty - Root form property. 
    * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
-   *          1. (ANSWER_OPTION_REQUIRED)               - linkId is empty.
-   *          2. (SNOMED_ANSWER_VALUE_SET_URI_REQUIRED) - linkId does not match the required pattern.
-   *          3. (ANSWER_VALUE_SET_URI_REQUIRED)         - duplicate linkId.
+   *          1. (ANSWER_OPTION_REQUIRED)               - 'Answer options' option is selected, but 'Answer choices' is
+   *                                                      empty and needs to be poulated.
+   *          2. (SNOMED_ANSWER_VALUE_SET_URI_REQUIRED) - 'SNOMED answer value set' option is selected, requiring the
+   *                                                      answer value set URI.
+   *          3. (ANSWER_VALUE_SET_URI_REQUIRED)        - 'Answer value set URI' option is selected, requiring both the
+   *                                                      'Answer value set' and 'Terminology server' fields.
    */
   validatePickInitial (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
@@ -406,6 +407,20 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       err.path = `#/__$pickInitial`;
       err.message = `Answer choices must be populated.`;
       errors.push(err);
+    } else if (asMethod === "snomed-value-set" && !answerValueSetUri) {
+      const errorCode = 'SNOMED_ANSWER_VALUE_SET_URI_REQUIRED';
+      const err: any = {};
+      err.code = errorCode;
+      err.path = `#/__$pickInitial`;
+      err.message = `SNOMED answer value set URI is required.`;
+      errors.push(err);
+    } else if (asMethod === "value-set" && !answerValueSetUri) {
+      const errorCode = 'ANSWER_VALUE_SET_URI_REQUIRED';
+      const err: any = {};
+      err.code = errorCode;
+      err.path = `#/__$pickInitial`;
+      err.message = `Answer value set URI is required.`;
+      errors.push(err);
     }
 
     if(errors.length) {
@@ -424,86 +439,4 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     return errors;
   }
 
-  /**
-   * Currently not used.
-   * Custom validator wrapper for the 'initial' field in ngx-schema-form, specifically for the 'integer' and 'decimal'
-   * data types. Iterates through each 'initial' value array and validate each one of them.
-   * @param value - Value of 'intial' field. Not used.
-   * @param arrayProperty - Array of form property of the 'initial' value.
-   * @param rootProperty - Root form property.
-   * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
-   *          1. (PATTERN) - The entered value does not match the required 'integer' or 'decimal' format pattern.
-   */
-  validateInitialAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
-    let errors = null;
-
-    const dataType = rootProperty.getProperty('type').value;
-
-    if (dataType !== 'integer' && dataType !== 'decimal') {
-      return null;
-    }
-
-    // iterate all properties
-    arrayProperty.forEachChild((property: ObjectProperty) => {
-      const value = (dataType === 'integer') ? property.value.valueInteger : property.value.valueDecimal;
-      const error = this.validateInitialSingle(value, property, rootProperty)
-      if (error) {
-        errors = errors || []
-        errors.push(error)
-      }
-    });
-    this.errorsChanged.next(errors);
-    return errors;
-  }
-
-  /**
-   * Custom validator wrapper for single initial value, specifically of the 'integer' or 'decimal' data types.
-   * Creates a validation object using data from the 'formProperty'and then invokes the actual validation
-   * function provided by the 'ValidationService'.
-   * @param value - Value of single initial value.
-   * @param formProperty - Object form property of the initial.
-   * @param rootProperty - Root form property.
-   * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
-   *          1. (PATTERN) - The entered value does not match the required 'integer' or 'decimal' format
-   */
-  validateInitialSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
-    let errors: any[] = [];
-    const dataType = rootProperty.getProperty('type').value;
-    if (dataType !== 'integer' && dataType !== 'decimal') {
-      return null;
-    }
-
-    if (!this.model) {
-      return null;
-    }
-    const nodeId = this.model?.[FormService.TREE_NODE_ID];
-
-    if (!nodeId) {
-      return null;
-    }
-    const node = this.formService.getTreeNodeById(nodeId);
-    const linkId = node.data.linkId;
-
-    const validationObj = this.createValidationObj(nodeId, linkId, value, formProperty);
-
-    let condKey = '';
-    if (formProperty._canonicalPath) {
-      const match = formProperty._canonicalPath.match(/initial\/(\d+)\/(valueDecimal|valueInteger)/);
-      condKey = match ? match[1] : '';
-
-      if (!match || condKey === "*")
-        return null;
-    }
-
-    validationObj['dataType'] = dataType;
-    validationObj['conditionKey'] = condKey;
-
-    errors = this.validationService.validateInitialSingle(validationObj, dataType);
-
-    if(errors && errors.length) {
-      formProperty.extendErrors(errors);
-    }
-    this.validationErrorsChanged.next(errors);
-    return errors;
-  }  
 }

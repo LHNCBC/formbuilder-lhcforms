@@ -18,6 +18,11 @@ import {fhirPrimitives} from '../fhir';
 // @ts-ignore
 export class ExtensionsService {
   static __ID = 0;
+  static VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
+  static CUSTOM_EXT_VARIABLE_TYPE = 'http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type';
+  static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
+  static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
+
   _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
   _propertyMap: Map<fhirPrimitives.url, FormProperty []> = new Map();
@@ -131,6 +136,15 @@ export class ExtensionsService {
 
 
   /**
+   * Remove expression extensions
+   */
+  removeExpressionExtensions() {
+    this.removeAllExtensions((ext) => {
+      return (ext.value.url === ExtensionsService.INITIAL_EXPRESSION || ext.value.url === ExtensionsService.CALCULATED_EXPRESSION);
+    });
+  }
+
+  /**
    * Remove all extensions that match a given criteria.
    * A callback method 'match` is called for each extension. Al
    * If it returns true, that extension is included in the removal list.
@@ -146,7 +160,96 @@ export class ExtensionsService {
     }
   }
 
+  /**
+   * Remove extensions by url and index.
+   * @param extUrl - Url to identify the extension.
+   * @param index - Index occurrence of the given url.
+   */
+  removeExtensionByUrlAtIndex(extUrl: fhirPrimitives.url, matchIndex: number) {
+    const matchingIndexes = (this.extensionsProp.properties as FormProperty[])
+                                .map((ext: any, i: number) => (ext.value.url === extUrl ? i : -1))
+                                .filter((i) => i !== -1);
 
+    if (matchIndex >= 0 && matchIndex < matchingIndexes.length) {
+      const arrayIndex = matchingIndexes[matchIndex];
+      this.extensionsProp.removeItem(this.extensionsProp.properties[arrayIndex]);
+    }
+  }
+
+  /**
+   * Replace extensions for the given url.
+   * @param extUrl - Url to identify the extension.
+   * @param newExtensionsJSON - New extensions to replace with.
+   */
+  replaceExtensions(extUrl: fhirPrimitives.url, newExtensionsJSON: any): void {
+    const originalExtensions = this.extensionsProp.value;
+
+    // If there are no original extensions, assign the new one.
+    if (!originalExtensions.length) {
+      this.extensionsProp.reset(newExtensionsJSON, false);
+      return;
+    }
+
+    // Find the start and end indexes of the consecutive block of variable extensions.
+    let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
+    if (startIndex === -1) {
+      this.extensionsProp.reset([...newExtensionsJSON, ...originalExtensions]);
+      return;
+    };
+
+    let endIndex = startIndex + 1;
+    while (endIndex < originalExtensions.length && originalExtensions[endIndex].url === extUrl) {
+      endIndex++;
+    }
+
+    // Replace the original extensions with the new ones.
+    this.extensionsProp.reset([
+      ...originalExtensions.slice(0, startIndex),
+      ...newExtensionsJSON,
+      ...originalExtensions.slice(endIndex)
+    ]);
+  }
+
+  /**
+   * Replace extensions for the given url.
+   * @param extUrl - Url to identify the extension.
+   * @param newExtensionsJSON - New extensions to replace with.
+   */
+  insertExtensionAfterURL(extUrl: fhirPrimitives.url, newExtensionsJSON: any): void {
+    const originalExtensions = this.extensionsProp.value;
+
+    // If there are no original extensions, assign the new one.
+    if (!originalExtensions.length) {
+      this.extensionsProp.reset(newExtensionsJSON, false);
+      return;
+    }
+
+    // Find the start and end indexes of the consecutive block of variable extensions.
+    const indexFromEnd = originalExtensions.slice().reverse().findIndex((ext) => ext.url === extUrl);
+    if (indexFromEnd === -1) {
+      this.extensionsProp.reset([...originalExtensions, ...newExtensionsJSON,]);
+      return;
+    };
+
+    const startIndex = originalExtensions.length - indexFromEnd;
+
+    // Replace the original extensions with the new ones.
+    this.extensionsProp.reset([
+      ...originalExtensions.slice(0, startIndex),
+      ...newExtensionsJSON,
+      ...originalExtensions.slice(startIndex)
+    ]);
+  }
+
+  /**
+   * The function checks if either 'url' or 'valueExpression.expression' is missing or empty.
+   * @param valueExpression - input object that may contain 'url' and 'valueExpression.expression'
+   * @return - True if either or both 'url' or 'valueExpression.expression' are missing or empty, otherwise false.
+   */
+  isEmptyValueExpression(valueExpression: any): boolean {
+    return !(valueExpression?.url && valueExpression?.valueExpression?.expression);
+  }
+  
   /**
    * Remove the first extension that matches a criteria. A callback method 'match` is called for each extension
    * The first extension that returns true is removed.

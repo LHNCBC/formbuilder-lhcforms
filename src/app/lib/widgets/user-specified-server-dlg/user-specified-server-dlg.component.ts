@@ -4,6 +4,7 @@ import {FHIRServer, FHIRServerValidityResponse, FhirService} from '../../../serv
 import {fhirPrimitives} from '../../../fhir';
 
 @Component({
+  standalone: false,
   selector: 'lfb-user-server-dlg',
   templateUrl: './user-specified-server-dlg.component.html'
 })

@@ -10,6 +10,7 @@ import { TableService, TableStatus } from 'src/app/services/table.service';
 declare var LForms: any;
 
 @Component({
+  standalone: false,  
   selector: 'lfb-answer-value-set-coding-display',
   templateUrl: './answer-value-set-coding-display.component.html'
 })
@@ -50,6 +51,9 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   answerValuseSetConfigErrorMessage: string;
   autoComplete = false;
 
+  dataType = 'string';
+  answerMethod = 'answer-option';
+
   /**
    * Invoke super constructor.
    *
@@ -64,6 +68,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
     if(initValue) {
       this.model = initValue;
     }
+    this.dataType = this.formProperty.findRoot().getProperty('type').value;
 
     this.init(true);
   }
@@ -83,6 +88,18 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
     });
     this.subscriptions.push(sub);
 
+    
+    sub = this.formProperty.searchProperty('/__$answerOptionMethods').valueChanges.subscribe((method) => {
+      this.answerMethod = method;
+      this.init(false);
+    })
+    this.subscriptions.push(sub);
+
+    sub = this.formProperty.findRoot().getProperty("type").valueChanges.subscribe((type) => {
+      this.dataType = type;
+      this.init(false);
+    });
+    this.subscriptions.push(sub);
 
     sub = this.extensionsService.extensionsObservable
               .pipe(
@@ -110,9 +127,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   init(firstChange: boolean) {
     this.answerOptions = [];
 
-    const dataType = this.formProperty.findRoot().getProperty('type').value;
-
-    if (dataType === 'choice' || dataType === 'open-choice') {
+    if (this.dataType === 'coding' && (this.answerMethod === 'snomed-value-set' || this.answerMethod === 'value-set')) {
       const linkId = this.formProperty.findRoot().getProperty('linkId').value;
       const sourceNode = this.formService.getTreeNodeByLinkId(linkId);
       const answerValueSetUri = this.formProperty.findRoot().getProperty("answerValueSet").value;
@@ -155,6 +170,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
         };
         this.tableService.setTableStatusChanged(status);  
       }
+    } else {
+      this.tableService.setTableStatusChanged(null);
     }
   }
 

@@ -28,7 +28,7 @@
       }
     },
     "type": {
-      "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coded choice, etc.). Header implies group if it has children. No children implies display type",
+      "description": "The type of questionnaire item this is - whether text for display, a grouping of other items or a particular type of data to be captured (string, integer, coding, etc.). Header implies group if it has children. No children implies display type",
       "enum": [
         "boolean",
         "decimal",
@@ -39,8 +39,7 @@
         "string",
         "text",
         "url",
-        "choice",
-        "open-choice",
+        "coding",
         "attachment",
         "reference",
         "quantity",
@@ -93,6 +92,33 @@
         "type": "object"
       },
       "visibleIf": {
+        "oneOf": [
+          // When no answer list, show for these types.
+          {
+            "allOf": [
+              {
+                "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url'"]
+              },
+              {
+                "__$isAnswerList": ["$EXP$ target.value == false || target.value == undefined"]
+              }
+            ],
+          },
+          // For answer list, exclude showing for optionsOnly constraint.
+          {
+            "allOf": [
+              {
+                "type": ["$EXP$ target.value != 'coding'"]
+              },
+              {
+                "__$isAnswerList": [true]
+              },
+              {
+                "answerConstraint": ["$EXP$ target.value == 'optionsOrType' || target.value == 'optionsOrString'"]
+              }
+            ],
+          }
+        ],
         "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url'"]
       },
       "widget": {
@@ -118,7 +144,7 @@
       "pattern": "^-?([0]|([1-9][0-9]*))$",
       "type": "number",
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'boolean' || target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url' || target.value == 'open-choice'"]
+        "__$restrictions": ["$ANY$"]
       },
       "widget": {
         "id": "hidden",
@@ -557,7 +583,7 @@
             "visibleIf": {
               "allOf": [
                 {
-                  "__$answerType": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+                  "__$answerType": ["$EXP$ target.value == 'coding'"]
                 },
                 {
                   "operator": ["$EXP$ target.value == '=' || target.value == '!='"]
@@ -788,6 +814,24 @@
         "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
+    "__$isAnswerList": {
+      "description": "An indication, when true, that the value cannot be changed by a human respondent to the Questionnaire.",
+      "title": "Create answer list",
+      "pattern": "^true|false$",
+      "type": "boolean",
+      "default": false,
+      "visibleIf": {
+        "type": [
+          "$EXP$ target.value == 'integer' || target.value == 'date' || target.value == 'time' || target.value == 'string' || target.value == 'text' || target.value == 'coding'"
+        ]
+      },
+      "widget": {
+        "id": "boolean-radio",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0",
+        "optionLabels": [[false, "No"], [true, "Yes"]]
+      }
+    },
     "__$answerOptionMethods": {
       "description": "Define predefined answers for the user to choose.",
       "title": "Answer list source",
@@ -811,7 +855,7 @@
       "default": "answer-option",
       "type": "string",
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+        "__$isAnswerList": [true]
       },
       "widget": {
         "id": "answer-option-methods",
@@ -820,8 +864,36 @@
         "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0"
       }
     },
+    /*
+    answerConstraint is R5 feature.
+    */
+    "answerConstraint": {
+      "description": "For items that have a defined set of allowed answers (via answerOption or answerValueSet), indicates whether values other than those specified can be selected.",
+      "enum": [
+        "optionsOnly",
+        "optionsOrType",
+        "optionsOrString"
+      ],
+      "type": "string",
+      "title": "Answer constraint",
+      "visibleIf": {
+        "__$isAnswerList": [true]
+      },
+      "widget": {
+        "id": "lb-radio",
+        "layout": "row",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto ps-0 btn-group btn-group-sm",
+        "labels": {
+          "optionsOnly": "Restrict to the list",
+          "optionsOrType": "Allow off list",
+          "optionsOrString": "Allow free text"
+        }
+      }
+    },
     "answerValueSet": {
-      "description": "A reference to a value set containing a list of codes representing permitted answers for a \"choice\" or \"open-choice\" question.",
+      "description": "A reference to a value set containing a list of codes representing permitted answers for a \"coding\" question.",
       "title": "Answer value set",
       "pattern": "^\\S*$",
       "type": "string",
@@ -836,7 +908,7 @@
       }
     },
     "answerOption": {
-      "description": "One of the permitted answers for a \"choice\" or \"open-choice\" question.",
+      "description": "One of the permitted answers for a \"coding\" question.",
       "items": {
         "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
         "properties": {
@@ -964,7 +1036,7 @@
             "additionalProperties": false,
             "type": "object",
             "visibleIf": {
-              "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+              "/type": ["$EXP$ target.value == 'coding'"]
             }
           },
           "valueReference": {
@@ -1014,14 +1086,7 @@
             "pattern": "^true|false$",
             "type": "boolean",
             "visibleIf": {
-              "allOf": [
-                {
-                  "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
-                },
-                {
-                  "/__$valueMethod": ["$EXP$ target.value == 'pick-initial' || target.value == ''  || target.value == null || target.value == undefined"]
-                }
-              ]
+              "/type": ["$EXP$ target.value == 'integer' || target.value == 'date' || target.value == 'time'|| target.value == 'string' || target.value == 'text' || target.value == 'coding'"]
             },
             "widget": {"id": "hidden"}
           }
@@ -1032,7 +1097,16 @@
       "type": "array",
       "title": "Answer choices",
       "visibleIf": {
-        "/__$answerOptionMethods": ["answer-option"]
+        "__$answerOptionMethods": ["answer-option"]
+/*
+        "allOf": [
+          {
+            "/__$answerOptionMethods": ["answer-option"]
+          },
+          {
+            "__$valueMethod": ["$EXP$ target.value != 'compute-initial' && target.value != 'compute-continuously' "]
+          }
+        ] */
       },
       "widget": {
         "id": "answer-option",
@@ -1061,7 +1135,7 @@
       "title": "Answer list layout",
       "type": "string",
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'open-choice' || target.value == 'choice'"]
+        "type": ["$EXP$ target.value == 'coding'"]
       },
       "widget": {
         "id": "item-control",
@@ -1084,13 +1158,13 @@
         {
           'enum': ["table"],
           'display': 'Vertical Answer Table',
-          'description': 'For \'choice\' questions, the table representation should have questions as rows and answers as columns. Ensure option sets are consistent within a group. Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
+          'description': 'For \'coding\' questions, the table representation should have questions as rows and answers as columns. Ensure option sets are consistent within a group. Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
           'support': true
         },
         {
           'enum': ["htable"],
           'display': 'Horizontal Answer Table',
-          'description': 'For \'choice\' questions, the table representation should have questions as columns and answers as rows. Ensure option sets are consistent within a group.  Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
+          'description': 'For \'coding\' questions, the table representation should have questions as columns and answers as rows. Ensure option sets are consistent within a group.  Sparse tables, where certain options are missing for specific questions, may not be rendered as tables by all tools due to inconsistent data structure.',
           'support': false
         },
         {
@@ -1139,10 +1213,75 @@
         "id": "item-control",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-9 btn-group btn-group-sm p-0",
+        "controlClasses": "col-10 btn-group btn-group-sm p-0",
         "note": "(1) - not supported by LHC-Forms preview."
       }
     },
+    "__$itemControlDisplay": {
+      // Proxy for item control extension.
+      "description": "Choose the type of control for the 'Display' data type. Some item controls are not supported by the LHC-Forms preview, as indicated by the asterisk (1) symbol.",
+      "title": "Display Item Control",
+      "oneOf": [
+        {
+          'enum': ["inline"],
+          'display': 'In-line',
+          'description': 'The display item is rendered as a paragraph positioned sequentially among its sibling items (default behavior).',
+          'support': true
+        },
+        {
+          'enum': ["prompt"],
+          'display': 'Prompt',
+            'description': 'Text is shown directly below or within the answer-entry area of the containing question item, usually as a guide for what to enter.',
+          'support': false,
+          'deprecated': true
+        },
+        {
+          'enum': ["unit"],
+          'display': 'Unit',
+            'description': 'The display item is shown next to the answer area of the parent question, usually to indicate a unit of measure.',
+          'support': false,
+          'deprecated': true
+        },
+        {
+          'enum': ["lower"],
+          'display': 'Lower-bound',
+            'description': 'The display item is rendered to the left of the answer choices or a scaling control for the parent question, indicating the meaning of the \'lower\' bound, e.g., \'Strongly disagree\'.',
+          'support': false
+        },
+        {
+          'enum': ["upper"],
+          'display': 'Upper-bound',
+          'description': 'The display item is rendered to the right of the answer choices or a scaling control for the parent question item, indicating the meaning of the \'upper\' bound, e.g., \'Strongly agree\'.',
+          'support': false
+        },
+        {
+          'enum': ["flyover"],
+          'display': 'Fly-over',
+          'description': 'The display item appears temporarily when the mouse hovers over the text of the containing item.',
+          'support': false
+        },
+        {
+          'enum': ["legal"],
+          'display': 'Legal-Button',
+          'description': 'The display item is shown in a dialog box or similar control when a button or other UI element is used to request legal information for a question, group, or the entire questionnaire, depending on where the display item is nested.',
+          'support': false
+        }
+      ],
+      "default": "inline",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'display'"]
+      },
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 btn-group btn-group-sm p-0",
+        "note": "(1) - not supported by LHC-Forms preview.",
+        "deprecatedNote": "* '${deprecatedItemControl}' item control is deprecated and is not presented in this list of item controls." 
+      }
+    },
+
     "__$terminologyServer": {
       "description": "Enter url for preferred terminology server.",
       "title": "Terminology server",
@@ -1160,7 +1299,7 @@
       "description": "Specify how the question obtains its initial values.",
       "title": "Value method",
       "visibleIf": {
-        "/type": ["$EXP$ target.value != 'group' && target.value != 'display'"]
+        "/type": ["$EXP$ target.value != 'group' && target.value != 'display' "]
       },
       "oneOf": [
         {
@@ -1247,7 +1386,7 @@
           },
           "valueDecimal": {
             "description": "The actual value to for an initial answer.",
-            "type": "string",
+            "type": "number",
             "title": "Value decimal",
             "visibleIf": {
               "/type": ["decimal"]
@@ -1258,7 +1397,7 @@
           },
           "valueInteger": {
             "description": "The actual value to for an initial answer.",
-            "type": "string",
+            "type": "integer",
             "title": "Value integer",
             "visibleIf": {
               "/type": ["integer"]
@@ -1435,7 +1574,14 @@
             "additionalProperties": false,
             "type": "object",
             "visibleIf": {
-              "/__$answerOptionMethods": ["answer-option", "snomed-value-set", "value-set"]
+              "allOf": [
+                {
+                  "/__$answerOptionMethods": ["answer-option", "snomed-value-set", "value-set"]
+                },
+                {
+                  "/type": ["$EXP$ target.value == 'coding'"]
+                }
+              ],
             },
             "widget": {
               "id": "hidden"
@@ -1554,20 +1700,20 @@
       "visibleIf": {
         "oneOf": [
           {
+            "__$valueMethod":  ["type-initial"]
+          },
+          {
             "allOf": [
               {
-                "/type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'choice' && target.value != 'open-choice'"]
+                "__$valueMethod":  ["pick-initial"]
               },
               {
-                "__$valueMethod":  ["type-initial"]
+                "type": ["boolean"]
               }
             ]
           },
           {
             "allOf": [
-              {
-                "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
-              },
               {
                 "__$valueMethod":  ["pick-initial"]
               },
@@ -1575,7 +1721,7 @@
                 "/__$answerOptionMethods": ["snomed-value-set", "value-set"]
               }
             ]
-          }
+          }          
         ]
       },
       "widget": {
@@ -1663,7 +1809,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "visibleIf": {
-                  "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+                  "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice' || target.value == 'coding'"]
                 }
               }
             },
@@ -1675,7 +1821,14 @@
       "type": "object",
       "title": "Pick Initial value",
       "visibleIf": {
-        "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option'"]
+        "allOf": [
+          {
+            "__$valueMethod":  ["pick-initial"]
+          },
+          {
+            "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option'"]
+          }
+        ],
       },
       "widget": {
         "id": "pick-answer",
@@ -1683,23 +1836,7 @@
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col p-0",
         "addButtonLabel": "Add another value",
-        "singleItemEnableSource": "repeats",
-        "showFields": [
-          {"field": "valueBoolean", "noHeader": true, "title": "", "nolabel": true},
-          {"field": "valueDecimal", "noHeader": true, "title": "", "nolabel": true},
-          {"field": "valueInteger", "noHeader": true, "nolabel": true},
-          {"field": "valueDate", "noHeader": true, "nolabel": true},
-          {"field": "valueDateTime", "noHeader": true, "nolabel": true},
-          {"field": "valueTime", "noHeader": true, "nolabel": true},
-          {"field": "valueString", "noHeader": true, "title": "", "nolabel": true},
-          {"field": "valueUri", "noHeader": true, "nolabel": true},
-          {"field": "valueCoding.display", "title": "Display", "col": 4, "nolabel": true},
-          {"field": "valueCoding.code", "title": "Code", "col": 3, "nolabel": true},
-          {"field": "valueCoding.system", "title": "System", "col": 4, "nolabel": true},
-          {"field": "valueQuantity.value","title": "Value", "col": 4, "nolabel": true},
-          {"field": "valueQuantity.unit", "title": "Unit", "col": 7, "nolabel": true},
-          {"field": "valueReference", "noHeader": true, "nolabel": true}
-        ]
+        "singleItemEnableSource": "repeats"
       }
     },
     "__$variable": {
@@ -1860,55 +1997,8 @@
           }
         },
         "valueExpression": {
-          "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-          "properties": {
-            "id": {
-              "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-              "pattern": "^[ \\r\\n\\t\\S]+$",
-              "type": "string"
-            },
-            "description": {
-              "description": "A brief, natural language description of the condition that effectively communicates the intended semantics.",
-              "pattern": "^[ \\r\\n\\t\\S]+$",
-              "type": "string"
-            },
-            "name": {
-              "description": "A short name assigned to the expression to allow for multiple reuse of the expression in the context where it is defined.",
-              "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
-              "type": "string"
-            },
-            "language": {
-              "description": "The media type of the language for the expression.",
-              "enum": [
-                "text/cql",
-                "text/fhirpath",
-                "application/x-fhir-query"
-              ],
-              "type": "string"
-            },
-            "expression": {
-              "description": "An expression in the specified language that returns a value.",
-              "pattern": "^[ \\r\\n\\t\\S]+$",
-              "type": "string"
-            },
-            "reference": {
-              "description": "A URI that defines where the expression is found.",
-              "pattern": "^\\S*$",
-              "type": "string"
-            },
-            "extension": {
-              "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
-              "items": {
-                "$ref": "#/definitions/Extension"
-              },
-              "type": "array",
-              "widget": {
-                "id": "hidden"
-              }
-            }
-          },
-          "additionalProperties": false,
-          "type": "object"
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
         }
       },
       "visibleIf": {
@@ -1971,56 +2061,9 @@
           }
         },
         "valueExpression": {
-          "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-          "properties": {
-            "id": {
-              "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-              "pattern": "^[ \\r\\n\\t\\S]+$",
-              "type": "string"
-            },
-            "description": {
-              "description": "A brief, natural language description of the condition that effectively communicates the intended semantics.",
-              "pattern": "^[ \\r\\n\\t\\S]+$",
-              "type": "string"
-            },
-            "name": {
-              "description": "A short name assigned to the expression to allow for multiple reuse of the expression in the context where it is defined.",
-              "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
-              "type": "string"
-            },
-            "language": {
-              "description": "The media type of the language for the expression.",
-              "enum": [
-                "text/cql",
-                "text/fhirpath",
-                "application/x-fhir-query"
-              ],
-              "type": "string"
-            },
-            "expression": {
-              "description": "An expression in the specified language that returns a value.",
-              "pattern": "^[ \\r\\n\\t\\S]+$",
-              "type": "string"
-            },
-            "reference": {
-              "description": "A URI that defines where the expression is found.",
-              "pattern": "^\\S*$",
-              "type": "string"
-            },
-            "extension": {
-              "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
-              "items": {
-                "$ref": "#/definitions/Extension"
-              },
-              "type": "array",
-              "widget": {
-                "id": "hidden"
-              }
-            }
-          },
-          "additionalProperties": false,
-          "type": "object"
-        },
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
       },
       "visibleIf": {
         "__$valueMethod": ["compute-continuously"]
@@ -2180,6 +2223,24 @@
         "controlClasses": "col p-0"
       }
     },
+    /*
+    disabledDisplay is R5 feature
+    */
+    "disabledDisplay": {
+      "description": "Indicates if and how items that are disabled (because enableWhen evaluates to 'false') should be displayed.",
+      "enum": [
+        "hidden",
+        "protected"
+      ],
+      "type": "string",
+      "title": "Hide or show this item when conditional display evaluates to 'false'?",
+      "widget": {
+        "id": "enable-behavior",
+        "layout": "row",
+        "labelWidthClass": "col-sm-2",
+        "controlWidthClass": "col-sm-7"
+      }
+    },
     "__$end": {
       "description": "An internal field to indicate end of loading an item. User should not see this.",
       "title": "End - Should be invisible",
@@ -2286,11 +2347,33 @@
     },
     {
       "fields": [
+        "__$isAnswerList"
+      ],
+      "showFields": [
+        {
+          "field": "__$isAnswerList",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
         "__$answerOptionMethods"
       ],
       "showFields": [
         {
           "field": "__$answerOptionMethods",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "answerConstraint"
+      ],
+      "showFields": [
+        {
+          "field": "answerConstraint",
           "col": 12
         }
       ]
@@ -2339,6 +2422,17 @@
         }
       ]
     },
+    {
+      "fields": [
+        "__$itemControlDisplay"
+      ],
+      "showFields": [
+        {
+          "field": "__$itemControlDisplay",
+          "col": 12
+        }
+      ]
+    },    
     {
       "fields": [
         "__$terminologyServer"
@@ -2456,6 +2550,17 @@
       "showFields": [
         {
           "field": "enableBehavior",
+          "col": 3
+        }
+      ]
+    },
+    {
+      "fields": [
+        "disabledDisplay"
+      ],
+      "showFields": [
+        {
+          "field": "disabledDisplay",
           "col": 3
         }
       ]
