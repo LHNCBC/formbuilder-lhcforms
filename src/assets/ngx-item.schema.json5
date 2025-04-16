@@ -839,17 +839,20 @@
         {
           "type": "string",
           "enum": ["answer-option"],
-          "title": "Answer options"
+          "title": "Answer options",
+          "dataType": ["all"]
         },
         {
           "type": "string",
           "enum": ["snomed-value-set"],
-          "title": "SNOMED answer value set"
+          "title": "SNOMED answer value set",
+          "dataType": ["coding"]
         },
         {
           "type": "string",
           "enum": ["value-set"],
-          "title": "Answer value set URI"
+          "title": "Answer value set URI",
+          "dataType": ["coding"]
         }
       ],
       "default": "answer-option",
