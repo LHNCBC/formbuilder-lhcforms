@@ -9,6 +9,13 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
   selector: 'lfb-label-radio',
   templateUrl: './label-radio.component.html'
 })
-export class LabelRadioComponent extends LfbControlWidgetComponent {
+export class LabelRadioComponent extends LfbControlWidgetComponent implements OnInit {
 
+  labels = {};
+  ngOnInit() {
+    super.ngOnInit();
+    this.formProperty.schema.enum?.forEach((option) => {
+      this.labels[option] = this.formProperty.schema.widget?.labels?.[option] || option;
+    });
+  }
 }

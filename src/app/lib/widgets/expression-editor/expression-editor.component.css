@@ -1,0 +1,34 @@
+.btn-sm {
+  margin-bottom: 6px !important;
+}
+
+#outputExpression {
+  margin-right: 0px !important;
+  border-top-right-radius: 0px !important;
+  border-bottom-right-radius: 0px !important;
+}
+
+
+.grayed-out {
+  background-color: #f0f0f0;
+  color: #707070;
+  opacity: 0.8;
+}
+
+.custom-dialog-container {
+  transition: width 0.13s ease, height 0.13s ease;
+}
+
+/* Display expression as textarea */
+.textarea {
+  width: calc(100% - 20px);
+  min-height: 24px;
+  resize: vertical;
+  font-family: Arial;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  padding: 1rem .5rem !important;
+  border-radius: 4px;
+  height: 24px;
+}

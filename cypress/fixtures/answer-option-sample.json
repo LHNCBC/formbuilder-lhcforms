@@ -2,6 +2,11 @@
   "resourceType": "Questionnaire",
   "title": "Answer options form",
   "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
   "item": [
     {
       "text": "Item with answer option and initial",
@@ -23,12 +28,12 @@
         ]
       },
       "linkId": "1",
-      "type": "choice",
+      "type": "coding",
       "answerOption": [
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 1
             }
           ],
@@ -41,7 +46,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 2
             }
           ],
@@ -74,12 +79,12 @@
         ]
       },
       "linkId": "2",
-      "type": "choice",
+      "type": "coding",
       "answerOption": [
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 10
             }
           ],
@@ -92,7 +97,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 20
             }
           ],
@@ -105,7 +110,7 @@
         {
           "extension": [
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
               "valueDecimal": 30
             }
           ],

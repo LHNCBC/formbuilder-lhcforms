@@ -52,7 +52,9 @@ Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
 Cypress.Commands.add('goToHomePage', () => {
   CypressUtil.mockLFormsLoader();
   cy.visit('/');
-  cy.window({timeout: 10000}).should('have.property', 'LForms');
+  cy.wait('@lformsVersions', {timeout: CypressUtil.HTTP_REQ_TIMEOUT});
+  cy.wait("@lformsLib", {timeout: CypressUtil.HTTP_REQ_TIMEOUT});
+  cy.window({timeout: 60000}).should('have.property', 'LForms');
 });
 
 
@@ -189,7 +191,9 @@ Cypress.Commands.add('FHIRServerResponse', (menuText, serverBaseUrl = 'https://l
 });
 
 Cypress.Commands.add('enterAnswerOptions', (codings) => {
-  cy.selectDataType('choice');
+  cy.selectDataType('coding');
+  cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+  cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
@@ -205,8 +209,10 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
  * Create a sample answer option list.
  */
 Cypress.Commands.add('addAnswerOptions', () => {
-  cy.selectDataType('choice');
-  // No 'initial' widget for choice. User selects default radio in answer option table.
+  cy.selectDataType('coding');
+  cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+  cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+  // No 'initial' widget for coding. User selects default radio in answer option table.
   // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
   cy.get('[id^="answerOption.0.valueCoding.code"]').type('c1');
@@ -214,10 +220,12 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.0.valueCoding.__$score"]').type('2.1');
 
   cy.questionnaireJSON().should((qJson) => {
-    expect(qJson.item[0].type).equal('choice');
+    console.log(JSON.stringify(qJson, null, 2));
+    expect(qJson.item[0].type).equal('coding');
+    expect(qJson.item[0].answerConstraint).equal('optionsOnly');
     expect(qJson.item[0].answerOption[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
     expect(qJson.item[0].answerOption[0].extension).to.deep.equal([{
-      url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+      url: 'http://hl7.org/fhir/StructureDefinition/itemWeight',
       valueDecimal: 2.1
     }]);
   });
@@ -229,24 +237,30 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.1.valueCoding.code"]').type('c2');
   cy.get('[id^="answerOption.1.valueCoding.system"]').type('s2');
   cy.get('[id^="answerOption.1.valueCoding.__$score"]').type('3');
-  // Select a default a.k.a initial
-  cy.get('lfb-answer-option table tbody tr').eq(0).find('input[type="radio"]').click();
+  // Select first option
+  cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
+  cy.get('[id^="pick-answer"]').as('pickAnswer');
+  cy.get('@pickAnswer').click();
+  cy.get('#searchResults ul > li').should('have.length', 2);
+  cy.get('@pickAnswer').type('{downarrow}{enter}');
+  cy.get('@pickAnswer').should('have.value', 'd1');
 
   cy.questionnaireJSON().should((qJson) => {
-    expect(qJson.item[0].type).equal('choice');
+    expect(qJson.item[0].type).equal('coding');
+    expect(qJson.item[0].answerConstraint).equal('optionsOnly');
     expect(qJson.item[0].answerOption).to.deep.equal([
       {
         initialSelected: true,
         valueCoding: {display: 'd1', code: 'c1', system: 's1'},
         extension: [{
-          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          url: 'http://hl7.org/fhir/StructureDefinition/itemWeight',
           valueDecimal: 2.1
         }]
       },
       {
         valueCoding: {display: 'd2', code: 'c2', system: 's2'},
         extension: [{
-          url: 'http://hl7.org/fhir/StructureDefinition/ordinalValue',
+          url: 'http://hl7.org/fhir/StructureDefinition/itemWeight',
           valueDecimal: 3
         }]
       },
@@ -499,10 +513,33 @@ Cypress.Commands.add('collapseAdvancedFields',() => {
 });
 
 /**
- * Click a radio button identified by field label and value of the radio button.
+ * Click a boolean value radio button identified by field label and value of the radio button.
  */
 Cypress.Commands.add('booleanFieldClick', (fieldLabel, rbValue) => {
   return cy.getBooleanFieldParent(fieldLabel).find('label[for^="booleanRadio_'+rbValue+'"]').click();
+});
+
+/**
+ * Get a radio button identified by the label of the group and the label of the radio button.
+ *
+ * Use radio input element to make assertions on input status, such as selected or not. It is not
+ * suitable for mouse actions as it is hidden from mouse-pointer. Instead use its label to perform
+ * mouse actions.
+*/
+
+Cypress.Commands.add('getRadioButton', (groupLabel, rLabel) => {
+  return cy.getRadioButtonLabel(groupLabel, rLabel).invoke('attr', 'for').then((id) => {
+    return cy.get('#'+id);
+  }).should('have.attr', 'type', 'radio');
+  // Confirm the radio input and return its label for mouse actions.
+});
+
+/**
+ * Get the label of radio input identified by the label of the field and the label of the radio button.
+ */
+Cypress.Commands.add('getRadioButtonLabel', (fieldLabel, radioLabel) => {
+  const radioGroup = cy.get('lfb-label label').contains(fieldLabel).parent().next();
+  return radioGroup.find('label').contains(radioLabel);
 });
 
 /**
@@ -542,3 +579,31 @@ Cypress.Commands.add('getInitialValueBooleanInput', (rbValue) => {
 Cypress.Commands.add('getInitialValueBooleanClick', (rbValue) => {
   return getInitialValueBooleanParent().find('label[for^="booleanRadio_'+rbValue+'"]').click();
 });
+
+/**
+ * Click radio button for the 'Type initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getTypeInitialValueValueMethodClick', (rbValue) => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_type-initial"]').click();
+});
+
+/**
+ * Click radio button for the 'Pick initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getPickInitialValueValueMethodClick', (rbValue) => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
+});
+/**
+ * Click radio button for the 'Compute initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getComputeInitialValueValueMethodClick', (rbValue) => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-initial"]').click();
+});
+
+/**
+ * Click radio button for the 'Continuously compute value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', (rbValue) => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-continuously"]').click();
+});
+

@@ -1,18 +1,42 @@
 import {Injectable} from '@angular/core';
 import {TestBed} from '@angular/core/testing';
 import {FormService} from '../services/form.service';
-import {FormProperty, FormPropertyFactory, SchemaPreprocessor} from '@lhncbc/ngx-schema-form';
+import {
+  ExpressionCompilerFactory,
+  FormProperty,
+  FormPropertyFactory, LogService,
+  PropertyBindingRegistry,
+  SchemaPreprocessor,
+  SchemaValidatorFactory,
+  ValidatorRegistry
+} from '@lhncbc/ngx-schema-form';
 import {CommonTestingModule} from './common-testing.module';
+
+export function useFactory(schemaValidatorFactory: SchemaValidatorFactory,
+                           validatorRegistry: ValidatorRegistry,
+                           propertyBindingRegistry: PropertyBindingRegistry,
+                           expressionCompilerFactory: ExpressionCompilerFactory,
+                           logService: LogService) {
+  return new FormPropertyFactory(schemaValidatorFactory, validatorRegistry, propertyBindingRegistry, expressionCompilerFactory, logService);
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class TestingService {
   rootProperty: FormProperty;
+  formPropertyFactory = TestBed.inject<FormPropertyFactory>(FormPropertyFactory);
+  TestBed = TestBed.overrideProvider(
+    FormPropertyFactory,
+    {
+      useFactory: useFactory,
+      deps: [SchemaValidatorFactory, ValidatorRegistry, PropertyBindingRegistry, ExpressionCompilerFactory, LogService],
+      multi: true
+    }
+  );
 
   constructor(
-    private formService: FormService,
-    private formPropertyFactory: FormPropertyFactory
+    private formService: FormService
   ) {
     let schema = formService.itemSchema;
     schema = SchemaPreprocessor.preprocess(schema);

@@ -78,7 +78,7 @@ mat-tab-group.preview-json-tabs, mat-tab-group.preview-json-tabs mat-tab-header 
  * is used in dialog boxes.
 */
 #searchResults {
-  z-index: 1010 !important;
+  z-index: 1410 !important;
 }
 
 html, body { height: 100%; }
@@ -96,4 +96,22 @@ fa-icon > svg.svg-inline--fa {
 
 .toggle-children {
   margin-bottom: 2px;
+}
+
+#error {
+  margin-right: 5px;
+}
+
+input.invalid {
+  outline: 2px solid red;
+}
+
+div.has-error > ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+div.has-error > ul:empty {
+  display: none;
 }

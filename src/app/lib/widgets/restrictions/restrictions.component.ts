@@ -1,6 +1,6 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import {PropertyGroup} from '@lhncbc/ngx-schema-form/lib/model';
+import {PropertyGroup} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';
@@ -96,9 +96,8 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
 
   constructor(private restrictionOperatorService: RestrictionOperatorService,
               private extensionsService: ExtensionsService,
-              private formService: FormService,
-              private elementRef: ElementRef) {
-    super(elementRef);
+              private formService: FormService) {
+    super();
   }
 
 

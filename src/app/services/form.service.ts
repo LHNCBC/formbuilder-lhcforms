@@ -26,11 +26,12 @@ import ngxFlSchema from '../../assets/ngx-fl.schema.json5';
 import flLayout from '../../assets/fl-fields-layout.json5';
 // @ts-ignore
 import itemEditorSchema from '../../assets/item-editor.schema.json5';
-import {GuidingStep, Util} from '../lib/util';
+import {GuidingStep, Util, FHIR_VERSIONS, FHIR_VERSION_TYPE} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { toUpper } from 'cypress/types/lodash';
 
 declare var LForms: any;
 
@@ -63,6 +64,10 @@ export class FormService {
   static readonly TREE_NODE_ID = "__$treeNodeId";
   _validationStatusChanged$: Subject<void> = new Subject<void>();
 
+  static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
+  static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
+  static VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
+  static CUSTOM_EXT_VARIABLE_TYPE = 'http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type';
 
   private _loading = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
@@ -83,6 +88,7 @@ export class FormService {
   _lformsVersion = '';
   _lformsErrorMessage = null;
   _windowOpenerUrl: string = null;
+  _windowOpenerFhirVersion: FHIR_VERSION_TYPE = "R4";
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
@@ -124,8 +130,7 @@ export class FormService {
     text: this.operatorOptions,
     url: this.operatorOptions2,
     boolean: this.operatorOptions2,
-    choice: this.operatorOptions2,
-    'open-choice': this.operatorOptions2,
+    coding: this.operatorOptions2,
     attachment: this.operatorOptions2,
     reference: this.operatorOptions2
   };
@@ -229,6 +234,22 @@ export class FormService {
 
   set windowOpenerUrl(url: string) {
     this._windowOpenerUrl = url;
+  }
+
+  get windowOpenerFhirVersion(): FHIR_VERSION_TYPE {
+    return this._windowOpenerFhirVersion;
+  }
+
+  /**
+   * Setter
+   * Set if the input is a valid version, otherwise ignore.
+   */
+  set windowOpenerFhirVersion(version: string) {
+    const v = version?.toUpperCase() as FHIR_VERSION_TYPE;
+    this._windowOpenerFhirVersion =
+      FHIR_VERSIONS[v] !== undefined
+        ? v
+        : this._windowOpenerFhirVersion;
   }
 
   get lformsVersion(): string {
@@ -545,6 +566,9 @@ export class FormService {
       if (this.treeNodeStatusMap[treeNodeId]['errors'] && fieldName in this.treeNodeStatusMap[treeNodeId]['errors']) {
         this.liveAnnouncer.announce('Error is resolved for this node.');
         delete this.treeNodeStatusMap[treeNodeId]['errors'][fieldName];
+      } else if (fieldName === "*") {
+        // clear all error for the given treeNodeId.
+        this.treeNodeStatusMap[treeNodeId]['errors'] = {};
       }
 
       this.treeNodeStatusMap[treeNodeId]['hasError'] = (Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length > 0);
@@ -612,6 +636,83 @@ export class FormService {
   clearAutoSavedTreeNodeStatusMap() {
     localStorage.removeItem('treeMap');
     this.treeNodeStatusMap = {};
+  }
+
+  /**
+   * Loop through the array of extensions and filters out extensions that is a Variable.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions excluding the extensions of type Variable.
+   */
+  removeVariablesExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url !== FormService.VARIABLE));
+  }
+
+  /**
+   * Loop through the array of extensions and filters out extensions that is an Initial Expression, or Calculated Expression.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions excluding the extensions of type Initial Expression or Calculated Expression.
+   */
+  removeExpressionsExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url !== FormService.INITIAL_EXPRESSION && ext.url !== FormService.CALCULATED_EXPRESSION));
+  }
+
+  /**
+   * Loop through the array of extensions and retain only extensions that is a Variable.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions that is of type Variable.
+   */
+  filterVariableExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url === FormService.VARIABLE));
+  }
+
+  /**
+   * Return the expression url based on the type of the expression.
+   * @param expressionType - Initial expression or calculated expression.
+   * @returns - expression url.
+   */
+  getUrlByType(expressionType: string): string {
+    return (expressionType === "__$initialExpression") ? FormService.INITIAL_EXPRESSION : FormService.CALCULATED_EXPRESSION;
+  }
+
+  /**
+   * Return the expression extension based on the type of the expression. If multiple extensions
+   * are found, the calculated expression takes precedence.
+   * @param extensions - array of extensions.
+   * @param expressionType - Initial expression or calculated expression.
+   * @returns - expression extension.
+   */
+  getExpressionsExtensionByType(extensions: any, expressionType: string): any {
+    let expression = null;
+
+    for (const ext of extensions) {
+      if (ext.url === FormService.CALCULATED_EXPRESSION) {
+        ext.url = this.getUrlByType(expressionType);
+        return ext;
+      } else if (ext.url === FormService.INITIAL_EXPRESSION && !expression) {
+        expression = ext;
+        expression.url = this.getUrlByType(expressionType);
+      }
+
+    }
+    return expression;
+  }
+
+  /**
+   * Check whether the provided array of extensions contains the Initial Expression.
+   * @param extensions - array of extensions
+   * @returns - True if the Initial Expression is found and false otherwise.
+   */
+  hasInitialComputeValueExpression(extensions: any): boolean {
+    return extensions.some(ext => (ext.url === FormService.INITIAL_EXPRESSION));
+  }
+
+  /**
+   * Check whether the provided array of extensions contains the Calculated Expression.
+   * @param extensions - array of extensions
+   * @returns - True if the Calculated Expression is found and false otherwise.
+   */
+  hasContinuouslyComputeValueExpression(extensions: any): boolean {
+    return extensions.some(ext => (ext.url === FormService.CALCULATED_EXPRESSION));
   }
 
   /**
@@ -891,46 +992,44 @@ export class FormService {
 
     if(jsonObj.resourceType !== 'Questionnaire') {
       if (!!jsonObj.name) {
-        jsonObj = LForms.Util._convertLFormsToFHIRData('Questionnaire', 'R4', jsonObj);
+        jsonObj = LForms.Util.getFormFHIRData('Questionnaire', 'R5', jsonObj);
       }
       else {
         throw new Error('Not a valid questionnaire');
       }
     }
 
-    return this.convertToR4(jsonObj);
+    return this.convertToR5(jsonObj);
   }
 
 
   /**
-   * Convert a given questionniare to R4 version. R4 is also internal format.
+   * Convert a given questionnaire to R5 version. R5 is also internal format.
    * Other formats are converted to internal format using LForms library when loading an external form.
    *
-   * @param fhirQ - A given questionnaire. Could be STU3, R4 etc.
+   * @param fhirQ - A given questionnaire. Could be STU3, R4, R5 etc.
    */
-  convertToR4(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
+  convertToR5(fhirQ: fhir.Questionnaire): fhir.Questionnaire {
     let ret = fhirQ;
-    const fhirVersion = LForms.Util.guessFHIRVersion(fhirQ);
-    if(fhirVersion !== 'R4') {
-      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, 'R4',
-        LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
+    const fhirVersion = Util.detectFHIRVersion(fhirQ);
+    if(fhirVersion !== 'R5') {
+      ret = Util.convertQuestionnaire(fhirQ, 'R5');
     }
     return ret;
   }
 
   /**
-   * Convert R4, which is default internal format, to other formats such as STU3.
+   * Convert from R5, which is default internal format, to other formats such as STU3.
    *
    * @param fhirQ - Given questionnaire.
    * @param version -  desired format, such as STU3
    */
-  convertFromR4(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
+  convertFromR5(fhirQ: fhir.Questionnaire, version: string): fhir.Questionnaire {
     let ret = fhirQ;
     if (version === 'LHC-Forms') {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
-    } else if (version !== 'R4') {
-      ret = LForms.Util.getFormFHIRData(fhirQ.resourceType, version,
-        LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ));
+    } else if (version !== 'R5') {
+      ret = Util.convertQuestionnaire(fhirQ, version);
     }
     return ret;
   }
@@ -965,6 +1064,9 @@ export class FormService {
             }
           }
         }
+        if(x?.answerOption || x?.type === 'coding' || x?.answerValueSet || x?.answerConstraint) {
+          x.__$isAnswerList = true;
+        }
     });
 
     return questionnaire;
@@ -996,6 +1098,11 @@ export class FormService {
    */
   notifyWindowOpener(data: any) {
     if(this._windowOpenerUrl) {
+      // Return the data in the requested format
+      data.questionnaire = this.convertFromR5(
+        data.questionnaire,
+        this._windowOpenerFhirVersion
+      );
       window.opener.postMessage(data, this._windowOpenerUrl);
     }
   }

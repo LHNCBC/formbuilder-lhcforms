@@ -11,7 +11,7 @@
   <div [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="'label_'+id">
     <ng-container *ngFor="let option of schema.oneOf">
       <ng-container *ngIf="isSnomedUser || option.enum[0] !== 'snomed-value-set'">
-        <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" [attr.name]="id"
+        <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" [name]="id"
                type="radio" [value]="option.enum[0]" autocomplete="off" (change)="handleChange()">
         <label class="btn btn-sm btn-outline-success" [attr.for]="id + '_' + option.enum[0]">{{option.title || option.description}}</label>
       </ng-container>

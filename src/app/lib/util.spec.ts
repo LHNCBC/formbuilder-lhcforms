@@ -103,4 +103,48 @@ describe('Util', () => {
       expect(Util.convertUnitsToExtensions(tCase.lformsUnits, tCase.dataType)).toEqual(tCase.fhirExtensions);
     });
   });
+
+  // TODO - Uncomment after conversion is fixed.
+  it('should convert R5 features to R4', () => {
+    const testCases: any [] = [
+      {
+        convertTo: 'R4',
+        questionnaire: {
+          resourceType: 'Questionnaire',
+          status: 'draft',
+          meta: {
+            tag: [
+              {
+                code: 'should-exist'
+              }
+            ]
+          },
+          item: [
+            {
+              linkId: '1',
+              type: 'coding',
+              answerOption: [
+                {valueCoding: {code: 'c1', display: 'd1', system: 's1'}}
+              ],
+              answerConstraint: 'optionsOrType'
+            }
+          ]
+        },
+        assertions: {
+          type: 'open-choice',
+        }
+      }
+    ];
+
+    testCases.forEach((tCase) => {
+      const convertedQ = Util.convertQuestionnaire(tCase.questionnaire, tCase.convertTo);
+      const assertions = Object.keys(tCase.assertions);
+      assertions.forEach(assertion => {
+        expect(convertedQ.item[0][assertion]).toEqual(tCase.assertions[assertion]);
+      });
+
+      expect(convertedQ.meta.tag.length).toEqual(1);
+      expect(convertedQ.meta.tag[0].code).toEqual('should-exist');
+    });
+  });
 });

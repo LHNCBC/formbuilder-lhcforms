@@ -1,17 +1,16 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
   OnInit
 } from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import fhir from 'fhir/r4';
 import {TreeService} from '../../../services/tree.service';
-import {Subscription} from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
+import { AnswerOptionService } from 'src/app/services/answer-option.service';
 
 @Component({
   standalone: false,
@@ -23,13 +22,14 @@ import { FormService } from 'src/app/services/form.service';
 export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
+  static ITEM_WEIGHT_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
 
   // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
   initializing = false;
 
-  constructor(private treeService: TreeService, private elementRef: ElementRef,
-              private formService: FormService) {
-    super(elementRef);
+  constructor(private formService: FormService,
+              private answerOptionService: AnswerOptionService) {
+    super();
   }
 
   /**
@@ -122,6 +122,24 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
       this.initializing = true;
     });
     this.subscriptions.push(sub);
+
+    // Subscribe to single selection (repeats = false) by the "Pick Initial" field.
+    sub = this.answerOptionService.radioSelection$.subscribe((selection) => {
+      this.selectionRadio = selection;
+      this.updateWithRadioSelection();
+    });
+    this.subscriptions.push(sub);
+
+    // Subscribe to multiple selections (repeats = true) by the "Pick Initial" field.
+    sub = this.answerOptionService.checkboxSelection$.subscribe((selection) => {
+      this.selectionCheckbox = selection;
+      this.updateWithCheckboxSelections();
+    });
+    this.subscriptions.push(sub);
+    
+    // The schema.widget.labelPosition is not populated after the 'Default' column in the table.component.html
+    // has been excluded.
+    this.cdr.detectChanges();
   }
 
 
@@ -131,17 +149,28 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   setAnswerOptions(answerOptions: any []) {
     let changed = false;
-    answerOptions?.forEach((option) => {
-      if(option.valueCoding) {
-        const scoreExt = option.extension?.find(ext => ext.url === AnswerOptionComponent.ORDINAL_URI);
-        const score = option.valueCoding.__$score !== undefined ? option.valueCoding.__$score : null;
-        const newVal = scoreExt && scoreExt.valueDecimal !== undefined ? scoreExt.valueDecimal : null;
-        if(score !== newVal) {
-          option.valueCoding.__$score = newVal;
-          changed = true;
+
+    const type = this.formProperty.findRoot().getProperty('type').value;
+
+    // Answer options can now be of different data types. Scoring is only applicable
+    // to 'valueCoding' (data type = coding).
+    if (type === "coding") {
+      answerOptions?.forEach((option) => {
+        if(option.valueCoding) {
+          const scoreExt = option.extension?.find((ext) => {
+            return ext.url === AnswerOptionComponent.ORDINAL_URI ||
+              ext.url === AnswerOptionComponent.ITEM_WEIGHT_URI;
+          });
+          const score = option.valueCoding.__$score !== undefined ? option.valueCoding.__$score : null;
+          const newVal = scoreExt && scoreExt.valueDecimal !== undefined ? scoreExt.valueDecimal : null;
+          if(score !== newVal) {
+            option.valueCoding.__$score = newVal;
+            changed = true;
+          }
         }
-      }
-    });
+      });
+    } 
+
     if(changed) {
       // This triggers valueChanges event on all observers.
       this.formProperty.setValue(answerOptions, false);
@@ -221,14 +250,17 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   updateScoreExtensions(options) {
     let changed = false;
     options?.forEach((option) => {
-      const i = option.extension?.findIndex((ext) => ext.url === AnswerOptionComponent.ORDINAL_URI);
+      const i = option.extension?.findIndex((ext) => {
+        return ext.url === AnswerOptionComponent.ORDINAL_URI ||
+          ext.url === AnswerOptionComponent.ITEM_WEIGHT_URI;
+      });
       const valueDecimal = i >= 0 ? option.extension[i].valueDecimal : null;
       const score = option.valueCoding?.__$score !== undefined ? option.valueCoding?.__$score : null;
       let updated = false;
       if(valueDecimal !== score) {
         const isAdd = score !== null; // True is add, false is remove.
         if(isAdd && i < 0) {
-          const scoreExt = {url: AnswerOptionComponent.ORDINAL_URI, valueDecimal: score};
+          const scoreExt = {url: AnswerOptionComponent.ITEM_WEIGHT_URI, valueDecimal: score};
           option.extension = option.extension || [];
           option.extension.push(scoreExt);
           updated = true;

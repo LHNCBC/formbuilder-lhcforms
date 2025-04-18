@@ -2,9 +2,36 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [9.7.7] 2025-03-11
+## [10.0.5] 2025-04-17
 ### Added
 - Added entry format extension.
+
+## [10.0.4] 2024-04-15
+### Added
+- Added Value Method field for selecting initial values.
+
+## [10.0.3] 2025-04-10
+### Fixed
+- Removed encoding of answerValueSet for SNOMED.
+- Changed default output of questionnaire to R4, when [using window api](/API.md)
+- Refactored loading of LForms in mockLFormsLoader() to address random cypress test failures.
+Added detailed log statements when the tests fail.
+
+## [10.0.2] 2025-03-24
+### Fixed
+- Fixed a playwright test.
+
+## [10.0.1] 2025-03-20
+### Fixed
+- Avoid angular@19.2.x versions in the dependency tree
+
+## [10.0.0] 2025-01-09
+### Added
+- Added R5 features
+
+## [9.7.7] 2025-03-04
+### Changed
+- Fixed an accessibility issue.
 
 ## [9.7.6] 2025-02-20
 ### Changed

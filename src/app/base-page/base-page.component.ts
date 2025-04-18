@@ -21,7 +21,7 @@ import {FhirServersDlgComponent} from '../lib/widgets/fhir-servers-dlg/fhir-serv
 import {FhirSearchDlgComponent} from '../lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import {PreviewDlgComponent} from '../lib/widgets/preview-dlg/preview-dlg.component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
-import {GuidingStep, Util} from '../lib/util';
+import {GuidingStep, Util, FHIR_VERSION_TYPE} from '../lib/util';
 import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
@@ -104,8 +104,15 @@ export class BasePageComponent implements OnInit {
     });
 
     formService.guidingStep$.subscribe((step: GuidingStep) => {this.guidingStep = step;});
-    FormService.lformsLoaded$.subscribe({error: (error) => {
-      this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
+    FormService.lformsLoaded$.subscribe({
+      next: (lformsVersion) => {
+        if(this.openerUrl) {
+          // Send the message to window opener after the LForms is loaded.
+          window.opener.postMessage({type: 'initialized'}, this.openerUrl);
+        }
+      },
+      error: (error) => {
+        this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
     }});
   }
 
@@ -140,7 +147,7 @@ export class BasePageComponent implements OnInit {
     }
 
     if(window.opener) {
-      this.formService.windowOpenerUrl = this.parseOpenerUrl(window.location);
+      this.parseOpenerUrl(window.location);
     }
     this.addWindowListeners();
   }
@@ -161,7 +168,8 @@ export class BasePageComponent implements OnInit {
     const pathname = location?.pathname.replace(/^\/+/, '').toLowerCase();
     if(pathname === 'window-open') {
       const params = new URLSearchParams(location.search);
-      ret = params.get('referrer');
+      this.formService.windowOpenerFhirVersion = params.get('fhirVersion');
+      this.formService.windowOpenerUrl = params.get('referrer');
     }
     return ret;
   }
@@ -219,8 +227,6 @@ export class BasePageComponent implements OnInit {
         }
         window.opener.postMessage(messageObj, this.openerUrl);
       });
-
-      window.opener.postMessage({type: 'initialized'}, this.openerUrl);
     }
   }
 
@@ -266,7 +272,8 @@ export class BasePageComponent implements OnInit {
    * @param questionnaire - Input FHIR questionnaire
    */
   setQuestionnaire(questionnaire: fhir.Questionnaire) {
-    this.questionnaire = this.formService.updateFhirQuestionnaire(questionnaire);
+    const q = this.formService.convertToR5(questionnaire);
+    this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
     this.formFields = Object.assign({}, this.questionnaire);
@@ -437,8 +444,8 @@ export class BasePageComponent implements OnInit {
    * @exportVersion - One of the defined version types: 'STU3' || 'R4' || 'R5'
    * 'R4' is assumed if not specified.
    */
-  saveToFile(exportVersion = 'R4') {
-    const questionnaire = this.formService.convertFromR4(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
+  saveToFile(exportVersion = 'R5') {
+    const questionnaire = this.formService.convertFromR5(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
     const content = this.toString(questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
     const formName = questionnaire.title;
@@ -685,6 +692,8 @@ export class BasePageComponent implements OnInit {
     const storedQ = this.formService.autoLoadForm();
     if(storedQ) {
       storedQ.item = storedQ.item || [];
+      storedQ.meta = storedQ.meta || {};
+      storedQ.meta.profile = storedQ.meta.profile || [Util.R5_PROFILE_URL];
     }
     return Util.isDefaultForm(storedQ);
   }

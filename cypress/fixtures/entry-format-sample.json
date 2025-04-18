@@ -112,7 +112,7 @@
       "text": "URL data type"
     },
     {
-      "type": "choice",
+      "type": "coding",
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -132,7 +132,7 @@
         }
       ],
       "linkId": "495480009200",
-      "text": "Choice data type",
+      "text": "Coding data type",
       "answerOption": [
         {
           "extension": [
