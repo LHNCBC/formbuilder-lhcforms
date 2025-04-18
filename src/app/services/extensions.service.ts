@@ -18,7 +18,7 @@ import {fhirPrimitives} from '../fhir';
 // @ts-ignore
 export class ExtensionsService {
   static __ID = 0;
-  static ENTRY_FORMAT = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
+  static ENTRY_FORMAT_URI = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
 
   _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
@@ -101,6 +101,14 @@ export class ExtensionsService {
     return extensions?.length > 0 ? extensions[0] : null;
   }
 
+  /**
+   * Get last extension object identified by the url.
+   * @param extUrl - Url to identify the extension.
+   */
+  public getLastExtensionByUrl(extUrl: fhirPrimitives.url): fhir.Extension {
+    const extensions = this._extMap.get(extUrl);
+    return extensions?.length > 0 ? extensions[extensions?.length - 1] : null;
+  }
 
   /**
    * Get an array of all extension form properties for a given extension url.
@@ -149,44 +157,23 @@ export class ExtensionsService {
   }
 
   /**
-   * Replace extensions for the given url.
+   * Loop through the array of textensions that match the given url. If no match is found, appends the 
+   * new extension to the end of the array. If a match is found, replace the last matched extension
+   * with the provided 'newExtensionJSON`.
    * @param extUrl - Url to identify the extension.
-   * @param newExtensionsJSON - New extensions to replace with.
+   * @param newExtensionJSON -  
+   *  * If it returns true, that extension is included in the removal list.
+   * @param match - New fhir.Extension to replace with.
    */
-  replaceExtensions(extUrl: fhirPrimitives.url, newExtensionsJSON: any): void {
-    const originalExtensions = this.extensionsProp.value;
 
-    // If there are no original extensions, assign the new one.
-    if (!originalExtensions.length) {
-      this.extensionsProp.reset(newExtensionsJSON, false);
-      return;
-    }
+  updateOrAppendExtensionByUrl(extUrl: fhirPrimitives.url, newExtensionJSON: fhir.Extension): void {
+    let endIndex = this.extensionsProp?.value?.findLastIndex(ext => ext.url === extUrl);
 
-    // Find the start and end indexes of the consecutive block of variable extensions.
-    let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
-    if (startIndex === -1) {
-      this.extensionsProp.reset([
-        ...newExtensionsJSON, ...originalExtensions
-      ]);
-      return;
-    };
-
-    let endIndex = startIndex;
-    while ((endIndex + 1) < originalExtensions.length && originalExtensions[endIndex].url === extUrl) {
-      endIndex++;
-    }
-
-    if (endIndex > startIndex) {
-      // Replace the original extensions with the new ones.
-      this.extensionsProp.reset([
-        ...originalExtensions.slice(0, startIndex),
-        ...newExtensionsJSON,
-        ...originalExtensions.slice(endIndex)
-      ]);
+    if (endIndex === -1) {
+      this.extensionsProp.addItem(newExtensionJSON);
     } else {
-      this.extensionsProp.reset([
-        ...newExtensionsJSON
-      ]);
+      this.extensionsProp?.value.splice(endIndex, 1, newExtensionJSON);
+      this.extensionsChange$.next(this.extensionsProp.value);
     }
   }
 

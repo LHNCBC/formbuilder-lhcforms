@@ -1647,7 +1647,7 @@ describe('Home page', () => {
         // Decimal data type
         cy.get('#text').should('have.value', 'Decimal data type');
         cy.get('#type').should('contain.value', 'decimal');
-        cy.get('[id="__$entryFormat"]').should('have.value', '#,###.##');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'Enter value between 15.2 and 20.1');
 
         // Integer data type
         cy.getTreeNode('Integer data type').click();
@@ -1691,12 +1691,25 @@ describe('Home page', () => {
         cy.get('#type').should('contain.value', 'url');
         cy.get('[id="__$entryFormat"]').should('have.value', 'https://your-site.com');
 
+        // Choice data type
+        cy.getTreeNode('Choice data type').click();
+        cy.get('#text').should('have.value', 'Choice data type');
+        cy.get('#type').should('contain.value', 'choice');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'Select option.');
+
+        // Quantity data type
+        cy.getTreeNode('Quantity data type').click();
+        cy.get('#text').should('have.value', 'Quantity data type');
+        cy.get('#type').should('contain.value', 'quantity');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'Please enter weight.');
+
         // Invoke preview.
         cy.contains('button', 'Preview').click();
 
         // Each item should have placeholder populated
-        const expectedPlaceholders = ["#,###.##", "nnn", "YY/MM/DD", "YY/MM/DD hh:mm:ss", "hh:mm:ss", "nnn-nnn-nnn", "https://your-site.com"];
-        cy.get('lhc-item lhc-item-question input').each(($el, index) => {
+        const expectedPlaceholders = ["Enter value between 15.2 and 20.1", "nnn", "YY/MM/DD", "YY/MM/DD hh:mm:ss", "hh:mm:ss",
+                                      "nnn-nnn-nnn", "https://your-site.com", "Select option.", "Please enter weight."];
+        cy.get('lhc-item lhc-item-question input:first').each(($el, index) => {
           cy.wrap($el).invoke('attr', 'placeholder').should('eq', expectedPlaceholders[index]);
         });
 
@@ -1745,12 +1758,23 @@ describe('Home page', () => {
         cy.get('#text').should('have.value', 'URL data type');
         cy.get('[id="__$entryFormat"]').clear().type('https://my-site.com');
 
+        // Choice data type
+        cy.getTreeNode('Choice data type').click();
+        cy.get('#text').should('have.value', 'Choice data type');
+        cy.get('[id="__$entryFormat"]').clear().type('Select one of the following options.');
+
+        // Quantity data type
+        cy.getTreeNode('Quantity data type').click();
+        cy.get('#text').should('have.value', 'Quantity data type');
+        cy.get('[id="__$entryFormat"]').clear().type('Please enter your weight.');
+
         // Invoke preview.
         cy.contains('button', 'Preview').click();
 
         // Each item should have placeholder populated
-        const expectedPlaceholders = ["##.##", "n", "YYYY", "YYYY hh:mm:ss", "hh:mm", "nnn-nnn", "https://my-site.com"];
-        cy.get('lhc-item lhc-item-question input').each(($el, index) => {
+        const expectedPlaceholders = ["##.##", "n", "YYYY", "YYYY hh:mm:ss", "hh:mm", "nnn-nnn", "https://my-site.com",
+                                      "Select one of the following options.", "Please enter your weight."];
+        cy.get('lhc-item lhc-item-question input:first').each(($el, index) => {
           cy.wrap($el).invoke('attr', 'placeholder').should('eq', expectedPlaceholders[index]);
         });
 
@@ -1762,9 +1786,9 @@ describe('Home page', () => {
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
-          expect(qJson.item[0].extension[0]).to.deep.equal({
+          expect(qJson.item[0].extension[3]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-            "valueString": "#,###.##"
+            "valueString": "Enter value between 15.2 and 20.1"
           });
           expect(qJson.item[1].extension[0]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
@@ -1793,6 +1817,14 @@ describe('Home page', () => {
           expect(qJson.item[7].extension[0]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
             "valueString": "https://your-site.com"
+          });
+          expect(qJson.item[8].extension[1]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "Select option."
+          });
+          expect(qJson.item[9].extension[3]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "Please enter weight."
           });
         });
 
@@ -1835,15 +1867,32 @@ describe('Home page', () => {
         cy.get('#text').should('have.value', 'URL data type');
         cy.get('[id="__$entryFormat"]').clear();
 
+        // Choice data type
+        cy.getTreeNode('Choice data type').click();
+        cy.get('#text').should('have.value', 'Choice data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
+        // Quantity data type
+        cy.getTreeNode('Quantity data type').click();
+        cy.get('#text').should('have.value', 'Quantity data type');
+        cy.get('[id="__$entryFormat"]').clear();
+
         // Invoke preview.
         cy.contains('button', 'Preview').click();
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
-          expect(qJson.item[0].extension).undefined;
+          expect(qJson.item[0].extension[3]).undefined;
         
-          expect(qJson.item[1].type).equal('integer');
-          expect(qJson.item[1].extension).undefined;
+          // the entryFormat has been deleted.
+          expect(qJson.item[1].extension[0]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+            "valueCoding": {
+              "code": "kg",
+              "display": "kilogram",
+              "system": "http://unitsofmeasure.org"
+            }
+          });
 
           expect(qJson.item[2].type).equal('date');
           expect(qJson.item[2].extension).undefined;
@@ -1862,10 +1911,125 @@ describe('Home page', () => {
 
           expect(qJson.item[7].type).equal('url');
           expect(qJson.item[7].extension).undefined;
+
+          expect(qJson.item[8].type).equal('choice');
+          expect(qJson.item[8].extension[1]).undefined;
+
+          expect(qJson.item[9].type).equal('quantity');
+          expect(qJson.item[9].extension[3]).undefined;
+        });
+      });
+
+      it('should correctly display the entry format even when other extnsions are present', () => {
+        cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
+        
+        // There should only be one entryFormat extension, however, should there be more than one, the 
+        // last entry format will be used.
+        cy.get('#text').should('have.value', 'Decimal data type');
+        cy.get('#type').should('contain.value', 'decimal');
+        cy.get('[id="__$entryFormat"]').should('have.value', 'Enter value between 15.2 and 20.1');
+      
+        // Looking at the JSON, there are actually two entryFormats.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].type).equal('decimal');
+          expect(qJson.item[0].extension[2]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "#,###.##"
+          });
+          expect(qJson.item[0].extension[3]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "Enter value between 15.2 and 20.1"
+          });
+        });
+  
+        // Invoke preview.
+        cy.contains('button', 'Preview').click();
+  
+        // The LForms preview should display the correct message.
+        cy.get('lhc-item lhc-item-question lhc-input > input:first')
+          .first()
+          .invoke('attr', 'placeholder')
+          .should('eq', 'Enter value between 15.2 and 20.1');
+        
+        // Close the Preview dialog.
+        cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
+
+        // Clear the entry format.
+        cy.getTreeNode('Decimal data type').click();
+        cy.get('[id="__$entryFormat"]').clear()
+
+        // Both entry formats got deleted actually. This is preferrable to suddenly
+        // popping up with the '#,###.##'.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension[2]).undefined;
+          expect(qJson.item[0].extension[3]).undefined;
+        });
+
+        // Re-enter the entry format.
+        cy.get('[id="__$entryFormat"]').type('Enter value between 15.2 and 20.1');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension[2]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "Enter value between 15.2 and 20.1"
+          });
+        });
+
+        // Invoke preview.
+        cy.contains('button', 'Preview').click();
+  
+        // The LForms preview should display the correct message.
+        cy.get('lhc-item lhc-item-question lhc-input > input:first')
+          .first()
+          .invoke('attr', 'placeholder')
+          .should('eq', 'Enter value between 15.2 and 20.1');
+        
+        // Close the Preview dialog.
+        cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
+
+        // Add a unit extension to the item.
+        cy.get('[id^="units"]').last().as('units');
+        cy.get('@units').should('be.visible');
+        cy.get('#searchResults').should('not.be.visible');
+        cy.get('@units').type('inch');
+        cy.get('#searchResults').should('be.visible');
+        cy.contains('#completionOptions tr', '[in_i]').click();
+        cy.get('@units').should('have.value', 'inch');
+
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension[3]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+            "valueCoding": {
+              "system": "http://unitsofmeasure.org",
+              "code": "[in_i]",
+              "display": "inch"
+            }
+          });
+        });
+
+        // Change the entryFormat
+        cy.get('[id="__$entryFormat"]').type('{selectall}Enter here.');
+
+        // The order should remain the same, unless .clear() is being called before .type(),
+        // then the entryFormat will get append as a last entry.
+        cy.questionnaireJSON().should((qJson) => {
+          expect(qJson.item[0].extension[2]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+            "valueString": "Enter here."
+          });
+          expect(qJson.item[0].extension[3]).to.deep.equal({
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+            "valueCoding": {
+              "system": "http://unitsofmeasure.org",
+              "code": "[in_i]",
+              "display": "inch"
+            }
+          });
+
         });
       });
     });
-
+ 
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');

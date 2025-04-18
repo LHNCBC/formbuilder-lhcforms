@@ -1,14 +1,8 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { StringComponent } from '../string/string.component';
-import { Subscription } from 'rxjs';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsService } from '../../../services/extensions.service';
 
-
-interface EntryFormat {
-  url: string;
-  valueString: string;
-}
 
 @Component({
   standalone: false,
@@ -16,18 +10,10 @@ interface EntryFormat {
   templateUrl: './entry-format.component.html'
 })
 export class EntryFormatComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
-  subscriptions: Subscription[] = [];
   entryFormat;
 
   constructor(private extensionsService: ExtensionsService) {
     super();
-  }
-
-  /**
-   * Initialize the component
-   */
-  ngOnInit() {
-    super.ngOnInit();
   }
 
   /**
@@ -36,7 +22,7 @@ export class EntryFormatComponent extends StringComponent implements OnInit, Aft
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
-    this.entryFormat = this.extensionsService.getFirstExtensionByUrl(ExtensionsService.ENTRY_FORMAT);
+    this.entryFormat = this.extensionsService.getLastExtensionByUrl(ExtensionsService.ENTRY_FORMAT_URI);
 
     if (this.entryFormat && this.entryFormat?.valueString) {
       this.formProperty.setValue(this.entryFormat?.valueString, false);
@@ -46,34 +32,17 @@ export class EntryFormatComponent extends StringComponent implements OnInit, Aft
       if (entryFormValue) {
         if (!this.entryFormat) {
           this.entryFormat = {
-            url: ExtensionsService.ENTRY_FORMAT 
+            url: ExtensionsService.ENTRY_FORMAT_URI
           };
         }
         this.entryFormat.valueString = entryFormValue;
-        this.extensionsService.replaceExtensions(ExtensionsService.ENTRY_FORMAT, [this.entryFormat]);
+        this.extensionsService.updateOrAppendExtensionByUrl(ExtensionsService.ENTRY_FORMAT_URI, this.entryFormat);
 
       } else {
         this.entryFormat = null;
-        this.extensionsService.removeExtensionsByUrl(ExtensionsService.ENTRY_FORMAT);
+        this.extensionsService.removeExtensionsByUrl(ExtensionsService.ENTRY_FORMAT_URI);
       }
     });
     this.subscriptions.push(sub);
-  }
-
-  /**
-   * Clear all subscriptions.
-   */
-  unsubscribe() {
-    this.subscriptions.forEach((sub) => {
-      sub.unsubscribe();
-    });
-    this.subscriptions = [];
-  }
-
-  /**
-   * Implement OnDestroy
-   */
-  ngOnDestroy() {
-    this.unsubscribe();
   }
 }
