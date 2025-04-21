@@ -1769,12 +1769,7 @@ describe('Home page', () => {
     describe('Entry format extension', () => {
       beforeEach(() => {
         const sampleFile = 'entry-format-sample.json';
-        let fixtureJson;
-        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-        cy.loadHomePage();
-        cy.get('input[type="radio"][value="scratch"]').click();
-        cy.get('button').contains('Continue').click();
-        cy.uploadFile(sampleFile, false);
+        cy.uploadFile(sampleFile, true);
         cy.get('#title').should('have.value', 'Entry format extension');
         cy.contains('button', 'Edit questions').click();
       });
@@ -3792,11 +3787,6 @@ describe('Home page', () => {
   describe('Variable', () => {
     beforeEach(() => {
       const sampleFile = 'value-methods-sample.json';
-      let fixtureJson;
-      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.loadHomePage();
-      cy.get('input[type="radio"][value="scratch"]').click();
-      cy.get('button').contains('Continue').click();
       cy.uploadFile(sampleFile, false);
       cy.get('#title').should('have.value', 'value-methods-sample');
       cy.contains('button', 'Edit questions').click();
@@ -4233,11 +4223,6 @@ describe('Home page', () => {
   describe('Value method', () => {
     beforeEach(() => {
       const sampleFile = 'value-methods-sample.json';
-      let fixtureJson;
-      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
-      cy.loadHomePage();
-      cy.get('input[type="radio"][value="scratch"]').click();
-      cy.get('button').contains('Continue').click();
       cy.uploadFile(sampleFile, false);
       cy.get('#title').should('have.value', 'value-methods-sample');
       cy.contains('button', 'Edit questions').click();
