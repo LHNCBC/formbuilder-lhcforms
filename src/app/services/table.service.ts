@@ -6,9 +6,7 @@ export interface TableStatus {
   message: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class TableService {
   private tableStatusChanged: BehaviorSubject<TableStatus> = new BehaviorSubject<TableStatus>(null);
 
