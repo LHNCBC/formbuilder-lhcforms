@@ -1389,6 +1389,7 @@
           },
           "valueDecimal": {
             "description": "The actual value to for an initial answer.",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$",
             "type": "number",
             "title": "Value decimal",
             "visibleIf": {
@@ -1400,6 +1401,7 @@
           },
           "valueInteger": {
             "description": "The actual value to for an initial answer.",
+            "pattern": "^-?([0]|([1-9][0-9]*))$",
             "type": "integer",
             "title": "Value integer",
             "visibleIf": {
@@ -1812,7 +1814,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "visibleIf": {
-                  "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice' || target.value == 'coding'"]
+                  "/type": ["$EXP$ target.value == 'coding'"]
                 }
               }
             },

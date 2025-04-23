@@ -7,23 +7,24 @@ import {AutoCompleteOptions} from '../auto-complete/auto-complete.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import { TableService, TableStatus } from 'src/app/services/table.service';
+import { AnswerValueSetComponent } from '../answer-value-set/answer-value-set.component';
 declare var LForms: any;
 
 @Component({
-  standalone: false,  
+  standalone: false,
   selector: 'lfb-answer-value-set-coding-display',
   templateUrl: './answer-value-set-coding-display.component.html'
 })
 export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('codingDisplay') codingDisplay: ElementRef;
   
-  subscriptions: Subscription [] = [];
+  subscriptions: Subscription[] = [];
   answerOptions: any[] = [];
   _fhir = LForms.FHIR["R4"];
   sdc = this._fhir.SDC;
   
   protected readonly warningIcon = faExclamationTriangle;
-  errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
+  errors: {code: string, originalMessage: string, modifiedMessage: string}[] = null;
   errorIcon = faExclamationTriangle;
 
   acOptions: AutoCompleteOptions = {
@@ -42,7 +43,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
       count: 10
     }
   }
-  model: fhir.Coding;
+
+  model: string;
   extensionsService = inject(ExtensionsService);
 
   answerValueSet;
@@ -64,8 +66,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   }
 
   ngOnInit() {
-    const initValue = this.formProperty.parent.value;
-    if(initValue) {
+    const initValue = this.formProperty.value;
+    if (initValue) {
       this.model = initValue;
     }
     this.dataType = this.formProperty.findRoot().getProperty('type').value;
@@ -107,7 +109,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
                 debounceTime(100),
                 distinctUntilChanged()
               )
-    .subscribe((extensions) => {
+              .subscribe((extensions) => {
       const linkId = this.formProperty.findRoot().getProperty('linkId').value;
       const sourceNode = this.formService.getTreeNodeByLinkId(linkId);
       const extension = this.formService.getPreferredTerminologyServer(sourceNode);
@@ -133,9 +135,14 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
       const answerValueSetUri = this.formProperty.findRoot().getProperty("answerValueSet").value;
       const fhirServer = this.formService.getPreferredTerminologyServer(sourceNode);
 
-      if (answerValueSetUri && fhirServer) {
+      // When switching from value-set to snomed-value-set, the 'answerValueSetUri' might still be
+      // populated with a non-SNOMED value set. Therefore, it's necessary to check whether
+      // 'answerValuetSetUri' contains the SNOMED base URI.
+      if (answerValueSetUri && fhirServer &&
+           (this.answerMethod === 'value-set' ||
+            (this.answerMethod === 'snomed-value-set' && answerValueSetUri.indexOf(AnswerValueSetComponent.snomedBaseUri) > -1))) {
         this.autoComplete = true;
-        if(firstChange) {
+        if (firstChange) {
           this.acOptions.fhirOptions.valueSetUri = decodeURI(answerValueSetUri);
           this.acOptions.fhirOptions.fhirServer = this.formService.getPreferredTerminologyServer(sourceNode);
         } else {
@@ -145,21 +152,22 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
             operation: '$expand',
             count: 10
           };
-          this.acOptions = { ...this.acOptions, acOptions: this.acOptions.acOptions, fhirOptions: updatedFhirOptions};
+          this.acOptions = { ...this.acOptions, acOptions: this.acOptions.acOptions, fhirOptions: updatedFhirOptions };
         }
 
-        this.tableService.setTableStatusChanged(null);  
+        this.tableService.setTableStatusChanged(null);
       } else {
         this.autoComplete = false;
-        if (!fhirServer) {
-          this.answerValuseSetConfigErrorMessage = 'Preferred terminology server is not set.';
-        } else if (!answerValueSetUri) {
-          const answerMethod = this.formProperty.searchProperty('/__$answerOptionMethods').value;
 
-          if (answerMethod === 'snomed-value-set') {
-            this.answerValuseSetConfigErrorMessage = 'SNOMED CT answer value set is not set.';
-          } else if (answerMethod === 'value-set') {
-            this.answerValuseSetConfigErrorMessage = 'Answer value set is not set.';
+        if (this.answerMethod === 'snomed-value-set') {
+          if ((!answerValueSetUri ) || (answerValueSetUri && answerValueSetUri.indexOf(AnswerValueSetComponent.snomedBaseUri) === -1)) {
+            this.answerValuseSetConfigErrorMessage = 'SNOMED ECL is not set.';
+          }
+        } else {
+          if (!answerValueSetUri) {
+            this.answerValuseSetConfigErrorMessage = 'The Answer value set URL is not set.';
+          } else if (!fhirServer) {
+            this.answerValuseSetConfigErrorMessage = 'Preferred terminology server is not set.';
           }
         }
         this.answerValuseSetConfigErrorMessage += ' The lookup feature will not be available. Initial values can still be manually typed in.';
@@ -168,10 +176,21 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
           type: 'warning',
           message: this.answerValuseSetConfigErrorMessage
         };
-        this.tableService.setTableStatusChanged(status);  
+        this.tableService.setTableStatusChanged(status);
       }
     } else {
       this.tableService.setTableStatusChanged(null);
+    }
+  }
+
+  /**
+   * Updates the parent form property's value with the given 'valueCoding' object.
+   * @param coding - A FHIR 'Coding' object that will be assigned to the parent form property's
+   *                 value.
+   */
+  updateValueCoding(coding: fhir.Coding) {
+    if (this.formProperty?.parent) {
+      this.formProperty.parent.reset(coding, false);
     }
   }
 
@@ -180,25 +199,37 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
    * @param coding - Option value
    */
   modelChanged(coding: fhir.Coding) {
-    this.model = coding || {};
-
-    if (this.formProperty?.parent) {
-      this.formProperty.parent.reset(coding, false);
-    }
+    this.model = coding.display || '';
+    this.updateValueCoding(coding);
   }
 
+  /**
+   * Handles the focusout event on an input elmeent. Retieves the text value from the event and 
+   * compares it with the model. If they differ, assigns the text value to the model and updates
+   * the display field of the parent valueCoding. This handles cases where users enter off-list
+   * values.
+   * @param event - The focusout event containing the current input element. 
+   */
+  onFocusOut(event: any) {
+    if (event.target.value && event.target.value !== this.model) {
+      this.model = event.target.value;
+
+      const coding = this.formProperty.parent.value;
+      coding['display'] = event.target.value;
+  
+      this.updateValueCoding(coding);
+    }
+
+  }
   /**
    * Handle field change event in <input> tag.
    * @param coding - Option value
    */
   fieldChanged(display: string) {
     const coding = this.formProperty.parent.value;
-
     coding['display'] = display;
 
-    if (this.formProperty?.parent) {
-      this.formProperty.parent.reset(coding, false);
-    }
+    this.updateValueCoding(coding);
   }
 
   /**

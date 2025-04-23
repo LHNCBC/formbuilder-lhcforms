@@ -633,7 +633,7 @@ describe('Home page', () => {
       cy.get('@initialValue')
         .siblings('div')
         .find('div > span')
-        .should('contain.text', 'Preferred terminology server is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
+        .should('contain.text', 'SNOMED ECL is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
 
       // An initial value can still be typed in manually.
       cy.get('[id^="initial.0.valueCoding.display"]').type('example');
@@ -709,27 +709,27 @@ describe('Home page', () => {
       cy.get('@initialValue')
         .siblings('div')
         .find('div > span')
-        .should('contain.text', 'Preferred terminology server is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
+        .should('contain.text', 'The Answer value set URL is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
 
       // An initial value can still be typed in manually.
       cy.get('[id^="initial.0.valueCoding.display"]').type('example');
       cy.get('[id^="initial.0.valueCoding.code"]').type('123');
       cy.get('[id^="initial.0.valueCoding.system"]').type('http://example.org');
 
-      // Expand the Advance Fields
-      cy.expandAdvancedFields();
-      // The terminology server should be blank
-      cy.tsUrl().scrollIntoView().should('be.visible').should('have.value', '');
-      cy.tsUrl().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
+      // Enter the 'Answer value set' URI.
+      cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
 
       // The warning message below the 'Initial value' table should change.
       cy.get('@initialValue')
         .siblings('div')
         .find('div > span')
-        .should('contain.text', 'Answer value set is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
-
-      // Enter the 'Answer value set' URI.
-      cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
+        .should('contain.text', 'Preferred terminology server is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
+    
+      // Expand the Advance Fields
+      cy.expandAdvancedFields();
+      // The terminology server should be blank
+      cy.tsUrl().scrollIntoView().should('be.visible').should('have.value', '');
+      cy.tsUrl().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
 
       // The warning message should no longer show.
       cy.get('@initialValue')

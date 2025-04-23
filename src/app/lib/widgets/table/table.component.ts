@@ -50,7 +50,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   showErrorObject;
 
   dataType = "string";
-  answerOptionMethod = "answer-option";
 
   includeActionColumn = false;
   isCollapsed = false;
@@ -128,7 +127,10 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
     this.handleErrorColumnVisibility(widget);
 
-    this.tableService.setTableStatusChanged(null);
+    // Limit the setting of the table status to 'Initial' component.
+    if (this.formProperty?.path === "/initial") {
+      this.tableService.setTableStatusChanged(null);
+    }
   }
   
   /**
@@ -155,7 +157,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods')?.value;
 
     const singleItemEnableSource = this.formProperty.schema.widget ?
       this.formProperty.schema.widget.singleItemEnableSource : null;
@@ -207,7 +208,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.keyField = keyField;
     }
     // Lookout for any changes to key field
-    subscription = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
+    subscription = this.formProperty.searchProperty(this.keyField)?.valueChanges.subscribe((newValue) => {
       const showFields = this.getShowTableFields();
       this.noHeader = showFields.some((f) => f.noHeader);
       this.cdr.markForCheck();
@@ -227,11 +228,14 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     });
     this.subscriptions.push(subscription);
 
-    subscription = this.tableService.tableStatusChanged$.subscribe((newValue: TableStatus) => {
-      this.tableStatus = newValue;
-      this.cdr.markForCheck();
-    });
-    this.subscriptions.push(subscription)
+    // Limit the subscription to only the "initial" component.
+    if (this.formProperty?.path === "/initial") {
+      subscription = this.tableService.tableStatusChanged$.subscribe((newValue: TableStatus) => {
+        this.tableStatus = newValue;
+        this.cdr.markForCheck();
+      });
+      this.subscriptions.push(subscription);
+    }
   }
 
   /**
