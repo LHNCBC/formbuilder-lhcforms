@@ -160,9 +160,11 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
 
       const answerType = this.formProperty.parent.getProperty('__$answerType').value;
 
-      if (answerType !== "choice" && answerType !== "open-choice") {
+      if (answerType && answerType !== "coding") {
         const answerKeyName = Util.getAnswerFieldName(answerType);
-        this.formProperty.parent.getProperty(answerKeyName).setValue('', false);
+        if (this.formProperty.parent.getProperty(answerKeyName).value) {
+          this.formProperty.parent.getProperty(answerKeyName).setValue('', false);
+        }
       }
     }
   }
