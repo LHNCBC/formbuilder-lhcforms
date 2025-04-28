@@ -152,25 +152,11 @@ export class CypressUtil {
   static mockSnomedEditions() {
     const fixture = 'snomedEditions.json';
     cy.intercept('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (req) => {
-      console.log(`cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`);
+      Cypress.log({message: `cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`});
       req.reply({fixture});
     });
   }
 
-  /**
-   * Cache calls to https://lhcforms-static to load LForms libraries.
-   */
-  static mockLFormsLoader() {
-    const lformsLibUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
-    cy.intercept(lformsLibUrl, async (req) => {
-      CypressUtil._handleCachedResponse(req);
-    }).as('lformsVersions');
-
-    cy.intercept({method: 'GET', url: lformsLibUrl+'**/@(webcomponent|fhir)/**/*.@(js|css)', times: 4}, async (req) => {
-      // Covers 4 urls: .../x.x.x/webcomponent/{styles.css, lhc-forms.js, assets/lib/zone.min.js,}, and .../fhir/lformsFHIRAll.min.js
-      CypressUtil._handleCachedResponse(req);
-    }).as('lformsLib');
-  }
 
   /**
    * Return from cache if the response is cached already, otherwise fetch it from the server, cache and return it.
@@ -178,7 +164,7 @@ export class CypressUtil {
    */
   static _handleCachedResponse(req) {
     if (CypressUtil.lformsLibs.has(req.url)) {
-      console.log(`Loading from cache: ${req.url}`);
+      Cypress.log({message: `Loading from cache: ${req.url}`});
       req.reply(CypressUtil.lformsLibs.get(req.url));
     } else {
       req.timeout = CypressUtil.HTTP_REQ_TIMEOUT;
@@ -188,7 +174,7 @@ export class CypressUtil {
           console.error(`${resp.statusCode}: Error loading ${req.url}: ${resp.statusMessage}`);
         }
         else {
-          console.log(`${resp.statusCode}: Loading from website ${req.url}`);
+          Cypress.log({message: `${resp.statusCode}: Loading from website ${req.url}`});
           CypressUtil.lformsLibs.set(req.url, resp.body);
         }
         resp.send();
