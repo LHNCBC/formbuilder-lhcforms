@@ -3,7 +3,6 @@
 import {Util} from '../../../src/app/lib/util';
 import {CypressUtil} from '../../support/cypress-util';
 import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
-//import 'cypress-real-events';
 
 const entryFormatUrl = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
@@ -3864,7 +3863,6 @@ describe('Home page', () => {
           .should('be.visible')
           .type('Pick Initial Value (Single)', { delay: 100 })
           .type('{downarrow}{enter}');
-        //cy.get('span#completionOptions').contains('29463-7').click();
 
         // Add a new variable 'e_easy_path_exp'
         cy.get('#add-variable').click();
@@ -3894,7 +3892,6 @@ describe('Home page', () => {
 
       cy.get('@thirdVariable').find('td:nth-child(1)').should('have.text', 'c_fhir_query_obs');
       cy.get('@thirdVariable').find('td:nth-child(2)').should('have.text', 'FHIR Query (Observation)');
-      //cy.get('@thirdVariable').find('td:nth-child(3)').should('have.text', "Observation?code=weight&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1");
       cy.get('@thirdVariable').find('td:nth-child(3)').should('have.text', "Observation?code=http%3A%2F%2Floinc.org%7C29463-7&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1");
 
       cy.get('@fourthVariable').find('td:nth-child(1)').should('have.text', 'd_question');
