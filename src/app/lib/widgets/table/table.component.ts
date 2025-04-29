@@ -74,20 +74,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   renderer = inject(Renderer2);
   cdr = inject(ChangeDetectorRef);
-
-  // Having this will fail the form-level tests.
   tableService = inject(TableService);
-/* this doesn't work.
-  tableService;
-  if(this.formProperty?.path === "/initial") {
-    this.tableService = inject(TableService);
-  }
- */
-  // Having this will fail the item-level test. related to answer value set.
-  // should add initial values for the SNOMED answer value set option:
-  // should add initial values for the answer value set URI option:
-  // the warning wouldn't show. - problem here is formProperty is always undefined.
-  //tableService = (this.formProperty?.path === "/initial") ? inject(TableService) : null;
 
   tableStatus: TableStatus;
   elementRef = inject(ElementRef);
