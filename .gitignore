@@ -62,3 +62,4 @@ scratch/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/logs/
