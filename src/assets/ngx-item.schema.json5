@@ -839,17 +839,20 @@
         {
           "type": "string",
           "enum": ["answer-option"],
-          "title": "Answer options"
+          "title": "Answer options",
+          "dataType": ["all"]
         },
         {
           "type": "string",
           "enum": ["snomed-value-set"],
-          "title": "SNOMED answer value set"
+          "title": "SNOMED answer value set",
+          "dataType": ["coding"]
         },
         {
           "type": "string",
           "enum": ["value-set"],
-          "title": "Answer value set URI"
+          "title": "Answer value set URI",
+          "dataType": ["coding"]
         }
       ],
       "default": "answer-option",
@@ -1097,6 +1100,8 @@
       "type": "array",
       "title": "Answer choices",
       "visibleIf": {
+        "__$answerOptionMethods": ["answer-option"]
+/*
         "allOf": [
           {
             "/__$answerOptionMethods": ["answer-option"]
@@ -1104,7 +1109,7 @@
           {
             "__$valueMethod": ["$EXP$ target.value != 'compute-initial' && target.value != 'compute-continuously' "]
           }
-        ]
+        ] */
       },
       "widget": {
         "id": "answer-option",
@@ -1560,7 +1565,10 @@
               "display": {
                 "description": "A representation of the meaning of the code in the system, following the rules of the system.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "answer-value-set-coding-display"
+                }
               },
               "userSelected": {
                 "description": "Indicates that this coding was chosen by a user directly - e.g. off a pick list of available items (codes or displays).",
@@ -1573,14 +1581,12 @@
             "visibleIf": {
               "allOf": [
                 {
-                  "/__$answerOptionMethods": ["answer-option"]
+                  "/__$answerOptionMethods": ["answer-option", "snomed-value-set", "value-set"]
                 },
                 {
                   "/type": ["$EXP$ target.value == 'coding'"]
                 }
               ],
-
-              "/__$answerOptionMethods": ["answer-option"]
             },
             "widget": {
               "id": "hidden"
@@ -1710,7 +1716,17 @@
                 "type": ["boolean"]
               }
             ]
-          }
+          },
+          {
+            "allOf": [
+              {
+                "__$valueMethod":  ["pick-initial"]
+              },
+              {
+                "/__$answerOptionMethods": ["snomed-value-set", "value-set"]
+              }
+            ]
+          }          
         ]
       },
       "widget": {
@@ -1798,7 +1814,7 @@
                 "additionalProperties": false,
                 "type": "object",
                 "visibleIf": {
-                  "/type": ["$EXP$ target.value == 'choice' || target.value == 'open-choice'"]
+                  "/type": ["$EXP$ target.value == 'coding'"]
                 }
               }
             },

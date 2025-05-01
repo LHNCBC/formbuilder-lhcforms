@@ -105,3 +105,8 @@ td.error-column {
 tr {
   margin-bottom: 2px;
 }
+
+/* override the default bootstrap color that is too light */
+.text-warning {
+  color: darkorange !important;
+}
