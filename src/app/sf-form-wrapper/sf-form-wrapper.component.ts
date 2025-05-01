@@ -189,7 +189,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'conditionKey': condKey,
       'q': q,
       'aType': aType,
-      'answerTypeProperty': formProperty.getProperty('__$answerType').value,
+      'answerTypeProperty': answerType,
       'op': op,
       'aField': aField,
       'answerX': answerX,
