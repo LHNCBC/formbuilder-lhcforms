@@ -50,7 +50,9 @@ Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
  * Visit home page and assert LForms, but do not deal with LOINC notice.
  */
 Cypress.Commands.add('goToHomePage', () => {
+  CypressUtil.mockLFormsLoader();
   cy.visit('/');
+  cy.window({timeout: 60000}).should('have.property', 'LForms');
 });
 
 

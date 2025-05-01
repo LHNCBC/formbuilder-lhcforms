@@ -157,6 +157,20 @@ export class CypressUtil {
     });
   }
 
+  /**
+   * Cache calls to https://lhcforms-static to load LForms libraries.
+   */
+  static mockLFormsLoader() {
+    const lformsLibUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
+    cy.intercept(lformsLibUrl, async (req) => {
+      CypressUtil._handleCachedResponse(req);
+    }).as('lformsVersions');
+
+    cy.intercept({method: 'GET', url: lformsLibUrl+'**/@(webcomponent|fhir)/**/*.@(js|css)', times: 4}, async (req) => {
+      // Covers 4 urls: .../x.x.x/webcomponent/{styles.css, lhc-forms.js, assets/lib/zone.min.js,}, and .../fhir/lformsFHIRAll.min.js
+      CypressUtil._handleCachedResponse(req);
+    }).as('lformsLib');
+  }
 
   /**
    * Return from cache if the response is cached already, otherwise fetch it from the server, cache and return it.
