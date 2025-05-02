@@ -3847,7 +3847,7 @@ describe('Home page', () => {
         cy.get('#variable-label-2').clear().type('c_fhir_query_obs');
         cy.get('#variable-type-2').select('FHIR Query (Observation)');
         //cy.get('input#simple-expression-2').type('12');
-        cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight', { delay: 100 }).type('{downarrow}{enter}');
+        cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight').type('{downarrow}{enter}');
         //cy.get('#searchResults #completionOptions tr').contains('29463-7').click();
         cy.get('div#row-2 lhc-query-observation').shadow().within(() => {
           cy.get('div.query-select > span.autocomp_selected > ul > li')
@@ -3861,7 +3861,7 @@ describe('Home page', () => {
         cy.get('#question-3')
           .should('exist')
           .should('be.visible')
-          .type('Pick Initial Value (Single)', { delay: 100 })
+          .type('Pick Initial Value (Single)')
           .type('{downarrow}{enter}');
 
         // Add a new variable 'e_easy_path_exp'
