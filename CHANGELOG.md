@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.6] 2025-05-05
+### Fixed
+- Fixed the logic in the Value method to correctly display the expression extension.
+
 ## [10.0.5] 2025-04-16
 ### Added
 - Added initial values for SNOMED and non-SNOMED answer value sets.
