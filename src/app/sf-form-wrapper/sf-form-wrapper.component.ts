@@ -14,6 +14,7 @@ import {ExtensionsService} from '../services/extensions.service';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
 import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
+import { TableService } from '../services/table.service';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -24,7 +25,7 @@ import { ValidationService, EnableWhenValidationObject } from '../services/valid
   templateUrl: './sf-form-wrapper.component.html',
   styleUrls: ['./sf-form-wrapper.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [ExtensionsService]
+  providers: [ExtensionsService, TableService]
 })
 export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('itemForm') itemForm: FormComponent;

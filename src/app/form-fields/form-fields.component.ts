@@ -16,6 +16,7 @@ import fhir from 'fhir/r4';
 import {GuidingStep, Util} from '../lib/util';
 import {PropertyGroup, ArrayProperty, FormComponent} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
+import { TableService } from '../services/table.service';
 
 /**
  * Use provider factory to inject extensions service for form level fields. There is one extensionsService provided in root of the
@@ -52,11 +53,14 @@ function configExtensionsServiceFactory(formService: FormService): ExtensionsSer
       </div>
     </div>
   `,
-  providers: [{
-    provide: ExtensionsService,
-    useFactory: configExtensionsServiceFactory,
-    deps: [FormService]
-  }],
+  providers: [
+    {
+      provide: ExtensionsService,
+      useFactory: configExtensionsServiceFactory,
+      deps: [FormService]
+    },
+    TableService
+  ],
   styles: [`
     .content {
       padding: 0.5rem;

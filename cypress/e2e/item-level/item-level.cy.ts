@@ -609,6 +609,159 @@ describe('Home page', () => {
 
     });
 
+    it('should add initial values for the SNOMED answer value set option', () => {
+      cy.selectDataType('coding');
+
+      // Select 'Allow repeating question' option to 'Yes'.
+      cy.contains('div', 'Allow repeating question').as('repeatOption').should('be.visible');
+      cy.get('@repeatOption').find('[for^="booleanRadio_true"]').as('repeatYes'); // Radio label for clicking   
+      cy.get('@repeatYes').click();
+
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      // Click the 'Answer list source - SNOMED answer value set' radion option.
+      cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
+
+      // Click the 'Value method - Pick initial value' radio option.
+      cy.getPickInitialValueValueMethodClick();
+      
+      // The 'Initial value' field should be visible.
+      cy.contains('div', 'Initial value').as('initialValue').should('be.visible');
+
+      // There should be a warning message below the 'Initial value' table.
+      cy.get('@initialValue')
+        .siblings('div')
+        .find('div > span')
+        .should('contain.text', 'SNOMED ECL is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
+
+      // An initial value can still be typed in manually.
+      cy.get('[id^="initial.0.valueCoding.display"]').type('example');
+      cy.get('[id^="initial.0.valueCoding.code"]').type('123');
+      cy.get('[id^="initial.0.valueCoding.system"]').type('http://example.org');
+
+      // Enter the 'SNOMED answer value set' URI.
+      cy.get('#answerValueSet_ecl').type("< 429019009 |Finding related to biological sex|");
+      // < 429019009 |Finding related to biological sex|
+      cy.get('#answerValueSet_edition').select('International Edition (900000000000207008)');
+      cy.get('#answerValueSet_version').select('20231001');
+
+      // The warning message should no longer show.
+      cy.get('@initialValue')
+        .siblings('div')
+        .find('div > span')
+        .should('not.exist');
+
+      // Expand the Advance Fields
+      cy.expandAdvancedFields();
+      // The terminology server should have the default value.
+      cy.tsUrl().scrollIntoView().should('be.visible').should('have.value', 'https://snowstorm.ihtsdotools.org/fhir');
+
+      // Add another initial value.
+      cy.contains('button', 'Add another value').as('addInitialValueButton');
+      cy.get('@addInitialValueButton').click();
+
+      // Use mock data for the SNOMED ECL expression request.
+      cy.intercept('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', { fixture: 'snomed-ecl-expression-mock.json' }).as('snomedReq');
+      cy.get('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input').click().type('Intersex');
+      cy.wait('@snomedReq');
+
+      // Autocomplete should show options.
+      cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
+      // Select 'Heart failure'
+      cy.get('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input').type('{downarrow}{enter}');
+      // Verify that code and system are filled in.
+      cy.get('[id^="initial.1.valueCoding.code"]').should('have.value', '32570691000036108');
+      cy.get('[id^="initial.1.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial[0].valueCoding.display).to.equal('example');
+        expect(qJson.item[0].initial[0].valueCoding.code).to.equal('123');
+        expect(qJson.item[0].initial[0].valueCoding.system).to.equal('http://example.org');
+
+        expect(qJson.item[0].initial[1].valueCoding.display).to.equal('Intersex');
+        expect(qJson.item[0].initial[1].valueCoding.code).to.equal('32570691000036108');
+        expect(qJson.item[0].initial[1].valueCoding.system).to.equal('http://snomed.info/sct');
+      });
+    });
+
+    it('should add initial values for the answer value set URI option', () => {
+      cy.selectDataType('coding');
+
+      // Select 'Allow repeating question' option to 'Yes'.
+      cy.contains('div', 'Allow repeating question').as('repeatOption').should('be.visible');
+      cy.get('@repeatOption').find('[for^="booleanRadio_true"]').as('repeatYes'); // Radio label for clicking   
+      cy.get('@repeatYes').click();
+
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      // Click the 'Answer list source - Answer value set URI' radion option.
+      cy.get('[for^="__\\$answerOptionMethods_value-set"]').click();
+
+      // Click the 'Value method - Pick initial value' radio option.
+      cy.getPickInitialValueValueMethodClick();
+      
+      // The 'Initial value' field should be visible.
+      cy.contains('div', 'Initial value').as('initialValue').should('be.visible');
+
+      // There should be a warning message below the 'Initial value' table.
+      cy.get('@initialValue')
+        .siblings('div')
+        .find('div > span')
+        .should('contain.text', 'The Answer value set URL is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
+
+      // An initial value can still be typed in manually.
+      cy.get('[id^="initial.0.valueCoding.display"]').type('example');
+      cy.get('[id^="initial.0.valueCoding.code"]').type('123');
+      cy.get('[id^="initial.0.valueCoding.system"]').type('http://example.org');
+
+      // Enter the 'Answer value set' URI.
+      cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
+
+      // The warning message below the 'Initial value' table should change.
+      cy.get('@initialValue')
+        .siblings('div')
+        .find('div > span')
+        .should('contain.text', 'Preferred terminology server is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
+    
+      // Expand the Advance Fields
+      cy.expandAdvancedFields();
+      // The terminology server should be blank
+      cy.tsUrl().scrollIntoView().should('be.visible').should('have.value', '');
+      cy.tsUrl().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
+
+      // The warning message should no longer show.
+      cy.get('@initialValue')
+        .siblings('div')
+        .find('div > span')
+        .should('not.exist');
+
+      // Add another initial value.
+      cy.contains('button', 'Add another value').as('addInitialValueButton');
+      cy.get('@addInitialValueButton').click();
+      cy.get('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input').click().type('pain');
+
+      // Autocomplete should show options.
+      cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
+      // Select 'Back pain'
+      cy.get('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input').type('{downarrow}{enter}');
+      // Verify that code and system are filled in.
+      cy.get('[id^="initial.1.valueCoding.code"]').should('have.value', '2315');
+      cy.get('[id^="initial.1.valueCoding.system"]').should('have.value', 'http://clinicaltables.nlm.nih.gov/fhir/CodeSystem/conditions');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial[0].valueCoding.display).to.equal('example');
+        expect(qJson.item[0].initial[0].valueCoding.code).to.equal('123');
+        expect(qJson.item[0].initial[0].valueCoding.system).to.equal('http://example.org');
+
+        expect(qJson.item[0].initial[1].valueCoding.display).to.equal('Back pain');
+        expect(qJson.item[0].initial[1].valueCoding.code).to.equal('2315');
+        expect(qJson.item[0].initial[1].valueCoding.system).to.equal('http://clinicaltables.nlm.nih.gov/fhir/CodeSystem/conditions');
+      });
+
+    });
+
     it('should import item with answer option', () => {
       const sampleFile = 'answer-option-sample.json';
       let fixtureJson;
