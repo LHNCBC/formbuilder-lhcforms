@@ -3847,11 +3847,11 @@ describe('Home page', () => {
         cy.get('#variable-label-2').clear().type('c_fhir_query_obs');
         cy.get('#variable-type-2').select('FHIR Query (Observation)');
         //cy.get('input#simple-expression-2').type('12');
-        cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight{downarrow}{enter}');
+        cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight').type('{downarrow}{enter}');
         //cy.get('#searchResults #completionOptions tr').contains('29463-7').click();
         cy.get('div#row-2 lhc-query-observation').shadow().within(() => {
           cy.get('div.query-select > span.autocomp_selected > ul > li')
-            .should('have.text', '×weight'); 
+            .should('have.text', '×Weight - 29463-7'); 
         });
 
         // Add a new variable 'd_question'
@@ -3861,8 +3861,8 @@ describe('Home page', () => {
         cy.get('#question-3')
           .should('exist')
           .should('be.visible')
-          .type('Pick Initial Value (Single){downarrow}{enter}');
-        //cy.get('span#completionOptions').contains('29463-7').click();
+          .type('Pick Initial Value (Single)')
+          .type('{downarrow}{enter}');
 
         // Add a new variable 'e_easy_path_exp'
         cy.get('#add-variable').click();
@@ -3892,7 +3892,7 @@ describe('Home page', () => {
 
       cy.get('@thirdVariable').find('td:nth-child(1)').should('have.text', 'c_fhir_query_obs');
       cy.get('@thirdVariable').find('td:nth-child(2)').should('have.text', 'FHIR Query (Observation)');
-      cy.get('@thirdVariable').find('td:nth-child(3)').should('have.text', "Observation?code=weight&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1");
+      cy.get('@thirdVariable').find('td:nth-child(3)').should('have.text', "Observation?code=http%3A%2F%2Floinc.org%7C29463-7&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1");
 
       cy.get('@fourthVariable').find('td:nth-child(1)').should('have.text', 'd_question');
       cy.get('@fourthVariable').find('td:nth-child(2)').should('have.text', 'Question');

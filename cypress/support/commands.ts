@@ -50,26 +50,9 @@ Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
  * Visit home page and assert LForms, but do not deal with LOINC notice.
  */
 Cypress.Commands.add('goToHomePage', () => {
-  const baseUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
-  const targets = [
-    {url: '**/@(webcomponent|fhir)/**/*.@(js|css)', alias: '@lformsLib', times: 4},
-    // {url: '**/*', alias: '@fhirAll', times: 5}
-  ];
-  targets.forEach((target) => {
-    const options: {method: string, url: string, times?: number} = {method: 'GET', url: baseUrl+target.url};
-    if(target.times) {
-      options.times = target.times;
-    }
-    cy.intercept(options, async (req) => {
-      CypressUtil._handleCachedResponse(req);
-    }).as(target.alias.substring(1)).then(() => {
-      Cypress.log({message: `*** ${target.alias} setup complete.`});
-      cy.visit('/');
-      cy.wait(targets.map((t) => {return t.alias})).then(() => {
-        cy.window().should('have.property', 'LForms');
-      });
-    });
-  });
+  CypressUtil.mockLFormsLoader();
+  cy.visit('/');
+  cy.window({timeout: 60000}).should('have.property', 'LForms');
 });
 
 
