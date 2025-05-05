@@ -58,35 +58,27 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
         hasAnswerValuetSetURL = true;
       }
 
+      const formPropertyExtensions = this.formProperty.findRoot().getProperty('extension').value;
+      const expression = formPropertyExtensions.filter(ext => ext.url === FormService.INITIAL_EXPRESSION || ext.url === FormService.CALCULATED_EXPRESSION);
       // Determine which Value Method option to select based on the available data. 
       // Default to 'None' if didn't meet the conditions.
-      if (!isAnswerList || isAnswerList === false) {
-        if (this.type === 'coding') {
-          this.control.setValue("none", { emitEvent: true });
-          this.formProperty.setValue("none", false);
-        } else {
-          this.control.setValue("type-initial", { emitEvent: true });
-          this.formProperty.setValue("type-initial", false);
-        }
+      if (expression[0]?.url === FormService.INITIAL_EXPRESSION) {
+        this.control.setValue("compute-initial", { emitEvent: true });
+        this.formProperty.setValue("compute-initial", false);
+      } else if (expression[0]?.url === FormService.CALCULATED_EXPRESSION) {
+        this.control.setValue("compute-continuously", { emitEvent: true });
+        this.formProperty.setValue("compute-continuously", false);
+      } else if ((!isAnswerList || isAnswerList === false) && this.type !== 'coding') {
+        this.control.setValue("type-initial", { emitEvent: true });
+        this.formProperty.setValue("type-initial", false);
       } else if (isAnswerList &&
-                  ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
-                  ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && hasAnswerValuetSetURL))) {
+        ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
+        ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && hasAnswerValuetSetURL))) {
         this.control.setValue("pick-initial", { emitEvent: true });
         this.formProperty.setValue("pick-initial", false);
       } else {
-        const formPropertyExtensions = this.formProperty.findRoot().getProperty('extension').value;
-        const expression = formPropertyExtensions.filter(ext => ext.url === FormService.INITIAL_EXPRESSION || ext.url === FormService.CALCULATED_EXPRESSION);
-
-        if (expression[0]?.url === FormService.INITIAL_EXPRESSION) {
-          this.control.setValue("compute-initial", { emitEvent: true });
-          this.formProperty.setValue("compute-initial", false);          
-        } else if (expression[0]?.url === FormService.CALCULATED_EXPRESSION) {
-          this.control.setValue("compute-continuously", { emitEvent: true });
-          this.formProperty.setValue("compute-continuously", false);
-        } else {
-          this.control.setValue("none", { emitEvent: true });
-          this.formProperty.setValue("none", false);  
-        }
+        this.control.setValue("none", { emitEvent: true });
+        this.formProperty.setValue("none", false);
       }
     });
     this.subscriptions.push(sub);

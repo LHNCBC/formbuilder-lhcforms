@@ -4068,6 +4068,48 @@ describe('Home page', () => {
       cy.get('@noneRadio').should('be.visible').and('not.be.checked');
       cy.get('#type').should('have.value', '2: integer');
       cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+
+      // Compute Initial Value
+      cy.clickTreeNode('Compute Initial Value with decimal data type');
+      cy.get('#type').should('have.value', '1: decimal');
+
+      // Variables section
+      cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
+
+      cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'normal_weight');
+      cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Question');
+      cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='normal_weight').answer.value");
+
+      cy.get('@secondVariable').find('td:nth-child(1)').should('have.text', 'measured_weight');
+      cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Question');
+      cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='measured_weight').answer.value");
+
+      cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
+      cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%measured_weight-%normal_weight');
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');        
+
+      // Continuously Compute Value
+      cy.clickTreeNode('Continuously Compute Value with decimal data type');
+      cy.get('#type').should('have.value', '1: decimal');
+
+      // Variables section
+      cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
+
+      cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'normal_weight');
+      cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Question');
+      cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='normal_weight').answer.value");
+
+      cy.get('@secondVariable').find('td:nth-child(1)').should('have.text', 'weight_change');
+      cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Question');
+      cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='weight_change').answer.value");
+
+      cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
+      cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '((%weight_change / %normal_weight).round(2))*100');
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked'); 
     });
 
     it('should type initial values', () => {

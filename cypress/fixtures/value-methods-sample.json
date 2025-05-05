@@ -316,6 +316,114 @@
       "type": "integer",
       "linkId": "/itm7",
       "text": "None"
+    },
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "normal_weight",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='normal_weight').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "measured_weight",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='measured_weight').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "kg",
+            "display": "kilogram"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%measured_weight-%normal_weight"
+          }
+        }
+      ],
+      "linkId": "weight_change",
+      "code": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "816160009",
+          "display": "Weight loss"
+        }
+      ],
+      "text": "Compute Initial Value with decimal data type",
+      "readOnly": true
+    },
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "normal_weight",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='normal_weight').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "weight_change",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='weight_change').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "((%weight_change / %normal_weight).round(2))*100"
+          }
+        }
+      ],
+      "linkId": "6",
+      "code": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "248346009",
+          "display": "weight change"
+        }
+      ],
+      "text": "Continuously Compute Value with decimal data type",
+      "readOnly": true
     }
   ]
 }
