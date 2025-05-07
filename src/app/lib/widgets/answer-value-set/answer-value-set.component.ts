@@ -192,7 +192,10 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     }
     else {
       this.snomedFhirVS = '';
-      this.snomedEdition = '';
+      // Set the Snomed Edition to its default value instead of an empty string.
+      // Unlike 'snomedVersion', which defaults to 'default' when set to an empty string,
+      // 'snomedEdition' does not handle empty string in the same way.
+      this.snomedEdition = '900000000000207008';
       this.snomedVersion = '';
     }
   }

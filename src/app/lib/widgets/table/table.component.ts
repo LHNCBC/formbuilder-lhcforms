@@ -20,13 +20,13 @@ import {
   OnInit, Renderer2,
   SimpleChanges
 } from '@angular/core';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong} from '@fortawesome/free-solid-svg-icons';
-import {ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import { TableService, TableStatus } from 'src/app/services/table.service';
 
 @Component({
   standalone: false,
@@ -73,6 +73,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   renderer = inject(Renderer2);
   cdr = inject(ChangeDetectorRef);
+  tableService = inject(TableService);
+
+  tableStatus: TableStatus;
   elementRef = inject(ElementRef);
 
   constructor() {
@@ -122,6 +125,11 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     this.selectionCheckbox = [];
 
     this.handleErrorColumnVisibility(widget);
+
+    // Limit the setting of the table status to 'Initial' component.
+    if (this.tableService && this.formProperty?.path === "/initial") {
+      this.tableService.setTableStatusChanged(null);
+    }
   }
   
   /**
@@ -148,6 +156,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   ngAfterViewInit() {
     super.ngAfterViewInit();
+
     const singleItemEnableSource = this.formProperty.schema.widget ?
       this.formProperty.schema.widget.singleItemEnableSource : null;
     const multipleSelectionEnableSource = this.formProperty.schema.widget ?
@@ -198,7 +207,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.keyField = keyField;
     }
     // Lookout for any changes to key field
-    subscription = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
+    subscription = this.formProperty.searchProperty(this.keyField)?.valueChanges.subscribe((newValue) => {
       const showFields = this.getShowTableFields();
       this.noHeader = showFields.some((f) => f.noHeader);
       this.cdr.markForCheck();
@@ -217,6 +226,55 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       }
     });
     this.subscriptions.push(subscription);
+
+    // Limit the subscription to only the "initial" component.
+    if (this.tableService && this.formProperty?.path === "/initial") {
+      subscription = this.tableService.tableStatusChanged$.subscribe((newValue: TableStatus) => {
+        this.tableStatus = newValue;
+        this.cdr.markForCheck();
+      });
+      this.subscriptions.push(subscription);
+    }
+  }
+
+  /**
+   * Get the style for the table row based on the table status.
+   * @returns - An object containing the CSS styles.
+   */
+  getStatusStyle() {
+    if (!this.tableStatus) {
+      return {};
+    }
+
+    switch (this.tableStatus.type) {
+      case 'error':
+        return { color: 'red' };
+      case 'warning':
+        return { color: 'darkorange' };
+      default:
+        return { color: 'black' };
+    }
+  }
+
+  /**
+   * Get the CSS class for the table row based on the table status.
+   * @returns - A string containing the CSS class.
+   */
+  getStatusClass() {
+    if (!this.tableStatus) {
+      return '';
+    }
+
+    switch (this.tableStatus.type) {
+      case 'error':
+        return 'text-danger';
+      case 'warning':
+        return 'text-warning';
+      case 'success':
+        return 'text-success';
+      default:
+        return '';
+    }
   }
 
   /**

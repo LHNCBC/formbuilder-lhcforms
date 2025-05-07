@@ -10,9 +10,6 @@ import { InitialNumberDirective } from '../../directives/initial-number.directiv
   standalone: false,
   selector: 'lfb-initial-number',
   template: `
-    <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
-           name="{{name}}" type="hidden" [formControl]="control">
-    <ng-template #notHiddenFieldBlock>
       <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}" [class.has-error]="errors">
         <lfb-label *ngIf="!nolabel"
                    [for]="id"
@@ -29,7 +26,6 @@ import { InitialNumberDirective } from '../../directives/initial-number.directiv
                [ngClass]="{invalid: errors}"
                [attr.aria-invalid]="errors">
       </div>
-    </ng-template>
   `
 })
 
@@ -62,7 +58,6 @@ export class InitialNumberComponent extends LfbControlWidgetComponent implements
 
     sub = this.formProperty.errorsChanges.subscribe((errors) => {
       this.errors = null;
-
       if(errors?.length) {
         const errorsObj = {};
         errors.reduce((acc: {[key: string]: any}, error: any) => {

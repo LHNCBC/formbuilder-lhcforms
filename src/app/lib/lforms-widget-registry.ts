@@ -47,6 +47,7 @@ import { ExpressionEditorDlgComponent } from './widgets/expression-editor-dlg/ex
 import { VariableComponent } from './widgets/variable/variable.component';
 import { InitialNumberComponent } from './widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './widgets/entry-format/entry-format.component';
+import { AnswerValueSetCodingDisplayComponent } from './widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -95,5 +96,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('variable', VariableComponent);
     this.register('initial-number', InitialNumberComponent);
     this.register('entry-format', EntryFormatComponent);
+    this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
   }
 }

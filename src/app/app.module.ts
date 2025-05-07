@@ -102,6 +102,7 @@ import { VariableComponent } from './lib/widgets/variable/variable.component';
 import { InitialNumberDirective } from './lib/directives/initial-number.directive';
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
+import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 
 import { environment } from '../environments/environment';
 
@@ -175,7 +176,8 @@ import { environment } from '../environments/environment';
     VariableComponent,
     InitialNumberDirective,
     InitialNumberComponent,
-    EntryFormatComponent
+    EntryFormatComponent,
+    AnswerValueSetCodingDisplayComponent
   ],
   imports: [
     BrowserModule,
