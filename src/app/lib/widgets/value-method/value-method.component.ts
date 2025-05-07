@@ -2,6 +2,7 @@ import { AfterViewInit, Component, OnInit, OnDestroy } from '@angular/core';
 import {FormService} from '../../../services/form.service';
 import { Subscription } from 'rxjs';
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
+import { Util } from '../../util';
 
 @Component({
   standalone: false,
@@ -58,8 +59,8 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
         hasAnswerValuetSetURL = true;
       }
 
-      const formPropertyExtensions = this.formProperty.findRoot().getProperty('extension').value;
-      const expression = formPropertyExtensions.filter(ext => ext.url === FormService.INITIAL_EXPRESSION || ext.url === FormService.CALCULATED_EXPRESSION);
+      const extensions = this.formProperty.findRoot().getProperty('extension').value;
+      const expression = extensions.filter(ext => ext.url === FormService.INITIAL_EXPRESSION || ext.url === FormService.CALCULATED_EXPRESSION);
       // Determine which Value Method option to select based on the available data. 
       // Default to 'None' if didn't meet the conditions.
       if (expression[0]?.url === FormService.INITIAL_EXPRESSION) {
@@ -68,14 +69,14 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       } else if (expression[0]?.url === FormService.CALCULATED_EXPRESSION) {
         this.control.setValue("compute-continuously", { emitEvent: true });
         this.formProperty.setValue("compute-continuously", false);
-      } else if ((!isAnswerList || isAnswerList === false) && this.type !== 'coding') {
-        this.control.setValue("type-initial", { emitEvent: true });
-        this.formProperty.setValue("type-initial", false);
-      } else if (isAnswerList &&
-        ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
-        ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && hasAnswerValuetSetURL))) {
+      } else if ((this.type === 'boolean' && initial.length > 0) ||
+                 ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
+                  ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && initial.length > 0))) {
         this.control.setValue("pick-initial", { emitEvent: true });
         this.formProperty.setValue("pick-initial", false);
+      } else if (initial.length > 0 && this.type !== 'coding' ) {
+        this.control.setValue("type-initial", { emitEvent: true });
+        this.formProperty.setValue("type-initial", false);
       } else {
         this.control.setValue("none", { emitEvent: true });
         this.formProperty.setValue("none", false);
@@ -86,10 +87,11 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
     sub = this.formProperty.searchProperty('type').valueChanges.subscribe((typeVal) => {
       this.type = typeVal;
       this.valueMethodOptions = this.formProperty.schema.oneOf;
-        
+      const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
+
       if (typeVal === "decimal" || typeVal === "dateTime" || typeVal === "url" || typeVal === "quantity" || typeVal === "group" || typeVal === "display") {
         this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
-      } else if (typeVal === "coding" && this.displayTypeInitial) {
+      } else if (typeVal === "coding" && Util.isEmptyAnswerOption(answerOptions)) {
         this.valueMethodOptions = this.valueMethodOptions.slice(1);
         this.control.setValue("none", { emitEvent: true });
         this.formProperty.setValue("none", false);
