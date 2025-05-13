@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.6] 2025-05-13
+### Fixed
+- Fixed missing answer list layout for some item types.
+
 ## [10.0.5] 2025-04-16
 ### Added
 - Added initial values for SNOMED and non-SNOMED answer value sets.

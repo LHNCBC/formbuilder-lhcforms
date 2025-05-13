@@ -125,6 +125,36 @@ test.describe('r5-features.spec.ts', async () => {
     expect(q.item[2].disabledDisplay).toBe('protected');
   });
 
+  test('should import items with answer list layout', async ({page}) => {
+    const fileJson = await PWUtils.uploadFile(page, 'fixtures/answer-list-layout-sample.json', true);
+    await page.getByRole('button', {name: 'Edit questions'}).click();
+
+    await PWUtils.clickTreeNode(page, 'Integer type answer list layout');
+    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/integer/);
+    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Drop down')).toBeChecked();
+
+    await PWUtils.clickTreeNode(page, 'Date type answer list layout');
+    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/date/);
+    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Check-box')).toBeChecked();
+
+    await PWUtils.clickTreeNode(page, 'Time type answer list layout');
+    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/time/);
+    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Radio Button')).toBeChecked();
+
+    await PWUtils.clickTreeNode(page, 'Coding type answer list layout');
+    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
+    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Drop down')).toBeChecked();
+
+    await PWUtils.clickTreeNode(page, 'String type answer list layout');
+    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/string/);
+    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Radio Button')).toBeChecked();
+  });
+
   test('should import R4 version from local storage', async ({page}) => {
     const json = await PWUtils.readJSONFile('fixtures/local-storage-mock.R4.json');
     await page.evaluate((mockQ) => {
