@@ -6,6 +6,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Fixed
 - Encoded ECL string of answerValueSet for SNOMED.
 - Fixed missing answer list layout for some item types.
+- Fixed the invalid enableWhen question throwing exception.
 
 ## [10.0.5] 2025-04-16
 ### Added
