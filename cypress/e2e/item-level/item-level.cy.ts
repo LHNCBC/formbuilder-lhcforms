@@ -4004,7 +4004,7 @@ describe('Home page', () => {
         //cy.get('#searchResults #completionOptions tr').contains('29463-7').click();
         cy.get('div#row-2 lhc-query-observation').shadow().within(() => {
           cy.get('div.query-select > span.autocomp_selected > ul > li')
-            .should('have.text', '×weight');
+            .should('have.text', '×Weight - 29463-7'); 
         });
 
         // Add a new variable 'd_question'
