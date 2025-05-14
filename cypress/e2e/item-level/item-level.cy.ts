@@ -4450,12 +4450,51 @@ describe('Home page', () => {
       cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b + %c');
       cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
-      // In the case, no data was provided, it is no longer default to None value method.
-      // 'Type initial value' is now a default.
       cy.clickTreeNode('None');
-      cy.get('@noneRadio').should('be.visible').and('not.be.checked');
       cy.get('#type').should('have.value', '2: integer');
-      cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+      cy.get('@noneRadio').should('be.visible').and('be.checked');
+
+      // Compute Initial Value
+      cy.clickTreeNode('Compute Initial Value with decimal data type');
+      cy.get('#type').should('have.value', '1: decimal');
+
+      // Variables section
+      cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
+
+      cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'normal_weight');
+      cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Question');
+      cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='normal_weight').answer.value");
+
+      cy.get('@secondVariable').find('td:nth-child(1)').should('have.text', 'measured_weight');
+      cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Question');
+      cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='measured_weight').answer.value");
+
+      cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
+      cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%measured_weight-%normal_weight');
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');        
+
+      // Continuously Compute Value
+      cy.clickTreeNode('Continuously Compute Value with decimal data type');
+      cy.get('#type').should('have.value', '1: decimal');
+
+      // Variables section
+      cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+      cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
+
+      cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'normal_weight');
+      cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Question');
+      cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='normal_weight').answer.value");
+
+      cy.get('@secondVariable').find('td:nth-child(1)').should('have.text', 'weight_change');
+      cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Question');
+      cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='weight_change').answer.value");
+
+      cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
+      cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '((%weight_change / %normal_weight).round(2))*100');
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked'); 
     });
 
     it('should type initial values', () => {
@@ -5131,6 +5170,126 @@ describe('Home page', () => {
         ]);
       });
     });
+  });
+});
+
+describe('Value method button selection', () => {
+  beforeEach(() => {
+    cy.loadHomePage();
+    const sampleFile = 'value-methods-button-selection-sample.json';
+    cy.uploadFile(sampleFile, false);
+    cy.get('#title').should('have.value', 'value-methods-button-selection-sample');
+    cy.contains('button', 'Edit questions').click();
+
+    cy.get('#type').as('type');
+
+    cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
+    cy.get('@valueMethod').find('[for^="__$valueMethod_compute-initial"]').as('computeInitial'); // Radio label for clicking
+    cy.get('@valueMethod').find('[for^="__$valueMethod_compute-continuously"]').as('computeContinuously'); // Radio label for clicking
+    cy.get('@valueMethod').find('[for^="__$valueMethod_none"]').as('none'); // Radio label for clicking
+
+    cy.get('@valueMethod').find('[id^="__$valueMethod_compute-initial"]').as('computeInitialRadio'); // Radio input for assertions
+    cy.get('@valueMethod').find('[id^="__$valueMethod_compute-continuously"]').as('computeContinuouslyRadio'); // Radio input for assertions
+    cy.get('@valueMethod').find('[id^="__$valueMethod_none"]').as('noneRadio'); // Radio input for assertions
+  });
+
+  it('should display the appropriate value method option based on the data', () => {
+    // Starts out with 'boolean' type
+    cy.get('@type').contains('boolean');
+    cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
+    cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+    cy.contains('div', 'Initial value').as('initialValue').should('be.visible');
+    cy.get('@initialValue')
+      .siblings('div')
+      .find('[id^="booleanRadio_true"]')
+      .should('be.visible').and('be.checked');
+
+    cy.clickTreeNode('decimal_type');
+    cy.get('@type').contains('decimal');
+    cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '3.2');
+
+    cy.clickTreeNode('integer_type-answerlist_no');
+    cy.get('@type').contains('integer');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueInteger"]').should('have.value', '5');
+
+    cy.clickTreeNode('integer_type-answerlist_yes');
+    cy.get('@type').contains('integer');
+    cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+    cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
+    cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', '2');
+
+    cy.clickTreeNode('date_type-answerlist_no');
+    cy.get('@type').contains('date');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueDate"]').should('have.value', '2024-03-03');
+    
+    cy.clickTreeNode('date_type-answerlist_yes');
+    cy.get('@type').contains('date');
+    cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+    cy.get('lfb-answer-option table > tbody > tr').should('have.length', 2);
+    cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', '2024-01-02');
+
+    cy.clickTreeNode('dateTime_type');
+    cy.get('@type').contains('dateTime');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueDateTime"]').should('have.value', '2024-03-03 01:01:01 PM');
+
+    cy.clickTreeNode('time_type-answerlist_no');
+    cy.get('@type').contains('time');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueTime"]').should('have.value', '01:01:01');
+
+    cy.clickTreeNode('time_type-answerlist_yes');
+    cy.get('@type').contains('time');
+    cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+    cy.get('lfb-answer-option table > tbody > tr').should('have.length', 2);
+    cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', '02:01:01');
+
+    cy.clickTreeNode('string_type-answerlist_no');
+    cy.get('@type').contains('string');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueString"]').should('have.value', 'abcd');
+
+    cy.clickTreeNode('string_type-answerlist_yes');
+    cy.get('@type').contains('string');
+    cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+    cy.get('lfb-answer-option table > tbody > tr').should('have.length', 2);
+    cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'def');
+    
+    cy.clickTreeNode('text_type-answerlist_no');
+    cy.get('@type').contains('text');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueString"]').should('have.value', 'abcd');
+
+    cy.clickTreeNode('text_type-answerlist_yes');
+    cy.get('@type').contains('text');
+    cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+    cy.get('lfb-answer-option table > tbody > tr').should('have.length', 2);
+    cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'def');
+
+    cy.clickTreeNode('url_type');
+    cy.get('@type').contains('url');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueUri"]').should('have.value', 'http://www.test.org');
+
+    cy.clickTreeNode('coding_type-answerlist_no');
+    cy.get('@type').contains('coding');
+    cy.get('@noneRadio').should('be.visible').and('be.checked');
+
+    cy.clickTreeNode('coding_type-answerlist_yes');
+    cy.get('@type').contains('coding');
+    cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+
+    cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
+    cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'a2');
+
+    cy.clickTreeNode('quantity_type');
+    cy.get('@type').contains('quantity');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueQuantity"]').should('have.value', '3');
   });
 });
 

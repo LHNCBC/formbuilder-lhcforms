@@ -200,21 +200,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     return enableWhenObj;
   }
 
-  /**
-   * Determines whether the provided array of answer options contains data. The array may
-   * contain an empty object; therefore, it is necessary to validate the 'display' and
-   * 'code' fields. 
-   * @param ansOpts - An array of Answer Options objects
-   * @returns - true if the Answer Option array is empty or contain one empty item, otherwise false.
-   */
-  isEmptyAnswerOption(ansOpts: any): boolean {
-    if (!ansOpts || ansOpts.length === 0) {
-      return true;
-    }
-    if (ansOpts.length > 1)
-      return false;
-    return ansOpts.some(ansOpt => !(ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
-  }
 
   /**
    * Custom validator wrapper for the 'type' field in ngx-schema-form. Creates a validation object using data
@@ -401,7 +386,11 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     const valueMethod = formProperty.findRoot().getProperty("__$valueMethod").value;
 
-    if (asMethod === "answer-option" && valueMethod === "pick-initial" && this.isEmptyAnswerOption(ansOpts)) {
+    const type = formProperty.findRoot().getProperty("type").value;
+
+    // For the boolean data type, 'pick-initial' was being assigned even though an answer option is not required.
+    // Added the data type check to exclude boolean types from triggering the 'ANSWER_OPTION_REQUIRED' error.
+    if (asMethod === "answer-option" && valueMethod === "pick-initial" && Util.isEmptyAnswerOption(ansOpts) && type !== "boolean") {
       const errorCode = 'ANSWER_OPTION_REQUIRED';
       const err: any = {};
       err.code = errorCode;

@@ -1,0 +1,252 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "value-methods-button-selection-sample",
+  "status": "draft",
+  "item": [
+    {
+      "type": "boolean",
+      "linkId": "900089213806",
+      "text": "boolean_type",
+      "initial": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "type": "decimal",
+      "linkId": "978068244807",
+      "text": "decimal_type",
+      "initial": [
+        {
+          "valueDecimal": 3.2
+        }
+      ]
+    },
+    {
+      "type": "integer",
+      "linkId": "319687569659",
+      "text": "integer_type-answerlist_no",
+      "initial": [
+        {
+          "valueInteger": 5
+        }
+      ]
+    },
+    {
+      "type": "integer",
+      "linkId": "448061795006",
+      "text": "integer_type-answerlist_yes",
+      "answerOption": [
+        {
+          "valueInteger": 1
+        },
+        {
+          "valueInteger": 2,
+          "initialSelected": true
+        },
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "type": "date",
+      "linkId": "504867585336",
+      "text": "date_type-answerlist_no",
+      "initial": [
+        {
+          "valueDate": "2024-03-03"
+        }
+      ]
+    },
+    {
+      "type": "date",
+      "linkId": "817467716897",
+      "text": "date_type-answerlist_yes",
+      "answerOption": [
+        {
+          "valueDate": "2024-01-01"
+        },
+        {
+          "valueDate": "2024-01-02",
+          "initialSelected": true
+        }
+      ]
+    },
+    {
+      "type": "dateTime",
+      "linkId": "102922881796",
+      "text": "dateTime_type",
+      "initial": [
+        {
+          "valueDateTime": "2024-03-03 01:01:01 PM"
+        }
+      ]
+    },
+    {
+      "type": "time",
+      "linkId": "960438073867",
+      "text": "time_type-answerlist_no",
+      "initial": [
+        {
+          "valueTime": "01:01:01"
+        }
+      ]
+    },
+    {
+      "type": "time",
+      "linkId": "752528940615",
+      "text": "time_type-answerlist_yes",
+      "answerOption": [
+        {
+          "valueTime": "01:01:01"
+        },
+        {
+          "valueTime": "02:01:01",
+          "initialSelected": true
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "369937723657",
+      "text": "string_type-answerlist_no",
+      "initial": [
+        {
+          "valueString": "abcd"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "676731999620",
+      "text": "string_type-answerlist_yes",
+      "answerOption": [
+        {
+          "valueString": "abc"
+        },
+        {
+          "valueString": "def",
+          "initialSelected": true
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "linkId": "514967135173",
+      "text": "text_type-answerlist_no",
+      "initial": [
+        {
+          "valueString": "abcd"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "linkId": "597044021185",
+      "text": "text_type-answerlist_yes",
+      "answerOption": [
+        {
+          "valueString": "abc"
+        },
+        {
+          "valueString": "def",
+          "initialSelected": true
+        }
+      ]
+    },
+    {
+      "type": "url",
+      "linkId": "944024279822",
+      "text": "url_type",
+      "initial": [
+        {
+          "valueUri": "http://www.test.org"
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "413278152097",
+      "text": "coding_type-answerlist_no"
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "879070235174",
+      "text": "coding_type-answerlist_yes",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "1",
+            "code": "1",
+            "display": "a1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "2",
+            "code": "2",
+            "display": "a2"
+          },
+          "initialSelected": true
+        },
+        {
+          "valueCoding": {
+            "system": "3",
+            "code": "3",
+            "display": "a3"
+          }
+        }
+      ]
+    },
+    {
+      "type": "quantity",
+      "linkId": "315368556165",
+      "text": "quantity_type",
+      "initial": [
+        {
+          "valueQuantity": {
+            "value": 3,
+            "unit": "kilogram",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    }
+  ]
+}
