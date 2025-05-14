@@ -25,7 +25,8 @@
           { field:  "publisher", col:  12},
           { field:  "copyright", col:  12},
           { field:  "approvalDate", col:  12},
-          { field:  "lastReviewDate", col:  12}
+          { field:  "lastReviewDate", col:  12},
+          { field:  "__$variable", col: 12}
         ]
       }
     ],
@@ -85,6 +86,33 @@
         {"field": "code", "col": 3, "nolabel": true},
         {"field": "system", "col": 4, "nolabel": true}
       ]
+    },
+    "__$variable": {
+    
+      "id": "variable",
+      "expressionUri":  "http://hl7.org/fhir/StructuredDefinition/variable",
+      "showExpression": false,
+      "displayExpressionEditorSections": {
+        titleSection: true,
+        uneditableVariablesSection: false,
+        itemVariablesSection: true,
+        outputExpressionSection: false
+      },
+      "labelPosition": "left",
+      "labelClasses": "col-2 ps-0 pe-1",
+      "controlClasses": "col-10 ",
+      "addButtonLabel": "Add/edit variables",
+      "showHeaderFields": [
+        {"field": "valueExpression.properties.name", "nolabel": true, "col": 2, "title": "Name"},
+        {"field": "valueExpression.properties.extension", "nolabel": true, "col": 3, "title": "Type"},
+        {"field": "valueExpression.properties.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"},
+      ],
+      "showDataFields": [
+        {"field": "valueExpression.name", "nolabel": true, "col": 2, "title": "Name"},
+        {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
+        {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
+      ]
+      
     }
   },
   // Map property: Each widget type is mapped to fields with json pointers of its schema.
