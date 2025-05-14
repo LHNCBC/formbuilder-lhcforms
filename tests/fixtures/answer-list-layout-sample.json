@@ -1,0 +1,149 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "title": "Answer list layout sample",
+  "item": [
+    {
+      "linkId": "int1",
+      "text": "Integer type answer list layout",
+      "type": "integer",
+      "answerOption": [
+        {
+          "valueInteger": 1,
+          "initialSelected": true
+        },
+        {
+          "valueInteger": 2
+        },
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "linkId": "str1",
+      "text": "String type answer list layout",
+      "type": "string",
+      "answerOption": [
+        {
+          "valueString": "One",
+          "initialSelected": true
+        },
+        {
+          "valueString": "Two"
+        },
+        {
+          "valueString": "Three"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "dt1",
+      "text": "Date type answer list layout",
+      "type": "date",
+      "repeats": true,
+      "answerOption": [
+        {
+          "valueDate": "2021-02-03",
+          "initialSelected": true
+        },
+        {
+          "valueDate": "2024-05-06"
+        },
+        {
+          "valueDate": "2027-08-09",
+          "initialSelected": true
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "tm1",
+      "text": "Time type answer list layout",
+      "type": "time",
+      "answerOption": [
+        {
+          "valueTime": "12:31:00",
+          "initialSelected": true
+        },
+        {
+          "valueTime": "13:42:01"
+        },
+        {
+          "valueTime": "14:53:02"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ]
+          }
+        }
+      ]
+
+    },
+    {
+      "linkId": "coding1",
+      "text": "Coding type answer list layout",
+      "type": "coding",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://example.org",
+            "code": "one",
+            "display": "Choice one"
+          },
+          "initialSelected": true
+        },
+        {
+          "valueCoding": {
+            "system": "http://example.org",
+            "code": "two",
+            "display": "Choice two"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://example.org",
+            "code": "three",
+            "display": "Choice three"
+          }
+        }
+      ]
+    }
+  ]
+}
