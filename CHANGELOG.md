@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.6] 2025-05-14
+### Added
+- Added a variables extension at the questionnaire level.
+
 ## [10.0.5] 2025-04-16
 ### Added
 - Added initial values for SNOMED and non-SNOMED answer value sets.
