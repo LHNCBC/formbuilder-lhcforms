@@ -99,7 +99,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
         // Set answer type input
         this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
       }
-    } else if (value === "" && '__$answerType' in this.formProperty.parent.value) {
+    } else if (value === "" && this.formProperty.parent.value?.['__$answerType']?.trim()) {
       this.validateQuestion();
     }
   }

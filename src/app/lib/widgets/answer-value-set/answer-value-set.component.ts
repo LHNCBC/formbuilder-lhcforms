@@ -1,6 +1,5 @@
 import {AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
 import {StringComponent} from '../string/string.component';
-import {Subscription} from 'rxjs';
 import {FetchService, SNOMEDEditions} from '../../../services/fetch.service';
 import {FormService} from '../../../services/form.service';
 import {ExtensionsService} from '../../../services/extensions.service';
@@ -37,7 +36,6 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   nonSnomedUrl = '';
   snomedFhirVS = '';
   url = new URL(AnswerValueSetComponent.snomedBaseUri);
-  subscriptions: Subscription[] = [];
   eclPrefixRE = /^ecl\s*\//i;
   parseEditionRE = /sct\/([^\/]+)?(\/version\/([^\/]+))?/;
 
@@ -219,16 +217,6 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     this.tooltipOpen = true;
   }
 
-  /**
-   * Close ecl tooltip manually
-   */
-  ngOnDestroy() {
-    this.subscriptions.forEach((sub) => {
-      if(sub) {
-        sub.unsubscribe();
-      }
-    });
-  }
 
   /**
    * Clean up the ARIA label by removing the anchor tags (<a> and </a>) from a given string and replacing them with a specified string.

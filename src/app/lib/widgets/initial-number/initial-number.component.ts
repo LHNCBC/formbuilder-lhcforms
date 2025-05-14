@@ -10,7 +10,6 @@ import { InitialNumberDirective } from '../../directives/initial-number.directiv
   standalone: false,
   selector: 'lfb-initial-number',
   template: `
-
       <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}" [class.has-error]="errors">
         <lfb-label *ngIf="!nolabel"
                    [for]="id"
@@ -27,7 +26,6 @@ import { InitialNumberDirective } from '../../directives/initial-number.directiv
                [ngClass]="{invalid: errors}"
                [attr.aria-invalid]="errors">
       </div>
-
   `
 })
 

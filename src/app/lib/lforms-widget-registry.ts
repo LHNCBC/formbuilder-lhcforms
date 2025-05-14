@@ -40,13 +40,13 @@ import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
 import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
 import {HelpTextComponent} from "./widgets/help-text/help-text.component";
-
 import { ValueMethodComponent } from './widgets/value-method/value-method.component';
 import { PickAnswerComponent } from './widgets/pick-answer/pick-answer.component';
 import { ExpressionEditorComponent } from './widgets/expression-editor/expression-editor.component';
 import { ExpressionEditorDlgComponent } from './widgets/expression-editor-dlg/expression-editor-dlg.component';
 import { VariableComponent } from './widgets/variable/variable.component';
 import { InitialNumberComponent } from './widgets/initial-number/initial-number.component';
+import { EntryFormatComponent } from './widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 
 @Injectable()
@@ -95,6 +95,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('expression-editor-dlg', ExpressionEditorDlgComponent);
     this.register('variable', VariableComponent);
     this.register('initial-number', InitialNumberComponent);
+    this.register('entry-format', EntryFormatComponent);
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
   }
 }
