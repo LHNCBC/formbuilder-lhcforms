@@ -147,4 +147,97 @@ describe('Util', () => {
       expect(convertedQ.meta.tag[0].code).toEqual('should-exist');
     });
   });
+
+  it('should check for empty answer options', () => {
+
+    const answerOption = [
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+            "valueDecimal": 1
+          }
+        ],
+        "valueCoding": {
+          "system": "1",
+          "code": "1",
+          "display": "a1"
+        }
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+            "valueDecimal": 2
+          }
+        ],
+        "valueCoding": {
+          "system": "2",
+          "code": "2",
+          "display": "a2"
+        }
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+            "valueDecimal": 3
+          }
+        ],
+        "valueCoding": {
+          "system": "3",
+          "code": "3",
+          "display": "a3"
+        }
+      }
+    ];
+    const emptyAnswerOption = [
+      {
+        "extension": [],
+      }
+    ];
+    const emptyAnswerOption2 = [
+      {
+        "extension": [],
+        "valueCoding": {}
+      },
+    ];
+    const emptyAnswerOption3 = [
+      {
+        "extension": [],
+        "valueCoding": {}
+      },
+      {
+        "extension": [],
+        "valueCoding": {}
+      }
+    ];
+    const emptyAnswerOption4 = [
+      {
+        "extension": [],
+        "valueCoding": {}
+      },
+      {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+            "valueDecimal": 3
+          }
+        ],
+        "valueCoding": {
+          "system": "3",
+          "code": "3",
+          "display": "a3"
+        }
+      }
+    ];
+    expect(Util.isEmptyAnswerOption(null)).toBe(true);
+    expect(Util.isEmptyAnswerOption([])).toBe(true);
+
+    expect(Util.isEmptyAnswerOption(answerOption)).toBe(false);
+    expect(Util.isEmptyAnswerOption(emptyAnswerOption)).toBe(true);
+    expect(Util.isEmptyAnswerOption(emptyAnswerOption2)).toBe(true);
+    expect(Util.isEmptyAnswerOption(emptyAnswerOption3)).toBe(true);
+    expect(Util.isEmptyAnswerOption(emptyAnswerOption4)).toBe(false);
+  });
 });

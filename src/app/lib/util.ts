@@ -698,8 +698,7 @@ export class Util {
     if (!ansOpts || ansOpts.length === 0) {
       return true;
     }
-    if (ansOpts.length > 1)
-      return false;
-    return ansOpts.some(ansOpt => !(ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
+
+    return ansOpts.every(ansOpt => !(ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
   }  
 }

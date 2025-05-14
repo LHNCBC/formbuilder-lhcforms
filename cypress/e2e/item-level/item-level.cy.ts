@@ -4062,8 +4062,6 @@ describe('Home page', () => {
       cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b + %c');
       cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');    
 
-      // In the case, no data was provided, it is no longer default to None value method. 
-      // 'Type initial value' is now a default.
       cy.clickTreeNode('None');
       cy.get('#type').should('have.value', '2: integer');
       cy.get('@noneRadio').should('be.visible').and('be.checked');
@@ -4813,11 +4811,6 @@ describe('Value method button selection', () => {
     cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
     cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
     cy.contains('div', 'Initial value').as('initialValue').should('be.visible');
-    cy.get('@initialValue')
-      .invoke('text')
-      .then((text) => {
-        console.log('Initial Value text:', text); // Logs to browser console
-      });
     cy.get('@initialValue')
       .siblings('div')
       .find('[id^="booleanRadio_true"]')
