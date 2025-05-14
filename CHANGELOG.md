@@ -2,8 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.0.6] 2025-05-05
+## [10.0.6] 2025-05-14
+### Added
+- Added entry format extension.
 ### Fixed
+- Encoded ECL string of answerValueSet for SNOMED.
+- Fixed missing answer list layout for some item types.
+- Fixed the invalid enableWhen question throwing exception.
 - Fixed the logic in the Value method to correctly display the expression extension.
 
 ## [10.0.5] 2025-04-16

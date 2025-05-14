@@ -50,7 +50,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   showErrorObject;
 
   dataType = "string";
-
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label

@@ -152,7 +152,7 @@ export class CypressUtil {
   static mockSnomedEditions() {
     const fixture = 'snomedEditions.json';
     cy.intercept('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (req) => {
-      console.log(`cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`);
+      Cypress.log({message: `cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`});
       req.reply({fixture});
     });
   }
@@ -178,7 +178,7 @@ export class CypressUtil {
    */
   static _handleCachedResponse(req) {
     if (CypressUtil.lformsLibs.has(req.url)) {
-      console.log(`Loading from cache: ${req.url}`);
+      Cypress.log({message: `Loading from cache: ${req.url}`});
       req.reply(CypressUtil.lformsLibs.get(req.url));
     } else {
       req.timeout = CypressUtil.HTTP_REQ_TIMEOUT;
@@ -188,7 +188,7 @@ export class CypressUtil {
           console.error(`${resp.statusCode}: Error loading ${req.url}: ${resp.statusMessage}`);
         }
         else {
-          console.log(`${resp.statusCode}: Loading from website ${req.url}`);
+          Cypress.log({message: `${resp.statusCode}: Loading from website ${req.url}`});
           CypressUtil.lformsLibs.set(req.url, resp.body);
         }
         resp.send();

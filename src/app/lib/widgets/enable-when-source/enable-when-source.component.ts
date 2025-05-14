@@ -99,7 +99,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
         // Set answer type input
         this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
       }
-    } else if (value === "" && '__$answerType' in this.formProperty.parent.value) {
+    } else if (value === "" && this.formProperty.parent.value?.['__$answerType']?.trim()) {
       this.validateQuestion();
     }
   }
@@ -152,18 +152,24 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   validateQuestion(): void {
     if (!this.model) {
       this.model = null;
-      this.formProperty.setValue("", false);
-      this.formProperty.updateValueAndValidity();
 
-      // Aside from clearing the question, also clear the 'operator' and the answer.
-      this.formProperty.parent.getProperty('operator').setValue('', false);
-
+      const enableWhenObj = this.formProperty.parent.value;
+      enableWhenObj['question'] = '';
+      enableWhenObj['operator'] = '';
+      
       const answerType = this.formProperty.parent.getProperty('__$answerType').value;
 
-      if (answerType !== "coding") {
+      if (answerType && answerType !== "coding") {
         const answerKeyName = Util.getAnswerFieldName(answerType);
-        this.formProperty.parent.getProperty(answerKeyName).setValue('', false);
+        if (answerKeyName && this.formProperty.parent.getProperty(answerKeyName).value) {
+          enableWhenObj[answerKeyName] = '';
+        }
+      } else if (!answerType) {
+        enableWhenObj['__$answerType'] = 'string';
       }
+
+      this.formProperty.parent.setValue(enableWhenObj, false);
+      this.formProperty.updateValueAndValidity();
     }
   }
 }
