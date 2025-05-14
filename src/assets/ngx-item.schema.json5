@@ -1152,7 +1152,7 @@
       "title": "Answer list layout",
       "type": "string",
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'coding'"]
+        "__$isAnswerList": [true]
       },
       "widget": {
         "id": "item-control",
@@ -1295,7 +1295,7 @@
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-10 btn-group btn-group-sm p-0",
         "note": "(1) - not supported by LHC-Forms preview.",
-        "deprecatedNote": "* '${deprecatedItemControl}' item control is deprecated and is not presented in this list of item controls." 
+        "deprecatedNote": "* '${deprecatedItemControl}' item control is deprecated and is not presented in this list of item controls."
       }
     },
 
@@ -1740,7 +1740,7 @@
                 "/__$answerOptionMethods": ["snomed-value-set", "value-set"]
               }
             ]
-          }          
+          }
         ]
       },
       "widget": {
@@ -2451,7 +2451,7 @@
           "col": 12
         }
       ]
-    },    
+    },
     {
       "fields": [
         "__$terminologyServer"

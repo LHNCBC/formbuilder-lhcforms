@@ -111,8 +111,8 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     this.url.pathname += this.snomedVersion ? '/version/' + this.snomedVersion : '';
     // this.snomedFhirVS = args.ecl;
     if(this.snomedFhirVS && this.snomedEdition) {
-      const ecl = this.eclPrefixRE.test(this.snomedFhirVS) ? this.snomedFhirVS : 'ecl/' + this.snomedFhirVS;
-      snomedUrl = this.url.toString()+'?fhir_vs='+ecl;
+      const ecl = this.eclPrefixRE.test(this.snomedFhirVS) ? this.snomedFhirVS.replace(this.eclPrefixRE, '') : this.snomedFhirVS;
+      snomedUrl = this.url.toString()+'?fhir_vs=ecl/'+encodeURIComponent(ecl);
     }
     this.snomedUrl = snomedUrl;
     this.formProperty.setValue(snomedUrl, false);

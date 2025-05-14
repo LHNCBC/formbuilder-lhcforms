@@ -152,20 +152,24 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   validateQuestion(): void {
     if (!this.model) {
       this.model = null;
-      this.formProperty.setValue("", false);
-      this.formProperty.updateValueAndValidity();
 
-      // Aside from clearing the question, also clear the 'operator' and the answer.
-      this.formProperty.parent.getProperty('operator').setValue('', false);
-
+      const enableWhenObj = this.formProperty.parent.value;
+      enableWhenObj['question'] = '';
+      enableWhenObj['operator'] = '';
+      
       const answerType = this.formProperty.parent.getProperty('__$answerType').value;
 
-      if (answerType !== "coding") {
+      if (answerType && answerType !== "coding") {
         const answerKeyName = Util.getAnswerFieldName(answerType);
-        if(answerKeyName) {
-          this.formProperty.parent.getProperty(answerKeyName).setValue('', false);
+        if (answerKeyName && this.formProperty.parent.getProperty(answerKeyName).value) {
+          enableWhenObj[answerKeyName] = '';
         }
+      } else if (!answerType) {
+        enableWhenObj['__$answerType'] = 'string';
       }
+
+      this.formProperty.parent.setValue(enableWhenObj, false);
+      this.formProperty.updateValueAndValidity();
     }
   }
 }

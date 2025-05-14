@@ -22,7 +22,7 @@
       <label  class="col-3 ps-0 col-form-label">Enter SNOMED ECL
         <div tabindex="0" class="btn border-0 p-0 b-0" [ngbTooltip]="eclHelp" tooltipClass="custom-tooltip-class"
             container="body" triggers="manual" [attr.aria-label]="getURLFreeAriaLabel('Tooltip for ECL: ' + eclHelpContent)" tablindex="0"
-            #eclTooltip 
+            #eclTooltip
             (mouseover)="eclTooltipOpen()"
             (focus)="eclTooltipOpen()"
             (blur)="eclTooltipClose($event)"
@@ -46,7 +46,7 @@
               (ngModelChange)="onEditionUpdate($event)"
               [ngModelOptions]="{standalone: true}"
       >
-        <option *ngFor="let eid of snomedEditions.keys()" [value]="eid">{{snomedEditions.get(eid).title + ' ('+eid+')'}}</option>
+        <option *ngFor="let eid of snomedEditions?.keys()" [value]="eid">{{snomedEditions.get(eid).title + ' ('+eid+')'}}</option>
       </select>
     </div>
     <div *ngIf="snomedEdition" class="row m-0 align-items-center">
