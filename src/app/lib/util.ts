@@ -699,6 +699,6 @@ export class Util {
       return true;
     }
 
-    return ansOpts.every(ansOpt => !(ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
+    return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
   }  
 }
