@@ -60,6 +60,20 @@
       },
       "default": "string"
     },
+    "__$entryFormat": {
+      "description": "The entry format extension provides a human-readable hint about the expected format of user input. It serves as a guide but does not enforce validation.",
+      "title": "Entry format",
+      "type": "string",
+      "visibleIf": {
+        "type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'boolean' && target.value != 'reference'"]
+      },
+      "widget": {
+        "id": "entry-format",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 p-0" 
+      }      
+    },
     "__$restrictions": {
       "description": "Choose to add value restrictions to the input.",
       "title": "Restrictions",
@@ -1138,7 +1152,7 @@
       "title": "Answer list layout",
       "type": "string",
       "visibleIf": {
-        "type": ["$EXP$ target.value == 'coding'"]
+        "__$isAnswerList": [true]
       },
       "widget": {
         "id": "item-control",
@@ -1281,7 +1295,7 @@
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-10 btn-group btn-group-sm p-0",
         "note": "(1) - not supported by LHC-Forms preview.",
-        "deprecatedNote": "* '${deprecatedItemControl}' item control is deprecated and is not presented in this list of item controls." 
+        "deprecatedNote": "* '${deprecatedItemControl}' item control is deprecated and is not presented in this list of item controls."
       }
     },
 
@@ -1726,7 +1740,7 @@
                 "/__$answerOptionMethods": ["snomed-value-set", "value-set"]
               }
             ]
-          }          
+          }
         ]
       },
       "widget": {
@@ -2437,7 +2451,7 @@
           "col": 12
         }
       ]
-    },    
+    },
     {
       "fields": [
         "__$terminologyServer"
@@ -2478,6 +2492,17 @@
       "showFields": [
         {
           "field": "initial",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$entryFormat"
+      ],
+      "showFields": [
+        {
+          "field": "__$entryFormat",
           "col": 12
         }
       ]

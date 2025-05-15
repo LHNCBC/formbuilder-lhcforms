@@ -4,6 +4,7 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
+import {Subscription} from 'rxjs';
 
 @Component({
   standalone: false,
@@ -37,6 +38,8 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit {
   @Input()
   booleanControlledInitial = true;
 
+  subscriptions: Subscription[] = [];
+
   ngOnInit() {
     const widget = this.formProperty.schema.widget;
     // Input is priority followed by widget definition and default
@@ -69,5 +72,23 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit {
 
     this.booleanControlledInitial = widget.booleanControlledInitial !== undefined ?
       widget.booleanControlledInitial : this.booleanControlledInitial; // If not defined, show the control.
+  }
+
+
+  /**
+   * Clear all subscriptions.
+   */
+  unsubscribe() {
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
+    });
+    this.subscriptions = [];
+  }
+
+  /**
+   * Implement OnDestroy
+   */
+  ngOnDestroy() {
+    this.unsubscribe();
   }
 }

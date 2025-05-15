@@ -1,6 +1,5 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { StringComponent } from '../string/string.component';
-import { Subscription } from 'rxjs';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
@@ -10,7 +9,6 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 })
 export class EditableLinkIdComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
   linkId;
-  subscriptions: Subscription[] = [];
   errorIcon = faExclamationTriangle;
 
   constructor() {
@@ -54,20 +52,4 @@ export class EditableLinkIdComponent extends StringComponent implements OnInit, 
     this.subscriptions.push(sub);
   }
 
-  /**
-   * Clear all subscriptions.
-   */
-  unsubscribe() {
-    this.subscriptions.forEach((sub) => {
-      sub.unsubscribe();
-    });
-    this.subscriptions = [];
-  }
-
-  /**
-   * Implement OnDestroy
-   */
-  ngOnDestroy() {
-    this.unsubscribe();
-  }
 }

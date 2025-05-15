@@ -18,6 +18,7 @@ import {fhirPrimitives} from '../fhir';
 // @ts-ignore
 export class ExtensionsService {
   static __ID = 0;
+  static ENTRY_FORMAT_URI = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
   static VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
   static CUSTOM_EXT_VARIABLE_TYPE = 'http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type';
   static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
@@ -104,6 +105,14 @@ export class ExtensionsService {
     return extensions?.length > 0 ? extensions[0] : null;
   }
 
+  /**
+   * Get last extension object identified by the url.
+   * @param extUrl - Url to identify the extension.
+   */
+  public getLastExtensionByUrl(extUrl: fhirPrimitives.url): fhir.Extension {
+    const extensions = this._extMap.get(extUrl);
+    return extensions?.length > 0 ? extensions[extensions?.length - 1] : null;
+  }
 
   /**
    * Get an array of all extension form properties for a given extension url.
@@ -157,6 +166,27 @@ export class ExtensionsService {
 
     if(otherExts.length !== this.extensionsProp.properties.length) {
       this.extensionsProp.reset(otherExts, false);
+    }
+  }
+
+  /**
+   * Loop through the array of textensions that match the given url. If no match is found, appends the 
+   * new extension to the end of the array. If a match is found, replace the last matched extension
+   * with the provided 'newExtensionJSON`.
+   * @param extUrl - Url to identify the extension.
+   * @param newExtensionJSON -  
+   *  * If it returns true, that extension is included in the removal list.
+   * @param match - New fhir.Extension to replace with.
+   */
+
+  updateOrAppendExtensionByUrl(extUrl: fhirPrimitives.url, newExtensionJSON: fhir.Extension): void {
+    let endIndex = this.extensionsProp?.value?.findLastIndex(ext => ext.url === extUrl);
+
+    if (endIndex === -1) {
+      this.extensionsProp.addItem(newExtensionJSON);
+    } else {
+      this.extensionsProp?.value.splice(endIndex, 1, newExtensionJSON);
+      this.extensionsChange$.next(this.extensionsProp.value);
     }
   }
 

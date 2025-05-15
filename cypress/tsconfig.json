@@ -2,6 +2,7 @@
   "extends": "../tsconfig.json",
   "include": ["**/*.ts"],
   "compilerOptions": {
+    "esModuleInterop": true,
     "sourceMap": true,
     "types": ["cypress", "cypress-real-events"]
   }

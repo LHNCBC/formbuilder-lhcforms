@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "10.0.6",
+  "version": "10.0.7",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -27,6 +27,7 @@
     "lint": "npx ng lint",
     "cy:verify": "npx cypress verify",
     "cy-run": "npx cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort}",
+    "cy-run-log": "npx cypress run --env CYPRESS_LOG=log --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort}",
     "cy-run-fl": "npx cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort} --spec ./cypress/e2e/form-level/form-level.cy.ts",
     "cy-run-il": "npx cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort} --spec ./cypress/e2e/item-level/item-level.cy.ts",
     "e2e": "npx ng e2e",
@@ -37,6 +38,8 @@
     "e2e:prod": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:start-second-server http://localhost:${npm_package_config_testPortSecond} cy-pw-run",
     "e2e:cy-run-fl": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-fl",
     "e2e:cy-run-il": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-il",
+    "e2e:cy-run": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run",
+    "e2e:cy-run-log": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-log",
     "cy-pw-run": "npm run cy-run && npm run pw-run"
   },
   "files": [
