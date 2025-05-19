@@ -108,7 +108,7 @@ export class BasePageComponent implements OnInit {
       next: (lformsVersion) => {
         if(this.openerUrl) {
           // Send the message to window opener after the LForms is loaded.
-          window.opener.postMessage({type: 'initialized'}, this.openerUrl);
+          formService.notifyWindowOpener({type: 'initialized'});
         }
       },
       error: (error) => {
@@ -225,7 +225,7 @@ export class BasePageComponent implements OnInit {
           messageObj.type = 'closed';
           messageObj.questionnaire = Util.convertToQuestionnaireJSON(this.formValue);
         }
-        window.opener.postMessage(messageObj, this.openerUrl);
+        this.formService.notifyWindowOpener(messageObj);
       });
     }
   }
