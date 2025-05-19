@@ -123,6 +123,7 @@ test.describe('Open form builder in a new window', async () => {
       await mainPO.titleLocator.fill('xxxx');
       messageData.data = await getMessage(page, 'updateQuestionnaire');
       expect(messageData.data.questionnaire.title).toBe('xxxx');
+      expect(messageData.data.questionnaire.meta.profile[0]).toBe(expectedProfile);
 
       await page.getByRole('button', {name: 'Clear messages'}).click();
       await mainPO.titleLocator.fill('');
@@ -130,6 +131,7 @@ test.describe('Open form builder in a new window', async () => {
       await mainPO.page.getByRole('button', {name: 'Save & Close'}).click();
       messageData.data = await getMessage(page, 'closed');
       expect(messageData.data.questionnaire.title).toBe('yyyy');
+      expect(messageData.data.questionnaire.meta.profile[0]).toBe(expectedProfile);
     });
   });
 });
