@@ -88,7 +88,6 @@
       ]
     },
     "__$variable": {
-    
       "id": "variable",
       "expressionUri":  "http://hl7.org/fhir/StructuredDefinition/variable",
       "showExpression": false,
@@ -112,7 +111,6 @@
         {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
         {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
       ]
-      
     }
   },
   // Map property: Each widget type is mapped to fields with json pointers of its schema.
@@ -143,6 +141,9 @@
     ],
     coding: [
       '/properties/meta/properties/tag'
+    ],
+    __$variable: [
+      '/properties/__$variable'
     ]
   }
 }

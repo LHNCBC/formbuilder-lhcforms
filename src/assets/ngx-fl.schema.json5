@@ -1390,31 +1390,6 @@
         },
         "additionalProperties": false,
         "type": "object"
-      },
-      "widget": {
-        "id": "variable",
-        "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-        "showExpression": false,
-        "displayExpressionEditorSections": {
-          titleSection: true,
-          uneditableVariablesSection: false,
-          itemVariablesSection: true,
-          outputExpressionSection: false
-        },
-        "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-10 ",
-        "addButtonLabel": "Add/edit variables",
-        "showHeaderFields": [
-          {"field": "valueExpression.properties.name", "nolabel": true, "col": 2, "title": "Name"},
-          {"field": "valueExpression.properties.extension", "nolabel": true, "col": 3, "title": "Type"},
-          {"field": "valueExpression.properties.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"},
-        ],
-        "showDataFields": [
-          {"field": "valueExpression.name", "nolabel": true, "col": 2, "title": "Name"},
-          {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
-          {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
-        ]
       }
     }
   },
