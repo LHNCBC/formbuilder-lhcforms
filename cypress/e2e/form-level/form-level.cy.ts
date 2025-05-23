@@ -628,10 +628,10 @@ describe('Home page', () => {
           cy.get('#add-variable').click();
           cy.get('#variable-label-2').clear().type('c_fhir_query_obs');
           cy.get('#variable-type-2').select('FHIR Query (Observation)');
-          cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight{downarrow}{enter}');
+          cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight').type('{downarrow}{enter}');
           cy.get('div#row-2 lhc-query-observation').shadow().within(() => {
             cy.get('div.query-select > span.autocomp_selected > ul > li')
-              .should('have.text', '×weight'); 
+              .should('have.text', '×Weight - 29463-7'); 
           });
   
           // Add a new variable 'e_easy_path_exp'
@@ -660,7 +660,7 @@ describe('Home page', () => {
         cy.get('@variables').eq(2).find('td').as('variable3');
         cy.get('@variable3').eq(0).should('have.text', 'c_fhir_query_obs');
         cy.get('@variable3').eq(1).should('have.text', 'FHIR Query (Observation)');
-        cy.get('@variable3').eq(2).should('have.text', "Observation?code=weight&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1");
+        cy.get('@variable3').eq(2).should('have.text', "Observation?code=http%3A%2F%2Floinc.org%7C29463-7&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1"); 
 
         cy.get('@variables').eq(3).find('td').as('variable4');
         cy.get('@variable4').eq(0).should('have.text', 'd_easy_path_exp');
