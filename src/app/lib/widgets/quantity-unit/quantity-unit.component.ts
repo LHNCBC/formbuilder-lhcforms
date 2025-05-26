@@ -24,7 +24,7 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
     this.subscriptions.push(sub);
 
     LForms.Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
-      const updateUnitValueQuantity = (code: string, system: string, unit?: string) => {
+      const updateQuantityFormProperty = (code: string, system: string, unit?: string) => {
         if (unit !== undefined) {
           this.formProperty.parent.setValue({
             code: code,
@@ -40,31 +40,34 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
             return unit[0] === data.item_code;
           });
           this.unitStorage.push(selectedUnit);
-          this.unitStorageService.addUnit(selectedUnit);
+          this.unitService.addUnit(selectedUnit);
 
-          updateUnitValueQuantity(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
+          updateQuantityFormProperty(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
         } else {
           const orgFinalVal = data.final_val;
-          data.final_val = this.unitStorageService.translateUnitDisplayToCode(data.final_val, data.list, this.unitTokenizeStr);
 
           // item_code is not found, so this might be a tokenizer
-          const parseResp = LForms.ucumPkg.UcumLhcUtils.getInstance().validateUnitString(data.final_val);
+          data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
+
+          const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
 
           if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
-            updateUnitValueQuantity(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, orgFinalVal);
+            updateQuantityFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
           } else {
-            updateUnitValueQuantity('', '', orgFinalVal);
+            updateQuantityFormProperty('', '', orgFinalVal);
           }
         }
       } else {
         const unitExt = this.getUnitExtension();
         if (unitExt?.valueCoding?.display !== data.final_val) {
-          const parseResp = LForms.ucumPkg.UcumLhcUtils.getInstance().validateUnitString(data.final_val);
+          data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
+
+          const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
 
           if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
-            updateUnitValueQuantity(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, data.final_val);
+            updateQuantityFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
           } else {
-            updateUnitValueQuantity('', '', data.final_val);
+            updateQuantityFormProperty('', '', data.final_val);
           }
         }
       }

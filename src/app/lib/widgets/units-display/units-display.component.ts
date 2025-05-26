@@ -4,7 +4,7 @@ import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.comp
 import {ExtensionsService} from '../../../services/extensions.service';
 import {fhirPrimitives} from '../../../fhir';
 import { UnitsComponent } from '../units/units.component';
-import { UnitStorageService } from 'src/app/services/unit-storage.service';
+import { UnitService } from 'src/app/services/unit.service';
 
 declare var LForms: any;
 
@@ -58,11 +58,10 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
   }
 
   autoComp: any;
-  unitTokenizeStr: string;
   dataType = 'string';
   unitStorage = [];
   
-  unitStorageService = inject(UnitStorageService);
+  unitService = inject(UnitService);
 
   constructor(private extensionsService: ExtensionsService) {
     super();
@@ -72,7 +71,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
 
   ngOnInit(): void {
     super.ngOnInit();
-    this.unitTokenizeStr = this.options.wordBoundaryChars.join('\\');
+    this.unitService.setUnitStringTokenizer(this.options.wordBoundaryChars);
   };
 
   ngAfterViewInit() {
@@ -94,7 +93,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.quantity);
         }
         this.options.maxSelect = changedValue === 'quantity' ? '*' : 1;
-        this.unitStorageService.clearUnits();
+        this.unitService.clearUnits();
       }
       if(changedValue === 'quantity' || changedValue === 'decimal' || changedValue === 'integer') {
         this.resetAutocomplete();
@@ -102,19 +101,16 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
       this.dataType = changedValue;
     });
     this.subscriptions.push(sub);
-    
-    /* Doing this cause the load data to be blank.*/
-    /* also causing tests to fail...*/
-    // handle manual changes to the valueCoding
+
     sub = this.formProperty.parent.valueChanges.subscribe((valueCoding) => {
       if (valueCoding.display) {
-        this.updateUnits(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
+        this.addOrUpdateUnitExtension(this.createUnitExt(UnitsComponent.unitsExtUrl[this.dataType],
           valueCoding?.system, valueCoding?.code, valueCoding.display));
       }
     });
 
     LForms.Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {    
-      const updateUnitValueCoding = (code: string, system: string, display?: string) => {
+      const updateUnitFormProperty = (code: string, system: string, display?: string) => {
         if (display !== undefined) {
           this.formProperty.parent.setValue({
             code: code,
@@ -128,72 +124,71 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
         this.extensionsService.removeExtension((extProp) =>
           extProp.value.url === UnitsComponent.unitsExtUrl[this.dataType]
         );
-        updateUnitValueCoding('', '', '');
+        updateUnitFormProperty('', '', '');
         return;
       }
     
       if (data.used_list || data.on_list) {
         if (data.item_code) {
           const selectedUnit = data.list.find((unit) => unit[0] === data.item_code);
-          this.unitStorageService.addUnit(selectedUnit);
-          this.updateUnits(this.createUnitExt(
+          this.unitService.addUnit(selectedUnit);
+          this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
             UnitsComponent.ucumSystemUrl,
             data.item_code,
             selectedUnit[1]
           ));
-          updateUnitValueCoding(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
+          updateUnitFormProperty(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
           return;
         }
     
         // Handle manual entry or tokenizer
         const orgFinalVal = data.final_val;
-        data.final_val = this.unitStorageService.translateUnitDisplayToCode(
-          data.final_val, data.list, this.unitTokenizeStr
-        );
-    
-        const parseResp = LForms.ucumPkg.UcumLhcUtils.getInstance().validateUnitString(data.final_val);
-    
+        data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
+
+        const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
+
         if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
-          this.updateUnits(this.createUnitExt(
+          this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
             UnitsComponent.ucumSystemUrl,
             parseResp.ucumCode,
-            orgFinalVal
+            parseResp.unit.name
           ));
-          updateUnitValueCoding(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, orgFinalVal);
+          updateUnitFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
         } else {
-          this.updateUnits(this.createUnitExt(
+          this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
             null, null, orgFinalVal
           ));
-          updateUnitValueCoding('', '', orgFinalVal);
+          updateUnitFormProperty('', '', orgFinalVal);
         }
         return;
       }
     
       // Not using list
       const unitExt = this.getUnitExtension();
-      if (unitExt?.valueCoding?.display !== data.final_val) {    
-        const parseResp = LForms.ucumPkg.UcumLhcUtils.getInstance().validateUnitString(data.final_val);
-    
+      if (unitExt?.valueCoding?.display !== data.final_val) {
+        data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
+
+        const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
+
         if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
-          const displayName = (parseResp.ucumCode === data.final_val) ? parseResp.unit.name : data.final_val;
-          
-          this.updateUnits(this.createUnitExt(
+          this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
             UnitsComponent.ucumSystemUrl,
             parseResp.ucumCode,
-            displayName
+            parseResp.unit.name
           ));
-          updateUnitValueCoding(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, displayName);
-          this.autoComp.setFieldVal(displayName);
+          updateUnitFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
+          this.autoComp.setFieldVal(parseResp.unit.name);
+
         } else {
-          this.updateUnits(this.createUnitExt(
+          this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
             null, null, data.final_val
           ));
-          updateUnitValueCoding('', '', data.final_val);
+          updateUnitFormProperty('', '', data.final_val);
         }
       }
     });
@@ -211,14 +206,14 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
    *
    * @param unitExt - Extension object representing the appropriate unit extension.
    */
-  updateUnits(unitExt: fhir.Extension) {
+  addOrUpdateUnitExtension(unitExt: fhir.Extension) {
     if(this.dataType === 'integer' || this.dataType === 'decimal') {
       this.extensionsService.resetExtension(unitExt.url, unitExt, 'valueCoding', false);
     }
     else if(this.dataType === 'quantity') {
       // Use the id, for example __$units.0.valueCoding.display, to determine which
       // row the data is being updated. This only applies to 'quantity'.
-      const idx = this.unitStorageService.getUnitIndexFromId(this.id);
+      const idx = this.unitService.getUnitIndexFromId(this.id);
       const numberOfFormPropertyArray = this.formProperty.findRoot().getProperty('__$units')?.properties?.length ?? 0;
       const extensionLength = this.extensionsService.extensionsProp.value.length;
 

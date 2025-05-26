@@ -2428,7 +2428,7 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[0].valueCoding.code).equal('A/kg.st');
-        expect(qJson.item[0].extension[0].valueCoding.display).equal('Ampere/kilogram.stere');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[Ampere/kilogram]*stere');
       });
 
       // Now try display that have multiple words.
@@ -2452,7 +2452,7 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/kat/kg');
-        expect(qJson.item[0].extension[0].valueCoding.display).equal('mean Gregorian year/katal per kilogram');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[[mean Gregorian year]/katal]/kilogram');
       });
 
       cy.get('@units').type('/').type('m');
@@ -2464,7 +2464,7 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/kat/kg/m');
-        expect(qJson.item[0].extension[0].valueCoding.display).equal('mean Gregorian year/katal per kilogram/meter');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[[[mean Gregorian year]/katal]/kilogram]/meter');
       });
     });
 
@@ -2490,11 +2490,11 @@ describe('Home page', () => {
       });
       cy.get('@quantityUnit').type('/').type('s');
       cy.contains('#completionOptions tr', 'second - time').click();
-      cy.get('@quantityUnit').should('have.value', 'Liters/second - time');      
+      cy.get('@quantityUnit').should('have.value', 'Liters per second');      
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial[0].valueQuantity.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].initial[0].valueQuantity.code).equal('L/s');
-        expect(qJson.item[0].initial[0].valueQuantity.unit).equal('Liters/second - time');
+        expect(qJson.item[0].initial[0].valueQuantity.unit).equal('Liters per second');
       });
 
       cy.contains('button', 'Add another unit').as('addUnitButton');
@@ -2570,7 +2570,7 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[0].valueCoding.code).equal('A/kg.st');
-        expect(qJson.item[0].extension[0].valueCoding.display).equal('Ampere/kilogram.stere');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[Ampere/kilogram]*stere');
       });
     });
     it('should support lookup display string that contains spaces between words', () => {

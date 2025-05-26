@@ -9,7 +9,7 @@ import {TableComponent} from '../table/table.component';
 import { Subscription } from 'rxjs';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 import { ArrayProperty } from '@lhncbc/ngx-schema-form';
-import { UnitStorageService } from 'src/app/services/unit-storage.service';
+import { UnitService } from 'src/app/services/unit.service';
 
 @Component({
   standalone: false,
@@ -41,7 +41,7 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
   }
   
   extensionsService = inject(ExtensionsService);
-  unitStorageService = inject(UnitStorageService);
+  unitService = inject(UnitService);
 
   initializing = false;
   dataType: string;
