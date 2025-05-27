@@ -605,3 +605,45 @@ Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', (rbValue) =>
   return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-continuously"]').click();
 });
 
+/**
+ * Adds a FHIR Query (Observation) variable with autocomplete selection.
+ * @param {string} variableLabel - The label for the variable.
+ * @param {string} searchKeyword - The keyword to type in the autocomplete.
+ * @param {string} specialCharacterSequencesText - The special character sequence to use in autocomplete to select
+ *                                                 an option.
+ * @param {string} expectedResultText - The expected text after selection.
+ */
+Cypress.Commands.add('addFhirQueryObservationVariable',
+  (variableLabel, searchKeyword, specialCharacterSequencesText, expectedResultText) => {
+
+  cy.get('lhc-expression-editor').shadow().within(() => {
+    // Add a new variable
+    cy.get('#add-variable').click();
+    cy.get('#variables-section .variable-row').its('length').then((rows) => {
+      const rowIndex = rows - 1;
+      cy.get(`#variable-label-${rowIndex}`).clear().type(variableLabel);
+      cy.get(`#variable-type-${rowIndex}`).select('FHIR Query (Observation)');
+  
+      cy.get('lhc-query-observation').shadow().find(`#autocomplete-${rowIndex}`)
+        .type(searchKeyword);
+    });
+  });
+          
+  // Wait for the suggestion to appear before selecting
+  cy.get('#searchResults').should('be.visible');
+
+  cy.get('lhc-expression-editor').shadow().within(() => {
+    cy.get('#variables-section .variable-row').its('length').then((rows) => {
+      const rowIndex = rows - 1;
+
+      cy.get('lhc-query-observation').shadow().find(`#autocomplete-${rowIndex}`)
+        .type(specialCharacterSequencesText);
+
+      cy.get(`div#row-${rowIndex} lhc-query-observation`).shadow().within(() => {
+        cy.get('div.query-select > span.autocomp_selected > ul > li')
+          .should('have.text', expectedResultText);
+      });
+    });
+  });
+
+});

@@ -40,20 +40,7 @@
     "e2e:cy-run-il": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-il",
     "e2e:cy-run": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run",
     "e2e:cy-run-log": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-log",
-    "cy-pw-run": "npm run cy-run && npm run pw-run",
-
-        "woody-run": "cypress run --browser chrome --headed --no-exit --spec 'cypress/e2e/item-level/item-level.cy.ts' --config baseUrl=http://localhost:${npm_package_config_testPort}",
-    "woody-open": "cypress open",
-    "woody:test": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} woody-run ",
-    "woody-runnoui": "cypress run --browser chrome --no-exit --spec 'cypress/e2e/item-level/item-level.cy.ts' --config baseUrl=http://localhost:${npm_package_config_testPort}",
- 
-    "woody:testnoui": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} woody-runnoui ",
-
-    "woody-run-form": "cypress run --browser chrome --headed --no-exit --spec 'cypress/e2e/form-level/form-level.cy.ts' --config baseUrl=http://localhost:${npm_package_config_testPort}",
-
-    "woody:test-form": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} woody-run-form ",
-    "woody-runformnoui": "cypress run --browser chrome --no-exit --spec 'cypress/e2e/form-level/form-level.cy.ts' --config baseUrl=http://localhost:${npm_package_config_testPort}",
-    "woody:testformnoui": "start-test e2e:start-server http://localhost:${npm_package_config_testPort} woody-runformnoui "
+    "cy-pw-run": "npm run cy-run && npm run pw-run"
   },
   "files": [
     "dist/formbuilder-lhcforms"
