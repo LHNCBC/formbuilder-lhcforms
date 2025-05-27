@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.0.7] 2025-05-15
+## [10.0.8] 2025-05-20
 ### Added
-- Added a variables extension at the questionnaire level.
+- Added a variable extension at the questionnaire level.
+
+## [10.0.7] 2025-05-19
+### Fixed
+- Fixed fhir version of questionnaire in window api output.
 
 ## [10.0.6] 2025-05-14
 ### Added

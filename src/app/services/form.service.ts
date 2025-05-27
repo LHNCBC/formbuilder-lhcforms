@@ -1099,10 +1099,12 @@ export class FormService {
   notifyWindowOpener(data: any) {
     if(this._windowOpenerUrl) {
       // Return the data in the requested format
-      data.questionnaire = this.convertFromR5(
-        data.questionnaire,
-        this._windowOpenerFhirVersion
-      );
+      if(data.questionnaire) {
+        data.questionnaire = this.convertFromR5(
+          data.questionnaire,
+          this._windowOpenerFhirVersion
+        );
+      }
       window.opener.postMessage(data, this._windowOpenerUrl);
     }
   }
