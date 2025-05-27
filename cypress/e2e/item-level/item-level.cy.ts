@@ -3999,9 +3999,18 @@ describe('Home page', () => {
         cy.get('#add-variable').click();
         cy.get('#variable-label-2').clear().type('c_fhir_query_obs');
         cy.get('#variable-type-2').select('FHIR Query (Observation)');
-        //cy.get('input#simple-expression-2').type('12');
-        cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight').type('{downarrow}{enter}');
-        //cy.get('#searchResults #completionOptions tr').contains('29463-7').click();
+
+        cy.get('lhc-query-observation').shadow().find('#autocomplete-2')
+          .type('weight');
+      });
+
+      // Wait for the suggestion to appear before selecting
+      cy.get('#searchResults').should('be.visible');
+      
+      cy.get('lhc-expression-editor').shadow().within(() => {   
+        cy.get('lhc-query-observation').shadow().find('#autocomplete-2')
+          .type('{downarrow}{enter}');
+
         cy.get('div#row-2 lhc-query-observation').shadow().within(() => {
           cy.get('div.query-select > span.autocomp_selected > ul > li')
             .should('have.text', '×Weight - 29463-7'); 
