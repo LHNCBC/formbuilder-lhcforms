@@ -606,44 +606,50 @@ Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', (rbValue) =>
 });
 
 /**
- * Adds a FHIR Query (Observation) variable with autocomplete selection.
- * @param {string} variableLabel - The label for the variable.
- * @param {string} searchKeyword - The keyword to type in the autocomplete.
- * @param {string} specialCharacterSequencesText - The special character sequence to use in autocomplete to select
- *                                                 an option.
- * @param {string} expectedResultText - The expected text after selection.
+ * Selects an option from an autocomplete input and verifies the result.
+ *
+ * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
+ * @param clearBeforeTyping - Whether to clear the input before typing.
+ * @param searchKeyword - (Optional) The keyword to type into the autocomplete input.
+ * @param expectedListSize - (Optional) The expected number of options in the search results. Pass undefined to skip this check.
+ * @param specialCharacterSequencesText - Special key sequences to send (e.g., '{downarrow}{enter}').
+ * @param expectedResultText - (Optional) The expected text of the selected result for assertion.
+ *
+ * This command types a keyword into an autocomplete input, waits for the search results to appear,
+ * optionally checks the number of results, selects an option using special key sequences,
+ * and verifies that the expected result appears in the selection display.
  */
-Cypress.Commands.add('addFhirQueryObservationVariable',
-  (variableLabel, searchKeyword, specialCharacterSequencesText, expectedResultText) => {
+Cypress.Commands.add('selectAutocompleteOptions',
+  (autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize, specialCharacterSequencesText, expectedResultText) => {
 
-  cy.get('lhc-expression-editor').shadow().within(() => {
-    // Add a new variable
-    cy.get('#add-variable').click();
-    cy.get('#variables-section .variable-row').its('length').then((rows) => {
-      const rowIndex = rows - 1;
-      cy.get(`#variable-label-${rowIndex}`).clear().type(variableLabel);
-      cy.get(`#variable-type-${rowIndex}`).select('FHIR Query (Observation)');
-  
-      cy.get('lhc-query-observation').shadow().find(`#autocomplete-${rowIndex}`)
-        .type(searchKeyword);
-    });
-  });
-          
+  if (clearBeforeTyping) {
+    cy.wrap(autocompleteElement).clear();  
+  }
+
+  if (searchKeyword) {
+    cy.wrap(autocompleteElement).type(searchKeyword);
+  } else {
+    cy.wrap(autocompleteElement).click();
+  }
+    
   // Wait for the suggestion to appear before selecting
-  cy.get('#searchResults').should('be.visible');
+  cy.document().then((doc) => {
+    
+    cy.wrap(doc).find('#searchResults').should('be.visible');
+    cy.wrap(doc).find('#searchResults tbody tr').contains(searchKeyword).should('be.visible');
+    if (typeof expectedListSize === 'number') {
+      cy.wrap(doc).find('#searchResults tbody tr').should('have.length', expectedListSize);
+    }
+  })
 
-  cy.get('lhc-expression-editor').shadow().within(() => {
-    cy.get('#variables-section .variable-row').its('length').then((rows) => {
-      const rowIndex = rows - 1;
+  cy.wrap(autocompleteElement).type(specialCharacterSequencesText);
 
-      cy.get('lhc-query-observation').shadow().find(`#autocomplete-${rowIndex}`)
-        .type(specialCharacterSequencesText);
-
-      cy.get(`div#row-${rowIndex} lhc-query-observation`).shadow().within(() => {
-        cy.get('div.query-select > span.autocomp_selected > ul > li')
-          .should('have.text', expectedResultText);
-      });
-    });
-  });
-
+  if (expectedResultText) {
+    // scope to the parent of the autocomplete element
+    cy.wrap(autocompleteElement)
+      .parentsUntil('div.query-select')
+      .parent()
+      .find('span.autocomp_selected > ul > li')
+      .should('have.text', expectedResultText);
+  }
 });

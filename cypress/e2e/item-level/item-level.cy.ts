@@ -3994,12 +3994,18 @@ describe('Home page', () => {
         cy.get('input#variable-expression-1')
           .type("Observation.component.where(code.memberOf(%'vs-observation-vitalsignresult'))");
         cy.get('input#variable-expression-1').should('not.have.class', 'field-error');
-      });
 
-      cy.addFhirQueryObservationVariable
-        ('c_fhir_query_obs', 'weight', '{downarrow}{enter}', '×Weight - 29463-7');
-  
-      cy.get('lhc-expression-editor').shadow().within(() => {
+        // Add a new variable 'c_fhir_query_obs'
+        cy.get('#add-variable').click();
+        cy.get('#variable-label-2').clear().type('c_fhir_query_obs');
+        cy.get('#variable-type-2').select('FHIR Query (Observation)');
+
+        cy.get('lhc-query-observation').shadow().find('#autocomplete-2').as('queryObs');
+
+        cy.get('@queryObs').then($el => {
+          cy.selectAutocompleteOptions($el, false, 'weight', null, '{downarrow}{enter}', '×Weight - 29463-7');
+        });
+
         // Add a new variable 'd_question'
         cy.get('#add-variable').click();
         cy.get('#variable-label-3').clear().type('d_question');
