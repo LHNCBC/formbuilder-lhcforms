@@ -606,24 +606,23 @@ Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', (rbValue) =>
 });
 
 /**
- * Selects an option from an autocomplete input and verifies the result.
+ * Handles the common workflow for interacting with an autocomplete input in Cypress tests.
  *
  * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
  * @param clearBeforeTyping - Whether to clear the input before typing.
  * @param searchKeyword - (Optional) The keyword to type into the autocomplete input.
  * @param expectedListSize - (Optional) The expected number of options in the search results. Pass undefined to skip this check.
  * @param specialCharacterSequencesText - Special key sequences to send (e.g., '{downarrow}{enter}').
- * @param expectedResultText - (Optional) The expected text of the selected result for assertion.
+ * @param assertionFn - A callback function containing assertions to run after selection.
  *
- * This command types a keyword into an autocomplete input, waits for the search results to appear,
+ * This helper function types a keyword into an autocomplete input, waits for the search results to appear,
  * optionally checks the number of results, selects an option using special key sequences,
- * and verifies that the expected result appears in the selection display.
+ * and then runs the provided assertion logic.
  */
-Cypress.Commands.add('selectAutocompleteOptions',
-  (autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize, specialCharacterSequencesText, expectedResultText) => {
-
+function handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize,
+                            specialCharacterSequencesText, assertionFn: () => void) {
   if (clearBeforeTyping) {
-    cy.wrap(autocompleteElement).clear();  
+    cy.wrap(autocompleteElement).clear();
   }
 
   if (searchKeyword) {
@@ -631,25 +630,88 @@ Cypress.Commands.add('selectAutocompleteOptions',
   } else {
     cy.wrap(autocompleteElement).click();
   }
-    
+
   // Wait for the suggestion to appear before selecting
   cy.document().then((doc) => {
-    
-    cy.wrap(doc).find('#searchResults').should('be.visible');
-    cy.wrap(doc).find('#searchResults tbody tr').contains(searchKeyword).should('be.visible');
-    if (typeof expectedListSize === 'number') {
-      cy.wrap(doc).find('#searchResults tbody tr').should('have.length', expectedListSize);
-    }
-  })
+    cy.wrap(doc).find('#searchResults').should('be.visible').within(() => {
+      if (searchKeyword) {
+        cy.get('tbody tr, ul li').contains(searchKeyword).should('be.visible');
+      }
+      if (typeof expectedListSize === 'number') {
+        cy.get('tbody tr, ul li').should('have.length', expectedListSize);
+      }
+    });
+  });
 
   cy.wrap(autocompleteElement).type(specialCharacterSequencesText);
 
-  if (expectedResultText) {
-    // scope to the parent of the autocomplete element
-    cy.wrap(autocompleteElement)
-      .parentsUntil('div.query-select')
-      .parent()
-      .find('span.autocomp_selected > ul > li')
-      .should('have.text', expectedResultText);
+  // Run the assertion logic passed in
+  assertionFn();
+}
+
+/**
+ * Selects an option from a multi-select autocomplete input and verifies the selected results.
+ *
+ * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
+ * @param clearBeforeTyping - Whether to clear the input before typing.
+ * @param searchKeyword - (Optional) The keyword to type into the autocomplete input.
+ * @param expectedListSize - (Optional) The expected number of options in the search results. Pass undefined to skip this check.
+ * @param specialCharacterSequencesText - Special key sequences to send (e.g., '{downarrow}{enter}').
+ * @param expectedResults - (Optional) The expected array of text for the selected results to assert.
+ *
+ * This command types an optional keyword into an autocomplete input, waits for the search results to appear,
+ * optionally checks the number of results, selects an option using special key sequences,
+ * and verifies that the expected results appear in the selection display.
+ */
+Cypress.Commands.add('selectAutocompleteOptions',
+  (autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize, specialCharacterSequencesText,
+   expectedResults) => {
+    
+    handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize,
+      specialCharacterSequencesText, () => {
+        if (Array.isArray(expectedResults)) {
+          cy.wrap(autocompleteElement)
+            .parentsUntil('div.query-select')
+            .parent()
+            .find('span.autocomp_selected > ul > li')
+            .should(($lis) => {
+              expect($lis.length).to.equal(expectedResults.length);
+              expectedResults.forEach((text, idx) => {
+                expect($lis.eq(idx)).to.have.text(text);
+              });
+            });
+        }
+      }
+    );
   }
-});
+);
+
+/**
+ * Selects an option from a single-select autocomplete input and verifies the selected result.
+ *
+ * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
+ * @param clearBeforeTyping - Whether to clear the input before typing.
+ * @param searchKeyword - (Optional) The keyword to type into the autocomplete input.
+ * @param expectedListSize - (Optional) The expected number of options in the search results. Pass undefined to skip this check.
+ * @param specialCharacterSequencesText - Special key sequences to send (e.g., '{downarrow}{enter}').
+ * @param expectedResultText - (Optional) The expected text for the selected result to assert.
+ *
+ * This command types an optional keyword into an autocomplete input, waits for the search results to appear,
+ * optionally checks the number of results, selects an option using special key sequences,
+ * and verifies that the expected result appear in the selection display.
+ */
+Cypress.Commands.add('selectAutocompleteOption',
+  (autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize, specialCharacterSequencesText,
+   expectedResultText) => {
+    
+    handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize,
+      specialCharacterSequencesText, () => {
+        if (expectedResultText) {
+          cy.wrap(autocompleteElement).should('have.value', expectedResultText);
+        } else {
+          cy.wrap(autocompleteElement).should('be.empty');
+        }
+      }
+    );
+  }
+);

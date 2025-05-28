@@ -847,8 +847,9 @@ describe('Home page', () => {
       cy.get('@pickAnswer2').should('be.empty');
 
       // Select first option in second item.
-      cy.get('@pickAnswer2').click().type('d11{downarrow}{enter}');
-      cy.get('@pickAnswer2').should('have.value', 'd11');
+      cy.get('@pickAnswer2').then($el => {
+        cy.selectAutocompleteOption($el, true, 'd11', null, '{downarrow}{enter}', 'd11');
+      });
 
       // Switch to first item
       cy.clickTreeNode('Item with answer option');
@@ -881,17 +882,14 @@ describe('Home page', () => {
       cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
 
       cy.get('#pick-answer_2').as('pickAnswer2');
-      cy.get('@pickAnswer2').click();
-      // No initial value was selected, so there should still be three options available.
-      cy.get('#searchResults ul > li').should('have.length', 3);
 
-      // Select third option in second item.
-      cy.get('@pickAnswer2').type('{downarrow}{downarrow}{downarrow}{enter}');
-      cy.get('@pickAnswer2').should('have.value', 'd31');
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer2').then($el => {
+        cy.selectAutocompleteOption($el, false, null, 3, '{downarrow}{downarrow}{downarrow}{enter}', 'd31');
+      });
 
-      // Clear the selection.
-      cy.get('@pickAnswer2').clear().type('{enter}').should('be.empty');
+      cy.get('@pickAnswer2').then($el => {
+        cy.selectAutocompleteOption($el, true, null, 3, '{enter}', '');
+      });
 
       // Items should be unselected.
       cy.get('#searchResults ul > li').should('have.length', 3);
@@ -904,8 +902,10 @@ describe('Home page', () => {
       cy.get('#searchResults ul > li').should('have.length', 3);
 
       // Select second and third option in second item.
-      cy.get('@pickAnswer2').type('{downarrow}{downarrow}{enter}');
-      cy.get('@pickAnswer2').type('{enter}');
+      cy.get('@pickAnswer2').then($el => {
+        cy.selectAutocompleteOptions($el, true, null, 3, '{downarrow}{downarrow}{enter}', ['×d21']);
+        cy.selectAutocompleteOptions($el, true, null, 2, '{downarrow}{downarrow}{enter}', ['×d21', '×d31']);
+      });
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[1].answerOption).to.deep.equal(
           [
@@ -4003,7 +4003,7 @@ describe('Home page', () => {
         cy.get('lhc-query-observation').shadow().find('#autocomplete-2').as('queryObs');
 
         cy.get('@queryObs').then($el => {
-          cy.selectAutocompleteOptions($el, false, 'weight', null, '{downarrow}{enter}', '×Weight - 29463-7');
+          cy.selectAutocompleteOptions($el, false, 'weight', null, '{downarrow}{enter}', ['×Weight - 29463-7']);
         });
 
         // Add a new variable 'd_question'
@@ -4577,19 +4577,18 @@ describe('Home page', () => {
       cy.get('@pickAnswer').should('not.have.class', 'invalid');
 
       // Select 'Example 2' option
-      cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
-      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
-      cy.get('@pickAnswer').should('have.value', 'Example 2');
+      cy.get('@pickAnswer').then($el => {
+        cy.selectAutocompleteOption($el, false, null, 3, '{downarrow}{downarrow}{enter}', 'Example 2');
+      });
 
       // Set the 'Repeats' option to yes.
       cy.get('@repeatYes').click();
-      cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
 
       // Select 1st and 3rd options
-      cy.get('@pickAnswer').type('Example 1{downarrow}{enter}');
-      cy.get('@pickAnswer').clear().type('Example 3{downarrow}{enter}');
+      cy.get('@pickAnswer').then($el => {
+        cy.selectAutocompleteOptions($el, true, 'Example 1', null, '{downarrow}{enter}', ['×Example 1']);
+        cy.selectAutocompleteOptions($el, true, 'Example 3', null, '{downarrow}{enter}', ['×Example 1', '×Example 3']);
+      });      
 
       cy.get('lfb-pick-answer span.autocomp_selected > ul > li').as('pickAnswerSelection');
       cy.get('@pickAnswerSelection').should('have.length', 2);
@@ -5083,10 +5082,9 @@ describe('Home page', () => {
       cy.get('@pickAnswer').should('not.have.class', 'invalid');
 
       // Select 'Example 2' option
-      cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
-      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
-      cy.get('@pickAnswer').should('have.value', 'Example 2');
+      cy.get('@pickAnswer').then($el => {
+        cy.selectAutocompleteOption($el, true, null, 3, '{downarrow}{downarrow}{enter}', 'Example 2');
+      });
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[7].type).equal('coding');
