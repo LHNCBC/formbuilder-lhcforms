@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.8] 2025-05-29
+### Fixed
+- Fixed the no_match status when switching between Pick initial value and other value methods.
+- Fixed the empty answer option check for all data types except coding.
+
 ## [10.0.7] 2025-05-19
 ### Fixed
 - Fixed fhir version of questionnaire in window api output.
