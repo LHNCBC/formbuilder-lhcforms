@@ -21,7 +21,7 @@ export class UnitService {
     this.unitTokenizeStr = unitTokenizers.join('\\');
   }
 
-    /**
+  /**
    * Splits a unit string into tokens using the configured delimiter characters.
    *
    * This function creates a regular expression from the stored delimiter string

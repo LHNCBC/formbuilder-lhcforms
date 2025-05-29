@@ -2139,7 +2139,7 @@
       }
     },
     "__$units": {
-      "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
+      "description": "The units associated with answers, used to convert numeric values into a Quantity when extracting data into a FHIR resource. They are applicable for integer, decimal, and quantity types.",
       "title": "Units",
       "type": "array",
       "items": {
