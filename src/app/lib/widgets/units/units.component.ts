@@ -121,7 +121,7 @@ export class UnitsComponent extends LfbArrayWidgetComponent implements OnInit, A
           this.autoComp.addToSelectedArea(dispVal);
         }
         else {
-          this.autoComp.setFieldVal(dispVal);
+          this.autoComp.setFieldVal(dispVal, false);
           break;
         }
       }

@@ -3976,7 +3976,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a_fhir_exp'
@@ -4069,7 +4069,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4144,7 +4144,7 @@ describe('Home page', () => {
       cy.get('lfb-variable table > tbody > tr').should('have.length', 1);
     });
 
-    it('should display variables correctly on both Item Variables field and when editing expression in Expression Editor', () => {
+    it('should display variables correctly on both Item variables field and when editing expression in Expression Editor', () => {
       // Add a new item under the 'Race' item of data type 'display'.
       cy.clickTreeNode('None');
       cy.contains('Add new item').scrollIntoView().click();
@@ -4158,7 +4158,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4203,7 +4203,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 2);
 
         // Add a new variable 'c'
@@ -4229,7 +4229,7 @@ describe('Home page', () => {
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 3);
 
         cy.get('#variable-label-0').should('have.value', 'a');
@@ -4259,7 +4259,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Output expression
@@ -4288,7 +4288,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4313,7 +4313,7 @@ describe('Home page', () => {
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         // Variables section should show variable 'a' that was created prior.
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 1);
 
         cy.get('#variable-label-0').should('have.value', 'a');
@@ -4606,6 +4606,94 @@ describe('Home page', () => {
       });
     });
 
+    it('should retain valid state when toggling between "Pick initial value" and other value methods', () => {
+      
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Test state');
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
+
+      // Answer Option field is empty. Add 3 options.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('[id^="answerOption.0.valueCoding.display"]').type('Example 1');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').type('MD11871-1');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.1.valueCoding.display"]').type('Example 2');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').type('MD11871-2');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.2.valueCoding.display"]').type('Example 3');
+      cy.get('[id^="answerOption.2.valueCoding.code"]').type('MD11871-3');
+      cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
+      cy.get('[id^="answerOption.2.valueCoding.__$score"]').click();
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('exist').should('be.visible');
+
+      // Select 'Example 2' option
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer').should('have.value', 'Example 2');
+
+      // Select the 'Compute initial value - Value method'
+      cy.getComputeInitialValueValueMethodClick();
+
+      // Then select the 'Pick initial value - Value method' again.
+      cy.getPickInitialValueValueMethodClick();
+
+      // The 'Pick initial value' field should not contain the 'no_match' class (darker yellow to represent )
+      cy.get('@pickAnswer').should('not.have.class', 'no_match');
+    });
+
+    it('should remove the answer choices error when answer choices are added and selected for types other than "coding"', () => {
+      
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Test answer choice error');
+      cy.selectDataType('integer');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('exist').should('be.visible');
+
+      cy.get('@pickAnswer').should('have.class', 'invalid');
+      // The error message should display at the bottom of the text input
+      cy.get('lfb-pick-answer')
+        .find('small.text-danger')
+        .should('be.visible')
+        .should('contain.text', "Answer choices must be populated.");
+
+      // Answer Option field is empty. Add 3 options.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('[id^="answerOption.0.valueInteger"]').type('100');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.1.valueInteger"]').type('200');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.2.valueInteger"]').type('300');
+      cy.get('@addAnswerButton').click();
+
+      // Select 'Example 2' option
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer').should('have.value', '200');
+
+      cy.get('@pickAnswer').should('not.have.class', 'invalid');
+    });    
+
     it('should create Initial compute value expression', () => {
       // Add a new item under the 'Race' item of data type 'display'.
       cy.clickTreeNode('None');
@@ -4620,7 +4708,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4699,7 +4787,7 @@ describe('Home page', () => {
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 2);
 
         cy.get('#variable-label-0').should('have.value', 'a');
@@ -4726,7 +4814,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4805,7 +4893,7 @@ describe('Home page', () => {
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 2);
 
         cy.get('#variable-label-0').should('have.value', 'a');
@@ -4832,7 +4920,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
