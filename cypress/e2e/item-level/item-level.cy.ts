@@ -3976,7 +3976,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a_fhir_exp'
@@ -4027,7 +4027,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 5 variables
+      // Item Variables section should now show 5 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 5);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4069,7 +4069,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4097,7 +4097,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 3 variables
+      // Item Variables section should now show 3 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 3);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4144,7 +4144,7 @@ describe('Home page', () => {
       cy.get('lfb-variable table > tbody > tr').should('have.length', 1);
     });
 
-    it('should display variables correctly on both Item variables field and when editing expression in Expression Editor', () => {
+    it('should display variables correctly on both Item Variables field and when editing expression in Expression Editor', () => {
       // Add a new item under the 'Race' item of data type 'display'.
       cy.clickTreeNode('None');
       cy.contains('Add new item').scrollIntoView().click();
@@ -4158,7 +4158,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4184,7 +4184,7 @@ describe('Home page', () => {
       });
       cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
 
-      // Item variables section should now show 2 variables that were created in the Expression Editor
+      // Item Variables section should now show 2 variables that were created in the Expression Editor
       cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4197,13 +4197,13 @@ describe('Home page', () => {
       cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
       cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', '2');
 
-      // Add a new variable from the 'Item variables' section
+      // Add a new variable from the 'Item Variables' section
       cy.get('button#editVariables').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 2);
 
         // Add a new variable 'c'
@@ -4217,7 +4217,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 3 variables
+      // Item Variables section should now show 3 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 3);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(3)').as('thirdVariable');
 
@@ -4229,7 +4229,7 @@ describe('Home page', () => {
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 3);
 
         cy.get('#variable-label-0').should('have.value', 'a');
@@ -4259,7 +4259,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Output expression
@@ -4282,13 +4282,13 @@ describe('Home page', () => {
         ]);
       });
 
-      // Add variable 'a' via the 'Item variables' section
+      // Add variable 'a' via the 'Item Variables' section
       cy.get('button#editVariables').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4302,7 +4302,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 2 variables that were created in the Expression Editor
+      // Item Variables section should now show 2 variables that were created in the Expression Editor
       cy.get('lfb-variable table > tbody > tr').should('have.length', 1);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'a');
@@ -4313,7 +4313,7 @@ describe('Home page', () => {
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         // Variables section should show variable 'a' that was created prior.
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 1);
 
         cy.get('#variable-label-0').should('have.value', 'a');
@@ -4708,7 +4708,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4787,7 +4787,7 @@ describe('Home page', () => {
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 2);
 
         cy.get('#variable-label-0').should('have.value', 'a');
@@ -4814,7 +4814,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
@@ -4893,7 +4893,7 @@ describe('Home page', () => {
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 2);
 
         cy.get('#variable-label-0').should('have.value', 'a');
@@ -4920,7 +4920,7 @@ describe('Home page', () => {
         cy.get('#expression-editor-base-dialog').should('exist');
 
         // Variables section
-        cy.get('lhc-variables > h2').should('contain', 'Item variables');
+        cy.get('lhc-variables > h2').should('contain', 'Item Variables');
         cy.get('#variables-section .variable-row').should('have.length', 0);
 
         // Add a new variable 'a'
