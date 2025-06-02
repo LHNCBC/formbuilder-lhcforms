@@ -94,6 +94,7 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
         this.dataType = changedValue;
       }
     });
+    this.subscriptions.push(sub);
 
     this.cdr.detectChanges();
   }

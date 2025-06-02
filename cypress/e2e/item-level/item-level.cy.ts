@@ -1026,7 +1026,6 @@ describe('Home page', () => {
         .find('label:contains("Yes")')
         .prev('input[type="radio"]')
         .should('be.checked');
-      // cy.get('[id^="answerConstraint_optionsOnly"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
       cy.get('lfb-answer-option').should('not.exist');
@@ -2608,9 +2607,6 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
       cy.get('@units').type('unknown unit').type('{enter}');
-/*       cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0]).to.not.have.property('extension');
-      }); */
       cy.get('[id^="__$units.0.valueCoding.code').type('unknown').type('{enter}');
       cy.get('[id^="__$units.0.valueCoding.system').type('http://unknown.org').type('{enter}');
       cy.questionnaireJSON().should((qJson) => {
@@ -2903,27 +2899,11 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.get('@type').contains('quantity');
       cy.get('[id^="units"]').as('units').should('be.visible');
-      //cy.get('@units').parent().prev('ul').as('selectedUnits');
-      cy.get('lfb-units table tbody').as('selectedUnits');  
-/* 
-      cy.get('lfb-units table').within(() => {
-        cy.get('tbody tr').eq(index).then($row => {
-          cy.wrap($row).within(() => {
-            cy.get('td input').as('unitCols');
- */
-
+      cy.get('lfb-units table tbody').as('selectedUnits');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
       });
-/*       cy.get('@selectedUnits').find('li').contains('xx').as('nonUcum');
-      cy.get('@selectedUnits').find('li').contains('meter').as('ucum'); */
-      // not sure what I'm trying to do here.
-      //cy.get('@selectedUnits').find('td input[value="xx"]').as('nonUcum');
-      //cy.get('@selectedUnits').find('td input[value="meter"]').as('ucum');
-      // it no longer has the 'x', instead, click the trashcan.
-      //cy.get('@nonUcum').contains('button', '×').click();
-
     });
 
     it('should create quantity type with initial quantity unit', () => {
@@ -3712,11 +3692,6 @@ describe('Home page', () => {
           });
         });
       });
-    });
-
-    describe('Units and quantity', () => {
-
-
     });
   });
 

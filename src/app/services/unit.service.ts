@@ -169,10 +169,7 @@ export class UnitService {
       const code = parseResp.unit.code;
       const name = parseResp.unit.name;
       const unit = [code, name, ""];
-      const exists = this.unitStorage.some(item => item[0] === unit[0]);
-      if (!exists) {
-        this.unitStorage.push(unit);
-      }
+      this.addUnit(unit);
     }
   }
 

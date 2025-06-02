@@ -108,6 +108,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
           valueCoding?.system, valueCoding?.code, valueCoding.display));
       }
     });
+    this.subscriptions.push(sub);
 
     LForms.Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {    
       const updateUnitFormProperty = (code: string, system: string, display?: string) => {
@@ -124,7 +125,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
         this.extensionsService.removeExtension((extProp) =>
           extProp.value.url === UnitsComponent.unitsExtUrl[this.dataType]
         );
-        updateUnitFormProperty('', '', '');
+        updateUnitFormProperty(null, null, null);
         return;
       }
     
@@ -161,7 +162,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
             UnitsComponent.unitsExtUrl[this.dataType],
             null, null, orgFinalVal
           ));
-          updateUnitFormProperty('', '', orgFinalVal);
+          updateUnitFormProperty(null, null, orgFinalVal);
         }
         return;
       }
@@ -188,7 +189,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
             UnitsComponent.unitsExtUrl[this.dataType],
             null, null, data.final_val
           ));
-          updateUnitFormProperty('', '', data.final_val);
+          updateUnitFormProperty(null, null, data.final_val);
         }
       }
     });

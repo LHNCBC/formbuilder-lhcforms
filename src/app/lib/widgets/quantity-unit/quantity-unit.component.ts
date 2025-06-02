@@ -54,7 +54,7 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
           if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
             updateQuantityFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
           } else {
-            updateQuantityFormProperty('', '', orgFinalVal);
+            updateQuantityFormProperty(null, null, orgFinalVal);
           }
         }
       } else {
@@ -67,7 +67,7 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
           if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
             updateQuantityFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
           } else {
-            updateQuantityFormProperty('', '', data.final_val);
+            updateQuantityFormProperty(null, null, data.final_val);
           }
         }
       }
