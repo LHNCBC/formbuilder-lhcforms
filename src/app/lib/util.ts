@@ -700,5 +700,20 @@ export class Util {
     }
 
     return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
-  }  
+  }
+  
+  /**
+   * Determines whether the provided array of answer options contains data. The array may
+   * contain an empty object; therefore, it is necessary to validate the 'display' and
+   * 'code' fields. 
+   * @param ansOpts - An array of Answer Options objects
+   * @returns - true if the Answer Option array is empty or contain one empty item, otherwise false.
+   */
+  static isEmptyValueCoding(valueCoding: any): boolean {
+/*     if (!obs || ansOpts.length === 0) {
+      return true;
+    }
+ */
+    return !(valueCoding?.display && valueCoding?.code);
+  }   
 }

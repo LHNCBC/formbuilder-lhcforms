@@ -10,6 +10,10 @@ const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition
 const ucumUrl = 'http://unitsofmeasure.org';
 const snomedEclText =
   '< 429019009 |Finding related to biological sex|';
+const snomedEclTextDiseaseDisorder =
+  '< 64572001 |Disease (disorder)|';
+const snomedEclEncodedTextDiseaseDisorder =
+  'ecl/http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl%2F%3C+64572001+%7CDisease+%28disorder%29%7C';
 
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
@@ -1195,6 +1199,64 @@ describe('Home page', () => {
       cy.get('@inputBox2').should('have.value', 'Back pain');
 
       cy.contains('mat-dialog-actions button', 'Close').click();
+    });
+
+    it('should display the pre-defined SNOMED CT answerValueSet initial selection', () => {
+      cy.uploadFile('snomed-answer-value-set-sample.json', true);
+      cy.get('#title').should('have.value', 'SNOMED answer value set form');
+      cy.contains('button', 'Edit questions').click();
+
+      // Select the 4th item.
+      cy.clickTreeNode('Item with a single SNOMED answerValuetSet initial selection');
+      cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').should('not.exist');
+
+      // The Answer value set section should be populated
+      cy.get('#answerValueSet_ecl').as('ecl').should('contain.value', snomedEclTextDiseaseDisorder);
+      cy.get('#answerValueSet_edition').as('edition')
+        .find('option:selected').should('have.text', 'International Edition (900000000000207008)');
+      cy.get('#answerValueSet_version').as('version')
+        .find('option:selected').should('have.text', '20231001');
+      cy.get('@ecl').parent().parent().parent().as('controlDiv');
+      cy.get('@controlDiv').find('span').should('contain.text', snomedEclEncodedTextDiseaseDisorder);
+
+      // Pick initial value should be selected for the Valuet method section.
+      cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
+      cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
+      cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+
+      // The Initial value section
+      cy.get('lfb-auto-complete[id^="initial.0.valueCoding.display"] > span > input').should('have.value', 'Adenosine deaminase 2 deficiency');
+      cy.get('[id^="initial.0.valueCoding.code"]').should('have.value', '987840791000119102');
+      cy.get('[id^="initial.0.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
+
+      // Select the 5th item.
+      cy.clickTreeNode('Item with multiple SNOMED answerValueSet initial selections');
+      cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').should('not.exist');
+
+      // The Answer value set section should be populated
+      cy.get('#answerValueSet_ecl').as('ecl').should('contain.value', snomedEclTextDiseaseDisorder);
+      cy.get('#answerValueSet_edition').as('edition')
+        .find('option:selected').should('have.text', 'International Edition (900000000000207008)');
+      cy.get('#answerValueSet_version').as('version')
+        .find('option:selected').should('have.text', '20231001');
+      cy.get('@ecl').parent().parent().parent().as('controlDiv');
+      cy.get('@controlDiv').find('span').should('contain.text', snomedEclEncodedTextDiseaseDisorder);
+
+      // Pick initial value should be selected for the Valuet method section.
+      cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
+      cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+
+      // The Initial value section
+      cy.get('lfb-auto-complete[id^="initial.0.valueCoding.display"] > span > input').should('have.value', 'Adenosine deaminase 2 deficiency');
+      cy.get('[id^="initial.0.valueCoding.code"]').should('have.value', '987840791000119102');
+      cy.get('[id^="initial.0.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
+      cy.get('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input').should('have.value', 'Chronic gastric erosion');
+      cy.get('[id^="initial.1.valueCoding.code"]').should('have.value', '956321981000119108');
+      cy.get('[id^="initial.1.valueCoding.system"]').should('have.value', 'http://snomed.info/sct'); 
     });
 
     describe('Item control', () => {
