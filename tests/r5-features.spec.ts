@@ -22,12 +22,12 @@ test.describe('r5-features.spec.ts', async () => {
   test('should test answer constraint', async ({page}) => {
     // Unsupported type
     for (const listType of ['boolean', 'decimal', 'dateTime', 'url', 'quantity', 'group', 'display']) {
-      await page.selectOption('#type', {label: listType});
+      await page.getByLabel('Data type', {exact: true}).selectOption({label: listType});
       await expect(page.getByRole('radiogroup', {name: 'Create answer list'})).not.toBeVisible();
     }
     // Supported type
     for (const listType of ['integer', 'date', 'time', 'string', 'text', 'coding']) {
-      await page.selectOption('#type', {label: listType});
+      await page.getByLabel('Data type', {exact: true}).selectOption({label: listType});
       await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click()
 
       for(const constraintType of Object.keys(constraintLabels)) {

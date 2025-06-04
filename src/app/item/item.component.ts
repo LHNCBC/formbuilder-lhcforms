@@ -236,7 +236,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Output()
   itemChange = new EventEmitter<any []>();
   isTreeExpanded = false;
-  itemEditorSchema: any;
   editor = 'ngx';
   loincType = LoincItemType.PANEL;
   errors$ = new EventEmitter<any []>(true); // Use async emitter.
@@ -295,7 +294,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
               private formService: FormService,
               private dataSrv: FetchService,
               private validationService: ValidationService) {
-    this.itemEditorSchema = formService.itemEditorSchema;
   }
 
 

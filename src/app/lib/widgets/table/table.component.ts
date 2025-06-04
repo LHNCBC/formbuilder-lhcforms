@@ -21,7 +21,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
-import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong} from '@fortawesome/free-solid-svg-icons';
+import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong, faEdit} from '@fortawesome/free-solid-svg-icons';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
@@ -43,7 +43,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   faDown = faAngleDown;
   faMoveDown = faDownLong;
   faMoveUp = faUpLong;
+  faEdit = faEdit;
 
+  addEditAction = false;
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
@@ -98,6 +100,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     this.addButtonLabel = widget && widget.addButtonLabel
       ? widget.addButtonLabel : 'Add';
 
+    this.addEditAction = widget && widget.addEditAction || false;
     this.noTableLabel = !!widget.noTableLabel;
     this.noCollapseButton = !!widget.noCollapseButton;
     this.singleItem = !!widget.singleItem;
@@ -345,6 +348,13 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     super.removeItem(props[index]);
   }
 
+  /**
+   * Handle edit button click.
+   * @param index - Index of the formProperty to edit.
+   */
+  onEditProperty(index: number) {
+    // Nothing by default. Override this method to implement for specific table.
+  }
 
   /**
    * Possible method for handling row selections for radio buttons.

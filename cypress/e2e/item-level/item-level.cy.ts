@@ -34,8 +34,7 @@ describe('Home page', () => {
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.contains('button', 'Create questions').click();
-      cy.get('#text').should('have.value', 'Item 0', {timeout: 10000});
-      cy.get('#type').as('type');
+      cy.getItemTextField().should('have.value', 'Item 0', {timeout: 10000});
       cy.contains('.node-content-wrapper', 'Item 0').as('item0');
       cy.get('.btn-toolbar').contains('button', 'Add new item').as('addNewItem');
       cy.get('input[id^="__\\$helpText\\.text"]').as('helpText');
@@ -56,11 +55,15 @@ describe('Home page', () => {
       cy.get('@codeNo').click();
       cy.get('@code').should('not.exist');
 
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.get('tree-root tree-viewport tree-node-collection tree-node').last().find('tree-node-content div span').eq(1).should('have.text', 'New item 1');
-      cy.contains('Delete this item').scrollIntoView().click();
+      cy.contains('Add new item').as("addItemBtn").scrollIntoView();
+      cy.get('@addItemBtn').click();
+      cy.get('tree-root tree-viewport tree-node-collection tree-node').last()
+        .find('tree-node-content div span').eq(1).should('have.text', 'New item 1');
+      cy.contains('Delete this item').as('deleteItemBtn').scrollIntoView();
+      cy.get('@deleteItemBtn').click();
       cy.contains('button', 'Yes').click();
-      cy.get('tree-root tree-viewport tree-node-collection tree-node').last().find('tree-node-content div span').eq(1).should('have.text', 'Item 0');
+      cy.get('tree-root tree-viewport tree-node-collection tree-node').last()
+        .find('tree-node-content div span').eq(1).should('have.text', 'Item 0');
 
       const helpString = 'Test help text!';
       cy.get('@helpText').click();
@@ -74,7 +77,7 @@ describe('Home page', () => {
     });
 
     it('should include code only when use question code is yes', () => {
-      cy.get('@codeOption').includeExcludeCodeField();
+      cy.get('@codeOption').includeExcludeCodeField('item');
     });
 
     it('should create codes at item level', () => {
@@ -98,12 +101,13 @@ describe('Home page', () => {
     });
 
     it('should import item from CTSS with answer option', () => {
-      cy.contains('Add new item from LOINC').scrollIntoView().click();
+      cy.contains('Add new item from LOINC').as('addLoincItemBtn').scrollIntoView();
+      cy.get('@addLoincItemBtn').click();
       cy.contains('ngb-modal-window label', 'Question').click();
       cy.get('#acSearchBoxId').type('vital signs assess');
       cy.get('ngb-typeahead-window button').first().click();
       cy.contains('ngb-modal-window div.modal-dialog button', 'Add').click();
-      cy.get('#type option:selected').should('have.text', 'coding');
+      cy.getItemTypeField().should('contain.value', 'coding');
       cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
 
       cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Within Defined Limits');
@@ -147,9 +151,9 @@ describe('Home page', () => {
       }).click({multiple: true, force: true});
       // Click the two nodes rapidly. Sometimes tooltip lingers, force through it.
 
-      cy.get('#text').should('have.value', 'Resp rate'); // Bugfix - Should not be Heart rate
+      cy.getItemTextField().should('have.value', 'Resp rate'); // Bugfix - Should not be Heart rate
       cy.getTreeNode('Heart rate').click();
-      cy.get('#text').should('have.value', 'Heart rate'); // This node should still exist.
+      cy.getItemTextField().should('have.value', 'Heart rate'); // This node should still exist.
     });
 
     it('should show correct focused node on the sidebar tree after updating the form from FHIR server', () => {
@@ -180,7 +184,7 @@ describe('Home page', () => {
       });
       cy.wait('@create');
       // The fix should load the same item as selected before, i.e. second item.
-      cy.get('#text').should('have.value', 'Second item');
+      cy.getItemTextField().should('have.value', 'Second item');
       cy.getTreeNode('First item').parents('div.node-content-wrapper').first().as('firstItem');
       cy.get('@firstItem').should('not.have.class', 'node-content-wrapper-focused');
       cy.get('@firstItem').should('not.have.class', 'node-content-wrapper-active');
@@ -193,7 +197,7 @@ describe('Home page', () => {
       const nestedItemsFilename = 'nested-items-delete-sample.json';
       cy.uploadFile(nestedItemsFilename, true);
       cy.contains('button', 'Edit questions').click();
-      cy.get('#text').should('have.value', 'One (group)');
+      cy.getItemTextField().should('have.value', 'One (group)');
 
       // Expand the tree
       cy.toggleTreeNodeExpansion('One (group)');
@@ -220,7 +224,7 @@ describe('Home page', () => {
         'Two (group): last sibling',
         'One (group)',
       ].forEach((itemText) => {
-        cy.get('#text').should('have.value', itemText);
+        cy.getItemTextField().should('have.value', itemText);
         cy.contains('button', 'Delete this item').click();
         cy.contains('button', 'Yes').click();
       });
@@ -236,29 +240,29 @@ describe('Home page', () => {
       const requiredLabel = 'Answer required';
 
       it('should test options for boolean field', () => {
-        cy.getBooleanInput(readOnlyLabel, 'null').should('be.checked');
-        cy.getBooleanInput(readOnlyLabel, 'false').should('not.be.checked');
+        cy.getBooleanInput(readOnlyLabel, null).should('be.checked');
+        cy.getBooleanInput(readOnlyLabel, false).should('not.be.checked');
 
-        cy.booleanFieldClick(readOnlyLabel, 'false');
+        cy.booleanFieldClick(readOnlyLabel, false);
 
-        cy.getBooleanInput(readOnlyLabel, 'null').should('not.be.checked');
-        cy.getBooleanInput(readOnlyLabel, 'false').should('be.checked');
-        cy.getBooleanInput(repeatsLabel, 'null').should('be.checked');
-        cy.getBooleanInput(repeatsLabel, 'false').should('not.be.checked');
+        cy.getBooleanInput(readOnlyLabel, null).should('not.be.checked');
+        cy.getBooleanInput(readOnlyLabel, false).should('be.checked');
+        cy.getBooleanInput(repeatsLabel, null).should('be.checked');
+        cy.getBooleanInput(repeatsLabel, false).should('not.be.checked');
 
-        cy.questionnaireJSON((json) => {
-          expect(json.item[0].readOnly).toBeFalsy()
-          expect(json.item[0].repeats).toBeUndefined();
+        cy.questionnaireJSON().should((json) => {
+          expect(json.item[0].readOnly).to.be.false;
+          expect(json.item[0].repeats).to.be.undefined;
         });
-        cy.booleanFieldClick(readOnlyLabel, 'null');
-        cy.questionnaireJSON((json) => {
-          expect(json.item[0].readOnly).toBeUndefined();
-          expect(json.item[0].repeats).toBeUndefined();
+        cy.booleanFieldClick(readOnlyLabel, null);
+        cy.questionnaireJSON().should((json) => {
+          expect(json.item[0].readOnly).to.be.undefined;
+          expect(json.item[0].repeats).to.be.undefined;
         });
-        cy.booleanFieldClick(readOnlyLabel, 'false');
-        cy.questionnaireJSON((json) => {
-          expect(json.item[0].readOnly).toBeFalsy()
-          expect(json.item[0].repeats).toBeUndefined();
+        cy.booleanFieldClick(readOnlyLabel, false);
+        cy.questionnaireJSON().should((json) => {
+          expect(json.item[0].readOnly).to.be.false;
+          expect(json.item[0].repeats).to.be.undefined;
         });
       });
 
@@ -267,38 +271,38 @@ describe('Home page', () => {
         cy.uploadFile(importFile, true);
         cy.contains('button', 'Edit questions').click();
 
-        cy.getInitialValueBooleanInput('null').should('be.checked');
-        cy.getBooleanInput(readOnlyLabel, 'true').should('be.checked');
-        cy.getBooleanInput(requiredLabel, 'false').should('be.checked');
-        cy.getBooleanInput(repeatsLabel, 'null').should('be.checked');
+        cy.getInitialValueBooleanInput(null).should('be.checked');
+        cy.getBooleanInput(readOnlyLabel, true).should('be.checked');
+        cy.getBooleanInput(requiredLabel, false).should('be.checked');
+        cy.getBooleanInput(repeatsLabel, null).should('be.checked');
 
         cy.getTreeNode('Item 1').click();
 
-        cy.getInitialValueBooleanInput('true').should('be.checked');
-        cy.getBooleanInput(readOnlyLabel, 'false').should('be.checked');
-        cy.getBooleanInput(requiredLabel, 'true').should('be.checked');
-        cy.getBooleanInput(repeatsLabel, 'false').should('be.checked');
+        cy.getInitialValueBooleanInput(true).should('be.checked');
+        cy.getBooleanInput(readOnlyLabel, false).should('be.checked');
+        cy.getBooleanInput(requiredLabel, true).should('be.checked');
+        cy.getBooleanInput(repeatsLabel, false).should('be.checked');
 
         cy.getTreeNode('Item 2').click();
 
-        cy.getInitialValueBooleanInput('false').should('be.checked');
-        cy.getBooleanInput(readOnlyLabel, 'null').should('be.checked');
-        cy.getBooleanInput(requiredLabel, 'null').should('be.checked');
-        cy.getBooleanInput(repeatsLabel, 'true').should('be.checked');
+        cy.getInitialValueBooleanInput(false).should('be.checked');
+        cy.getBooleanInput(readOnlyLabel, null).should('be.checked');
+        cy.getBooleanInput(requiredLabel, null).should('be.checked');
+        cy.getBooleanInput(repeatsLabel, true).should('be.checked');
 
-        cy.questionnaireJSON((json) => {
-          expect(json.item[0].initial[0].valueBoolean).toBeUndefined();
-          expect(json.item[0].readOnly).toBeTruthy();
-          expect(json.item[0].required).toBeFalsy();
-          expect(json.item[0].repeats).toBeUndefined();
-          expect(json.item[1].initial[0].valueBoolean).toBeTruthy();
-          expect(json.item[1].readOnly).toBeFalsy();
-          expect(json.item[1].required).toBeTruthy();
-          expect(json.item[1].repeats).toBeFalsy();
-          expect(json.item[2].initial[0].valueBoolean).toBeFalsy();
-          expect(json.item[2].readOnly).toBeUndefined();
-          expect(json.item[2].required).toBeUndefined();
-          expect(json.item[2].repeats).toBeTruthy();
+        cy.questionnaireJSON().should((json) => {
+          expect(json.item[0].initial).to.be.undefined;
+          expect(json.item[0].readOnly).to.be.true;
+          expect(json.item[0].required).to.be.false;
+          expect(json.item[0].repeats).to.be.undefined;
+          expect(json.item[1].initial[0].valueBoolean).to.be.true;
+          expect(json.item[1].readOnly).to.be.false;
+          expect(json.item[1].required).to.be.true;
+          expect(json.item[1].repeats).to.be.false;
+          expect(json.item[2].initial[0].valueBoolean).to.be.false;
+          expect(json.item[2].readOnly).to.be.undefined;
+          expect(json.item[2].required).to.undefined;
+          expect(json.item[2].repeats).to.be.true;
         });
       });
     });
@@ -320,19 +324,19 @@ describe('Home page', () => {
 
       it('should insert before context node using sidebar tree node context menu', () => {
         cy.contains('button.dropdown-item', 'Insert a new item before').click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1');
       });
 
       it('should insert after context node using sidebar tree node context menu', () => {
         cy.contains('button.dropdown-item', 'Insert a new item after').click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
       });
 
       it('should insert a child of context node using sidebar tree node context menu', () => {
         cy.contains('button.dropdown-item', 'Insert a new child item').click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1.1');
       });
     });
@@ -342,9 +346,6 @@ describe('Home page', () => {
         cy.contains('button', 'Add new item').click();
         cy.contains('button', 'Add new item').click();
         cy.contains('button', 'Add new item').click();
-        cy.getTreeNode('New item 1').as('node1');
-        cy.getTreeNode('New item 2').as('node2');
-        cy.getTreeNode('New item 3').as('node3');
         cy.getTreeNode('Item 0').click();
 
         cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '1');
@@ -526,7 +527,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getFormTitleField().should('have.value', 'Answer options form');
       cy.contains('button', 'Edit questions').click();
       cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption');
       cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption');
@@ -582,7 +583,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getFormTitleField().should('have.value', 'Answer options form');
       cy.contains('button', 'Edit questions').click();
       cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption')
         .find('[id^="radio_answerOption."]').as('firstRadioDefault');
@@ -618,7 +619,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getFormTitleField().should('have.value', 'Answer options form');
       cy.contains('button', 'Edit questions').click();
 
       // Switch to second item
@@ -682,7 +683,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'Sample to test initial component error');
+      cy.getFormTitleField().should('have.value', 'Sample to test initial component error');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].answerOption).to.deep.equal(fixtureJson.item[0].item[0].answerOption);
@@ -690,7 +691,7 @@ describe('Home page', () => {
 
       cy.toggleTreeNodeExpansion('Group item 1');
       cy.getTreeNode('Choice item 1.1').click();
-      cy.get('@type').find(':selected').should('have.text', 'coding');
+      cy.getItemTypeField().find(':selected').should('have.text', 'coding');
       cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
       cy.get('[id^="answerOption."]').should('be.visible');
       cy.get('[id^="initial"]').should('not.exist');
@@ -738,9 +739,9 @@ describe('Home page', () => {
 
     it('should import a form with an item having answerValueSet', () => {
       cy.uploadFile('answer-value-set-sample.json', true);
-      cy.get('#title').should('have.value', 'Answer value set form');
+      cy.getFormTitleField().should('have.value', 'Answer value set form');
       cy.contains('button', 'Edit questions').click();
-      cy.get('#type option:selected').should('have.text', 'coding');
+      cy.getItemTypeField().should('contain.value', 'coding');
       cy.get('lfb-label')
         .filter(':contains("Create answer list")')
         .parent()
@@ -842,7 +843,7 @@ describe('Home page', () => {
       const encodedUriPart = 'fhir_vs='+encodeURIComponent('ecl/' + snomedEclText);
 
       cy.uploadFile('snomed-answer-value-set-sample.json', true);
-      cy.get('#title').should('have.value', 'SNOMED answer value set form');
+      cy.getFormTitleField().should('have.value', 'SNOMED answer value set form');
       cy.contains('button', 'Edit questions').click();
 
       // First item is with SNOMED CT URI.
@@ -1055,7 +1056,7 @@ describe('Home page', () => {
         const answerMethodsValueSetRadio = '#__\\$answerOptionMethods_value-set';
 
         cy.uploadFile('item-control-sample.json', true);
-        cy.get('#title').should('have.value', 'Item control sample form');
+        cy.getFormTitleField().should('have.value', 'Item control sample form');
         cy.contains('button', 'Edit questions').click();
 
         cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
@@ -1158,7 +1159,7 @@ describe('Home page', () => {
         let fixtureJson;
         cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
         cy.uploadFile(sampleFile, true);
-        cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+        cy.getFormTitleField().should('have.value', 'US Surgeon General family health portrait');
         cy.contains('button', 'Edit questions').click();
       });
 
@@ -1278,7 +1279,7 @@ describe('Home page', () => {
         const tabContainerRadio = '#__\\$itemControlGroup\\.tab-container';
 
         // The Data type for the 1st question should be a group
-        cy.get('#type').should('contain.value', 'group');
+        cy.getItemTypeField().should('contain.value', 'group');
         // The Group Item Control should be visible but the default 'list' should no longer be set
         cy.get(listRadio).should('not.be.checked');
 
@@ -1380,7 +1381,7 @@ describe('Home page', () => {
         const unspecifiedRadio = '#__\\$itemControlGroup\\.unspecified';
 
         // The Data type for the 1st question should be a group
-        cy.get('#type').should('contain.value', 'group');
+        cy.getItemTypeField().should('contain.value', 'group');
         // The Group Item Control should be visible but there should be no default selection
         cy.get(listRadio).should('not.be.checked');
 
@@ -1409,7 +1410,7 @@ describe('Home page', () => {
         let fixtureJson;
         cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
         cy.uploadFile(sampleFile, true);
-        cy.get('#title').should('have.value', 'Display item control sample form');
+        cy.getFormTitleField().should('have.value', 'Display item control sample form');
         cy.contains('button', 'Edit questions').click();
       });
 
@@ -1503,7 +1504,7 @@ describe('Home page', () => {
         const unspecifiedRadio = '#__\\$itemControlDisplay\\.unspecified';
 
         // The Data type should be a display.
-        cy.get('#type').should('contain.value', 'display');
+        cy.getItemTypeField().should('contain.value', 'display');
         // The 'In-line' Display Item Control should be selected.
         cy.get(inlineRadio).should('be.checked');
         cy.questionnaireJSON().should((qJson) => {
@@ -1520,7 +1521,7 @@ describe('Home page', () => {
 
         cy.clickTreeNode('Prompt display item control - deprecated');
         // The Data type should be a display.
-        cy.get('#type').should('contain.value', 'display');
+        cy.getItemTypeField().should('contain.value', 'display');
         // The 'Prompt' Display Item Control is deprecated and should not be visible.
         cy.get(promptRadio).should('not.exist');
         // Should display deprecated message.
@@ -1542,7 +1543,7 @@ describe('Home page', () => {
 
         cy.clickTreeNode('Unit display item control - deprecated');
         // The Data type should be a display.
-        cy.get('#type').should('contain.value', 'display');
+        cy.getItemTypeField().should('contain.value', 'display');
         // The 'Unit' Display Item Control is deprecated and should not be visible.
         cy.get(unitRadio).should('not.exist');
         // Should display deprecated message.
@@ -1561,7 +1562,7 @@ describe('Home page', () => {
 
         cy.clickTreeNode('Lower-bound display item control');
         // The Data type should be a display.
-        cy.get('#type').should('contain.value', 'display');
+        cy.getItemTypeField().should('contain.value', 'display');
         // The 'Lower-bound' Display Item Control should be selected.
         cy.get(lowerRadio).should('be.checked');
         // The button label should display superscript (1) indicating that the item control is not supported
@@ -1581,7 +1582,7 @@ describe('Home page', () => {
 
         cy.clickTreeNode('Upper-bound display item control');
         // The Data type should be a display.
-        cy.get('#type').should('contain.value', 'display');
+        cy.getItemTypeField().should('contain.value', 'display');
         // The 'Upper-bound' Display Item Control should be selected.
         cy.get(upperRadio).should('be.checked');
         // The button label should display superscript (1) indicating that the item control is not supported
@@ -1601,7 +1602,7 @@ describe('Home page', () => {
 
         cy.clickTreeNode('Fly-over display item control');
         // The Data type should be a display.
-        cy.get('#type').should('contain.value', 'display');
+        cy.getItemTypeField().should('contain.value', 'display');
         // The 'Fly-over' Display Item Control should be selected.
         cy.get(flyoverRadio).should('be.checked');
         // The button label should display superscript (1) indicating that the item control is not supported
@@ -1621,7 +1622,7 @@ describe('Home page', () => {
 
         cy.clickTreeNode('Legal-button display item control');
         // The Data type should be a display.
-        cy.get('#type').should('contain.value', 'display');
+        cy.getItemTypeField().should('contain.value', 'display');
         // The 'Legal-button' Display Item Control should be selected.
         cy.get(legalRadio).should('be.checked');
         // The button label should display superscript (1) indicating that the item control is not supported
@@ -1700,7 +1701,7 @@ describe('Home page', () => {
       });
       cy.uploadFile(sampleFile, true);
       cy.contains('button', 'Edit questions').click();
-      cy.get('#type option:selected').should('have.text', 'decimal');
+      cy.getItemTypeField().should('contain.value', 'decimal');
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
       cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
       cy.questionnaireJSON().should((qJson) => {
@@ -1778,7 +1779,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'Form with restrictions');
+      cy.getFormTitleField().should('have.value', 'Form with restrictions');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0]).to.deep.equal(fixtureJson.item[0]);
@@ -1790,7 +1791,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'Dummy Form');
+      cy.getFormTitleField().should('have.value', 'Dummy Form');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         // Make some key assertions.
@@ -1810,7 +1811,7 @@ describe('Home page', () => {
     });
 
     xit('should create display type', () => {
-      cy.get('@type').contains('string');
+      cy.getItemTypeField().contains('string');
       cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
@@ -1834,7 +1835,7 @@ describe('Home page', () => {
 
     // Skip this test for now as the dragAndDropNode command is not functioning
     xit('should not be able to drop item on display data type item', () => {
-      cy.get('@type').contains('string');
+      cy.getItemTypeField().contains('string');
       cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
@@ -1850,7 +1851,7 @@ describe('Home page', () => {
 
     // Skip this test for now as the dragAndDropNode command is not functioning
     xit('should be able to drop item on display data type item', () => {
-      cy.get('@type').contains('string');
+      cy.getItemTypeField().contains('string');
       cy.selectDataType('group');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('group');
@@ -1865,9 +1866,9 @@ describe('Home page', () => {
     });
 
     it('should not display header display data type if item has sub-item', () => {
-      cy.get('@type').contains('string');
+      cy.getItemTypeField().find(':selected').contains('string');
 
-      cy.get('#type').then($dataTypeSelect => {
+      cy.getItemTypeField().then($dataTypeSelect => {
         cy.wrap($dataTypeSelect)
           .should('be.visible')
           .find('option')
@@ -1885,11 +1886,11 @@ describe('Home page', () => {
       cy.get('@contextNode').find('button.dropdown-toggle').click();
 
       cy.contains('button.dropdown-item', 'Insert a new child item').click();
-      cy.get('#text').should('have.value', 'New item 1');
+      cy.getItemTextField().should('have.value', 'New item 1');
       cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '1.1');
 
       cy.get('@contextNode').click();
-      cy.get('#type').focus().then($dataTypeSelect => {
+      cy.getItemTypeField().focus().then($dataTypeSelect => {
         cy.wrap($dataTypeSelect)
           .should('be.visible')
           .find('option')
@@ -1903,15 +1904,15 @@ describe('Home page', () => {
     });
 
     it('should retain header type after switching to another item and switching back', () => {
-      cy.get('@type').contains('string');
+      cy.getItemTypeField().find(':selected').contains('string');
       cy.selectDataType('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
       });
       cy.get('@addNewItem').click();
-      cy.get('@type').contains('string');
+      cy.getItemTypeField().find(':selected').contains('string');
       cy.get('@item0').click();
-      cy.get('@type').contains('display');
+      cy.getItemTypeField().find(':selected').contains('display');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('display');
         expect(qJson.item[1].type).equal('string');
@@ -1923,7 +1924,7 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'New Form');
+      cy.getFormTitleField().should('have.value', 'New Form');
       cy.contains('button', 'Edit questions').click();
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).to.deep.equal(fixtureJson.item[0].type);
@@ -1937,9 +1938,9 @@ describe('Home page', () => {
       let fixtureJson;
       cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, true);
-      cy.get('#title').should('have.value', 'Quantity Sample');
+      cy.getFormTitleField().should('have.value', 'Quantity Sample');
       cy.contains('button', 'Edit questions').click();
-      cy.get('@type').contains('quantity');
+      cy.getItemTypeField().find(':selected').contains('quantity');
       cy.get('[id^="units"]').as('units').should('be.visible');
       cy.get('@units').parent().prev('ul').as('selectedUnits');
       cy.questionnaireJSON().should((qJson) => {
@@ -1953,7 +1954,7 @@ describe('Home page', () => {
 
     it('should create quantity type with initial quantity unit', () => {
       cy.selectDataType('quantity');
-      cy.get('@type').contains('quantity');
+      cy.getItemTypeField().find(':selected').contains('quantity');
       cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('123');
       cy.get('[id^="initial.0.valueQuantity.unit"]')
         .as('unit0').type('f');
@@ -2130,7 +2131,7 @@ describe('Home page', () => {
 
         cy.get('[id^="enableWhen.1.question"]').type('invalid question');
         cy.get('ngb-typeahead-window').should('not.exist');
-        // Hit the tab key from the question field. Validation should be triggered, but 
+        // Hit the tab key from the question field. Validation should be triggered, but
         // no error should occur, as this represents a new condition where the 'enableWhen'
         // condition has not yet been added to the item.
         cy.get('[id^="enableWhen.1.question"]').trigger('keyup', {key: 'Tab'});
@@ -2260,7 +2261,7 @@ describe('Home page', () => {
       it('should display lforms errors in preview', () => {
         const sampleFile = 'questionnaire-enableWhen-missing-linkId.json';
         cy.uploadFile(sampleFile, true);
-        cy.get('#title').should('have.value', 'Questionnaire where enableWhen contains an invalid linkId');
+        cy.getFormTitleField().should('have.value', 'Questionnaire where enableWhen contains an invalid linkId');
         cy.contains('button', 'Edit questions').click();
         cy.contains('button', 'Preview').click();
         cy.get('wc-lhc-form').should('exist').parent().as('tabBody');
@@ -2297,14 +2298,14 @@ describe('Home page', () => {
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
         ]);
         cy.contains('Add new item').scrollIntoView().click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
           {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
         ]);
         cy.contains('Add new item').scrollIntoView().click();
-        cy.get('#text').should('have.value', 'New item 2');
+        cy.getItemTextField().should('have.value', 'New item 2');
 
         cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
         cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
@@ -2327,7 +2328,7 @@ describe('Home page', () => {
 
       it('should show answer column if there is an answer in any row of conditional display', () => {
         cy.contains('Add new item').scrollIntoView().click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
 
         const r1Question = '[id^="enableWhen.0.question"]';
         const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -2364,14 +2365,14 @@ describe('Home page', () => {
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
         ]);
         cy.contains('Add new item').scrollIntoView().click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
         cy.enterAnswerOptions([
           {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
           {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
           {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
         ]);
         cy.contains('Add new item').scrollIntoView().click();
-        cy.get('#text').should('have.value', 'New item 2');
+        cy.getItemTextField().should('have.value', 'New item 2');
 
         cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
         cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
@@ -2402,7 +2403,7 @@ describe('Home page', () => {
       it('should display the tree hierarchy sequence number concatenated with the item text ', () => {
         cy.selectDataType('decimal');
         cy.contains('Add new item').scrollIntoView().click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
 
         const r1Question = '[id^="enableWhen.0.question"]';
         // First row operator='exist'
@@ -2414,7 +2415,7 @@ describe('Home page', () => {
       it('should fix a bug showing answer field when source item is decimal and operator is other than exists', () => {
         cy.selectDataType('decimal');
         cy.contains('Add new item').scrollIntoView().click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
 
         const r1Question = '[id^="enableWhen.0.question"]';
         const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -2443,7 +2444,7 @@ describe('Home page', () => {
         cy.tsUrl().scrollIntoView().type('https://clinicaltables.nlm.nih.gov/fhir/R4');
         cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
         cy.contains('Add new item').scrollIntoView().click();
-        cy.get('#text').should('have.value', 'New item 1');
+        cy.getItemTextField().should('have.value', 'New item 1');
 
         const r1Question = '[id^="enableWhen.0.question"]';
         const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -2528,7 +2529,7 @@ describe('Home page', () => {
         let fixtureJson;
         cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
         cy.uploadFile(sampleFile, true);
-        cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+        cy.getFormTitleField().should('have.value', 'US Surgeon General family health portrait');
 
         cy.contains('button', 'Edit questions').click();
         cy.toggleTreeNodeExpansion('Family member health history');
@@ -2570,7 +2571,7 @@ describe('Home page', () => {
       it('should import a form with terminology server extension', () => {
         const sampleFile = 'terminology-server-sample.json';
         cy.uploadFile(sampleFile, true); // Avoid warning form loading based on item or form
-        cy.get('#title').should('have.value', 'Terminology server sample form');
+        cy.getFormTitleField().should('have.value', 'Terminology server sample form');
         cy.contains('button', 'Edit questions').click();
         cy.tsUrl().should('be.visible').should('have.value', 'http://example.com/r4');
         CypressUtil.assertExtensionsInQuestionnaire(
@@ -2642,7 +2643,7 @@ describe('Home page', () => {
           originalExtension = JSON.parse(JSON.stringify(json.item[0].extension));
         });
         cy.uploadFile(sampleFile, true);
-        cy.get('#title').should('have.value', 'Form with observation link period');
+        cy.getFormTitleField().should('have.value', 'Form with observation link period');
         cy.contains('button', 'Edit questions').click();
         cy.get('@codeYesRadio').should('be.checked');
         cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
@@ -2713,7 +2714,7 @@ describe('Home page', () => {
             originalExtension = JSON.parse(JSON.stringify(json.item[0].extension));
           });
           cy.uploadFile(sampleFile, true);
-          cy.get('#title').should('have.value', 'Form with observation extract');
+          cy.getFormTitleField().should('have.value', 'Form with observation extract');
           cy.contains('button', 'Edit questions').click();
           cy.get('@codeYesRadio').should('be.checked');
           cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
@@ -2752,7 +2753,7 @@ describe('Home page', () => {
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.uploadFile(sampleFile, false);
-      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+      cy.getFormTitleField().should('have.value', 'US Surgeon General family health portrait');
       cy.contains('button', 'Edit questions').click();
 
       cy.expandAdvancedFields();
@@ -3134,7 +3135,7 @@ describe('Home page', () => {
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.uploadFile(sampleFile, false);
-      cy.get('#title').should('have.value', 'US Surgeon General family health portrait');
+      cy.getFormTitleField().should('have.value', 'US Surgeon General family health portrait');
       cy.contains('button', 'Edit questions').click();
     });
 
@@ -3151,13 +3152,13 @@ describe('Home page', () => {
         expect(qJson.item[0].item[0].text).to.equal('Name');
         expect(qJson.item[0].item[0].type).to.equal('string');
       });
-      cy.get('#text').clear().type('xxx');
-      cy.get('#type').select('display');
+      cy.getItemTextField().clear().type('xxx');
+      cy.getItemTypeField().select('display');
 
       cy.clickTreeNode('My health history');
       cy.getTreeNode('xxx').click({force: true}); // Force through tooltip.
-      cy.get('#text').should('have.value', 'xxx');
-      cy.get('#type').should('have.value', '12: display');
+      cy.getItemTextField().should('have.value', 'xxx');
+      cy.getItemTypeField().should('contain.value', 'display');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].text).to.equal('xxx');
@@ -3187,7 +3188,7 @@ describe('Home page', () => {
 
       // Add a new item under the 'Race' item of data type 'display'.
       cy.contains('Add new item').scrollIntoView().click();
-      cy.get('#text').clear().type('Display Data Type');
+      cy.getItemTextField().clear().type('Display Data Type');
       cy.selectDataType('display');
       cy.getTreeNode('Display Data Type').find('span.node-display-prefix').should('have.text', '2.8');
 
@@ -3241,7 +3242,7 @@ describe('Home page', () => {
 
       // Add a new item under the 'Race' item of data type 'display'.
       cy.contains('Add new item').scrollIntoView().click();
-      cy.get('#text').clear().type('Display Data Type');
+      cy.getItemTextField().clear().type('Display Data Type');
       cy.selectDataType('display');
       cy.getTreeNode('Display Data Type').find('span.node-display-prefix').should('have.text', '2.8');
 

@@ -1,0 +1,91 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Contained Value Set Sample Form",
+  "status": "draft",
+  "contained": [
+    {
+      "resourceType": "ValueSet",
+      "id": "vs1",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://example11.org/tags",
+            "code": "example-tag11",
+            "display": "Example tag11"
+          },
+          {
+            "system": "https://example12.org/tags",
+            "code": "example-tag12",
+            "display": "Example tag12"
+          }
+        ]
+      },
+      "status": "active",
+      "title": "Title - Contained Value Set One",
+      "version": "1.0.0",
+      "name": "Name - Contained Value Set one",
+      "description": "Some description1",
+      "purpose": "Some purpose1",
+      "publisher": "Some publisher1",
+      "copyright": "Some copyright1",
+      "expansion": {
+        "contains": [
+          {
+            "code": "code11",
+            "display": "Code 11"
+          },
+          {
+            "code": "code12",
+            "display": "Code 12"
+          }
+        ]
+      }
+    },
+    {
+      "resourceType": "ValueSet",
+      "id": "vs2",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://example21.org/tags",
+            "code": "example-tag21",
+            "display": "Example tag21"
+          },
+          {
+            "system": "https://example22.org/tags",
+            "code": "example-tag22",
+            "display": "Example tag22"
+          }
+        ]
+      },
+      "status": "active",
+      "title": "Title - Contained Value Set Two",
+      "version": "2.0.0",
+      "name": "Name - Contained Value Set Two",
+      "description": "Some description2",
+      "purpose": "Some purpose2",
+      "publisher": "Some publisher2",
+      "copyright": "Some copyright2",
+      "expansion": {
+        "contains": [
+          {
+            "code": "code21",
+            "display": "Code 21"
+          },
+          {
+            "code": "code22",
+            "display": "Code 22"
+          }
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Coding question",
+      "type": "coding",
+      "answerValueSet": "#vs2"
+    }
+  ]
+}

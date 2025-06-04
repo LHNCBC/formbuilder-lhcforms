@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "include": ["**/*.ts"],
+  "exclude": [],
   "compilerOptions": {
     "sourceMap": true,
     "types": ["cypress", "cypress-real-events"]

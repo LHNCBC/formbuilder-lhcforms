@@ -1,7 +1,7 @@
 
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
     <lfb-label *ngIf="!nolabel"
-               [for]="id"
+               [for]="id+_id"
                [title]="schema.title"
                [helpMessage]="schema.description"
                [ngClass]="labelClasses"
@@ -11,7 +11,7 @@
       <div class="input-group input-group-sm">
         <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
                class="form-control"
-               [attr.id]="id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
+               [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
                [required]="schema.widget.required"
                [lfbDisableControl]="schema.disabled"
                [footerTemplate]="timeTemplate"
@@ -44,8 +44,8 @@
     <span class="d-block text-center">Time</span>
     <div class="d-flex">
       <div class="flex-grow-1">
-        <input id="ignoreTimeCheckBox" type="checkbox" [(ngModel)]="includeTime" (click)="updateValue()" class="me-1 form-check-input form-check-inline">
-        <label for="ignoreTimeCheckBox">Include time</label>
+        <input [attr.id]="'ignoreTimeCheckBox_'+_id" type="checkbox" [(ngModel)]="includeTime" (click)="updateValue()" class="me-1 form-check-input form-check-inline">
+        <label [attr.for]="'ignoreTimeCheckBox_'+_id">Include time</label>
       </div>
       <div>
         <button class="btn btn-sm btn-link" (click)="d.navigateTo(); now()">Now</button>

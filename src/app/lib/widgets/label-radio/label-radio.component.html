@@ -3,22 +3,22 @@
 <ng-template #notHiddenFieldBlock>
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
     <lfb-label *ngIf="!nolabel"
-               [for]="id"
+               [for]="'labelRadio_'+_id"
                [title]="schema.title"
                [helpMessage]="schema.description"
                [ngClass]="labelClasses"
-               [labelId]="'label_rg_'+id"
+               [labelId]="'label_rg_'+_id"
     ></lfb-label>
-    <div [attr.aria-labelledby]="'label_rg_'+id" [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="id">
+    <div [attr.aria-labelledby]="'label_rg_'+_id" [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="'labelRadio_'+_id">
       <ng-container *ngFor="let option of schema.oneOf">
-        <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" name="{{id}}"
+        <input [attr.id]="'labelRadio_'+_id + '_' + option.enum[0]" [formControl]="control" class="btn-check" name="{{'labelRadio_'+_id}}"
                  type="radio" [value]="option.enum[0]" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null" autocomplete="off">
-        <label class="btn btn-sm btn-outline-success" [attr.for]="id + '_' + option.enum[0]">{{option.title || option.description}}</label>
+        <label class="btn btn-sm btn-outline-success" [attr.for]="'labelRadio_'+_id + '_' + option.enum[0]">{{option.title || option.description}}</label>
       </ng-container>
       <ng-container *ngFor="let option of schema.enum">
-        <input [attr.id]="id + '_' + option" [formControl]="control" class="btn-check" name="{{id}}"
+        <input [attr.id]="'labelRadio_'+_id + '_' + option" [formControl]="control" class="btn-check" name="{{'labelRadio_'+_id}}"
                  type="radio" [value]="option" [attr.disabled]="(schema.readOnly) ? '' : null" autocomplete="off">
-        <label class="btn btn-outline-success" [attr.for]="id + '_' + option"><span class="ms-1 me-3">{{labels[option]}}</span></label>
+        <label class="btn btn-outline-success" [attr.for]="'labelRadio_'+_id + '_' + option"><span class="ms-1 me-3">{{labels[option]}}</span></label>
       </ng-container>
     </div>
   </div>

@@ -1,0 +1,119 @@
+{
+  "formLayout": {
+    "basic": [
+      {
+        "showFields": [
+          { "field": "id", "col": 12 },
+          { "field": "title", "col": 12 },
+          { "field": "status", "col": 12},
+          { "field": "expansion/contains", "col": 12}
+        ]
+      }
+    ],
+    "advanced": [
+      {
+        "showFields": [
+          { field:  "version", col:  12},
+          { field:  "name", col:  12},
+          { "field": "description", "col": 12},
+          { "field": "purpose", "col": 12},
+          { field:  "meta/tag", col:  12},
+          { field:  "publisher", col:  12},
+          { field:  "copyright", col:  12},
+        ]
+      }
+    ],
+    "targetPage": "valueSetResource"
+  },
+  // The keys are jsonpath expressions.
+  overridePropertyLabels: {
+    '$.definitions.Meta.properties.tag': 'Tags',
+    '$.properties.resourceType': 'Contained resource type',
+    '$.definitions.ValueSet_Expansion.properties.contains': 'Contains',
+  },
+  // Specify widget layout.
+  // id is widget schema registry defined in lforms-widget-registry.ts
+  // Label classes and control classes are used in the widget templates to fine tune widget layout positions
+  widgets: {
+    inputBox: {
+      id: "string",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 form-control"
+    },
+    idInput: {
+      id: "string",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 form-control",
+      showEmptyError: true,
+      "note": "*  This field is mandatory, and must be unique across the questionnaire. If you change it, make sure to update any places in the questionnaire that reference this field."
+    },
+    textArea: {
+      id: "textarea",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 form-control"
+    },
+    "lb-radio": {
+      "id": "lb-radio",
+      "layout": "row",
+      "labelPosition": "left",
+      "labelClasses": "col-2 ps-0 pe-1",
+      "controlClasses": "col-auto ps-0 btn-group btn-group-sm",
+    },
+    coding: {
+      "id": "table",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new tag",
+      "showFields": [
+        {"field": "display", "col": 4, "nolabel": true},
+        {"field": "code", "col": 3, "nolabel": true},
+        {"field": "system", "col": 4, "nolabel": true}
+      ]
+    },
+    vsContains: {
+      "id": "table",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new row",
+      "showFields": [
+        {"field": "display", "col": 4, "nolabel": true},
+        {"field": "code", "col": 3, "nolabel": true},
+        {"field": "system", "col": 4, "nolabel": true}
+      ]
+    }
+  },
+  // Map property: Each widget type is mapped to fields with jsonpath of its schema.
+  widgetsMap: {
+    // List of fields implementing this widget.
+    inputBox: [
+      '$.properties.id',
+      '$.properties.implicitRules',
+      '$.properties.version',
+      '$.properties.title',
+      '$.properties.name',
+      '$.properties.publisher',
+      '$.properties.description',
+      '$.properties.purpose',
+    ],
+    idInput: [
+      '$.properties.id',
+    ],
+    textArea: [
+      '$.properties.copyright',
+    ],
+    "lb-radio": [
+      '$.properties.status'
+    ],
+    coding: [
+      '$.definitions.Meta.properties.tag',
+    ],
+    vsContains: [
+      '$.definitions.ValueSet_Expansion.properties.contains',
+    ]
+  }
+}

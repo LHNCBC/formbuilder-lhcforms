@@ -40,6 +40,8 @@ import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
 import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
 import {HelpTextComponent} from "./widgets/help-text/help-text.component";
+import { ContainedComponent } from './widgets/contained/contained.component';
+import { ValueSetResourceComponent } from './widgets/value-set-resource/value-set-resource.component';
 
 
 @Injectable()
@@ -82,6 +84,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('quantity-unit', QuantityUnitComponent);
     this.register('terminology-server', TerminologyServerComponent);
     this.register('editable-link-id', EditableLinkIdComponent);
-
+    this.register("contained", ContainedComponent);
+    this.register("value-set", ValueSetResourceComponent);
   }
 }

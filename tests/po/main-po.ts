@@ -27,7 +27,7 @@ export class MainPO {
    * Getter for title field locator.
    */
   get titleLocator(): Locator {
-    return this._page.locator('#title');
+    return this._page.locator('lfb-form-fields').getByLabel('Title', {exact: true});
   }
 
   /**

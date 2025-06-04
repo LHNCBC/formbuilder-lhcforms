@@ -24,7 +24,13 @@ export class SharedObjectService {
     return new AppJsonPipe().transform(item);
     // return JSON.stringify(item, null, 2);
   }));
-  constructor() {}
+
+  _questionnaire: fhir.Questionnaire;
+  constructor() {
+    this.questionnaire$.subscribe(questionnaire => {
+      this._questionnaire = questionnaire;
+    });
+  }
 
 
   /**
@@ -53,6 +59,10 @@ export class SharedObjectService {
 
   get questionnaire$(): Observable<fhir.Questionnaire> {
     return this.questionnaireSource$.asObservable();
+  }
+
+  get questionnaire(): fhir.Questionnaire {
+    return this._questionnaire;
   }
 
   set currentItem (item: fhir.QuestionnaireItem) {

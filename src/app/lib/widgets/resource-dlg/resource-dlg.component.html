@@ -1,0 +1,30 @@
+<h2 mat-dialog-title class="bg-primary text-white pe-2 pb-3">Preview of Questionnaire
+   <button mat-icon-button class="close-button mt-2" (click)="cancel()">
+     <mat-icon class="close-icon" matTooltip="Discard changes">close</mat-icon>
+   </button>
+</h2>
+<mat-dialog-content #dlgContent class="resource-dlg-content">
+  @switch (resourceType) {
+    @case ('ValueSet') {
+      <lfb-value-set-resource
+        #vsForm
+        [model]="inputValueSet"
+        [schema]="schema"
+        (valueSetChanged)="onValueSetChanged($event)"
+        [indexInContained]="data?.indexInContained"
+      ></lfb-value-set-resource>
+    }
+    @case ('Binary') {
+
+    }
+    @default {
+      No resource loaded.
+    }
+  }
+</mat-dialog-content>
+<mat-dialog-actions class="border-top pe-3 pt-3" align="end">
+  <button class="btn btn-primary" (click)="cancel()">Discard changes</button>
+  <button class="btn btn-primary ms-2" (click)="save()">Save and close</button>
+</mat-dialog-actions>
+
+

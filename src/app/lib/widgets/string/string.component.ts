@@ -1,7 +1,7 @@
 /**
  * Component for general input box
  */
-import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 
@@ -10,7 +10,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   selector: 'lfb-string',
   templateUrl: './string.component.html'
 })
-export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
+export class StringComponent extends LfbControlWidgetComponent implements OnInit {
 
   liveAnnouncer = inject(LiveAnnouncer);
 
@@ -18,6 +18,10 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   // Keys are error codes from the validator.
   modifiedMessages = {
     PATTERN: [
+      {
+        pattern: "^[A-Za-z0-9\\-\\.]{1,64}$",
+        message: 'Only alphanumeric, hyphen and period characters are allowed in this field. Make sure any white space characters are not used.'
+      }, // id
       {
         pattern: '^\\S*$',
         message: 'Spaces and other whitespace characters are not allowed in this field.'
@@ -49,13 +53,6 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   ngOnInit() {
     super.ngOnInit();
     this.controlClasses = this.controlClasses || 'form-control form-control-sm';
-  }
-
-  /**
-   * Add formProperty change subscriptions.
-   */
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
     this.formProperty.errorsChanges.subscribe((errors) => {
       this.errors = null;
       if(errors?.length) {
@@ -68,17 +65,27 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
           return acc;
         }, errorsObj);
         this.errors = Object.values(errorsObj).map((e: any) => {
-          const modifiedMessage = e.code === 'PATTERN'
-            ? this.getModifiedErrorForPatternMismatch(e.params[0])
-            : this.modifiedMessages[e.code];
-          return {code: e.code, originalMessage: e.message, modifiedMessage};
+          let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
+          if(!e.params[1]?.trim() && this.schema.widget.showEmptyError) {
+            // If the error is caused by an empty value, use a generic message.
+            ret.code = 'EMPTY_ERROR';
+            ret.modifiedMessage = 'This field is required.';
+          } else {
+            const modifiedMessage = e.code === 'PATTERN'
+              ? this.getModifiedErrorForPatternMismatch(e.params[0])
+              : this.modifiedMessages[e.code];
+            ret.code = e.code;
+            ret.originalMessage = e.message;
+            ret.modifiedMessage = modifiedMessage;
+          }
+          return ret;
         });
       }
     });
   }
 
   /**
-   * Replace standard schema validator error message with customized message.
+   * Replace the standard schema validator error message with the customized message.
    * @param pattern - Pattern as specified in the schema to identify the replacement message.
    */
   getModifiedErrorForPatternMismatch(pattern: string): string {

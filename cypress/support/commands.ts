@@ -10,7 +10,6 @@
 //
 //
 import {isEqual} from 'lodash';
-import {searchFHIRServer} from "./mocks/fhir-server-mocks";
 import {CypressUtil} from "./cypress-util";
 // -- This is a parent command --
 // Cypress.Commands.add('login', (email, password) => { ... })
@@ -28,7 +27,7 @@ import {CypressUtil} from "./cypress-util";
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 /**
- * Load home page and wait until LForms is loaded.
+ * Load the home page and wait until LForms is loaded.
  */
 Cypress.Commands.add('loadHomePage',() => {
   cy.clearSession();
@@ -47,7 +46,7 @@ Cypress.Commands.add('loadHomePageWithLoincOnly',() => {
 
 
 /**
- * Visit home page and assert LForms, but do not deal with LOINC notice.
+ * Visit the home page and assert LForms, but do not deal with LOINC notice.
  */
 Cypress.Commands.add('goToHomePage', () => {
   CypressUtil.mockLFormsLoader();
@@ -86,11 +85,12 @@ Cypress.Commands.add('clearSession',() => {
 
 
 /**
- * Get an item from local storage.
+ * Read a local storage item.
  */
-Cypress.Commands.add('getLocalStorageItem',(item) => {
+Cypress.Commands.add('getLocalStorageItem', (itemName) => {
   return cy.window()
-    .its('localStorage').invoke('getItem', item);
+    .its('localStorage')
+    .invoke('getItem', itemName);
 });
 
 
@@ -109,7 +109,7 @@ Cypress.Commands.add('getSessionStorageItem',(item) => {
  * @param fileName - Name of the file to upload
  */
 Cypress.Commands.add('uploadFile',(fileName, handleWarning) => {
-  cy.fixture(fileName, { encoding: null }).as('myFixture');
+  cy.fixture(fileName, null).as("myFixture");
   cy.get('input[type="file"]').selectFile('@myFixture', {force: true});
   if(handleWarning) {
     cy.handleWarning();
@@ -117,7 +117,7 @@ Cypress.Commands.add('uploadFile',(fileName, handleWarning) => {
 });
 
 /**
- * Command to get json from 'Preview'
+ * Command to get JSON from 'Preview'
  */
 Cypress.Commands.add('questionnaireJSON', () => {
   return CypressUtil.getQuestionnaireJSON();
@@ -127,15 +127,15 @@ Cypress.Commands.add('questionnaireJSON', () => {
  * Command to select data type in item editor.
  */
 Cypress.Commands.add('selectDataType', (type) => {
-  cy.get('#type').select(type);
+  cy.getItemTypeField().select(type);
 });
 
 /**
- * Select a node by its text in the sidebar. The text is read from tooltip.
+ * Select a node by its text in the sidebar. The text is read from the tooltip.
  */
 Cypress.Commands.add('getTreeNode', (text) => {
   return cy.get('div[role="tooltip"]:contains("'+text+'")').invoke('attr', 'id').then((tooltipId) => {
-    return cy.get('div[aria-describedby="' + tooltipId + '"]').should('be.visible');
+    return cy.get('div[aria-describedby="' + tooltipId + '"]:visible');
   });
 });
 
@@ -143,22 +143,23 @@ Cypress.Commands.add('getTreeNode', (text) => {
  * Toggle expansion and collapse of tree node having children.
  */
 Cypress.Commands.add('toggleTreeNodeExpansion', (text) => {
-  const tooltipId = cy.get('div[role="tooltip"]:contains("'+text+'")').invoke('attr', 'id').then((tooltipId) => {
+  cy.get('div[role="tooltip"]:contains("'+text+'")').invoke('attr', 'id').then(tooltipId => {
     cy.get('tree-root tree-viewport tree-node-collection tree-node tree-node-wrapper div.node-wrapper div tree-node-content div')
       .filter('div[aria-describedby="'+tooltipId+'"]').parents('div.node-wrapper').find('tree-node-expander').as('expander');
     cy.get('@expander').should('be.visible');
     cy.get('@expander').click();
     cy.getTreeNode(text).should('be.visible');
-  }, (err)=> {console.error(err)});
+  });
 });
 
 
 /**
  * Load LOINC form using a search term. Picks first item from the result list.
- * @param searchTerm - Search term to search LOINC database.
+ * @param searchTerm - Search term to search the LOINC database.
  */
 Cypress.Commands.add('loadLOINCForm', (searchTerm) => {
-  cy.contains('nav.navbar button', 'Import').scrollIntoView().click();
+  cy.contains('nav.navbar button', 'Import').as('importBtn').scrollIntoView();
+  cy.get('@importBtn').click();
   cy.get('div.dropdown-menu.show form input[placeholder="Search LOINC"]').as('searchBox');
   cy.get('@searchBox').type(searchTerm);
   cy.get('ngb-typeahead-window').should('be.visible');
@@ -168,7 +169,7 @@ Cypress.Commands.add('loadLOINCForm', (searchTerm) => {
 });
 
 /**
- * Get json from FHIR server response after create/update interaction.
+ * Get JSON from FHIR server response after create/update interaction.
  * @param menuText - Menu text to pick the menu item.
  */
 Cypress.Commands.add('FHIRServerResponse', (menuText, serverBaseUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4') => {
@@ -265,7 +266,7 @@ Cypress.Commands.add('addAnswerOptions', () => {
  * Test code yes no options
  */
 Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOptionElement, formOrItem) => {
-  const formTesting = formOrItem === 'form' ? true : false;
+  const formTesting = formOrItem === 'form';
   cy.wrap(codeOptionElement).find('[for^="booleanRadio_true"]').as('codeYes');
   cy.wrap(codeOptionElement).find('[for^="booleanRadio_false"]').as('codeNo');
   cy.get('[id^="booleanRadio_false"]').should('be.checked');
@@ -278,9 +279,9 @@ Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOption
   cy.get('@codeYes').click();
   cy.get('[id^="code.0.code_"]').as('code');
   cy.get('@code').type('ab ');
-  cy.get('@code').next('small')
-    .should('be.visible')
-    .contains('Spaces are not allowed at the beginning or end.');
+  cy.get('@code').next('ul').find('small').as('codeError');
+  cy.get('@codeError').should('be.visible');
+  cy.get('@codeError').contains('Spaces are not allowed at the beginning or end.');
   cy.get('@code').clear();
   cy.get('@code').type(coding.code);
   cy.get('[id^="code.0.system_"]').type(coding.system);
@@ -313,9 +314,9 @@ Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
 
   const dropSelector = '.node-content-wrapper span:contains("' + dropNodeText + '")';
   const dragSelector = '.node-content-wrapper span:contains("' + dragNodeText + '")';
-  let droppable, coords;
+  let coords: any;
   cy.get(dropSelector).should(($eList) => {
-    droppable = $eList[0];
+    const droppable = $eList[0];
     coords = droppable.getBoundingClientRect();
   });
 
@@ -340,12 +341,15 @@ Cypress.Commands.add('dragAndDropNode', (dragNodeText, dropNodeText) => {
 
 /**
  * Interact with FHIR server selection and do search with <code>titleSearchTerm</code>
- * and pick first result to load into the form builder.
- * Make sure to create mock response based on titleSearchTerm.
+ * and pick the first result to load into the form builder.
+ * Make sure to create a mock response based on titleSearchTerm.
  */
 Cypress.Commands.add('fhirSearch', (titleSearchTerm) => {
-  searchFHIRServer(titleSearchTerm,
-    `fhir-server-mock-response-${titleSearchTerm}.json`);
+
+  cy.intercept(
+    `**title:contains=${titleSearchTerm}**`,
+    {fixture: `fhir-server-mock-response-${titleSearchTerm}.json`}).as("searchFHIRServer");
+
   cy.get('input[type="radio"][name="fhirServer"]').first().click();
   cy.contains('div.modal-footer button', 'Continue').click();
   cy.get('input.form-control[placeholder="Search any text field"]').type(titleSearchTerm);
@@ -357,7 +361,7 @@ Cypress.Commands.add('fhirSearch', (titleSearchTerm) => {
 });
 
 /**
- * Expect warning dialog and click continue.
+ * Expect the warning dialog and click continue.
  */
 Cypress.Commands.add('handleWarning', () => {
   cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
@@ -365,7 +369,7 @@ Cypress.Commands.add('handleWarning', () => {
 });
 
 /**
- * Read form from local storage and compare it with default form.
+ * Read a form from local storage and compare it with the default form.
  * Yields boolean
  */
 Cypress.Commands.add('isDefault', () => {
@@ -389,23 +393,12 @@ Cypress.Commands.add('getCurrentForm', () => {
   return cy.getLocalStorageItem('fhirQuestionnaire').then((formStr) => {
     const form = formStr && formStr.length > 0 ? JSON.parse(formStr) : null;
     return cy.wrap(form);
-  }, (err) => {
-    return err;
   });
 });
 
 /**
- * Read a local storage item.
- */
-Cypress.Commands.add('getLocalStorageItem', (itemName) => {
-  return cy.window()
-    .its('localStorage')
-    .invoke('getItem', itemName);
-});
-
-/**
  * Reset form builder.
- * Using Close menu option to reset.
+ * Using the Close menu option to reset.
  */
 Cypress.Commands.add('resetForm', () => {
   cy.contains('nav.navbar > div > button', 'Close').click();
@@ -570,5 +563,94 @@ Cypress.Commands.add('getInitialValueBooleanInput', (rbValue) => {
  * Click radio button of 'Initial value' boolean field.
  */
 Cypress.Commands.add('getInitialValueBooleanClick', (rbValue) => {
-  return getInitialValueBooleanParent().find('label[for^="booleanRadio_'+rbValue+'"]').click();
+  return cy.getInitialValueBooleanParent().find('label[for^="booleanRadio_'+rbValue+'"]').click();
 });
+
+/**
+ * Get the input element using its label text.
+ * Works provided the label[for] === input[id].
+ * @param parentSelector - The parent selector to search within. Helps to constrain
+ * the search to a specific part of the form.
+ * @param label - The label text to find the input element.
+ */
+Cypress.Commands.add('getByLabel', (parentSelector: string, label: string) => {
+  return cy.get(parentSelector)
+    .find('label')
+    .contains(label).invoke('attr', 'for').then((id) => {
+      return cy.get('#' + id);
+    });
+});
+
+/**
+ * Get the title field from the form level page.
+ */
+Cypress.Commands.add('getFormTitleField', () => {
+  return cy.getByLabel('lfb-form-fields', 'Title');
+});
+
+/**
+ * Get the data type field from the item editor.
+ */
+Cypress.Commands.add('getItemTypeField', () => {
+  return cy.getByLabel('lfb-ngx-schema-form', 'Data type');
+});
+
+/**
+ * Get the question text field from the item editor.
+ */
+Cypress.Commands.add('getItemTextField', () => {
+  return cy.getByLabel('lfb-ngx-schema-form', 'Question text');
+});
+
+// Helps remove typescript errors and auto completing the Cypress commands in TypeScript
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      loadHomePage(): Chainable<void>;
+      loadHomePageWithLoincOnly(): Chainable<void>;
+      goToHomePage(): Chainable<void>;
+      acceptAllTermsOfUse(): Chainable<void>;
+      acceptLoincOnly(): Chainable<void>;
+      clearSession(): Chainable<void>;
+      uploadFile(fileName: string, handleWarning?: boolean): Chainable<void>;
+      questionnaireJSON(): Chainable<any>;
+      selectDataType(type: string): Chainable<void>;
+      toggleTreeNodeExpansion(text: string): Chainable<JQuery<HTMLElement>>;
+      loadLOINCForm(searchTerm: string): Chainable<void>;
+      FHIRServerResponse(menuText: string, serverBaseUrl?: string): Chainable<any>;
+      enterAnswerOptions(codings: any[]): Chainable<void>;
+      addAnswerOptions(): Chainable<void>;
+      includeExcludeCodeField(formOrItem: 'form' | 'item'): Chainable<void>;
+      dragAndDropNode(dragNodeText: string, dropNodeText: string): Chainable<JQuery<HTMLElement>>;
+      fhirSearch(titleSearchTerm: string): Chainable<JQuery<HTMLElement>>;
+      handleWarning(): Chainable<JQuery<HTMLElement>>;
+      isDefault(): Chainable<boolean>;
+      resetForm(): Chainable<void>;
+      waitForSpinner(): Chainable<JQuery<HTMLElement>>;
+      clickTreeNode(nodeText: string): Chainable<JQuery<HTMLElement>>;
+      getExtensions(extensionsArray: any[], url: string): any[];
+      tsUrl(): Cypress.Chainable<JQuery<HTMLElement>>;
+      editableLinkId(): Cypress.Chainable<JQuery<HTMLElement>>;
+      checkLinkIdErrorIsDisplayed(errorMessage: string): Cypress.Chainable<JQuery<HTMLElement>>;
+      checkLinkIdErrorIsNotDisplayed(): Cypress.Chainable<JQuery<HTMLElement>>;
+      expandAdvancedFields(): Cypress.Chainable<JQuery<HTMLElement>>;
+      collapseAdvancedFields(): Cypress.Chainable<JQuery<HTMLElement>>;
+      booleanFieldClick(fieldLabel: string, rbValue: boolean): Cypress.Chainable<JQuery<HTMLElement>>;
+      getBooleanFieldParent(fieldLabel: string): Chainable<JQuery<HTMLElement>>;
+      getBooleanInput(fieldLabel: string, rbValue: boolean): Chainable<JQuery<HTMLElement>>;
+      getByLabel(parentSelector: string, label: string): Cypress.Chainable<JQuery<HTMLElement>>;
+      getCurrentForm(): Chainable<any>;
+      getFormTitleField(): Cypress.Chainable<JQuery<HTMLElement>>;
+      getInitialValueBooleanClick(rbValue: boolean): Chainable<JQuery<HTMLElement>>;
+      getInitialValueBooleanInput(rbValue: boolean): Chainable<JQuery<HTMLElement>>;
+      getInitialValueBooleanParent(): Chainable<JQuery<HTMLElement>>;
+      getItemTextField(): Cypress.Chainable<JQuery<HTMLElement>>;
+      getItemTypeField(): Cypress.Chainable<JQuery<HTMLElement>>;
+      getLocalStorageItem(itemName: string): Chainable<string | null>;
+      getRadioButton(groupLabel: string, rLabel: string): Chainable<JQuery<HTMLElement>>;
+      getRadioButtonLabel(groupLabel: string, rLabel: string): Cypress.Chainable<JQuery<HTMLElement>>;
+      getSessionStorageItem(item: string): Chainable<string | null>;
+      getTreeNode(text: string): Chainable<JQuery<HTMLElement>>;
+    }
+  }
+}

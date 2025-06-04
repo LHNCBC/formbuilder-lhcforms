@@ -1,8 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
-import {WidgetChooserComponent} from '@lhncbc/ngx-schema-form';
+import {SchemaFormModule, WidgetChooserComponent} from '@lhncbc/ngx-schema-form';
 
 @Component({
-  standalone: false,
+  imports: [SchemaFormModule],
   selector: 'lfb-element-chooser',
   template: `<div #target></div>`,
   styles: []
