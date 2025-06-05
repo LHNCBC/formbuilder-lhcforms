@@ -72,7 +72,7 @@
       "linkId": "/itm1",
       "text": "Item with a single SNOMED answerValuetSet initial selection",
       "repeats": false,
-      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl%2F%3C+64572001+%7CDisease+%28disorder%29%7C"
+      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl/%3C+64572001+%7CDisease+%28disorder%29%7C"
     },
     {
       "type": "choice",
@@ -113,7 +113,7 @@
       "linkId": "/itm2",
       "text": "Item with multiple SNOMED answerValueSet initial selections",
       "repeats": true,
-      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl%2F%3C+64572001+%7CDisease+%28disorder%29%7C"
+      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl/%3C+64572001+%7CDisease+%28disorder%29%7C"
     }
   ],
   "resourceType": "Questionnaire",

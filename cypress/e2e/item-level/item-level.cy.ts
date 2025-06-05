@@ -13,7 +13,7 @@ const snomedEclText =
 const snomedEclTextDiseaseDisorder =
   '< 64572001 |Disease (disorder)|';
 const snomedEclEncodedTextDiseaseDisorder =
-  'ecl/http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl%2F%3C+64572001+%7CDisease+%28disorder%29%7C';
+  'ecl/http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl/%3C+64572001+%7CDisease+%28disorder%29%7C';
 
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
@@ -1221,7 +1221,7 @@ describe('Home page', () => {
       cy.get('@ecl').parent().parent().parent().as('controlDiv');
       cy.get('@controlDiv').find('span').should('contain.text', snomedEclEncodedTextDiseaseDisorder);
 
-      // Pick initial value should be selected for the Valuet method section.
+      // Pick initial value should be selected for the Value method section.
       cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
       cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
       cy.get('@pickInitialRadio').should('be.visible').and('be.checked');

@@ -699,21 +699,17 @@ export class Util {
       return true;
     }
 
-    return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
+    return !ansOpts.some(ansOpt => !Util.isEmptyValueCoding(ansOpt?.valueCoding));
   }
   
   /**
-   * Determines whether the provided array of answer options contains data. The array may
-   * contain an empty object; therefore, it is necessary to validate the 'display' and
-   * 'code' fields. 
-   * @param ansOpts - An array of Answer Options objects
-   * @returns - true if the Answer Option array is empty or contain one empty item, otherwise false.
+   * Determines whether a valueCoding object is considered empty.
+   * A valueCoding is considered empty if either its 'display' or 'code' property is missing or falsy.
+   *
+   * @param valueCoding - The valueCoding object to check.
+   * @returns - true if valueCoding is empty; otherwise, false.
    */
   static isEmptyValueCoding(valueCoding: any): boolean {
-/*     if (!obs || ansOpts.length === 0) {
-      return true;
-    }
- */
     return !(valueCoding?.display && valueCoding?.code);
   }   
 }
