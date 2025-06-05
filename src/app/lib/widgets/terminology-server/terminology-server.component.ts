@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
-import {Subscription} from 'rxjs';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {LabelComponent} from '../label/label.component';
 import {FormsModule} from '@angular/forms';
@@ -17,7 +16,6 @@ import {CommonModule} from '@angular/common';
 export class TerminologyServerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
 
   static PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
-  subscriptions: Subscription[] = [];
   tsExtension: fhir4.Extension = {
     url: TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
     valueUrl: ''
@@ -91,9 +89,4 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
     }
   }
 
-  ngOnDestroy() {
-    this.subscriptions.forEach((sub) => {
-      sub.unsubscribe();
-    });
-  }
 }

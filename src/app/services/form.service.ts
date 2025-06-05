@@ -30,7 +30,7 @@ import vsLayout from '../../assets/value-set-fields-layout.json5';
 // @ts-ignore
 import ngxVSSchema from '../../assets/ngx-vs.schema.json5';
 
-import {GuidingStep, Util} from '../lib/util';
+import {GuidingStep, Util, FHIR_VERSIONS, FHIR_VERSION_TYPE} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
@@ -67,6 +67,9 @@ export class FormService {
   static readonly TREE_NODE_ID = "__$treeNodeId";
   _validationStatusChanged$: Subject<void> = new Subject<void>();
 
+  static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
+  static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
+  static VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
 
   private _loading = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
@@ -90,6 +93,7 @@ export class FormService {
   _lformsVersion = '';
   _lformsErrorMessage = null;
   _windowOpenerUrl: string = null;
+  _windowOpenerFhirVersion: FHIR_VERSION_TYPE = "R4";
 
   fetchService = inject(FetchService);
   formLevelExtensionService = inject(ExtensionsService);
@@ -261,6 +265,22 @@ export class FormService {
 
   set windowOpenerUrl(url: string) {
     this._windowOpenerUrl = url;
+  }
+
+  get windowOpenerFhirVersion(): FHIR_VERSION_TYPE {
+    return this._windowOpenerFhirVersion;
+  }
+
+  /**
+   * Setter
+   * Set if the input is a valid version, otherwise ignore.
+   */
+  set windowOpenerFhirVersion(version: string) {
+    const v = version?.toUpperCase() as FHIR_VERSION_TYPE;
+    this._windowOpenerFhirVersion =
+      FHIR_VERSIONS[v] !== undefined
+        ? v
+        : this._windowOpenerFhirVersion;
   }
 
   get lformsVersion(): string {
@@ -605,6 +625,9 @@ export class FormService {
       if (this.treeNodeStatusMap[treeNodeId]['errors'] && fieldName in this.treeNodeStatusMap[treeNodeId]['errors']) {
         this.liveAnnouncer.announce('Error is resolved for this node.');
         delete this.treeNodeStatusMap[treeNodeId]['errors'][fieldName];
+      } else if (fieldName === "*") {
+        // clear all error for the given treeNodeId.
+        this.treeNodeStatusMap[treeNodeId]['errors'] = {};
       }
 
       this.treeNodeStatusMap[treeNodeId]['hasError'] = (Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length > 0);
@@ -672,6 +695,83 @@ export class FormService {
   clearAutoSavedTreeNodeStatusMap() {
     localStorage.removeItem('treeMap');
     this.treeNodeStatusMap = {};
+  }
+
+  /**
+   * Loop through the array of extensions and filters out extensions that is a Variable.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions excluding the extensions of type Variable.
+   */
+  removeVariablesExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url !== FormService.VARIABLE));
+  }
+
+  /**
+   * Loop through the array of extensions and filters out extensions that is an Initial Expression, or Calculated Expression.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions excluding the extensions of type Initial Expression or Calculated Expression.
+   */
+  removeExpressionsExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url !== FormService.INITIAL_EXPRESSION && ext.url !== FormService.CALCULATED_EXPRESSION));
+  }
+
+  /**
+   * Loop through the array of extensions and retain only extensions that is a Variable.
+   * @param extensions - array of extensions
+   * @returns - returns the array of extensions that is of type Variable.
+   */
+  filterVariableExtensions(extensions: any): any {
+    return extensions.filter(ext => (ext.url === FormService.VARIABLE));
+  }
+
+  /**
+   * Return the expression url based on the type of the expression.
+   * @param expressionType - Initial expression or calculated expression.
+   * @returns - expression url.
+   */
+  getUrlByType(expressionType: string): string {
+    return (expressionType === "__$initialExpression") ? FormService.INITIAL_EXPRESSION : FormService.CALCULATED_EXPRESSION;
+  }
+
+  /**
+   * Return the expression extension based on the type of the expression. If multiple extensions
+   * are found, the calculated expression takes precedence.
+   * @param extensions - array of extensions.
+   * @param expressionType - Initial expression or calculated expression.
+   * @returns - expression extension.
+   */
+  getExpressionsExtensionByType(extensions: any, expressionType: string): any {
+    let expression = null;
+
+    for (const ext of extensions) {
+      if (ext.url === FormService.CALCULATED_EXPRESSION) {
+        ext.url = this.getUrlByType(expressionType);
+        return ext;
+      } else if (ext.url === FormService.INITIAL_EXPRESSION && !expression) {
+        expression = ext;
+        expression.url = this.getUrlByType(expressionType);
+      }
+
+    }
+    return expression;
+  }
+
+  /**
+   * Check whether the provided array of extensions contains the Initial Expression.
+   * @param extensions - array of extensions
+   * @returns - True if the Initial Expression is found and false otherwise.
+   */
+  hasInitialComputeValueExpression(extensions: any): boolean {
+    return extensions.some(ext => (ext.url === FormService.INITIAL_EXPRESSION));
+  }
+
+  /**
+   * Check whether the provided array of extensions contains the Calculated Expression.
+   * @param extensions - array of extensions
+   * @returns - True if the Calculated Expression is found and false otherwise.
+   */
+  hasContinuouslyComputeValueExpression(extensions: any): boolean {
+    return extensions.some(ext => (ext.url === FormService.CALCULATED_EXPRESSION));
   }
 
   /**
@@ -1058,6 +1158,13 @@ export class FormService {
    */
   notifyWindowOpener(data: any) {
     if(this._windowOpenerUrl) {
+      // Return the data in the requested format
+      if(data.questionnaire) {
+        data.questionnaire = this.convertFromR5(
+          data.questionnaire,
+          this._windowOpenerFhirVersion
+        );
+      }
       window.opener.postMessage(data, this._windowOpenerUrl);
     }
   }

@@ -236,8 +236,13 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.1.valueCoding.code"]').type('c2');
   cy.get('[id^="answerOption.1.valueCoding.system"]').type('s2');
   cy.get('[id^="answerOption.1.valueCoding.__$score"]').type('3');
-  // Select a default a.k.a initial
-  cy.get('lfb-answer-option table tbody tr').eq(0).find('input[type="radio"]').click();
+  // Select first option
+  cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
+  cy.get('[id^="pick-answer"]').as('pickAnswer');
+  cy.get('@pickAnswer').click();
+  cy.get('#searchResults ul > li').should('have.length', 2);
+  cy.get('@pickAnswer').type('{downarrow}{enter}');
+  cy.get('@pickAnswer').should('have.value', 'd1');
 
   cy.questionnaireJSON().should((qJson) => {
     expect(qJson.item[0].type).equal('coding');
@@ -602,6 +607,33 @@ Cypress.Commands.add('getItemTextField', () => {
   return cy.getByLabel('lfb-ngx-schema-form', 'Question text');
 });
 
+/**
+ * Click radio button for the 'Type initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getTypeInitialValueValueMethodClick', () => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_type-initial"]').click();
+});
+
+/**
+ * Click radio button for the 'Pick initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getPickInitialValueValueMethodClick', () => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
+});
+/**
+ * Click radio button for the 'Compute initial value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getComputeInitialValueValueMethodClick', () => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-initial"]').click();
+});
+
+/**
+ * Click radio button for the 'Continuously compute value' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', () => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-continuously"]').click();
+});
+
 // Helps remove typescript errors and auto completing the Cypress commands in TypeScript
 declare global {
   namespace Cypress {
@@ -651,6 +683,10 @@ declare global {
       getRadioButtonLabel(groupLabel: string, rLabel: string): Cypress.Chainable<JQuery<HTMLElement>>;
       getSessionStorageItem(item: string): Chainable<string | null>;
       getTreeNode(text: string): Chainable<JQuery<HTMLElement>>;
+      getTypeInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
+      getPickInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
+      getComputeInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
+      getComputeContinuouslyValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
     }
   }
 }

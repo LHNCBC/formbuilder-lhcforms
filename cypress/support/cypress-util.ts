@@ -4,6 +4,7 @@ import {format, parseISO} from 'date-fns';
 
 export class CypressUtil {
 
+  public static HTTP_REQ_TIMEOUT = 20000;
   static lformsLibs = new Map();
   /**
    * Access base page component
@@ -151,7 +152,7 @@ export class CypressUtil {
   static mockSnomedEditions() {
     const fixture = 'snomedEditions.json';
     cy.intercept('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (req) => {
-      console.log(`cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`);
+      Cypress.log({message: `cy.intecept(): url = ${req.url}; query = ${JSON.stringify(req.query)}`});
       req.reply({fixture});
     });
   }
@@ -162,32 +163,37 @@ export class CypressUtil {
   static mockLFormsLoader() {
     const lformsLibUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
     cy.intercept(lformsLibUrl, async (req) => {
-      if(CypressUtil.lformsLibs.has(req.url)) {
-        console.log(`LForms versions from cached response for ${req.url}`);
-        req.reply(CypressUtil.lformsLibs.get(req.url));
-      }
-      else {
-        req.continue((res) => {
-            CypressUtil.lformsLibs.set(req.url, res.body);
-            console.log(`LForms versions after call through to ${req.url}`);
-            res.send({body: res.body});
-
-        });
-      }
+      CypressUtil._handleCachedResponse(req);
     }).as('lformsVersions');
 
-    cy.intercept(lformsLibUrl+'**/@(webcomponent|fhir)/*.@(js|css)', async (req) => {
-      if(CypressUtil.lformsLibs.has(req.url)) {
-        console.log(`LForms libraries from cache for ${req.url}`);
-        req.reply(CypressUtil.lformsLibs.get(req.url));
-      }
-      else {
-        req.continue((res) => {
-            CypressUtil.lformsLibs.set(req.url, res.body);
-            console.log(`LForms libraries after call through to ${req.url}`);
-        });
-      }
+    cy.intercept({method: 'GET', url: lformsLibUrl+'**/@(webcomponent|fhir)/**/*.@(js|css)', times: 4}, async (req) => {
+      // Covers 4 urls: .../x.x.x/webcomponent/{styles.css, lhc-forms.js, assets/lib/zone.min.js,}, and .../fhir/lformsFHIRAll.min.js
+      CypressUtil._handleCachedResponse(req);
     }).as('lformsLib');
+  }
+
+  /**
+   * Return from cache if the response is cached already, otherwise fetch it from the server, cache and return it.
+   * @param req - request object.
+   */
+  static _handleCachedResponse(req) {
+    if (CypressUtil.lformsLibs.has(req.url)) {
+      Cypress.log({message: `Loading from cache: ${req.url}`});
+      req.reply(CypressUtil.lformsLibs.get(req.url));
+    } else {
+      req.timeout = CypressUtil.HTTP_REQ_TIMEOUT;
+      req.continue((resp) => {
+        if (resp.statusCode >= 400) {
+          // Console.error statement should trigger failure of the test.
+          console.error(`${resp.statusCode}: Error loading ${req.url}: ${resp.statusMessage}`);
+        }
+        else {
+          Cypress.log({message: `${resp.statusCode}: Loading from website ${req.url}`});
+          CypressUtil.lformsLibs.set(req.url, resp.body);
+        }
+        resp.send();
+      });
+    }
   }
 
   /**

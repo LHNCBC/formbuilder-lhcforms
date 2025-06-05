@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "10.0.2",
+  "version": "10.1.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -27,6 +27,7 @@
     "lint": "npx ng lint",
     "cy:verify": "npx cypress verify",
     "cy-run": "npx cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort}",
+    "cy-run-log": "npx cypress run --env CYPRESS_LOG=log --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort}",
     "cy-run-fl": "npx cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort} --spec ./cypress/e2e/form-level/form-level.cy.ts",
     "cy-run-il": "npx cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort} --spec ./cypress/e2e/item-level/item-level.cy.ts",
     "e2e": "npx ng e2e",
@@ -37,6 +38,8 @@
     "e2e:prod": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:start-second-server http://localhost:${npm_package_config_testPortSecond} cy-pw-run",
     "e2e:cy-run-fl": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-fl",
     "e2e:cy-run-il": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-il",
+    "e2e:cy-run": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run",
+    "e2e:cy-run-log": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-log",
     "cy-pw-run": "npm run cy-run && npm run pw-run"
   },
   "files": [
@@ -44,17 +47,17 @@
   ],
   "dependencies": {
     "@angular-builders/custom-webpack": "^19.0.0",
-    "@angular/animations": "~19.1.4",
-    "@angular/cdk": "~19.1.2",
-    "@angular/common": "~19.1.4",
-    "@angular/compiler": "~19.1.4",
-    "@angular/core": "~19.1.4",
-    "@angular/forms": "~19.1.4",
-    "@angular/localize": "~19.1.4",
-    "@angular/material": "~19.1.2",
-    "@angular/platform-browser": "~19.1.4",
-    "@angular/platform-browser-dynamic": "~19.1.4",
-    "@angular/router": "~19.1.4",
+    "@angular/animations": "~19.1.8",
+    "@angular/cdk": "~19.1.5",
+    "@angular/common": "~19.1.8",
+    "@angular/compiler": "~19.1.8",
+    "@angular/core": "~19.1.8",
+    "@angular/forms": "~19.1.8",
+    "@angular/localize": "~19.1.8",
+    "@angular/material": "~19.1.5",
+    "@angular/platform-browser": "~19.1.8",
+    "@angular/platform-browser-dynamic": "~19.1.8",
+    "@angular/router": "~19.1.8",
     "@bugsplat/angular-tree-component": "^13.0.1",
     "@ctrl/ngx-codemirror": "^7.0.0",
     "@fortawesome/angular-fontawesome": "^1.0.0",
@@ -63,8 +66,10 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fullcalendar/core": "^6.1.15",
     "@lhncbc/ngx-schema-form": "2.13.1-forked1",
+    "@lhncbc/expression-editor": "^3.2.1",
     "@ng-bootstrap/ng-bootstrap": "^18.0.0",
     "@types/fhir": "^0.0.36",
+    "autocomplete-lhc": "^18.6.3",
     "bootstrap": "^5.3.3",
     "codemirror": "^5.65.18",
     "date-fns": "^2.30.0",
@@ -94,8 +99,8 @@
     "@angular-eslint/schematics": "~19.1.0",
     "@angular-eslint/template-parser": "~19.1.0",
     "@angular/cli": "~19.1.5",
-    "@angular/compiler-cli": "~19.1.4",
-    "@angular/language-service": "~19.1.4",
+    "@angular/compiler-cli": "~19.1.8",
+    "@angular/language-service": "~19.1.8",
     "@cypress/schematic": "^2.5.1",
     "@playwright/test": "^1.42.1",
     "@types/hapi": "18.0.8",
@@ -109,6 +114,7 @@
     "cypress": "^14.4.0",
     "cypress-fail-on-console-error": "^5.1.1",
     "cypress-real-events": "^1.14.0",
+    "cypress-terminal-report": "^7.1.0",
     "eslint": "^8.57.0",
     "jasmine-core": "^4.6.0",
     "jasmine-spec-reporter": "~7.0.0",
@@ -137,6 +143,13 @@
     },
     "@angular-eslint/schematics": {
       "@angular-devkit/schematics": "~19.1.0"
+    },
+    "@lhncbc/expression-editor": {
+      "@angular/animations": "~19.1.0",
+      "@angular/cdk": "~19.1.0",
+      "@angular/common": "~19.1.0",
+      "@angular/core": "~19.1.0",
+      "@angular/material": "~19.1.0"
     }
   }
 }

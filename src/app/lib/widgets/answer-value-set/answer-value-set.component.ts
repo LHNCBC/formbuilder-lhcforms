@@ -1,6 +1,5 @@
 import {AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
 import {StringComponent} from '../string/string.component';
-import {Subscription} from 'rxjs';
 import {FetchService, SNOMEDEditions} from '../../../services/fetch.service';
 import {FormService} from '../../../services/form.service';
 import {ExtensionsService} from '../../../services/extensions.service';
@@ -37,7 +36,6 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   nonSnomedUrl = '';
   snomedFhirVS = '';
   url = new URL(AnswerValueSetComponent.snomedBaseUri);
-  subscriptions: Subscription[] = [];
   eclPrefixRE = /^ecl\s*\//i;
   parseEditionRE = /sct\/([^\/]+)?(\/version\/([^\/]+))?/;
 
@@ -113,9 +111,8 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     this.url.pathname += this.snomedVersion ? '/version/' + this.snomedVersion : '';
     // this.snomedFhirVS = args.ecl;
     if(this.snomedFhirVS && this.snomedEdition) {
-      const ecl = this.eclPrefixRE.test(this.snomedFhirVS) ? this.snomedFhirVS : 'ecl/' + this.snomedFhirVS;
-      this.url.searchParams.set('fhir_vs', ecl);
-      snomedUrl = this.url.toString();
+      const ecl = this.eclPrefixRE.test(this.snomedFhirVS) ? this.snomedFhirVS.replace(this.eclPrefixRE, '') : this.snomedFhirVS;
+      snomedUrl = this.url.toString()+'?fhir_vs=ecl/'+encodeURIComponent(ecl);
     }
     this.snomedUrl = snomedUrl;
     this.formProperty.setValue(snomedUrl, false);
@@ -195,7 +192,10 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     }
     else {
       this.snomedFhirVS = '';
-      this.snomedEdition = '';
+      // Set the Snomed Edition to its default value instead of an empty string.
+      // Unlike 'snomedVersion', which defaults to 'default' when set to an empty string,
+      // 'snomedEdition' does not handle empty string in the same way.
+      this.snomedEdition = '900000000000207008';
       this.snomedVersion = '';
     }
   }
@@ -217,16 +217,6 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     this.tooltipOpen = true;
   }
 
-  /**
-   * Close ecl tooltip manually
-   */
-  ngOnDestroy() {
-    this.subscriptions.forEach((sub) => {
-      if(sub) {
-        sub.unsubscribe();
-      }
-    });
-  }
 
   /**
    * Clean up the ARIA label by removing the anchor tags (<a> and </a>) from a given string and replacing them with a specified string.

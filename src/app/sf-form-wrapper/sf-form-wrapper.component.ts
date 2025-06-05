@@ -14,6 +14,7 @@ import {ExtensionsService} from '../services/extensions.service';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
 import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
+import { TableService } from '../services/table.service';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -24,7 +25,7 @@ import { ValidationService, EnableWhenValidationObject } from '../services/valid
   templateUrl: './sf-form-wrapper.component.html',
   styleUrls: ['./sf-form-wrapper.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [ExtensionsService]
+  providers: [ExtensionsService, TableService]
 })
 export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('itemForm') itemForm: FormComponent;
@@ -52,7 +53,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     '/type': this.validateType.bind(this),
     '/enableWhen': this.validateEnableWhenAll.bind(this),
     '/enableWhen/*': this.validateEnableWhenSingle.bind(this),
-    '/linkId': this.validateLinkId.bind(this)
+    '/linkId': this.validateLinkId.bind(this),
+    '/__$pickInitial': this.validatePickInitial.bind(this)
   };
 
   mySchema: any = {properties: {}};
@@ -188,7 +190,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'conditionKey': condKey,
       'q': q,
       'aType': aType,
-      'answerTypeProperty': formProperty.getProperty('__$answerType').value,
+      'answerTypeProperty': answerType,
       'op': op,
       'aField': aField,
       'answerX': answerX,
@@ -197,6 +199,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     return enableWhenObj;
   }
+
 
   /**
    * Custom validator wrapper for the 'type' field in ngx-schema-form. Creates a validation object using data
@@ -266,9 +269,11 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @param formProperty - Object form property of the condition.
    * @param rootProperty - Root form property.
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
-   *          1. (INVALID_QUESTION)           - The question, which is the 'linkId', is an invalid 'linkId'.
-   *          2. (ENABLEWHEN_ANSWER_REQUIRED) - The question is provided and valid, the operator is provided and not
-   *                                            and not equal to 'exists', and the answer is empty.
+   *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
+   *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
+   *                                             options. 
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
+   *                                            and not equal to 'exists', and the answer is empty. 
    */
   validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
@@ -342,4 +347,86 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     return errors;
   }
+
+  /**
+   * Custom validator for the 'Pick initial' option in the Value Method. This validates data requirements
+   * for each of the 'Answer list source' field: 'answer-option', 'snomed-value-set', and 'value-set'.
+   * @param value - not used.
+   * @param formProperty - Object form property of the '__$pickInitial' field. 
+   * @param rootProperty - Root form property. 
+   * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
+   *          1. (ANSWER_OPTION_REQUIRED)               - 'Answer options' option is selected, but 'Answer choices' is
+   *                                                      empty and needs to be poulated.
+   *          2. (SNOMED_ANSWER_VALUE_SET_URI_REQUIRED) - 'SNOMED answer value set' option is selected, requiring the
+   *                                                      answer value set URI.
+   *          3. (ANSWER_VALUE_SET_URI_REQUIRED)        - 'Answer value set URI' option is selected, requiring both the
+   *                                                      'Answer value set' and 'Terminology server' fields.
+   */
+  validatePickInitial (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
+    let errors: any[] = [];
+
+    if (!this.model) {
+      return null;
+    }
+    const nodeId = this.model?.[FormService.TREE_NODE_ID];
+
+    if (!nodeId) {
+      return null;
+    }
+
+    const node = this.formService.getTreeNodeById(nodeId);
+    const linkId = node.data.linkId;
+
+    const asMethod = formProperty.findRoot().getProperty("__$answerOptionMethods").value;
+    // Answer Choices shows up with Answer Option Method = "answer-option" and 
+    const ansOpts = formProperty.findRoot().getProperty("answerOption").value;
+
+    // Answer Value Set field shows up when the Answer Option Method = "value-set" or "snomed-value-set"
+    const answerValueSetUri = formProperty.findRoot().getProperty("answerValueSet").value;
+
+    const valueMethod = formProperty.findRoot().getProperty("__$valueMethod").value;
+
+    const type = formProperty.findRoot().getProperty("type").value;
+
+    // For the boolean data type, 'pick-initial' was being assigned even though an answer option is not required.
+    // Added the data type check to exclude boolean types from triggering the 'ANSWER_OPTION_REQUIRED' error.
+    if (asMethod === "answer-option" && valueMethod === "pick-initial" && Util.isEmptyAnswerOption(ansOpts) && type !== "boolean") {
+      const errorCode = 'ANSWER_OPTION_REQUIRED';
+      const err: any = {};
+      err.code = errorCode;
+      err.path = `#/__$pickInitial`;
+      err.message = `Answer choices must be populated.`;
+      errors.push(err);
+    } else if (asMethod === "snomed-value-set" && !answerValueSetUri) {
+      const errorCode = 'SNOMED_ANSWER_VALUE_SET_URI_REQUIRED';
+      const err: any = {};
+      err.code = errorCode;
+      err.path = `#/__$pickInitial`;
+      err.message = `SNOMED answer value set URI is required.`;
+      errors.push(err);
+    } else if (asMethod === "value-set" && !answerValueSetUri) {
+      const errorCode = 'ANSWER_VALUE_SET_URI_REQUIRED';
+      const err: any = {};
+      err.code = errorCode;
+      err.path = `#/__$pickInitial`;
+      err.message = `Answer value set URI is required.`;
+      errors.push(err);
+    }
+
+    if(errors.length) {
+      formProperty.extendErrors(errors);
+    }
+    else {
+      errors = null;
+    }
+
+    this.formService.updateValidationStatus(nodeId,
+                                            linkId,
+                                            this.validationService.getLastPathSegment(formProperty.canonicalPathNotation),
+                                            errors);
+
+    this.validationErrorsChanged.next(errors);
+    return errors;
+  }
+
 }

@@ -9,9 +9,9 @@
       "text": "Group item 1",
       "item": [
         {
-          "type": "choice",
+          "type": "coding",
           "linkId": "lid-1.1",
-          "text": "Choice item 1.1",
+          "text": "Coding item 1.1",
           "answerOption": [
             {
               "valueCoding": {

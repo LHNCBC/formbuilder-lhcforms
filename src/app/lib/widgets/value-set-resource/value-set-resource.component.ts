@@ -17,13 +17,14 @@ import fhir from 'fhir/r4';
 import { FormService } from '../../../services/form.service';
 import {ExtensionsService} from "../../../services/extensions.service";
 import {SharedObjectService} from "../../../services/shared-object.service";
+import {TableService} from "../../../services/table.service";
 
 @Component({
   selector: 'lfb-value-set-resource',
   imports: [SchemaFormModule],
   templateUrl: './value-set-resource.component.html',
   styleUrl: './value-set-resource.component.css',
-  providers: [ExtensionsService]
+  providers: [ExtensionsService, TableService]
 })
 export class ValueSetResourceComponent implements OnInit {
 

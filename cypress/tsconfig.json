@@ -3,6 +3,7 @@
   "include": ["**/*.ts"],
   "exclude": [],
   "compilerOptions": {
+    "esModuleInterop": true,
     "sourceMap": true,
     "types": ["cypress", "cypress-real-events"]
   }

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {AnswerOptionComponent} from '../answer-option/answer-option.component';
 import {StringComponent} from '../string/string.component';
 import {LabelRadioComponent} from '../label-radio/label-radio.component';
@@ -12,12 +12,13 @@ import {Subscription} from 'rxjs';
   selector: 'lfb-answer-option-methods',
   templateUrl: './answer-option-methods.component.html'
 })
-export class AnswerOptionMethodsComponent extends LabelRadioComponent implements OnInit, AfterViewInit {
+export class AnswerOptionMethodsComponent extends LabelRadioComponent implements OnInit, AfterViewInit, OnDestroy {
 
   subscriptions: Subscription [] = [];
   @ViewChild('answerOption', {static: true, read: AnswerOptionComponent}) answerOption: AnswerOptionComponent;
   @ViewChild('answerValueSet', {static: true, read: StringComponent}) answerValueSet: StringComponent;
   isSnomedUser = false;
+  type = 'string';
 
   constructor(private formService: FormService, private liveAnnouncer: LiveAnnouncer) {
     super();
@@ -34,6 +35,13 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
+
+    let sub: Subscription;
+
+    sub = this.formProperty.findRoot().getProperty('type').valueChanges.subscribe((type) => {
+      this.type = type;
+    });
+    this.subscriptions.push(sub);
   }
 
   /**
@@ -71,5 +79,14 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
       }
       this.formProperty.setValue(valueSetType, false);
     }
+  }
+
+  /**
+   * Angular lifecycle hook
+   */
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub) => {
+      sub.unsubscribe();
+    });
   }
 }

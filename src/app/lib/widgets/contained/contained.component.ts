@@ -13,6 +13,7 @@ import { TitleComponent } from '../title/title.component';
 import { BooleanControlledComponent } from '../boolean-controlled/boolean-controlled.component';
 import { ResourceDlgComponent, ResourceData } from '../resource-dlg/resource-dlg.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import {MatTooltip} from "@angular/material/tooltip";
 
 
 @Component({
@@ -28,7 +29,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     CommonModule,
     FontAwesomeModule,
     NgbModule,
-    MatDialogModule
+    MatDialogModule,
+    MatTooltip
   ],
   templateUrl: '../table/table.component.html',
   styleUrl: '../table/table.component.css',
@@ -73,7 +75,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
    * Override the click handler on edit button.
    * @param index -  Index of the row in the table.
    */
-  onEditProperty(index: number) {
+  override onEditProperty(index: number) {
     const formProperty = this.formProperty.properties[index];
     const resourceType = formProperty.schema.properties.resourceType.enum[0];
     const matDialogRef = this.openDialog({

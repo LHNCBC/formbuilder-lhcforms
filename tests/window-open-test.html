@@ -6,7 +6,10 @@
 </head>
 <body>
 <div class="bg-body p-2" xmlns="http://www.w3.org/1999/html">
-  <button id="openWin" class="btn btn-primary m-2" onClick="openFormBuilder()">Open form builder</button>
+  <button id="openWinDefault" class="btn btn-primary m-2" onClick="openFormBuilder()">Open form builder (Default)</button>
+  <button id="openWinSTU3" class="btn btn-primary m-2" onClick="openFormBuilder('STU3')">Open form builder (STU3)</button>
+  <button id="openWinR4" class="btn btn-primary m-2" onClick="openFormBuilder('R4')">Open form builder (R4)</button>
+  <button id="openWinR5" class="btn btn-primary m-2" onClick="openFormBuilder('R5')">Open form builder (R5)</button>
   <button id="sendQ" class="btn btn-primary m-2" onClick="sendQuestionnaire()">Post questionnaire</button>
   <button id="clear" class="btn btn-primary m-2" onClick="clearMessages()">Clear messages</button>
   <p class="m-1" id="url"></p>
@@ -80,10 +83,16 @@
   /**
    * Open a child window to load form builder app.
    */
-  function openFormBuilder() {
-    fbWindow = window.open(fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href), 'formbuilder_window');
+  function openFormBuilder(fhirVersion) {
+    const referrerParam = 'referrer='+encodeURIComponent(window.location.href);
+    let versionParam = '';
+    if(fhirVersion) {
+      versionParam = '&fhirVersion='+encodeURIComponent(fhirVersion);
+    }
+    const reqUrl = fbUrl+'/window-open?'+referrerParam+versionParam;
+    fbWindow = window.open(reqUrl, 'formbuilder_window');
     fbWindow.focus();
-    urlEl.innerHTML = 'Opened url: ' + fbUrl;
+    urlEl.innerHTML = 'Opened url: ' + reqUrl;
   }
 
   /**

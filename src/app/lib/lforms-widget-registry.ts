@@ -43,6 +43,14 @@ import {HelpTextComponent} from "./widgets/help-text/help-text.component";
 import { ContainedComponent } from './widgets/contained/contained.component';
 import { ValueSetResourceComponent } from './widgets/value-set-resource/value-set-resource.component';
 
+import { ValueMethodComponent } from './widgets/value-method/value-method.component';
+import { PickAnswerComponent } from './widgets/pick-answer/pick-answer.component';
+import { ExpressionEditorComponent } from './widgets/expression-editor/expression-editor.component';
+import { ExpressionEditorDlgComponent } from './widgets/expression-editor-dlg/expression-editor-dlg.component';
+import { VariableComponent } from './widgets/variable/variable.component';
+import { InitialNumberComponent } from './widgets/initial-number/initial-number.component';
+import { EntryFormatComponent } from './widgets/entry-format/entry-format.component';
+import { AnswerValueSetCodingDisplayComponent } from './widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -86,5 +94,13 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('editable-link-id', EditableLinkIdComponent);
     this.register("contained", ContainedComponent);
     this.register("value-set", ValueSetResourceComponent);
+    this.register('value-method', ValueMethodComponent);
+    this.register('pick-answer', PickAnswerComponent);
+    this.register('expression-editor', ExpressionEditorComponent);
+    this.register('expression-editor-dlg', ExpressionEditorDlgComponent);
+    this.register('variable', VariableComponent);
+    this.register('initial-number', InitialNumberComponent);
+    this.register('entry-format', EntryFormatComponent);
+    this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
   }
 }

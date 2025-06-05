@@ -20,12 +20,13 @@ import {
   OnInit, Renderer2,
   SimpleChanges
 } from '@angular/core';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong, faEdit} from '@fortawesome/free-solid-svg-icons';
-import {PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
-import {Subscription} from 'rxjs';
+import {Observable, of, Subscription} from 'rxjs';
+import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import { TableService, TableStatus } from 'src/app/services/table.service';
 
 @Component({
   standalone: false,
@@ -34,7 +35,7 @@ import {Subscription} from 'rxjs';
   styleUrls: ['./table.component.css']
 })
 export class TableComponent extends LfbArrayWidgetComponent implements OnInit, AfterViewInit, DoCheck, OnChanges {
-
+  errors: {code: string, originalMessage: string, modifiedMessage: string} [] = null;
   static seqNum = 0;
   // Icons for buttons.
   faAdd = faPlusCircle;
@@ -46,6 +47,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   faEdit = faEdit;
 
   addEditAction = false;
+  warningIcon = faExclamationTriangle;
+  includeErrorColumn = false;
+  showErrorTypeList = [];
+  showErrorObject;
+
+  dataType = "string";
   includeActionColumn = false;
   isCollapsed = false;
   addButtonLabel = 'Add'; // Default label
@@ -69,6 +76,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   renderer = inject(Renderer2);
   cdr = inject(ChangeDetectorRef);
+  tableService = inject(TableService);
+
+  tableStatus: TableStatus;
   elementRef = inject(ElementRef);
 
   constructor() {
@@ -117,14 +127,40 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     }
     this.selectionRadio = -1;
     this.selectionCheckbox = [];
+
+    this.handleErrorColumnVisibility(widget);
+
+    // Limit the setting of the table status to 'Initial' component.
+    if (this.tableService && this.formProperty?.path === "/initial") {
+      this.tableService.setTableStatusChanged(null);
+    }
   }
 
+  /**
+   * Manages the visibility of the error column based on the schema.widget configuration for
+   * the given property.
+   * @param widget - The widget configuration for the property.
+   */
+  handleErrorColumnVisibility(widget: any): void {
+    if (this.dataType) {
+      this.showErrorTypeList = widget?.showErrorTypeList || [];
+
+      if (this.showErrorTypeList.length) {
+        this.includeErrorColumn = this.showErrorTypeList.some(errorType =>
+          errorType.type === this.dataType
+        );
+
+        this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
+      }
+    }
+  }
 
   /**
    * Initialize setting up observers.
    */
   ngAfterViewInit() {
     super.ngAfterViewInit();
+
     const singleItemEnableSource = this.formProperty.schema.widget ?
       this.formProperty.schema.widget.singleItemEnableSource : null;
     const multipleSelectionEnableSource = this.formProperty.schema.widget ?
@@ -175,7 +211,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.keyField = keyField;
     }
     // Lookout for any changes to key field
-    subscription = this.formProperty.searchProperty(this.keyField).valueChanges.subscribe((newValue) => {
+    subscription = this.formProperty.searchProperty(this.keyField)?.valueChanges.subscribe((newValue) => {
       const showFields = this.getShowTableFields();
       this.noHeader = showFields.some((f) => f.noHeader);
       this.cdr.markForCheck();
@@ -185,8 +221,64 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
     subscription = this.formProperty.valueChanges.subscribe((newValue) => {
       this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(newValue);
+
+      const widget = this.formProperty.schema.widget;
+      const type = this.formProperty.findRoot().getProperty('type');
+      if (type) {
+        this.dataType = type.value;
+        this.handleErrorColumnVisibility(widget);
+      }
     });
     this.subscriptions.push(subscription);
+
+    // Limit the subscription to only the "initial" component.
+    if (this.tableService && this.formProperty?.path === "/initial") {
+      subscription = this.tableService.tableStatusChanged$.subscribe((newValue: TableStatus) => {
+        this.tableStatus = newValue;
+        this.cdr.markForCheck();
+      });
+      this.subscriptions.push(subscription);
+    }
+  }
+
+  /**
+   * Get the style for the table row based on the table status.
+   * @returns - An object containing the CSS styles.
+   */
+  getStatusStyle() {
+    if (!this.tableStatus) {
+      return {};
+    }
+
+    switch (this.tableStatus.type) {
+      case 'error':
+        return { color: 'red' };
+      case 'warning':
+        return { color: 'darkorange' };
+      default:
+        return { color: 'black' };
+    }
+  }
+
+  /**
+   * Get the CSS class for the table row based on the table status.
+   * @returns - A string containing the CSS class.
+   */
+  getStatusClass() {
+    if (!this.tableStatus) {
+      return '';
+    }
+
+    switch (this.tableStatus.type) {
+      case 'error':
+        return 'text-danger';
+      case 'warning':
+        return 'text-warning';
+      case 'success':
+        return 'text-success';
+      default:
+        return '';
+    }
   }
 
   /**
@@ -488,5 +580,64 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   unHighlight(event: Event) {
     this.renderer.removeClass(event.currentTarget, 'row-highlight');
+  }
+
+  /**
+   * Retrieves the error messages for the given row index.
+   * @param index - Index of the row.
+   * @returns - observable that emits a string created by joining the 'errorMessage' array.
+   */
+  getFieldErrorsByIndex(index: number): Observable<string> {
+    const rowProperty = this.formProperty.properties[index] as ObjectProperty;
+    return this.getRowPropertyFieldErrors(rowProperty);
+  }
+
+  /**
+   * Loop through each of the 'property' fields and return any errors. This refers to
+   * any 'property' fields that display in a table structure.
+   * @param rowProperty - Object property.
+   * @returns - observable that emits a string created by joining the 'errorMessage' array.
+   */
+  getRowPropertyFieldErrors(rowProperty: ObjectProperty): Observable<string> {
+    let errorMessages: string [] = [];
+    const fields = this.showErrorObject.properties;
+
+    for (const field of fields) {
+      const fieldValue = rowProperty.getProperty(field)?.value;
+      if (fieldValue || fieldValue === null) {
+        const fieldName = field;
+        const errors = this.getFieldErrors(rowProperty.getProperty(fieldName));
+
+        if (errors) {
+          errorMessages.push(...errors);
+          break;
+        }
+      }
+    }
+
+    return of(errorMessages.length ? errorMessages.join() : null);
+  }
+
+  /**
+   * Collect field related errors based on the specified error codes.
+   * @param fieldProperty - FormProperty representing the field.
+   * @returns - Array of error messages or null.
+   */
+  getFieldErrors(fieldProperty: FormProperty): string [] {
+    const codes = this.showErrorObject.codes;
+    const messages = fieldProperty?._errors?.reduce((acc, error) => {
+      if (codes.includes(error.code)) {
+        acc.push(error.message);
+      }
+      return acc;
+    }, []);
+    return messages?.length ? messages : null;
+  }
+
+  /**
+   * Get the row properties.
+   */
+  get rowProperties(): ObjectProperty [] {
+    return this.formProperty.properties as ObjectProperty[];
   }
 }

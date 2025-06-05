@@ -321,8 +321,10 @@ export class Util {
     traverse(value).forEach(function (node) {
       this.before(function () {
         if(node && Array.isArray(node)) {
-          // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
-          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
+          // There is a bug in one of the package which caused issue if there is objects with empty fields in the array.
+          // The array index is not updated properly which caused an error. This is a work-around to clean up the empty fields.
+          Util.eliminateEmptyFields(node);
+          this.update(node);
         }
         if (Util.hasHelpText(node)) {
           Util.eliminateEmptyFields(node.__$helpText);
@@ -647,12 +649,56 @@ export class Util {
     const v = Util.detectFHIRVersion(initialQ);
     if(v !== version) {
       const resp: any = convert(initialQ, v, version);
+      // Remove tags added by the converter.
+      Util.removeElementsFromArray(resp?.data?.meta?.tag, (tag: fhir.Coding) => {
+        return (/^lhc-qnvconv-(STU3|R4|R5|R6)-to-(STU3|R4|R5|R6)$/i.test(tag?.code));
+      });
+      if(resp?.data?.meta?.tag && resp.data.meta.tag.length === 0) {
+        delete resp.data.meta.tag;
+      }
       ret = resp.data;
-      /*
-      ret = LForms.Util.getFormFHIRData(initialQ.resourceType, version,
-          LForms.Util.convertFHIRQuestionnaireToLForms(initialQ));
-      */
     }
     return ret;
   }
+
+  /**
+   * Returns the name of the value field for a given FHIR data type.
+   * @param type - one of the fhir data types.
+   * @returns - a field name in the format 'value' + CamelCase(type).
+   */
+  static getValueDataTypeName(type: string): string {
+    if (type === "text") {
+      type = "string";
+    }
+    return 'value' + type.charAt(0).toUpperCase() + type.slice(1);
+  }
+
+  /**
+   * Remove elements based on the boolean value returned by the callback.
+   *
+   * @param arr - Array to prune
+   * @param callback - Truthy call back. The function will be passed the element and its index in the array.
+   */
+  static removeElementsFromArray(arr: any [], callback) {
+    for(let i = arr?.length - 1; arr && i >= 0; i--) {
+      if(callback(arr[i], i)) {
+        arr.splice(i, 1);
+      }
+    }
+  }
+
+  /**
+   * Determines whether the provided array of answer options contains data. The array may
+   * contain an empty object; therefore, it is necessary to validate the 'display' and
+   * 'code' fields. 
+   * @param ansOpts - An array of Answer Options objects
+   * @returns - true if the Answer Option array is empty or contain one empty item, otherwise false.
+   */
+  static isEmptyAnswerOption(ansOpts: any): boolean {
+    if (!ansOpts || ansOpts.length === 0) {
+      return true;
+    }
+
+    return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
+  }  
 }

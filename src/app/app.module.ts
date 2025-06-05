@@ -1,6 +1,8 @@
 import { BrowserModule } from '@angular/platform-browser';
 import {ApplicationRef, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, NgModule} from '@angular/core';
 import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
+import { ExpressionEditorModule, ENVIRONMENT_TOKEN } from '@lhncbc/expression-editor';
+import { Util } from "./lib/util";
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -91,7 +93,18 @@ import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable
 import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
 import {CodemirrorModule} from "@ctrl/ngx-codemirror";
 import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
-import {Util} from "./lib/util";
+import { ValueMethodComponent } from './lib/widgets/value-method/value-method.component';
+import { PickAnswerComponent } from './lib/widgets/pick-answer/pick-answer.component';
+import { ExpressionEditorComponent } from './lib/widgets/expression-editor/expression-editor.component';
+import { ExpressionEditorDlgComponent } from './lib/widgets/expression-editor-dlg/expression-editor-dlg.component';
+
+import { VariableComponent } from './lib/widgets/variable/variable.component';
+import { InitialNumberDirective } from './lib/directives/initial-number.directive';
+import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
+import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
+import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
+
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -149,7 +162,16 @@ import {Util} from "./lib/util";
     TextAreaComponent,
     DatetimeComponent,
     EditableLinkIdComponent,
-    HelpTextComponent
+    HelpTextComponent,
+    ValueMethodComponent,
+    PickAnswerComponent,
+    ExpressionEditorComponent,
+    ExpressionEditorDlgComponent,
+    VariableComponent,
+    InitialNumberDirective,
+    InitialNumberComponent,
+    EntryFormatComponent,
+    AnswerValueSetCodingDisplayComponent
   ],
   imports: [
     AppFormElementComponent,
@@ -187,11 +209,13 @@ import {Util} from "./lib/util";
     AutoCompleteComponent,
     LabelComponent,
     CdkCopyToClipboard,
-    CodemirrorModule
+    CodemirrorModule,
+    ExpressionEditorModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [
     { provide: WidgetRegistry, useClass: LformsWidgetRegistry },
+    { provide: ENVIRONMENT_TOKEN, useValue: environment },
     AppJsonPipe,
     provideHttpClient()
   ],

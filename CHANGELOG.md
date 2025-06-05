@@ -2,6 +2,34 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.7] 2025-05-19
+### Fixed
+- Fixed fhir version of questionnaire in window api output.
+
+## [10.0.6] 2025-05-14
+### Added
+- Added entry format extension.
+### Fixed
+- Encoded ECL string of answerValueSet for SNOMED.
+- Fixed missing answer list layout for some item types.
+- Fixed the invalid enableWhen question throwing exception.
+- Fixed the logic in the Value method to correctly display the expression extension.
+
+## [10.0.5] 2025-04-16
+### Added
+- Added initial values for SNOMED and non-SNOMED answer value sets.
+
+## [10.0.4] 2025-04-15
+### Added
+- Added Value Method field for selecting initial values.
+
+## [10.0.3] 2025-04-10
+### Fixed
+- Removed encoding of answerValueSet for SNOMED.
+- Changed default output of questionnaire to R4, when [using window api](/API.md)
+- Refactored loading of LForms in mockLFormsLoader() to address random cypress test failures.
+Added detailed log statements when the tests fail.
+
 ## [10.0.2] 2025-03-24
 ### Fixed
 - Fixed a playwright test.

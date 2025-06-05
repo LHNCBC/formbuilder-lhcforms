@@ -20,6 +20,7 @@ describe('Home page accept Terms of Use notices', () => {
         }).as('loadingError');
 
       cy.visit('/'); // Avoid goToHomePage(), which intercepts lforms loading calls of its own.
+      cy.wait("@loadingError");
       cy.acceptAllTermsOfUse();
       cy.get('.card').as('errorCard').contains('.card-header', 'Error', {timeout: 10000});
       cy.get('@errorCard').find('.card-body').should('include.text', 'Encountered an error which causes');
@@ -80,6 +81,7 @@ describe('Home page accept Terms of Use notices', () => {
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
+    cy.get('.spinner-border').should('not.exist');
     cy.selectDataType('coding');
     cy.getRadioButtonLabel('Create answer list', 'Yes').click();
     cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
@@ -186,6 +188,7 @@ describe('Home page', () => {
       cy.get('@firstRow').find('[id^="code.0.code_"]').should('have.value', '34565-2');
 
       cy.contains('button', 'Edit questions').click();
+      cy.get('.spinner-border').should('not.exist');
       cy.contains('div', 'Question code').find('[id^="booleanRadio_true"]').should('be.checked');
       cy.contains('table > thead', 'Code').parent().parent().as('codeField');
       cy.get('@codeField').find('tbody').as('codeTable');
@@ -234,7 +237,6 @@ describe('Home page', () => {
     beforeEach(() => {
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
-      cy.resetForm();
       cy.get('[id^="booleanRadio_true"]').as('codeYes');
       cy.get('[id^="booleanRadio_false"]').as('codeNo');
     });
@@ -689,7 +691,6 @@ describe('Home page', () => {
     beforeEach(() => {
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.contains('button', 'Continue').click();
-      cy.resetForm();
       cy.uploadFile('answer-option-sample.json');
     });
 
