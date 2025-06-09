@@ -17,6 +17,7 @@
           { "field": "__$answerOptionMethods", "col": 12 },
           { "field": "answerValueSet", "col": 12 },
           { "field": "answerOption", "title": "Answer choices", "col": 12 },
+          { "field": "__$answerExpression", "col": 12 },
           { "field": "answerConstraint", "col": 12 },
           { "field": "__$valueMethod", "col": 12 },
           { "field": "initial", "title": "Default value", "col": 12 },

@@ -867,6 +867,12 @@
           "enum": ["value-set"],
           "title": "Answer value set URI",
           "dataType": ["coding"]
+        },
+        {
+          "type": "string",
+          "enum": ["answer-expression"],
+          "title": "Answer expression",
+          "dataType": ["all"]
         }
       ],
       "default": "answer-option",
@@ -915,7 +921,14 @@
       "pattern": "^\\S*$",
       "type": "string",
       "visibleIf": {
-        "/__$answerOptionMethods": ["value-set", "snomed-value-set"]
+        "allOf": [
+          {
+            "/__$answerOptionMethods":  ["value-set", "snomed-value-set"],
+          },
+          {
+            "type": ["coding"]
+          }
+        ]
       },
       "widget": {
         "id": "answer-value-set",
@@ -1595,7 +1608,7 @@
             "visibleIf": {
               "allOf": [
                 {
-                  "/__$answerOptionMethods": ["answer-option", "snomed-value-set", "value-set"]
+                  "/__$answerOptionMethods": ["answer-option", "snomed-value-set", "value-set", "answer-expression"]
                 },
                 {
                   "/type": ["$EXP$ target.value == 'coding'"]
@@ -1740,7 +1753,17 @@
                 "/__$answerOptionMethods": ["snomed-value-set", "value-set"]
               }
             ]
-          }
+          },
+          {
+            "allOf": [
+              {
+                "__$valueMethod":  ["type-initial"]
+              },
+              {
+                "/__$answerOptionMethods": ["answer-expression"]
+              }
+            ]
+          }          
         ]
       },
       "widget": {
@@ -1845,7 +1868,7 @@
             "__$valueMethod":  ["pick-initial"]
           },
           {
-            "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option'"]
+            "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option' || target.value == 'answer-expression' "]
           }
         ],
       },
@@ -2099,6 +2122,66 @@
           titleSection: true,
           uneditableVariablesSection: true,
           itemVariablesSection: true,
+          outputExpressionSection: true
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col form-control form-control-sm"
+      }
+    },
+    "__$answerExpression": {
+      "description": "An expression (FHIRPath, CQL, or FHIR query) that dynamically generates a list of allowed answers for a question item, or provides context for a group item. Users can select one or more answers from the generated list.",
+      "title": "Answer expression",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
+      },
+      "visibleIf": {
+        "__$answerOptionMethods": ["answer-expression"]
+      },
+      "widget": {
+        "id": "expression-editor",
+        "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+        "showExpression": true,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: false,
+          itemVariablesSection: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -2551,6 +2634,17 @@
         }
       ]
     },
+    {
+      "fields": [
+        "__$answerExpression"
+      ],
+      "showFields": [
+        {
+          "field": "__$answerExpression",
+          "col": 12
+        }
+      ]
+    },    
     {
       "fields": [
         "__$restrictions"

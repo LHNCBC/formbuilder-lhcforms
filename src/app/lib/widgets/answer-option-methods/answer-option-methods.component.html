@@ -10,7 +10,8 @@
   ></lfb-label>
   <div [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="'label_'+id">
     <ng-container *ngFor="let option of schema.oneOf">
-      <ng-container *ngIf="(isSnomedUser && (option.dataType[0] === 'all' || option.dataType.indexOf(type) > -1)) || (!isSnomedUser && option.enum[0] !== 'snomed-value-set')">
+      <ng-container *ngIf="(isSnomedUser && (option.dataType[0] === 'all' || option.dataType.indexOf(type) > -1) && isAnswerList) ||
+                           (!isSnomedUser && option.enum[0] !== 'snomed-value-set')">
         <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" [name]="id"
                type="radio" [value]="option.enum[0]" autocomplete="off" (change)="handleChange()">
         <label class="btn btn-sm btn-outline-success" [attr.for]="id + '_' + option.enum[0]">{{option.title || option.description}}</label>

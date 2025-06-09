@@ -31,6 +31,8 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   itemId: number;
   faAdd = faPlusCircle;
   name: string;
+  answerOptionMethod: string;
+
   /**
    * Invoke super constructor.
    *
@@ -62,7 +64,8 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
 
     if ('extension' in item) {
       const exp = this.extensionsService.getFirstExtensionByUrl(ExtensionsService.INITIAL_EXPRESSION) ||
-                  this.extensionsService.getFirstExtensionByUrl(ExtensionsService.CALCULATED_EXPRESSION);
+                  this.extensionsService.getFirstExtensionByUrl(ExtensionsService.CALCULATED_EXPRESSION) ||
+                  this.extensionsService.getFirstExtensionByUrl(ExtensionsService.ANSWER_EXPRESSION);
       if (exp) {
         this.expression = exp.valueExpression.expression;
         this.formProperty.setValue(exp, false);
@@ -86,12 +89,20 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
    * @returns - the output expression from either the 'initial expression' or the 'calculated expression'.
    */
   getOutputExpressionFromFormProperty(): any {
-    let outputExpression = this.formProperty.findRoot().getProperty('__$initialExpression').value;
-    if (this.extensionsService.isEmptyValueExpression(outputExpression)) {
-      outputExpression = this.formProperty.findRoot().getProperty('__$calculatedExpression').value;
+    const properties = [
+      '__$initialExpression',
+      '__$calculatedExpression',
+      '__$answerExpression'
+    ];
+
+    for (const prop of properties) {
+      const expr = this.formProperty.findRoot().getProperty(prop).value;
+      if (!this.extensionsService.isEmptyValueExpression(expr)) {
+        return expr;
+      }
     }
 
-    return outputExpression;
+    return null;
   }
 
   /**
@@ -112,11 +123,17 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
 
   /**
    * Return the expression url based on the value method.
-   * @param valueMethod - "compute-initial" or "compute-continuously".
+   * @param valueMethod - "compute-initial", "compute-continuously" or "answer-expression".
    * @returns - expression url.
    */
   getUrlByValueMethod(valueMethod: string): string {
-    return (valueMethod === "compute-initial") ? ExtensionsService.INITIAL_EXPRESSION : ExtensionsService.CALCULATED_EXPRESSION;
+    if (valueMethod === "compute-initial") {
+      return ExtensionsService.INITIAL_EXPRESSION;
+    } else if (valueMethod === "compute-continuously") {
+      return ExtensionsService.CALCULATED_EXPRESSION;
+    } else {
+      return ExtensionsService.ANSWER_EXPRESSION;
+    }
   }
   /**
    * Get extension
@@ -189,7 +206,7 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
         this.extensionsService.extensionsProp.reset(resultExtensions, false);
         const variables = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE);
 
-        const outputExtension = this.extensionsService.getFirstExtensionByUrl(this.getUrlByValueMethod(this.valueMethod));
+        const outputExtension = this.extensionsService.getFirstExtensionByUrl(this.schema.widget.expressionUri);
         this.expression = outputExtension?.valueExpression?.expression;
         this.formProperty.setValue(outputExtension, false);
 

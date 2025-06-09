@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {AnswerOptionComponent} from '../answer-option/answer-option.component';
 import {StringComponent} from '../string/string.component';
 import {LabelRadioComponent} from '../label-radio/label-radio.component';
@@ -6,6 +6,8 @@ import {AnswerValueSetComponent} from '../answer-value-set/answer-value-set.comp
 import {FormService} from '../../../services/form.service';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {Subscription} from 'rxjs';
+import { ExtensionsService } from 'src/app/services/extensions.service';
+import { TableService, TableStatus } from 'src/app/services/table.service';
 
 @Component({
   standalone: false,
@@ -19,6 +21,9 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   @ViewChild('answerValueSet', {static: true, read: StringComponent}) answerValueSet: StringComponent;
   isSnomedUser = false;
   type = 'string';
+  isAnswerList = false;
+  extensionsService: ExtensionsService = inject(ExtensionsService);
+  tableService = inject(TableService);
 
   constructor(private formService: FormService, private liveAnnouncer: LiveAnnouncer) {
     super();
@@ -38,8 +43,35 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
 
     let sub: Subscription;
 
+    sub = this.formProperty.valueChanges.subscribe((ansOptMethod) => {
+      if (ansOptMethod === "answer-expression") {
+        const warningMessage = 'Validation and automatic lookup for Answer Expression are not available. The expression cannot be checked, and initial values must be entered manually.';
+
+        const status: TableStatus = {
+          type: 'warning',
+          message: warningMessage
+        };
+        this.tableService.setTableStatusChanged(status);
+        
+      } else {
+        // Clear previous status to force UI update
+        this.tableService.setTableStatusChanged(null);
+        
+      }
+    });
+    this.subscriptions.push(sub);
+
     sub = this.formProperty.findRoot().getProperty('type').valueChanges.subscribe((type) => {
       this.type = type;
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.formProperty.findRoot().getProperty('__$isAnswerList').valueChanges.subscribe((isAnswerList) => {
+      this.isAnswerList = isAnswerList;
+
+      if (!this.isAnswerList) {
+        this.tableService.setTableStatusChanged(null);
+      }
     });
     this.subscriptions.push(sub);
   }
@@ -49,7 +81,8 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
    */
   handleChange() {
     let message = '';
-    switch(this.formProperty.value) {
+
+    switch (this.formProperty.value) {
       case 'answer-option':
         message = `Fields for answer options are displayed below.`;
         break;
@@ -58,6 +91,9 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
         break;
       case 'value-set':
         message = `A field for an answer value set URI is displayed below.`;
+        break;
+      case 'answer-expression':
+        message = `A field for an answer expression is displayed below.`;
         break;
     }
     this.liveAnnouncer.announce(message).then(r => {});
@@ -78,6 +114,11 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
         valueSetType = 'snomed-value-set';
       }
       this.formProperty.setValue(valueSetType, false);
+    } else {
+      const answerExpressionExtension = this.extensionsService.getFirstExtensionByUrl(ExtensionsService.ANSWER_EXPRESSION);
+      if (answerExpressionExtension) {
+        this.formProperty.setValue('answer-expression', false);
+      }
     }
   }
 

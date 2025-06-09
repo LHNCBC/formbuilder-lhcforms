@@ -390,7 +390,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     // For the boolean data type, 'pick-initial' was being assigned even though an answer option is not required.
     // Added the data type check to exclude boolean types from triggering the 'ANSWER_OPTION_REQUIRED' error.
-    if (asMethod === "answer-option" && valueMethod === "pick-initial" && Util.isEmptyAnswerOption(ansOpts) && type !== "boolean") {
+    if (asMethod === "answer-option" && valueMethod === "pick-initial" && Util.isEmptyAnswerOptionForType(ansOpts, type) && type !== "boolean") {
       const errorCode = 'ANSWER_OPTION_REQUIRED';
       const err: any = {};
       err.code = errorCode;

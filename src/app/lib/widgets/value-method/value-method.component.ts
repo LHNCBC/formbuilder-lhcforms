@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, OnInit, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, OnInit, OnDestroy, inject } from '@angular/core';
 import {FormService} from '../../../services/form.service';
 import { Subscription } from 'rxjs';
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
 import { Util } from '../../util';
+import { ExtensionsService } from 'src/app/services/extensions.service';
 
 @Component({
   standalone: false,
@@ -14,13 +15,14 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
   linkId: string;
   answerOptions;
   subscriptions: Subscription[] = [];
-
+  isAnswerList = false;
   displayTypeInitial = true;
   displayPickInitial = true;
-
+  answerOptionMethod = "answer-option";
   currentValueMethod: string;
 
   valueMethodOptions: any[];
+  extensionsService: ExtensionsService = inject(ExtensionsService);
 
   constructor(private formService: FormService) {
     super();
@@ -35,78 +37,102 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
   }
 
+  /**
+   * Updates the available value method options and sets the appropriate control value
+   * based on the current type, answer option method, and whether the item is an answer list.
+   * This function determines which value method options should be shown to the user,
+   * and sets the control and form property values accordingly.
+   * It also updates display flags for the UI.
+   *
+   * @param type - The data type of the item (e.g., 'boolean', 'coding', etc.)
+   * @param answerOptionMethod - The method used for answer options (e.g., 'answer-option', 'answer-expression', etc.)
+   * @param isAnswerList - Whether the item is configured as an answer list
+   */
+  private updateValueMethodOptions(type: string, answerOptionMethod: string, isAnswerList: boolean) {
+    
+    const initial = this.formProperty.findRoot().getProperty('initial').value;
+    const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
+    const extensions = this.extensionsService.extensionsProp.value;
+
+    const expression = extensions.filter(ext =>
+      ext.url === ExtensionsService.INITIAL_EXPRESSION ||
+      ext.url === ExtensionsService.CALCULATED_EXPRESSION ||
+      ext.url === ExtensionsService.ANSWER_EXPRESSION
+    );
+
+    // if the expression is available and it is an initial expression
+    if (expression[0]?.url === ExtensionsService.INITIAL_EXPRESSION) {
+      this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
+      this.control.setValue("compute-initial", { emitEvent: true });
+      this.formProperty.setValue("compute-initial", false);
+    // if the expression is available and it is a calculated expression
+    } else if (expression[0]?.url === ExtensionsService.CALCULATED_EXPRESSION) {
+      this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
+      this.control.setValue("compute-continuously", { emitEvent: true });
+      this.formProperty.setValue("compute-continuously", false);
+    // if type is boolean or 
+    // answer option method = answer-option and there are answer choices, and intial values or
+    // answer option method = snomed-value-set or value set, and initial values  
+    } else if ((type === 'boolean') ||
+               ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && answerOptions.some(opt => "initialSelected" in opt)) ||
+                ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && initial.length > 0))) {
+      this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
+      this.control.setValue("pick-initial", { emitEvent: true });
+      this.formProperty.setValue("pick-initial", false);
+    // answer option method = answer-expression  
+    } else if (answerOptionMethod === "answer-expression" || expression[0]?.url === ExtensionsService.ANSWER_EXPRESSION) {
+      this.valueMethodOptions = [this.formProperty.schema.oneOf[0], this.formProperty.schema.oneOf[this.formProperty.schema.oneOf.length - 1]];
+      this.control.setValue("type-initial", { emitEvent: true });
+      this.formProperty.setValue("type-initial", false);
+    } else if (type === "coding" && Util.isEmptyAnswerOptionForType(answerOptions, type)) {
+      this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
+      this.control.setValue("none", { emitEvent: true });
+      this.formProperty.setValue("none", false);
+    } else if (initial.length > 0 && type !== 'coding') {
+      this.valueMethodOptions = [...this.formProperty.schema.oneOf.slice(0, 1), ...this.formProperty.schema.oneOf.slice(2)];
+      this.control.setValue("type-initial", { emitEvent: true });
+      this.formProperty.setValue("type-initial", false);
+    } else {
+      if (isAnswerList) {
+        this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
+      } else {
+        this.valueMethodOptions = [...this.formProperty.schema.oneOf.slice(0, 1), ...this.formProperty.schema.oneOf.slice(2)];
+      }
+      this.control.setValue("none", { emitEvent: true });
+      this.formProperty.setValue("none", false);
+    }
+    this.displayTypeInitial = ((answerOptionMethod === "answer-expression" && isAnswerList) || !isAnswerList);
+    this.displayPickInitial = !this.displayTypeInitial;
+  }
+  
   ngAfterViewInit() {
     super.ngAfterViewInit();
     let sub: Subscription;
 
-    sub = this.formProperty.searchProperty('__$isAnswerList').valueChanges.subscribe((isAnswerList) => {
-      this.displayPickInitial = isAnswerList;
-      this.displayTypeInitial = !this.displayPickInitial;
-      
-      const initial = this.formProperty.findRoot().getProperty('initial').value;
-      const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
-      const answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
+    sub = this.formProperty.searchProperty('/__$isAnswerList').valueChanges.subscribe((isAnswerList) => {
+      this.isAnswerList = isAnswerList;
 
-      let hasPickSelection = false;
-      if (isAnswerList) {
-        hasPickSelection = answerOptions.some(opt => "initialSelected" in opt);
-      }
-
-      let hasAnswerValuetSetURL = false;
-      const valueSetUrl = this.formProperty.searchProperty('answerValueSet').value;
-      if(valueSetUrl?.length > 0) {
-        hasAnswerValuetSetURL = true;
-      }
-
-      const extensions = this.formProperty.findRoot().getProperty('extension').value;
-      const expression = extensions.filter(ext => ext.url === FormService.INITIAL_EXPRESSION ||
-                                           ext.url === FormService.CALCULATED_EXPRESSION);
-      // Determine which Value Method option to select based on the available data. 
-      // Default to 'None' if didn't meet the conditions.
-      if (expression[0]?.url === FormService.INITIAL_EXPRESSION) {
-        this.control.setValue("compute-initial", { emitEvent: true });
-        this.formProperty.setValue("compute-initial", false);
-      } else if (expression[0]?.url === FormService.CALCULATED_EXPRESSION) {
-        this.control.setValue("compute-continuously", { emitEvent: true });
-        this.formProperty.setValue("compute-continuously", false);
-      } else if ((this.type === 'boolean' && initial.length > 0) ||
-                 ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && hasPickSelection) ||
-                  ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') &&
-                    initial.length > 0))) {
-        this.control.setValue("pick-initial", { emitEvent: true });
-        this.formProperty.setValue("pick-initial", false);
-      } else if (initial.length > 0 && this.type !== 'coding' ) {
-        this.control.setValue("type-initial", { emitEvent: true });
-        this.formProperty.setValue("type-initial", false);
-      } else {
-        this.control.setValue("none", { emitEvent: true });
-        this.formProperty.setValue("none", false);
-      }
+      this.updateValueMethodOptions(this.type, this.answerOptionMethod, isAnswerList);
     });
     this.subscriptions.push(sub);
 
     sub = this.formProperty.searchProperty('type').valueChanges.subscribe((typeVal) => {
       this.type = typeVal;
-      this.valueMethodOptions = this.formProperty.schema.oneOf;
-      const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
 
       if (typeVal === "decimal" || typeVal === "dateTime" || typeVal === "url" || typeVal === "quantity" ||
           typeVal === "group" || typeVal === "display") {
+        this.isAnswerList = false;
         this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
-      } else if (typeVal === "coding" && Util.isEmptyAnswerOption(answerOptions)) {
-        this.valueMethodOptions = this.valueMethodOptions.slice(1);
-        this.control.setValue("none", { emitEvent: true });
-        this.formProperty.setValue("none", false);
-      } else if (typeVal === "boolean") {
-        this.valueMethodOptions = this.valueMethodOptions.slice(1);
-        this.control.setValue("pick-initial", { emitEvent: true });
-        this.formProperty.setValue("pick-initial", false);
-      } else {
-        const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
-        if (answerOptions && answerOptions.length > 0) {
-          this.formProperty.searchProperty('__$isAnswerList').setValue(true, false);
-        }
       }
+      
+      this.updateValueMethodOptions(typeVal, this.answerOptionMethod, this.isAnswerList);
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.formProperty.searchProperty('/__$answerOptionMethods').valueChanges.subscribe((method) => {
+      this.answerOptionMethod = method;
+
+      this.updateValueMethodOptions(this.type, method, this.isAnswerList);
     });
     this.subscriptions.push(sub);
 
