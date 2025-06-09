@@ -35,3 +35,4 @@ const config = {
 installLogsCollector();
 failOnConsoleError(config);
 
+window.global = window;

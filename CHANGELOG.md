@@ -5,6 +5,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [10.1.0] 2025-05-29
 ### Added
 - Enabled combining multiple displays and codes in a unit lookup.
+- Added a variable extension at the questionnaire level.
 ### Fixed
 - Fixed the no_match status when switching between Pick initial value and other value methods.
 - Fixed the empty answer option check for all data types except coding.
