@@ -1762,8 +1762,10 @@
           {"field": "valueCoding.display", "title": "Display", "col": 4, "nolabel": true},
           {"field": "valueCoding.code", "title": "Code", "col": 3, "nolabel": true},
           {"field": "valueCoding.system", "title": "System", "col": 4, "nolabel": true},
-          {"field": "valueQuantity.value","title": "Value", "col": 4, "nolabel": true},
-          {"field": "valueQuantity.unit", "title": "Unit", "col": 7, "nolabel": true},
+          {"field": "valueQuantity.value","title": "Value", "col": 2, "nolabel": true},
+          {"field": "valueQuantity.unit", "title": "Unit", "col": 4, "nolabel": true},
+          {"field": "valueQuantity.code", "title": "Code", "col": 3, "nolabel": true},
+          {"field": "valueQuantity.system", "title": "System", "col": 3, "nolabel": true},
           {"field": "valueReference", "noHeader": true, "nolabel": true}
         ],
         "showErrorTypeList": [
@@ -2136,7 +2138,121 @@
         "type": ["$EXP$ target.value != 'display'"]
       }
     },
+    "__$units": {
+      "description": "The units associated with answers, used to convert numeric values into a Quantity when extracting data into a FHIR resource. They are applicable for integer, decimal, and quantity types.",
+      "title": "Units",
+      "type": "array",
+      "items": {
+        "description": "Some description here.",
 
+        "properties": {
+          "id": {
+            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+            "title": "Id",
+            "pattern": "^[ \\r\\n\\t\\S]+$",
+            "type": "string",
+            "widget": {"id": "hidden"}
+          },
+          "url": {
+            "description": "A location where the data can be accessed.",
+            "pattern": "^\\S*$",
+            "type": "string"
+          },
+          "extension": {
+            "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+            "items": {
+              "$ref": "#/definitions/Extension"
+            },
+            "type": "array",
+            "title": "Extension",
+            "widget": {
+              "id": "hidden"
+            }
+          },
+          "valueCoding": {
+            "description": "The actual value to for an initial answer.",
+            "title": "Value coding",
+            "properties": {
+              "id": {
+                "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+                "widget": {
+                  "id": "hidden"
+                },
+                "pattern": "^[ \\r\\n\\t\\S]+$",
+                "type": "string"
+              },
+              "extension": {
+                "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+                "items": {
+                  "$ref": "#/definitions/Extension"
+                },
+                "type": "array",
+                "widget": {
+                  "id": "hidden"
+                }
+              },
+              "system": {
+                "description": "The identification of the code system that defines the meaning of the symbol in the code.",
+                "pattern": "^\\S*$",
+                "type": "string"
+              },
+              "version": {
+                "description": "The version of the code system which was used when choosing this code. Note that a well-maintained code system does not need the version reported, because the meaning of codes is consistent across versions. However this cannot consistently be assured, and when the meaning is not guaranteed to be consistent, the version SHOULD be exchanged.",
+                "widget": {
+                  "id": "hidden"
+                },
+                "pattern": "^[ \\r\\n\\t\\S]+$",
+                "type": "string"
+              },
+              "code": {
+                "description": "A symbol in syntax defined by the system. The symbol may be a predefined code or an expression in a syntax defined by the coding system (e.g. post-coordination).",
+                "pattern": "^[^\\s]+(\\s[^\\s]+)*$",
+                "type": "string"
+              },
+              "display": {
+                "description": "A representation of the meaning of the code in the system, following the rules of the system.",
+                "pattern": "^[ \\r\\n\\t\\S]+$",
+                "type": "string"
+                ,
+                "widget": {
+                  "id": "units-display"
+                }
+              },
+              "userSelected": {
+                "description": "Indicates that this coding was chosen by a user directly - e.g. off a pick list of available items (codes or displays).",
+                "pattern": "^true|false$",
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false,
+            "type": "object",
+            "widget": {
+              "id": "hidden"          
+            }
+          }
+
+        },
+        "additionalProperties": false,
+        "type": "object"
+      },
+      "visibleIf": {
+        "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal' || target.value == 'quantity'"]
+      },
+      "widget": {
+        "id": "units",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0",
+        "addButtonLabel": "Add another unit",
+        "multipleSelectionEnableSource": "repeats",
+        "showFields": [
+          {"field": "valueCoding.display", "title": "Display", "nolabel": true},
+          {"field": "valueCoding.code", "title": "Code", "col": 3, "nolabel": true},
+          {"field": "valueCoding.system", "title": "System", "col": 3, "nolabel": true}
+        ]
+      }
+    },
+/*
     "__$units": {
       "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
       "title": "Units",
@@ -2151,7 +2267,7 @@
       "visibleIf": {
         "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal' || target.value == 'quantity'"]
       }
-    },
+    }, */
     /** Proxy for help text. Help text is represented by a child item.
      In form builder, to avoid child item to represent like a child question, the help text child item
       is converted to a proxy field __$helpText. Its _ element is this:
