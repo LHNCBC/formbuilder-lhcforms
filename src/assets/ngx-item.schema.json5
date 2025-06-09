@@ -1788,7 +1788,7 @@
         },
         "selectedAnswers": {
           "type": "array",
-          "title": "Pick Initial value",
+          "title": "Pick initial value",
           "items": {
             "properties": {
               "extension": {
@@ -1840,7 +1840,7 @@
         }
       },
       "type": "object",
-      "title": "Pick Initial value",
+      "title": "Pick initial value",
       "visibleIf": {
         "allOf": [
           {
@@ -1862,7 +1862,7 @@
     },
     "__$variable": {
       "description": "Use to store values derived from calculations, references to other answers, or external data.",
-      "title": "Item Variables",
+      "title": "Item variables",
       "type": "array",
       "items": {
         "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",

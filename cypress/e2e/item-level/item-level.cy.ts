@@ -2322,7 +2322,7 @@ describe('Home page', () => {
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
-      //cy.get('@units').type('inch');
+
       [['[in_i]', 'inch'], ['[in_br]', 'inch - British']].forEach((result, index) => {
         cy.get('[id^="units"]').eq(index).type('inch');
         cy.contains('#completionOptions tr', result[0]).click();
@@ -4304,7 +4304,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 5 variables
+      // Item Variables section should now show 5 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 5);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4374,7 +4374,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 3 variables
+      // Item Variables section should now show 3 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 3);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4461,7 +4461,7 @@ describe('Home page', () => {
       });
       cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
 
-      // Item variables section should now show 2 variables that were created in the Expression Editor
+      // Item Variables section should now show 2 variables that were created in the Expression Editor
       cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4474,7 +4474,7 @@ describe('Home page', () => {
       cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
       cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', '2');
 
-      // Add a new variable from the 'Item variables' section
+      // Add a new variable from the 'Item Variables' section
       cy.get('button#editVariables').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         cy.get('#expression-editor-base-dialog').should('exist');
@@ -4494,7 +4494,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 3 variables
+      // Item Variables section should now show 3 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 3);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(3)').as('thirdVariable');
 
@@ -4559,7 +4559,7 @@ describe('Home page', () => {
         ]);
       });
 
-      // Add variable 'a' via the 'Item variables' section
+      // Add variable 'a' via the 'Item Variables' section
       cy.get('button#editVariables').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         cy.get('#expression-editor-base-dialog').should('exist');
@@ -4579,7 +4579,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 2 variables that were created in the Expression Editor
+      // Item Variables section should now show 2 variables that were created in the Expression Editor
       cy.get('lfb-variable table > tbody > tr').should('have.length', 1);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'a');
@@ -4882,6 +4882,94 @@ describe('Home page', () => {
         expect(qJson.item[7].answerOption[2].initialSelected).equal(true);
       });
     });
+
+    it('should retain valid state when toggling between "Pick initial value" and other value methods', () => {
+      
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Test state');
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
+
+      // Answer Option field is empty. Add 3 options.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('[id^="answerOption.0.valueCoding.display"]').type('Example 1');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').type('MD11871-1');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.1.valueCoding.display"]').type('Example 2');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').type('MD11871-2');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.2.valueCoding.display"]').type('Example 3');
+      cy.get('[id^="answerOption.2.valueCoding.code"]').type('MD11871-3');
+      cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
+      cy.get('[id^="answerOption.2.valueCoding.__$score"]').click();
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('exist').should('be.visible');
+
+      // Select 'Example 2' option
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer').should('have.value', 'Example 2');
+
+      // Select the 'Compute initial value - Value method'
+      cy.getComputeInitialValueValueMethodClick();
+
+      // Then select the 'Pick initial value - Value method' again.
+      cy.getPickInitialValueValueMethodClick();
+
+      // The 'Pick initial value' field should not contain the 'no_match' class (darker yellow to represent )
+      cy.get('@pickAnswer').should('not.have.class', 'no_match');
+    });
+
+    it('should remove the answer choices error when answer choices are added and selected for types other than "coding"', () => {
+      
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Test answer choice error');
+      cy.selectDataType('integer');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('exist').should('be.visible');
+
+      cy.get('@pickAnswer').should('have.class', 'invalid');
+      // The error message should display at the bottom of the text input
+      cy.get('lfb-pick-answer')
+        .find('small.text-danger')
+        .should('be.visible')
+        .should('contain.text', "Answer choices must be populated.");
+
+      // Answer Option field is empty. Add 3 options.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('[id^="answerOption.0.valueInteger"]').type('100');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.1.valueInteger"]').type('200');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.2.valueInteger"]').type('300');
+      cy.get('@addAnswerButton').click();
+
+      // Select 'Example 2' option
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer').should('have.value', '200');
+
+      cy.get('@pickAnswer').should('not.have.class', 'invalid');
+    });    
 
     it('should create Initial compute value expression', () => {
       // Add a new item under the 'Race' item of data type 'display'.
