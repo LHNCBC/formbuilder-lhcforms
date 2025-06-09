@@ -632,7 +632,11 @@ describe('Home page', () => {
           cy.get('lhc-query-observation').shadow().find('#autocomplete-2').as('queryObs');
 
           cy.get('@queryObs').then($el => {
-            cy.selectAutocompleteOptions($el, false, 'weight', null, '{downarrow}{enter}', ['×Weight - 29463-7']);
+            // Search for invalid code, should return empty array
+            cy.selectAutocompleteOptions($el, false, 'invalidCode', null, '{downarrow}{enter}', []);
+
+            // Search for 'weight', should return selected result
+            cy.selectAutocompleteOptions($el, true, 'weight', null, '{downarrow}{enter}', ['×Weight - 29463-7']);
           });
 
           // Add a new variable 'e_easy_path_exp'

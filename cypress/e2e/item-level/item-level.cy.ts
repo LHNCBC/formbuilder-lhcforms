@@ -848,7 +848,10 @@ describe('Home page', () => {
 
       // Select first option in second item.
       cy.get('@pickAnswer2').then($el => {
-        cy.selectAutocompleteOption($el, true, 'd11', null, '{downarrow}{enter}', 'd11');
+        // Search for invalid code, the expected list size should be 0
+        cy.selectAutocompleteOption($el, true, 'invalidCode', 0, '{downarrow}{enter}', null);
+        // Search for valid code
+        cy.selectAutocompleteOption($el, true, 'd11', 1, '{downarrow}{enter}', 'd11');
       });
 
       // Switch to first item
@@ -4003,7 +4006,11 @@ describe('Home page', () => {
         cy.get('lhc-query-observation').shadow().find('#autocomplete-2').as('queryObs');
 
         cy.get('@queryObs').then($el => {
-          cy.selectAutocompleteOptions($el, false, 'weight', null, '{downarrow}{enter}', ['×Weight - 29463-7']);
+          // Search for invalid code, should return empty array
+          cy.selectAutocompleteOptions($el, false, 'invalidCode', null, '{downarrow}{enter}', []);
+
+          // Search for 'weight', should return selected result
+          cy.selectAutocompleteOptions($el, true, 'weight', null, '{downarrow}{enter}', ['×Weight - 29463-7']);
         });
 
         // Add a new variable 'd_question'
@@ -4587,6 +4594,9 @@ describe('Home page', () => {
       // Select 1st and 3rd options
       cy.get('@pickAnswer').then($el => {
         cy.selectAutocompleteOptions($el, true, 'Example 1', null, '{downarrow}{enter}', ['×Example 1']);
+
+        cy.selectAutocompleteOptions($el, true, 'invalidCode', null, '{downarrow}{enter}', ['×Example 1']);
+
         cy.selectAutocompleteOptions($el, true, 'Example 3', null, '{downarrow}{enter}', ['×Example 1', '×Example 3']);
       });      
 
