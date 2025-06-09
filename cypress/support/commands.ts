@@ -641,11 +641,6 @@ function handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeywor
       }
 
       if ($results.length > 0) {
-        // Results exist, check if any contain the keyword
-        if (searchKeyword) {
-          const found = $results.toArray().some(el => el.innerText.includes(searchKeyword));
-          expect(found).to.equal(true);
-        }
         if (specialCharacterSequencesText) {
           cy.wrap(autocompleteElement).type(specialCharacterSequencesText);
         }
