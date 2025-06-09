@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.0.8] 2025-06-09
+### Fixed
+- Fixed copy of an item when a single item is in the sidebar tree.
+
 ## [10.0.7] 2025-05-19
 ### Fixed
 - Fixed fhir version of questionnaire in window api output.

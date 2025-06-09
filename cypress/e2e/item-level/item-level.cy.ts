@@ -448,6 +448,23 @@ describe('Home page', () => {
       });
     });
 
+    it('should copy a single item', () => {
+      // Select the 'Relationship to patient' item and select the 'More options'.
+      cy.get('div.node-content-wrapper-active button.dropdown-toggle').as('contextMoreBtn');
+      cy.get('@contextMoreBtn').click();
+
+      // Select the 'Move this item' option.
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Copy this item').click();
+
+      cy.get('lfb-node-dialog #moveTarget1').as('dlgInput');
+      cy.get('@dlgInput').click();
+      cy.get('lfb-node-dialog [role="listbox"]').find('button.dropdown-item').should('contain.text', 'Item 0');
+      cy.get('@dlgInput').type('{downArrow}{enter}');
+      cy.get('lfb-node-dialog').contains('button', 'Copy').click();
+
+      cy.getTreeNode('Copy of Item 0').click();
+    });
+
     it('should restrict to integer input in integer field', () => {
       cy.selectDataType('integer');
       cy.getTypeInitialValueValueMethodClick();
@@ -1929,7 +1946,7 @@ describe('Home page', () => {
 
       it('should display entry format placeholder for different data types', () => {
         cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
-        
+
         // Decimal data type
         cy.get('#text').should('have.value', 'Decimal data type');
         cy.get('#type').should('contain.value', 'decimal');
@@ -1951,7 +1968,7 @@ describe('Home page', () => {
         cy.getTreeNode('Datetime data type').click();
         cy.get('#text').should('have.value', 'Datetime data type');
         cy.get('#type').should('contain.value', 'dateTime');
-        cy.get('[id="__$entryFormat"]').should('have.value', 'YY/MM/DD hh:mm:ss');        
+        cy.get('[id="__$entryFormat"]').should('have.value', 'YY/MM/DD hh:mm:ss');
 
         // Time data type
         cy.getTreeNode('Time data type').click();
@@ -2004,7 +2021,7 @@ describe('Home page', () => {
 
       it('should update entry format placeholder for different data types', () => {
         cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
-        
+
         // Decimal data type
         cy.get('#text').should('have.value', 'Decimal data type');
         cy.get('[id="__$entryFormat"]').clear().type('##.##');
@@ -2022,7 +2039,7 @@ describe('Home page', () => {
         // Datetime data type
         cy.getTreeNode('Datetime data type').click();
         cy.get('#text').should('have.value', 'Datetime data type');
-        cy.get('[id="__$entryFormat"]').clear().type('YYYY hh:mm:ss');      
+        cy.get('[id="__$entryFormat"]').clear().type('YYYY hh:mm:ss');
 
         // Time data type
         cy.getTreeNode('Time data type').click();
@@ -2131,7 +2148,7 @@ describe('Home page', () => {
         // Datetime data type
         cy.getTreeNode('Datetime data type').click();
         cy.get('#text').should('have.value', 'Datetime data type');
-        cy.get('[id="__$entryFormat"]').clear();      
+        cy.get('[id="__$entryFormat"]').clear();
 
         // Time data type
         cy.getTreeNode('Time data type').click();
@@ -2169,7 +2186,7 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
           expect(qJson.item[0].extension[3]).undefined;
-        
+
           // the entryFormat has been deleted.
           expect(qJson.item[1].extension[0]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
@@ -2191,7 +2208,7 @@ describe('Home page', () => {
 
           expect(qJson.item[5].type).equal('string');
           expect(qJson.item[5].extension).undefined;
-        
+
           expect(qJson.item[6].type).equal('text');
           expect(qJson.item[6].extension).undefined;
 
@@ -2208,13 +2225,13 @@ describe('Home page', () => {
 
       it('should correctly display the entry format even when other extnsions are present', () => {
         cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
-        
-        // There should only be one entryFormat extension, however, should there be more than one, the 
+
+        // There should only be one entryFormat extension, however, should there be more than one, the
         // last entry format will be used.
         cy.get('#text').should('have.value', 'Decimal data type');
         cy.get('#type').should('contain.value', 'decimal');
         cy.get('[id="__$entryFormat"]').should('have.value', 'Enter value between 15.2 and 20.1');
-      
+
         // Looking at the JSON, there are actually two entryFormats.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
@@ -2227,16 +2244,16 @@ describe('Home page', () => {
             "valueString": "Enter value between 15.2 and 20.1"
           });
         });
-  
+
         // Invoke preview.
         cy.contains('button', 'Preview').click();
-  
+
         // The LForms preview should display the correct message.
         cy.get('lhc-item lhc-item-question lhc-input > input:first')
           .first()
           .invoke('attr', 'placeholder')
           .should('eq', 'Enter value between 15.2 and 20.1');
-        
+
         // Close the Preview dialog.
         cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
 
@@ -2263,13 +2280,13 @@ describe('Home page', () => {
 
         // Invoke preview.
         cy.contains('button', 'Preview').click();
-  
+
         // The LForms preview should display the correct message.
         cy.get('lhc-item lhc-item-question lhc-input > input:first')
           .first()
           .invoke('attr', 'placeholder')
           .should('eq', 'Enter value between 15.2 and 20.1');
-        
+
         // Close the Preview dialog.
         cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
 
@@ -2315,7 +2332,7 @@ describe('Home page', () => {
         });
       });
     });
- 
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
@@ -4004,7 +4021,7 @@ describe('Home page', () => {
         //cy.get('#searchResults #completionOptions tr').contains('29463-7').click();
         cy.get('div#row-2 lhc-query-observation').shadow().within(() => {
           cy.get('div.query-select > span.autocomp_selected > ul > li')
-            .should('have.text', '×Weight - 29463-7'); 
+            .should('have.text', '×Weight - 29463-7');
         });
 
         // Add a new variable 'd_question'
@@ -4473,7 +4490,7 @@ describe('Home page', () => {
 
       cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
       cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%measured_weight-%normal_weight');
-      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');        
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
       // Continuously Compute Value
       cy.clickTreeNode('Continuously Compute Value with decimal data type');
@@ -4494,7 +4511,7 @@ describe('Home page', () => {
 
       cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
       cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '((%weight_change / %normal_weight).round(2))*100');
-      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked'); 
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
     });
 
     it('should type initial values', () => {
@@ -5225,7 +5242,7 @@ describe('Value method button selection', () => {
     cy.get('@type').contains('date');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
     cy.get('[id^="initial.0.valueDate"]').should('have.value', '2024-03-03');
-    
+
     cy.clickTreeNode('date_type-answerlist_yes');
     cy.get('@type').contains('date');
     cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
@@ -5258,7 +5275,7 @@ describe('Value method button selection', () => {
     cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
     cy.get('lfb-answer-option table > tbody > tr').should('have.length', 2);
     cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'def');
-    
+
     cy.clickTreeNode('text_type-answerlist_no');
     cy.get('@type').contains('text');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
