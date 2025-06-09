@@ -64,6 +64,7 @@ import { UserSpecifiedServerDlgComponent } from './lib/widgets/user-specified-se
 import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
+import { UnitsDisplayComponent } from './lib/widgets/units-display/units-display.component';
 import { AnswerOptionComponent } from './lib/widgets/answer-option/answer-option.component';
 import { SfFormWrapperComponent } from './sf-form-wrapper/sf-form-wrapper.component';
 import { PreviewDlgComponent } from './lib/widgets/preview-dlg/preview-dlg.component';
@@ -144,6 +145,7 @@ import { environment } from '../environments/environment';
     FhirSearchDlgComponent,
     BooleanRadioComponent,
     UnitsComponent,
+    UnitsDisplayComponent,
     AnswerOptionComponent,
     SfFormWrapperComponent,
     PreviewDlgComponent,
