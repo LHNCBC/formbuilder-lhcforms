@@ -231,13 +231,13 @@ describe('Util', () => {
         }
       }
     ];
-    expect(Util.isEmptyAnswerOption(null)).toBe(true);
-    expect(Util.isEmptyAnswerOption([])).toBe(true);
+    expect(Util.isEmptyAnswerOptionForType(null, "coding")).toBe(true);
+    expect(Util.isEmptyAnswerOptionForType([], "coding")).toBe(true);
 
-    expect(Util.isEmptyAnswerOption(answerOption)).toBe(false);
-    expect(Util.isEmptyAnswerOption(emptyAnswerOption)).toBe(true);
-    expect(Util.isEmptyAnswerOption(emptyAnswerOption2)).toBe(true);
-    expect(Util.isEmptyAnswerOption(emptyAnswerOption3)).toBe(true);
-    expect(Util.isEmptyAnswerOption(emptyAnswerOption4)).toBe(false);
+    expect(Util.isEmptyAnswerOptionForType(answerOption, "coding")).toBe(false);
+    expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption, "coding")).toBe(true);
+    expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption2, "coding")).toBe(true);
+    expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption3, "coding")).toBe(true);
+    expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption4, "coding")).toBe(false);
   });
 });

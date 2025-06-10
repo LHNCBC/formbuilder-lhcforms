@@ -866,8 +866,12 @@ describe('Home page', () => {
       cy.get('@pickAnswer2').should('be.empty');
 
       // Select first option in second item.
-      cy.get('@pickAnswer2').click().type('d11{downarrow}{enter}');
-      cy.get('@pickAnswer2').should('have.value', 'd11');
+      cy.get('@pickAnswer2').then($el => {
+        // Search for invalid code, the expected list size should be 0
+        cy.selectAutocompleteOption($el, true, 'invalidCode', 0, '{downarrow}{enter}', null);
+        // Search for valid code
+        cy.selectAutocompleteOption($el, true, 'd11', 1, '{downarrow}{enter}', 'd11');
+      });
 
       // Switch to first item
       cy.clickTreeNode('Item with answer option');
@@ -900,17 +904,14 @@ describe('Home page', () => {
       cy.get('lfb-answer-option table > tbody > tr').should('have.length', 3);
 
       cy.get('#pick-answer_2').as('pickAnswer2');
-      cy.get('@pickAnswer2').click();
-      // No initial value was selected, so there should still be three options available.
-      cy.get('#searchResults ul > li').should('have.length', 3);
 
-      // Select third option in second item.
-      cy.get('@pickAnswer2').type('{downarrow}{downarrow}{downarrow}{enter}');
-      cy.get('@pickAnswer2').should('have.value', 'd31');
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer2').then($el => {
+        cy.selectAutocompleteOption($el, false, null, 3, '{downarrow}{downarrow}{downarrow}{enter}', 'd31');
+      });
 
-      // Clear the selection.
-      cy.get('@pickAnswer2').clear().type('{enter}').should('be.empty');
+      cy.get('@pickAnswer2').then($el => {
+        cy.selectAutocompleteOption($el, true, null, 3, '{enter}', '');
+      });
 
       // Items should be unselected.
       cy.get('#searchResults ul > li').should('have.length', 3);
@@ -923,8 +924,10 @@ describe('Home page', () => {
       cy.get('#searchResults ul > li').should('have.length', 3);
 
       // Select second and third option in second item.
-      cy.get('@pickAnswer2').type('{downarrow}{downarrow}{enter}');
-      cy.get('@pickAnswer2').type('{enter}');
+      cy.get('@pickAnswer2').then($el => {
+        cy.selectAutocompleteOptions($el, true, null, 3, '{downarrow}{downarrow}{enter}', ['×d21']);
+        cy.selectAutocompleteOptions($el, true, null, 2, '{downarrow}{downarrow}{enter}', ['×d21', '×d31']);
+      });
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[1].answerOption).to.deep.equal(
           [
@@ -1045,7 +1048,6 @@ describe('Home page', () => {
         .find('label:contains("Yes")')
         .prev('input[type="radio"]')
         .should('be.checked');
-      // cy.get('[id^="answerConstraint_optionsOnly"]').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
       cy.get('lfb-answer-option').should('not.exist');
@@ -2225,7 +2227,7 @@ describe('Home page', () => {
         });
       });
 
-      it('should correctly display the entry format even when other extnsions are present', () => {
+      it('should correctly display the entry format even when other extensions are present', () => {
         cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
 
         // There should only be one entryFormat extension, however, should there be more than one, the
@@ -2293,7 +2295,7 @@ describe('Home page', () => {
         cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
 
         // Add a unit extension to the item.
-        cy.get('[id^="units"]').last().as('units');
+        cy.get('[id^="units"]').first().as('units');
         cy.get('@units').should('be.visible');
         cy.get('#searchResults').should('not.be.visible');
         cy.get('@units').type('inch');
@@ -2339,13 +2341,29 @@ describe('Home page', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
       cy.getTypeInitialValueValueMethodClick();
-      cy.get('[id^="units"]').last().as('units');
+      cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
-      cy.get('@units').type('inch');
-      [['[in_i]', 'inch'], ['[in_br]', 'inch - British']].forEach((result) => {
+
+      [['[in_i]', 'inch'], ['[in_br]', 'inch - British']].forEach((result, index) => {
+        cy.get('[id^="units"]').eq(index).type('inch');
         cy.contains('#completionOptions tr', result[0]).click();
-        cy.contains('span.autocomp_selected li', result[1]).should('be.visible');
+
+        cy.get('lfb-units table').within(() => {
+          cy.get('tbody tr').eq(index).then($row => {
+            cy.wrap($row).within(() => {
+              cy.get('td input').as('unitCols');
+
+              cy.get('@unitCols').eq(0).should('have.value', result[1]);
+              cy.get('@unitCols').eq(1).should('have.value', result[0]);
+              cy.get('@unitCols').eq(2).should('have.value', 'http://unitsofmeasure.org');
+            });
+          });
+        });
+
+        if (index < 1) {
+          cy.get('lfb-units').contains('button', 'Add another unit').click();
+        }
       });
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('quantity');
@@ -2364,7 +2382,7 @@ describe('Home page', () => {
       cy.get('[id^="units"]').should('not.exist');
       cy.selectDataType('decimal');
       cy.getTypeInitialValueValueMethodClick();
-      cy.get('[id^="units"]').last().as('units');
+      cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
       cy.get('#searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
@@ -2388,6 +2406,272 @@ describe('Home page', () => {
       });
     });
 
+    it('should support lookup with wordBoundaryChars (string tokenizer) for decimal/integer units', () => {
+      cy.get('[id^="units"]').should('not.exist');
+      cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
+      cy.get('[id^="units"]').first().as('units');
+      cy.get('@units').should('be.visible');
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@units').type('A');
+      cy.get('#searchResults').should('be.visible');
+      cy.contains('#completionOptions tr', 'Ampere').click();
+      cy.get('@units').should('have.value', 'Ampere');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.0.valueCoding.code"]').as('unitCode').should('have.value', 'A');
+      cy.get('[id^="__$units.0.valueCoding.system"]').as('unitSystem').should('have.value', 'http://unitsofmeasure.org');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].type).equal('decimal');
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('A');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('Ampere');
+      });
+
+      cy.get('@units').type('/').type('kg');
+      cy.contains('#completionOptions tr', 'kilogram').click();
+      cy.get('@units').should('have.value', 'Ampere/kilogram');
+      cy.get('@unitCode').should('have.value', 'A/kg');
+      cy.get('@unitSystem').should('have.value', 'http://unitsofmeasure.org');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('A/kg');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('Ampere/kilogram');
+      });
+      cy.get('@units').type('.').type('st');
+      cy.contains('#completionOptions tr', 'stere').click();
+      cy.get('@units').should('have.value', 'Ampere/kilogram.stere');
+      cy.get('@unitCode').should('have.value', 'A/kg.st');
+      cy.get('@unitSystem').should('have.value', 'http://unitsofmeasure.org');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('A/kg.st');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[Ampere/kilogram]*stere');
+      });
+
+      // Now try display that have multiple words.
+      cy.get('@units').clear().type('a');
+      cy.contains('#completionOptions tr', 'a_g').click();
+      cy.get('@units').should('have.value', 'mean Gregorian year');
+      cy.get('@unitCode').should('have.value', 'a_g');
+      cy.get('@unitSystem').should('have.value', 'http://unitsofmeasure.org');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('mean Gregorian year');
+      });
+      cy.get('@units').type('/').type('k');
+      cy.contains('#completionOptions tr', 'kat/kg').click();
+      cy.get('@units').should('have.value', 'mean Gregorian year/katal per kilogram');
+      cy.get('@unitCode').should('have.value', 'a_g/kat/kg');
+      cy.get('@unitSystem').should('have.value', 'http://unitsofmeasure.org');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/kat/kg');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[[mean Gregorian year]/katal]/kilogram');
+      });
+
+      cy.get('@units').type('/').type('m');
+      cy.contains('#completionOptions tr', 'meter').click();
+      cy.get('@units').should('have.value', 'mean Gregorian year/katal per kilogram/meter');
+      cy.get('@unitCode').should('have.value', 'a_g/kat/kg/m');
+      cy.get('@unitSystem').should('have.value', 'http://unitsofmeasure.org');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/kat/kg/m');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[[[mean Gregorian year]/katal]/kilogram]/meter');
+      });
+    });
+
+    it('should support lookup with wordBoundaryChars (string tokenizer) for quantity units', () => {
+      cy.get('[id^="units"]').should('not.exist');
+      cy.selectDataType('quantity');
+      cy.getTypeInitialValueValueMethodClick();
+
+      cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('10');
+      cy.get('[id^="initial.0.valueQuantity.unit"]').as('quantityUnit').type('l');
+      cy.get('#searchResults').should('be.visible');
+      cy.contains('#completionOptions tr', 'Liters').click();
+      cy.get('@quantityUnit').should('have.value', 'Liters');
+
+      // The quantity unit should also now display the code and system.
+      cy.get('[id^="initial.0.valueQuantity.code"]').should('have.value', 'L');
+      cy.get('[id^="initial.0.valueQuantity.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial[0].valueQuantity.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].initial[0].valueQuantity.code).equal('L');
+        expect(qJson.item[0].initial[0].valueQuantity.unit).equal('Liters');
+      });
+      cy.get('@quantityUnit').type('/').type('s');
+      cy.contains('#completionOptions tr', 'second - time').click();
+      cy.get('@quantityUnit').should('have.value', 'Liters per second');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].initial[0].valueQuantity.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].initial[0].valueQuantity.code).equal('L/s');
+        expect(qJson.item[0].initial[0].valueQuantity.unit).equal('Liters per second');
+      });
+
+      cy.contains('button', 'Add another unit').as('addUnitButton');
+
+      cy.get('[id^="units"]').should('have.length', 1);
+      cy.get('[id^="units"]').first().as('unit1');
+      cy.get('@unit1').should('be.visible');
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@unit1').type('l');
+      cy.get('#searchResults').should('be.visible');
+      cy.contains('#completionOptions tr', 'Liters').click();
+      cy.get('@unit1').should('have.value', 'Liters');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.0.valueCoding.code"]').should('have.value', 'L');
+      cy.get('[id^="__$units.0.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('L');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('Liters');
+      });
+
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 2);
+      cy.get('[id^="units"]').eq(1).as('unit2');
+      cy.get('@unit2').should('be.visible');
+      cy.get('@unit2').type('oz');
+      cy.get('#searchResults').should('be.visible');
+      cy.contains('#completionOptions tr', 'standard unit used in the US and internationally').click();
+      cy.get('@unit2').should('have.value', 'ounce');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.1.valueCoding.code"]').should('have.value', '[oz_av]');
+      cy.get('[id^="__$units.1.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[1].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[1].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[1].valueCoding.code).equal('[oz_av]');
+        expect(qJson.item[0].extension[1].valueCoding.display).equal('ounce');
+      });
+    });
+
+    it('should support lookup code string that contains wordBoundaryChars', () => {
+      cy.get('[id^="units"]').should('not.exist');
+      cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
+      cy.get('[id^="units"]').first().as('units');
+      cy.get('@units').should('be.visible');
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@units').type('a_g/kat/kg/m').type('{enter}');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/kat/kg/m');
+        // The display is however a little different as it is coming from the UCUM instead of autocompleter
+        // So instead of 'mean Gregorian year/katal per kilogram/meter'
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[[[mean Gregorian year]/katal]/kilogram]/meter');
+      });
+    });
+    it('should support lookup display string that contains wordBoundaryChars and no spaces between words', () => {
+      cy.get('[id^="units"]').should('not.exist');
+      cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
+      cy.get('[id^="units"]').first().as('units');
+      cy.get('@units').should('be.visible');
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@units').type('Ampere/kilogram.stere').type('{enter}');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('A/kg.st');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[Ampere/kilogram]*stere');
+      });
+    });
+    it('should support lookup display string that contains spaces between words', () => {
+      cy.get('[id^="units"]').should('not.exist');
+      cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
+      cy.get('[id^="units"]').first().as('units');
+      cy.get('@units').should('be.visible');
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@units').type('mean Gregorian year').type('{enter}');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('mean Gregorian year');
+      });
+    });
+    it('should NOT support lookup display string that contains wordBoundaryChars and spaces between words', () => {
+      cy.get('[id^="units"]').should('not.exist');
+      cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
+      cy.get('[id^="units"]').first().as('units');
+      cy.get('@units').should('be.visible');
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@units').type('mean Gregorian year/katal per kilogram').type('{enter}');
+      cy.get('[id^="__$units.0.valueCoding.code').should('have.value', '');
+      cy.get('[id^="__$units.0.valueCoding.system').should('have.value', '');
+
+    });
+    it('should allow users to create their own valueCoding', () => {
+      cy.get('[id^="units"]').should('not.exist');
+      cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
+      cy.get('[id^="units"]').first().as('units');
+      cy.get('@units').should('be.visible');
+      cy.get('#searchResults').should('not.be.visible');
+      cy.get('@units').type('unknown unit').type('{enter}');
+      cy.get('[id^="__$units.0.valueCoding.code').type('unknown').type('{enter}');
+      cy.get('[id^="__$units.0.valueCoding.system').type('http://unknown.org').type('{enter}');
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unknown.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('unknown');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('unknown unit');
+      });
+    });
+
+    it('should display units when reading from existing questionnaire', () => {
+      const sampleFile = 'units-and-quantity-sample.json';
+      cy.uploadFile(sampleFile, true);
+      cy.get('#title').should('have.value', 'Units and Quantity');
+      cy.contains('button', 'Edit questions').click();
+
+      cy.get('[id^="units"]').first().should('have.value', '[[katal/kilogram]/Ampere]*stere');
+      cy.get('[id^="__$units.0.valueCoding.code').should('have.value', 'kat/kg/A.st');
+      cy.get('[id^="__$units.0.valueCoding.system').should('have.value', 'http://unitsofmeasure.org');
+
+      cy.clickTreeNode('Integer data type');
+      cy.get('[id^="units"]').first().should('have.value', '[[katal/kilogram]/Ampere]*stere');
+      cy.get('[id^="__$units.0.valueCoding.code').should('have.value', 'kat/kg/A.st');
+      cy.get('[id^="__$units.0.valueCoding.system').should('have.value', 'http://unitsofmeasure.org');
+
+      cy.clickTreeNode('Quantity data type');
+      cy.get('[id^="initial.0.valueQuantity.value"]').should('have.value', '1');
+      cy.get('[id^="initial.0.valueQuantity.unit"]').should('have.value', 'kilogram');
+      cy.get('[id^="initial.0.valueQuantity.code"]').should('have.value', 'kg');
+      cy.get('[id^="initial.0.valueQuantity.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      cy.get('[id^="units"]').eq(0).should('have.value', 'kilogram');
+      cy.get('[id^="__$units.0.valueCoding.code').should('have.value', 'kg');
+      cy.get('[id^="__$units.0.valueCoding.system').should('have.value', 'http://unitsofmeasure.org');
+      cy.get('[id^="units"]').eq(1).should('have.value', 'gram');
+      cy.get('[id^="__$units.1.valueCoding.code').should('have.value', 'g');
+      cy.get('[id^="__$units.1.valueCoding.system').should('have.value', 'http://unitsofmeasure.org');
+      cy.get('[id^="units"]').eq(2).should('have.value', 'milligram');
+      cy.get('[id^="__$units.2.valueCoding.code').should('have.value', 'mg');
+      cy.get('[id^="__$units.2.valueCoding.system').should('have.value', 'http://unitsofmeasure.org');
+
+    });
+
     it('should import decimal/integer units', () => {
       const sampleFile = 'decimal-type-sample.json';
       let fixtureJson;
@@ -2398,7 +2682,7 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.get('#type option:selected').should('have.text', 'decimal');
       cy.get('[id^="initial.0.valueDecimal"]').should('have.value', '1.1')
-      cy.get('[id^="units"]').last().as('units').should('have.value', 'inch');
+      cy.get('[id^="units"]').first().as('units').should('have.value', 'inch');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson).to.deep.equal(fixtureJson);
       });
@@ -2637,14 +2921,11 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.get('@type').contains('quantity');
       cy.get('[id^="units"]').as('units').should('be.visible');
-      cy.get('@units').parent().prev('ul').as('selectedUnits');
+      cy.get('lfb-units table tbody').as('selectedUnits');
+
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial).to.deep.equal(fixtureJson.item[0].initial);
       });
-      cy.get('@selectedUnits').find('li').contains('xx').as('nonUcum');
-      cy.get('@selectedUnits').find('li').contains('meter').as('ucum');
-      cy.get('@nonUcum').contains('button', '×').click();
-
     });
 
     it('should create quantity type with initial quantity unit', () => {
@@ -3434,7 +3715,6 @@ describe('Home page', () => {
         });
       });
     });
-
   });
 
   describe('Item level fields: advanced - Editable Link Id', () => {
@@ -4018,12 +4298,15 @@ describe('Home page', () => {
         cy.get('#add-variable').click();
         cy.get('#variable-label-2').clear().type('c_fhir_query_obs');
         cy.get('#variable-type-2').select('FHIR Query (Observation)');
-        //cy.get('input#simple-expression-2').type('12');
-        cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight').type('{downarrow}{enter}');
-        //cy.get('#searchResults #completionOptions tr').contains('29463-7').click();
-        cy.get('div#row-2 lhc-query-observation').shadow().within(() => {
-          cy.get('div.query-select > span.autocomp_selected > ul > li')
-            .should('have.text', '×Weight - 29463-7');
+
+        cy.get('lhc-query-observation').shadow().find('#autocomplete-2').as('queryObs');
+
+        cy.get('@queryObs').then($el => {
+          // Search for invalid code, should return empty array
+          cy.selectAutocompleteOptions($el, false, 'invalidCode', null, '{downarrow}{enter}', []);
+
+          // Search for 'weight', should return selected result
+          cy.selectAutocompleteOptions($el, true, 'weight', null, '{downarrow}{enter}', ['×Weight - 29463-7']);
         });
 
         // Add a new variable 'd_question'
@@ -4046,7 +4329,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 5 variables
+      // Item Variables section should now show 5 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 5);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4116,7 +4399,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 3 variables
+      // Item Variables section should now show 3 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 3);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4203,7 +4486,7 @@ describe('Home page', () => {
       });
       cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
 
-      // Item variables section should now show 2 variables that were created in the Expression Editor
+      // Item Variables section should now show 2 variables that were created in the Expression Editor
       cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
@@ -4216,7 +4499,7 @@ describe('Home page', () => {
       cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
       cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', '2');
 
-      // Add a new variable from the 'Item variables' section
+      // Add a new variable from the 'Item Variables' section
       cy.get('button#editVariables').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         cy.get('#expression-editor-base-dialog').should('exist');
@@ -4236,7 +4519,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 3 variables
+      // Item Variables section should now show 3 variables
       cy.get('lfb-variable table > tbody > tr').should('have.length', 3);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(3)').as('thirdVariable');
 
@@ -4301,7 +4584,7 @@ describe('Home page', () => {
         ]);
       });
 
-      // Add variable 'a' via the 'Item variables' section
+      // Add variable 'a' via the 'Item Variables' section
       cy.get('button#editVariables').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
         cy.get('#expression-editor-base-dialog').should('exist');
@@ -4321,7 +4604,7 @@ describe('Home page', () => {
         cy.get('#export').click();
       });
 
-      // Item variables section should now show 2 variables that were created in the Expression Editor
+      // Item Variables section should now show 2 variables that were created in the Expression Editor
       cy.get('lfb-variable table > tbody > tr').should('have.length', 1);
       cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
       cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'a');
@@ -4597,19 +4880,21 @@ describe('Home page', () => {
       cy.get('@pickAnswer').should('not.have.class', 'invalid');
 
       // Select 'Example 2' option
-      cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
-      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
-      cy.get('@pickAnswer').should('have.value', 'Example 2');
+      cy.get('@pickAnswer').then($el => {
+        cy.selectAutocompleteOption($el, false, null, 3, '{downarrow}{downarrow}{enter}', 'Example 2');
+      });
 
       // Set the 'Repeats' option to yes.
       cy.get('@repeatYes').click();
-      cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
 
       // Select 1st and 3rd options
-      cy.get('@pickAnswer').type('Example 1{downarrow}{enter}');
-      cy.get('@pickAnswer').clear().type('Example 3{downarrow}{enter}');
+      cy.get('@pickAnswer').then($el => {
+        cy.selectAutocompleteOptions($el, true, 'Example 1', null, '{downarrow}{enter}', ['×Example 1']);
+
+        cy.selectAutocompleteOptions($el, true, 'invalidCode', null, '{downarrow}{enter}', ['×Example 1']);
+
+        cy.selectAutocompleteOptions($el, true, 'Example 3', null, '{downarrow}{enter}', ['×Example 1', '×Example 3']);
+      });
 
       cy.get('lfb-pick-answer span.autocomp_selected > ul > li').as('pickAnswerSelection');
       cy.get('@pickAnswerSelection').should('have.length', 2);
@@ -4623,6 +4908,94 @@ describe('Home page', () => {
         expect(qJson.item[7].answerOption[2].valueCoding.display).equal('Example 3');
         expect(qJson.item[7].answerOption[2].initialSelected).equal(true);
       });
+    });
+
+    it('should retain valid state when toggling between "Pick initial value" and other value methods', () => {
+
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Test state');
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
+
+      // Answer Option field is empty. Add 3 options.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('[id^="answerOption.0.valueCoding.display"]').type('Example 1');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').type('MD11871-1');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.1.valueCoding.display"]').type('Example 2');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').type('MD11871-2');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.2.valueCoding.display"]').type('Example 3');
+      cy.get('[id^="answerOption.2.valueCoding.code"]').type('MD11871-3');
+      cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
+      cy.get('[id^="answerOption.2.valueCoding.__$score"]').click();
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('exist').should('be.visible');
+
+      // Select 'Example 2' option
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer').should('have.value', 'Example 2');
+
+      // Select the 'Compute initial value - Value method'
+      cy.getComputeInitialValueValueMethodClick();
+
+      // Then select the 'Pick initial value - Value method' again.
+      cy.getPickInitialValueValueMethodClick();
+
+      // The 'Pick initial value' field should not contain the 'no_match' class (darker yellow to represent )
+      cy.get('@pickAnswer').should('not.have.class', 'no_match');
+    });
+
+    it('should remove the answer choices error when answer choices are added and selected for types other than "coding"', () => {
+
+      cy.clickTreeNode('None');
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.get('#text').clear().type('Test answer choice error');
+      cy.selectDataType('integer');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      cy.getPickInitialValueValueMethodClick();
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('exist').should('be.visible');
+
+      cy.get('@pickAnswer').should('have.class', 'invalid');
+      // The error message should display at the bottom of the text input
+      cy.get('lfb-pick-answer')
+        .find('small.text-danger')
+        .should('be.visible')
+        .should('contain.text', "Answer choices must be populated.");
+
+      // Answer Option field is empty. Add 3 options.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('[id^="answerOption.0.valueInteger"]').type('100');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.1.valueInteger"]').type('200');
+      cy.get('@addAnswerButton').click();
+      cy.get('[id^="answerOption.2.valueInteger"]').type('300');
+      cy.get('@addAnswerButton').click();
+
+      // Select 'Example 2' option
+      cy.get('@pickAnswer').click();
+      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
+      cy.get('@pickAnswer').should('have.value', '200');
+
+      cy.get('@pickAnswer').should('not.have.class', 'invalid');
     });
 
     it('should create Initial compute value expression', () => {
@@ -5103,10 +5476,9 @@ describe('Home page', () => {
       cy.get('@pickAnswer').should('not.have.class', 'invalid');
 
       // Select 'Example 2' option
-      cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
-      cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
-      cy.get('@pickAnswer').should('have.value', 'Example 2');
+      cy.get('@pickAnswer').then($el => {
+        cy.selectAutocompleteOption($el, true, null, 3, '{downarrow}{downarrow}{enter}', 'Example 2');
+      });
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[7].type).equal('coding');

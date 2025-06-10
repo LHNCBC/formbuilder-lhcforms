@@ -72,6 +72,20 @@ export class Util {
     reference: 'answerReference'
   };
 
+  private static _valueTypeMap = {
+    boolean: 'valueBoolean',
+    integer: 'valueInteger',
+    decimal: 'valueDecimal',
+    date: 'valueDate',
+    dateTime: 'valueDateTime',
+    time: 'valueTime',
+    string: 'valueString',
+    text: 'valueString',
+    coding: 'valueCoding',
+    quantity: 'valueQuantity',
+    reference: 'valueReference'
+  };
+
   /**
    * See if the guiding step is one of the defined type. The flag is store in localStorage/sessionStorage.
    * This function is to help sanitize the stored values.
@@ -451,6 +465,16 @@ export class Util {
     return f && f.startsWith('answer');
   }
 
+  /**
+   * Map type to value[x] field.
+   * @param type - question type
+   */
+  static getValueFieldName(type: string): string {
+    if (type === "text") {
+      type = "string";
+    }
+    return Util._valueTypeMap[type];
+  }
 
   /**
    * Map type to answer[x] field.
@@ -459,6 +483,7 @@ export class Util {
   static getAnswerFieldName(type: string): string {
     return Util._answerTypeMap[type];
   }
+
 
   /**
    * Compute tree hierarchy sequence numbering.
@@ -694,11 +719,35 @@ export class Util {
    * @param ansOpts - An array of Answer Options objects
    * @returns - true if the Answer Option array is empty or contain one empty item, otherwise false.
    */
-  static isEmptyAnswerOption(ansOpts: any): boolean {
+/*   static isEmptyAnswerOption(ansOpts: any): boolean {
     if (!ansOpts || ansOpts.length === 0) {
       return true;
     }
 
     return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
-  }  
+  }
+ */
+
+  /**
+   * Determines whether the provided array of answer options is empty for a given FHIR data type.
+   * For 'coding' type, checks if any answer option has both 'display' and 'code' in 'valueCoding'.
+   * For other types, checks if any answer option has a value for the corresponding value[x] field.
+   *
+   * @param ansOpts - An array of answer option objects.
+   * @param type - The FHIR data type (e.g., 'coding', 'string', 'boolean', etc.).
+   * @returns true if the answer option array is empty for the given type, otherwise false.
+   */
+  static isEmptyAnswerOptionForType(ansOpts: any, type: string): boolean {
+    if (!ansOpts || ansOpts.length === 0) {
+      return true;
+    }
+
+    if (type === 'coding') {
+      return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
+    } else {
+      const valueFieldName = this.getValueFieldName(type);
+      return !ansOpts.some(ansOpt => ansOpt[valueFieldName]);
+    }
+  }
 }
+
