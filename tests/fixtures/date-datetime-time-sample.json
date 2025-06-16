@@ -1,0 +1,42 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "date-datetime-time-sample",
+  "status": "draft",
+  "item": [
+    {
+      "type": "date",
+      "linkId": "date_1",
+      "text": "Date field - 1",
+      "initial": [
+        {
+          "valueDate": "2000-01-02"
+        }
+      ]
+    },
+    {
+      "type": "dateTime",
+      "linkId": "datetime_1",
+      "text": "DateTime field - 1",
+      "initial": [
+        {
+          "valueDateTime": "2001-01-02T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "type": "time",
+      "linkId": "time_1",
+      "text": "Time field - 2",
+      "initial": [
+        {
+          "valueTime": "12:34:56.789"
+        }
+      ]
+    }
+  ]
+}
