@@ -124,6 +124,21 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
         this.isAnswerList = false;
         this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
       }
+/*       
+      else if (typeVal === "coding" && Util.isEmptyAnswerOptionForType(answerOptions, typeVal)) {
+        this.valueMethodOptions = this.valueMethodOptions.slice(1);
+        this.control.setValue("none", { emitEvent: true });
+        this.formProperty.setValue("none", false);
+      } else if (typeVal === "boolean") {
+        this.valueMethodOptions = this.valueMethodOptions.slice(1);
+        this.control.setValue("pick-initial", { emitEvent: true });
+        this.formProperty.setValue("pick-initial", false);
+      } else {
+        const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
+        if (answerOptions && answerOptions.length > 0) {
+          this.formProperty.searchProperty('__$isAnswerList').setValue(true, false);
+        }
+      } */
       
       this.updateValueMethodOptions(typeVal, this.answerOptionMethod, this.isAnswerList);
     });
