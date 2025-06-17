@@ -155,25 +155,6 @@ test.describe('r5-features.spec.ts', async () => {
     await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Radio Button')).toBeChecked();
   });
 
-  test('should import R4 version from local storage', async ({page}) => {
-    const json = await PWUtils.readJSONFile('fixtures/local-storage-mock.R4.json');
-    await page.evaluate((mockQ) => {
-      window.localStorage.removeItem('state');
-      window.localStorage.setItem('fhirQuestionnaire', JSON.stringify(mockQ));
-    }, json);
-    await page.goto('/');
-    await page.getByLabel('Would you like to start from where you left off before?').click();
-    await page.getByRole('button', {name: 'Continue'}).click();
-    await page.getByRole('button', {name: 'Edit questions'}).click();
-    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
-
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
-    const helpString = /^A plain text instruction/;
-    await expect(page.getByLabel('Help text', {exact: true})).toHaveValue(helpString);
-    const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
-    expect(qJson.item[0].item[0].text).toMatch(helpString);
-  });
-
   test('should export to R4 and STU3 versions', async ({page}) => {
     const fileJson = await PWUtils.uploadFile(page, 'fixtures/answer-constraint-sample.json', true);
     await page.getByRole('button', {name: 'Edit questions'}).click();

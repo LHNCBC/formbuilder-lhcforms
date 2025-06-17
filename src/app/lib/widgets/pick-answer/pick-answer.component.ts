@@ -252,7 +252,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
           if(this.isRepeating) {
             this.autoComplete.addToSelectedArea(String(dispVal ?? ''));
           } else {
-            this.autoComplete.setFieldVal(String(dispVal ?? ''));
+            this.autoComplete.setFieldVal(String(dispVal ?? ''), false);
             break;
           }
         }

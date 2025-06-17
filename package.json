@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "10.0.8",
+  "version": "10.1.1",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -65,7 +65,7 @@
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fullcalendar/core": "^6.1.15",
-    "@lhncbc/expression-editor": "^3.2.1",
+    "@lhncbc/expression-editor": "^3.2.2",
     "@lhncbc/ngx-schema-form": "2.13.1-forked",
     "@ng-bootstrap/ng-bootstrap": "^18.0.0",
     "@types/fhir": "^0.0.36",

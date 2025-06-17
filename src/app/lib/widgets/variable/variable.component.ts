@@ -45,7 +45,7 @@ export class VariableComponent extends TableComponent implements OnInit {
 
   ngOnInit(): void {
     super.ngOnInit();
-    this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
+    this.linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     const sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
     });
@@ -129,14 +129,18 @@ export class VariableComponent extends TableComponent implements OnInit {
       size: 'lg',
       fullscreen: 'lg'
     };
-    const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
-    if (itemIndex > -1) {
-      if (this.formProperty.value) {
-        this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;
+
+    if (this.linkId) {
+      const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
+      if (itemIndex > -1) {
+        if (this.formProperty.value) {
+          this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;
+        }
       }
     }
     const modalRef = this.modalService.open(ExpressionEditorDlgComponent, modalConfig);
-    modalRef.componentInstance.linkId = this.formProperty.findRoot().getProperty('linkId').value;
+    const linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
+    modalRef.componentInstance.linkId = linkId;
     modalRef.componentInstance.expressionUri = this.schema.widget.expressionUri;
     modalRef.componentInstance.questionnaire = this.questionnaire;
     modalRef.componentInstance.display = this.schema.widget.displayExpressionEditorSections;
@@ -144,9 +148,18 @@ export class VariableComponent extends TableComponent implements OnInit {
       // Result returning from the Rule Editor is the whole questionnaire.
       // Rule Editor returns false in the case changes were cancelled.
       if (result) {
-        this.resultExtensions = this.extractVariableExtensions(result.item, this.linkId);
-        this.formProperty.setValue(this.resultExtensions, false);
+        if (this.linkId) {
+          this.resultExtensions = this.extractVariableExtensions(result.item, this.linkId);
+        } else {
+          this.resultExtensions = result.extension;
+        }
+
+        // Result coming back from the Expression Editor may also contain launchContext.  We do want
+        // to save those extensions, but want to filter out from the variables.
         this.extensionsService.replaceExtensions(ExtensionsService.VARIABLE, this.resultExtensions);
+
+        const variables = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE);
+        this.formProperty.setValue(variables, false);
         this.cdr.detectChanges();
         this.formProperty.findRoot().getProperty('extension').setValue(this.extensionsService.extensionsProp.value, false);
       }

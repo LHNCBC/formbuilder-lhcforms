@@ -1,0 +1,84 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "Units and Quantity",
+  "status": "draft",
+  "item": [
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "kat/kg/A.st",
+            "display": "[[katal/kilogram]/Ampere]*stere"
+          }
+        }
+      ],
+      "linkId": "197357858376",
+      "text": "Decimal data type"
+    },
+    {
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "kat/kg/A.st",
+            "display": "[[katal/kilogram]/Ampere]*stere"
+          }
+        }
+      ],
+      "linkId": "362705828849",
+      "text": "Integer data type"
+    },
+    {
+      "type": "quantity",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "kg",
+            "display": "kilogram"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "g",
+            "display": "gram"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "mg",
+            "display": "milligram"
+          }
+        }
+      ],
+      "linkId": "520310867260",
+      "text": "Quantity data type",
+      "repeats": true,
+      "initial": [
+        {
+          "valueQuantity": {
+            "value": 1,
+            "unit": "kilogram",
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ]
+    }
+  ]
+}
