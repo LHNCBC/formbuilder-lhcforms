@@ -5,7 +5,6 @@ import fhir from "fhir/r4";
 
 test.describe('Contained resources table in form level page', async () => {
   let mainPO: MainPO;
-  const editLoc = `button[aria-label="Edit this row"]`;
 
   test.beforeEach(async ({page}) => {
     await page.goto('/');
@@ -14,12 +13,12 @@ test.describe('Contained resources table in form level page', async () => {
     await page.getByRole('button', {name: 'Advanced fields'}).click();
   });
 
-  test('should add a resource', async({page}) => {
+  test('should add a resource', async ({page}) => {
     const containedTable: Locator = PWUtils.getTableByFieldLabel(
-        page.locator('lfb-form-fields'),
-        'Contained resources'
-      );
-    await page.getByRole('button', {name: 'Add new Resource'}).click();
+      page.locator('lfb-form-fields'),
+      'Contained resources'
+    );
+    await page.getByRole('button', {name: 'Add new ValueSet'}).click();
     const dialog = page.locator('mat-dialog-container');
     await expect(dialog).toBeVisible();
     await dialog.getByLabel('Id', {exact: true}).fill('vs1');
@@ -89,14 +88,27 @@ test.describe('Contained resources table in form level page', async () => {
       system: 's3'
     }]);
   });
+});
 
-  test('should import questionnaire with contained value set', async({page}) => {
-    const fileJson = await PWUtils.uploadFile(page, 'fixtures/contained-value-set-sample.json', false);
-    const flContainedTable: Locator = PWUtils.getTableByFieldLabel(
+test.describe(() => {
+  let mainPO: MainPO, fileJson;
+  let flContainedTable: Locator;
+  const editLoc = `button[aria-label="Edit this row"]`;
+
+  test.beforeEach(async ({page}) => {
+    await page.goto('/');
+    mainPO = new MainPO(page);
+    await mainPO.loadFLPage();
+    fileJson = await PWUtils.uploadFile(page, 'fixtures/contained-value-set-sample.json', false);
+    flContainedTable = PWUtils.getTableByFieldLabel(
       page.locator('lfb-form-fields'),
       'Contained resources'
     );
-    expect(await flContainedTable.locator('tbody > tr').count()).toBe(2);
+    await page.getByRole('button', {name: 'Advanced fields'}).click();
+  });
+  test('should import questionnaire with contained value set', async({page}) => {
+    expect(await flContainedTable.locator('tbody > tr').count()).toBe(3);
+    await expect(PWUtils.getTableCell(flContainedTable, 3, 6).locator(editLoc)).toBeDisabled();
     await PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc).click();
     const dialog = page.locator('mat-dialog-container');
     await expect(dialog).toBeVisible();
@@ -139,14 +151,10 @@ test.describe('Contained resources table in form level page', async () => {
   });
 
   test('should validate resource.id', async({page}) => {
-    await PWUtils.uploadFile(page, 'fixtures/contained-value-set-sample.json', false);
-    const flContainedTable: Locator = PWUtils.getTableByFieldLabel(
-      page.locator('lfb-form-fields'),
-      'Contained resources'
-    );
     await PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc).click();
     const dialog = page.locator('mat-dialog-container');
     const idInput = dialog.getByLabel('Id', {exact: true});
+    await expect(idInput).toBeVisible();
     const idParent = idInput.locator('..');
     await expect(idParent.filter({hasNot: page.locator('small.text-danger')})).toBeVisible();
     await expect(idInput).toHaveValue('vs2');
@@ -173,7 +181,7 @@ test.describe('Contained resources table in form level page', async () => {
     await idInput.fill('vs2-modified'); // Valid id
     await dialog.getByRole('button', {name: 'Save and close'}).click();
     await expect(dialog).not.toBeVisible();
-    await expect(flContainedTable.locator('tbody > tr')).toHaveCount(2);
+    await expect(flContainedTable.locator('tbody > tr')).toHaveCount(3);
     await expect(PWUtils.getTableCellInput(flContainedTable, 2, 2)).toHaveValue('vs2-modified');
   });
 });

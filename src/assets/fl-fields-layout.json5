@@ -96,7 +96,7 @@
       "labelPosition": "left",
       "labelClasses": "col-sm-2 ps-0 pe-1",
       "controlClasses": "col-sm-10",
-      "addButtonLabel": "Add new Resource",
+      "addButtonLabel": "Add new ValueSet",
       "showFields": [
         // The fields here are canonical paths of FormProperty.
         {"field": "resourceType", "col": 1, "nolabel": true},

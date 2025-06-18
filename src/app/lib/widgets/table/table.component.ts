@@ -640,4 +640,13 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   get rowProperties(): ObjectProperty [] {
     return this.formProperty.properties as ObjectProperty[];
   }
+
+  /**
+   * Check if the edit button should be disabled for a given row.
+   * Returns false by default, but can be overridden in derived classes.
+   * @param index - Index of the row in the table.
+   */
+  isDisabled(index: number): boolean {
+    return false;
+  }
 }

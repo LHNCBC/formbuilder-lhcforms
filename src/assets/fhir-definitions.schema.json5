@@ -5369,7 +5369,7 @@
           "$ref": "#/definitions/Element"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "resourceType"
       ],
@@ -5573,7 +5573,7 @@
           "$ref": "#/definitions/ValueSet_Expansion"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [
         "resourceType"
       ],

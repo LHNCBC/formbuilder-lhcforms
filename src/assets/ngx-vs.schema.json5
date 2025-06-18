@@ -231,7 +231,7 @@
       "title": "Expansion"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "resourceType"
   ],

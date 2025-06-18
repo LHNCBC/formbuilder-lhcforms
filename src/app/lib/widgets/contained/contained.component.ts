@@ -1,12 +1,10 @@
 import { AfterViewInit, Component, DoCheck, inject, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { LfbArrayWidgetComponent } from '../lfb-array-widget/lfb-array-widget.component';
 import { TableComponent } from '../table/table.component';
-import { MatIconModule } from '@angular/material/icon';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgbModal, NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { SchemaFormModule, FormProperty } from '@lhncbc/ngx-schema-form';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { AppFormElementComponent } from '../form-element/form-element.component';
 import { LabelComponent } from '../label/label.component';
 import { TitleComponent } from '../title/title.component';
@@ -77,7 +75,7 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
    */
   override onEditProperty(index: number) {
     const formProperty = this.formProperty.properties[index];
-    const resourceType = formProperty.schema.properties.resourceType.enum[0];
+    const resourceType = formProperty?.getProperty('resourceType')?.value;
     const matDialogRef = this.openDialog({
       formProperty,
       resourceType,
@@ -119,6 +117,15 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
       closeOnNavigation: false
     });
     return matDialogRef;
+  }
+
+  /**
+   * Check if the edit button should be disabled for a given row.
+   * @param index - Row index in the table.
+   */
+  isDisabled(index: number): boolean {
+    const formProperty = this.formProperty.properties[index];
+    return !!(formProperty?.getProperty('resourceType').value !== 'ValueSet');
   }
 
 }
