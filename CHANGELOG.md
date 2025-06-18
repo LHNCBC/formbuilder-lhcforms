@@ -3,7 +3,7 @@
 This project follows [Semantic Versioning](http://semver.org/).
 
 ## [10.1.1] 2025-06-09
-- Fixed copying of an item when a single item is in the sidebar tree.
+- Fixed a bug on copying an item when a single item is in the sidebar tree.
 - 
 ## [10.1.0] 2025-05-29
 ### Added
