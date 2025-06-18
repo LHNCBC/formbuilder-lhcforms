@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.1.0] 2025-06-16
+## [10.1.1] 2025-06-16
 ### Added
 - Added a time component for data type time.
 - Changed date and dateTime input fields to use their respective components in
