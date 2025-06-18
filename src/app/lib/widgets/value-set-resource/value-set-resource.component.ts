@@ -88,6 +88,9 @@ export class ValueSetResourceComponent implements OnInit {
    */
   onValueSetChanged(event) {
     this._emptyId = !event.value?.id?.trim().length;
+    if(event.value.expansion) {
+      event.value.expansion.timestamp = new Date().toISOString();
+    }
     this.valueSetChanged.emit(event.value);
   }
 
