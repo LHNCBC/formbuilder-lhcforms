@@ -8,6 +8,8 @@ import { ExtensionsService } from 'src/app/services/extensions.service';
 import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import { TableService, TableStatus } from 'src/app/services/table.service';
 import { AnswerValueSetComponent } from '../answer-value-set/answer-value-set.component';
+import { Util } from '../../util';
+
 declare var LForms: any;
 
 @Component({
@@ -44,7 +46,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
     }
   }
 
-  model: string;
+  model: fhir.Coding;
   extensionsService = inject(ExtensionsService);
 
   answerValueSet;
@@ -66,9 +68,9 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   }
 
   ngOnInit() {
-    const initValue = this.formProperty.value;
-    if (initValue) {
-      this.model = initValue;
+    const initValueCoding = this.formProperty.parent.value;
+    if (!Util.isEmptyValueCoding(initValueCoding)) {
+      this.model = initValueCoding;
     }
     this.dataType = this.formProperty.findRoot().getProperty('type').value;
 
@@ -199,7 +201,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
    * @param coding - Option value
    */
   modelChanged(coding: fhir.Coding) {
-    this.model = coding.display || '';
+    this.model = coding || null;
     this.updateValueCoding(coding);
   }
 
