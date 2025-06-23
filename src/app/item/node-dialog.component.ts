@@ -101,8 +101,9 @@ export class NodeDialogComponent implements OnInit {
   ngOnInit() {
     this.self = this;
     this.item.treeComponent.treeModel.doForAll((node) => {
-      if (this.node.id !== node.id)
+      if (this.node.id !== node.id || this.mode === 'Copy') {
         this.sources.push(node);
+      }
     });
     this.title = `${this.mode} - ${this.resultFormatter(this.node)}`;
   }

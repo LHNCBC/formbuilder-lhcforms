@@ -2,6 +2,9 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.1.2] 2025-06-09
+- Fixed a bug on copying an item when a single item is in the sidebar tree.
+- 
 ## [10.1.1] 2025-06-02
 ### Fixed
 - Fixed an issue where Answer valueset initial value did not display the 'display' field
