@@ -39,6 +39,81 @@
           }
         }
       ]
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://snowstorm.ihtsdotools.org/fhir"
+        }
+      ],
+      "initial" : [
+        {
+          "valueCoding": {
+               "code": "987840791000119102",
+               "display": "Adenosine deaminase 2 deficiency",
+               "system": "http://snomed.info/sct"
+          }
+        }
+      ],
+      "linkId": "/itm1",
+      "text": "Item with a single SNOMED answerValuetSet initial selection",
+      "repeats": false,
+      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl/%3C+64572001+%7CDisease+%28disorder%29%7C"
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://snowstorm.ihtsdotools.org/fhir"
+        }
+      ],
+      "initial" : [
+        {
+          "valueCoding": {
+            "code": "987840791000119102",
+            "display": "Adenosine deaminase 2 deficiency",
+            "system": "http://snomed.info/sct"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "956321981000119108",
+            "display": "Chronic gastric erosion"
+          }
+        }
+      ],
+      "linkId": "/itm2",
+      "text": "Item with multiple SNOMED answerValueSet initial selections",
+      "repeats": true,
+      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl/%3C+64572001+%7CDisease+%28disorder%29%7C"
     }
   ],
   "resourceType": "Questionnaire",
