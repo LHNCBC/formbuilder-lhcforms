@@ -33,9 +33,9 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
           }, false);
         }
       };
-      
+
       if (data.used_list || data.on_list) {
-        if (data.item_code) {
+        if (data.item_code && !this.unitService.hasDelimiter(data.final_val)) {
           const selectedUnit = data.list.find((unit) => {
             return unit[0] === data.item_code;
           });

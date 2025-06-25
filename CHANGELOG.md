@@ -2,12 +2,25 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.1.1] 2025-06-16
+## [10.2.1] 2025-06-25
 ### Added
 - Added a time component for data type time.
 - Changed date and dateTime input fields to use their respective components in
   item level fields.
  
+## [10.2.0] 2025-06-25
+### Changed
+- Updated to use new ID lhc-tools-searchResults.
+### Removed
+- Removed autocomplete-lhc dependency.
+
+## [10.1.2] 2025-06-09
+- Fixed a bug on copying an item when a single item is in the sidebar tree.
+
+## [10.1.1] 2025-06-02
+### Fixed
+- Fixed an issue where Answer valueset initial value did not display the 'display' field
+
 ## [10.1.0] 2025-05-29
 ### Added
 - Enabled combining multiple displays and codes in a unit lookup.

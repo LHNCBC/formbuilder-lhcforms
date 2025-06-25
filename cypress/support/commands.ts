@@ -239,7 +239,7 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
   cy.get('[id^="pick-answer"]').as('pickAnswer');
   cy.get('@pickAnswer').click();
-  cy.get('#searchResults ul > li').should('have.length', 2);
+  cy.get('#lhc-tools-searchResults ul > li').should('have.length', 2);
   cy.get('@pickAnswer').type('{downarrow}{enter}');
   cy.get('@pickAnswer').should('have.value', 'd1');
 
@@ -633,7 +633,7 @@ function handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeywor
   }
 
   cy.document().then((doc) => {
-    cy.wrap(doc).find('#searchResults').then($container => {
+    cy.wrap(doc).find('#lhc-tools-searchResults').then($container => {
       const $results = $container.find('tbody tr, ul li');
 
       if (typeof expectedListSize === 'number') {
@@ -669,7 +669,7 @@ function handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeywor
 Cypress.Commands.add('selectAutocompleteOptions',
   (autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize, specialCharacterSequencesText,
    expectedResults) => {
-    
+
     handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize,
       specialCharacterSequencesText, () => {
         if (Array.isArray(expectedResults) && expectedResults.length === 0) {
@@ -714,7 +714,7 @@ Cypress.Commands.add('selectAutocompleteOptions',
 Cypress.Commands.add('selectAutocompleteOption',
   (autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize, specialCharacterSequencesText,
    expectedResultText) => {
-    
+
     handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize,
       specialCharacterSequencesText, () => {
         const hasExpectedListSize = typeof expectedListSize === 'number';
@@ -727,7 +727,7 @@ Cypress.Commands.add('selectAutocompleteOption',
             cy.wrap(autocompleteElement).should('not.have.class', 'no_match');
           }
 
-          // This handles the scenario where searchKeyword is not provided. 
+          // This handles the scenario where searchKeyword is not provided.
           // If searchKeyword is provided, then autocompleteElement is likely always equal to expectedResultText.
           // If the value is based on specialCharacterSequencesText, this will validate that the autocompleteElement value
           // is equal to expectedResultText.

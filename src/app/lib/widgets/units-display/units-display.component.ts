@@ -60,7 +60,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
   autoComp: any;
   dataType = 'string';
   unitStorage = [];
-  
+
   unitService = inject(UnitService);
 
   constructor(private extensionsService: ExtensionsService) {
@@ -110,7 +110,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
     });
     this.subscriptions.push(sub);
 
-    LForms.Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {    
+    LForms.Def.Autocompleter.Event.observeListSelections(this.elementId, (data) => {
       const updateUnitFormProperty = (code: string, system: string, display?: string) => {
         if (display !== undefined) {
           this.formProperty.parent.setValue({
@@ -120,7 +120,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
           }, false);
         }
       };
-    
+
       if (this.options.maxSelect === 1 && !(data.final_val?.trim())) {
         this.extensionsService.removeExtension((extProp) =>
           extProp.value.url === UnitsComponent.unitsExtUrl[this.dataType]
@@ -128,9 +128,9 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
         updateUnitFormProperty(null, null, null);
         return;
       }
-    
+
       if (data.used_list || data.on_list) {
-        if (data.item_code) {
+        if (data.item_code && !this.unitService.hasDelimiter(data.final_val)) {
           const selectedUnit = data.list.find((unit) => unit[0] === data.item_code);
           this.unitService.addUnit(selectedUnit);
           this.addOrUpdateUnitExtension(this.createUnitExt(
@@ -142,7 +142,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
           updateUnitFormProperty(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
           return;
         }
-    
+
         // Handle manual entry or tokenizer
         const orgFinalVal = data.final_val;
         data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
@@ -166,7 +166,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
         }
         return;
       }
-    
+
       // Not using list
       const unitExt = this.getUnitExtension();
       if (unitExt?.valueCoding?.display !== data.final_val) {
