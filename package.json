@@ -69,7 +69,6 @@
     "@lhncbc/ngx-schema-form": "2.13.1-forked",
     "@ng-bootstrap/ng-bootstrap": "^18.0.0",
     "@types/fhir": "^0.0.36",
-    "autocomplete-lhc": "^20.0.0",
     "bootstrap": "^5.3.3",
     "codemirror": "^5.65.18",
     "date-fns": "^2.30.0",
