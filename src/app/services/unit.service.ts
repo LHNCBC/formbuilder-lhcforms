@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 
 declare var LForms: any;
 
@@ -34,8 +34,19 @@ export class UnitService {
     if (typeof unitStr !== 'string') {
       return unitStr;
     }
-    const regex = new RegExp(`[${this.unitTokenizeStr}]`); 
+    const regex = new RegExp(`[${this.unitTokenizeStr}]`);
     return unitStr.split(regex);
+  }
+
+  /**
+   * Checks if a unit string contains at least one of the specified delimiters.
+   *
+   * @param unitStr - The unit string to check.
+   * @returns True if the unit string contains at least one delimiter; otherwise, false.
+   */
+  hasDelimiter(unitStr: string): boolean {
+    const regex = new RegExp(`[${this.unitTokenizeStr}]`);
+    return regex.test(unitStr);
   }
 
   /**
@@ -101,7 +112,7 @@ export class UnitService {
           }
 
           newUnitStr = newUnitStr.replace(token, compareUnitStorage[j][0]);
-          
+
           break;
         }
       }
@@ -129,7 +140,7 @@ export class UnitService {
 
         // If parseResp.unit.name contains a tokenizer, it means it consists
         // of multiple names or codes. In that case, you need to perform a lookup
-        // for each individual name or code.        
+        // for each individual name or code.
         const tokens = this.tokenizeUnitStr(parseResp.unit.code);
         if (tokens.length > 1) {
           tokens.forEach(token => {
