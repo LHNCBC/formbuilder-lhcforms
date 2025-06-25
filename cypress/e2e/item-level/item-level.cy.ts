@@ -431,15 +431,15 @@ describe('Home page', () => {
         cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
         cy.get('@copyBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
-        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
-        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '4');
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '4');
         cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '5');
       });
 
       it('should copy before a target node', () => {
         cy.get('input[type="radio"][value="BEFORE"]').click();
         cy.get('@copyBtn').should('not.be.disabled').click();
-        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '2');
       });
 
       it('should copy as a child of a target', () => {
@@ -447,9 +447,28 @@ describe('Home page', () => {
         cy.get('@copyBtn').should('not.be.disabled').click();
         cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '1');
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.toggleTreeNodeExpansion('New item 1');
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '2.1');
         cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
         cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
       });
+    });
+
+    it('should copy a single item', () => {
+      // Select the 'Relationship to patient' item and select the 'More options'.
+      cy.get('div.node-content-wrapper-active button.dropdown-toggle').as('contextMoreBtn');
+      cy.get('@contextMoreBtn').click();
+
+      // Select the 'Move this item' option.
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Copy this item').click();
+
+      cy.get('lfb-node-dialog #moveTarget1').as('dlgInput');
+      cy.get('@dlgInput').click();
+      cy.get('lfb-node-dialog [role="listbox"]').find('button.dropdown-item').should('contain.text', 'Item 0');
+      cy.get('@dlgInput').type('{downArrow}{enter}');
+      cy.get('lfb-node-dialog').contains('button', 'Copy').click();
+
+      cy.getTreeNode('Copy of Item 0').click();
     });
 
     it('should restrict to integer input in integer field', () => {
