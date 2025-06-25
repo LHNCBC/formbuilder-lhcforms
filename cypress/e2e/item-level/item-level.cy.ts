@@ -823,7 +823,7 @@ describe('Home page', () => {
       cy.get('@thirdOption').find('td:nth-child(3) input').type('s');
       cy.get('@thirdOption').find('td:nth-child(4) input').type('33');
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').clear().type('d3{enter}');
 
       const SCORE_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
@@ -918,14 +918,14 @@ describe('Home page', () => {
       });
 
       // Items should be unselected.
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Set the 'Allow repeating question?' to 'Yes'.
       cy.getRadioButtonLabel(repeatsLabel, 'Yes').click();
       cy.getRadioButton(repeatsLabel, 'Yes').should('be.checked');
 
       // Items should be unchecked.
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Select second and third option in second item.
       cy.get('@pickAnswer2').then($el => {
@@ -1207,16 +1207,16 @@ describe('Home page', () => {
       cy.contains('.mdc-tab.mat-mdc-tab', 'View Rendered Form').click();
       cy.get('#1\\/1').as('inputBox1').click();
       cy.wait('@snomedReq');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.get('@inputBox1').type('{downarrow}{enter}', {force: true});
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@inputBox1').should('have.value', 'Intersex');
 
       // Non SNOMED CT answers
       cy.get('#2\\/1').as('inputBox2').click();
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.get('@inputBox2').type('{downarrow}{enter}', {force: true});
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@inputBox2').should('have.value', 'Back pain');
 
       cy.contains('mat-dialog-actions button', 'Close').click();
@@ -1277,7 +1277,7 @@ describe('Home page', () => {
       cy.get('[id^="initial.0.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
       cy.get('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input').should('have.value', 'Chronic gastric erosion');
       cy.get('[id^="initial.1.valueCoding.code"]').should('have.value', '956321981000119108');
-      cy.get('[id^="initial.1.valueCoding.system"]').should('have.value', 'http://snomed.info/sct'); 
+      cy.get('[id^="initial.1.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
     });
 
     describe('Item control', () => {
@@ -2359,9 +2359,9 @@ describe('Home page', () => {
         // Add a unit extension to the item.
         cy.get('[id^="units"]').first().as('units');
         cy.get('@units').should('be.visible');
-        cy.get('#searchResults').should('not.be.visible');
+        cy.get('#lhc-tools-searchResults').should('not.be.visible');
         cy.get('@units').type('inch');
-        cy.get('#searchResults').should('be.visible');
+        cy.get('#lhc-tools-searchResults').should('be.visible');
         cy.contains('#completionOptions tr', '[in_i]').click();
         cy.get('@units').should('have.value', 'inch');
 
@@ -2405,7 +2405,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
 
       [['[in_i]', 'inch'], ['[in_br]', 'inch - British']].forEach((result, index) => {
         cy.get('[id^="units"]').eq(index).type('inch');
@@ -2446,9 +2446,9 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', '[in_i]').click();
       cy.get('@units').should('have.value','inch');
       cy.questionnaireJSON().should((qJson) => {
@@ -2474,9 +2474,9 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('A');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', 'Ampere').click();
       cy.get('@units').should('have.value', 'Ampere');
 
@@ -2558,7 +2558,7 @@ describe('Home page', () => {
 
       cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('10');
       cy.get('[id^="initial.0.valueQuantity.unit"]').as('quantityUnit').type('l');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', 'Liters').click();
       cy.get('@quantityUnit').should('have.value', 'Liters');
 
@@ -2585,9 +2585,9 @@ describe('Home page', () => {
       cy.get('[id^="units"]').should('have.length', 1);
       cy.get('[id^="units"]').first().as('unit1');
       cy.get('@unit1').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@unit1').type('l');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', 'Liters').click();
       cy.get('@unit1').should('have.value', 'Liters');
 
@@ -2608,7 +2608,7 @@ describe('Home page', () => {
       cy.get('[id^="units"]').eq(1).as('unit2');
       cy.get('@unit2').should('be.visible');
       cy.get('@unit2').type('oz');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', 'standard unit used in the US and internationally').click();
       cy.get('@unit2').should('have.value', 'ounce');
 
@@ -2630,7 +2630,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('a_g/kat/kg/m').type('{enter}');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
@@ -2647,7 +2647,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('Ampere/kilogram.stere').type('{enter}');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
@@ -2662,7 +2662,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('mean Gregorian year').type('{enter}');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
@@ -2677,7 +2677,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('mean Gregorian year/katal per kilogram').type('{enter}');
       cy.get('[id^="__$units.0.valueCoding.code').should('have.value', '');
       cy.get('[id^="__$units.0.valueCoding.system').should('have.value', '');
@@ -2689,7 +2689,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('unknown unit').type('{enter}');
       cy.get('[id^="__$units.0.valueCoding.code').type('unknown').type('{enter}');
       cy.get('[id^="__$units.0.valueCoding.system').type('http://unknown.org').type('{enter}');
@@ -2997,7 +2997,7 @@ describe('Home page', () => {
       cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('123');
       cy.get('[id^="initial.0.valueQuantity.unit"]')
         .as('unit0').type('f');
-      cy.get('#searchResults').as('unitSuggestions').should('be.visible', true);
+      cy.get('#lhc-tools-searchResults').as('unitSuggestions').should('be.visible', true);
       cy.get('@unitSuggestions').find('table tbody tr:first').click();
       cy.get('@unitSuggestions').should('not.be.visible');
       cy.get('@unit0').should('have.value', 'farad');
@@ -3493,7 +3493,7 @@ describe('Home page', () => {
         cy.get(r1Operator).as('r1Operator').select('=');
         cy.get(r1Answer).click();
         cy.get(r1Answer).type('dia');
-        cy.get('#searchResults').contains('Diabetes mellitus').click();
+        cy.get('#lhc-tools-searchResults').contains('Diabetes mellitus').click();
 
         cy.questionnaireJSON().should((json) => {
           expect(json.item[1].enableWhen).to.deep.equal([
@@ -3546,7 +3546,7 @@ describe('Home page', () => {
 
         cy.get(r1Answer).type('male');
         cy.wait('@snomedReq');
-        cy.get('#searchResults li:nth-child(1)').click();
+        cy.get('#lhc-tools-searchResults li:nth-child(1)').click();
         cy.get(r1Answer).should('have.value', 'Intersex');
 
         cy.questionnaireJSON().should((json) => {
@@ -5005,7 +5005,7 @@ describe('Home page', () => {
 
       // Select 'Example 2' option
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
       cy.get('@pickAnswer').should('have.value', 'Example 2');
 
@@ -5053,7 +5053,7 @@ describe('Home page', () => {
 
       // Select 'Example 2' option
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
       cy.get('@pickAnswer').should('have.value', '200');
 
