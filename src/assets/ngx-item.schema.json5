@@ -1449,7 +1449,11 @@
               "/type": ["date"]
             },
             "widget": {
-              "id": "date"
+              "id": "date",
+              "labelPosition": "left",
+              "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+              "controlClasses": "col-sm-5",
+              "placeholder": 'yyyy-MM-dd'
             }
           },
           "valueDateTime": {
@@ -1461,7 +1465,11 @@
               "/type": ["dateTime"]
             },
             "widget": {
-              "id": "datetime"
+              "id": "datetime",
+              "labelPosition": "left",
+              "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+              "controlClasses": "col-sm-5",
+              "placeholder": 'yyyy-MM-dd hh:mm:ss (AM|PM)'
             }
           },
           "valueTime": {
