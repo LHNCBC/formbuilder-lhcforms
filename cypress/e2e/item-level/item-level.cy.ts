@@ -10,6 +10,10 @@ const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition
 const ucumUrl = 'http://unitsofmeasure.org';
 const snomedEclText =
   '< 429019009 |Finding related to biological sex|';
+const snomedEclTextDiseaseDisorder =
+  '< 64572001 |Disease (disorder)|';
+const snomedEclEncodedTextDiseaseDisorder =
+  'ecl/http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl/%3C+64572001+%7CDisease+%28disorder%29%7C';
 
 describe('Home page', () => {
   beforeEach(CypressUtil.mockSnomedEditions);
@@ -427,15 +431,15 @@ describe('Home page', () => {
         cy.get('input[type="radio"][value="AFTER"]').should('be.checked');
         cy.get('@copyBtn').should('not.be.disabled').click();
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
-        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
-        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '4');
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '4');
         cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '5');
       });
 
       it('should copy before a target node', () => {
         cy.get('input[type="radio"][value="BEFORE"]').click();
         cy.get('@copyBtn').should('not.be.disabled').click();
-        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '3');
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '2');
       });
 
       it('should copy as a child of a target', () => {
@@ -443,9 +447,28 @@ describe('Home page', () => {
         cy.get('@copyBtn').should('not.be.disabled').click();
         cy.getTreeNode('Item 0').find('span.node-display-prefix').should('have.text', '1');
         cy.getTreeNode('New item 1').find('span.node-display-prefix').should('have.text', '2');
+        cy.toggleTreeNodeExpansion('New item 1');
+        cy.getTreeNode('Copy of Item 0').find('span.node-display-prefix').should('have.text', '2.1');
         cy.getTreeNode('New item 2').find('span.node-display-prefix').should('have.text', '3');
         cy.getTreeNode('New item 3').find('span.node-display-prefix').should('have.text', '4');
       });
+    });
+
+    it('should copy a single item', () => {
+      // Select the 'Relationship to patient' item and select the 'More options'.
+      cy.get('div.node-content-wrapper-active button.dropdown-toggle').as('contextMoreBtn');
+      cy.get('@contextMoreBtn').click();
+
+      // Select the 'Move this item' option.
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Copy this item').click();
+
+      cy.get('lfb-node-dialog #moveTarget1').as('dlgInput');
+      cy.get('@dlgInput').click();
+      cy.get('lfb-node-dialog [role="listbox"]').find('button.dropdown-item').should('contain.text', 'Item 0');
+      cy.get('@dlgInput').type('{downArrow}{enter}');
+      cy.get('lfb-node-dialog').contains('button', 'Copy').click();
+
+      cy.getTreeNode('Copy of Item 0').click();
     });
 
     it('should restrict to integer input in integer field', () => {
@@ -800,7 +823,7 @@ describe('Home page', () => {
       cy.get('@thirdOption').find('td:nth-child(3) input').type('s');
       cy.get('@thirdOption').find('td:nth-child(4) input').type('33');
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').clear().type('d3{enter}');
 
       const SCORE_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
@@ -895,14 +918,14 @@ describe('Home page', () => {
       });
 
       // Items should be unselected.
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Set the 'Allow repeating question?' to 'Yes'.
       cy.getRadioButtonLabel(repeatsLabel, 'Yes').click();
       cy.getRadioButton(repeatsLabel, 'Yes').should('be.checked');
 
       // Items should be unchecked.
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Select second and third option in second item.
       cy.get('@pickAnswer2').then($el => {
@@ -1184,19 +1207,77 @@ describe('Home page', () => {
       cy.contains('.mdc-tab.mat-mdc-tab', 'View Rendered Form').click();
       cy.get('#1\\/1').as('inputBox1').click();
       cy.wait('@snomedReq');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.get('@inputBox1').type('{downarrow}{enter}', {force: true});
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@inputBox1').should('have.value', 'Intersex');
 
       // Non SNOMED CT answers
       cy.get('#2\\/1').as('inputBox2').click();
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.get('@inputBox2').type('{downarrow}{enter}', {force: true});
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@inputBox2').should('have.value', 'Back pain');
 
       cy.contains('mat-dialog-actions button', 'Close').click();
+    });
+
+    it('should display the pre-defined SNOMED CT answerValueSet initial selection', () => {
+      cy.uploadFile('snomed-answer-value-set-sample.json', true);
+      cy.get('#title').should('have.value', 'SNOMED answer value set form');
+      cy.contains('button', 'Edit questions').click();
+
+      // Select the 4th item.
+      cy.clickTreeNode('Item with a single SNOMED answerValuetSet initial selection');
+      cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').should('not.exist');
+
+      // The Answer value set section should be populated
+      cy.get('#answerValueSet_ecl').as('ecl').should('contain.value', snomedEclTextDiseaseDisorder);
+      cy.get('#answerValueSet_edition').as('edition')
+        .find('option:selected').should('have.text', 'International Edition (900000000000207008)');
+      cy.get('#answerValueSet_version').as('version')
+        .find('option:selected').should('have.text', '20231001');
+      cy.get('@ecl').parent().parent().parent().as('controlDiv');
+      cy.get('@controlDiv').find('span').should('contain.text', snomedEclEncodedTextDiseaseDisorder);
+
+      // Pick initial value should be selected for the Value method section.
+      cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
+      cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
+      cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+
+      // The Initial value section
+      cy.get('lfb-auto-complete[id^="initial.0.valueCoding.display"] > span > input').should('have.value', 'Adenosine deaminase 2 deficiency');
+      cy.get('[id^="initial.0.valueCoding.code"]').should('have.value', '987840791000119102');
+      cy.get('[id^="initial.0.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
+
+      // Select the 5th item.
+      cy.clickTreeNode('Item with multiple SNOMED answerValueSet initial selections');
+      cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
+      cy.get('lfb-answer-option').should('not.exist');
+      cy.get('#answerValueSet_non-snomed').should('not.exist');
+
+      // The Answer value set section should be populated
+      cy.get('#answerValueSet_ecl').as('ecl').should('contain.value', snomedEclTextDiseaseDisorder);
+      cy.get('#answerValueSet_edition').as('edition')
+        .find('option:selected').should('have.text', 'International Edition (900000000000207008)');
+      cy.get('#answerValueSet_version').as('version')
+        .find('option:selected').should('have.text', '20231001');
+      cy.get('@ecl').parent().parent().parent().as('controlDiv');
+      cy.get('@controlDiv').find('span').should('contain.text', snomedEclEncodedTextDiseaseDisorder);
+
+      // Pick initial value should be selected for the Valuet method section.
+      cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
+      cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+
+      // The Initial value section
+      cy.get('lfb-auto-complete[id^="initial.0.valueCoding.display"] > span > input').should('have.value', 'Adenosine deaminase 2 deficiency');
+      cy.get('[id^="initial.0.valueCoding.code"]').should('have.value', '987840791000119102');
+      cy.get('[id^="initial.0.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
+      cy.get('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input').should('have.value', 'Chronic gastric erosion');
+      cy.get('[id^="initial.1.valueCoding.code"]').should('have.value', '956321981000119108');
+      cy.get('[id^="initial.1.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
     });
 
     describe('Item control', () => {
@@ -1931,7 +2012,7 @@ describe('Home page', () => {
 
       it('should display entry format placeholder for different data types', () => {
         cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
-        
+
         // Decimal data type
         cy.get('#text').should('have.value', 'Decimal data type');
         cy.get('#type').should('contain.value', 'decimal');
@@ -1953,7 +2034,7 @@ describe('Home page', () => {
         cy.getTreeNode('Datetime data type').click();
         cy.get('#text').should('have.value', 'Datetime data type');
         cy.get('#type').should('contain.value', 'dateTime');
-        cy.get('[id="__$entryFormat"]').should('have.value', 'YY/MM/DD hh:mm:ss');        
+        cy.get('[id="__$entryFormat"]').should('have.value', 'YY/MM/DD hh:mm:ss');
 
         // Time data type
         cy.getTreeNode('Time data type').click();
@@ -2006,7 +2087,7 @@ describe('Home page', () => {
 
       it('should update entry format placeholder for different data types', () => {
         cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
-        
+
         // Decimal data type
         cy.get('#text').should('have.value', 'Decimal data type');
         cy.get('[id="__$entryFormat"]').clear().type('##.##');
@@ -2024,7 +2105,7 @@ describe('Home page', () => {
         // Datetime data type
         cy.getTreeNode('Datetime data type').click();
         cy.get('#text').should('have.value', 'Datetime data type');
-        cy.get('[id="__$entryFormat"]').clear().type('YYYY hh:mm:ss');      
+        cy.get('[id="__$entryFormat"]').clear().type('YYYY hh:mm:ss');
 
         // Time data type
         cy.getTreeNode('Time data type').click();
@@ -2133,7 +2214,7 @@ describe('Home page', () => {
         // Datetime data type
         cy.getTreeNode('Datetime data type').click();
         cy.get('#text').should('have.value', 'Datetime data type');
-        cy.get('[id="__$entryFormat"]').clear();      
+        cy.get('[id="__$entryFormat"]').clear();
 
         // Time data type
         cy.getTreeNode('Time data type').click();
@@ -2171,7 +2252,7 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
           expect(qJson.item[0].extension[3]).undefined;
-        
+
           // the entryFormat has been deleted.
           expect(qJson.item[1].extension[0]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
@@ -2193,7 +2274,7 @@ describe('Home page', () => {
 
           expect(qJson.item[5].type).equal('string');
           expect(qJson.item[5].extension).undefined;
-        
+
           expect(qJson.item[6].type).equal('text');
           expect(qJson.item[6].extension).undefined;
 
@@ -2210,13 +2291,13 @@ describe('Home page', () => {
 
       it('should correctly display the entry format even when other extensions are present', () => {
         cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
-        
-        // There should only be one entryFormat extension, however, should there be more than one, the 
+
+        // There should only be one entryFormat extension, however, should there be more than one, the
         // last entry format will be used.
         cy.get('#text').should('have.value', 'Decimal data type');
         cy.get('#type').should('contain.value', 'decimal');
         cy.get('[id="__$entryFormat"]').should('have.value', 'Enter value between 15.2 and 20.1');
-      
+
         // Looking at the JSON, there are actually two entryFormats.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
@@ -2229,16 +2310,16 @@ describe('Home page', () => {
             "valueString": "Enter value between 15.2 and 20.1"
           });
         });
-  
+
         // Invoke preview.
         cy.contains('button', 'Preview').click();
-  
+
         // The LForms preview should display the correct message.
         cy.get('lhc-item lhc-item-question lhc-input > input:first')
           .first()
           .invoke('attr', 'placeholder')
           .should('eq', 'Enter value between 15.2 and 20.1');
-        
+
         // Close the Preview dialog.
         cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
 
@@ -2265,22 +2346,22 @@ describe('Home page', () => {
 
         // Invoke preview.
         cy.contains('button', 'Preview').click();
-  
+
         // The LForms preview should display the correct message.
         cy.get('lhc-item lhc-item-question lhc-input > input:first')
           .first()
           .invoke('attr', 'placeholder')
           .should('eq', 'Enter value between 15.2 and 20.1');
-        
+
         // Close the Preview dialog.
         cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
 
         // Add a unit extension to the item.
         cy.get('[id^="units"]').first().as('units');
         cy.get('@units').should('be.visible');
-        cy.get('#searchResults').should('not.be.visible');
+        cy.get('#lhc-tools-searchResults').should('not.be.visible');
         cy.get('@units').type('inch');
-        cy.get('#searchResults').should('be.visible');
+        cy.get('#lhc-tools-searchResults').should('be.visible');
         cy.contains('#completionOptions tr', '[in_i]').click();
         cy.get('@units').should('have.value', 'inch');
 
@@ -2317,19 +2398,19 @@ describe('Home page', () => {
         });
       });
     });
- 
+
     it('should display quantity units', () => {
       cy.get('[id^="units"]').should('not.exist'); // looking for *units*
       cy.selectDataType('quantity');
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
 
       [['[in_i]', 'inch'], ['[in_br]', 'inch - British']].forEach((result, index) => {
         cy.get('[id^="units"]').eq(index).type('inch');
         cy.contains('#completionOptions tr', result[0]).click();
-        
+
         cy.get('lfb-units table').within(() => {
           cy.get('tbody tr').eq(index).then($row => {
             cy.wrap($row).within(() => {
@@ -2365,9 +2446,9 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', '[in_i]').click();
       cy.get('@units').should('have.value','inch');
       cy.questionnaireJSON().should((qJson) => {
@@ -2393,9 +2474,9 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('A');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', 'Ampere').click();
       cy.get('@units').should('have.value', 'Ampere');
 
@@ -2477,7 +2558,7 @@ describe('Home page', () => {
 
       cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('10');
       cy.get('[id^="initial.0.valueQuantity.unit"]').as('quantityUnit').type('l');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', 'Liters').click();
       cy.get('@quantityUnit').should('have.value', 'Liters');
 
@@ -2492,7 +2573,7 @@ describe('Home page', () => {
       });
       cy.get('@quantityUnit').type('/').type('s');
       cy.contains('#completionOptions tr', 'second - time').click();
-      cy.get('@quantityUnit').should('have.value', 'Liters per second');      
+      cy.get('@quantityUnit').should('have.value', 'Liters per second');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].initial[0].valueQuantity.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].initial[0].valueQuantity.code).equal('L/s');
@@ -2504,9 +2585,9 @@ describe('Home page', () => {
       cy.get('[id^="units"]').should('have.length', 1);
       cy.get('[id^="units"]').first().as('unit1');
       cy.get('@unit1').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@unit1').type('l');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', 'Liters').click();
       cy.get('@unit1').should('have.value', 'Liters');
 
@@ -2527,7 +2608,7 @@ describe('Home page', () => {
       cy.get('[id^="units"]').eq(1).as('unit2');
       cy.get('@unit2').should('be.visible');
       cy.get('@unit2').type('oz');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', 'standard unit used in the US and internationally').click();
       cy.get('@unit2').should('have.value', 'ounce');
 
@@ -2540,7 +2621,7 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[1].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[1].valueCoding.code).equal('[oz_av]');
         expect(qJson.item[0].extension[1].valueCoding.display).equal('ounce');
-      });     
+      });
     });
 
     it('should support lookup code string that contains wordBoundaryChars', () => {
@@ -2549,7 +2630,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('a_g/kat/kg/m').type('{enter}');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
@@ -2566,7 +2647,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('Ampere/kilogram.stere').type('{enter}');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
@@ -2581,7 +2662,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('mean Gregorian year').type('{enter}');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
@@ -2596,7 +2677,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('mean Gregorian year/katal per kilogram').type('{enter}');
       cy.get('[id^="__$units.0.valueCoding.code').should('have.value', '');
       cy.get('[id^="__$units.0.valueCoding.system').should('have.value', '');
@@ -2608,7 +2689,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').first().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('unknown unit').type('{enter}');
       cy.get('[id^="__$units.0.valueCoding.code').type('unknown').type('{enter}');
       cy.get('[id^="__$units.0.valueCoding.system').type('http://unknown.org').type('{enter}');
@@ -2916,7 +2997,7 @@ describe('Home page', () => {
       cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('123');
       cy.get('[id^="initial.0.valueQuantity.unit"]')
         .as('unit0').type('f');
-      cy.get('#searchResults').as('unitSuggestions').should('be.visible', true);
+      cy.get('#lhc-tools-searchResults').as('unitSuggestions').should('be.visible', true);
       cy.get('@unitSuggestions').find('table tbody tr:first').click();
       cy.get('@unitSuggestions').should('not.be.visible');
       cy.get('@unit0').should('have.value', 'farad');
@@ -3412,7 +3493,7 @@ describe('Home page', () => {
         cy.get(r1Operator).as('r1Operator').select('=');
         cy.get(r1Answer).click();
         cy.get(r1Answer).type('dia');
-        cy.get('#searchResults').contains('Diabetes mellitus').click();
+        cy.get('#lhc-tools-searchResults').contains('Diabetes mellitus').click();
 
         cy.questionnaireJSON().should((json) => {
           expect(json.item[1].enableWhen).to.deep.equal([
@@ -3465,7 +3546,7 @@ describe('Home page', () => {
 
         cy.get(r1Answer).type('male');
         cy.wait('@snomedReq');
-        cy.get('#searchResults li:nth-child(1)').click();
+        cy.get('#lhc-tools-searchResults li:nth-child(1)').click();
         cy.get(r1Answer).should('have.value', 'Intersex');
 
         cy.questionnaireJSON().should((json) => {
@@ -4756,7 +4837,7 @@ describe('Home page', () => {
 
       cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
       cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%measured_weight-%normal_weight');
-      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');        
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
       // Continuously Compute Value
       cy.clickTreeNode('Continuously Compute Value with decimal data type');
@@ -4777,7 +4858,7 @@ describe('Home page', () => {
 
       cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
       cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '((%weight_change / %normal_weight).round(2))*100');
-      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked'); 
+      cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
     });
 
     it('should type initial values', () => {
@@ -4875,7 +4956,7 @@ describe('Home page', () => {
         cy.selectAutocompleteOptions($el, true, 'invalidCode', null, '{downarrow}{enter}', ['×Example 1']);
 
         cy.selectAutocompleteOptions($el, true, 'Example 3', null, '{downarrow}{enter}', ['×Example 1', '×Example 3']);
-      });      
+      });
 
       cy.get('lfb-pick-answer span.autocomp_selected > ul > li').as('pickAnswerSelection');
       cy.get('@pickAnswerSelection').should('have.length', 2);
@@ -4892,7 +4973,7 @@ describe('Home page', () => {
     });
 
     it('should retain valid state when toggling between "Pick initial value" and other value methods', () => {
-      
+
       cy.clickTreeNode('None');
       cy.contains('Add new item').scrollIntoView().click();
       cy.get('#text').clear().type('Test state');
@@ -4924,7 +5005,7 @@ describe('Home page', () => {
 
       // Select 'Example 2' option
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
       cy.get('@pickAnswer').should('have.value', 'Example 2');
 
@@ -4939,7 +5020,7 @@ describe('Home page', () => {
     });
 
     it('should remove the answer choices error when answer choices are added and selected for types other than "coding"', () => {
-      
+
       cy.clickTreeNode('None');
       cy.contains('Add new item').scrollIntoView().click();
       cy.get('#text').clear().type('Test answer choice error');
@@ -4972,12 +5053,12 @@ describe('Home page', () => {
 
       // Select 'Example 2' option
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
       cy.get('@pickAnswer').should('have.value', '200');
 
       cy.get('@pickAnswer').should('not.have.class', 'invalid');
-    });    
+    });
 
     it('should create Initial compute value expression', () => {
       // Add a new item under the 'Race' item of data type 'display'.
@@ -5597,7 +5678,7 @@ describe('Value method button selection', () => {
     cy.get('@type').contains('date');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
     cy.get('[id^="initial.0.valueDate"]').should('have.value', '2024-03-03');
-    
+
     cy.clickTreeNode('date_type-answerlist_yes');
     cy.get('@type').contains('date');
     cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
@@ -5630,7 +5711,7 @@ describe('Value method button selection', () => {
     cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
     cy.get('lfb-answer-option table > tbody > tr').should('have.length', 2);
     cy.get('[id^="pick-answer_"]').should('exist').should('be.visible').should('have.value', 'def');
-    
+
     cy.clickTreeNode('text_type-answerlist_no');
     cy.get('@type').contains('text');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');

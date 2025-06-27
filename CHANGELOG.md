@@ -2,9 +2,22 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.1.1] 2025-06-09
+## [10.2.1] 2025-06-27
 ### Added
 - Added the ability to create/update the Answer Expression.
+
+## [10.2.0] 2025-06-25
+### Changed
+- Updated to use new ID lhc-tools-searchResults.
+### Removed
+- Removed autocomplete-lhc dependency.
+
+## [10.1.2] 2025-06-09
+- Fixed a bug on copying an item when a single item is in the sidebar tree.
+
+## [10.1.1] 2025-06-02
+### Fixed
+- Fixed an issue where Answer valueset initial value did not display the 'display' field
 
 ## [10.1.0] 2025-05-29
 ### Added
@@ -177,11 +190,11 @@ Added detailed log statements when the tests fail.
 ## [9.4.1] 2024-04-29
 ### Added
 - Added notice for window opener invocation.
-### Fixed 
+### Fixed
 - Display error messages in preview reported by lforms widget.
 
 ## [9.4.0] 2024-04-01
-### Added 
+### Added
 - Added a feature to invoke formbuilder from a parent window,
   in a new child window and optionally initialize it with a questionnaire.
 - If opened from another window, the formbuilder will post a message
@@ -244,7 +257,7 @@ Added detailed log statements when the tests fail.
 
 ## [9.2.0] 2023-08-03
 ### Added
-- Added these fields to advanced section in the form level fields: 
+- Added these fields to advanced section in the form level fields:
   implicit rules, version, name, date, publisher, copyright, approvalDate, lastReviewDate
 ### Changed
 - Converted schema and layout json files to json5 format.

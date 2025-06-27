@@ -712,6 +712,17 @@ export class Util {
   }
 
   /**
+   * Determines whether a valueCoding object is considered empty.
+   * A valueCoding is considered empty if either its 'display' or 'code' property is missing or falsy.
+   *
+   * @param valueCoding - The valueCoding object to check.
+   * @returns - true if valueCoding is empty; otherwise, false.
+   */
+  static isEmptyValueCoding(valueCoding: any): boolean {
+    return !(valueCoding?.display && valueCoding?.code);
+  }
+
+  /**
    * Determines whether the provided array of answer options is empty for a given FHIR data type.
    * For 'coding' type, checks if any answer option has both 'display' and 'code' in 'valueCoding'.
    * For other types, checks if any answer option has a value for the corresponding value[x] field.
