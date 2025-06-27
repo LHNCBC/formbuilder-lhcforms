@@ -78,6 +78,7 @@
             [ngbPopover]="'Please fill in the above fields before adding a new item'"
             #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
             popoverClass=""
+            [attr.title]="schema.widget.addButtonTitle"
     >
       <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
     </button>

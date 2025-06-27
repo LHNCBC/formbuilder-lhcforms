@@ -805,7 +805,7 @@ describe('Home page', () => {
       cy.get('@thirdOption').find('td:nth-child(3) input').type('s');
       cy.get('@thirdOption').find('td:nth-child(4) input').type('33');
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').clear().type('d3{enter}');
 
       const SCORE_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
@@ -890,25 +890,25 @@ describe('Home page', () => {
       cy.get('#pick-answer_2').as('pickAnswer2');
       cy.get('@pickAnswer2').click();
       // No initial value was selected, so there should still be three options available.
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Select third option in second item.
       cy.get('@pickAnswer2').type('{downarrow}{downarrow}{downarrow}{enter}');
       cy.get('@pickAnswer2').should('have.value', 'd31');
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Clear the selection.
       cy.get('@pickAnswer2').clear().type('{enter}').should('be.empty');
 
       // Items should be unselected.
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Set the 'Allow repeating question?' to 'Yes'.
       cy.getRadioButtonLabel(repeatsLabel, 'Yes').click();
       cy.getRadioButton(repeatsLabel, 'Yes').should('be.checked');
 
       // Items should be unchecked.
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Select second and third option in second item.
       cy.get('@pickAnswer2').type('{downarrow}{downarrow}{enter}');
@@ -1191,16 +1191,16 @@ describe('Home page', () => {
       cy.contains('.mdc-tab.mat-mdc-tab', 'View Rendered Form').click();
       cy.get('#1\\/1').as('inputBox1').click();
       cy.wait('@snomedReq');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.get('@inputBox1').type('{downarrow}{enter}', {force: true});
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@inputBox1').should('have.value', 'Intersex');
 
       // Non SNOMED CT answers
       cy.get('#2\\/1').as('inputBox2').click();
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.get('@inputBox2').type('{downarrow}{enter}', {force: true});
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@inputBox2').should('have.value', 'Back pain');
 
       cy.contains('mat-dialog-actions button', 'Close').click();
@@ -2287,9 +2287,9 @@ describe('Home page', () => {
         // Add a unit extension to the item.
         cy.get('[id^="units"]').last().as('units');
         cy.get('@units').should('be.visible');
-        cy.get('#searchResults').should('not.be.visible');
+        cy.get('#lhc-tools-searchResults').should('not.be.visible');
         cy.get('@units').type('inch');
-        cy.get('#searchResults').should('be.visible');
+        cy.get('#lhc-tools-searchResults').should('be.visible');
         cy.contains('#completionOptions tr', '[in_i]').click();
         cy.get('@units').should('have.value', 'inch');
 
@@ -2333,7 +2333,7 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').last().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
       [['[in_i]', 'inch'], ['[in_br]', 'inch - British']].forEach((result) => {
         cy.contains('#completionOptions tr', result[0]).click();
@@ -2358,9 +2358,9 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="units"]').last().as('units');
       cy.get('@units').should('be.visible');
-      cy.get('#searchResults').should('not.be.visible');
+      cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('inch');
-      cy.get('#searchResults').should('be.visible');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
       cy.contains('#completionOptions tr', '[in_i]').click();
       cy.get('@units').should('have.value','inch');
       cy.questionnaireJSON().should((qJson) => {
@@ -2650,7 +2650,7 @@ describe('Home page', () => {
       cy.get('[id^="initial.0.valueQuantity.value"]').as('value0').type('123');
       cy.get('[id^="initial.0.valueQuantity.unit"]')
         .as('unit0').type('f');
-      cy.get('#searchResults').as('unitSuggestions').should('be.visible', true);
+      cy.get('#lhc-tools-searchResults').as('unitSuggestions').should('be.visible', true);
       cy.get('@unitSuggestions').find('table tbody tr:first').click();
       cy.get('@unitSuggestions').should('not.be.visible');
       cy.get('@unit0').should('have.value', 'farad');
@@ -3150,7 +3150,7 @@ describe('Home page', () => {
         cy.get(r1Operator).as('r1Operator').select('=');
         cy.get(r1Answer).click();
         cy.get(r1Answer).type('dia');
-        cy.get('#searchResults').contains('Diabetes mellitus').click();
+        cy.get('#lhc-tools-searchResults').contains('Diabetes mellitus').click();
 
         cy.questionnaireJSON().should((json) => {
           expect(json.item[1].enableWhen).to.deep.equal([
@@ -3203,7 +3203,7 @@ describe('Home page', () => {
 
         cy.get(r1Answer).type('male');
         cy.wait('@snomedReq');
-        cy.get('#searchResults li:nth-child(1)').click();
+        cy.get('#lhc-tools-searchResults li:nth-child(1)').click();
         cy.get(r1Answer).should('have.value', 'Intersex');
 
         cy.questionnaireJSON().should((json) => {
@@ -4027,7 +4027,7 @@ describe('Home page', () => {
         cy.get('#variable-type-2').select('FHIR Query (Observation)');
         //cy.get('input#simple-expression-2').type('12');
         cy.get('lhc-query-observation').shadow().find('#autocomplete-2').type('weight').type('{downarrow}{enter}');
-        //cy.get('#searchResults #completionOptions tr').contains('29463-7').click();
+        //cy.get('#lhc-tools-searchResults #completionOptions tr').contains('29463-7').click();
         cy.get('div#row-2 lhc-query-observation').shadow().within(() => {
           cy.get('div.query-select > span.autocomp_selected > ul > li')
             .should('have.text', '×Weight - 29463-7');
@@ -4605,14 +4605,14 @@ describe('Home page', () => {
 
       // Select 'Example 2' option
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
       cy.get('@pickAnswer').should('have.value', 'Example 2');
 
       // Set the 'Repeats' option to yes.
       cy.get('@repeatYes').click();
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
 
       // Select 1st and 3rd options
       cy.get('@pickAnswer').type('Example 1{downarrow}{enter}');
@@ -5111,7 +5111,7 @@ describe('Home page', () => {
 
       // Select 'Example 2' option
       cy.get('@pickAnswer').click();
-      cy.get('#searchResults ul > li').should('have.length', 3);
+      cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
       cy.get('@pickAnswer').type('{downarrow}{downarrow}{enter}');
       cy.get('@pickAnswer').should('have.value', 'Example 2');
 

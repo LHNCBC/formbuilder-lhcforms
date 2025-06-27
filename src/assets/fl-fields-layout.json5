@@ -97,6 +97,7 @@
       "labelClasses": "col-sm-2 ps-0 pe-1",
       "controlClasses": "col-sm-10",
       "addButtonLabel": "Add new ValueSet",
+      "addButtonTitle": "At present, only ValueSet is supported as contained resource.",
       "showFields": [
         // The fields here are canonical paths of FormProperty.
         {"field": "resourceType", "col": 1, "nolabel": true},

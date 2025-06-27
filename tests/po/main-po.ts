@@ -41,7 +41,7 @@ export class MainPO {
 
   async loadILPage() {
     await this.loadFLPage();
-    await this._page.getByRole('button', {name: 'Create questions'}).click();
+    await this._page.getByRole('button', {name: 'Create questions'}).first().click();
   }
   /**
    * Load item level page from scratch.
@@ -50,7 +50,7 @@ export class MainPO {
     await this.loadHomePage();
     await this._page.getByLabel('Start from scratch').click();
     await this._page.getByRole('button', {name: 'Continue'}).click();
-    await this._page.getByRole('button', {name: 'Create questions'}).click();
+    await this._page.getByRole('button', {name: 'Create questions'}).first().click();
   }
 
   /**

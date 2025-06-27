@@ -41,7 +41,7 @@ test.describe('r5-features.spec.ts', async () => {
 
   test('should import form with answer constraints', async ({page}) => {
     const fileJson = await PWUtils.uploadFile(page, 'fixtures/answer-constraint-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
 
     await PWUtils.clickTreeNode(page, 'Integer type, optionsOrType');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Integer type, optionsOrType');
@@ -110,7 +110,7 @@ test.describe('r5-features.spec.ts', async () => {
 
   test('should import a form with disabledDisplay', async ({page}) => {
     const fileJson = await PWUtils.uploadFile(page, 'fixtures/disabled-display-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await page.getByRole('button', {name: 'Advanced fields'}).click();
 
     await PWUtils.clickTreeNode(page, 'Target 1');
@@ -127,7 +127,7 @@ test.describe('r5-features.spec.ts', async () => {
 
   test('should import items with answer list layout', async ({page}) => {
     const fileJson = await PWUtils.uploadFile(page, 'fixtures/answer-list-layout-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
 
     await PWUtils.clickTreeNode(page, 'Integer type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/integer/);
@@ -164,7 +164,7 @@ test.describe('r5-features.spec.ts', async () => {
     await page.goto('/');
     await page.getByLabel('Would you like to start from where you left off before?').click();
     await page.getByRole('button', {name: 'Continue'}).click();
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
 
     await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
@@ -176,7 +176,7 @@ test.describe('r5-features.spec.ts', async () => {
 
   test('should export to R4 and STU3 versions', async ({page}) => {
     const fileJson = await PWUtils.uploadFile(page, 'fixtures/answer-constraint-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
 
     // R4
     const q4 = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
@@ -223,7 +223,7 @@ test.describe('R4 to R5', () => {
     await page.goto('/');
     await page.getByLabel('Would you like to start from where you left off before?').click();
     await page.getByRole('button', {name: 'Continue'}).click();
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
 
     await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();

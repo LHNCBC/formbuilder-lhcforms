@@ -32,7 +32,7 @@ test.describe('item-level fields', async () => {
     const helpTextInputEl = page.getByLabel('Help text', {exact: true});
     const helpString = /^A <b>plain<\/b> text instruction/;
     await PWUtils.uploadFile(page, 'fixtures/help-text-sample1.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await expect(helpTextInputEl).toHaveValue(helpString);
     const qJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
     expect(qJson.item[0].item[2].text).toMatch(helpString);

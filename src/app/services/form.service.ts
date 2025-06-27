@@ -180,6 +180,11 @@ export class FormService {
   }
 
 
+  /**
+   * Get resource schema based on the resource type.
+   *
+   * @param resourceType
+   */
   getResourceSchema(resourceType: 'ValueSet' | 'Binary') {
     let ret = null;
     if(resourceType === 'Binary') {

@@ -52,15 +52,25 @@ export class SharedObjectService {
     }
   }
 
-
+  /**
+   * Set questionnaire and share it with listeners.
+   *
+   * @param questionnaire - Questionnaire object to share.
+   */
   set questionnaire(questionnaire: fhir.Questionnaire) {
     this.questionnaireSource$.next(questionnaire);
   }
 
+  /**
+   * Get the observable to listen to the changes in questionnaire.
+   */
   get questionnaire$(): Observable<fhir.Questionnaire> {
     return this.questionnaireSource$.asObservable();
   }
 
+  /**
+   *
+   */
   get questionnaire(): fhir.Questionnaire {
     return this._questionnaire;
   }

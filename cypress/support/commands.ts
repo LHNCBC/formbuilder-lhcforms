@@ -240,7 +240,7 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
   cy.get('[id^="pick-answer"]').as('pickAnswer');
   cy.get('@pickAnswer').click();
-  cy.get('#searchResults ul > li').should('have.length', 2);
+  cy.get('#lhc-tools-searchResults ul > li').should('have.length', 2);
   cy.get('@pickAnswer').type('{downarrow}{enter}');
   cy.get('@pickAnswer').should('have.value', 'd1');
 

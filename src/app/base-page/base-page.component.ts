@@ -62,6 +62,8 @@ export class BasePageComponent implements OnInit {
   weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
   canceledEvent = false;
   titleAriaLabel: string;
+  editMenuLabel = 'Edit form attributes';
+  editMenuTargetStep = 'item-editor';
 
   constructor(private formService: FormService,
               private modelService: SharedObjectService,
@@ -103,7 +105,11 @@ export class BasePageComponent implements OnInit {
       console.log('Saved');
     });
 
-    formService.guidingStep$.subscribe((step: GuidingStep) => {this.guidingStep = step;});
+    formService.guidingStep$.subscribe((step: GuidingStep) => {
+      this.guidingStep = step;
+      this.editMenuLabel = step === 'fl-editor' ? this.createButtonLabel() : 'Edit form attributes';
+    });
+
     FormService.lformsLoaded$.subscribe({
       next: (lformsVersion) => {
         if(this.openerUrl) {
@@ -301,6 +307,10 @@ export class BasePageComponent implements OnInit {
   setStep(step: GuidingStep) {
     this.formService.setGuidingStep(step);
     this.formService.autoSave('state', step);
+  }
+
+  toggleGuidingStep() {
+    this.setStep(this.guidingStep === 'fl-editor' ? 'item-editor' : 'fl-editor');
   }
 
   /**
