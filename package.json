@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "10.1.0",
+  "version": "10.3.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -105,6 +105,7 @@
     "@types/hapi": "18.0.8",
     "@types/jasmine": "~4.3.1",
     "@types/jasminewd2": "~2.0.10",
+    "@types/lodash": "^4.17.19",
     "@types/node": "^18.15.5",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",

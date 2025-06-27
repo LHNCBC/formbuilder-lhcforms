@@ -2,6 +2,27 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.2.0] 2025-06-25
+### Changed
+- Updated to use new ID lhc-tools-searchResults.
+### Removed
+- Removed autocomplete-lhc dependency.
+
+## [10.1.2] 2025-06-09
+- Fixed a bug on copying an item when a single item is in the sidebar tree.
+
+## [10.1.1] 2025-06-02
+### Fixed
+- Fixed an issue where Answer valueset initial value did not display the 'display' field
+
+## [10.1.0] 2025-05-29
+### Added
+- Enabled combining multiple displays and codes in a unit lookup.
+- Added a variable extension at the questionnaire level.
+### Fixed
+- Fixed the no_match status when switching between Pick initial value and other value methods.
+- Fixed the empty answer option check for all data types except coding.
+
 ## [10.0.7] 2025-05-19
 ### Fixed
 - Fixed fhir version of questionnaire in window api output.

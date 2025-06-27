@@ -633,7 +633,122 @@ describe('Home page', () => {
           });
         });
       });
+
+      it('should create variables at the Questionnaire level', () => {
+        cy.get('button#editVariables').click();
+        cy.get('lhc-expression-editor').shadow().within(() => {
+          cy.get('#expression-editor-base-dialog').should('exist');
+
+          // Variables section
+          cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.get('#variables-section .variable-row').should('have.length', 0);
+
+          // Add a new variable 'a_fhir_exp'
+          cy.get('#add-variable').click();
+          cy.get('#variables-section .variable-row').should('have.length', 1);
+          cy.get('#variable-label-0').clear().type('a_fhir_exp');
+          cy.get('#variable-type-0').select('FHIRPath Expression');
+          cy.get('input#variable-expression-0').type("%resource.item.where(linkId='/29453-7').answer.value");
+          cy.get('input#variable-expression-0').should('not.have.class', 'field-error');
+
+          // Add a new variable 'b_fhir_query'
+          cy.get('#add-variable').click();
+          cy.get('#variable-label-1').clear().type('b_fhir_query');
+          cy.get('#variable-type-1').select('FHIR Query');
+          cy.get('input#variable-expression-1')
+            .type("Observation.component.where(code.memberOf(%'vs-observation-vitalsignresult'))");
+          cy.get('input#variable-expression-1').should('not.have.class', 'field-error');
+
+          // Add a new variable 'c_fhir_query_obs'
+          cy.get('#add-variable').click();
+          cy.get('#variable-label-2').clear().type('c_fhir_query_obs');
+          cy.get('#variable-type-2').select('FHIR Query (Observation)');
+
+          cy.get('lhc-query-observation').shadow().find('#autocomplete-2').as('queryObs');
+
+          cy.get('@queryObs').then(($el: JQuery<HTMLInputElement>) => {
+            // Search for invalid code, should return empty array
+            cy.selectAutocompleteOptions($el, false, 'invalidCode', null, '{downarrow}{enter}', []);
+
+            // Search for 'weight', should return selected result
+            cy.selectAutocompleteOptions($el, true, 'weight', null, '{downarrow}{enter}', ['×Weight - 29463-7']);
+          });
+
+          // Add a new variable 'e_easy_path_exp'
+          cy.get('#add-variable').click();
+          cy.get('#variable-label-3').clear().type('d_easy_path_exp');
+          cy.get('#variable-type-3').select('Easy Path Expression');
+          cy.get('input#simple-expression-3').type('1');
+
+          // Save the variables
+          cy.get('#export').click();
+        });
+
+        cy.get('lfb-variable tbody > tr').as('variables');
+        cy.get('@variables').should('have.length', 4);
+
+        cy.get('@variables').eq(0).find('td').as('variable1');
+        cy.get('@variable1').eq(0).should('have.text', 'a_fhir_exp');
+        cy.get('@variable1').eq(1).should('have.text', 'FHIRPath Expression');
+        cy.get('@variable1').eq(2).should('have.text', "%resource.item.where(linkId='/29453-7').answer.value");
+
+        cy.get('@variables').eq(1).find('td').as('variable2');
+        cy.get('@variable2').eq(0).should('have.text', 'b_fhir_query');
+        cy.get('@variable2').eq(1).should('have.text', 'FHIR Query');
+        cy.get('@variable2').eq(2).should('have.text', "Observation.component.where(code.memberOf(%'vs-observation-vitalsignresult'))");
+
+        cy.get('@variables').eq(2).find('td').as('variable3');
+        cy.get('@variable3').eq(0).should('have.text', 'c_fhir_query_obs');
+        cy.get('@variable3').eq(1).should('have.text', 'FHIR Query (Observation)');
+        cy.get('@variable3').eq(2).should('have.text', "Observation?code=http%3A%2F%2Floinc.org%7C29463-7&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1");
+
+        cy.get('@variables').eq(3).find('td').as('variable4');
+        cy.get('@variable4').eq(0).should('have.text', 'd_easy_path_exp');
+        cy.get('@variable4').eq(1).should('have.text', 'Easy Path Expression');
+        cy.get('@variable4').eq(2).should('have.text', "1");
+      });
     });
+  });
+
+  it('should display variables at the Questionnaire level', () => {
+    cy.get('input[type="radio"][value="existing"]').click();
+    cy.get('input[type="radio"][value="local"]').click();
+    // Note, the cypress upload works regardless of the file extension.
+    cy.uploadFile('questionnaire_level_variables.json');
+
+    cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Weight & Height tracking panel', { timeout: 10000 });
+
+    cy.expandAdvancedFields();
+
+    cy.get('lfb-variable tbody > tr').as('variables');
+    cy.get('@variables').should('have.length', 5);
+
+    cy.get('@variables').eq(0).find('td').as('variable1');
+    cy.get('@variable1').eq(0).should('have.text', 'a_fhirpath_exp');
+    cy.get('@variable1').eq(1).should('have.text', 'FHIRPath Expression');
+    cy.get('@variable1').eq(2).should('have.text', "%resource.item.where(linkId='/8302-2').answer.value");
+
+    cy.get('@variables').eq(1).find('td').as('variable2');
+    cy.get('@variable2').eq(0).should('have.text', 'b_fhir_query');
+    cy.get('@variable2').eq(1).should('have.text', 'FHIR Query');
+    cy.get('@variable2').eq(2).should('have.text', "%resource.item.where(linkId='/8352-7').answer.value");
+
+    cy.get('@variables').eq(2).find('td').as('variable3');
+    cy.get('@variable3').eq(0).should('have.text', 'c_fhir_obs');
+    cy.get('@variable3').eq(1).should('have.text', 'FHIR Query (Observation)');
+    cy.get('@variable3').eq(2).should('have.text', "Observation?code=http%3A%2F%2Floinc.org%7C29463-7&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1");
+
+    cy.get('@variables').eq(3).find('td').as('variable4');
+    cy.get('@variable4').eq(0).should('have.text', 'd_question');
+    cy.get('@variable4').eq(1).should('have.text', 'Question');
+    cy.get('@variable4').eq(2).should('have.text', "%resource.item.where(linkId='/29463-7').answer.value");
+
+    cy.get('@variables').eq(4).find('td').as('variable5');
+    cy.get('@variable5').eq(0).should('have.text', 'e_simple');
+    cy.get('@variable5').eq(1).should('have.text', 'Easy Path Expression');
+    cy.get('@variable5').eq(2).should('have.text', "1 + 1");
+
+    cy.collapseAdvancedFields();
   });
 
   describe('User specified FHIR server dialog', () => {

@@ -4,7 +4,7 @@
 // existing commands.
 //
 // For more comprehensive examples of custom
-// commands please read more here:
+//  commands, please read more here:
 // https://on.cypress.io/custom-commands
 // ***********************************************
 //
@@ -236,7 +236,7 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.1.valueCoding.code"]').type('c2');
   cy.get('[id^="answerOption.1.valueCoding.system"]').type('s2');
   cy.get('[id^="answerOption.1.valueCoding.__$score"]').type('3');
-  // Select first option
+  // Select the first option
   cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
   cy.get('[id^="pick-answer"]').as('pickAnswer');
   cy.get('@pickAnswer').click();
@@ -457,7 +457,7 @@ Cypress.Commands.add('editableLinkId', () => {
  * @param errorMessage - the error message to validate.
  */
 Cypress.Commands.add('checkLinkIdErrorIsDisplayed', (errorMessage) => {
-  // The link id text input should be outline in red
+  // The link id text input should be outlined in red
   cy.editableLinkId()
     .should('have.class', 'invalid');
      // The error message should display at the bottom of the text input
@@ -476,7 +476,7 @@ Cypress.Commands.add('checkLinkIdErrorIsDisplayed', (errorMessage) => {
  * Check whether the error message for the linkId field is no longer displayed in the UI.
  */
 Cypress.Commands.add('checkLinkIdErrorIsNotDisplayed', () => {
-  // The link id text input should not have outline in red
+  // The link id text input should not have an outline in red
   cy.editableLinkId()
     .should('not.have.class', 'invalid');
   // The error message should not be displayed at the bottom of the text input
@@ -513,8 +513,8 @@ Cypress.Commands.add('booleanFieldClick', (fieldLabel, rbValue) => {
 /**
  * Get a radio button identified by the label of the group and the label of the radio button.
  *
- * Use radio input element to make assertions on input status, such as selected or not. It is not
- * suitable for mouse actions as it is hidden from mouse-pointer. Instead use its label to perform
+ * Use a radio input element to make assertions on input status, such as selected or not. It is not
+ * suitable for mouse actions as it is hidden from a mouse-pointer, instead use its label to perform
  * mouse actions.
 */
 
@@ -550,7 +550,7 @@ Cypress.Commands.add('getBooleanFieldParent', (fieldLabel) => {
 
 /**
  * Get parent for elements of boolean input/label in initial[x].valueBoolean field.
- * The initial value field has different css path compared to above general boolean field.
+ * The initial value field has a different CSS path compared to the above general boolean field.
  */
 Cypress.Commands.add('getInitialValueBooleanParent', () => {
   return cy.get('lfb-table lfb-label label').contains('Initial value').parent().parent().next()
@@ -558,14 +558,14 @@ Cypress.Commands.add('getInitialValueBooleanParent', () => {
 });
 
 /**
- * Get input element for 'Initial value' boolean field.
+ * Get an input element for 'Initial value' boolean field.
  */
 Cypress.Commands.add('getInitialValueBooleanInput', (rbValue) => {
   return cy.getInitialValueBooleanParent().find('input[id^="booleanRadio_'+rbValue+'"]');
 });
 
 /**
- * Click radio button of 'Initial value' boolean field.
+ * Click a radio button of 'Initial value' boolean field.
  */
 Cypress.Commands.add('getInitialValueBooleanClick', (rbValue) => {
   return cy.getInitialValueBooleanParent().find('label[for^="booleanRadio_'+rbValue+'"]').click();
@@ -608,33 +608,168 @@ Cypress.Commands.add('getItemTextField', () => {
 });
 
 /**
- * Click radio button for the 'Type initial value' boolean field under the Value Method.
+ * Click a radio button for the 'Type initial value' boolean field under the Value Method.
  */
 Cypress.Commands.add('getTypeInitialValueValueMethodClick', () => {
   return cy.contains('div', 'Value method').find('[for^="__$valueMethod_type-initial"]').click();
 });
 
 /**
- * Click radio button for the 'Pick initial value' boolean field under the Value Method.
+ * Click a radio button for the 'Pick initial value' boolean field under the Value Method.
  */
 Cypress.Commands.add('getPickInitialValueValueMethodClick', () => {
   return cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();
 });
 /**
- * Click radio button for the 'Compute initial value' boolean field under the Value Method.
+ * Click a radio button for the 'Compute initial value' boolean field under the Value Method.
  */
 Cypress.Commands.add('getComputeInitialValueValueMethodClick', () => {
   return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-initial"]').click();
 });
 
 /**
- * Click radio button for the 'Continuously compute value' boolean field under the Value Method.
+ * Click a radio button for the 'Continuously compute value' boolean field under the Value Method.
  */
 Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', () => {
   return cy.contains('div', 'Value method').find('[for^="__$valueMethod_compute-continuously"]').click();
 });
 
-// Helps remove typescript errors and auto completing the Cypress commands in TypeScript
+/**
+ * Handles the common workflow for interacting with an autocomplete input in Cypress tests.
+ *
+ * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
+ * @param clearBeforeTyping - Whether to clear the input before typing.
+ * @param searchKeyword - (Optional) The keyword to type into the autocomplete input.
+ * @param expectedListSize - (Optional) The expected number of options in the search results. Pass undefined to skip this check.
+ * @param specialCharacterSequencesText - Special key sequences to send (e.g., '{downarrow}{enter}').
+ * @param assertionFn - A callback function containing assertions to run after selection.
+ *
+ * This helper function types a keyword into an autocomplete input, waits for the search results to appear,
+ * optionally checks the number of results, selects an option using special key sequences,
+ * and then runs the provided assertion logic.
+ */
+function handleAutocomplete(autocompleteElement: JQuery<HTMLInputElement>, clearBeforeTyping: boolean, searchKeyword: string, expectedListSize: number,
+                            specialCharacterSequencesText: string, assertionFn: () => void) {
+  if (clearBeforeTyping) {
+    cy.wrap(autocompleteElement).clear();
+  }
+
+  // If a searchKeyword is provided, type it into the input; otherwise, just click the input element.
+  if (searchKeyword) {
+    cy.wrap(autocompleteElement).type(searchKeyword);
+  } else {
+    cy.wrap(autocompleteElement).click();
+  }
+
+  cy.document().then((doc) => {
+    cy.wrap(doc).find('#lhc-tools-searchResults').then($container => {
+      const $results = $container.find('tbody tr, ul li');
+
+      if (typeof expectedListSize === 'number') {
+        expect($results.length, 'Number of results returned by the search').to.equal(expectedListSize);
+      }
+
+      if ($results.length > 0) {
+        if (specialCharacterSequencesText) {
+          cy.wrap(autocompleteElement).type(specialCharacterSequencesText);
+        }
+      }
+    });
+  });
+
+  // Run the assertion logic passed in
+  assertionFn();
+}
+
+/**
+ * Selects an option from a multi-select autocomplete input and verifies the selected results.
+ *
+ * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
+ * @param clearBeforeTyping - Whether to clear the input before typing.
+ * @param searchKeyword - (Optional) The keyword to type into the autocomplete input.
+ * @param expectedListSize - (Optional) The expected number of options in the search results. Pass null to skip this check.
+ * @param specialCharacterSequencesText - Special key sequences to send (e.g., '{downarrow}{enter}').
+ * @param expectedResults - (Optional) The expected array of texts for the selected results to assert.
+ *
+ * This command types an optional keyword into an autocomplete input, waits for the search results to appear,
+ * optionally checks the number of results, selects an option using special key sequences,
+ * and verifies that the expected results appear in the selection display.
+ */
+Cypress.Commands.add('selectAutocompleteOptions',
+  (autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize, specialCharacterSequencesText,
+   expectedResults) => {
+
+    handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize,
+      specialCharacterSequencesText, () => {
+        if (Array.isArray(expectedResults) && expectedResults.length === 0) {
+          // Expect no selection
+          cy.wrap(autocompleteElement)
+            .parentsUntil('div.query-select')
+            .parent()
+            .find('span.autocomp_selected > ul > li')
+            .should('have.length', 0);
+        } else if (Array.isArray(expectedResults)) {
+          // Existing positive case
+          cy.wrap(autocompleteElement)
+            .parentsUntil('div.query-select')
+            .parent()
+            .find('span.autocomp_selected > ul > li')
+            .should(($lis) => {
+              expect($lis.length, 'Number of results returned by the search').to.equal(expectedResults.length);
+              expectedResults.forEach((text, idx) => {
+                expect($lis.eq(idx)).to.have.text(text);
+              });
+            });
+        }
+      }
+    );
+  }
+);
+
+/**
+ * Selects an option from a single-select autocomplete input and verifies the selected result.
+ *
+ * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
+ * @param clearBeforeTyping - Whether to clear the input before typing.
+ * @param searchKeyword - (Optional) The keyword to type into the autocomplete input.
+ * @param expectedListSize - (Optional) The expected number of options in the search results. Pass null to skip this check.
+ * @param specialCharacterSequencesText - Special key sequences to send (e.g., '{downarrow}{enter}').
+ * @param expectedResultText - (Optional) The expected text for the selected result to assert.
+ *
+ * This command types an optional keyword into an autocomplete input, waits for the search results to appear,
+ * optionally checks the number of results, selects an option using special key sequences,
+ * and verifies that the expected result appears in the selection display.
+ */
+Cypress.Commands.add('selectAutocompleteOption',
+  (autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize, specialCharacterSequencesText,
+   expectedResultText) => {
+
+    handleAutocomplete(autocompleteElement, clearBeforeTyping, searchKeyword, expectedListSize,
+      specialCharacterSequencesText, () => {
+        const hasExpectedListSize = typeof expectedListSize === 'number';
+
+        if (searchKeyword && hasExpectedListSize && expectedListSize === 0) {
+          cy.wrap(autocompleteElement).should('have.class', 'no_match');
+          expect(expectedResultText == null).to.be.true;
+        } else {
+          if (hasExpectedListSize && expectedListSize > 0) {
+            cy.wrap(autocompleteElement).should('not.have.class', 'no_match');
+          }
+
+          // This handles the scenario where searchKeyword is not provided.
+          // If searchKeyword is provided, then autocompleteElement is likely always equal to expectedResultText.
+          // If the value is based on specialCharacterSequencesText, this will validate that the autocompleteElement value
+          // is equal to expectedResultText.
+          if (expectedResultText) {
+            cy.wrap(autocompleteElement).should('have.value', expectedResultText);
+          }
+        }
+      }
+    );
+  }
+);
+
+// Helps remove TypeScript errors and auto completing the Cypress commands in TypeScript
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -687,6 +822,14 @@ declare global {
       getPickInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
       getComputeInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
       getComputeContinuouslyValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
+      selectAutocompleteOption(
+        autoCompleteInput: JQuery<HTMLInputElement>, clearBeforeTyping: boolean,
+        searchKeyword: string, expectedListSize: number, specialCharacterSequencesText: string,
+        expectedResult: string): Chainable<void>;
+      selectAutocompleteOptions(
+        autoCompleteInput: JQuery<HTMLInputElement>, clearBeforeTyping: boolean,
+        searchKeyword: string, expectedListSize: number, specialCharacterSequencesText: string,
+        expectedResults: string []): Chainable<void>;
     }
   }
 }

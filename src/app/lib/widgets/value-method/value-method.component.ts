@@ -89,11 +89,12 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       this.type = typeVal;
       this.valueMethodOptions = this.formProperty.schema.oneOf;
       const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
+      const answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
 
       if (typeVal === "decimal" || typeVal === "dateTime" || typeVal === "url" || typeVal === "quantity" ||
           typeVal === "group" || typeVal === "display") {
         this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
-      } else if (typeVal === "coding" && Util.isEmptyAnswerOption(answerOptions)) {
+      } else if (typeVal === "coding" && answerOptionMethod === 'answer-option' && Util.isEmptyAnswerOptionForType(answerOptions, typeVal)) {
         this.valueMethodOptions = this.valueMethodOptions.slice(1);
         this.control.setValue("none", { emitEvent: true });
         this.formProperty.setValue("none", false);
