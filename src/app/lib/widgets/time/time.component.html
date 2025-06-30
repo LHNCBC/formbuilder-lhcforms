@@ -1,0 +1,35 @@
+<input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
+       name="{{name}}" type="hidden" [formControl]="control">
+<ng-template #notHiddenFieldBlock>
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    <lfb-label *ngIf="!nolabel"
+               [for]="id"
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+               [ngClass]="labelClasses"
+               class="form-label"
+    ></lfb-label>
+    <div class="col p-0 position-relative">
+      <div class="input-group input-group-sm">
+
+        <input [name]="name"
+               class="form-control-like"
+             type="time"
+             step="1"
+             [attr.id]="id"  [formControl]="control"
+             [required]="schema.isRequired"
+             [lfbDisableControl]="schema.disabled"
+        >
+        <button class="btn btn-sm btn-outline-primary"
+                title="Set current time" (click)="now()">Now</button>
+        <button class="btn btn-sm btn-outline-primary"
+                title="Removes the field from the output" (click)="clear()">Clear</button>
+      </div>
+      <ng-container *ngFor="let error of errors">
+        <small *ngIf="formProperty.value && error"
+               class="text-danger form-text" role="alert"
+        >{{error.modifiedMessage || error.originalMessage}}</small>
+      </ng-container>
+    </div>
+  </div>
+</ng-template>

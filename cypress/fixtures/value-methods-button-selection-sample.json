@@ -85,7 +85,7 @@
       "text": "dateTime_type",
       "initial": [
         {
-          "valueDateTime": "2024-03-03 01:01:01 PM"
+          "valueDateTime": "2024-03-03T12:01:01Z"
         }
       ]
     },

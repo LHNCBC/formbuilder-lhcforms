@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.2.1] 2025-06-25
+### Added
+- Added a time component for data type time.
+- Changed date and dateTime input fields to use their respective components in
+  item level fields.
+ 
 ## [10.2.0] 2025-06-25
 ### Changed
 - Updated to use new ID lhc-tools-searchResults.
