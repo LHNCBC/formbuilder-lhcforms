@@ -738,7 +738,7 @@ export class Util {
     }
 
     if (type === 'coding') {
-      return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.display && ansOpt?.valueCoding?.code));
+      return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.code));
     } else {
       const valueFieldName = this.getValueFieldName(type);
       return !ansOpts.some(ansOpt => ansOpt[valueFieldName]);

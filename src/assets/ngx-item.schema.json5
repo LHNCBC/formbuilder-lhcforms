@@ -853,26 +853,22 @@
         {
           "type": "string",
           "enum": ["answer-option"],
-          "title": "Answer options",
-          "dataType": ["all"]
+          "title": "Answer options"
         },
         {
           "type": "string",
           "enum": ["snomed-value-set"],
-          "title": "SNOMED answer value set",
-          "dataType": ["coding"]
+          "title": "SNOMED answer value set"
         },
         {
           "type": "string",
           "enum": ["value-set"],
-          "title": "Answer value set URI",
-          "dataType": ["coding"]
+          "title": "Answer value set URI"
         },
         {
           "type": "string",
           "enum": ["answer-expression"],
-          "title": "Answer expression",
-          "dataType": ["all"]
+          "title": "Answer expression"
         }
       ],
       "default": "answer-option",
