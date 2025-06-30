@@ -63,12 +63,10 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
     // if the expression is available and it is an initial expression
     if (expression[0]?.url === ExtensionsService.INITIAL_EXPRESSION) {
       this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
-      this.control.setValue("compute-initial", { emitEvent: true });
       this.formProperty.setValue("compute-initial", false);
     // if the expression is available and it is a calculated expression
     } else if (expression[0]?.url === ExtensionsService.CALCULATED_EXPRESSION) {
       this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
-      this.control.setValue("compute-continuously", { emitEvent: true });
       this.formProperty.setValue("compute-continuously", false);
     // if type is boolean or
     // answer option method = answer-option and there are answer choices, and intial values or
@@ -77,20 +75,17 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
                ((answerOptionMethod === 'answer-option' && answerOptions?.length > 0 && answerOptions.some(opt => "initialSelected" in opt)) ||
                 ((answerOptionMethod === 'snomed-value-set' || answerOptionMethod === 'value-set') && initial.length > 0))) {
       this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
-      this.control.setValue("pick-initial", { emitEvent: true });
       this.formProperty.setValue("pick-initial", false);
     // answer option method = answer-expression
-    } else if (answerOptionMethod === "answer-expression" || expression[0]?.url === ExtensionsService.ANSWER_EXPRESSION) {
+    } else if (answerOptionMethod === "answer-expression") {
+
       this.valueMethodOptions = [this.formProperty.schema.oneOf[0], this.formProperty.schema.oneOf[this.formProperty.schema.oneOf.length - 1]];
-      this.control.setValue("type-initial", { emitEvent: true });
       this.formProperty.setValue("type-initial", false);
     } else if (type === "coding" && Util.isEmptyAnswerOptionForType(answerOptions, type)) {
       this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
-      this.control.setValue("none", { emitEvent: true });
       this.formProperty.setValue("none", false);
-    } else if (initial.length > 0 && type !== 'coding') {
+    } else if (initial.length > 0 && !Util.isEmptyInitialForType(initial, type) && type !== 'coding') {
       this.valueMethodOptions = [...this.formProperty.schema.oneOf.slice(0, 1), ...this.formProperty.schema.oneOf.slice(2)];
-      this.control.setValue("type-initial", { emitEvent: true });
       this.formProperty.setValue("type-initial", false);
     } else {
       if (isAnswerList) {
@@ -98,7 +93,6 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       } else {
         this.valueMethodOptions = [...this.formProperty.schema.oneOf.slice(0, 1), ...this.formProperty.schema.oneOf.slice(2)];
       }
-      this.control.setValue("none", { emitEvent: true });
       this.formProperty.setValue("none", false);
     }
     this.displayTypeInitial = ((answerOptionMethod === "answer-expression" && isAnswerList) || !isAnswerList);
@@ -112,38 +106,22 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
     sub = this.formProperty.searchProperty('/__$isAnswerList').valueChanges.subscribe((isAnswerList) => {
       this.isAnswerList = isAnswerList;
 
+      if (this.type === "string") {
+        this.type = this.formProperty.findRoot().getProperty('type').value;
+      }
+
       this.updateValueMethodOptions(this.type, this.answerOptionMethod, isAnswerList);
     });
     this.subscriptions.push(sub);
 
     sub = this.formProperty.searchProperty('type').valueChanges.subscribe((typeVal) => {
       this.type = typeVal;
-/*
-      this.valueMethodOptions = this.formProperty.schema.oneOf;
-      const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
-      const answerOptionMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
- */
+
       if (typeVal === "decimal" || typeVal === "dateTime" || typeVal === "url" || typeVal === "quantity" ||
           typeVal === "group" || typeVal === "display") {
         this.isAnswerList = false;
         this.formProperty.searchProperty('__$isAnswerList').setValue(false, false);
       }
-/*
-      else if (typeVal === "coding" && Util.isEmptyAnswerOptionForType(answerOptions, typeVal)) {
-      } else if (typeVal === "coding" && answerOptionMethod === 'answer-option' && Util.isEmptyAnswerOptionForType(answerOptions, typeVal)) {
-        this.valueMethodOptions = this.valueMethodOptions.slice(1);
-        this.control.setValue("none", { emitEvent: true });
-        this.formProperty.setValue("none", false);
-      } else if (typeVal === "boolean") {
-        this.valueMethodOptions = this.valueMethodOptions.slice(1);
-        this.control.setValue("pick-initial", { emitEvent: true });
-        this.formProperty.setValue("pick-initial", false);
-      } else {
-        const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
-        if (answerOptions && answerOptions.length > 0) {
-          this.formProperty.searchProperty('__$isAnswerList').setValue(true, false);
-        }
-      } */
 
       this.updateValueMethodOptions(typeVal, this.answerOptionMethod, this.isAnswerList);
     });
@@ -175,7 +153,10 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
           this.formService._validationStatusChanged$.next(null);
         }
 
-        if (val === "pick-initial" || val === "type-initial") {
+        // When switching to "pick-initial" or "type-initial" value methods (and not using "answer-expression"),
+        // remove any lingering answer expression-related extensions from the root 'extension' property
+        // to ensure the form state is consistent and does not retain
+        if ((val === "pick-initial" || val === "type-initial") && this.answerOptionMethod !== "answer-expression") {
           const updatedExts = this.formService.removeExpressionsExtensions(exts);
           if (updatedExts.length !== exts.length) {
             this.formProperty.findRoot().getProperty('extension').setValue(updatedExts, false);

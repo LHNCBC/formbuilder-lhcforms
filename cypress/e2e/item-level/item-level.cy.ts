@@ -594,6 +594,7 @@ describe('Home page', () => {
         expect(qJson.item[0].initial[0].valueString).equal('initial string');
       });
       cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueDecimal"]').type('100.1');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('decimal');
@@ -601,6 +602,7 @@ describe('Home page', () => {
       });
 
       cy.selectDataType('integer');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueInteger"]').as('initialInteger');
       cy.get('@initialInteger').type('100');
       cy.questionnaireJSON().should((qJson) => {
@@ -2632,6 +2634,13 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('a_g/kat/kg/m').type('{enter}');
+
+      cy.get('[id^="__$units.0.valueCoding.code_"]').as('valueCodingCode').should('be.visible');
+      cy.get('[id^="__$units.0.valueCoding.system_"]').as('valueCodingSystem').should('be.visible');
+
+      cy.get('@valueCodingCode').should('have.value', 'a_g/kat/kg/m');
+      cy.get('@valueCodingSystem').should('have.value', 'http://unitsofmeasure.org');
+
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
@@ -5778,7 +5787,7 @@ describe('Answer expression', () => {
     cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
     cy.get('[id^="initial.0.valueInteger"]').should('have.value', '20');
-    
+
     cy.clickTreeNode("What is the patient's gender?");
     cy.get('@type').contains('coding');
     cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
@@ -5834,7 +5843,7 @@ describe('Answer expression', () => {
     cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'a');
     cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
     cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', '1');
-  
+
     cy.get('@secondVariable').find('td:nth-child(1)').should('have.text', 'b');
     cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
     cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', '2');

@@ -20,6 +20,7 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   @ViewChild('answerOption', {static: true, read: AnswerOptionComponent}) answerOption: AnswerOptionComponent;
   @ViewChild('answerValueSet', {static: true, read: StringComponent}) answerValueSet: StringComponent;
   isSnomedUser = false;
+  answerOptionMethod = null;
   type = 'string';
   isAnswerList = false;
   extensionsService: ExtensionsService = inject(ExtensionsService);
@@ -52,12 +53,22 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
           message: warningMessage
         };
         this.tableService.setTableStatusChanged(status);
-        
       } else {
+        // If switching away from "answer-expression" method, remove any answer expression-related
+        // extensions from the root 'extension' property to keep the form state consistent.
+        if (this.answerOptionMethod && this.answerOptionMethod === "answer-expression" && ansOptMethod !== this.answerOptionMethod) {
+          const exts = this.formProperty.findRoot().getProperty('extension').value;
+          const updatedExts = this.extensionsService.removeExpressionExtensions();
+          if (updatedExts && exts && updatedExts.length !== exts.length) {
+            this.formProperty.findRoot().getProperty('extension').setValue(updatedExts, false);
+          }
+        }
+
         // Clear previous status to force UI update
         this.tableService.setTableStatusChanged(null);
-        
       }
+
+      this.answerOptionMethod = ansOptMethod;
     });
     this.subscriptions.push(sub);
 
@@ -120,6 +131,17 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
         this.formProperty.setValue('answer-expression', false);
       }
     }
+  }
+
+  /**
+   * Checks if the specified FHIR data type is supported for a given key in the widget's supportedDataType map.
+   *
+   * @param supportedKey - The key to look up in the supportedDataType object (e.g., 'answerOption', 'valueSet', etc.).
+   * @param type - The FHIR data type to check for support (e.g., 'string', 'coding', etc.).
+   * @returns True if the type is supported for the given key; otherwise, false.
+   */
+  isTypeSupportedForKey(supportedKey: string, type: string): boolean {
+    return this.schema.widget.supportedDataType[supportedKey].indexOf(type) > -1;
   }
 
   /**

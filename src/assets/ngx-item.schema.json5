@@ -71,8 +71,8 @@
         "id": "entry-format",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-10 p-0" 
-      }      
+        "controlClasses": "col-10 p-0"
+      }
     },
     "__$restrictions": {
       "description": "Choose to add value restrictions to the input.",
@@ -884,7 +884,13 @@
         "id": "answer-option-methods",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0"
+        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0",
+        "supportedDataType": {
+          "answer-option": ["all"],
+          "snomed-value-set": ["coding"],
+          "value-set": ["coding"],
+          "answer-expression": ["all"]
+        }
       }
     },
     /*
@@ -1763,7 +1769,7 @@
                 "/__$answerOptionMethods": ["answer-expression"]
               }
             ]
-          }          
+          }
         ]
       },
       "widget": {
@@ -2310,7 +2316,7 @@
             "additionalProperties": false,
             "type": "object",
             "widget": {
-              "id": "hidden"          
+              "id": "hidden"
             }
           }
 
@@ -2760,7 +2766,7 @@
           "col": 12
         }
       ]
-    },    
+    },
     {
       "fields": [
         "__$restrictions"

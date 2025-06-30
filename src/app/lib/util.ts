@@ -83,7 +83,8 @@ export class Util {
     text: 'valueString',
     coding: 'valueCoding',
     quantity: 'valueQuantity',
-    reference: 'valueReference'
+    reference: 'valueReference',
+    url: 'valueUri'
   };
 
   /**
@@ -742,6 +743,23 @@ export class Util {
       const valueFieldName = this.getValueFieldName(type);
       return !ansOpts.some(ansOpt => ansOpt[valueFieldName]);
     }
+  }
+
+  /**
+   * Determines whether the provided array of initials is empty for a given FHIR data type.
+   * For 'coding' type, checks if any initial has a value for the corresponding value[x] field.
+   *
+   * @param initials - An array of initial objects.
+   * @param type - The FHIR data type (e.g., 'coding', 'string', 'boolean', etc.).
+   * @returns true if the initials array is empty for the given type, otherwise false.
+   */
+  static isEmptyInitialForType(initials: any, type: string): boolean {
+    if (!initials || initials.length === 0) {
+      return true;
+    }
+
+    const valueFieldName = this.getValueFieldName(type);
+    return !initials.some(initial => initial[valueFieldName]);
   }
 }
 

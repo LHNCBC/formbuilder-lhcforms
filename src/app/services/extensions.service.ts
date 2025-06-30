@@ -147,10 +147,11 @@ export class ExtensionsService {
 
   /**
    * Remove expression extensions
+   * @returns - returns the array of extensions excluding the extensions of type Initial Expression, Calculated Expression, or Answer Expression.
    */
-  removeExpressionExtensions() {
+  removeExpressionExtensions(): any {
     this.removeAllExtensions((ext) => {
-      return (ext.value.url === ExtensionsService.INITIAL_EXPRESSION || ext.value.url === ExtensionsService.CALCULATED_EXPRESSION);
+      return (ext.value.url === ExtensionsService.INITIAL_EXPRESSION || ext.value.url === ExtensionsService.CALCULATED_EXPRESSION || ext.value.url === ExtensionsService.ANSWER_EXPRESSION);
     });
   }
 
@@ -171,15 +172,12 @@ export class ExtensionsService {
   }
 
   /**
-   * Loop through the array of textensions that match the given url. If no match is found, appends the 
-   * new extension to the end of the array. If a match is found, replace the last matched extension
-   * with the provided 'newExtensionJSON`.
-   * @param extUrl - Url to identify the extension.
-   * @param newExtensionJSON -  
-   *  * If it returns true, that extension is included in the removal list.
-   * @param match - New fhir.Extension to replace with.
+   * Updates the last extension in the array that matches the given URL with the provided extension object.
+   * If no extension with the specified URL exists, appends the new extension to the array.
+   * Notifies subscribers of the change.
+   * @param extUrl - The URL used to identify the extension to update or append.
+   * @param newExtensionJSON - The new extension object to insert or update.
    */
-
   updateOrAppendExtensionByUrl(extUrl: fhirPrimitives.url, newExtensionJSON: fhir.Extension): void {
     let endIndex = this.extensionsProp?.value?.findLastIndex(ext => ext.url === extUrl);
 
@@ -280,7 +278,7 @@ export class ExtensionsService {
   isEmptyValueExpression(valueExpression: any): boolean {
     return !(valueExpression?.url && valueExpression?.valueExpression?.expression);
   }
-  
+
   /**
    * Remove the first extension that matches a criteria. A callback method 'match` is called for each extension
    * The first extension that returns true is removed.

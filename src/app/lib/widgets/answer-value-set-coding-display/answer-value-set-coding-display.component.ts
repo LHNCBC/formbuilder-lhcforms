@@ -19,12 +19,12 @@ declare var LForms: any;
 })
 export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('codingDisplay') codingDisplay: ElementRef;
-  
+
   subscriptions: Subscription[] = [];
   answerOptions: any[] = [];
   _fhir = LForms.FHIR["R4"];
   sdc = this._fhir.SDC;
-  
+
   protected readonly warningIcon = faExclamationTriangle;
   errors: {code: string, originalMessage: string, modifiedMessage: string}[] = null;
   errorIcon = faExclamationTriangle;
@@ -71,6 +71,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
     const initValueCoding = this.formProperty.parent.value;
     if (!Util.isEmptyValueCoding(initValueCoding)) {
       this.model = initValueCoding;
+    } else {
+      this.model = {};
     }
     this.dataType = this.formProperty.findRoot().getProperty('type').value;
 
@@ -92,7 +94,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
     });
     this.subscriptions.push(sub);
 
-    
+
     sub = this.formProperty.searchProperty('/__$answerOptionMethods').valueChanges.subscribe((method) => {
       this.answerMethod = method;
       this.init(false);
@@ -206,11 +208,11 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   }
 
   /**
-   * Handles the focusout event on an input elmeent. Retieves the text value from the event and 
+   * Handles the focusout event on an input elmeent. Retieves the text value from the event and
    * compares it with the model. If they differ, assigns the text value to the model and updates
    * the display field of the parent valueCoding. This handles cases where users enter off-list
    * values.
-   * @param event - The focusout event containing the current input element. 
+   * @param event - The focusout event containing the current input element.
    */
   onFocusOut(event: any) {
     if (event.target.value && event.target.value !== this.model) {
@@ -218,7 +220,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
 
       const coding = this.formProperty.parent.value;
       coding['display'] = event.target.value;
-  
+
       this.updateValueCoding(coding);
     }
 
