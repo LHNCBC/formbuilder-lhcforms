@@ -13,6 +13,13 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
+// Polyfill global for browser context (must be first!)
+// Moving the global assignment to the top of the file, trying to solve the
+// error "global is not defined" error.
+if (typeof window !== 'undefined' && typeof global === 'undefined') {
+  (window as any).global = window;
+}
+
 // Import commands.js using ES2015 syntax:
 import './commands';
 import 'cypress-real-events';
@@ -34,5 +41,3 @@ const config = {
 
 installLogsCollector();
 failOnConsoleError(config);
-
-window.global = window;
