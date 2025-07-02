@@ -62,7 +62,6 @@ export class BasePageComponent implements OnInit {
   weekInMilliseconds = 7 * 24 * 60 * 60 * 1000;
   canceledEvent = false;
   titleAriaLabel: string;
-  editMenuLabel = 'Edit form attributes';
   editMenuTargetStep = 'item-editor';
 
   constructor(private formService: FormService,
@@ -107,7 +106,6 @@ export class BasePageComponent implements OnInit {
 
     formService.guidingStep$.subscribe((step: GuidingStep) => {
       this.guidingStep = step;
-      this.editMenuLabel = step === 'fl-editor' ? this.createButtonLabel() : 'Edit form attributes';
     });
 
     FormService.lformsLoaded$.subscribe({
@@ -120,6 +118,15 @@ export class BasePageComponent implements OnInit {
       error: (error) => {
         this.lformsErrorMessage = `Encountered an error which causes the application not to work properly. Root cause is: ${error.message}`;
     }});
+  }
+
+
+  /**
+   * Get the label for the edit menu button.
+   * @returns {string} - Label for the edit menu button.
+   */
+  editMenuLabel() {
+    return this.guidingStep === 'fl-editor' ? this.createButtonLabel() : 'Edit form attributes';
   }
 
   ngOnInit() {

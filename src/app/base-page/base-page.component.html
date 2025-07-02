@@ -47,9 +47,9 @@
           </div>
         </div>
 
-        <div class="btn-group-sm me-2" role="group" [attr.aria-label]="editMenuLabel">
+        <div class="btn-group-sm me-2" role="group" [attr.aria-label]="editMenuLabel()">
           <button type="button" class="btn btn-secondary"
-                  (click)="toggleGuidingStep()">{{editMenuLabel}}</button>
+                  (click)="toggleGuidingStep()">{{editMenuLabel()}}</button>
         </div>
         <div class="btn-group-sm me-2 ms-auto" role="group" aria-label="Preview">
           <button type="button" class="btn btn-secondary"
@@ -149,7 +149,7 @@
 </ng-template>
 
 <ng-template #formLevelFields>
-  <lfb-form-fields (state)="setStep($event)"
+  <lfb-form-fields
                    [questionnaire]="formFields"
                    (questionnaireChange)="formFieldsChanged($event)"
                    [questionsButtonLabel]="createButtonLabel()"
