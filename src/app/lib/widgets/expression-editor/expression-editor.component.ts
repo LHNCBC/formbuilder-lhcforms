@@ -63,8 +63,9 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
     const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
 
     if ('extension' in item) {
-      const exp = this.extensionsService.getFirstExtensionByUrl(ExtensionsService.INITIAL_EXPRESSION) ||
-                  this.extensionsService.getFirstExtensionByUrl(ExtensionsService.CALCULATED_EXPRESSION) ||
+      const exp = (this.valueMethod === "compute-initial" || this.valueMethod === "compute-continuously") ?
+                  this.extensionsService.getFirstExtensionByUrl(ExtensionsService.INITIAL_EXPRESSION) ||
+                    this.extensionsService.getFirstExtensionByUrl(ExtensionsService.CALCULATED_EXPRESSION) :
                   this.extensionsService.getFirstExtensionByUrl(ExtensionsService.ANSWER_EXPRESSION);
       if (exp) {
         this.expression = exp.valueExpression.expression;
@@ -76,7 +77,7 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
         if (!this.extensionsService.isEmptyValueExpression(outputExpression)) {
           this.expression = outputExpression?.valueExpression?.expression;
           const outputExpressionExtension = { ...outputExpression};
-          outputExpressionExtension.url = this.getUrlByValueMethod(this.valueMethod); 
+          outputExpressionExtension.url = this.getUrlByValueMethod(this.valueMethod);
 
           this.extensionsService.insertExtensionAfterURL(ExtensionsService.VARIABLE, [outputExpressionExtension]);
         }
@@ -85,15 +86,18 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   }
 
   /**
-   * Fetches the 'initial expression' from the FormProperty. If it is empty, returns the 'calculated expression' instead. 
+   * Fetches the 'initial expression' from the FormProperty. If it is empty, returns the 'calculated expression' instead.
    * @returns - the output expression from either the 'initial expression' or the 'calculated expression'.
    */
   getOutputExpressionFromFormProperty(): any {
-    const properties = [
-      '__$initialExpression',
-      '__$calculatedExpression',
-      '__$answerExpression'
-    ];
+    const properties = (this.valueMethod === "compute-initial" || this.valueMethod === "compute-continuously") ?
+                         [
+                           '__$initialExpression',
+                           '__$calculatedExpression'
+                         ] :
+                         [
+                           '__$answerExpression'
+                         ];
 
     for (const prop of properties) {
       const expr = this.formProperty.findRoot().getProperty(prop).value;

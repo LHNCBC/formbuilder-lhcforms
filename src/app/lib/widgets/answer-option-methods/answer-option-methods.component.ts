@@ -39,6 +39,30 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
     this.updateUI();
   }
 
+  /**
+   * Returns the list of answer option methods that should be available for selection,
+   * filtered based on the current user context and item configuration.
+   *
+   * - For SNOMED users, includes options where the supported data type is 'all' or matches the current type,
+   *   and only if the item is configured as an answer list.
+   * - For non-SNOMED users, excludes the 'snomed-value-set' option.
+   *
+   * @returns An array of answer option method schema objects that are valid for the current context.
+   */
+  get filteredAnswerOptionMethods(): any[] {
+    return this.schema.oneOf.filter(option => {
+      if (this.isSnomedUser) {
+        return (
+          (this.schema.widget.supportedDataType[option.enum[0]][0] === 'all' ||
+          this.isTypeSupportedForKey(option.enum[0], this.type)) &&
+          this.isAnswerList
+        );
+      } else {
+        return option.enum[0] !== 'snomed-value-set';
+      }
+    });
+  }
+
   ngAfterViewInit() {
     super.ngAfterViewInit();
 

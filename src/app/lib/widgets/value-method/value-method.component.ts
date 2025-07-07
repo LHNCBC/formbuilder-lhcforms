@@ -78,8 +78,7 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
       this.formProperty.setValue("pick-initial", false);
     // answer option method = answer-expression
     } else if (answerOptionMethod === "answer-expression") {
-
-      this.valueMethodOptions = [this.formProperty.schema.oneOf[0], this.formProperty.schema.oneOf[this.formProperty.schema.oneOf.length - 1]];
+      this.valueMethodOptions = [...this.formProperty.schema.oneOf.slice(0, 1), ...this.formProperty.schema.oneOf.slice(2)];
       this.formProperty.setValue("type-initial", false);
     } else if (type === "coding" && Util.isEmptyAnswerOptionForType(answerOptions, type)) {
       this.valueMethodOptions = this.formProperty.schema.oneOf.slice(1);
