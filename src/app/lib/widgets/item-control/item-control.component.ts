@@ -6,6 +6,7 @@ import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import {Util} from '../../util';
 import {LiveAnnouncer} from "@angular/cdk/a11y";
+import { isNamedDeclaration } from '@angular/compiler-cli/src/ngtsc/util/src/typescript';
 
 @Component({
   standalone: false,
@@ -33,6 +34,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   hasCodeSystemItemControl = false;
   isItemControlDeprecated = false;
   deprecatedMessage = '';
+
+  answerList = false;
 
   constructor(private extensionsService: ExtensionsService, private formService: FormService,
               private cdr: ChangeDetectorRef, private liveAnnouncer: LiveAnnouncer) {
@@ -84,11 +87,17 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    */
   getItemControl(dataTypeChanged: boolean = false): string {
     const ext = this.getItemControlExtension();
-    const defaultItemControl = (this.dataType === 'group' || this.dataType === 'display') ? '' : 'drop-down';
+    const isAnswerList = this.formProperty.findRoot().getProperty('__$isAnswerList').value;
+
+    let defaultItemControl = '';
+    if (this.dataType !== 'group' && this.dataType !== 'display') {
+      defaultItemControl = isAnswerList ? 'drop-down' : '';
+    }
+
     if (dataTypeChanged)
       return defaultItemControl;
 
-    return ext ? ext.valueCodeableConcept.coding[0].code : defaultItemControl;
+    return ext ? ext.valueCodeableConcept?.coding[0]?.code : defaultItemControl;
   }
 
   /**
@@ -152,6 +161,11 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       this.cdr.markForCheck();
     })
     this.subscriptions.push(sub);
+
+    sub = this.formProperty.searchProperty('/__$isAnswerList').valueChanges.subscribe((answerList) => {
+      this.answerList = answerList;
+    })
+    this.subscriptions.push(sub);
   }
 
   /**
@@ -168,6 +182,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    * @param option - Selected option (angular event).
    */
   updateItemControlExt(option: string) {
+    this.clearExtensionItemControlSelection();
+
     if(this.answerMethod === 'answer-option' && option === 'autocomplete') {
       this.option = 'drop-down';
     }
@@ -192,6 +208,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
         delete ext.valueCodeableConcept.text;
         ext.valueCodeableConcept.coding[0].code = option;
         ext.valueCodeableConcept.coding[0].display = this.optionsObj[option];
+
+        this.extensionsService.updateOrAppendExtensionByUrl(ItemControlComponent.itemControlUrl, ext);
       }
     }
   }
@@ -213,6 +231,23 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       }
       return ret;
     });
+  }
+
+  /**
+   * Filters the item control options based on the repeat status and answer method.
+   * Excludes controls that are not appropriate for the current configuration, such as:
+   * - 'radio-button' when repeats is enabled
+   * - 'check-box' when repeats is disabled
+   * - 'autocomplete' when the answer method is 'answer-option'
+   *
+   * @returns {any[]} - The filtered list of item control option objects.
+   */
+  getItemControlOptions(): any [] {
+    return this.formProperty.schema.oneOf.filter((o) =>
+      !((this.isRepeat && o.enum[0] === 'radio-button') ||
+        (!this.isRepeat && o.enum[0] === 'check-box') ||
+        (this.answerMethod === 'answer-option' && o.enum[0] === 'autocomplete'))
+    );
   }
 
   /**
@@ -249,7 +284,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   composeCodeSystemItemControlLabel(opt: any): string {
     let label = `Item control ${opt.display}. ${opt.description}  `;
     if (!opt.support)
-      label += "Please note that this item control is not supported by the LHC-Forms preview.";
+      label += "Please note that this item control is not yet supported by the LHC-Forms preview.";
     return label;
   }
 

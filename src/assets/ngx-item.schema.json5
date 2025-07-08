@@ -1169,11 +1169,80 @@
       "visibleIf": {
         "__$isAnswerList": [true]
       },
+      "oneOf": [
+        {
+          'enum': ["autocomplete"],
+          'display': 'Auto-complete',
+          'description': 'A control that shows matching options as the user types. Ideal for large lists where searching by text is helpful.',
+          'support': true
+        },
+        {
+          'enum': ["drop-down"],
+          'display': 'Drop down',
+          'description': 'Text displayed below or inside the answer-entry area as a prompt or guide.',
+          'support': true
+        },
+        {
+          'enum': ["check-box"],
+          'display': 'Check-box',
+          'description': 'A control listing choices with checkboxes. Users can select or deselect options, allowing multiple selections. Useful for repeating items or booleans with an \'unanswered\' state.',
+          'support': true
+        },
+/* TBD        {
+          'enum': ["lookup"],
+          'display': 'Lookup',
+          'description': 'A control that opens a dialog or screen for users to browse or filter and select a match. Best for large lists where text search is not suitable.',
+          'support': false
+        }, */
+        {
+          'enum': ["radio-button"],
+          'display': 'Radio Button',
+          'description': 'A control listing choices with radio buttons. Selecting one option deselects others. Used for single-choice items or booleans with an \'unanswered\' state.',
+          'support': true
+        }
+      ],
       "widget": {
         "id": "item-control",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-auto btn-group btn-group-sm p-0"
+      }
+    },
+    "__$itemControlQuestion": {
+      // Proxy for item control extension.
+      "description": "Choose the type of control for the answer list. The default is a drop-down list, which works well for lists that aren't too large. You may also choose checkboxes or radio-buttons for smaller lists. For large lists, you can make it an autocomplete list, in which matching items will show up when the user starts typing, though some FHIR servers (e.g., the SNOMED server) might not return results until the user types a few characters.",
+      "title": "Question item control",
+      "type": "string",
+      "oneOf": [
+        {
+          'enum': ["slider"],
+          'display': 'Slider',
+          'description': 'A control with a movable handle on an axis to select a value between set minimum and maximum.',
+          'support': false
+        },
+        {
+          'enum': ["spinner"],
+          'display': 'Spinner',
+          'description': 'A control for scrolling through numeric or ordered values using arrows.',
+          'support': false
+        },
+        {
+          'enum': ["text-box"],
+          'display': 'Text Box',
+          'description': 'A control for free text entry.',
+          'support': false
+        }
+      ],
+      "visibleIf": {
+        "__$isAnswerList": [false]
+      },
+      "default": "unspecified",
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 btn-group btn-group-sm p-0",
+        "note": "(1) - not yet supported by LHC-Forms preview."
       }
     },
     "__$itemControlGroup": {
@@ -2574,6 +2643,17 @@
       "showFields": [
         {
           "field": "__$itemControl",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$itemControlQuestion"
+      ],
+      "showFields": [
+        {
+          "field": "__$itemControlQuestion",
           "col": 12
         }
       ]
