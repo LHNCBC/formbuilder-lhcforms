@@ -182,7 +182,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
             parseResp.unit.name
           ));
           updateUnitFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
-          this.autoComp.setFieldVal(parseResp.unit.name);
+          this.autoComp.setFieldVal(parseResp.unit.name, false);
 
         } else {
           this.addOrUpdateUnitExtension(this.createUnitExt(

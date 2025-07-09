@@ -2595,13 +2595,6 @@ describe('Home page', () => {
       cy.get('[id^="__$units.0.valueCoding.code"]').should('have.value', 'L');
       cy.get('[id^="__$units.0.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
 
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
-        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
-        expect(qJson.item[0].extension[0].valueCoding.code).equal('L');
-        expect(qJson.item[0].extension[0].valueCoding.display).equal('Liters');
-      });
-
       cy.get('@addUnitButton').click();
 
       cy.get('[id^="units"]').should('have.length', 2);
@@ -2616,11 +2609,93 @@ describe('Home page', () => {
       cy.get('[id^="__$units.1.valueCoding.code"]').should('have.value', '[oz_av]');
       cy.get('[id^="__$units.1.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
 
+      // Add m/s/J
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 3);
+      cy.get('[id^="units"]').eq(2).as('unit3');
+      cy.get('@unit3').should('be.visible');
+      cy.get('@unit3').type('m/s/J');
+      cy.get('[id^="__$units.2.valueCoding.code"]').click();
+      cy.get('@unit3').should('have.value', '[meter/[second - time]]/joule');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.2.valueCoding.code"]').should('have.value', 'm/s/J');
+      cy.get('[id^="__$units.2.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      // Add kg.m/s2
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 4);
+      cy.get('[id^="units"]').eq(3).as('unit4');
+      cy.get('@unit4').should('be.visible');
+      cy.get('@unit4').type('kg.m/s2');
+      cy.get('[id^="__$units.3.valueCoding.code"]').click();
+      cy.get('@unit4').should('have.value', '[kilogram*meter]/[second - time2]');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.3.valueCoding.code"]').should('have.value', 'kg.m/s2');
+      cy.get('[id^="__$units.3.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      // Add kg/(m.s2)
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 5);
+      cy.get('[id^="units"]').eq(4).as('unit5');
+      cy.get('@unit5').should('be.visible');
+      cy.get('@unit5').type('kg/(m.s2)');
+      cy.get('[id^="__$units.4.valueCoding.code"]').click();
+      cy.get('@unit5').should('have.value', 'kilogram/[meter*[second - time2]]');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.4.valueCoding.code"]').should('have.value', 'kg/(m.s2)');
+      cy.get('[id^="__$units.4.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      // Add kg.m2/(s3.A)
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 6);
+      cy.get('[id^="units"]').eq(5).as('unit6');
+      cy.get('@unit6').should('be.visible');
+      cy.get('@unit6').type('kg.m2/(s3.A)');
+      cy.get('[id^="__$units.5.valueCoding.code"]').click();
+      cy.get('@unit6').should('have.value', '[kilogram*[square meter]]/[[second - time3]*Ampere]');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.5.valueCoding.code"]').should('have.value', 'kg.m2/(s3.A)');
+      cy.get('[id^="__$units.5.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+
       cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('L');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('Liters');
+
         expect(qJson.item[0].extension[1].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
         expect(qJson.item[0].extension[1].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[1].valueCoding.code).equal('[oz_av]');
         expect(qJson.item[0].extension[1].valueCoding.display).equal('ounce');
+
+        expect(qJson.item[0].extension[2].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[2].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[2].valueCoding.code).equal('m/s/J');
+        expect(qJson.item[0].extension[2].valueCoding.display).equal('[meter/[second - time]]/joule');
+
+        expect(qJson.item[0].extension[3].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[3].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[3].valueCoding.code).equal('kg.m/s2');
+        expect(qJson.item[0].extension[3].valueCoding.display).equal('[kilogram*meter]/[second - time2]');
+
+        expect(qJson.item[0].extension[4].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[4].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[4].valueCoding.code).equal('kg/(m.s2)');
+        expect(qJson.item[0].extension[4].valueCoding.display).equal('kilogram/[meter*[second - time2]]');
+
+        expect(qJson.item[0].extension[5].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[5].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[5].valueCoding.code).equal('kg.m2/(s3.A)');
+        expect(qJson.item[0].extension[5].valueCoding.display).equal('[kilogram*[square meter]]/[[second - time3]*Ampere]');
       });
     });
 
