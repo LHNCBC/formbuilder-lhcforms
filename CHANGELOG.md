@@ -2,12 +2,16 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.2.2] 2025-07-09
+### Changed
+- Fixed the issue with quantity unit lookup.
+
 ## [10.2.1] 2025-06-25
 ### Added
 - Added a time component for data type time.
 - Changed date and dateTime input fields to use their respective components in
   item level fields.
- 
+
 ## [10.2.0] 2025-06-25
 ### Changed
 - Updated to use new ID lhc-tools-searchResults.
@@ -192,11 +196,11 @@ Added detailed log statements when the tests fail.
 ## [9.4.1] 2024-04-29
 ### Added
 - Added notice for window opener invocation.
-### Fixed 
+### Fixed
 - Display error messages in preview reported by lforms widget.
 
 ## [9.4.0] 2024-04-01
-### Added 
+### Added
 - Added a feature to invoke formbuilder from a parent window,
   in a new child window and optionally initialize it with a questionnaire.
 - If opened from another window, the formbuilder will post a message
@@ -259,7 +263,7 @@ Added detailed log statements when the tests fail.
 
 ## [9.2.0] 2023-08-03
 ### Added
-- Added these fields to advanced section in the form level fields: 
+- Added these fields to advanced section in the form level fields:
   implicit rules, version, name, date, publisher, copyright, approvalDate, lastReviewDate
 ### Changed
 - Converted schema and layout json files to json5 format.
