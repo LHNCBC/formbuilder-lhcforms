@@ -10,10 +10,10 @@ describe('TitleComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ TitleComponent ],
       imports: [
         MatIconModule,
         MatIconTestingModule,
+        TitleComponent
       ],
     })
     .compileComponents();

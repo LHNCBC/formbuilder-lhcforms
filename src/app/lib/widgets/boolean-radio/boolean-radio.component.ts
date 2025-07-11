@@ -7,8 +7,6 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
   templateUrl: 'boolean-radio.component.html'
 })
 export class BooleanRadioComponent  extends LfbControlWidgetComponent implements AfterViewInit {
-  static ID = 0;
-  _id = ''+BooleanRadioComponent.ID++;
   options: Map<any, string> = new Map([['false', 'No'], ['true', 'Yes'], ['null', 'Unspecified']]);
   optionsKeys = []
   ngAfterViewInit() {

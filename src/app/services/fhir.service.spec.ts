@@ -17,14 +17,16 @@ import {FormService} from "./form.service";
  * @param resolveFlag - Reject or resolve the promise.
  */
 const createSpy = (fhirClient, reqOptions, returnValue: any, resolveFlag: boolean) => {
-  return spyOn(fhirClient, 'request')
-    .and.callFake((requestOptions: RequestOptions): Promise<any> => {
+  return spyOn(fhirClient, 'fhirRequest')
+    .and.callFake((uri, requestOptions: RequestOptions): Promise<any> => {
       return new Promise<any>((resolve, reject) => {
         try {
           Object.keys(reqOptions).forEach((k) => {
             if(k === 'body') {
               // BOdy strings are not going to match. Convert to objects and compare.
               expect(JSON.parse(<string>requestOptions[k])).toEqual(JSON.parse(<string>reqOptions[k]));
+            } else if(k === 'url') {
+              expect(uri).toEqual(reqOptions[k]);
             } else {
               expect(requestOptions[k]).toEqual(reqOptions[k]);
             }

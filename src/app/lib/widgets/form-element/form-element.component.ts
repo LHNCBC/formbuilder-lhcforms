@@ -2,12 +2,15 @@
  * Customize layout of form-element from ngx-schema-form
  */
 import {Component, Input} from '@angular/core';
-import {FormElementComponent} from '@lhncbc/ngx-schema-form';
+import {FormElementComponent, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { Widget } from '@lhncbc/ngx-schema-form';
+import { ElementChooserComponent } from '../element-chooser/element-chooser.component';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
-  standalone: false,
+  standalone: true,
+  imports: [SchemaFormModule, ElementChooserComponent, CommonModule],
   selector: 'lfb-form-element',
   template: `
     <div *ngIf="formProperty.visible"

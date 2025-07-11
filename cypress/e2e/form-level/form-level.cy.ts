@@ -81,6 +81,7 @@ describe('Home page accept Terms of Use notices', () => {
     cy.get('input[type="radio"][value="scratch"]').click();
     cy.get('button').contains('Continue').click();
     cy.get('button').contains('Create questions').click();
+    cy.get('.spinner-border').should('not.exist');
     cy.selectDataType('coding');
     cy.getRadioButtonLabel('Create answer list', 'Yes').click();
     cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
@@ -120,7 +121,7 @@ describe('Home page', () => {
       cy.get('input[type="radio"][value="local"]').should('be.visible').click();
       cy.readFile('cypress/fixtures/answer-option-sample.json').then((json) => {
         cy.uploadFile('answer-option-sample.json');
-        cy.get('#title').should('have.value', 'Answer options form');
+        cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Answer options form');
         cy.questionnaireJSON().then((previewJson) => {
           expect(previewJson.item.length).equal(2);
         });
@@ -133,7 +134,7 @@ describe('Home page', () => {
       cy.get('#loincSearch').type('vital signs with');
       cy.get('ngb-typeahead-window').should('be.visible');
       cy.get('ngb-typeahead-window button').first().click();
-      cy.get('#title').should('have.value', 'Vital signs with method details panel');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Vital signs with method details panel');
       cy.get('[id^="booleanRadio_true"]').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '34566-0');
     });
@@ -145,7 +146,7 @@ describe('Home page', () => {
       cy.contains('button', 'Continue').click();
       cy.fhirSearch(titleSearchTerm);
 
-      cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
+      cy.getByLabel('lfb-form-fields', 'Title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
       cy.get('[id^="booleanRadio_true"]').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '85353-1');
     });
@@ -159,7 +160,7 @@ describe('Home page', () => {
 
     it('should export to local file in R4 format', () => {
       cy.uploadFile('sample.STU3.json');
-      cy.get('#title').should('have.value', 'Sample STU3 form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Sample STU3 form');
       cy.contains('button.dropdown-toggle', 'Export').click();
       cy.contains('button.dropdown-item', 'Export to file in FHIR R4 format').click();
       cy.readFile('cypress/downloads/Sample-STU3-form.R4.json').then((json) => {
@@ -178,7 +179,7 @@ describe('Home page', () => {
 
     it('should export to local file in STU3 format', () => {
       cy.uploadFile('sample.R4.json');
-      cy.get('#title').should('have.value', 'Sample R4 form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Sample R4 form');
 
       cy.contains('div', 'Code').find('[id^="booleanRadio_true"]').should('be.checked');
       cy.contains('table > thead', 'Code').parent().parent().as('codeField');
@@ -187,6 +188,7 @@ describe('Home page', () => {
       cy.get('@firstRow').find('[id^="code.0.code_"]').should('have.value', '34565-2');
 
       cy.contains('button', 'Edit questions').click();
+      cy.get('.spinner-border').should('not.exist');
       cy.contains('div', 'Question code').find('[id^="booleanRadio_true"]').should('be.checked');
       cy.contains('table > thead', 'Code').parent().parent().as('codeField');
       cy.get('@codeField').find('tbody').as('codeTable');
@@ -211,7 +213,7 @@ describe('Home page', () => {
 
     it('should export to local file in LHC-FORMS format', () => {
       cy.uploadFile('sample.R4.json');
-      cy.get('#title').should('have.value', 'Sample R4 form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Sample R4 form');
       cy.contains('button.dropdown-toggle', 'Export').click();
       cy.contains('button.dropdown-item', 'Export to file in LHC-Forms internal (and volatile) format').click();
       cy.readFile('cypress/downloads/Sample-R4-form.LHC-Forms.json').then((json) => {
@@ -235,7 +237,6 @@ describe('Home page', () => {
     beforeEach(() => {
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
-      cy.resetForm();
       cy.get('[id^="booleanRadio_true"]').as('codeYes');
       cy.get('[id^="booleanRadio_false"]').as('codeNo');
     });
@@ -249,31 +250,31 @@ describe('Home page', () => {
     });
 
     it('should display Questionnaire.url', () => {
-      cy.get('#url').as('url').type('http://example.com/1');
+      cy.getByLabel('lfb-form-fields', 'URL').as('url').type('http://example.com/1');
       cy.questionnaireJSON().should((json) => {
         expect(json.url).equal('http://example.com/1');
       });
       cy.get('@url').clear().type('a a');
-      cy.get('@url').next('small')
+      cy.get('@url').next('ul').find('small')
         .should('be.visible')
         .contains('Spaces and other whitespace characters are not allowed in this field.');
       cy.get('@url').clear();
-      cy.get('@url').siblings('small').should('not.exist');
+      cy.get('@url').siblings('ul').should('not.exist');
     });
 
     it('should retain title edits', () => {
-      cy.get('#title').should('have.value', 'New Form').clear();
-      cy.get('#title').type('Dummy title');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'New Form').clear();
+      cy.getByLabel('lfb-form-fields', 'Title').type('Dummy title');
       cy.contains('button', 'Create questions').click();
       cy.questionnaireJSON().should((json) => {
         expect(json.title).equal('Dummy title');
       });
       cy.contains('button', 'Edit form attributes').click();
-      cy.get('#title').should('have.value','Dummy title');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value','Dummy title');
     });
 
     it('should display default title', () => {
-      cy.get('#title').should('have.value', 'New Form').clear();
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'New Form').clear();
       cy.contains('button', 'Create questions').click();
       cy.get('div#resizableMiddle button')
         .should('contain.text', 'Untitled Form')
@@ -294,7 +295,7 @@ describe('Home page', () => {
 
     it('should display preview widget', () => {
       cy.uploadFile('answer-option-sample.json');
-      cy.get('#title').should('have.value', 'Answer options form', {timeout: 10000});
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Answer options form', {timeout: 10000});
 
       cy.contains('nav.navbar button', 'Preview').scrollIntoView().click();
       cy.contains('div[role="tab"]', 'View Rendered Form').scrollIntoView().click();
@@ -310,12 +311,13 @@ describe('Home page', () => {
 
     it('should work with ethnicity ValueSet in preview', () => {
       cy.uploadFile('USSG-family-portrait.json');
-      cy.get('#title').should('have.value', 'US Surgeon General family health portrait', {timeout: 10000});
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'US Surgeon General family health portrait', {timeout: 10000});
       cy.contains('nav.navbar button', 'Preview').click();
       cy.contains('div[role="tab"]', 'View Rendered Form').click();
       cy.get('wc-lhc-form').should('exist', true, {timeout: 10000});
       cy.get('#\\/54126-8\\/54133-4\\/1\\/1').as('ethnicity');
       cy.get('@ethnicity').type('l');
+      cy.get('#completionOptions').scrollIntoView();
       cy.get('#completionOptions').should('be.visible', true);
       cy.get('@ethnicity').type('{downarrow}{enter}', {force: true});
       cy.get('span.autocomp_selected').contains('La Raza');
@@ -374,7 +376,7 @@ describe('Home page', () => {
 
           // Update
           responseStub.title = 'Modified title';
-          cy.get('#title').clear().type(responseStub.title);
+          cy.getByLabel('lfb-form-fields', 'Title').clear().type(responseStub.title);
           cy.get('@exportMenu').click();
           cy.get('@updateMenuItem').should('be.visible');
           cy.get('@updateMenuItem').should('not.have.class', 'disabled');
@@ -435,7 +437,7 @@ describe('Home page', () => {
       it('should import form with terminology server extension at form level', () => {
         const sampleFile = 'terminology-server-sample.json';
         cy.uploadFile(sampleFile, false); // Avoid warning form loading based on item or form
-        cy.get('#title').should('have.value', 'Terminology server sample form');
+        cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Terminology server sample form');
         cy.tsUrl().should('be.visible');
         cy.tsUrl().should('have.value', 'https://example.org/fhir');
         CypressUtil.assertExtensionsInQuestionnaire(
@@ -464,10 +466,26 @@ describe('Home page', () => {
 
       describe('Import date fields', () => {
         const fileToFieldsMap = {
-          'form-level-advanced-fields.json':
-            ['implicitRules', 'version', 'name', 'date', 'publisher', 'copyright', 'approvalDate', 'lastReviewDate'],
-          'datetime-1.json': ['date', 'approvalDate', 'lastReviewDate'],
-          'datetime-2.json': ['date', 'approvalDate', 'lastReviewDate']
+          'form-level-advanced-fields.json': [
+            {field: 'implicitRules', title: 'Implicit rules'},
+            {field: 'version', title: 'Version'},
+            {field: 'name', title: 'Questionnaire name'},
+            {field: 'date', title: 'Revision date'},
+            {field: 'publisher', title: 'Publisher'},
+            {field: 'copyright', title: 'Copyright'},
+            {field: 'approvalDate', title: 'Approval date'},
+            {field: 'lastReviewDate', title: 'Last review date'}
+          ],
+          'datetime-1.json': [
+            {field: 'date', title: 'Revision date'},
+            {field: 'approvalDate', title: 'Approval date'},
+            {field: 'lastReviewDate', title: 'Last review date'}
+          ],
+          'datetime-2.json': [
+            {field: 'date', title: 'Revision date'},
+            {field: 'approvalDate', title: 'Approval date'},
+            {field: 'lastReviewDate', title: 'Last review date'}
+          ]
         };
 
         Object.keys(fileToFieldsMap).forEach((file, index) => {
@@ -476,21 +494,21 @@ describe('Home page', () => {
               cy.uploadFile(file);
               const fieldList = fileToFieldsMap[file];
 
-              cy.get('#title').should('have.value', json.title); // Wait until fields are loaded.
-              fieldList.forEach((field) => {
-                let expVal = json[field];
+              cy.getByLabel('lfb-form-fields', 'Title').should('have.value', json.title); // Wait until fields are loaded.
+              fieldList.forEach((fieldObj) => {
+                let expVal = json[fieldObj.field];
                 // Any datetime with zulu time included should be translated to local time.
-                if (file === 'form-level-advanced-fields.json' && field === 'date') {
-                  expVal = CypressUtil.getLocalTime(json[field]);
+                if (file === 'form-level-advanced-fields.json' && fieldObj.field === 'date') {
+                  expVal = CypressUtil.getLocalTime(json[fieldObj.field]);
                 }
-                cy.get('#' + field).should((fieldEl) => {
+                cy.getByLabel('lfb-form-fields', fieldObj.title).should((fieldEl) => {
                   expect(fieldEl.val()).to.equal(expVal);
                 });
               });
 
               cy.questionnaireJSON().then((previewJson) => {
                 fieldList.forEach((f) => {
-                  expect(previewJson[f]).to.be.deep.equal(json[f]);
+                  expect(previewJson[f.field]).to.be.deep.equal(json[f.field]);
                 });
               });
             });
@@ -504,15 +522,16 @@ describe('Home page', () => {
         const dateTimeZuluRE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
         it('should test revised date (date time picker)', () => {
-          cy.get('#date+button').as('dateBtn').click();
-          cy.get('#date').as('dateInput');
-          cy.get('ngb-datepicker').should('be.visible');
-          cy.get('#ignoreTimeCheckBox').as('includeTime').should('be.checked');
+          cy.getByLabel('lfb-form-fields', 'Revision date').as('dateInput');
+          cy.get('@dateInput').next('button').as('dateBtn').click();
+          cy.get('@dateInput').next('ngb-datepicker').as('datepicker');
+          cy.getByLabel('@datepicker', 'Include time').as('includeTime');
+          cy.get('@includeTime').should('be.checked');
           cy.contains('ngb-datepicker button', 'Today').click();
           cy.get('@dateInput').should('have.prop', 'value').should('match', dateRE);
           cy.contains('ngb-datepicker button', 'Now').as('now').click();
           cy.get('@dateInput').should('have.prop', 'value').should('match', dateTimeRE);
-          cy.get('@includeTime').click();
+          cy.get('@includeTime').next('label').click();
           cy.get('ngb-timepicker fieldset').should('be.disabled');
           cy.get('@dateInput').should('have.prop', 'value').should('match', dateRE);
           cy.get('@now').click();
@@ -523,10 +542,13 @@ describe('Home page', () => {
         });
 
         it('should test approval date (date picker)', () => {
-          cy.get('#approvalDate+button').as('approvalDt').click();
-          cy.get('ngb-datepicker').should('be.visible');
-          cy.contains('ngb-datepicker button', 'Today').click();
-          cy.get('#approvalDate').as('approvalDtInput').should('have.prop', 'value').should('match', dateRE);
+          cy.getByLabel('lfb-form-fields', 'Approval date').as("approvalDtInput");
+          cy.get('@approvalDtInput').next('button').as('approvalDtBtn').click();
+          cy.get('@approvalDtInput').next('ngb-datepicker').as('datepicker');
+
+          cy.get('@datepicker').should('be.visible');
+          cy.get('@datepicker').contains('Today').click();
+          cy.get('@approvalDtInput').should('have.prop', 'value').should('match', dateRE);
           cy.get('@approvalDtInput').clear().type('2021-01-01');
           cy.questionnaireJSON().then((previewJson) => {
             expect(previewJson.approvalDate).to.be.equal('2021-01-01');
@@ -535,8 +557,13 @@ describe('Home page', () => {
 
         it('should accept valid but not invalid dates', () => {
           // Pick a sample datetime and date widgets; date is datetime widget and approvalDate is date widget.
-          ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
-            const widgetSel = '#'+widgetId;
+          [
+            {widgetId: 'date', widgetLabel: 'Revision date'},
+            {widgetId:'approvalDate', widgetLabel: 'Approval date'},
+            {widgetId: 'lastReviewDate', widgetLabel: 'Last review date'}
+          ].forEach(({widgetId,widgetLabel}) => {
+            cy.getByLabel('lfb-form-fields', widgetLabel).as('dateInput');
+            const widgetSel = '@dateInput';
             ['2020', '2020-06', '2020-06-23'].forEach((validDate) => {
               cy.get(widgetSel).clear().type(validDate).blur();
 
@@ -554,8 +581,13 @@ describe('Home page', () => {
             });
           });
 
-          ['date', 'approvalDate', 'lastReviewDate'].forEach((widgetId) => {
-            const widgetSel = '#'+widgetId;
+          [
+            {widgetId: 'date', widgetLabel: 'Revision date'},
+            {widgetId:'approvalDate', widgetLabel: 'Approval date'},
+            {widgetId: 'lastReviewDate', widgetLabel: 'Last review date'}
+          ].forEach(({widgetId,widgetLabel}) => {
+            cy.getByLabel('lfb-form-fields', widgetLabel).as('dateInput');
+            const widgetSel = '@dateInput';
             cy.get(widgetSel).clear().type('2020-01-02 10:');
             cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
             cy.get(widgetSel).type('{backspace}');
@@ -580,8 +612,11 @@ describe('Home page', () => {
               });
             });
           });
-          ['date'].forEach((widgetId) => {
-            const widgetSel = '#'+widgetId;
+          [
+            {widgetId: 'date', widgetLabel: 'Revision date'}
+          ].forEach(({widgetId,widgetLabel}) => {
+            cy.getByLabel('lfb-form-fields', widgetLabel).as('dateInput');
+            const widgetSel = '@dateInput';
             cy.get(widgetSel).clear().type('2020-01-02 100');
             cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
             cy.get(widgetSel).blur();
@@ -603,11 +638,11 @@ describe('Home page', () => {
         cy.get('button#editVariables').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
-  
+
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
           cy.get('#variables-section .variable-row').should('have.length', 0);
-  
+
           // Add a new variable 'a_fhir_exp'
           cy.get('#add-variable').click();
           cy.get('#variables-section .variable-row').should('have.length', 1);
@@ -615,7 +650,7 @@ describe('Home page', () => {
           cy.get('#variable-type-0').select('FHIRPath Expression');
           cy.get('input#variable-expression-0').type("%resource.item.where(linkId='/29453-7').answer.value");
           cy.get('input#variable-expression-0').should('not.have.class', 'field-error');
-  
+
           // Add a new variable 'b_fhir_query'
           cy.get('#add-variable').click();
           cy.get('#variable-label-1').clear().type('b_fhir_query');
@@ -631,7 +666,7 @@ describe('Home page', () => {
 
           cy.get('lhc-query-observation').shadow().find('#autocomplete-2').as('queryObs');
 
-          cy.get('@queryObs').then($el => {
+          cy.get('@queryObs').then(($el: JQuery<HTMLInputElement>) => {
             // Search for invalid code, should return empty array
             cy.selectAutocompleteOptions($el, false, 'invalidCode', null, '{downarrow}{enter}', []);
 
@@ -644,7 +679,7 @@ describe('Home page', () => {
           cy.get('#variable-label-3').clear().type('d_easy_path_exp');
           cy.get('#variable-type-3').select('Easy Path Expression');
           cy.get('input#simple-expression-3').type('1');
-  
+
           // Save the variables
           cy.get('#export').click();
         });
@@ -665,7 +700,7 @@ describe('Home page', () => {
         cy.get('@variables').eq(2).find('td').as('variable3');
         cy.get('@variable3').eq(0).should('have.text', 'c_fhir_query_obs');
         cy.get('@variable3').eq(1).should('have.text', 'FHIR Query (Observation)');
-        cy.get('@variable3').eq(2).should('have.text', "Observation?code=http%3A%2F%2Floinc.org%7C29463-7&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1"); 
+        cy.get('@variable3').eq(2).should('have.text', "Observation?code=http%3A%2F%2Floinc.org%7C29463-7&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1");
 
         cy.get('@variables').eq(3).find('td').as('variable4');
         cy.get('@variable4').eq(0).should('have.text', 'd_easy_path_exp');
@@ -677,9 +712,11 @@ describe('Home page', () => {
 
   it('should display variables at the Questionnaire level', () => {
     cy.get('input[type="radio"][value="existing"]').click();
+    cy.get('input[type="radio"][value="local"]').click();
+    // Note, the cypress upload works regardless of the file extension.
     cy.uploadFile('questionnaire_level_variables.json');
-    
-    cy.get('#title').should('have.value', 'Weight & Height tracking panel', { timeout: 10000 });
+
+    cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Weight & Height tracking panel', { timeout: 10000 });
 
     cy.expandAdvancedFields();
 
@@ -769,24 +806,23 @@ describe('Home page', () => {
     beforeEach(() => {
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.contains('button', 'Continue').click();
-      cy.resetForm();
       cy.uploadFile('answer-option-sample.json');
     });
 
     it('should display warning dialog when replacing from local file', () => {
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Answer options form');
 
       cy.uploadFile('decimal-type-sample.json');
       cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
       cy.contains('div.modal-footer button', 'Cancel').click();
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Answer options form');
 
       cy.uploadFile('decimal-type-sample.json', true);
-      cy.get('#title').should('have.value', 'Decimal type form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Decimal type form');
     });
 
     it('should display warning dialog when replacing form from LOINC', () => {
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Answer options form');
 
       cy.contains('nav.navbar button.dropdown-toggle', 'Import ').click();
       cy.get('form > input[placeholder="Search LOINC"]').type('Vital signs with method details panel');
@@ -794,7 +830,7 @@ describe('Home page', () => {
       cy.get('ngb-typeahead-window button').first().click();
       cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
       cy.contains('div.modal-footer button', 'Cancel').click();
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Answer options form');
 
       cy.contains('nav.navbar button.dropdown-toggle', 'Import ').click();
       cy.get('form > input[placeholder="Search LOINC"]').type('Vital signs with method details panel');
@@ -803,18 +839,18 @@ describe('Home page', () => {
       cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
       cy.contains('div.modal-footer button', 'Continue').click();
 
-      cy.get('#title').should('have.value', 'Vital signs with method details panel');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Vital signs with method details panel');
     });
 
     it('should display warning dialog when replacing form from FHIR server', () => {
       const titleSearchTerm = 'vital';
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Answer options form');
       cy.contains('button', 'Import').click();
       cy.contains('button', 'Import from a FHIR server...').click();
       cy.fhirSearch(titleSearchTerm);
       cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
       cy.contains('div.modal-footer button', 'Cancel').click();
-      cy.get('#title').should('have.value', 'Answer options form');
+      cy.getByLabel('lfb-form-fields', 'Title').should('have.value', 'Answer options form');
 
       cy.contains('button', 'Import').click();
       cy.contains('button', 'Import from a FHIR server...').click();
@@ -822,7 +858,7 @@ describe('Home page', () => {
       cy.contains('.modal-title', 'Replace existing form?').should('be.visible');
       cy.contains('div.modal-footer button', 'Continue').click();
 
-      cy.get('#title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
+      cy.getByLabel('lfb-form-fields', 'Title').invoke('val').should('match', new RegExp(titleSearchTerm, 'i'));
       cy.get('[id^="booleanRadio_true"]').should('be.checked');
       cy.get('[id^="code.0.code"]').should('have.value', '85353-1');
     });

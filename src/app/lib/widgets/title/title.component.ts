@@ -1,12 +1,15 @@
 /**
  * Component for creating a title for a control.
  */
+import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  standalone: false,
   selector: 'lfb-title',
+  imports: [MatTooltipModule, FontAwesomeModule, CommonModule],
   template: `
     <span *ngIf="title" class="horizontal control-label">
       {{title}}

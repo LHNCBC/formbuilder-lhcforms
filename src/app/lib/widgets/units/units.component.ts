@@ -39,12 +39,12 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
       display: ""
     }
   }
-  
+
   extensionsService = inject(ExtensionsService);
   unitService = inject(UnitService);
 
   initializing = false;
-  dataType: string;
+  // dataType: string;
 
   constructor() {
     super();

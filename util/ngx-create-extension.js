@@ -1,6 +1,7 @@
 const jp = require("json-pointer");
 const path = require("path");
 const traverse = require("traverse");
+require("json5/lib/register");
 
 if (process.argv.length < 3) {
   console.log("Usage: " + process.argv[0] + " " + process.argv[1] + " fhirSchemaFile");
@@ -22,8 +23,6 @@ let newDefs = {};
 const refs = new Set();
 
 const removeFields = new Set([
-  "contained",
-  "ResourceList",
   "extension",
   "modifiedExtension"
 ]);
@@ -72,7 +71,7 @@ jp.set(schema, "/definitions/Coding/properties/version/widget/id", "hidden");
 jp.set(schema, "/definitions/Extension/widget/id", "hidden");
 jp.set(schema, "/definitions/Extension/properties/id/widget/id", "hidden");
 hideExtensions(schema);
-jp.remove(schema, "/properties/item");
+// jp.remove(schema, "/properties/item");
 jp.remove(schema, "/definitions/Questionnaire_Item");
 jp.remove(schema, "/definitions/Reference/properties/identifier");
 codingLayout(schema);
@@ -132,6 +131,9 @@ function addMissingFields(obj, fields) {
 }
 
 function addMissingTitle(obj) {
+  if(!obj || !obj.properties) {
+    return;
+  }
   const objProp = obj.properties;
   Object.keys(objProp).forEach(function(key) {
     if (!objProp[key].title) {
