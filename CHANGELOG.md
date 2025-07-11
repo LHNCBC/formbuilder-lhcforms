@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.0] 2025-07-11
+### Added
+- Added support for contained ValueSet resource.
+
 ## [10.2.1] 2025-06-25
 ### Added
 - Added a time component for data type time.
