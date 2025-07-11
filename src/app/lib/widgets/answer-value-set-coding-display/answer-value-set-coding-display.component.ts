@@ -9,6 +9,10 @@ import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import { TableService, TableStatus } from 'src/app/services/table.service';
 import { AnswerValueSetComponent } from '../answer-value-set/answer-value-set.component';
 import { Util } from '../../util';
+import {
+  ANSWER_OPTION_METHOD_ANSWER_OPTION, ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET,
+  TYPE_STRING, TYPE_CODING
+} from '../../constants/constants';
 
 declare var LForms: any;
 
@@ -55,8 +59,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   answerValuseSetConfigErrorMessage: string;
   autoComplete = false;
 
-  dataType = 'string';
-  answerMethod = 'answer-option';
+  dataType = TYPE_STRING;
+  answerMethod = ANSWER_OPTION_METHOD_ANSWER_OPTION;
 
   /**
    * Invoke super constructor.
@@ -133,7 +137,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   init(firstChange: boolean) {
     this.answerOptions = [];
 
-    if (this.dataType === 'coding' && (this.answerMethod === 'snomed-value-set' || this.answerMethod === 'value-set')) {
+    if (this.dataType === TYPE_CODING && (this.answerMethod === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET || this.answerMethod === ANSWER_OPTION_METHOD_VALUE_SET)) {
       const linkId = this.formProperty.findRoot().getProperty('linkId').value;
       const sourceNode = this.formService.getTreeNodeByLinkId(linkId);
       const answerValueSetUri = this.formProperty.findRoot().getProperty("answerValueSet").value;
@@ -143,8 +147,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
       // populated with a non-SNOMED value set. Therefore, it's necessary to check whether
       // 'answerValuetSetUri' contains the SNOMED base URI.
       if (answerValueSetUri && fhirServer &&
-           (this.answerMethod === 'value-set' ||
-            (this.answerMethod === 'snomed-value-set' && answerValueSetUri.indexOf(AnswerValueSetComponent.snomedBaseUri) > -1))) {
+           (this.answerMethod === ANSWER_OPTION_METHOD_VALUE_SET ||
+            (this.answerMethod === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET && answerValueSetUri.indexOf(AnswerValueSetComponent.snomedBaseUri) > -1))) {
         this.autoComplete = true;
         if (firstChange) {
           this.acOptions.fhirOptions.valueSetUri = decodeURI(answerValueSetUri);
@@ -163,7 +167,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
       } else {
         this.autoComplete = false;
 
-        if (this.answerMethod === 'snomed-value-set') {
+        if (this.answerMethod === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET) {
           if ((!answerValueSetUri ) || (answerValueSetUri && answerValueSetUri.indexOf(AnswerValueSetComponent.snomedBaseUri) === -1)) {
             this.answerValuseSetConfigErrorMessage = 'SNOMED ECL is not set.';
           }

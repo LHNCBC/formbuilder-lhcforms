@@ -6,6 +6,7 @@ import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import {Util} from '../../util';
 import {LiveAnnouncer} from "@angular/cdk/a11y";
+import { EXTENSION_URL_ITEM_CONTROL } from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -15,7 +16,7 @@ import {LiveAnnouncer} from "@angular/cdk/a11y";
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemControlComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
-  static itemControlUrl = Util.ITEM_CONTROL_EXT_URL;
+  static itemControlUrl = EXTENSION_URL_ITEM_CONTROL;
 
   optionsObj = {
     'drop-down': 'Drop down',

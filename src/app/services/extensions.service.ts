@@ -3,6 +3,7 @@ import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {fhirPrimitives} from '../fhir';
+import { EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION, EXTENSION_URL_ANSWER_EXPRESSION } from '../lib/constants/constants';
 
 /**
  * This class is intended for components which needs to interact with extension field.
@@ -18,12 +19,6 @@ import {fhirPrimitives} from '../fhir';
 // @ts-ignore
 export class ExtensionsService {
   static __ID = 0;
-  static ENTRY_FORMAT_URI = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
-  static VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
-  static CUSTOM_EXT_VARIABLE_TYPE = 'http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type';
-  static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
-  static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
-  static ANSWER_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression';
 
   _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
@@ -151,7 +146,7 @@ export class ExtensionsService {
    */
   removeExpressionExtensions(): any {
     this.removeAllExtensions((ext) => {
-      return (ext.value.url === ExtensionsService.INITIAL_EXPRESSION || ext.value.url === ExtensionsService.CALCULATED_EXPRESSION || ext.value.url === ExtensionsService.ANSWER_EXPRESSION);
+      return (ext.value.url === EXTENSION_URL_INITIAL_EXPRESSION || ext.value.url === EXTENSION_URL_CALCULATED_EXPRESSION || ext.value.url === EXTENSION_URL_ANSWER_EXPRESSION);
     });
   }
 

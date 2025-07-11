@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
+import { EXTENSION_URL_ANSWER_EXPRESSION } from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -20,13 +21,13 @@ export class BooleanRadioComponent  extends LfbControlWidgetComponent implements
     // then set the value to 'Yes'
     if (this.formProperty.path === "/__$isAnswerList") {
       const extensions = this.extensionsService.extensionsProp.value;
-  
+
       const expression = extensions.filter(ext =>
-        ext.url === ExtensionsService.ANSWER_EXPRESSION
+        ext.url === EXTENSION_URL_ANSWER_EXPRESSION
       );
-      
+
       // if the expression is available and it is the answer expression
-      if (expression[0]?.url === ExtensionsService.ANSWER_EXPRESSION) {
+      if (expression[0]?.url === EXTENSION_URL_ANSWER_EXPRESSION) {
         this.formProperty.setValue(true, false);
       }
     }

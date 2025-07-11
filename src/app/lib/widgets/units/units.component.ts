@@ -10,6 +10,10 @@ import { Subscription } from 'rxjs';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 import { ArrayProperty } from '@lhncbc/ngx-schema-form';
 import { UnitService } from 'src/app/services/unit.service';
+import {
+  EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  TYPE_DECIMAL, TYPE_INTEGER, TYPE_QUANTITY
+} from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -19,17 +23,13 @@ import { UnitService } from 'src/app/services/unit.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UnitsComponent extends TableComponent implements AfterViewInit, OnInit {
-  static questionUnitExtUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-unit';
-  static questionUnitOptionExtUrl = 'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption';
-  static ucumSystemUrl = 'http://unitsofmeasure.org'
-
   static unitsExtUrl = {
-    quantity: UnitsComponent.questionUnitOptionExtUrl,
-    decimal: UnitsComponent.questionUnitExtUrl,
-    integer: UnitsComponent.questionUnitExtUrl
-  };
+    quantity: EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+    decimal: EXTENSION_URL_QUESTIONNAIRE_UNIT,
+    integer: EXTENSION_URL_QUESTIONNAIRE_UNIT
+  }
 
-  valueCodingDataType = ["decimal", "integer", "quantity"];
+  valueCodingDataType = [TYPE_DECIMAL, TYPE_INTEGER, TYPE_QUANTITY];
 
   newUnit = {
     url: "",
@@ -39,7 +39,7 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
       display: ""
     }
   }
-  
+
   extensionsService = inject(ExtensionsService);
   unitService = inject(UnitService);
 
@@ -87,7 +87,7 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
     sub = this.formProperty.searchProperty("type")?.valueChanges.subscribe((changedValue) => {
       const isCurrentValueCodingType = this.valueCodingDataType.includes(this.dataType);
       const isNewValueCodingType = this.valueCodingDataType.includes(changedValue);
-      this.singleItem = (changedValue === 'quantity') ? false : true;
+      this.singleItem = (changedValue === TYPE_QUANTITY) ? false : true;
 
       if (isCurrentValueCodingType && isNewValueCodingType && this.dataType !== changedValue) {
         this.formProperty.setValue([this.newUnit], false);

@@ -12,6 +12,14 @@ import {v4 as uuidv4} from 'uuid';
 import {fhirPrimitives} from "../fhir";
 import {PropertyGroup} from "@lhncbc/ngx-schema-form";
 import { convert } from 'questionnaire-version-converter';
+import {
+  EXTENSION_URL_ITEM_CONTROL, EXTENSION_URL_RENDERING_XHTML,
+  TYPE_DECIMAL, TYPE_INTEGER, TYPE_STRING, TYPE_TEXT, TYPE_QUANTITY, TYPE_CODING, TYPE_GROUP, TYPE_URL, TYPE_DISPLAY,
+  TYPE_DATE, TYPE_DATETIME, TYPE_TIME,
+  EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION
+} from './constants/constants';
+
+
 declare var LForms: any;
 
 export type GuidingStep = 'home' | 'fl-editor' | 'item-editor';
@@ -23,11 +31,8 @@ export enum FHIR_VERSIONS {
 export type FHIR_VERSION_TYPE = keyof typeof FHIR_VERSIONS;
 
 export class Util {
-  static ITEM_CONTROL_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
-  static RENDERING_STYLE_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/rendering-style';
-  static RENDERING_XHTML_EXT_URL = 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml';
   static HELP_BUTTON_EXTENSION = {
-      url: Util.ITEM_CONTROL_EXT_URL,
+      url: EXTENSION_URL_ITEM_CONTROL,
       valueCodeableConcept: {
         text: 'Help-Button',
         coding: [
@@ -42,7 +47,7 @@ export class Util {
 
   static helpItemTemplate = {
     // text: '',  Update with value from input box.
-    type: 'display',
+    type: TYPE_DISPLAY,
     linkId: '', // Update at run time.
     extension: [Util.HELP_BUTTON_EXTENSION]
   };
@@ -211,44 +216,44 @@ export class Util {
     let ret = 'string';
     switch (lformsType) {
       case 'INT':
-        ret = 'integer';
+        ret = TYPE_INTEGER;
         break;
       case 'REAL':
-        ret = 'decimal';
+        ret = TYPE_DECIMAL;
         break;
       case 'DT':
       case 'DAY':
       case 'MONTH':
       case 'YEAR':
-        ret = 'date';
+        ret = TYPE_DATE;
         break;
       case 'DTM':
-        ret = 'dateTime';
+        ret = TYPE_DATETIME;
         break;
       case 'ST':
       case 'EMAIL':
       case 'PHONE':
-        ret = 'string';
+        ret = TYPE_STRING;
         break;
       case 'TITLE':
-        ret = 'display';
+        ret = TYPE_DISPLAY;
         break;
       case 'TM':
-        ret = 'time';
+        ret = TYPE_TIME;
         break;
       case 'SECTION':
       case null: // Null type for panels.
-        ret = 'group';
+        ret = TYPE_GROUP;
         break;
       case 'URL':
-        ret = 'url';
+        ret = TYPE_URL;
         break;
       case 'QTY':
-        ret = 'quantity';
+        ret = TYPE_QUANTITY;
         break;
       case 'CNE':
       case 'CWE':
-        ret = 'coding';
+        ret = TYPE_CODING;
         break;
     }
     return ret;
@@ -268,20 +273,20 @@ export class Util {
     }
     const ret: any [] = [];
     const unitUri = dataType === 'quantity' ?
-      'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption' :
-      'http://hl7.org/fhir/StructureDefinition/questionnaire-unit';
+      EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION :
+      EXTENSION_URL_QUESTIONNAIRE_UNIT;
     units.some((unit) => {
       const display = LForms.ucumPkg.UcumLhcUtils.getInstance().validateUnitString(unit.unit)?.unit?.name || unit.unit;
       ret.push({
         url: unitUri,
         valueCoding: {
           code: unit.unit,
-          system: 'http://unitsofmeasure.org',
+          system: EXTENSION_URL_UCUM_SYSTEM,
           display: display
         }
       });
       // For quantity convert all units. For decimal or integer pick the first one.
-      return (dataType !== 'quantity');
+      return (dataType !== TYPE_QUANTITY);
     });
     return ret;
   }
@@ -299,7 +304,7 @@ export class Util {
       let ret = false;
       if (item.type === 'display') {
         ret = item.extension?.some((e) => {
-          return e.url === Util.ITEM_CONTROL_EXT_URL &&
+          return e.url === EXTENSION_URL_ITEM_CONTROL &&
             e.valueCodeableConcept?.coding?.some((coding) => coding.code === 'help');
         });
       }
@@ -316,7 +321,7 @@ export class Util {
   static hasHelpText(node): boolean {
     return node?.__$helpText?.text?.trim().length > 0 ||
       node?.__$helpText?._text?.extension?.some((ext: fhir.Extension) => {
-        return ext.url === Util.RENDERING_XHTML_EXT_URL && ext.valueString?.trim().length > 0;
+        return ext.url === EXTENSION_URL_RENDERING_XHTML && ext.valueString?.trim().length > 0;
       });
   }
 
@@ -471,8 +476,8 @@ export class Util {
    * @param type - question type
    */
   static getValueFieldName(type: string): string {
-    if (type === "text") {
-      type = "string";
+    if (type === TYPE_TEXT) {
+      type = TYPE_STRING;
     }
     return Util._valueTypeMap[type];
   }
@@ -692,8 +697,8 @@ export class Util {
    * @returns - a field name in the format 'value' + CamelCase(type).
    */
   static getValueDataTypeName(type: string): string {
-    if (type === "text") {
-      type = "string";
+    if (type === TYPE_TEXT) {
+      type = TYPE_STRING;
     }
     return 'value' + type.charAt(0).toUpperCase() + type.slice(1);
   }
@@ -737,7 +742,7 @@ export class Util {
       return true;
     }
 
-    if (type === 'coding') {
+    if (type === TYPE_CODING) {
       return !ansOpts.some(ansOpt => (ansOpt?.valueCoding?.code));
     } else {
       const valueFieldName = this.getValueFieldName(type);

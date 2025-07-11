@@ -8,6 +8,10 @@ import fhir from 'fhir/r4';
 import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsService } from 'src/app/services/extensions.service';
+import {
+  EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION, EXTENSION_URL_ANSWER_EXPRESSION,
+  EXTENSION_URL_VARIABLE, VALUE_METHOD_COMPUTE_INITIAL, VALUE_METHOD_COMPUTE_CONTINUOUSLY
+} from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -63,10 +67,10 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
     const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
 
     if ('extension' in item) {
-      const exp = (this.valueMethod === "compute-initial" || this.valueMethod === "compute-continuously") ?
-                  this.extensionsService.getFirstExtensionByUrl(ExtensionsService.INITIAL_EXPRESSION) ||
-                    this.extensionsService.getFirstExtensionByUrl(ExtensionsService.CALCULATED_EXPRESSION) :
-                  this.extensionsService.getFirstExtensionByUrl(ExtensionsService.ANSWER_EXPRESSION);
+      const exp = (this.valueMethod === VALUE_METHOD_COMPUTE_INITIAL || this.valueMethod === VALUE_METHOD_COMPUTE_CONTINUOUSLY) ?
+                  this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_INITIAL_EXPRESSION) ||
+                    this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_CALCULATED_EXPRESSION) :
+                  this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_ANSWER_EXPRESSION);
       if (exp) {
         this.expression = exp.valueExpression.expression;
         this.formProperty.setValue(exp, false);
@@ -79,7 +83,7 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
           const outputExpressionExtension = { ...outputExpression};
           outputExpressionExtension.url = this.getUrlByValueMethod(this.valueMethod);
 
-          this.extensionsService.insertExtensionAfterURL(ExtensionsService.VARIABLE, [outputExpressionExtension]);
+          this.extensionsService.insertExtensionAfterURL(EXTENSION_URL_VARIABLE, [outputExpressionExtension]);
         }
       }
     }
@@ -90,7 +94,7 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
    * @returns - the output expression from either the 'initial expression' or the 'calculated expression'.
    */
   getOutputExpressionFromFormProperty(): any {
-    const properties = (this.valueMethod === "compute-initial" || this.valueMethod === "compute-continuously") ?
+    const properties = (this.valueMethod === VALUE_METHOD_COMPUTE_INITIAL || this.valueMethod === VALUE_METHOD_COMPUTE_CONTINUOUSLY) ?
                          [
                            '__$initialExpression',
                            '__$calculatedExpression'
@@ -131,12 +135,12 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
    * @returns - expression url.
    */
   getUrlByValueMethod(valueMethod: string): string {
-    if (valueMethod === "compute-initial") {
-      return ExtensionsService.INITIAL_EXPRESSION;
-    } else if (valueMethod === "compute-continuously") {
-      return ExtensionsService.CALCULATED_EXPRESSION;
+    if (valueMethod === VALUE_METHOD_COMPUTE_INITIAL) {
+      return EXTENSION_URL_INITIAL_EXPRESSION;
+    } else if (valueMethod === VALUE_METHOD_COMPUTE_CONTINUOUSLY) {
+      return EXTENSION_URL_CALCULATED_EXPRESSION;
     } else {
-      return ExtensionsService.ANSWER_EXPRESSION;
+      return EXTENSION_URL_ANSWER_EXPRESSION;
     }
   }
   /**
@@ -208,7 +212,7 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
       if (result) {
         const resultExtensions = this.extractExtension(result.item, this.linkId);
         this.extensionsService.extensionsProp.reset(resultExtensions, false);
-        const variables = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE);
+        const variables = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE);
 
         const outputExtension = this.extensionsService.getFirstExtensionByUrl(this.schema.widget.expressionUri);
         this.expression = outputExtension?.valueExpression?.expression;

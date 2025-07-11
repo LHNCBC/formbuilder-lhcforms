@@ -2,7 +2,8 @@
 
 import {Util} from '../../../src/app/lib/util';
 import {CypressUtil} from '../../support/cypress-util';
-import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
+import { ExtensionDefs } from "../../../src/app/lib/extension-defs";
+import { EXTENSION_URL_ITEM_CONTROL } from 'src/app/lib/constants/constants';
 
 const entryFormatUrl = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
@@ -24,7 +25,7 @@ describe('Home page', () => {
 
   describe('Item level fields', () => {
     const helpTextExtension = [{
-      url: Util.ITEM_CONTROL_EXT_URL,
+      url: EXTENSION_URL_ITEM_CONTROL,
       valueCodeableConcept: {
         text: 'Help-Button',
         coding: [{

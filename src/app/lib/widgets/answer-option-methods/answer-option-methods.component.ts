@@ -8,6 +8,10 @@ import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {Subscription} from 'rxjs';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 import { TableService, TableStatus } from 'src/app/services/table.service';
+import {
+  ANSWER_OPTION_METHOD_ANSWER_OPTION, ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET, ANSWER_OPTION_METHOD_ANSWER_EXPRESSION,
+  EXTENSION_URL_ANSWER_EXPRESSION
+} from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -69,7 +73,7 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
     let sub: Subscription;
 
     sub = this.formProperty.valueChanges.subscribe((ansOptMethod) => {
-      if (ansOptMethod === "answer-expression") {
+      if (ansOptMethod === ANSWER_OPTION_METHOD_ANSWER_EXPRESSION) {
         const warningMessage = 'Validation and automatic lookup for Answer Expression are not available. The expression cannot be checked, and initial values must be entered manually.';
 
         const status: TableStatus = {
@@ -80,7 +84,7 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
       } else {
         // If switching away from "answer-expression" method, remove any answer expression-related
         // extensions from the root 'extension' property to keep the form state consistent.
-        if (this.answerOptionMethod && this.answerOptionMethod === "answer-expression" && ansOptMethod !== this.answerOptionMethod) {
+        if (this.answerOptionMethod && this.answerOptionMethod === ANSWER_OPTION_METHOD_ANSWER_EXPRESSION && ansOptMethod !== this.answerOptionMethod) {
           const exts = this.formProperty.findRoot().getProperty('extension').value;
           const updatedExts = this.extensionsService.removeExpressionExtensions();
           if (updatedExts && exts && updatedExts.length !== exts.length) {
@@ -118,16 +122,16 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
     let message = '';
 
     switch (this.formProperty.value) {
-      case 'answer-option':
+      case ANSWER_OPTION_METHOD_ANSWER_OPTION:
         message = `Fields for answer options are displayed below.`;
         break;
-      case 'snomed-value-set':
+      case ANSWER_OPTION_METHOD_SNOMED_VALUE_SET:
         message = `Fields for a SNOMED CT answer value set are displayed below.`;
         break;
-      case 'value-set':
+      case ANSWER_OPTION_METHOD_VALUE_SET:
         message = `A field for an answer value set URI is displayed below.`;
         break;
-      case 'answer-expression':
+      case ANSWER_OPTION_METHOD_ANSWER_EXPRESSION:
         message = `A field for an answer expression is displayed below.`;
         break;
     }
@@ -143,16 +147,16 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   updateUI() {
     const valueSetUrl = this.formProperty.searchProperty('answerValueSet').value;
     if(valueSetUrl?.length > 0) {
-      let valueSetType = 'value-set';
+      let valueSetType = ANSWER_OPTION_METHOD_VALUE_SET;
       if(this.isSnomedUser &&
         (valueSetUrl.startsWith(AnswerValueSetComponent.snomedBaseUri))) {
-        valueSetType = 'snomed-value-set';
+        valueSetType = ANSWER_OPTION_METHOD_SNOMED_VALUE_SET;
       }
       this.formProperty.setValue(valueSetType, false);
     } else {
-      const answerExpressionExtension = this.extensionsService.getFirstExtensionByUrl(ExtensionsService.ANSWER_EXPRESSION);
+      const answerExpressionExtension = this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_ANSWER_EXPRESSION);
       if (answerExpressionExtension) {
-        this.formProperty.setValue('answer-expression', false);
+        this.formProperty.setValue(ANSWER_OPTION_METHOD_ANSWER_EXPRESSION, false);
       }
     }
   }

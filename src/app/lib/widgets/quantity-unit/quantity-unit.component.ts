@@ -1,6 +1,7 @@
 import {AfterViewInit, Component} from '@angular/core';
 import {UnitsComponent} from '../units/units.component';
 import { UnitsDisplayComponent } from '../units-display/units-display.component';
+import { EXTENSION_URL_UCUM_SYSTEM } from '../../constants/constants';
 
 declare var LForms: any;
 
@@ -42,7 +43,7 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
           this.unitStorage.push(selectedUnit);
           this.unitService.addUnit(selectedUnit);
 
-          updateQuantityFormProperty(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
+          updateQuantityFormProperty(data.item_code, EXTENSION_URL_UCUM_SYSTEM, selectedUnit[1]);
         } else {
           const orgFinalVal = data.final_val;
 
@@ -52,7 +53,7 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
           const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
 
           if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
-            updateQuantityFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
+            updateQuantityFormProperty(parseResp.ucumCode, EXTENSION_URL_UCUM_SYSTEM, parseResp.unit.name);
           } else {
             updateQuantityFormProperty(null, null, orgFinalVal);
           }
@@ -65,7 +66,7 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
           const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
 
           if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
-            updateQuantityFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
+            updateQuantityFormProperty(parseResp.ucumCode, EXTENSION_URL_UCUM_SYSTEM, parseResp.unit.name);
           } else {
             updateQuantityFormProperty(null, null, data.final_val);
           }
