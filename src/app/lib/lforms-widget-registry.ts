@@ -52,6 +52,7 @@ import { VariableComponent } from './widgets/variable/variable.component';
 import { InitialNumberComponent } from './widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
+import {TimeComponent} from "./widgets/time/time.component";
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -65,6 +66,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('textarea', TextAreaComponent);
     this.register('date', DateComponent);
     this.register('datetime', DatetimeComponent);
+    this.register('time', TimeComponent);
     this.register('url', StringComponent);
     this.register('select', SelectComponent);
     this.register('checkbox', CheckboxComponent);

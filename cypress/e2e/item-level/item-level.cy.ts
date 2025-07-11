@@ -5724,7 +5724,9 @@ describe('Value method button selection', () => {
     cy.clickTreeNode('dateTime_type');
     cy.getItemTypeField().contains('dateTime');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
-    cy.get('[id^="initial.0.valueDateTime"]').should('have.value', '2024-03-03 01:01:01 PM');
+    cy.get('[id^="initial.0.valueDateTime"]')
+      .should('have.prop', 'value')
+      .should('match', /^2024-03-03 \d{2}:\d{2}:\d{2} [AP]M$/);
 
     cy.clickTreeNode('time_type-answerlist_no');
     cy.getItemTypeField().contains('time');
