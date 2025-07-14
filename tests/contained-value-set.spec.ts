@@ -152,7 +152,7 @@ test.describe(() => {
 
   test('should validate resource.id', async({page}) => {
     await PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc).click();
-    const dialog = page.locator('mat-dialog-container');
+    const dialog = page.locator('.cdk-dialog-container');
     const idInput = dialog.getByLabel('Id', {exact: true});
     await expect(idInput).toBeVisible();
     const idParent = idInput.locator('..');
