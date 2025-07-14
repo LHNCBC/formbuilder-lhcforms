@@ -169,9 +169,7 @@ test.describe(() => {
     })).toBeVisible();
 
     await dialog.getByRole('button', {name: 'Save and close'}).click();
-    const alertDialog = page.getByRole('dialog').filter({
-      has: page.getByText('Fix errors')
-    });
+    const alertDialog = page.getByRole('dialog', {name: 'Fix errors'});
     await expect(alertDialog).toBeVisible();
     await expect(alertDialog.getByText(/There are errors in the form./)).toBeVisible();
     await alertDialog.getByRole('button', {name: 'OK'}).click();
