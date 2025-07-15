@@ -24,19 +24,21 @@ export interface MessageDlgOptions {
   standalone: false,
   selector: 'lfb-message-dlg',
   template: `
+    <div role="dialog" aria-labelledby="msgDlgTitle" aria-describedby="msgContent">
       <div class="modal-header bg-primary">
-        <h4 class="modal-title text-white">{{title}}</h4>
+        <h4 class="modal-title text-white" id="msgDlgTitle">{{title}}</h4>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
         </button>
       </div>
       <div class="modal-body">
-        <p>{{message}}</p>
+        <div id="msgContent" [innerHTML]="message"></div>
       </div>
       <div class="modal-footer">
         @for(button of buttons; track $index) {
           <button type="button" class="btn btn-primary" (click)="activeModal.close(button.value)">{{button.label}}</button>
         }
       </div>
+    </div>
   `,
   styles: [
   ]

@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.1] 2025-07-14
+### Fixed
+- Fixed playwright test locator to find stacked dialog box.
+
 ## [10.3.0] 2025-07-11
 ### Added
 - Added support for contained ValueSet resource.

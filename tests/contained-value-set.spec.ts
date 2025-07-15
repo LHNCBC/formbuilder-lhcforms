@@ -152,7 +152,7 @@ test.describe(() => {
 
   test('should validate resource.id', async({page}) => {
     await PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc).click();
-    const dialog = page.locator('mat-dialog-container');
+    const dialog = page.locator('.cdk-dialog-container');
     const idInput = dialog.getByLabel('Id', {exact: true});
     await expect(idInput).toBeVisible();
     const idParent = idInput.locator('..');
@@ -169,9 +169,7 @@ test.describe(() => {
     })).toBeVisible();
 
     await dialog.getByRole('button', {name: 'Save and close'}).click();
-    const alertDialog = page.getByRole('dialog').filter({
-      has: page.getByText('Fix errors')
-    });
+    const alertDialog = page.getByRole('dialog', {name: 'Fix errors'});
     await expect(alertDialog).toBeVisible();
     await expect(alertDialog.getByText(/There are errors in the form./)).toBeVisible();
     await alertDialog.getByRole('button', {name: 'OK'}).click();
