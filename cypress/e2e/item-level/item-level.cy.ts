@@ -1332,6 +1332,7 @@ describe('Home page', () => {
         const acBtn = '[for^="__\\$itemControl\\.autocomplete"]';
 
         const dropDownRadio = '#__\\$itemControl\\.drop-down';
+        const unspecifiedRadio = '#__\\$itemControl\\.unspecified';
         const checkboxRadio = '#__\\$itemControl\\.check-box';
 
         cy.selectDataType('coding');
@@ -1342,7 +1343,8 @@ describe('Home page', () => {
         cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod');
         cy.get('@answerOptionMethod').click();
         cy.get(dropDownBtn).should('be.visible');
-        cy.get(dropDownRadio).should('be.checked'); // Default is answer-option
+        // Default for item control is now 'Unspecified'
+        cy.get(unspecifiedRadio).should('be.checked');
         cy.get(radioBtn).should('be.visible'); // Radio option when repeats is false by default.
         cy.get(checkboxBtn).should('not.exist'); // Not visible when repeats is true
         cy.get(acBtn).should('not.exist'); // Not visible for answerOption.
@@ -1351,15 +1353,12 @@ describe('Home page', () => {
         ['@snomedMethod', '@nonSnomedMethod'].forEach((vsMethod) => {
           cy.get(vsMethod).click();
           cy.get(dropDownBtn).should('be.visible');
-          cy.get(dropDownRadio).should('be.checked'); // Default
+          // Default for item control is now 'Unspecified'
+          cy.get(unspecifiedRadio).should('be.checked');
           cy.get(radioBtn).should('be.visible');
           cy.get(checkboxBtn).should('not.exist');
           cy.get(acBtn).should('be.visible'); // Autocomplete should be visible.
 
-          // No extension for drop-down
-          cy.questionnaireJSON().should((qJson) => {
-            expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
-          });
         });
 
         cy.get('@snomedMethod').click();
@@ -2001,17 +2000,14 @@ describe('Home page', () => {
     });
 
     describe('Question item control', () => {
-      beforeEach(() => {
+      it('should display Question item-control extension', () => {
         const sampleFile = 'question-item-control-sample.json';
         let fixtureJson;
         cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
         cy.uploadFile(sampleFile, true);
         cy.get('#title').should('have.value', 'Question item control sample form');
         cy.contains('button', 'Edit questions').click();
-      });
 
-      it('should display Question item-control extension', () => {
-        // The Data type should be a display.
         cy.get('#type').should('contain.value', 'string');
 
         cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
@@ -2020,7 +2016,7 @@ describe('Home page', () => {
         cy.contains('button', 'Preview').click();
         cy.get('lhc-item').as('lhc-item');
 
-        // Find the first lhc-item, it should be an autocomplete drop-down
+        // The first lhc-item
         cy.get('@lhc-item').first().within(() => {
           // Check for element label
           cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
@@ -2033,7 +2029,7 @@ describe('Home page', () => {
           });
         });
 
-        // Find the 2nd lhc-item, it should be an autocomplete search
+        // The 2nd lhc-item
         cy.get('@lhc-item').eq(1).within(() => {
           // Check for element label
           cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
@@ -2045,7 +2041,7 @@ describe('Home page', () => {
           });
         });
 
-        // Find the 3rd lhc-item, it should be an autocomplete drop-down
+        // The 3rd lhc-item
         cy.get('@lhc-item').eq(2).within(() => {
           // Check for element label
           cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
@@ -2057,7 +2053,7 @@ describe('Home page', () => {
           });
         });
 
-        // Find the 4th lhc-item, it should be checkbox question item control that displays as checkboxes
+        // The 4th lhc-item
         cy.get('@lhc-item').eq(3).within(() => {
           // Check for element label
           cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
@@ -2070,7 +2066,7 @@ describe('Home page', () => {
           });
         });
 
-        // Find the 5th lhc-item, radio button question item control
+        // The 5th lhc-item
         cy.get('@lhc-item').eq(4).within(() => {
           // Check for element label
           cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
@@ -2083,7 +2079,7 @@ describe('Home page', () => {
           });
         });
 
-        // Find the 6th lhc-item, it should just be input type="text"
+        // The 6th lhc-item
         cy.get('@lhc-item').eq(5).within(() => {
           // Check for element label
           cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
@@ -2094,7 +2090,7 @@ describe('Home page', () => {
           });
         });
 
-        // Find the 7th lhc-item, it should just be input type="text"
+        //The 7th lhc-item
         cy.get('@lhc-item').eq(6).within(() => {
           // Check for element label
           cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
@@ -2105,7 +2101,7 @@ describe('Home page', () => {
           });
         });
 
-        // Find the 8th lhc-item, it should just be input type="text"
+        // The 8th lhc-item
         cy.get('@lhc-item').eq(7).within(() => {
           // Check for element label
           cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
@@ -2115,6 +2111,59 @@ describe('Home page', () => {
             cy.get('input[type="text"]').should('exist');
           });
         });
+      });
+
+      it('should display different question item controls based on data types', () => {
+        // Select 'boolean' data type
+        cy.checkQuestionItemControlUI('boolean', null,  null, null, null);
+
+        // Select 'decimal' data type
+        cy.checkQuestionItemControlUI('decimal',  ['Slider (1)', 'Spinner (1)', 'Unspecified'], null, null, null);
+
+        // Select 'integer' data type
+        cy.checkQuestionItemControlUI('integer',
+          ['Slider (1)', 'Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'date' data type
+        cy.checkQuestionItemControlUI('date',
+          ['Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'dateTime' data type
+        cy.checkQuestionItemControlUI('dateTime', ['Spinner (1)', 'Unspecified'], null, null, null);
+
+        // Select 'time' data type
+        cy.checkQuestionItemControlUI('time',
+          ['Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'string' data type
+        cy.checkQuestionItemControlUI('string',
+          ['Text Box (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'text' data type
+        cy.checkQuestionItemControlUI('text',
+          ['Text Box (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'url' data type
+        cy.checkQuestionItemControlUI('url', null,  null, null, null);
+
+        // Select 'coding' data type
+        cy.checkQuestionItemControlUI('coding', null,
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'],
+          ['Auto-complete', 'Drop down', 'Check-box', 'Unspecified']);
+
+        // Select 'quantity' data type
+        cy.checkQuestionItemControlUI('quantity', null,  null, null, null);
       });
     });
 
@@ -5626,6 +5675,9 @@ describe('Home page', () => {
       cy.selectDataType('coding');
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
       cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+      // Default for the 'Answer list laytout' is now 'Unspecified'.  Have to manually select 'drop-down'.
+      cy.getRadioButtonLabel('Answer list layout', 'Drop down').click();
 
       cy.getPickInitialValueValueMethodClick();
 

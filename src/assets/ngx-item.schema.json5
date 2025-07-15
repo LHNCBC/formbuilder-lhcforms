@@ -1174,7 +1174,8 @@
           'enum': ["autocomplete"],
           'display': 'Auto-complete',
           'description': 'A control that shows matching options as the user types. Ideal for large lists where searching by text is helpful.',
-          'support': true
+          'support': true,
+          'dataType': ['coding']
         },
         {
           'enum': ["drop-down"],
@@ -1185,7 +1186,7 @@
         {
           'enum': ["check-box"],
           'display': 'Check-box',
-          'description': 'A control listing choices with checkboxes. Users can select or deselect options, allowing multiple selections. Useful for repeating items or booleans with an \'unanswered\' state.',
+          'description': 'A control listing choices with checkboxes. Users can select or deselect options, allowing multiple selections.',
           'support': true
         },
 /* TBD        {
@@ -1218,23 +1219,49 @@
           'enum': ["slider"],
           'display': 'Slider',
           'description': 'A control with a movable handle on an axis to select a value between set minimum and maximum.',
-          'support': false
+          'support': false,
+          'dataType': ['decimal', 'integer']
         },
         {
           'enum': ["spinner"],
           'display': 'Spinner',
           'description': 'A control for scrolling through numeric or ordered values using arrows.',
-          'support': false
+          'support': false,
+          'dataType': ['decimal', 'integer', 'date', 'dateTime', 'time']
         },
         {
           'enum': ["text-box"],
           'display': 'Text Box',
           'description': 'A control for free text entry.',
-          'support': false
+          'support': false,
+          'dataType': ['string', 'text']
         }
       ],
       "visibleIf": {
-        "__$isAnswerList": [false]
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "__$isAnswerList": [false]
+              },
+              {
+                "type": [
+                  "$EXP$ target.value != 'boolean' && target.value != 'url'  && target.value != 'coding' && target.value != 'quantity'"
+                ]
+              }
+            ],
+
+          },
+          {
+            "allOf": [
+              {
+                "type": [
+                  "$EXP$ target.value == 'decimal' || target.value == 'dateTime'"
+                ]
+              }
+            ]
+          }
+        ]
       },
       "default": "unspecified",
       "widget": {

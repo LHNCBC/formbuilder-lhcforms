@@ -6,7 +6,6 @@ import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import {Util} from '../../util';
 import {LiveAnnouncer} from "@angular/cdk/a11y";
-import { isNamedDeclaration } from '@angular/compiler-cli/src/ngtsc/util/src/typescript';
 
 @Component({
   standalone: false,
@@ -91,7 +90,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
     let defaultItemControl = '';
     if (this.dataType !== 'group' && this.dataType !== 'display') {
-      defaultItemControl = isAnswerList ? 'drop-down' : '';
+      const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
+      defaultItemControl = this.hasInitialSelectedAnswerOption(answerOptions) ? 'drop-down' : '';
     }
 
     if (dataTypeChanged)
@@ -242,12 +242,26 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    *
    * @returns {any[]} - The filtered list of item control option objects.
    */
-  getItemControlOptions(): any [] {
-    return this.formProperty.schema.oneOf.filter((o) =>
-      !((this.isRepeat && o.enum[0] === 'radio-button') ||
-        (!this.isRepeat && o.enum[0] === 'check-box') ||
-        (this.answerMethod === 'answer-option' && o.enum[0] === 'autocomplete'))
-    );
+  getItemControlOptions(): any[] {
+    return this.formProperty.schema.oneOf.filter((o) => {
+      // Exclude item controls that are not supported for the current data type, repeat status, or answer method.
+      if ((this.isRepeat && o.enum[0] === 'radio-button') ||
+          (!this.isRepeat && o.enum[0] === 'check-box') ||
+          (this.answerMethod === 'answer-option' && o.enum[0] === 'autocomplete')) {
+        return false;
+      }
+
+      if (o.hasOwnProperty('dataType')) {
+        // If the option has a 'dataType' property, only include it if the current data type matches.
+        // Handles both array and single value cases for 'dataType'.
+        if (Array.isArray(o.dataType)) {
+          return o.dataType.includes(this.dataType);
+        } else {
+          return o.dataType === this.dataType;
+        }
+      }
+      return true;
+    });
   }
 
   /**
@@ -265,6 +279,16 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
         }]
       }
     }
+  }
+
+  /**
+   * Check if at least one answer option is initially selected.
+   * @param answerOptions - Array of answer option objects.
+   * @returns {boolean} - True if at least one answer option has initialSelected === true, else false.
+   */
+  hasInitialSelectedAnswerOption(answerOptions: any[]): boolean {
+    if (!Array.isArray(answerOptions)) return false;
+    return answerOptions.some(opt => opt && opt.initialSelected === true);
   }
 
   /**
