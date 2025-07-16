@@ -2,9 +2,23 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.2.1] 2025-06-27
+## [10.3.2] 2025-06-27
 ### Added
 - Added the ability to create/update the Answer Expression.
+
+## [10.3.1] 2025-07-14
+### Fixed
+- Fixed playwright test locator to find stacked dialog box.
+
+## [10.3.0] 2025-07-11
+### Added
+- Added support for contained ValueSet resource.
+
+## [10.2.1] 2025-06-25
+### Added
+- Added a time component for data type time.
+- Changed date and dateTime input fields to use their respective components in
+  item level fields.
 
 ## [10.2.0] 2025-06-25
 ### Changed

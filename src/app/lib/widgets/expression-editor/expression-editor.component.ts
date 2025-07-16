@@ -23,10 +23,10 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   @Input() model: any;
   @Input() exp: string;
   @Output() questionnaireChange = new EventEmitter<fhir4.Questionnaire>();
-  subscriptions: Subscription[] = [];
 
   elementId: string;
-  control = new FormControl();
+  // control is already declared in the base class.
+  // control = new FormControl();
   questionnaire = null;
   private LANGUAGE_FHIRPATH = 'text/fhirpath';
   linkId: string;
@@ -34,9 +34,10 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   valueMethod: string;
   itemId: number;
   faAdd = faPlusCircle;
-  name: string;
-  answerOptionMethod: string;
+////  name: string;
+////  answerOptionMethod: string;
 
+  // name: string;
   /**
    * Invoke super constructor.
    *
@@ -63,7 +64,7 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
 
   ngAfterViewInit(): void {
     const item = this.formProperty.findRoot().value;
-    this.name = this.formProperty.canonicalPathNotation;
+    ////this.name = this.formProperty.canonicalPathNotation;
     const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
 
     if ('extension' in item) {

@@ -42,7 +42,7 @@
             lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)"
             (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
         >
-          <lfb-form-element *ngIf="isShow(rowProperty, showField.field)" nolabel="true"
+          <lfb-form-element *ngIf="isShow(rowProperty, showField.field)" [nolabel]="true"
                             [formProperty]="getProperty(rowProperty, showField.field)"
           ></lfb-form-element>
         </td>

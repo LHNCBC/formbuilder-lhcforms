@@ -16,7 +16,7 @@ test.describe('retain-additional-fields', async () => {
     await page.getByLabel('Start from scratch').click();
     await page.getByRole('button', {name: 'Continue'}).click();
     const fileJson = await PWUtils.uploadFile(page, '../cypress/fixtures/contained-example.json');
-    await expect(page.locator('input#title')).toHaveValue('Contained example');
+    await expect(page.getByLabel('Title', {exact: true})).toHaveValue('Contained example');
     const json = await PWUtils.getQuestionnaireJSON(page, 'R4');
     expect(json.contained).toEqual(fileJson.contained);
   });

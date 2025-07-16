@@ -12,6 +12,9 @@ const baseURL = `http://localhost:${port}`;
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  expect: {
+    timeout: 10000, // Default timeout for expect() assertions
+  },
   testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,

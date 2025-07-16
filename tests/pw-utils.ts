@@ -31,8 +31,6 @@ export class PWUtils {
    */
   static async getQuestionnaireJSONWithoutUI(page: Page, format = 'R4'): Promise<any> {
     return await page.evaluate( (format) => {
-      const app = window['appRef'];
-      // app.tick();
       const basePageComponent = window['basePageComponent'];
       const form = basePageComponent.formValue;
       return basePageComponent.formService.convertFromR5(window['fbUtil'].convertToQuestionnaireJSON(form), format);
@@ -66,7 +64,7 @@ export class PWUtils {
   }
 
   /**
-   * Upload local file.
+   * Upload a local file.
    *
    * @param page - Browser page.
    * @param relativeFilePath - Relative path of the uploading file.
@@ -93,7 +91,7 @@ export class PWUtils {
    * Wait for local storage to update.
    * @param page - Browser page
    * @param itemKey - window.localStorage item key.
-   * @param valueSubStr - A sub string of item value to match.
+   * @param valueSubStr - A substring of item value to match.
    */
   static async waitUntilLocalStorageItemIsUpdated(page: Page, itemKey: string, valueSubStr: string) {
     await page.waitForFunction( ({key, match}) => {
@@ -144,11 +142,32 @@ export class PWUtils {
   }
 
   /**
-   * Read json file and return a promise of JSON object.
+   * Get a table cell's input.
+   * @param table - Table locator.
+   * @param row - Row number, indexed from 1.
+   * @param column - Column number, indexed from 1
+   * @return Locator - Input locator.
+   */
+  static getTableCellInput(table: Locator, row: number, column: number): Locator {
+    return PWUtils.getTableCell(table, row, column).locator(`input`);
+  }
+
+  /**
+   * Read a JSON file and return a promise of JSON object.
    * @param relativeFilePath - File path of the file.
    */
   static async readJSONFile(relativeFilePath: string): Promise<Object> {
     const testFile = path.join(__dirname, relativeFilePath);
     return JSON.parse(await fs.readFile(testFile, 'utf-8'));
+  }
+
+  /**
+   * Get a table by field label.
+   * @param locator - Locator of the ancestral element, to constrain the search.
+   * @param label - Label text of the field.
+   * @return Locator - Table locator.
+   */
+  static getTableByFieldLabel(locator: Locator, label: string): Locator {
+    return locator.getByText(label, {exact: true}).locator('xpath=../../following-sibling::div[1]/table');
   }
 }

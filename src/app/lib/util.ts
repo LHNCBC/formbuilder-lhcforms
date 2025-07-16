@@ -137,7 +137,7 @@ export class Util {
       const path = propertyId.split('.');
       for (let i = 0; i < path.length && visible; i++) {
         formProperty = formProperty.getProperty(path[i]);
-        visible = formProperty.visible;
+        visible = !!formProperty?.visible;
       }
     }
     return visible;

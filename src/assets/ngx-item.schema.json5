@@ -490,6 +490,9 @@
                   "operator": ["$EXP$ target.value != 'exists'"]
                 }
               ]
+            },
+            "widget": {
+              "id": "date"
             }
           },
           "answerDateTime": {
@@ -505,6 +508,9 @@
                   "operator": ["$EXP$ target.value != 'exists'"]
                 }
               ]
+            },
+            "widget": {
+              "id": "datetime"
             }
           },
           "answerTime": {
@@ -520,6 +526,9 @@
                   "operator": ["$EXP$ target.value != 'exists'"]
                 }
               ]
+            },
+            "widget": {
+              "id": "time"
             }
           },
           "answerString": {
@@ -989,6 +998,9 @@
             "title": "Value date",
             "visibleIf": {
               "/type": ["date"]
+            },
+            "widget": {
+              "id": "date"
             }
           },
           "valueTime": {
@@ -998,6 +1010,9 @@
             "title": "Value time",
             "visibleIf": {
               "/type": ["time"]
+            },
+            "widget": {
+              "id": "time"
             }
           },
           "valueString": {
@@ -1447,6 +1462,13 @@
             "title": "Value date",
             "visibleIf": {
               "/type": ["date"]
+            },
+            "widget": {
+              "id": "date",
+              "labelPosition": "left",
+              "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+              "controlClasses": "col-sm-5",
+              "placeholder": 'yyyy-MM-dd'
             }
           },
           "valueDateTime": {
@@ -1456,6 +1478,13 @@
             "title": "Value date time",
             "visibleIf": {
               "/type": ["dateTime"]
+            },
+            "widget": {
+              "id": "datetime",
+              "labelPosition": "left",
+              "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+              "controlClasses": "col-sm-5",
+              "placeholder": 'yyyy-MM-dd hh:mm:ss (AM|PM)'
             }
           },
           "valueTime": {
@@ -1465,6 +1494,9 @@
             "title": "Value time",
             "visibleIf": {
               "/type": ["time"]
+            },
+            "widget": {
+              "id": "time"
             }
           },
           "valueString": {

@@ -21,7 +21,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   static snomedBaseUri = 'http://snomed.info/sct';
   static snomedTerminologyServer = 'https://snowstorm.ihtsdotools.org/fhir';
   static snomedTSHint = 'Note that this option also sets the terminology server option below (under "Advanced fields").';
-  static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields).';
+  static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields). Alternatively, you can enter a valid ID for contained ValueSet resource with a prefix \'#\' (example: #123).';
 
   eclHelpContent = `See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
                    `href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or ` +

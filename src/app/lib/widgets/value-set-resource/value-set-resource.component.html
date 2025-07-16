@@ -1,0 +1,12 @@
+<h4 class="ms-2">ValueSet</h4>
+<p class="ms-4">Enter ValueSet resource fields.</p>
+<hr/>
+<div class="container">
+  <sf-form [schema]="schema"
+    [model]="model"
+    (onChange)="onValueSetChanged($event)"
+           (onErrorChange)="onErrorsChanged($event)"
+    [validators]="vsValidators"
+  ></sf-form>
+</div>
+<hr/>

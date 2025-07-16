@@ -33,7 +33,6 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
   static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
   static seqNum = 0;
   elementId: string;
-  subscriptions: Subscription [];
   unitIndex: fhirPrimitives.integer = 0;
   value: string;
   adjustVAlignClass = 'd-flex';

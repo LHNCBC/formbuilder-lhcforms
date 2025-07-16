@@ -5,7 +5,7 @@ import {Component, Input, OnChanges, SimpleChanges, TemplateRef, ViewChild} from
 import {NgbModal, NgbModalOptions, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  standalone: false,
+  imports: [],
   selector: 'lfb-spinner',
   templateUrl: './lfb-spinner.component.html',
   styleUrls: ['./lfb-spinner.component.css']

@@ -21,7 +21,7 @@ import {
   SimpleChanges
 } from '@angular/core';
 import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
-import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong} from '@fortawesome/free-solid-svg-icons';
+import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong, faEdit} from '@fortawesome/free-solid-svg-icons';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
@@ -44,6 +44,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   faDown = faAngleDown;
   faMoveDown = faDownLong;
   faMoveUp = faUpLong;
+  faEdit = faEdit;
+
+  addEditAction = false;
   warningIcon = faExclamationTriangle;
   includeErrorColumn = false;
   showErrorTypeList = [];
@@ -107,6 +110,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     this.addButtonLabel = widget && widget.addButtonLabel
       ? widget.addButtonLabel : 'Add';
 
+    this.addEditAction = widget && widget.addEditAction || false;
     this.noTableLabel = !!widget.noTableLabel;
     this.noCollapseButton = !!widget.noCollapseButton;
     this.singleItem = !!widget.singleItem;
@@ -126,7 +130,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
     this.handleErrorColumnVisibility(widget);
   }
-  
+
   /**
    * Manages the visibility of the error column based on the schema.widget configuration for
    * the given property.
@@ -135,12 +139,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   handleErrorColumnVisibility(widget: any): void {
     if (this.dataType) {
       this.showErrorTypeList = widget?.showErrorTypeList || [];
-    
+
       if (this.showErrorTypeList.length) {
-        this.includeErrorColumn = this.showErrorTypeList.some(errorType => 
+        this.includeErrorColumn = this.showErrorTypeList.some(errorType =>
           errorType.type === this.dataType
         );
-    
+
         this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
       }
     }
@@ -431,6 +435,13 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     super.removeItem(props[index]);
   }
 
+  /**
+   * Handle edit button click.
+   * @param index - Index of the formProperty to edit.
+   */
+  onEditProperty(index: number) {
+    // Nothing by default. Override this method to implement for specific table.
+  }
 
   /**
    * Possible method for handling row selections for radio buttons.
@@ -577,7 +588,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   /**
-   * Loop through each of the 'property' fields and return any errors. This refers to 
+   * Loop through each of the 'property' fields and return any errors. This refers to
    * any 'property' fields that display in a table structure.
    * @param rowProperty - Object property.
    * @returns - observable that emits a string created by joining the 'errorMessage' array.
@@ -623,5 +634,14 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   get rowProperties(): ObjectProperty [] {
     return this.formProperty.properties as ObjectProperty[];
+  }
+
+  /**
+   * Check if the edit button should be disabled for a given row.
+   * Returns false by default, but can be overridden in derived classes.
+   * @param index - Index of the row in the table.
+   */
+  isDisabled(index: number): boolean {
+    return false;
   }
 }

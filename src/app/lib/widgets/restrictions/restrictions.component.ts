@@ -80,7 +80,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
 
   // maxLength = -1;
   appliedOptions = [];
-  dataType: string;
+  // dataType: string;
 
   selectedOptions: Set<string> = new Set<string>();
 

@@ -41,6 +41,9 @@ import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
 import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
 import {HelpTextComponent} from "./widgets/help-text/help-text.component";
+import { ContainedComponent } from './widgets/contained/contained.component';
+import { ValueSetResourceComponent } from './widgets/value-set-resource/value-set-resource.component';
+
 import { ValueMethodComponent } from './widgets/value-method/value-method.component';
 import { PickAnswerComponent } from './widgets/pick-answer/pick-answer.component';
 import { ExpressionEditorComponent } from './widgets/expression-editor/expression-editor.component';
@@ -49,6 +52,7 @@ import { VariableComponent } from './widgets/variable/variable.component';
 import { InitialNumberComponent } from './widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
+import {TimeComponent} from "./widgets/time/time.component";
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -62,6 +66,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('textarea', TextAreaComponent);
     this.register('date', DateComponent);
     this.register('datetime', DatetimeComponent);
+    this.register('time', TimeComponent);
     this.register('url', StringComponent);
     this.register('select', SelectComponent);
     this.register('checkbox', CheckboxComponent);
@@ -91,6 +96,8 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('quantity-unit', QuantityUnitComponent);
     this.register('terminology-server', TerminologyServerComponent);
     this.register('editable-link-id', EditableLinkIdComponent);
+    this.register("contained", ContainedComponent);
+    this.register("value-set", ValueSetResourceComponent);
     this.register('value-method', ValueMethodComponent);
     this.register('pick-answer', PickAnswerComponent);
     this.register('expression-editor', ExpressionEditorComponent);

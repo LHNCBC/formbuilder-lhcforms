@@ -123,7 +123,6 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
 })
 export class DatetimeComponent extends DateComponent implements OnInit {
 
-  static id = 0;
   dateTime: DateTime = {dateStruct: null, timeStruct: null, millis: NaN};
   includeTime = true;
 
@@ -136,7 +135,6 @@ export class DatetimeComponent extends DateComponent implements OnInit {
               private parserFormatter: NgbDateParserFormatter,
               private timeAdapter: NgbTimeAdapter<NgbTimeStruct>) {
     super();
-    DatetimeComponent.id++;
   }
   ngOnInit() {
     super.ngOnInit();

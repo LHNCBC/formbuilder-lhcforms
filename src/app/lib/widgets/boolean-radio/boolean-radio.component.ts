@@ -9,8 +9,6 @@ import { EXTENSION_URL_ANSWER_EXPRESSION } from '../../constants/constants';
   templateUrl: 'boolean-radio.component.html'
 })
 export class BooleanRadioComponent  extends LfbControlWidgetComponent implements AfterViewInit {
-  static ID = 0;
-  _id = ''+BooleanRadioComponent.ID++;
   options: Map<any, string> = new Map([['false', 'No'], ['true', 'Yes'], ['null', 'Unspecified']]);
   optionsKeys = []
   extensionsService: ExtensionsService = inject(ExtensionsService);

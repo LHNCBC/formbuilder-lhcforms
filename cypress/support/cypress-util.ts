@@ -1,6 +1,7 @@
 import {Util} from '../../src/app/lib/util';
 import {JsonPointer} from "json-ptr";
 import {format, parseISO} from 'date-fns';
+import fhir from 'fhir/r4';
 
 export class CypressUtil {
 
@@ -77,7 +78,7 @@ export class CypressUtil {
    */
   static assertExtensionsInQuestionnaire(extensionPtrInQuestionnaire, matchingExtUrl, expectedValue) {
     cy.questionnaireJSON().should((q) => {
-      const extensions = JsonPointer.get(q, extensionPtrInQuestionnaire).filter((e) => e.url === matchingExtUrl);
+      const extensions = (JsonPointer.get(q, extensionPtrInQuestionnaire) as Array<fhir.Extension>).filter((e) => e.url === matchingExtUrl);
       expect(extensions).to.deep.equal(expectedValue);
     });
   };

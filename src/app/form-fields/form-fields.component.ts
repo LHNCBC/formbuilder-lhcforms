@@ -97,8 +97,6 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   };
 
   @Output()
-  state = new EventEmitter<string>();
-  @Output()
   questionnaireChange = new EventEmitter<fhir.Questionnaire>();
   loading = false;
   formValue: fhir.Questionnaire;
