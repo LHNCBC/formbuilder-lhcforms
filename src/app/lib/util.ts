@@ -721,7 +721,7 @@ export class Util {
    */
   static isEmptyValueCoding(valueCoding: any): boolean {
     return !(valueCoding?.display && valueCoding?.code);
-  }   
+  }
 
   /**
    * Determines whether the provided array of answer options is empty for a given FHIR data type.
@@ -743,6 +743,51 @@ export class Util {
       const valueFieldName = this.getValueFieldName(type);
       return !ansOpts.some(ansOpt => ansOpt[valueFieldName]);
     }
+  }
+
+  /**
+   * Find ancestral node having enableWhen condition for a given source node.
+   * This function traverses up the tree from the source node up the ancestors
+   * until it finds a node that has an enableWhen condition that references the source node's linkId.
+   * If such a node is found, it returns that node; otherwise, it returns null.
+   * @param sourceNode - Source node.
+   *
+   */
+  static findAncestralNodeHavingEnableWhen(sourceNode: ITreeNode) {
+
+    return Util.findAncestralNode(sourceNode, (node) => {
+      let ret = false;
+      if (node.data?.enableWhen && node.data.enableWhen.length > 0) {
+        // If the enableWhen has question, it is a linkId of the source node.
+        ret = node.data.enableWhen.some((enableWhen) => {
+          return (enableWhen.question === sourceNode.data.linkId);
+        });
+      }
+      return ret;
+    });
+  }
+
+  /**
+   * Traverses up the tree from a given descendant node and invokes a callback function for each ancestor node. It
+   * returns the first ancestor node for which the callback returns true.
+   *
+   * @param descendant - The descendant node from which to start the search.
+   * @param callback - A function that takes a node as an argument and returns a boolean value.
+   * The search stops when this function returns true.
+   * @return - The first ancestor node for which the callback returns true, or null if no such node is found.
+   */
+  static findAncestralNode(descendant: ITreeNode, callback: (node: ITreeNode) => boolean): ITreeNode {
+    let ret: ITreeNode = null;
+    let targetNode = descendant?.parent;
+    while (targetNode) {
+      const found = callback(targetNode);
+      if(found) {
+        ret = targetNode; // Found the target node that meets the criteria.
+        break;
+      }
+      targetNode = targetNode.parent;
+    }
+    return ret;
   }
 }
 

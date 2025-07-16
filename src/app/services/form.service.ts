@@ -895,7 +895,7 @@ export class FormService {
   /**
    * Get sources excluding the branch of a given node.
    * @param focusedNode
-   * @param treeModel?: Optional tree model to search. Default is this.treeModel.
+   * @param treeModel - Optional tree model to search. Default is this.treeModel.
    */
   getEnableWhenSources(focusedNode: ITreeNode, treeModel?: TreeModel): ITreeNode [] {
     if (!treeModel) {

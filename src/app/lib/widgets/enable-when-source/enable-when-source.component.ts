@@ -59,7 +59,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   click$ = new Subject<string>();
 
   /**
-   * Search through text of the source items, with input string. For empty term, show  all items.
+   * Search through text of the source items, with input string. For empty term, show all items.
    *
    * @param input$ - Observation for input string.
    */
@@ -156,7 +156,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
       const enableWhenObj = this.formProperty.parent.value;
       enableWhenObj['question'] = '';
       enableWhenObj['operator'] = '';
-      
+
       const answerType = this.formProperty.parent.getProperty('__$answerType').value;
 
       if (answerType && answerType !== "coding") {

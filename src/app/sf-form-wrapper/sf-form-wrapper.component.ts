@@ -9,7 +9,13 @@ import {
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
-import {ArrayProperty, FormComponent, FormProperty, PropertyGroup, ObjectProperty} from '@lhncbc/ngx-schema-form';
+import {
+  ArrayProperty,
+  FormComponent,
+  FormProperty,
+  PropertyGroup,
+  ObjectProperty,
+} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
@@ -167,9 +173,14 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const questionItem = this.formService.getTreeNodeByLinkId(q.value);
 
     let aType = '';
+    let invalid = true;
 
     if (questionItem) {
       aType = questionItem.data.type;
+      const validSources = this.formService.getSourcesExcludingFocusedTree();
+      invalid = !validSources.some((source) => {
+        return (source.data.linkId === questionItem.data.linkId);
+      });
     }
 
     // The condition key is used to differentiate between each enableWHen conditions.
@@ -190,6 +201,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'conditionKey': condKey,
       'q': q,
       'aType': aType,
+      'invalid': invalid,
       'answerTypeProperty': answerType,
       'op': op,
       'aField': aField,
@@ -271,9 +283,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
    *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
-   *                                             options. 
-   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty. 
+   *                                             options.
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
+   *                                            and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
@@ -352,8 +364,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * Custom validator for the 'Pick initial' option in the Value Method. This validates data requirements
    * for each of the 'Answer list source' field: 'answer-option', 'snomed-value-set', and 'value-set'.
    * @param value - not used.
-   * @param formProperty - Object form property of the '__$pickInitial' field. 
-   * @param rootProperty - Root form property. 
+   * @param formProperty - Object form property of the '__$pickInitial' field.
+   * @param rootProperty - Root form property.
    * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
    *          1. (ANSWER_OPTION_REQUIRED)               - 'Answer options' option is selected, but 'Answer choices' is
    *                                                      empty and needs to be poulated.
@@ -378,7 +390,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const linkId = node.data.linkId;
 
     const asMethod = formProperty.findRoot().getProperty("__$answerOptionMethods").value;
-    // Answer Choices shows up with Answer Option Method = "answer-option" and 
+    // Answer Choices shows up with Answer Option Method = "answer-option" and
     const ansOpts = formProperty.findRoot().getProperty("answerOption").value;
 
     // Answer Value Set field shows up when the Answer Option Method = "value-set" or "snomed-value-set"

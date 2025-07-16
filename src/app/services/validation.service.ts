@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Injectable } from '@angular/core';
 import { FormService } from './form.service';
 import { Util } from '../lib/util';
 import {TreeNode} from '@bugsplat/angular-tree-component';
+import {FormProperty} from "@lhncbc/ngx-schema-form";
 
 interface EnableWhenFieldValidationObject {
   canonicalPath: string;
@@ -15,6 +16,7 @@ export interface EnableWhenValidationObject {
   conditionKey: string;
   q: EnableWhenFieldValidationObject;
   aType: string;
+  invalid: boolean;
   answerTypeProperty?: string;
   op: EnableWhenFieldValidationObject;
   aField: string;
@@ -30,7 +32,7 @@ export class ValidationService {
   static readonly LINKID_PATTERN = /^[^\s]+(\s[^\s]+)*$/;
   static readonly INITIAL_DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$/;
   static readonly INITIAL_INTEGER = /^-?([0]|([1-9][0-9]*))$/;
-  
+
   constructor(private formService: FormService) { }
 
   validators = {
@@ -82,8 +84,13 @@ export class ValidationService {
   createEnableWhenValidationObj(id: string, linkId: string, enableWhen: any, index: number): EnableWhenValidationObject {
     const questionItem = this.formService.getTreeNodeByLinkId(enableWhen.question);
     let aType = '';
+    let invalid = true;
     if (questionItem) {
       aType = questionItem.data.type;
+      const validSources = this.formService.getSourcesExcludingFocusedTree();
+      invalid = !validSources.some((source) => {
+        return (source.data.linkId === questionItem.data.linkId);
+      });
     }
 
     const aField = Util.getAnswerFieldName(aType || 'string');
@@ -93,6 +100,7 @@ export class ValidationService {
       'conditionKey': '' + index,
       'q': this.createEnableWhenFieldValidationObject(enableWhen, 'question', index),
       'aType': aType,
+      'invalid': invalid,
       'op': this.createEnableWhenFieldValidationObject(enableWhen, 'operator', index),
       'aField': aField,
       'answerX': this.createEnableWhenFieldValidationObject(enableWhen, aField, index),
@@ -303,22 +311,27 @@ export class ValidationService {
       // Validate whether the  'linkId' specified in the question exists.
       // If not, then throw the 'ENABLEWHEN_INVALID_QUESTION' error.
       if (!enableWhenObj.aType) {
-        const errorCode = 'ENABLEWHEN_INVALID_QUESTION';
-        const errorMsg = `Question not found for the linkId '${enableWhenObj.q.value}'.`;
-        const err: any = {};
-        err.code = errorCode;
-        err.path = `#${enableWhenObj.q.canonicalPathNotation}`;
-        err.message = errorMsg;
-        err.indexPath = indexPath;
-        const valStr = JSON.stringify(aValue);
-        err.params = [enableWhenObj.q.value, enableWhenObj.op.value, valStr];
+        const err = this.createErrorObj(
+          'ENABLEWHEN_INVALID_QUESTION',
+          `#${enableWhenObj.q.canonicalPathNotation}`,
+          `Question not found for the linkId '${enableWhenObj.q.value}'.`,
+          indexPath,
+          [enableWhenObj.q.value, enableWhenObj.op.value, JSON.stringify(aValue)],
+          isSchemaFormValidation,
+          enableWhenObj.q
+        );
         errors.push(err);
-        if (isSchemaFormValidation) {
-          const i = enableWhenObj.q._errors?.findIndex((e) => e.code === errorCode);
-          if(!(i >= 0)) { // Check if the error is already processed.
-            enableWhenObj.q.extendErrors(err);
-          }
-        }
+      } else if(enableWhenObj.invalid) {
+        const err = this.createErrorObj(
+          'ENABLEWHEN_INVALID_QUESTION',
+          `#${enableWhenObj.q.canonicalPathNotation}`,
+          `The question cannot be a display item, a group item, or a descendant of this item. '${enableWhenObj.q.value}'.`,
+          indexPath,
+          [enableWhenObj.q.value, enableWhenObj.op.value, JSON.stringify(aValue)],
+          isSchemaFormValidation,
+          enableWhenObj.q
+        );
+        errors.push(err);
       } else {
         const opExists = enableWhenObj?.op ? enableWhenObj.operatorOptions.some(operatorOption => operatorOption.option === enableWhenObj.op.value) : false;
         if (!opExists) {
@@ -367,6 +380,33 @@ export class ValidationService {
     return errors;
   }
 
+  /**
+   * Create error object
+   *
+   * @param code - Error code
+   * @param path - Path to the field in the form.
+   * @param message - Error message to be displayed.
+   * @param indexPath -
+   * @param params - Array of parameters to be used in the error message.
+   * @param isSchemaFormValidation - Indicates whether this is a specific schema form validation (true)
+   * @param fieldProperty - FormProperty associated with the field.
+   */
+  createErrorObj(code: string, path: string, message: string, indexPath: string, params: any[], isSchemaFormValidation: boolean, fieldProperty: FormProperty): any {
+    const err: any = {};
+    err.code = code;
+    err.path = path;
+    err.message = message;
+    err.indexPath = indexPath;
+    err.params = params;
+
+    if (isSchemaFormValidation) {
+      const i = fieldProperty._errors?.findIndex((e) => e.code === code);
+      if(!(i >= 0)) { // Check if the error is already processed.
+        fieldProperty.extendErrors(err);
+      }
+    }
+    return err;
+  }
 
   /**
    * Custom validator for the 'linkId' field.

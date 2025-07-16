@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.2] 2025-07-15
+### Fixed
+- Fix invalid source item in enableWhen condition.
+
 ## [10.3.1] 2025-07-14
 ### Fixed
 - Fixed playwright test locator to find stacked dialog box.
