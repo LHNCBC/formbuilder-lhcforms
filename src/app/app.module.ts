@@ -7,7 +7,7 @@ import { Util } from "./lib/util";
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient } from '@angular/common/http';
 import { LayoutModule } from '@angular/cdk/layout';
 import { ItemComponent, ConfirmDlgComponent } from './item/item.component';
 import { MatButtonModule } from '@angular/material/button';
@@ -119,9 +119,6 @@ import { environment } from '../environments/environment';
     SelectComponent,
     CheckboxComponent,
     IntegerComponent,
-    AppFormElementComponent,
-    TitleComponent,
-    ElementChooserComponent,
     HeaderComponent,
     FooterComponent,
     EnableWhenSourceComponent,
@@ -135,9 +132,7 @@ import { environment } from '../environments/environment';
     BasePageComponent,
     FormFieldsComponent,
     LabelRadioComponent,
-    BooleanControlledComponent,
     RowLayoutComponent,
-    BooleanControlledComponent,
     EnableBehaviorComponent,
     MessageDlgComponent,
     FhirServersDlgComponent,
@@ -155,7 +150,6 @@ import { environment } from '../environments/environment';
     RestrictionsComponent,
     RestrictionsOperatorComponent,
     ObservationLinkPeriodComponent,
-    LfbSpinnerComponent,
     EnableWhenComponent,
     QuantityUnitComponent,
     EwValidateDirective,
@@ -182,13 +176,16 @@ import { environment } from '../environments/environment';
     AnswerValueSetCodingDisplayComponent
   ],
   imports: [
+    AppFormElementComponent,
+    BooleanControlledComponent,
     BrowserModule,
     BrowserAnimationsModule,
+    ElementChooserComponent,
     FormsModule,
     FontAwesomeModule,
-    HttpClientModule,
     LayoutModule,
     LfbDisableControlDirective,
+    LfbSpinnerComponent,
     MatButtonModule,
     MatCardModule,
     MatExpansionModule,
@@ -205,6 +202,7 @@ import { environment } from '../environments/environment';
     MatTooltipModule,
     NgbModule,
     SchemaFormModule.forRoot(),
+    TitleComponent,
     TreeModule,
     ReactiveFormsModule,
     MatAutocompleteModule,
@@ -218,22 +216,25 @@ import { environment } from '../environments/environment';
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [
-    {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
+    { provide: WidgetRegistry, useClass: LformsWidgetRegistry },
     { provide: ENVIRONMENT_TOKEN, useValue: environment },
-    AppJsonPipe
-  ]
+    AppJsonPipe,
+    provideHttpClient()
+  ],
 })
 export class AppModule implements DoBootstrap {
   ngDoBootstrap(appRef: ApplicationRef) {
     // bootstrap AppComponent ourselves
-    appRef.bootstrap(AppComponent)
+    appRef.bootstrap(AppComponent);
     // @ts-ignore
     if (window.Cypress || window.navigator.webdriver) {
       // and save the application reference!
       // @ts-ignore
       window.appRef = appRef;
-      window['basePageComponent'] = (<AppComponent> appRef.components[0].instance).basePageComponent;
-      window['fbUtil'] = Util;
+      window["basePageComponent"] = (<AppComponent>(
+        appRef.components[0].instance
+      )).basePageComponent;
+      window["fbUtil"] = Util;
     }
   }
 }

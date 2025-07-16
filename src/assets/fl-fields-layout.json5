@@ -26,16 +26,20 @@
           { field:  "copyright", col:  12},
           { field:  "approvalDate", col:  12},
           { field:  "lastReviewDate", col:  12},
+          { field:  "contained", "col": 12},
           { field:  "__$variable", col: 12}
         ]
       }
     ],
     "targetPage": "formLevel"
   },
+  // Please note that the jsonpath expression paths in the keys
   overridePropertyLabels: {
-    '/properties/name': 'Questionnaire name',
-    '/properties/date': 'Revision date',
-    '/properties/meta/properties/tag': 'Tags',
+    '$.properties.contained': 'Contained resources',
+    '$.properties.name': 'Questionnaire name',
+    '$.properties.date': 'Revision date',
+    '$.properties.meta.properties.tag': 'Tags',
+    '$.definitions.ValueSet.properties.resourceType': 'Type',
   },
   // Specify widget layout.
   // id is widget schema registry defined in lforms-widget-registry.ts
@@ -87,6 +91,51 @@
         {"field": "system", "col": 4, "nolabel": true}
       ]
     },
+    contained: {
+      "id": "contained",
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new ValueSet",
+      "addButtonTitle": "At present, only ValueSet is supported as contained resource.",
+      "showFields": [
+        // The fields here are canonical paths of FormProperty.
+        {"field": "resourceType", "col": 1, "nolabel": true},
+        {"field": "id", "col": 3, "nolabel": true},
+        {"field": "title", "col": 4, "nolabel": true},
+        {"field": "date", "col": 2, "nolabel": true},
+        {"field": "status", "col": 1, "nolabel": true}
+      ]
+    },
+    valueSet: {
+      "id": "value-set",
+      "nolabel": true,
+      "controlClasses": "col-sm-12",
+      "showFields": [
+        // The fields here are canonical paths of FormProperty.
+        {
+          "field": "id",
+          "col": 2,
+          "nolabel": true
+        },
+        {
+          "field": "meta/tag",
+          "col": 4,
+          "nolabel": true
+        },
+        {
+          "field": "meta/tag",
+          "col": 3,
+          "nolabel": true
+        },
+        {
+          "field": "meta/tag",
+          "col": 3,
+          "nolabel": true
+        }
+      ]
+    },
     "__$variable": {
       "id": "variable",
       "expressionUri":  "http://hl7.org/fhir/StructuredDefinition/variable",
@@ -113,37 +162,43 @@
       ]
     }
   },
-  // Map property: Each widget type is mapped to fields with json pointers of its schema.
+  // Map property: Each widget type is mapped to fields with jsonpath of its schema.
   widgetsMap: {
     // List of fields implementing this widget.
     inputBox: [
-      '/properties/url',
-      '/properties/implicitRules',
-      '/properties/version',
-      '/properties/title',
-      '/properties/name',
-      '/properties/publisher',
-      '/properties/description',
-      '/properties/purpose',
+      '$.properties.url',
+      '$.properties.implicitRules',
+      '$.properties.version',
+      '$.properties.title',
+      '$.properties.name',
+      '$.properties.publisher',
+      '$.properties.description',
+      '$.properties.purpose',
     ],
     textArea: [
-      '/properties/copyright',
+      '$.properties.copyright',
     ],
     inputDate: [
-      '/properties/approvalDate',
-      '/properties/lastReviewDate'
+      '$.properties.approvalDate',
+      '$.properties.lastReviewDate'
     ],
     inputDateTime: [
-      '/properties/date'
+      '$.properties.date'
     ],
     __$terminologyServer: [
-      '/properties/__$terminologyServer'
+      '$.properties.__$terminologyServer'
     ],
     coding: [
-      '/properties/meta/properties/tag'
+      '$.properties.meta.properties.tag',
+    ],
+    contained: [
+      '$.properties.contained'
+    ],
+    valueSet: [
+      '$.definitions.ValueSet'
     ],
     __$variable: [
-      '/properties/__$variable'
+      '$.properties.__$variable'
     ]
   }
 }

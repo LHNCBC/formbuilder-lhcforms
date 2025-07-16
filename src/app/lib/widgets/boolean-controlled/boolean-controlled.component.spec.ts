@@ -10,8 +10,7 @@ describe('BooleanControlledComponent', () => {
 
   beforeEach((() => {
     TestBed.configureTestingModule({
-      imports: [FormsModule, AppModule],
-      declarations: [ BooleanControlledComponent ]
+      imports: [FormsModule, AppModule, BooleanControlledComponent]
     })
     .compileComponents();
   }));

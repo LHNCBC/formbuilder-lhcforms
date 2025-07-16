@@ -2,9 +2,17 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.2.2] 2025-07-07
+## [10.3.2] 2025-07-07
 ### Added
 - Added question item control.
+
+## [10.3.1] 2025-07-14
+### Fixed
+- Fixed playwright test locator to find stacked dialog box.
+
+## [10.3.0] 2025-07-11
+### Added
+- Added support for contained ValueSet resource.
 
 ## [10.2.1] 2025-06-25
 ### Added

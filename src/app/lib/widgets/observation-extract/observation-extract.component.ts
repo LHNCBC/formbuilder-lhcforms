@@ -49,7 +49,6 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
   static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
   static seqNum = 0;
   elementId: string;
-  subscriptions: Subscription [];
   value: boolean;
   codePresent: boolean;
   adjustVAlignClass = 'd-flex';

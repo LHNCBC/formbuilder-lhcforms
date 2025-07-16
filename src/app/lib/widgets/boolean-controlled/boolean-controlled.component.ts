@@ -2,10 +2,13 @@
  * A boolean control typically to trigger hide and show of a sibling component.
  */
 import {Component, EventEmitter, Input, Output} from '@angular/core';
+import { LabelComponent } from '../label/label.component';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
-  standalone: false,
   selector: 'lfb-boolean-controlled',
+  imports: [LabelComponent, CommonModule, FormsModule, ReactiveFormsModule],
   template: `
     <ng-template #controller>
       <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
@@ -39,7 +42,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 })
 export class BooleanControlledComponent  {
   static ID = 0;
-  _id = BooleanControlledComponent.ID++;
+  _id = (BooleanControlledComponent.ID++).toString();
   // Properties for layout, typically to be read from layout schema file.
   @Input()
   bool: boolean;

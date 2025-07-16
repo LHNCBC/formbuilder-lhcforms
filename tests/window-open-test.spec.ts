@@ -78,6 +78,19 @@ async function getMessage(page: Page, type: string) {
 test.describe('Open form builder in a new window', async () => {
   let mainPO: MainPO;
 
+  test.beforeEach(async ({page}) => {
+    page.on('console', msg => {
+      if(msg.type() === 'error') {
+        console.error(msg.text());
+      }
+      else {
+        console.log(msg.text());
+      }
+    });
+
+    await page.goto('/tests/window-open-test.html');
+  });
+
   [
     {fhirVersion: 'Default', expectedProfile: 'http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire'},
     {fhirVersion: 'STU3', expectedProfile: 'http://hl7.org/fhir/3.0/StructureDefinition/Questionnaire'},
@@ -86,16 +99,6 @@ test.describe('Open form builder in a new window', async () => {
   ].forEach(({fhirVersion, expectedProfile}) => {
     test(`should return ${fhirVersion} questionnaire`, async ({page}) => {
 
-      page.on('console', msg => {
-        if(msg.type() === 'error') {
-          console.error(msg.text());
-        }
-        else {
-          console.log(msg.text());
-        }
-      });
-
-      await page.goto('/tests/window-open-test.html');
       const pagePromise = page.context().waitForEvent('page');
       await page.getByRole('button', {name: `Open form builder (${fhirVersion})`}).click();
       const newPage = await pagePromise;

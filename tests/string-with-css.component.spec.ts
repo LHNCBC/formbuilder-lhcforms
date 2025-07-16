@@ -133,7 +133,7 @@ test.describe('string-with-css.component.spec.ts', async () => {
     const fileJson = await PWUtils.uploadFile(page, 'fixtures/css-xhtml-sample.json', true);
     let q = await PWUtils.getQuestionnaireJSON(page, 'R5');
     expect(q).toEqual(fileJson);
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
 
     await assertInputs(page, 'Question text');
     await assertInputs(page, 'Prefix');
@@ -155,7 +155,7 @@ test.describe('string-with-css.component.spec.ts', async () => {
 
   test('Bugfix: should detect help text on the second item in the tree', async ({page}) => {
     await PWUtils.uploadFile(page, 'fixtures/help-text-sample1.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await PWUtils.clickAndToggleTreeNode(page,'Parent');
     await PWUtils.clickTreeNode(page, 'First');
     const inputEl = page.getByLabel('Help text', {exact: true});
