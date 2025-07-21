@@ -1,3 +1,7 @@
+// Polyfill global for browser context (must be first!)
+if (typeof window !== 'undefined' && typeof global === 'undefined') {
+  (window as any).global = window;
+}
 // ***********************************************************
 // This example support/index.js is processed and
 // loaded automatically before your test files.
@@ -34,5 +38,3 @@ const config = {
 
 installLogsCollector();
 failOnConsoleError(config);
-
-window.global = window;

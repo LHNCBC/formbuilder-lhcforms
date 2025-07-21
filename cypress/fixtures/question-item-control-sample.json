@@ -1,0 +1,228 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Question item control sample form",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "autocomplete",
+                "display": "Auto-complete"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueString": "a"
+        },
+        {
+          "valueString": "b"
+        },
+        {
+          "valueString": "c"
+        },
+        {
+          "valueString": "d"
+        }
+      ],
+      "linkId": "982188710916",
+      "text": "Autocomplete question item control displays as drop-down"
+    },
+    {
+      "type": "coding",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "autocomplete",
+                "display": "Auto-complete"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "982188710917",
+      "text": "Autocomplete question item control displays as autocomplete search",
+      "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/ucum&count=4"
+    },
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueString": "a"
+        },
+        {
+          "valueString": "b"
+        },
+        {
+          "valueString": "c"
+        },
+        {
+          "valueString": "d"
+        }
+      ],
+      "linkId": "989100111672",
+      "text": "Drop down question item control"
+    },
+
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueString": "a"
+        },
+        {
+          "valueString": "b"
+        },
+        {
+          "valueString": "c"
+        },
+        {
+          "valueString": "d"
+        }
+      ],
+      "repeats": true,
+      "linkId": "917631145425",
+      "text": "Check-box question item control displays as checkbox"
+    },
+
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ]
+          }
+        }
+      ],
+      "answerOption": [
+        {
+          "valueString": "a"
+        },
+        {
+          "valueString": "b"
+        },
+        {
+          "valueString": "c"
+        },
+        {
+          "valueString": "d"
+        }
+      ],
+      "linkId": "943320291806",
+      "text": "Radio button question item control"
+    },
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "slider",
+                "display": "Slider"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "968336910856",
+      "text": "Slider question item control - not yet supported by LHC-Forms preview"
+    },
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "spinner",
+                "display": "Spinner"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "948336910856",
+      "text": "Spinner question item control - not yet supported by LHC-Forms preview"
+    },
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "text-box",
+                "display": "Text Box"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "948336911117",
+      "text": "Text Box question item control - not yet supported by LHC-Forms preview"
+    }
+  ]
+}
