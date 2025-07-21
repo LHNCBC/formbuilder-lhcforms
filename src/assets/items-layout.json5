@@ -25,8 +25,9 @@
           { "field": "__$initialExpression", "col": 12 },
           { "field": "__$calculatedExpression", "col": 12 },
           { "field": "__$itemControl", "col": 12 },
+          { "field": "__$itemControlQuestion", "col": 12 },
           { "field": "__$itemControlGroup", "col": 12 },
-          { "field": "__$itemControlDisplay", "col": 12 },          
+          { "field": "__$itemControlDisplay", "col": 12 },
           { "field": "__$units", "col": 12 }
         ]
       },

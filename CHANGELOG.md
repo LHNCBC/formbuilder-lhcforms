@@ -2,9 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.2] 2025-06-27
+## [10.3.2] 2025-07-21
 ### Added
 - Added the ability to create/update the Answer Expression.
+- Added question item control.
 
 ## [10.3.1] 2025-07-14
 ### Fixed

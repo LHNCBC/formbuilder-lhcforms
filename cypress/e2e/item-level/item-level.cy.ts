@@ -1338,16 +1338,15 @@ describe('Home page', () => {
 
 
       it('should create item-control extension with autocomplete option', () => {
-        const icTag = 'lfb-item-control';
         const dropDownBtn = '[for^="__\\$itemControl\\.drop-down"]';
         const radioBtn = '[for^="__\\$itemControl\\.radio-button"]';
         const checkboxBtn = '[for^="__\\$itemControl\\.check-box"]';
         const acBtn = '[for^="__\\$itemControl\\.autocomplete"]';
 
         const dropDownRadio = '#__\\$itemControl\\.drop-down';
+        const unspecifiedRadio = '#__\\$itemControl\\.unspecified';
         const checkboxRadio = '#__\\$itemControl\\.check-box';
 
-        cy.get(icTag).should('not.exist'); // Datatype is other than coding
         cy.selectDataType('coding');
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Allow free text').click();
@@ -1356,7 +1355,8 @@ describe('Home page', () => {
         cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod');
         cy.get('@answerOptionMethod').click();
         cy.get(dropDownBtn).should('be.visible');
-        cy.get(dropDownRadio).should('be.checked'); // Default is answer-option
+        // Default for item control is now 'Unspecified'
+        cy.get(unspecifiedRadio).should('be.checked');
         cy.get(radioBtn).should('be.visible'); // Radio option when repeats is false by default.
         cy.get(checkboxBtn).should('not.exist'); // Not visible when repeats is true
         cy.get(acBtn).should('not.exist'); // Not visible for answerOption.
@@ -1365,15 +1365,12 @@ describe('Home page', () => {
         ['@snomedMethod', '@nonSnomedMethod'].forEach((vsMethod) => {
           cy.get(vsMethod).click();
           cy.get(dropDownBtn).should('be.visible');
-          cy.get(dropDownRadio).should('be.checked'); // Default
+          // Default for item control is now 'Unspecified'
+          cy.get(unspecifiedRadio).should('be.checked');
           cy.get(radioBtn).should('be.visible');
           cy.get(checkboxBtn).should('not.exist');
           cy.get(acBtn).should('be.visible'); // Autocomplete should be visible.
 
-          // No extension for drop-down
-          cy.questionnaireJSON().should((qJson) => {
-            expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
-          });
         });
 
         cy.get('@snomedMethod').click();
@@ -1674,7 +1671,7 @@ describe('Home page', () => {
         // Select 'Horizontal Answer Table' Group Item Control
         cy.get(horizontalAnsTblBtn).click();
         cy.get(horizontalAnsTblRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not yet supported
         // by LForms Preview.
         cy.get(horizontalAnsTblBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1693,7 +1690,7 @@ describe('Home page', () => {
         // Select 'Group Grid' Group Item Control
         cy.get(groupGridBtn).click();
         cy.get(groupGridRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(groupGridBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1704,7 +1701,7 @@ describe('Home page', () => {
         // Select 'Header' Group Item Control
         cy.get(headerBtn).click();
         cy.get(headerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(headerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1715,7 +1712,7 @@ describe('Home page', () => {
         // Select 'Footer' Group Item Control
         cy.get(footerBtn).click();
         cy.get(footerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(footerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1726,7 +1723,7 @@ describe('Home page', () => {
         // Select 'Page' Group Item Control
         cy.get(pageBtn).click();
         cy.get(pageRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(pageBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1737,7 +1734,7 @@ describe('Home page', () => {
         // Select 'Tab Container' Group Item Control
         cy.get(tabContainerBtn).click();
         cy.get(tabContainerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(tabContainerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be added
@@ -1938,7 +1935,7 @@ describe('Home page', () => {
         cy.getItemTypeField().should('contain.value', 'display');
         // The 'Lower-bound' Display Item Control should be selected.
         cy.get(lowerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(lowerBtn).find('sup').should('exist').should('contain.text', '(1)');
         cy.questionnaireJSON().should((qJson) => {
@@ -1958,7 +1955,7 @@ describe('Home page', () => {
         cy.getItemTypeField().should('contain.value', 'display');
         // The 'Upper-bound' Display Item Control should be selected.
         cy.get(upperRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(upperBtn).find('sup').should('exist').should('contain.text', '(1)');
         cy.questionnaireJSON().should((qJson) => {
@@ -1978,7 +1975,7 @@ describe('Home page', () => {
         cy.getItemTypeField().should('contain.value', 'display');
         // The 'Fly-over' Display Item Control should be selected.
         cy.get(flyoverRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(flyoverBtn).find('sup').should('exist').should('contain.text', '(1)');
         cy.questionnaireJSON().should((qJson) => {
@@ -1998,7 +1995,7 @@ describe('Home page', () => {
         cy.getItemTypeField().should('contain.value', 'display');
         // The 'Legal-button' Display Item Control should be selected.
         cy.get(legalRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(legalBtn).find('sup').should('exist').should('contain.text', '(1)');
         cy.questionnaireJSON().should((qJson) => {
@@ -2012,6 +2009,174 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[6].extension).undefined;
         });
+      });
+    });
+
+    describe('Question item control', () => {
+      it('should display Question item-control extension', () => {
+        const sampleFile = 'question-item-control-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.getFormTitleField().should('have.value', 'Question item control sample form');
+        cy.contains('button', 'Edit questions').click();
+
+        cy.getItemTypeField().should('contain.value', 'string');
+
+        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+
+        // Invoke preview.
+        cy.contains('button', 'Preview').click();
+        cy.get('lhc-item').as('lhc-item');
+
+        // The first lhc-item
+        cy.get('@lhc-item').first().within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Autocomplete question item control displays as drop-down');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            // Validate the input with role="combobox" exists in the correct structure
+            cy.get('lhc-item-choice-autocomplete lhc-autocomplete > div > input.ac_multiple.ansList')
+              .should('exist');
+          });
+        });
+
+        // The 2nd lhc-item
+        cy.get('@lhc-item').eq(1).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Autocomplete question item control displays as autocomplete search');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('lhc-item-choice-autocomplete lhc-autocomplete input.search_field')
+              .should('exist');
+          });
+        });
+
+        // The 3rd lhc-item
+        cy.get('@lhc-item').eq(2).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Drop down question item control');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('lhc-item-choice-autocomplete lhc-autocomplete > div > input.ac_multiple.ansList')
+              .should('exist');
+          });
+        });
+
+        // The 4th lhc-item
+        cy.get('@lhc-item').eq(3).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Check-box question item control displays as checkbox');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('lhc-item-choice-check-box').within(() => {
+              cy.get('input[type="checkbox"]').should('have.length', 4);
+            });
+          });
+        });
+
+        // The 5th lhc-item
+        cy.get('@lhc-item').eq(4).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Radio button question item control');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('lhc-item-choice-radio-button').within(() => {
+              cy.get('input[type="radio"]').should('have.length', 4);
+            });
+          });
+        });
+
+        // The 6th lhc-item
+        cy.get('@lhc-item').eq(5).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Slider question item control - not yet supported by LHC-Forms preview');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('input[type="text"]').should('exist');
+          });
+        });
+
+        //The 7th lhc-item
+        cy.get('@lhc-item').eq(6).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Spinner question item control - not yet supported by LHC-Forms preview');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('input[type="text"]').should('exist');
+          });
+        });
+
+        // The 8th lhc-item
+        cy.get('@lhc-item').eq(7).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Text Box question item control - not yet supported by LHC-Forms preview');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('input[type="text"]').should('exist');
+          });
+        });
+      });
+
+      it('should display different question item controls based on data types', () => {
+        // Select 'boolean' data type
+        cy.checkQuestionItemControlUI('boolean', null,  null, null, null);
+
+        // Select 'decimal' data type
+        cy.checkQuestionItemControlUI('decimal',  ['Slider (1)', 'Spinner (1)', 'Unspecified'], null, null, null);
+
+        // Select 'integer' data type
+        cy.checkQuestionItemControlUI('integer',
+          ['Slider (1)', 'Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'date' data type
+        cy.checkQuestionItemControlUI('date',
+          ['Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'dateTime' data type
+        cy.checkQuestionItemControlUI('dateTime', ['Spinner (1)', 'Unspecified'], null, null, null);
+
+        // Select 'time' data type
+        cy.checkQuestionItemControlUI('time',
+          ['Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'string' data type
+        cy.checkQuestionItemControlUI('string',
+          ['Text Box (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'text' data type
+        cy.checkQuestionItemControlUI('text',
+          ['Text Box (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'url' data type
+        cy.checkQuestionItemControlUI('url', null,  null, null, null);
+
+        // Select 'coding' data type
+        cy.checkQuestionItemControlUI('coding', null,
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'],
+          ['Auto-complete', 'Drop down', 'Check-box', 'Unspecified']);
+
+        // Select 'quantity' data type
+        cy.checkQuestionItemControlUI('quantity', null,  null, null, null);
       });
     });
 
@@ -5543,6 +5708,9 @@ describe('Home page', () => {
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
       cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
 
+      // Default for the 'Answer list laytout' is now 'Unspecified'.  Have to manually select 'drop-down'.
+      cy.getRadioButtonLabel('Answer list layout', 'Drop down').click();
+
       cy.getPickInitialValueValueMethodClick();
 
       cy.get('[id^="pick-answer_"]').as('pickAnswer');
@@ -5727,9 +5895,7 @@ describe('Value method button selection', () => {
     cy.clickTreeNode('dateTime_type');
     cy.getItemTypeField().contains('dateTime');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
-    cy.get('[id^="initial.0.valueDateTime"]')
-      .should('have.prop', 'value')
-      .should('match', /^2024-03-03 \d{2}:\d{2}:\d{2} [AP]M$/);
+    cy.get('[id^="initial.0.valueDateTime"]').should('have.value', '2024-03-03 07:01:01 AM');
 
     cy.clickTreeNode('time_type-answerlist_no');
     cy.getItemTypeField().contains('time');
@@ -5938,18 +6104,6 @@ describe('Answer expression', () => {
               {
                 "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
                 "valueString": "2"
-              }
-            ]
-          }
-        },
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "drop-down",
-                "display": "Drop down"
               }
             ]
           }
