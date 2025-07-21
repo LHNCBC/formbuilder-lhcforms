@@ -246,7 +246,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
    *                                             options.
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
-   *                                            and not equal to 'exists', and the answer is empty.
+   *                                             and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
     let errors = null;
@@ -271,9 +271,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * @returns Array of errors if validation fails, or null if it passes. This returns an error in the following cases:
    *          1. (ENABLEWHEN_INVALID_QUESTION) - The question, which is the 'linkId', is an invalid 'linkId'.
    *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
-   *                                             options. 
-   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not 
-   *                                            and not equal to 'exists', and the answer is empty. 
+   *                                             options.
+   *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
+   *                                             and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
@@ -352,8 +352,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    * Custom validator for the 'Pick initial' option in the Value Method. This validates data requirements
    * for each of the 'Answer list source' field: 'answer-option', 'snomed-value-set', and 'value-set'.
    * @param value - not used.
-   * @param formProperty - Object form property of the '__$pickInitial' field. 
-   * @param rootProperty - Root form property. 
+   * @param formProperty - Object form property of the '__$pickInitial' field.
+   * @param rootProperty - Root form property.
    * @returns Array of errors if validation fails, or null if it passes.  This returns an error in the following cases:
    *          1. (ANSWER_OPTION_REQUIRED)               - 'Answer options' option is selected, but 'Answer choices' is
    *                                                      empty and needs to be poulated.
@@ -378,7 +378,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const linkId = node.data.linkId;
 
     const asMethod = formProperty.findRoot().getProperty("__$answerOptionMethods").value;
-    // Answer Choices shows up with Answer Option Method = "answer-option" and 
+    // Answer Choices shows up with Answer Option Method = "answer-option" and
     const ansOpts = formProperty.findRoot().getProperty("answerOption").value;
 
     // Answer Value Set field shows up when the Answer Option Method = "value-set" or "snomed-value-set"
@@ -390,7 +390,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     // For the boolean data type, 'pick-initial' was being assigned even though an answer option is not required.
     // Added the data type check to exclude boolean types from triggering the 'ANSWER_OPTION_REQUIRED' error.
-    if (asMethod === "answer-option" && valueMethod === "pick-initial" && Util.isEmptyAnswerOptionForType(ansOpts, type) && type !== "boolean") {
+    if (asMethod === "answer-option" && valueMethod === "pick-initial" && ansOpts?.length > 0 && type !== "boolean") {
       const errorCode = 'ANSWER_OPTION_REQUIRED';
       const err: any = {};
       err.code = errorCode;

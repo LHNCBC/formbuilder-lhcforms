@@ -3,6 +3,7 @@ import {StringComponent} from '../string/string.component';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../../../fhir';
 import {Util} from '../../util';
+import { EXTENSION_URL_RENDERING_STYLE, EXTENSION_URL_RENDERING_XHTML } from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -16,11 +17,13 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
   extValObj = {};
   elName: string;
   elementTypeField: fhir.Element;
+  EXTENSION_URL_RENDERING_STYLE = EXTENSION_URL_RENDERING_STYLE;
+  EXTENSION_URL_RENDERING_XHTML = EXTENSION_URL_RENDERING_XHTML;
 
   constructor() {
     super();
-    this.extValObj[Util.RENDERING_STYLE_EXT_URL] = '';
-    this.extValObj[Util.RENDERING_XHTML_EXT_URL] = '';
+    this.extValObj[EXTENSION_URL_RENDERING_STYLE] = '';
+    this.extValObj[EXTENSION_URL_RENDERING_XHTML] = '';
   }
 
 
@@ -33,7 +36,7 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
     this.elName = '_' + this.name.replace(/^.*\./, '');
     this.elementTypeField = this.formProperty.parent.getProperty(this.elName)?.value;
     if(this.elementTypeField) {
-      [Util.RENDERING_STYLE_EXT_URL, Util.RENDERING_XHTML_EXT_URL].forEach((url) => {
+      [EXTENSION_URL_RENDERING_STYLE, EXTENSION_URL_RENDERING_XHTML].forEach((url) => {
         const ext = Util.findExtensionByUrl(this.elementTypeField.extension, url);
         this.extValObj[url] = ext?.valueString || '';
       });

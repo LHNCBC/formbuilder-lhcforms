@@ -2,7 +2,8 @@
 
 import {Util} from '../../../src/app/lib/util';
 import {CypressUtil} from '../../support/cypress-util';
-import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
+import { ExtensionDefs } from "../../../src/app/lib/extension-defs";
+import { EXTENSION_URL_ITEM_CONTROL } from 'src/app/lib/constants/constants';
 
 const entryFormatUrl = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
@@ -24,7 +25,7 @@ describe('Home page', () => {
 
   describe('Item level fields', () => {
     const helpTextExtension = [{
-      url: Util.ITEM_CONTROL_EXT_URL,
+      url: EXTENSION_URL_ITEM_CONTROL,
       valueCodeableConcept: {
         text: 'Help-Button',
         coding: [{
@@ -598,6 +599,7 @@ describe('Home page', () => {
         expect(qJson.item[0].initial[0].valueString).equal('initial string');
       });
       cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueDecimal"]').type('100.1');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('decimal');
@@ -605,6 +607,7 @@ describe('Home page', () => {
       });
 
       cy.selectDataType('integer');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueInteger"]').as('initialInteger');
       cy.get('@initialInteger').type('100');
       cy.questionnaireJSON().should((qJson) => {
@@ -5947,6 +5950,192 @@ describe('Value method button selection', () => {
     cy.getItemTypeField().contains('quantity');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
     cy.get('[id^="initial.0.valueQuantity"]').should('have.value', '3');
+  });
+});
+
+describe('Answer expression', () => {
+  beforeEach(() => {
+    cy.loadHomePage();
+    const sampleFile = 'answer-expression-sample.json';
+    cy.uploadFile(sampleFile, false);
+    cy.getFormTitleField().should('have.value', 'answer-expression-sample');
+    cy.contains('button', 'Edit questions').click();
+
+    // cy.getItemTypeField() does not work in this case.
+    cy.get('[id^="type"]').as('type');
+    cy.contains('div', 'Value method').as('valueMethod');
+  });
+
+  it('should display the appropriate answer expression and initial value', () => {
+    // Starts out with "What is the patient's full name?"
+    cy.get('@type').contains('string');
+    cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family");
+    cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
+    cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueString"]').should('have.value', 'Ann Anderson');
+
+    cy.clickTreeNode("What is the patient's age?");
+    cy.get('@type').contains('integer');
+    cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "today().toDate().difference(%patient.birthDate.toDate()).years()");
+    cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
+    cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueInteger"]').should('have.value', '20');
+
+    cy.clickTreeNode("What is the patient's gender?");
+    cy.get('@type').contains('coding');
+    cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%patient.gender");
+    cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
+    cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueCoding.display"]').should('have.value', 'Male');
+    cy.get('[id^="initial.0.valueCoding.code"]').should('have.value', 'male');
+    cy.get('[id^="initial.0.valueCoding.system"]').should('have.value', 'http://hl7.org/fhir/administrative-gender');
+  });
+
+  it('should create and update Answer expression', () => {
+    cy.clickTreeNode("What is the patient's gender?");
+    cy.contains('Add new item').scrollIntoView().click();
+    cy.get('#text').clear().type('Answer Expression');
+    cy.selectDataType('integer');
+
+    cy.get('button#editVariables').click();
+    cy.get('lhc-expression-editor').shadow().within(() => {
+      cy.get('#expression-editor-base-dialog').should('exist');
+
+      // Variables section
+      cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+      cy.get('#variables-section .variable-row').should('have.length', 0);
+
+      // Add a new variable 'a'
+      cy.get('#add-variable').click();
+      cy.get('#variables-section .variable-row').should('have.length', 1);
+      cy.get('#variable-label-0').clear().type('a');
+      cy.get('#variable-type-0').select('Easy Path Expression');
+      cy.get('input#simple-expression-0').type("1");
+
+      // Add a new variable 'b'
+      cy.get('#add-variable').click();
+      cy.get('#variables-section .variable-row').should('have.length', 2);
+      cy.get('#variable-label-1').clear().type('b');
+      cy.get('#variable-type-1').select('Easy Path Expression');
+      cy.get('input#simple-expression-1').type("2");
+
+      // Save the variables
+      cy.get('#export').click();
+    });
+
+    cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
+    cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+    cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
+
+    cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'a');
+    cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
+    cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', '1');
+
+    cy.get('@secondVariable').find('td:nth-child(1)').should('have.text', 'b');
+    cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
+    cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', '2');
+
+    cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+    cy.getRadioButtonLabel('Answer list source', 'Answer expression').click();
+    cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+    // Click the 'Create/edit expression' for the Answer expression
+    cy.get('button#editExpression').click();
+    cy.get('lhc-expression-editor').shadow().within(() => {
+      // Update the Output expression
+      cy.get('textarea#final-expression').clear().type('%a | %b');
+
+      // Save (Export) should output the questionnaire for the given Variable Type
+      cy.get('#export').click();
+    });
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b');
+
+    // Edit the Answer expression
+    cy.get('button#editExpression').click();
+    cy.get('lhc-expression-editor').shadow().within(() => {
+      // Update the Output expression
+      cy.get('textarea#final-expression').clear().type('%a | %b | 999');
+
+      // Save (Export) should output the questionnaire for the given Variable Type
+      cy.get('#export').click();
+    });
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b | 999');
+
+    cy.questionnaireJSON().should((qJson) => {
+      expect(qJson.item[3].extension).to.deep.equal([
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "1",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "1"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "2",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "2"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a | %b | 999"
+          }
+        }
+      ]);
+    });
+
+    // Click the Preview
+    cy.contains('button', 'Preview').click();
+
+    cy.get('lhc-item').eq(3).find('lhc-item-question input').click();
+    cy.get('span#completionOptions > ul > li').as('completionOptions').should('have.length', 3);
+    cy.get('@completionOptions').eq(0).should('have.text', '1');
+    cy.get('@completionOptions').eq(1).should('have.text', '2');
+    cy.get('@completionOptions').eq(2).should('have.text', '999');
+
+    // Close the Preview
+    cy.contains('mat-dialog-actions button', 'Close').click();
+
+    // Select the 'Compute initial value - Value method'
+    cy.getComputeInitialValueValueMethodClick();
+    // The expression for the Compute Initial Value should be blank. It should not
+    // display the Answer expression.
+    cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
+
   });
 });
 

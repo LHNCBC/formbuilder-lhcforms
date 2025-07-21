@@ -129,11 +129,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     this.selectionCheckbox = [];
 
     this.handleErrorColumnVisibility(widget);
-
-    // Limit the setting of the table status to 'Initial' component.
-    if (this.tableService && this.formProperty?.path === "/initial") {
-      this.tableService.setTableStatusChanged(null);
-    }
   }
 
   /**
