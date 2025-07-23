@@ -463,7 +463,7 @@ describe('Home page', () => {
       cy.get('div.node-content-wrapper-active button.dropdown-toggle').as('contextMoreBtn');
       cy.get('@contextMoreBtn').click();
 
-      // Select the 'Move this item' option.
+      // Select the 'Copy this item' option.
       cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Copy this item').click();
 
       cy.get('lfb-node-dialog #moveTarget1').as('dlgInput');
@@ -4198,6 +4198,31 @@ describe('Home page', () => {
         .scrollIntoView()
         .should('have.value', '');
     });
+
+    /*
+     * Verifies that when a new item is created after a focused item that has expanded children, the new item's
+     * linkId is properly populated. This ensures that the fix correctly assigns a linkId even when the previous
+     * node is expanded and has children.
+     */
+    it('should populate linkId when creating a new item after a focused item with expanded children', () => {
+      // Click on '2 Family member health history'
+      cy.getTreeNode('Family member health history').click();
+
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click the 'Add new item'
+      cy.contains('button', 'Add new item').click();
+      // Click on the new added item
+      cy.getTreeNode('New item 1').click();
+
+      // Go to the link id section and enter 1
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .invoke('val')
+        .should('not.be.empty');
+    });
+
   });
 
   describe('Test descendant items and display/group type changes', () => {
@@ -5809,5 +5834,184 @@ describe('Accepting only LOINC terms of use', () => {
     cy.get('[for^="__\\$answerOptionMethods_value-set"]').click();
     cy.get('#answerValueSet_non-snomed').should('be.visible');
     cy.get('lfb-answer-option').should('not.exist');
+  });
+});
+
+describe('enableWhen dependency validation', () => {
+  beforeEach(() => {
+    cy.loadHomePage();
+    const sampleFile = 'enableWhen-dependency-validation-sample.json';
+    cy.uploadFile(sampleFile, false);
+    cy.getFormTitleField().should('have.value', 'enableWhen-dependency-validation-sample');
+    cy.contains('button', 'Edit questions').click();
+    cy.get('.spinner-border').should('not.exist');
+  });
+
+  it('should prevent moving an item if the destination node contains an enableWhen question that references the linkId of the focused item or any of its descendants', () => {
+    const question1El = '[id^="enableWhen.0.question"]';
+    cy.toggleTreeNodeExpansion('New item 5');
+
+    // Validate that 'New item 6' has enableWhen defined and pointing to question '1.1.1 - New item 2'
+    cy.getTreeNode('New item 6').click();
+    cy.get(question1El).should('contain.value', '1.1.1 - New item 2');
+
+    // Locate 'New item 2'
+    cy.toggleTreeNodeExpansion('Item 0');
+    cy.toggleTreeNodeExpansion('New item 1');
+    cy.getTreeNode('New item 2').should('exist').click();
+
+    // Select 'More options'.
+    cy.get('div.node-content-wrapper-active button.dropdown-toggle').as('contextMoreBtn');
+    cy.get('@contextMoreBtn').click();
+
+    // Select the 'Move this item' option.
+    cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+
+    cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+    cy.get('@moveBtn').should('be.disabled');
+
+    // Should display 3 target items
+    cy.get('lfb-node-dialog').find('ul').within(() => {
+      cy.get('li').should('have.length', 3);
+      cy.get('li').eq(0).should('contain.text', 'After the target item.');
+      cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+      cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
+    });
+
+    cy.get('lfb-node-dialog').find('#moveTarget1').click();
+    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
+
+    // Because 'New item 2' is referenced in an enableWhen condition for 'New item 6', the move is prohibited.
+    cy.get('lfb-node-dialog').find('ul').within(() => {
+      cy.get('li').should('have.length', 2);
+      cy.get('li').eq(0).should('contain.text', 'After the target item.');
+      cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+    });
+
+    // Close the modal by clicking the cancel button
+    cy.get('lfb-node-dialog').contains('button', 'Cancel').click();
+
+    // Now select 'New item 1' which is the parent of 'New item 2'.
+    cy.getTreeNode('New item 1').should('exist').click();
+
+    // Select 'More options'.
+    cy.get('@contextMoreBtn').click();
+
+    // Select the 'Move this item' option.
+    cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+
+    cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+    cy.get('@moveBtn').should('be.disabled');
+
+    // Should display 3 target items
+    cy.get('lfb-node-dialog').find('ul').within(() => {
+      cy.get('li').should('have.length', 3);
+      cy.get('li').eq(0).should('contain.text', 'After the target item.');
+      cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+      cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
+    });
+
+    cy.get('lfb-node-dialog').find('#moveTarget1').click();
+    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
+
+    // Because 'New item 2' which is a child of 'New item 1' is referenced in an enableWhen condition for 'New item 6', the move should be prohibited.
+    cy.get('lfb-node-dialog').find('ul').within(() => {
+      cy.get('li').should('have.length', 2);
+      cy.get('li').eq(0).should('contain.text', 'After the target item.');
+      cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+    });
+  });
+
+  it('should prevent deleting an item if its linkId is referenced by another item in an enableWhen condition', () => {
+    const question1El = '[id^="enableWhen.0.question"]';
+    cy.toggleTreeNodeExpansion('New item 5');
+
+    // Validate that 'New item 6' has enableWhen defined and pointing to question '1.1.1 - New item 2'
+    cy.getTreeNode('New item 6').click();
+    cy.get(question1El).should('contain.value', '1.1.1 - New item 2');
+
+    // Expand tree and locate the item to delete
+    cy.toggleTreeNodeExpansion('Item 0');
+    cy.toggleTreeNodeExpansion('New item 1');
+    cy.getTreeNode('New item 2').should('exist').click();
+
+    // Attempt to delete the item using the 'Delete this item' button.
+    cy.contains('Delete this item').as('deleteItemBtn').scrollIntoView();
+    cy.get('@deleteItemBtn').click();
+
+    // The modal is displayed.
+    cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Unable to delete item');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'This item cannot be deleted because it is referenced by an enableWhen condition.');
+
+    // Close the modal by clicking the close button
+    cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
+
+    // Now try to delete the item via 'More options'.
+    cy.get('div.node-content-wrapper-active button.dropdown-toggle').as('contextMoreBtn');
+    cy.get('@contextMoreBtn').click();
+
+    // Select the 'Remove this item' option.
+    cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Remove this item').click();
+
+    // The modal is displayed.
+    cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Unable to delete item');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'This item cannot be deleted because it is referenced by an enableWhen condition.');
+
+    // Close the modal by clicking the close button
+    cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
+
+    // Expand 'New item 2'
+    cy.toggleTreeNodeExpansion('New item 2');
+    // Click on 'New item 3'
+    cy.getTreeNode('New item 3').as('item3').should('exist').click();
+
+    // Select 'More options'.
+    cy.get('@contextMoreBtn').click();
+
+    // Select the 'Remove this item' option. Users should be allowed to delete this item.
+    cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Remove this item').click();
+
+    cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Confirm deletion');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Are you sure you want to delete this item?');
+  });
+
+  it('should validate and display an error when enableWhen references a non-existent question id', () => {
+    cy.getTreeNode('Invalid item with enableWhen references question id that does not exist')
+      .find('fa-icon#error')
+      .should('exist');
+    cy.clickTreeNode('Invalid item with enableWhen references question id that does not exist');
+
+    // Error should display at the top of the content and at the bottom.
+    cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('have.class', 'text-danger');
+    cy.get('mat-sidenav-content > ul > li').should('have.class', 'text-danger');
+
+    const question1El = '[id^="enableWhen.0.question"]';
+    const errorIcon1El = '[id^="enableWhen.0_err"]';
+
+    cy.get(errorIcon1El).should('exist');
+    cy.get(question1El).should('be.empty');
+    cy.get(errorIcon1El)
+      .find('small')
+      .should('contain.text', ' Question not found for the linkId \'000000000000\' for enableWhen condition 1. ');
+  });
+
+  it('should validate and display an error when enableWhen references a question id from the child item', () => {
+    cy.getTreeNode('Invalid item with enableWhen question references a child item')
+      .find('fa-icon#error')
+      .should('exist');
+    cy.clickTreeNode('Invalid item with enableWhen question references a child item');
+
+    // Error should display at the top of the content and at the bottom.
+    cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('have.class', 'text-danger');
+    cy.get('mat-sidenav-content > ul > li').should('have.class', 'text-danger');
+
+    const question1El = '[id^="enableWhen.0.question"]';
+    const errorIcon1El = '[id^="enableWhen.0_err"]';
+
+    cy.get(errorIcon1El).should('exist');
+    cy.get(question1El).should('be.empty');
+    cy.get(errorIcon1El)
+      .find('small')
+      .should('contain.text', ' The question cannot be a display item, a group item, or a descendant of this item. \'677718877639\' for enableWhen condition 1. ');
   });
 });

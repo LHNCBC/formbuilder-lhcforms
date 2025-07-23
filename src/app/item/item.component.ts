@@ -81,14 +81,15 @@ export class LinkIdCollection {
 }
 
 export class ErrorTooltip {
-  dropErrorMessage = "Cannot drop into a node of type \'display\' because it cannot contain children.";
+  dropErrorMessage: string;
   showDropNotAllowedTooltip = false;
   tooltipMouseXLoc: number;
   tooltipMouseYLoc: number;
   tooltipXOffset: number;
   tooltipYOffset: number;
 
-  constructor() {
+  constructor(dropErrorMessage: string = "Cannot drop into a node of type 'display' because it cannot contain children.") {
+    this.dropErrorMessage = dropErrorMessage;
     this.tooltipMouseXLoc = 0;
     this.tooltipMouseYLoc = 0;
     this.tooltipXOffset = -15;
@@ -133,7 +134,7 @@ export class ErrorTooltip {
   standalone: false,
   selector: 'lfb-confirm-dlg',
   template: `
-    <div class="modal-header bg-primary">
+    <div class="modal-header" [ngClass]="{'bg-danger': type === MessageType.DANGER, 'bg-primary': type !== MessageType.DANGER}">
       <h4 class="modal-title text-white">{{title}}</h4>
       <button type="button" class="btn-close btn-close-white" aria-label="Close"
               (click)="activeModal.dismiss(false)"
@@ -144,14 +145,22 @@ export class ErrorTooltip {
       <p>{{message}}</p>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary"
-              (keydown.enter)="activeModal.dismiss(false)"
-              (click)="activeModal.dismiss(false)"
-      >No</button>
-      <button type="button" class="btn btn-primary"
-              (keydown.enter)="activeModal.close(true)"
-              (click)="activeModal.close(true)"
-      >Yes</button>
+      <ng-container *ngIf="type !== MessageType.DANGER; else closeBtn">
+        <button type="button" class="btn btn-primary"
+                (keydown.enter)="activeModal.dismiss(false)"
+                (click)="activeModal.dismiss(false)"
+        >No</button>
+        <button type="button" class="btn btn-primary"
+                (keydown.enter)="activeModal.close(true)"
+                (click)="activeModal.close(true)"
+        >Yes</button>
+      </ng-container>
+      <ng-template #closeBtn>
+        <button type="button" class="btn btn-primary"
+                (keydown.enter)="activeModal.dismiss(false)"
+                (click)="activeModal.dismiss(false)"
+        >Close</button>
+      </ng-template>
     </div>
   `
 })
@@ -160,6 +169,10 @@ export class ConfirmDlgComponent {
   title: string;
   @Input()
   message: string;
+  @Input()
+  type: MessageType;
+
+  MessageType = MessageType;
 
   constructor(public activeModal: NgbActiveModal) {
   }
@@ -557,7 +570,12 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
 
       this.treeComponent.treeModel.update();
-      this.treeComponent.treeModel.focusNextNode();
+
+      // this.treeComponent.treeModel.focusNextNode() may not work here if the focused node
+      // has children. FocusNextNode will move to the first child rather than the next sibling.
+      const newNode = this.treeComponent.treeModel.getNodeById(item.__$treeNodeId);
+      this.treeComponent.treeModel.setFocusedNode(newNode);
+
       this.setNode(this.treeComponent.treeModel.getFocusedNode(), true);
       this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId);
       this.formService.addLinkIdToLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
@@ -686,9 +704,22 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   confirmItemDelete(): Promise<any> {
     const modalRef = this.modalService.open(ConfirmDlgComponent);
-    modalRef.componentInstance.title = 'Confirm deletion';
-    modalRef.componentInstance.message = 'Are you sure you want to delete this item?';
-    modalRef.componentInstance.type = MessageType.WARNING;
+
+    let hasEnableWhenError = false;
+    if (this.focusNode.data.linkId) {
+      const errors = this.validationService.validateItemDeletionForEnableWhenDependency(this.focusNode);
+      hasEnableWhenError = Array.isArray(errors) && errors.length > 0;
+    }
+
+    if (hasEnableWhenError) {
+      modalRef.componentInstance.title = 'Unable to delete item';
+      modalRef.componentInstance.message = 'This item cannot be deleted because it is referenced by an enableWhen condition.';
+      modalRef.componentInstance.type = MessageType.DANGER;
+    } else {
+      modalRef.componentInstance.title = 'Confirm deletion';
+      modalRef.componentInstance.message = 'Are you sure you want to delete this item?';
+      modalRef.componentInstance.type = MessageType.WARNING;
+    }
     return modalRef.result.then(() => {
       this.deleteFocusedItem();
     })
@@ -1029,14 +1060,37 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @returns - True if the drop is allowed, otherwise false.
    */
   canDropNode(draggedNode, targetParentNode) {
+    // It is possible to drag an item without selecting it, so the focused node is not updated,
+    // which causes a validation issue. This check is added to update the focused node accordingly.
+    if (this.focusNode.data.linkId !== draggedNode.data.linkId) {
+      this.setFocusedNode(draggedNode);
+      this.treeComponent.treeModel.setFocusedNode(draggedNode);
+    }
+
     if (targetParentNode && targetParentNode.data.type === 'display') {
       this.errorTooltip.showTooltip(true);
       setTimeout(() => {
         this.liveAnnouncer.announce(this.errorTooltip.dropErrorMessage);
       }, 0);
     } else {
-      this.errorTooltip.showTooltip(false);
+      if (targetParentNode.data.linkId && draggedNode.data.linkId !== targetParentNode.data.linkId) {
+        const errors = this.validationService.validateEnableWhenAll({
+          'value': targetParentNode.data.enableWhen,
+          'id': targetParentNode.data.__$treeNodeId,
+          'linkId': targetParentNode.data.linkId
+        }, false, false);
+
+        const hasError = Array.isArray(errors) && errors.length > 0;
+        if (hasError) {
+          const invalidQuestionError = errors[0].find(err => err && err.code === 'ENABLEWHEN_INVALID_QUESTION');
+          this.errorTooltip = new ErrorTooltip(invalidQuestionError?.message || 'unknown error');
+        }
+        this.errorTooltip.showTooltip(hasError);
+      } else {
+        this.errorTooltip.showTooltip(false);
+      }
     }
+
 
     return !this.errorTooltip.showDropNotAllowedTooltip;
   }

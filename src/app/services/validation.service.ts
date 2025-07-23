@@ -3,6 +3,7 @@ import { FormService } from './form.service';
 import { Util } from '../lib/util';
 import {TreeNode} from '@bugsplat/angular-tree-component';
 import {FormProperty} from "@lhncbc/ngx-schema-form";
+import { ITreeNode } from '@bugsplat/angular-tree-component/lib/defs/api';
 
 interface EnableWhenFieldValidationObject {
   canonicalPath: string;
@@ -16,7 +17,7 @@ export interface EnableWhenValidationObject {
   conditionKey: string;
   q: EnableWhenFieldValidationObject;
   aType: string;
-  invalid: boolean;
+  invalid?: boolean;
   answerTypeProperty?: string;
   op: EnableWhenFieldValidationObject;
   aField: string;
@@ -88,9 +89,24 @@ export class ValidationService {
     if (questionItem) {
       aType = questionItem.data.type;
       const validSources = this.formService.getSourcesExcludingFocusedTree();
-      invalid = !validSources.some((source) => {
-        return (source.data.linkId === questionItem.data.linkId);
-      });
+      if (this.formService.hasFocusedNode()) {
+        invalid = !validSources.some((source) => {
+          return (source.data.linkId === questionItem.data.linkId);
+        });
+      } else {
+        // This scenario occurs when the questionnaire is loaded from a file and no item is selected,
+        // resulting in a missing focused node. As a result, the call to this.formService.getSourcesExcludingFocusedTree()
+        // returns all nodes.
+        // If there is a match on the linkId, validate that the source.data.linkId is not a descendant of the questionItem.
+        const sourceItem = this.formService.getTreeNodeByLinkId(linkId);
+        const sourceIds = this.formService.getNodeAndDescendantLinkIds(sourceItem);
+        invalid = validSources.some((source) => {
+          if (source.data.linkId === questionItem.data.linkId) {
+            // now need to make sure that the source.data.linkId is not a child node of the questionItem
+            return sourceIds.indexOf(source.data.linkId) !== -1;
+          }
+        });
+      }
     }
 
     const aField = Util.getAnswerFieldName(aType || 'string');
@@ -264,20 +280,19 @@ export class ValidationService {
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes.
    */
-  validateEnableWhenAll(validationObj: any, isSchemaFormValidation = true): any[] | null {
+  validateEnableWhenAll(validationObj: any, isSchemaFormValidation = true, displayError = true): any[] | null {
     let errors: any[] = [];
     const enableWhenList = validationObj.value;
-
     if (!validationObj.id || !validationObj.value) {
       return null;
     }
-
     enableWhenList.forEach((enableWhen, index) => {
       const enableWhenObj = this.createEnableWhenValidationObj(validationObj.id, validationObj.linkId, enableWhen, index);
+
       if (!enableWhenObj)
         return null;
 
-      const error = this.validateEnableWhenSingle(enableWhenObj, isSchemaFormValidation);
+      const error = this.validateEnableWhenSingle(enableWhenObj, isSchemaFormValidation, displayError);
       if (error) {
         errors = errors || []
         errors.push(error)
@@ -300,7 +315,7 @@ export class ValidationService {
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
    *                                             equal to 'exists', and the answer is empty.
    */
-  validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true): any[] | null {
+  validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true, displayError = true): any[] | null {
     let errors: any[] = [];
     if(enableWhenObj?.op?.value?.length > 0 || (!enableWhenObj?.aType && enableWhenObj?.answerTypeProperty)) {
       const aValue = enableWhenObj.answerX?.value;
@@ -372,12 +387,44 @@ export class ValidationService {
       errors = null;
 
     // Update validate status if there are errors or if 'isSchemaFormValidation' is true.
-    if (isSchemaFormValidation || errors)
+    if (displayError && (isSchemaFormValidation || errors))
       this.formService.updateValidationStatus(enableWhenObj.id, enableWhenObj.linkId,
                                               `enableWhen_${enableWhenObj.conditionKey}`,
                                               errors);
 
     return errors;
+  }
+
+  /**
+   * Validates whether a tree node (and its descendants) can be safely deleted from the form.
+   * Checks if any other node in the questionnaire references the node or its descendants in an enableWhen condition.
+   * If such a dependency exists, returns an error blocking deletion; otherwise, returns null.
+   * @param node - The tree node to check for deletion.
+   * @returns Array of errors if deletion is blocked due to enableWhen references, or null if deletion is allowed.
+   */
+  validateItemDeletionForEnableWhenDependency(node: ITreeNode): any[] | null {
+    let errors: any[] = [];
+
+    // Get the top-most root node for the current node
+    const rootNode = this.formService.getRootNodeFromNode(node);
+    // Recursively collects all linkIds from the given node and its descendant nodes.
+    const linkIds = this.formService.getNodeAndDescendantLinkIds(node);
+    // Check for Enable When dependency
+    const dependencyFound = this.formService.hasEnableWhenReferenceToLinkIds(rootNode.data.__$treeNodeId, linkIds);
+
+    if (dependencyFound) {
+      const err = this.createErrorObj(
+        'ITEM_DELETION_BLOCKED',
+        `#enableWhen.0.question`,
+        `Cannot delete item because it is referenced in an enableWhen condition of another node (linkId: ).`,
+        '',
+        [],
+        false,
+        null
+      );
+      errors.push(err);
+    }
+    return errors.length ? errors : null;
   }
 
   /**

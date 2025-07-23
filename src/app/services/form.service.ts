@@ -442,6 +442,67 @@ export class FormService {
     return validationNodes;
   }
 
+
+  /**
+   * Recursively collects all linkIds from the given node and its descendant nodes.
+   * @param node - The starting ITreeNode.
+   * @returns An array of linkIds for the node and all its children.
+   */
+  getNodeAndDescendantLinkIds(node: ITreeNode): string[] {
+    const linkIds: string[] = [];
+    function recurse(n: ITreeNode): void {
+      linkIds.push(n.data.linkId);
+      if (n.hasChildren) {
+        for (const child of n.children) {
+          recurse(child);
+        }
+      }
+    }
+    if (node) {
+      recurse(node);
+    }
+    return linkIds;
+  }
+
+  /**
+   * Checks if any node in the tree (excluding the specified root node) has an enableWhen.question
+   * that matches any of the provided linkIds. Returns true if a match is found, otherwise false.
+   * @param excludedRootNodeId - The tree node id to exclude from the search.
+   * @param linkIds - Array of linkIds to check for references.
+   * @returns True if any enableWhen.question matches a linkId, otherwise false.
+   */
+  hasEnableWhenReferenceToLinkIds(excludedRootNodeId: string, linkIds: string[]): boolean {
+    let found = false;
+    function recurse(node: TreeNode): boolean {
+      if ('enableWhen' in node.data && Array.isArray(node.data.enableWhen)) {
+        const enableWhenList = node.data.enableWhen;
+        for (let idx = 0; idx < enableWhenList.length; idx++) {
+          const ew = enableWhenList[idx];
+          if (linkIds.includes(ew.question)) {
+            found = true;
+            return true; // Stop recursion immediately
+          }
+        }
+      }
+      if (node.hasChildren) {
+        for (const child of node.children) {
+          if (recurse(child)) return true;
+        }
+      }
+      return false;
+    }
+
+    const roots = this.treeModel.roots;
+    if (roots) {
+      for (const root of roots) {
+        if (root.data.__$treeNodeId !== excludedRootNodeId) {
+          if (recurse(root)) break;
+        }
+      }
+    }
+    return found;
+  }
+
   /**
    * Walk through the treeModel and populate the TreeNodeStatus for each of the
    * TreeNodes into the TreeNodeStatusMap.
@@ -580,6 +641,7 @@ export class FormService {
     }
 
     if (node.parent && !node.isRoot &&
+        (!('hasError' in this.treeNodeStatusMap[nodeIdStr]) || this.treeNodeStatusMap[nodeIdStr].hasError === false) &&
         (!('childHasError' in this.treeNodeStatusMap[nodeIdStr]) || !this.treeNodeStatusMap[nodeIdStr]['childHasError'])) {
 
       const siblingHasError = this.siblingHasError(node);
@@ -1307,5 +1369,28 @@ export class FormService {
       console.error(`lforms-loader.getSupportedLFormsVersions() failed: ${error.message}`);
       throw new Error(error);
     });
+  }
+
+  /**
+   * Given a node, traverse up its parent chain and return the topmost root node (where parent == null).
+   * @param node - The starting TreeNode.
+   * @returns The root TreeNode.
+   */
+  getRootNodeFromNode(node:ITreeNode): ITreeNode {
+    let current = node;
+    while (current && current.parent && 'linkId' in current.parent.data) {
+      current = current.parent;
+
+      console.log('getRootNode::current - ', current);
+    }
+    return current;
+  }
+
+  /**
+   * Checks if there is a focused node in the tree model.
+   * @returns True if a focused node exists, otherwise false.
+   */
+  hasFocusedNode(): boolean {
+    return !!(this.treeModel && this.treeModel.getFocusedNode());
   }
 }
