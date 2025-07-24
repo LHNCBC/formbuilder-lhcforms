@@ -2,7 +2,8 @@
 
 import {Util} from '../../../src/app/lib/util';
 import {CypressUtil} from '../../support/cypress-util';
-import {ExtensionDefs} from "../../../src/app/lib/extension-defs";
+import { ExtensionDefs } from "../../../src/app/lib/extension-defs";
+import { EXTENSION_URL_ITEM_CONTROL } from 'src/app/lib/constants/constants';
 
 const entryFormatUrl = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
@@ -24,7 +25,7 @@ describe('Home page', () => {
 
   describe('Item level fields', () => {
     const helpTextExtension = [{
-      url: Util.ITEM_CONTROL_EXT_URL,
+      url: EXTENSION_URL_ITEM_CONTROL,
       valueCodeableConcept: {
         text: 'Help-Button',
         coding: [{
@@ -598,6 +599,7 @@ describe('Home page', () => {
         expect(qJson.item[0].initial[0].valueString).equal('initial string');
       });
       cy.selectDataType('decimal');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueDecimal"]').type('100.1');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].type).equal('decimal');
@@ -605,6 +607,7 @@ describe('Home page', () => {
       });
 
       cy.selectDataType('integer');
+      cy.getTypeInitialValueValueMethodClick();
       cy.get('[id^="initial.0.valueInteger"]').as('initialInteger');
       cy.get('@initialInteger').type('100');
       cy.questionnaireJSON().should((qJson) => {
@@ -1335,16 +1338,15 @@ describe('Home page', () => {
 
 
       it('should create item-control extension with autocomplete option', () => {
-        const icTag = 'lfb-item-control';
         const dropDownBtn = '[for^="__\\$itemControl\\.drop-down"]';
         const radioBtn = '[for^="__\\$itemControl\\.radio-button"]';
         const checkboxBtn = '[for^="__\\$itemControl\\.check-box"]';
         const acBtn = '[for^="__\\$itemControl\\.autocomplete"]';
 
         const dropDownRadio = '#__\\$itemControl\\.drop-down';
+        const unspecifiedRadio = '#__\\$itemControl\\.unspecified';
         const checkboxRadio = '#__\\$itemControl\\.check-box';
 
-        cy.get(icTag).should('not.exist'); // Datatype is other than coding
         cy.selectDataType('coding');
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Allow free text').click();
@@ -1353,7 +1355,8 @@ describe('Home page', () => {
         cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').as('snomedMethod');
         cy.get('@answerOptionMethod').click();
         cy.get(dropDownBtn).should('be.visible');
-        cy.get(dropDownRadio).should('be.checked'); // Default is answer-option
+        // Default for item control is now 'Unspecified'
+        cy.get(unspecifiedRadio).should('be.checked');
         cy.get(radioBtn).should('be.visible'); // Radio option when repeats is false by default.
         cy.get(checkboxBtn).should('not.exist'); // Not visible when repeats is true
         cy.get(acBtn).should('not.exist'); // Not visible for answerOption.
@@ -1362,15 +1365,12 @@ describe('Home page', () => {
         ['@snomedMethod', '@nonSnomedMethod'].forEach((vsMethod) => {
           cy.get(vsMethod).click();
           cy.get(dropDownBtn).should('be.visible');
-          cy.get(dropDownRadio).should('be.checked'); // Default
+          // Default for item control is now 'Unspecified'
+          cy.get(unspecifiedRadio).should('be.checked');
           cy.get(radioBtn).should('be.visible');
           cy.get(checkboxBtn).should('not.exist');
           cy.get(acBtn).should('be.visible'); // Autocomplete should be visible.
 
-          // No extension for drop-down
-          cy.questionnaireJSON().should((qJson) => {
-            expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
-          });
         });
 
         cy.get('@snomedMethod').click();
@@ -1671,7 +1671,7 @@ describe('Home page', () => {
         // Select 'Horizontal Answer Table' Group Item Control
         cy.get(horizontalAnsTblBtn).click();
         cy.get(horizontalAnsTblRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not yet supported
         // by LForms Preview.
         cy.get(horizontalAnsTblBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1690,7 +1690,7 @@ describe('Home page', () => {
         // Select 'Group Grid' Group Item Control
         cy.get(groupGridBtn).click();
         cy.get(groupGridRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(groupGridBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1701,7 +1701,7 @@ describe('Home page', () => {
         // Select 'Header' Group Item Control
         cy.get(headerBtn).click();
         cy.get(headerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(headerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1712,7 +1712,7 @@ describe('Home page', () => {
         // Select 'Footer' Group Item Control
         cy.get(footerBtn).click();
         cy.get(footerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(footerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1723,7 +1723,7 @@ describe('Home page', () => {
         // Select 'Page' Group Item Control
         cy.get(pageBtn).click();
         cy.get(pageRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(pageBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be add
@@ -1734,7 +1734,7 @@ describe('Home page', () => {
         // Select 'Tab Container' Group Item Control
         cy.get(tabContainerBtn).click();
         cy.get(tabContainerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(tabContainerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be added
@@ -1935,7 +1935,7 @@ describe('Home page', () => {
         cy.getItemTypeField().should('contain.value', 'display');
         // The 'Lower-bound' Display Item Control should be selected.
         cy.get(lowerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(lowerBtn).find('sup').should('exist').should('contain.text', '(1)');
         cy.questionnaireJSON().should((qJson) => {
@@ -1955,7 +1955,7 @@ describe('Home page', () => {
         cy.getItemTypeField().should('contain.value', 'display');
         // The 'Upper-bound' Display Item Control should be selected.
         cy.get(upperRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(upperBtn).find('sup').should('exist').should('contain.text', '(1)');
         cy.questionnaireJSON().should((qJson) => {
@@ -1975,7 +1975,7 @@ describe('Home page', () => {
         cy.getItemTypeField().should('contain.value', 'display');
         // The 'Fly-over' Display Item Control should be selected.
         cy.get(flyoverRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(flyoverBtn).find('sup').should('exist').should('contain.text', '(1)');
         cy.questionnaireJSON().should((qJson) => {
@@ -1995,7 +1995,7 @@ describe('Home page', () => {
         cy.getItemTypeField().should('contain.value', 'display');
         // The 'Legal-button' Display Item Control should be selected.
         cy.get(legalRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not supported
+        // The button label should display superscript (1) indicating that the item control is not  yet supported
         // by LForms Preview.
         cy.get(legalBtn).find('sup').should('exist').should('contain.text', '(1)');
         cy.questionnaireJSON().should((qJson) => {
@@ -2009,6 +2009,174 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[6].extension).undefined;
         });
+      });
+    });
+
+    describe('Question item control', () => {
+      it('should display Question item-control extension', () => {
+        const sampleFile = 'question-item-control-sample.json';
+        let fixtureJson;
+        cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+        cy.uploadFile(sampleFile, true);
+        cy.getFormTitleField().should('have.value', 'Question item control sample form');
+        cy.contains('button', 'Edit questions').click();
+
+        cy.getItemTypeField().should('contain.value', 'string');
+
+        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+
+        // Invoke preview.
+        cy.contains('button', 'Preview').click();
+        cy.get('lhc-item').as('lhc-item');
+
+        // The first lhc-item
+        cy.get('@lhc-item').first().within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Autocomplete question item control displays as drop-down');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            // Validate the input with role="combobox" exists in the correct structure
+            cy.get('lhc-item-choice-autocomplete lhc-autocomplete > div > input.ac_multiple.ansList')
+              .should('exist');
+          });
+        });
+
+        // The 2nd lhc-item
+        cy.get('@lhc-item').eq(1).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Autocomplete question item control displays as autocomplete search');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('lhc-item-choice-autocomplete lhc-autocomplete input.search_field')
+              .should('exist');
+          });
+        });
+
+        // The 3rd lhc-item
+        cy.get('@lhc-item').eq(2).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Drop down question item control');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('lhc-item-choice-autocomplete lhc-autocomplete > div > input.ac_multiple.ansList')
+              .should('exist');
+          });
+        });
+
+        // The 4th lhc-item
+        cy.get('@lhc-item').eq(3).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Check-box question item control displays as checkbox');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('lhc-item-choice-check-box').within(() => {
+              cy.get('input[type="checkbox"]').should('have.length', 4);
+            });
+          });
+        });
+
+        // The 5th lhc-item
+        cy.get('@lhc-item').eq(4).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Radio button question item control');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('lhc-item-choice-radio-button').within(() => {
+              cy.get('input[type="radio"]').should('have.length', 4);
+            });
+          });
+        });
+
+        // The 6th lhc-item
+        cy.get('@lhc-item').eq(5).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Slider question item control - not yet supported by LHC-Forms preview');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('input[type="text"]').should('exist');
+          });
+        });
+
+        //The 7th lhc-item
+        cy.get('@lhc-item').eq(6).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Spinner question item control - not yet supported by LHC-Forms preview');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('input[type="text"]').should('exist');
+          });
+        });
+
+        // The 8th lhc-item
+        cy.get('@lhc-item').eq(7).within(() => {
+          // Check for element label
+          cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+            .should('have.text', 'Text Box question item control - not yet supported by LHC-Forms preview');
+          // Check for element input
+          cy.get('.lhc-de-input-unit').within(() => {
+            cy.get('input[type="text"]').should('exist');
+          });
+        });
+      });
+
+      it('should display different question item controls based on data types', () => {
+        // Select 'boolean' data type
+        cy.checkQuestionItemControlUI('boolean', null,  null, null, null);
+
+        // Select 'decimal' data type
+        cy.checkQuestionItemControlUI('decimal',  ['Slider (1)', 'Spinner (1)', 'Unspecified'], null, null, null);
+
+        // Select 'integer' data type
+        cy.checkQuestionItemControlUI('integer',
+          ['Slider (1)', 'Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'date' data type
+        cy.checkQuestionItemControlUI('date',
+          ['Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'dateTime' data type
+        cy.checkQuestionItemControlUI('dateTime', ['Spinner (1)', 'Unspecified'], null, null, null);
+
+        // Select 'time' data type
+        cy.checkQuestionItemControlUI('time',
+          ['Spinner (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'string' data type
+        cy.checkQuestionItemControlUI('string',
+          ['Text Box (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'text' data type
+        cy.checkQuestionItemControlUI('text',
+          ['Text Box (1)', 'Unspecified'],
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'], null);
+
+        // Select 'url' data type
+        cy.checkQuestionItemControlUI('url', null,  null, null, null);
+
+        // Select 'coding' data type
+        cy.checkQuestionItemControlUI('coding', null,
+          ['Drop down', 'Radio Button', 'Unspecified'],
+          ['Drop down', 'Check-box', 'Unspecified'],
+          ['Auto-complete', 'Drop down', 'Check-box', 'Unspecified']);
+
+        // Select 'quantity' data type
+        cy.checkQuestionItemControlUI('quantity', null,  null, null, null);
       });
     });
 
@@ -5565,6 +5733,9 @@ describe('Home page', () => {
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
       cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
 
+      // Default for the 'Answer list laytout' is now 'Unspecified'.  Have to manually select 'drop-down'.
+      cy.getRadioButtonLabel('Answer list layout', 'Drop down').click();
+
       cy.getPickInitialValueValueMethodClick();
 
       cy.get('[id^="pick-answer_"]').as('pickAnswer');
@@ -5749,9 +5920,7 @@ describe('Value method button selection', () => {
     cy.clickTreeNode('dateTime_type');
     cy.getItemTypeField().contains('dateTime');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
-    cy.get('[id^="initial.0.valueDateTime"]')
-      .should('have.prop', 'value')
-      .should('match', /^2024-03-03 \d{2}:\d{2}:\d{2} [AP]M$/);
+    cy.get('[id^="initial.0.valueDateTime"]').should('have.value', '2024-03-03 07:01:01 AM');
 
     cy.clickTreeNode('time_type-answerlist_no');
     cy.getItemTypeField().contains('time');
@@ -5806,6 +5975,192 @@ describe('Value method button selection', () => {
     cy.getItemTypeField().contains('quantity');
     cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
     cy.get('[id^="initial.0.valueQuantity"]').should('have.value', '3');
+  });
+});
+
+describe('Answer expression', () => {
+  beforeEach(() => {
+    cy.loadHomePage();
+    const sampleFile = 'answer-expression-sample.json';
+    cy.uploadFile(sampleFile, false);
+    cy.getFormTitleField().should('have.value', 'answer-expression-sample');
+    cy.contains('button', 'Edit questions').click();
+
+    // cy.getItemTypeField() does not work in this case.
+    cy.get('[id^="type"]').as('type');
+    cy.contains('div', 'Value method').as('valueMethod');
+  });
+
+  it('should display the appropriate answer expression and initial value', () => {
+    // Starts out with "What is the patient's full name?"
+    cy.get('@type').contains('string');
+    cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family");
+    cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
+    cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueString"]').should('have.value', 'Ann Anderson');
+
+    cy.clickTreeNode("What is the patient's age?");
+    cy.get('@type').contains('integer');
+    cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "today().toDate().difference(%patient.birthDate.toDate()).years()");
+    cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
+    cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueInteger"]').should('have.value', '20');
+
+    cy.clickTreeNode("What is the patient's gender?");
+    cy.get('@type').contains('coding');
+    cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%patient.gender");
+    cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
+    cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+    cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
+    cy.get('[id^="initial.0.valueCoding.display"]').should('have.value', 'Male');
+    cy.get('[id^="initial.0.valueCoding.code"]').should('have.value', 'male');
+    cy.get('[id^="initial.0.valueCoding.system"]').should('have.value', 'http://hl7.org/fhir/administrative-gender');
+  });
+
+  it('should create and update Answer expression', () => {
+    cy.clickTreeNode("What is the patient's gender?");
+    cy.contains('Add new item').scrollIntoView().click();
+    cy.get('#text').clear().type('Answer Expression');
+    cy.selectDataType('integer');
+
+    cy.get('button#editVariables').click();
+    cy.get('lhc-expression-editor').shadow().within(() => {
+      cy.get('#expression-editor-base-dialog').should('exist');
+
+      // Variables section
+      cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+      cy.get('#variables-section .variable-row').should('have.length', 0);
+
+      // Add a new variable 'a'
+      cy.get('#add-variable').click();
+      cy.get('#variables-section .variable-row').should('have.length', 1);
+      cy.get('#variable-label-0').clear().type('a');
+      cy.get('#variable-type-0').select('Easy Path Expression');
+      cy.get('input#simple-expression-0').type("1");
+
+      // Add a new variable 'b'
+      cy.get('#add-variable').click();
+      cy.get('#variables-section .variable-row').should('have.length', 2);
+      cy.get('#variable-label-1').clear().type('b');
+      cy.get('#variable-type-1').select('Easy Path Expression');
+      cy.get('input#simple-expression-1').type("2");
+
+      // Save the variables
+      cy.get('#export').click();
+    });
+
+    cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
+    cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+    cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
+
+    cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'a');
+    cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
+    cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', '1');
+
+    cy.get('@secondVariable').find('td:nth-child(1)').should('have.text', 'b');
+    cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
+    cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', '2');
+
+    cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+    cy.getRadioButtonLabel('Answer list source', 'Answer expression').click();
+    cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+    // Click the 'Create/edit expression' for the Answer expression
+    cy.get('button#editExpression').click();
+    cy.get('lhc-expression-editor').shadow().within(() => {
+      // Update the Output expression
+      cy.get('textarea#final-expression').clear().type('%a | %b');
+
+      // Save (Export) should output the questionnaire for the given Variable Type
+      cy.get('#export').click();
+    });
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b');
+
+    // Edit the Answer expression
+    cy.get('button#editExpression').click();
+    cy.get('lhc-expression-editor').shadow().within(() => {
+      // Update the Output expression
+      cy.get('textarea#final-expression').clear().type('%a | %b | 999');
+
+      // Save (Export) should output the questionnaire for the given Variable Type
+      cy.get('#export').click();
+    });
+    cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b | 999');
+
+    cy.questionnaireJSON().should((qJson) => {
+      expect(qJson.item[3].extension).to.deep.equal([
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "1",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "1"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "2",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "2"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a | %b | 999"
+          }
+        }
+      ]);
+    });
+
+    // Click the Preview
+    cy.contains('button', 'Preview').click();
+
+    cy.get('lhc-item').eq(3).find('lhc-item-question input').click();
+    cy.get('span#completionOptions > ul > li').as('completionOptions').should('have.length', 3);
+    cy.get('@completionOptions').eq(0).should('have.text', '1');
+    cy.get('@completionOptions').eq(1).should('have.text', '2');
+    cy.get('@completionOptions').eq(2).should('have.text', '999');
+
+    // Close the Preview
+    cy.contains('mat-dialog-actions button', 'Close').click();
+
+    // Select the 'Compute initial value - Value method'
+    cy.getComputeInitialValueValueMethodClick();
+    // The expression for the Compute Initial Value should be blank. It should not
+    // display the Answer expression.
+    cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
+
   });
 });
 
