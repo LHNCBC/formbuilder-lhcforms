@@ -22,7 +22,7 @@ interface UnitExtension {
   selector: 'lfb-units-display',
   template: `
       <div class="{{controlWidthClass}} p-0">
-        <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control" />
+        <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control" (input)="onInput($event)"  />
       </div>
   `,
   styles: [`
@@ -121,6 +121,12 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
         }
       };
 
+      // Only call if data contains a space
+      if (data && typeof data.final_val === 'string' && data.final_val.includes(' ')) {
+        const completionOptions = document.getElementById('completionOptions');
+        this.unitService.replaceTokensWithCompletionOptions(data, completionOptions, this.options.wordBoundaryChars);
+      }
+
       if (this.options.maxSelect === 1 && !(data.final_val?.trim())) {
         this.extensionsService.removeExtension((extProp) =>
           extProp.value.url === UnitsComponent.unitsExtUrl[this.dataType]
@@ -140,15 +146,14 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
             selectedUnit[1]
           ));
           updateUnitFormProperty(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
+          this.autoComp.setFieldVal( selectedUnit[1], false);
           return;
         }
 
         // Handle manual entry or tokenizer
         const orgFinalVal = data.final_val;
         data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
-
         const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
-
         if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
@@ -157,6 +162,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
             parseResp.unit.name
           ));
           updateUnitFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
+          this.autoComp.setFieldVal(parseResp.unit.name, false);
         } else {
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
@@ -171,9 +177,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
       const unitExt = this.getUnitExtension();
       if (unitExt?.valueCoding?.display !== data.final_val) {
         data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
-
         const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
-
         if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
@@ -278,6 +282,24 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
       ret.valueCoding.display = display;
     }
     return ret;
+  }
+
+  /**
+   * Intercept and transform input before it is submitted.
+   * Converts '[' to '(', ']' to ')', and '*' to '.'.
+   *
+   * This transformation is necessary because the result returned from the UCUM package
+   * will group the Display text with square brackets and convert the multiplication '.' to '*'.
+   * If users try to search using the original UCUM output, it would fail because neither the autocompleter
+   * nor the UCUM package handle the square bracket or the '*' character. Converting to parenthesis and period
+   * allows search to be performed successfully.
+   */
+  onInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (typeof input.value !== 'string') {
+      return;
+    }
+    input.value = this.unitService.transformUnitInput(input.value);
   }
 
   /**

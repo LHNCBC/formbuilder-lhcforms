@@ -238,4 +238,113 @@ export class UnitService {
     }
     return str.replace(/<sup>(.*?)<\/sup>/gi, '$1');
   }
+
+  /**
+   * Builds a mapping from the completion options table: key = 2nd <td>, value = 1st <td>.
+   *
+   * @param completionOptions - The DOM element containing the completion options table (with <tr> rows and <td> columns).
+   * @returns A map where the key is the 2nd <td> value and the value is the 1st <td> value for each row.
+   */
+  private buildCompletionOptionsMap(completionOptions: HTMLElement): Record<string, string> {
+    const map: Record<string, string> = {};
+    const rows = completionOptions.querySelectorAll('tr');
+    rows.forEach(row => {
+      const tds = row.querySelectorAll('td');
+      if (tds.length >= 2) {
+        const key = tds[1].textContent?.trim();
+        const value = tds[0].textContent?.trim();
+        if (key && value) {
+          map[key] = value;
+        }
+      }
+    });
+    return map;
+  }
+
+  /**
+   * Tokenizes a string by the given word boundary characters.
+   *
+   * @param value - The input string to tokenize.
+   * @param wordBoundaryChars - Array of word boundary characters to use for splitting.
+   * @returns The array of tokens obtained by splitting the input string.
+   */
+  private tokenizeByWordBoundaries(value: string, wordBoundaryChars: string[]): string[] {
+    const regex = new RegExp(`[${wordBoundaryChars.map(c => c.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')).join('')}]`);
+    return value.split(regex);
+  }
+
+  /**
+   * Rebuilds a string from tokens, preserving original delimiters and wrapping as needed.
+   *
+   * @param tokens - The array of original tokens from the input string.
+   * @param original - The original input string (used to extract delimiters).
+   * @param wordBoundaryChars - Array of word boundary characters for wrapping logic.
+   * @param newTokens - The array of tokens after mapping/replacement.
+   * @returns The rebuilt string with delimiters and wrapping applied.
+   */
+  private rebuildStringWithDelimiters(tokens: string[], original: string, wordBoundaryChars: string[], newTokens: string[]): string {
+    let rebuilt = '';
+    let lastIndex = 0;
+    for (let i = 0; i < tokens.length; i++) {
+      if (i > 0) {
+        const prevToken = tokens[i - 1];
+        const currToken = tokens[i];
+        const idx = original.indexOf(currToken, lastIndex);
+        const delim = original.substring(lastIndex + prevToken.length, idx);
+        rebuilt += delim;
+        lastIndex = idx;
+      }
+      let tokenToAdd = newTokens[i];
+      if (
+        typeof tokenToAdd === 'string' &&
+        Array.isArray(wordBoundaryChars) &&
+        wordBoundaryChars.some(char => tokenToAdd.includes(char))
+      ) {
+        tokenToAdd = '(' + tokenToAdd + ')';
+      }
+      rebuilt += tokenToAdd;
+    }
+    return rebuilt;
+  }
+
+  /**
+   * Replaces tokens in a unit string (data.final_val) with mapped values from a completion options table.
+   * Used for advanced mapping of user input to display values.
+   *
+   * @param data - The LForms autocompleter data object (must have final_val).
+   * @param completionOptions - The DOM element containing the completion options table (with <tr> rows and <td> columns).
+   * @param wordBoundaryChars - Array of word boundary characters (e.g., ['/', '.']) for tokenization and wrapping logic.
+   */
+  replaceTokensWithCompletionOptions(data: any, completionOptions: HTMLElement, wordBoundaryChars: string[]): void {
+    if (!completionOptions || !data || typeof data.final_val !== 'string') return;
+    const map = this.buildCompletionOptionsMap(completionOptions);
+    const tokens = this.tokenizeByWordBoundaries(data.final_val, wordBoundaryChars);
+    let replaced = false;
+    const newTokens = tokens.map(token => {
+      if (map[token]) {
+        replaced = true;
+        return map[token];
+      }
+      return token;
+    });
+    if (replaced) {
+      data.final_val = this.rebuildStringWithDelimiters(tokens, data.final_val, wordBoundaryChars, newTokens);
+      data.on_list = false;
+      data.used_list = false;
+    }
+  }
+
+  /**
+   * Transforms input value for unit entry: converts '[' to '(', ']' to ')', and '*' to '.'.
+   * Returns the transformed string.
+   *
+   * @param value - The input string to transform.
+   * @returns The transformed string.
+   */
+  transformUnitInput(value: string): string {
+    if (typeof value !== 'string') return value;
+    return value.replace(/\[/g, '(')
+                .replace(/\]/g, ')')
+                .replace(/\*/g, '.');
+  }
 }
