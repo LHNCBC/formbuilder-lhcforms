@@ -1297,6 +1297,13 @@
       "title": "Terminology server",
       "type": "string"
     },
+    "contained": {
+      "description": "These resources do not have an independent existence apart from the resource that contains them - they cannot be identified independently, and nor can they have their own independent transaction scope.",
+      "items": {
+        "$ref": "#/definitions/ValueSet"
+      },
+      "type": "array"
+    },
     "__$variable": {
       "description": "Use to store values derived from calculations, references to other answers, or external data.",
       "title": "Variables",
@@ -1445,7 +1452,8 @@
         "copyright",
         "approvalDate",
         "lastReviewDate",
-        "effectivePeriod"
+        "effectivePeriod",
+        "contained"
       ]
     },
     {

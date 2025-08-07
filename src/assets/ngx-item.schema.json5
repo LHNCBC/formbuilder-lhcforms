@@ -862,20 +862,22 @@
         {
           "type": "string",
           "enum": ["answer-option"],
-          "title": "Answer options",
-          "dataType": ["all"]
+          "title": "Answer options"
         },
         {
           "type": "string",
           "enum": ["snomed-value-set"],
-          "title": "SNOMED answer value set",
-          "dataType": ["coding"]
+          "title": "SNOMED answer value set"
         },
         {
           "type": "string",
           "enum": ["value-set"],
-          "title": "Answer value set URI",
-          "dataType": ["coding"]
+          "title": "Answer value set URI"
+        },
+        {
+          "type": "string",
+          "enum": ["answer-expression"],
+          "title": "Answer expression"
         }
       ],
       "default": "answer-option",
@@ -887,7 +889,13 @@
         "id": "answer-option-methods",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0"
+        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0",
+        "supportedDataType": {
+          "answer-option": ["all"],
+          "snomed-value-set": ["coding"],
+          "value-set": ["coding"],
+          "answer-expression": ["all"]
+        }
       }
     },
     /*
@@ -924,7 +932,14 @@
       "pattern": "^\\S*$",
       "type": "string",
       "visibleIf": {
-        "/__$answerOptionMethods": ["value-set", "snomed-value-set"]
+        "allOf": [
+          {
+            "/__$answerOptionMethods":  ["value-set", "snomed-value-set"],
+          },
+          {
+            "type": ["coding"]
+          }
+        ]
       },
       "widget": {
         "id": "answer-value-set",
@@ -1169,11 +1184,107 @@
       "visibleIf": {
         "__$isAnswerList": [true]
       },
+      "oneOf": [
+        {
+          'enum': ["autocomplete"],
+          'display': 'Auto-complete',
+          'description': 'A control that shows matching options as the user types. Ideal for large lists where searching by text is helpful.',
+          'support': true,
+          'dataType': ['coding']
+        },
+        {
+          'enum': ["drop-down"],
+          'display': 'Drop down',
+          'description': 'Text displayed below or inside the answer-entry area as a prompt or guide.',
+          'support': true
+        },
+        {
+          'enum': ["check-box"],
+          'display': 'Check-box',
+          'description': 'A control listing choices with checkboxes. Users can select or deselect options, allowing multiple selections.',
+          'support': true
+        },
+/* TBD        {
+          'enum': ["lookup"],
+          'display': 'Lookup',
+          'description': 'A control that opens a dialog or screen for users to browse or filter and select a match. Best for large lists where text search is not suitable.',
+          'support': false
+        }, */
+        {
+          'enum': ["radio-button"],
+          'display': 'Radio Button',
+          'description': 'A control listing choices with radio buttons. Selecting one option deselects others. Used for single-choice items or booleans with an \'unanswered\' state.',
+          'support': true
+        }
+      ],
       "widget": {
         "id": "item-control",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-auto btn-group btn-group-sm p-0"
+      }
+    },
+    "__$itemControlQuestion": {
+      // Proxy for item control extension.
+      "description": "Choose the type of control for the answer list. The default is a drop-down list, which works well for lists that aren't too large. You may also choose checkboxes or radio-buttons for smaller lists. For large lists, you can make it an autocomplete list, in which matching items will show up when the user starts typing, though some FHIR servers (e.g., the SNOMED server) might not return results until the user types a few characters.",
+      "title": "Question item control",
+      "type": "string",
+      "oneOf": [
+        {
+          'enum': ["slider"],
+          'display': 'Slider',
+          'description': 'A control with a movable handle on an axis to select a value between set minimum and maximum.',
+          'support': false,
+          'dataType': ['decimal', 'integer']
+        },
+        {
+          'enum': ["spinner"],
+          'display': 'Spinner',
+          'description': 'A control for scrolling through numeric or ordered values using arrows.',
+          'support': false,
+          'dataType': ['decimal', 'integer', 'date', 'dateTime', 'time']
+        },
+        {
+          'enum': ["text-box"],
+          'display': 'Text Box',
+          'description': 'A control for free text entry.',
+          'support': false,
+          'dataType': ['string', 'text']
+        }
+      ],
+      "visibleIf": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "__$isAnswerList": [false]
+              },
+              {
+                "type": [
+                  "$EXP$ target.value != 'boolean' && target.value != 'url'  && target.value != 'coding' && target.value != 'quantity'"
+                ]
+              }
+            ],
+
+          },
+          {
+            "allOf": [
+              {
+                "type": [
+                  "$EXP$ target.value == 'decimal' || target.value == 'dateTime'"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "default": "unspecified",
+      "widget": {
+        "id": "item-control",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-10 btn-group btn-group-sm p-0",
+        "note": "(1) - not yet supported by LHC-Forms preview."
       }
     },
     "__$itemControlGroup": {
@@ -1627,7 +1738,7 @@
             "visibleIf": {
               "allOf": [
                 {
-                  "/__$answerOptionMethods": ["answer-option", "snomed-value-set", "value-set"]
+                  "/__$answerOptionMethods": ["answer-option", "snomed-value-set", "value-set", "answer-expression"]
                 },
                 {
                   "/type": ["$EXP$ target.value == 'coding'"]
@@ -1772,6 +1883,16 @@
                 "/__$answerOptionMethods": ["snomed-value-set", "value-set"]
               }
             ]
+          },
+          {
+            "allOf": [
+              {
+                "__$valueMethod":  ["type-initial"]
+              },
+              {
+                "/__$answerOptionMethods": ["answer-expression"]
+              }
+            ]
           }
         ]
       },
@@ -1879,7 +2000,7 @@
             "__$valueMethod":  ["pick-initial"]
           },
           {
-            "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option'"]
+            "/__$answerOptionMethods": ["$EXP$ target.value == 'answer-option' || target.value == 'answer-expression' "]
           }
         ],
       },
@@ -2133,6 +2254,66 @@
           titleSection: true,
           uneditableVariablesSection: true,
           itemVariablesSection: true,
+          outputExpressionSection: true
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col form-control form-control-sm"
+      }
+    },
+    "__$answerExpression": {
+      "description": "An expression (FHIRPath, CQL, or FHIR query) that dynamically generates a list of allowed answers for a question item, or provides context for a group item. Users can select one or more answers from the generated list.",
+      "title": "Answer expression",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
+      },
+      "visibleIf": {
+        "__$answerOptionMethods": ["answer-expression"]
+      },
+      "widget": {
+        "id": "expression-editor",
+        "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+        "showExpression": true,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: false,
+          itemVariablesSection: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -2580,6 +2761,17 @@
     },
     {
       "fields": [
+        "__$itemControlQuestion"
+      ],
+      "showFields": [
+        {
+          "field": "__$itemControlQuestion",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
         "__$itemControlGroup"
       ],
       "showFields": [
@@ -2695,6 +2887,17 @@
       "showFields": [
         {
           "field": "__$calculatedExpression",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$answerExpression"
+      ],
+      "showFields": [
+        {
+          "field": "__$answerExpression",
           "col": 12
         }
       ]

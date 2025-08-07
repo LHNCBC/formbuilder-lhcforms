@@ -15,6 +15,9 @@ import {Subscription} from 'rxjs';
   ]
 })
 export class LfbControlWidgetComponent extends ControlWidget implements OnInit {
+
+  static ID = 0;
+  _id = (LfbControlWidgetComponent.ID++).toString();
   // Info icon
   faInfo = faInfoCircle;
 

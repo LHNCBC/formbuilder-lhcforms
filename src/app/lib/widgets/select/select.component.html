@@ -1,7 +1,7 @@
 <ng-template #baseSelect>
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
     <lfb-label  *ngIf="!nolabel"
-                [for]="id"
+                [for]="id+_id"
                 [title]="schema.title"
                 [helpMessage]="schema.description"
                 [ngClass]="labelClasses"
@@ -10,7 +10,7 @@
     <select *ngIf="schema.type !== 'array'"
             [formControl]="control"
             name="{{name}}"
-            [attr.id]="id"
+            [attr.id]="id+_id"
 
             [ngClass]="{invalid: errors}"
             [attr.aria-invalid]="errors"
@@ -31,7 +31,7 @@
     <select *ngIf="schema.type==='array'" multiple
             [formControl]="control"
             name="{{name}}"
-            [attr.id]="id"
+            [attr.id]="id+_id"
 
             [ngClass]="{invalid: errors}"
             [attr.aria-invalid]="errors"

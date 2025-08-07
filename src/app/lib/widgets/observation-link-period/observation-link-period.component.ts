@@ -11,6 +11,7 @@ import fhir from 'fhir/r4';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {StringComponent} from '../string/string.component';
 import {fhirPrimitives} from '../../../fhir';
+import { EXTENSION_URL_UCUM_SYSTEM } from '../../constants/constants';
 
 interface ObservationLinkPeriodExtension {
   url: fhirPrimitives.url,
@@ -32,7 +33,6 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
   static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
   static seqNum = 0;
   elementId: string;
-  subscriptions: Subscription [];
   unitIndex: fhirPrimitives.integer = 0;
   value: string;
   adjustVAlignClass = 'd-flex';
@@ -189,7 +189,7 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
         valueDuration: {value: parseFloat(value)}
       };
 
-    ret.valueDuration.system = UnitsComponent.ucumSystemUrl;
+    ret.valueDuration.system = EXTENSION_URL_UCUM_SYSTEM;
     if(unitCode) {
       ret.valueDuration.code = unitCode;
     }

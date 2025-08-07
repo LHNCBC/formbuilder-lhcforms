@@ -4,7 +4,14 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   standalone: false,
   selector: 'lfb-expression-editor-dlg',
-  templateUrl: './expression-editor-dlg.component.html'
+  templateUrl: './expression-editor-dlg.component.html',
+  styles: [
+    `::ng-deep .modal-dialog {
+      margin: 0px;
+      min-width: 100%;
+      min-height: 100%;
+    }`
+  ]
 })
 export class ExpressionEditorDlgComponent {
   linkId:string;
@@ -16,7 +23,7 @@ export class ExpressionEditorDlgComponent {
 
   constructor(private activeModal: NgbActiveModal) {};
 
-  /** 
+  /**
    * Close the Rule Editor modal dialog.
    */
   closeRuleEditorDialog() {

@@ -8,7 +8,7 @@ describe('LfbSpinnerComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ LfbSpinnerComponent ]
+      imports: [ LfbSpinnerComponent ]
     })
     .compileComponents();
   });

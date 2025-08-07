@@ -7,6 +7,7 @@ import fhir from 'fhir/r4';
 import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {TableComponent} from '../table/table.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
+import { EXTENSION_URL_VARIABLE, EXTENSION_URL_CUSTOM_VARIABLE_TYPE } from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -51,7 +52,7 @@ export class VariableComponent extends TableComponent implements OnInit {
     });
     this.subscriptions.push(sub);
 
-    const variablesExtension = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE) ?? [];
+    const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
     this.formProperty.setValue(variablesExtension, false);
   }
 
@@ -60,7 +61,7 @@ export class VariableComponent extends TableComponent implements OnInit {
    * @param extensions - Item's extension.
    */
   getVariableType(extensions: any): string {
-    const match = extensions.find((ext) => ext.url === ExtensionsService.CUSTOM_EXT_VARIABLE_TYPE);
+    const match = extensions.find((ext) => ext.url === EXTENSION_URL_CUSTOM_VARIABLE_TYPE);
     return this.variableTypeMapping[match?.valueString] ?? "Unknown";
   }
 
@@ -72,7 +73,7 @@ export class VariableComponent extends TableComponent implements OnInit {
   extractVariableExtensions(items, linkId): fhir.Extension []|null {
     for (const item of items) {
       if (item.linkId === linkId && item.extension) {
-        const variableExtensions = item.extension.filter(ext => ext.url === ExtensionsService.VARIABLE);
+        const variableExtensions = item.extension.filter(ext => ext.url === EXTENSION_URL_VARIABLE);
         if (variableExtensions.length > 0) {
           return variableExtensions;
         }
@@ -156,9 +157,9 @@ export class VariableComponent extends TableComponent implements OnInit {
 
         // Result coming back from the Expression Editor may also contain launchContext.  We do want
         // to save those extensions, but want to filter out from the variables.
-        this.extensionsService.replaceExtensions(ExtensionsService.VARIABLE, this.resultExtensions);
+        this.extensionsService.replaceExtensions(EXTENSION_URL_VARIABLE, this.resultExtensions);
 
-        const variables = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE);
+        const variables = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE);
         this.formProperty.setValue(variables, false);
         this.cdr.detectChanges();
         this.formProperty.findRoot().getProperty('extension').setValue(this.extensionsService.extensionsProp.value, false);
@@ -172,8 +173,8 @@ export class VariableComponent extends TableComponent implements OnInit {
    */
   deleteVariable(index: number) {
     let currentExtArray;
-    const tmpt = this.extensionsService.removeExtensionByUrlAtIndex(ExtensionsService.VARIABLE, index);
-    const variablesExtension = this.extensionsService.getExtensionsByUrl(ExtensionsService.VARIABLE) ?? [];
+    const tmpt = this.extensionsService.removeExtensionByUrlAtIndex(EXTENSION_URL_VARIABLE, index);
+    const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
     this.formProperty.setValue(variablesExtension, false);
     this.cdr.markForCheck();
   }

@@ -75,6 +75,12 @@ td.action-column {
   max-width: 4.16667%;
 }
 
+.edit-row.col-sm-half {
+  width: 8.16667% !important;
+  flex: 0 0  8.16667% !important;
+  max-width: 8.16667% !important;
+}
+
 .col-sm-quarter {
   width: 2.08333%;
   flex: 0 0  2.08333%;

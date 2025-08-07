@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import fhir from 'fhir/r4';
 import {Subscription} from 'rxjs';
 import {ExtensionsService} from '../../../services/extensions.service';
@@ -49,12 +49,12 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
   static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
   static seqNum = 0;
   elementId: string;
-  subscriptions: Subscription [];
   value: boolean;
   codePresent: boolean;
   adjustVAlignClass = 'd-flex';
+  extensionsService: ExtensionsService = inject(ExtensionsService);
 
-  constructor(private extensionsService: ExtensionsService) {
+  constructor() {
     super();
     this.elementId = 'observationExtract_'+ObservationExtractComponent.seqNum++;
     this.subscriptions = [];

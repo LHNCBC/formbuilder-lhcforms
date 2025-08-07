@@ -5,6 +5,10 @@ import {ExtensionsService} from '../../../services/extensions.service';
 import {fhirPrimitives} from '../../../fhir';
 import { UnitsComponent } from '../units/units.component';
 import { UnitService } from 'src/app/services/unit.service';
+import {
+  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, EXTENSION_URL_UCUM_SYSTEM,
+  TYPE_DECIMAL, TYPE_INTEGER, TYPE_QUANTITY, TYPE_STRING
+} from '../../constants/constants';
 
 declare var LForms: any;
 
@@ -58,7 +62,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
   }
 
   autoComp: any;
-  dataType = 'string';
+  dataType = TYPE_STRING;
   unitStorage = [];
 
   unitService = inject(UnitService);
@@ -81,21 +85,21 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
     // Watch item type to setup autocomplete
     let sub = this.formProperty.searchProperty('/type')
       .valueChanges.subscribe((changedValue) => {
-      if(this.dataType !== changedValue && this.dataType !== "string") {
-        if(changedValue === 'quantity') {
+      if(this.dataType !== changedValue && this.dataType !== TYPE_STRING) {
+        if(changedValue === TYPE_QUANTITY) {
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.decimal);
         }
-        else if(changedValue === 'decimal' || changedValue === 'integer') {
+        else if(changedValue === TYPE_DECIMAL || changedValue === TYPE_INTEGER) {
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl[this.dataType]);
         }
         else {
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.decimal);
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.quantity);
         }
-        this.options.maxSelect = changedValue === 'quantity' ? '*' : 1;
+        this.options.maxSelect = changedValue === TYPE_QUANTITY ? '*' : 1;
         this.unitService.clearUnits();
       }
-      if(changedValue === 'quantity' || changedValue === 'decimal' || changedValue === 'integer') {
+      if(changedValue === TYPE_QUANTITY || changedValue === TYPE_DECIMAL || changedValue === TYPE_INTEGER) {
         this.resetAutocomplete();
       }
       this.dataType = changedValue;
@@ -141,11 +145,11 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
           this.unitService.addUnit(selectedUnit);
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
-            UnitsComponent.ucumSystemUrl,
+            EXTENSION_URL_UCUM_SYSTEM,
             data.item_code,
             selectedUnit[1]
           ));
-          updateUnitFormProperty(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
+          updateUnitFormProperty(data.item_code, EXTENSION_URL_UCUM_SYSTEM, selectedUnit[1]);
           this.autoComp.setFieldVal( selectedUnit[1], false);
           return;
         }
@@ -157,11 +161,11 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
         if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
-            UnitsComponent.ucumSystemUrl,
+            EXTENSION_URL_UCUM_SYSTEM,
             parseResp.ucumCode,
             parseResp.unit.name
           ));
-          updateUnitFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
+          updateUnitFormProperty(parseResp.ucumCode, EXTENSION_URL_UCUM_SYSTEM, parseResp.unit.name);
           this.autoComp.setFieldVal(parseResp.unit.name, false);
         } else {
           this.addOrUpdateUnitExtension(this.createUnitExt(
@@ -181,11 +185,11 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
         if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
-            UnitsComponent.ucumSystemUrl,
+            EXTENSION_URL_UCUM_SYSTEM,
             parseResp.ucumCode,
             parseResp.unit.name
           ));
-          updateUnitFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
+          updateUnitFormProperty(parseResp.ucumCode, EXTENSION_URL_UCUM_SYSTEM, parseResp.unit.name);
           this.autoComp.setFieldVal(parseResp.unit.name, false);
 
         } else {
@@ -212,10 +216,10 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
    * @param unitExt - Extension object representing the appropriate unit extension.
    */
   addOrUpdateUnitExtension(unitExt: fhir.Extension) {
-    if(this.dataType === 'integer' || this.dataType === 'decimal') {
+    if(this.dataType === TYPE_INTEGER || this.dataType === TYPE_DECIMAL) {
       this.extensionsService.resetExtension(unitExt.url, unitExt, 'valueCoding', false);
     }
-    else if(this.dataType === 'quantity') {
+    else if(this.dataType === TYPE_QUANTITY) {
       // Use the id, for example __$units.0.valueCoding.display, to determine which
       // row the data is being updated. This only applies to 'quantity'.
       const idx = this.unitService.getUnitIndexFromId(this.id);
@@ -225,10 +229,10 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
       if (extensionLength < numberOfFormPropertyArray) {
         this.extensionsService.addExtension(unitExt, 'valueCoding');
       } else if (extensionLength === numberOfFormPropertyArray && idx > -1) {
-        const unitExts = this.extensionsService.getExtensionsByUrl(UnitsComponent.questionUnitOptionExtUrl);
+        const unitExts = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION);
         if (unitExts && unitExts.length > idx) {
           unitExts[idx] = unitExt;
-          this.extensionsService.replaceExtensions(UnitsComponent.questionUnitOptionExtUrl, unitExts);
+          this.extensionsService.replaceExtensions(EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, unitExts);
         } else {
           this.extensionsService.addExtension(unitExt, 'valueCoding');
         }

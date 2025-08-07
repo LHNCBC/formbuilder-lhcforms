@@ -7,6 +7,7 @@ import {TerminologyServerComponent} from '../terminology-server/terminology-serv
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
 import {Util} from '../../util';
+import { ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET } from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -20,7 +21,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   static snomedBaseUri = 'http://snomed.info/sct';
   static snomedTerminologyServer = 'https://snowstorm.ihtsdotools.org/fhir';
   static snomedTSHint = 'Note that this option also sets the terminology server option below (under "Advanced fields").';
-  static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields).';
+  static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields). Alternatively, you can enter a valid ID for contained ValueSet resource with a prefix \'#\' (example: #123).';
 
   eclHelpContent = `See the <a class="lfb-ngb-tooltip-link" target="_blank" (click)="eclTooltipClose($event)" ` +
                    `href="https://confluence.ihtsdotools.org/display/DOCECL">ECL documentation</a> for more information, or ` +
@@ -67,10 +68,10 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     const sub = asMethodsProp.valueChanges.subscribe((newVal) => {
       this.valueSetType = newVal;
       switch (this.valueSetType) {
-        case 'snomed-value-set':
+        case ANSWER_OPTION_METHOD_SNOMED_VALUE_SET:
           this.tsHint = AnswerValueSetComponent.snomedTSHint;
           break;
-        case 'value-set':
+        case ANSWER_OPTION_METHOD_VALUE_SET:
           this.tsHint = AnswerValueSetComponent.nonSnomedTSHint;
       }
       this.updateUI(this.formProperty.value);
@@ -83,7 +84,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    * @param answerValueSetValue - Value of answerValueSet. Checks if its snomed URI and sets appropriate radio button.
    */
   updateUI(answerValueSetValue: string) {
-    if(this.valueSetType === 'snomed-value-set') {
+    if(this.valueSetType === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET) {
       if(answerValueSetValue) {
         this.updateSnomedFields(answerValueSetValue);
         this.snomedUrl = answerValueSetValue;
@@ -92,7 +93,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
         this.snomedUrl = '';
       }
     }
-    else if(this.valueSetType === 'value-set') {
+    else if(this.valueSetType === ANSWER_OPTION_METHOD_VALUE_SET) {
       if(answerValueSetValue) {
         this.nonSnomedUrl = answerValueSetValue;
       }

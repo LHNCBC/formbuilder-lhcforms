@@ -2,3 +2,7 @@
   height: 6rem;
   width: 6rem;
 }
+
+.resource-dlg-content {
+  padding: 2px;
+}
