@@ -61,6 +61,25 @@
       "text": "New item 5"
     },
     {
+      "item": [
+        {
+          "type": "string",
+          "linkId": "863989565554",
+          "text": "New item 8"
+        }
+      ],
+      "type": "string",
+      "linkId": "587234105553",
+      "text": "New item 7",
+      "enableWhen": [
+        {
+          "question": "790053845245",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
       "type": "string",
       "linkId": "587234105444",
       "text": "Invalid item with enableWhen references question id that does not exist",

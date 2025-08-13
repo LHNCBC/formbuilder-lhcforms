@@ -4480,27 +4480,20 @@ describe('Home page', () => {
       cy.get('lfb-node-dialog').find('button.dropdown-item').should('exist').should('have.length', 1).click();
 
       cy.get('lfb-node-dialog').find('ul').within(() => {
-        cy.get('li').should('have.length', 2);
-        cy.get('li').eq(0).should('contain.text', 'After the target item.');
-        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
-      });
-
-      // Clear the target again. 3 drop locations should be presented.
-      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear();
-      cy.get('lfb-node-dialog form').click();
-      cy.get('lfb-node-dialog').find('ul').within(() => {
         cy.get('li').should('have.length', 3);
-        cy.get('li').eq(0).should('contain.text', 'After the target item.');
-        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
-        cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
-        // Select the 'As a child of target item.' option.
         cy.get('li').eq(2).should('contain.text', 'As a child of target item.')
           .find('input[type="radio"').check();
 
       });
-      // The 'Display Data Type' item should be excluded from the target item list.
-      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
-      cy.get('lfb-node-dialog').find('button.dropdown-item').should('not.exist');
+
+      cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn').click();
+
+      // The modal is displayed.
+      cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
+      cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a node of type \'display\' because it cannot contain children.');
+
+      // Close the modal by clicking the close button
+      cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
     });
 
     it('should not be able to insert a new child item to an item of type "display"', () => {
@@ -6234,17 +6227,22 @@ describe('enableWhen dependency validation', () => {
     });
 
     cy.get('lfb-node-dialog').find('#moveTarget1').click();
-    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
+    // Select 'New item 6' as a target location
+    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
 
-    // Because 'New item 2' is referenced in an enableWhen condition for 'New item 6', the move is prohibited.
+    // Select 'As a child of target item' option
     cy.get('lfb-node-dialog').find('ul').within(() => {
-      cy.get('li').should('have.length', 2);
-      cy.get('li').eq(0).should('contain.text', 'After the target item.');
-      cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+      cy.get('li').eq(2).should('contain.text', 'As a child of target item.')
+        .find('input[type="radio"').check();
     });
+    cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn').click();
 
-    // Close the modal by clicking the cancel button
-    cy.get('lfb-node-dialog').contains('button', 'Cancel').click();
+    // The error modal is displayed.
+    cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a node that contains an enableWhen question reference to the source node or any ancestor of the source node.');
+
+    // Close the modal by clicking the close button
+    cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
 
     // Now select 'New item 1' which is the parent of 'New item 2'.
     cy.getTreeNode('New item 1').should('exist').click();
@@ -6267,14 +6265,110 @@ describe('enableWhen dependency validation', () => {
     });
 
     cy.get('lfb-node-dialog').find('#moveTarget1').click();
-    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
+    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
 
-    // Because 'New item 2' which is a child of 'New item 1' is referenced in an enableWhen condition for 'New item 6', the move should be prohibited.
     cy.get('lfb-node-dialog').find('ul').within(() => {
-      cy.get('li').should('have.length', 2);
+      cy.get('li').eq(2).should('contain.text', 'As a child of target item.')
+        .find('input[type="radio"').check();
+    });
+    cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn').click();
+
+    // The modal is displayed.
+    cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a node that contains an enableWhen question reference to the source node or any ancestor of the source node.');
+
+    // Close the modal by clicking the close button
+    cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
+
+  });
+
+  it('should prevent moving an item if the ancestor of the destination node contains an enableWhen question that references the linkId of the focused item or any of its descendants', () => {
+    const question1El = '[id^="enableWhen.0.question"]';
+    cy.toggleTreeNodeExpansion('New item 7');
+
+    // Validate that 'New item 7' has enableWhen defined and pointing to question '1.1.1 - New item 2'
+    cy.getTreeNode('New item 7').click();
+    cy.get(question1El).should('contain.value', '1.1.1 - New item 2');
+
+    // Locate 'New item 2'
+    cy.toggleTreeNodeExpansion('Item 0');
+    cy.toggleTreeNodeExpansion('New item 1');
+    cy.getTreeNode('New item 2').should('exist').click();
+
+    // Select 'More options'.
+    cy.get('div.node-content-wrapper-active button.dropdown-toggle').as('contextMoreBtn');
+    cy.get('@contextMoreBtn').click();
+
+    // Select the 'Move this item' option.
+    cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+
+    cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+    cy.get('@moveBtn').should('be.disabled');
+
+    // Should display 3 target items
+    cy.get('lfb-node-dialog').find('ul').within(() => {
+      cy.get('li').should('have.length', 3);
       cy.get('li').eq(0).should('contain.text', 'After the target item.');
       cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+      cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
     });
+
+    // Select 'New item 8'
+    cy.get('lfb-node-dialog').find('#moveTarget1').click();
+    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
+
+    // Select 'As a child of target item' option
+    cy.get('lfb-node-dialog').find('ul').within(() => {
+      cy.get('li').eq(2).should('contain.text', 'As a child of target item.')
+        .find('input[type="radio"').check();
+    });
+    cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn').click();
+
+    // The error modal is displayed.
+    cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a descendant of a node that contains an enableWhen question reference to the source node.');
+
+    // Close the modal by clicking the close button
+    cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
+
+
+    // Now select 'New item 1' which is the parent of 'New item 2'.
+    cy.getTreeNode('New item 1').should('exist').click();
+
+    // Select 'More options'.
+    cy.get('@contextMoreBtn').click();
+
+    // Select the 'Move this item' option.
+    cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Move this item').click();
+
+    cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn');
+    cy.get('@moveBtn').should('be.disabled');
+
+    // Should display 3 target items
+    cy.get('lfb-node-dialog').find('ul').within(() => {
+      cy.get('li').should('have.length', 3);
+      cy.get('li').eq(0).should('contain.text', 'After the target item.');
+      cy.get('li').eq(1).should('contain.text', 'Before the target item.');
+      cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
+    });
+
+    cy.get('lfb-node-dialog').find('#moveTarget1').click();
+    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
+
+    // Select 'As a child of target item' option
+    cy.get('lfb-node-dialog').find('ul').within(() => {
+      cy.get('li').eq(2).should('contain.text', 'As a child of target item.')
+        .find('input[type="radio"').check();
+    });
+    cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn').click();
+
+    // The error modal is displayed.
+    cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a descendant of a node that contains an enableWhen question reference to the source node.');
+
+    // Close the modal by clicking the close button
+    cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
+
   });
 
   it('should prevent deleting an item if its linkId is referenced by another item in an enableWhen condition', () => {
@@ -6296,7 +6390,7 @@ describe('enableWhen dependency validation', () => {
 
     // The modal is displayed.
     cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Unable to delete item');
-    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'This item cannot be deleted because it is referenced by an enableWhen condition.');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'This item cannot be deleted because it is referenced by an enableWhen condition');
 
     // Close the modal by clicking the close button
     cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
@@ -6310,7 +6404,7 @@ describe('enableWhen dependency validation', () => {
 
     // The modal is displayed.
     cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Unable to delete item');
-    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'This item cannot be deleted because it is referenced by an enableWhen condition.');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'This item cannot be deleted because it is referenced by an enableWhen condition');
 
     // Close the modal by clicking the close button
     cy.get('lfb-confirm-dlg').contains('button', 'Close').click();

@@ -54,7 +54,7 @@ export type DialogMode = 'Move' | 'Insert' | 'Copy';
                 Before the target item.
               </label>
             </li>
-            <li *ngIf="canDisplayChildOption()">
+            <li>
               <label class="btn">
                 <input value="CHILD" type="radio" [(ngModel)]="targetLocation" name="targetLocation" [ngModelOptions]="{standalone: true}">
                 As a child of target item.

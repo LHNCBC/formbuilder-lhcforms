@@ -463,20 +463,20 @@ export class FormService {
 
   /**
    * Checks if any node in the tree (excluding the specified root node) has an enableWhen.question
-   * that matches any of the provided linkIds. Returns true if a match is found, otherwise false.
+   * that matches any of the provided linkIds. Returns the matching linkId if found, otherwise null.
    * @param excludedRootNodeId - The tree node id to exclude from the search.
    * @param linkIds - Array of linkIds to check for references.
-   * @returns True if any enableWhen.question matches a linkId, otherwise false.
+   * @returns The matching linkId if found, otherwise null.
    */
-  hasEnableWhenReferenceToLinkIds(excludedRootNodeId: string, linkIds: string[]): boolean {
-    let found = false;
+  hasEnableWhenReferenceToLinkIds(excludedRootNodeId: string, linkIds: string[]): string | null {
+    let foundLinkId: string | null = null;
     function recurse(node: TreeNode): boolean {
       if ('enableWhen' in node.data && Array.isArray(node.data.enableWhen)) {
         const enableWhenList = node.data.enableWhen;
         for (let idx = 0; idx < enableWhenList.length; idx++) {
           const ew = enableWhenList[idx];
           if (linkIds.includes(ew.question)) {
-            found = true;
+            foundLinkId = node.data.linkId;
             return true; // Stop recursion immediately
           }
         }
@@ -486,7 +486,7 @@ export class FormService {
           if (recurse(child)) return true;
         }
       }
-      return false;
+      return null;
     }
 
     const roots = this.treeModel.roots;
@@ -497,7 +497,7 @@ export class FormService {
         }
       }
     }
-    return found;
+    return foundLinkId;
   }
 
   /**

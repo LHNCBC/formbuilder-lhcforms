@@ -336,7 +336,7 @@ export class ValidationService {
           enableWhenObj.q
         );
         errors.push(err);
-      } else if(enableWhenObj.invalid) {
+      } else if (enableWhenObj.invalid) {
         const err = this.createErrorObj(
           'ENABLEWHEN_INVALID_QUESTION',
           `#${enableWhenObj.q.canonicalPathNotation}`,
@@ -410,13 +410,15 @@ export class ValidationService {
     // Recursively collects all linkIds from the given node and its descendant nodes.
     const linkIds = this.formService.getNodeAndDescendantLinkIds(node);
     // Check for Enable When dependency
-    const dependencyFound = this.formService.hasEnableWhenReferenceToLinkIds(rootNode.data.__$treeNodeId, linkIds);
+    const dependencyLinkId = this.formService.hasEnableWhenReferenceToLinkIds(rootNode.data.__$treeNodeId, linkIds);
 
-    if (dependencyFound) {
+    if (dependencyLinkId) {
+      const matchingNode = this.formService.getTreeNodeByLinkId(dependencyLinkId);
+
       const err = this.createErrorObj(
         'ITEM_DELETION_BLOCKED',
         `#enableWhen.0.question`,
-        `Cannot delete item because it is referenced in an enableWhen condition of another node (linkId: ).`,
+        `This item cannot be deleted because it is referenced by an enableWhen condition in the item '${matchingNode.data.text}'.`,
         '',
         [],
         false,
