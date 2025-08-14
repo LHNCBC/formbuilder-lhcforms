@@ -194,6 +194,16 @@ export class UnitService {
   }
 
   /**
+   * Returns the unit from unitStorage whose display (item[1]) matches the given displayStr.
+   * @param displayStr - The display string to match.
+   * @returns The unit array if found, otherwise undefined.
+   */
+
+  getUnitByDisplayString(displayStr: string): any {
+    return this.unitStorage.find(item => item[1] === displayStr);
+  }
+
+  /**
    * Clears all units from the internal unit storage.
    *
    * This function resets the unit storage array, removing all units that have been added.

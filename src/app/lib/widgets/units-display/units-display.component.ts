@@ -126,9 +126,25 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
       };
 
       // Only call if data contains a space
-      if (data && typeof data.final_val === 'string' && data.final_val.includes(' ')) {
-        const completionOptions = document.getElementById('completionOptions');
-        this.unitService.replaceTokensWithCompletionOptions(data, completionOptions, this.options.wordBoundaryChars);
+      if (data && typeof data.final_val === 'string') {
+        if (data.input_method === 'typed' && this.unitService.hasDelimiter(data.final_val)) {
+          const unit = this.unitService.getUnitByDisplayString(data.final_val);
+          if (unit) {
+            // Replace the data.final_val with the code found in the unitStorage.
+            data.final_val = unit[0];
+            // Remove 'no_match' CSS class set by Autcomplete from the input element if present
+            const inputElem = document.getElementById(this.elementId);
+            if (inputElem && inputElem.classList) {
+              inputElem.classList.remove('no_match');
+            }
+            return;
+          }
+        }
+
+        if (data.final_val.includes(' ')) {
+          const completionOptions = document.getElementById('completionOptions');
+          this.unitService.replaceTokensWithCompletionOptions(data, completionOptions, this.options.wordBoundaryChars);
+        }
       }
 
       if (this.options.maxSelect === 1 && !(data.final_val?.trim())) {

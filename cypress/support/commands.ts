@@ -529,7 +529,8 @@ Cypress.Commands.add('getRadioButton', (groupLabel, rLabel) => {
  * Get the label of radio input identified by the label of the field and the label of the radio button.
  */
 Cypress.Commands.add('getRadioButtonLabel', (fieldLabel, radioLabel) => {
-  const radioGroup = cy.get('lfb-label label').contains(fieldLabel).parent().next();
+  // Ensure the label is visible before proceeding
+  const radioGroup = cy.get('lfb-label label').contains(fieldLabel).should('be.visible').parent().next();
   return radioGroup.find('label').contains(radioLabel);
 });
 
