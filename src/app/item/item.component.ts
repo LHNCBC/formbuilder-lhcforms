@@ -214,11 +214,16 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         drop: (tree: TreeModel, node: TreeNode, $event:any, {from, to}) => {
           // Override the default drop behavior when a node is dropped as a child,
           // and instead call moveItem, which performs necessary validation.
-          if (to?.dropOnNode && to.dropOnNode === true) {
-            this.moveItem(from, to.parent, 'CHILD', 'DROP');
-          } else {
-            TREE_ACTIONS.MOVE_NODE(tree, node, $event, { from, to });
+
+          // Ensure that dropping onto itself does not trigger the move.
+          if (from.data.__$treeNodeId !== to.parent.data.__$treeNodeId) {
+            if (to?.dropOnNode && to.dropOnNode === true) {
+              this.moveItem(from, to.parent, 'CHILD', 'DROP');
+            } else {
+              TREE_ACTIONS.MOVE_NODE(tree, node, $event, { from, to });
+            }
           }
+          delete node.data.__$isHovered;
         }
       },
       keys: {
@@ -1158,7 +1163,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * correctly under the mouse cursor.
    * @param event - the 'dragover' event triggered by the mouse.
    */
-  onMouseDragOver(event: MouseEvent) {
+  onMouseDragOver(event: MouseEvent): void {
     this.errorTooltip.updateTooltipMouseLocation(event.pageX, event.pageY);
   }
 
@@ -1167,7 +1172,48 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Hides the tooltip that was displayed during the drag process.
    * @param event - the 'mouseover' event triggered by the mouse.
    */
-  onMouseOver(event: MouseEvent) {
+  onMouseOver(event: MouseEvent): void {
     this.errorTooltip.showTooltip(false);
   }
+
+
+
+  /**
+   * Sets the __$isHovered property to true on the node's data when a drag-over event occurs.
+   * This can be used to visually highlight the node as a potential drop target.
+   * @param node - The TreeNode being dragged over.
+   */
+  onDragOver(node: TreeNode): void {
+    node.data.__$isHovered = true;
+  }
+
+  /**
+   * Sets the __$isHovered property to false on the node's data when a drag-leave event occurs.
+   * This removes any visual highlight from the node as a drop target.
+   * @param node - The TreeNode that the drag has left.
+   */
+  onDragLeave(node: TreeNode) {
+    delete node.data.__$isHovered;
+  }
+
+  /**
+   * Retrieves all error messages for the currently focused node.
+   * Iterates through the node's error object and collects the first message from each error key.
+   * @returns An array of error message strings for display in the UI.
+   */
+  getNodeErrors(): string[] {
+    const nodeIdStr = this.focusNode.id.toString();
+    const nodeStatus = this.formService.getTreeNodeStatusById(nodeIdStr);
+    const errorMessages = [];
+    if (nodeStatus && nodeStatus.errors) {
+      const errorKeys = Object.keys(nodeStatus.errors);
+      for (const key of errorKeys) {
+        if (nodeStatus.errors[key] && nodeStatus.errors[key][0] && nodeStatus.errors[key][0].message) {
+          errorMessages.push(`${nodeStatus.errors[key][0].message}`);
+        }
+      }
+    }
+    return errorMessages;
+  }
+
 }

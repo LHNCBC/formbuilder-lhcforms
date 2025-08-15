@@ -445,7 +445,7 @@ export class FormService {
    * @param node - The starting ITreeNode.
    * @returns An array of linkIds for the node and all its children.
    */
-  getNodeAndDescendantLinkIds(node: ITreeNode): string[] {
+  getLinkIdsForNodeAndDescendants(node: ITreeNode): string[] {
     const linkIds: string[] = [];
     function recurse(n: ITreeNode): void {
       linkIds.push(n.data.linkId);
@@ -1377,8 +1377,6 @@ export class FormService {
     let current = node;
     while (current && current.parent && 'linkId' in current.parent.data) {
       current = current.parent;
-
-      console.log('getRootNode::current - ', current);
     }
     return current;
   }

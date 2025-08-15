@@ -99,7 +99,7 @@ export class ValidationService {
         // returns all nodes.
         // If there is a match on the linkId, validate that the source.data.linkId is not a descendant of the questionItem.
         const sourceItem = this.formService.getTreeNodeByLinkId(linkId);
-        const sourceIds = this.formService.getNodeAndDescendantLinkIds(sourceItem);
+        const sourceIds = this.formService.getLinkIdsForNodeAndDescendants(sourceItem);
         invalid = validSources.some((source) => {
           if (source.data.linkId === questionItem.data.linkId) {
             // now need to make sure that the source.data.linkId is not a child node of the questionItem
@@ -323,6 +323,8 @@ export class ValidationService {
       const node = this.formService.getTreeNodeById(enableWhenObj.id);
       const indexPath = Util.getIndexPath(node).join('.');
 
+      const questionNode = this.formService.getTreeNodeByLinkId(enableWhenObj.q.value);
+
       // Validate whether the  'linkId' specified in the question exists.
       // If not, then throw the 'ENABLEWHEN_INVALID_QUESTION' error.
       if (!enableWhenObj.aType) {
@@ -336,11 +338,22 @@ export class ValidationService {
           enableWhenObj.q
         );
         errors.push(err);
+      } else if (enableWhenObj.aType === 'group' || enableWhenObj.aType === 'display') {
+        const err = this.createErrorObj(
+          'ENABLEWHEN_INVALID_QUESTION',
+          `#${enableWhenObj.q.canonicalPathNotation}`,
+          `Invalid question: Referencing an item '${questionNode.data.text}' (linkId: ${enableWhenObj.q.value}) of type '${enableWhenObj.aType}' is not allowed.`,
+          indexPath,
+          [enableWhenObj.q.value, enableWhenObj.op.value, JSON.stringify(aValue)],
+          isSchemaFormValidation,
+          enableWhenObj.q
+        );
+        errors.push(err);
       } else if (enableWhenObj.invalid) {
         const err = this.createErrorObj(
           'ENABLEWHEN_INVALID_QUESTION',
           `#${enableWhenObj.q.canonicalPathNotation}`,
-          `The question cannot be a display item, a group item, or a descendant of this item. '${enableWhenObj.q.value}'.`,
+          `Invalid question: Referencing a child or descendant item '${questionNode.data.text}' (linkId: ${enableWhenObj.q.value}) is not allowed.'`,
           indexPath,
           [enableWhenObj.q.value, enableWhenObj.op.value, JSON.stringify(aValue)],
           isSchemaFormValidation,
@@ -348,7 +361,7 @@ export class ValidationService {
         );
         errors.push(err);
       } else {
-        const opExists = enableWhenObj?.op ? enableWhenObj.operatorOptions.some(operatorOption => operatorOption.option === enableWhenObj.op.value) : false;
+        const opExists = enableWhenObj?.op ? enableWhenObj?.operatorOptions?.some(operatorOption => operatorOption.option === enableWhenObj.op.value) : false;
         if (!opExists) {
           const errorCode = 'ENABLEWHEN_INVALID_OPERATOR';
           const err: any = {};
@@ -408,7 +421,7 @@ export class ValidationService {
     // Get the top-most root node for the current node
     const rootNode = this.formService.getRootNodeFromNode(node);
     // Recursively collects all linkIds from the given node and its descendant nodes.
-    const linkIds = this.formService.getNodeAndDescendantLinkIds(node);
+    const linkIds = this.formService.getLinkIdsForNodeAndDescendants(node);
     // Check for Enable When dependency
     const dependencyLinkId = this.formService.hasEnableWhenReferenceToLinkIds(rootNode.data.__$treeNodeId, linkIds);
 
@@ -418,7 +431,7 @@ export class ValidationService {
       const err = this.createErrorObj(
         'ITEM_DELETION_BLOCKED',
         `#enableWhen.0.question`,
-        `This item cannot be deleted because it is referenced by an enableWhen condition in the item '${matchingNode.data.text}'.`,
+        `This item cannot be deleted because it is referenced by an enableWhen condition in the item '${matchingNode.data.text}' (linkId: ${matchingNode.data.linkId}).`,
         '',
         [],
         false,

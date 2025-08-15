@@ -4383,7 +4383,7 @@ describe('Home page', () => {
       // Click on the new added item
       cy.getTreeNode('New item 1').click();
 
-      // Go to the link id section and enter 1
+      // Go to the link id section
       cy.editableLinkId()
         .scrollIntoView()
         .should('be.visible')
@@ -6275,8 +6275,7 @@ describe('enableWhen dependency validation', () => {
 
     // The modal is displayed.
     cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
-    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a node that contains an enableWhen question reference to the source node or any ancestor of the source node.');
-
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a node of type \'display\' because it cannot contain children.');
     // Close the modal by clicking the close button
     cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
 
@@ -6315,7 +6314,7 @@ describe('enableWhen dependency validation', () => {
 
     // Select 'New item 8'
     cy.get('lfb-node-dialog').find('#moveTarget1').click();
-    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
+    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
 
     // Select 'As a child of target item' option
     cy.get('lfb-node-dialog').find('ul').within(() => {
@@ -6353,7 +6352,7 @@ describe('enableWhen dependency validation', () => {
     });
 
     cy.get('lfb-node-dialog').find('#moveTarget1').click();
-    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
+    cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
 
     // Select 'As a child of target item' option
     cy.get('lfb-node-dialog').find('ul').within(() => {
@@ -6461,6 +6460,47 @@ describe('enableWhen dependency validation', () => {
     cy.get(question1El).should('be.empty');
     cy.get(errorIcon1El)
       .find('small')
-      .should('contain.text', ' The question cannot be a display item, a group item, or a descendant of this item. \'677718877639\' for enableWhen condition 1. ');
+      .should('contain.text', ' Invalid question: Referencing a child or descendant item \'New item 7\' (linkId: 677718877639) is not allowed. ');
   });
+
+  it('should validate and display an error if enableWhen references a question with data type "display"', () => {
+    cy.getTreeNode('Invalid item with enableWhen references display item')
+      .find('fa-icon#error')
+      .should('exist');
+    cy.clickTreeNode('Invalid item with enableWhen references display item');
+
+    // Error should display at the top of the content and at the bottom.
+    cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('have.class', 'text-danger');
+    cy.get('mat-sidenav-content > ul > li').should('have.class', 'text-danger');
+
+    const question1El = '[id^="enableWhen.0.question"]';
+    const errorIcon1El = '[id^="enableWhen.0_err"]';
+
+    cy.get(errorIcon1El).should('exist');
+    cy.get(question1El).should('be.empty');
+    cy.get(errorIcon1El)
+      .find('small')
+      .should('contain.text', ' Invalid question: Referencing an item \'Display item\' (linkId: 969848586908) of type \'display\' is not allowed for enableWhen condition 1. ');
+  });
+
+  it('should validate and display an error if enableWhen references a question with data type "group"', () => {
+    cy.getTreeNode('Invalid item with enableWhen references group item')
+      .find('fa-icon#error')
+      .should('exist');
+    cy.clickTreeNode('Invalid item with enableWhen references group item');
+
+    // Error should display at the top of the content and at the bottom.
+    cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('have.class', 'text-danger');
+    cy.get('mat-sidenav-content > ul > li').should('have.class', 'text-danger');
+
+    const question1El = '[id^="enableWhen.0.question"]';
+    const errorIcon1El = '[id^="enableWhen.0_err"]';
+
+    cy.get(errorIcon1El).should('exist');
+    cy.get(question1El).should('be.empty');
+    cy.get(errorIcon1El)
+      .find('small')
+      .should('contain.text', ' Invalid question: Referencing an item \'Group item\' (linkId: 967213897865) of type \'group\' is not allowed for enableWhen condition 1. ');
+  });
+
 });

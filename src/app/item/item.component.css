@@ -99,3 +99,8 @@
   white-space: nowrap;
   z-index: 1500 !important;
 }
+
+.drop-target {
+  background-color: #d4f8e8;
+  border: 1px dashed #111111;
+}

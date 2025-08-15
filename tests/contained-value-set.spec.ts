@@ -20,6 +20,7 @@ test.describe('Contained resources table in form level page', async () => {
     );
     await page.getByRole('button', {name: 'Add new ValueSet'}).click();
     const dialog = page.locator('mat-dialog-container');
+    await dialog.waitFor({ state: 'visible' }); // Wait until the input is visible
     await expect(dialog).toBeVisible();
     await dialog.getByLabel('Id', {exact: true}).fill('vs1');
     await dialog.getByLabel('Title', {exact: true}).fill('A title');
@@ -111,6 +112,7 @@ test.describe(() => {
     await expect(PWUtils.getTableCell(flContainedTable, 3, 6).locator(editLoc)).toBeDisabled();
     await PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc).click();
     const dialog = page.locator('mat-dialog-container');
+    await dialog.waitFor({ state: 'visible' }); // Wait until the input is visible
     await expect(dialog).toBeVisible();
     await expect(dialog.getByLabel('Id', {exact: true})).toHaveValue('vs2');
 

@@ -109,6 +109,40 @@
           "text": "New item 7"
         }
       ]
+    },
+    {
+      "type": "display",
+      "linkId": "969848586908",
+      "text": "Display item"
+    },
+    {
+      "type": "string",
+      "linkId": "587234105444",
+      "text": "Invalid item with enableWhen references display item",
+      "enableWhen": [
+        {
+          "question": "969848586908",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "linkId": "967213897865",
+      "text": "Group item"
+    },
+    {
+      "type": "string",
+      "linkId": "587234105555",
+      "text": "Invalid item with enableWhen references group item",
+      "enableWhen": [
+        {
+          "question": "967213897865",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
     }
   ]
 }
