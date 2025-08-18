@@ -50,7 +50,7 @@ describe('Home page', () => {
       cy.get('@codeOption').find('[id^="booleanRadio_true"]').as('codeYesRadio'); // Radio input for assertions
       cy.get('@codeOption').find('[id^="booleanRadio_false"]').as('codeNoRadio'); // Radio input for assertions
 
-      cy.get('.spinner-border').should('not.exist');
+      cy.get('.spinner-border', { timeout: 10000 }).should('not.exist');
     });
 
     it('should display item editor page', () => {
@@ -4490,7 +4490,9 @@ describe('Home page', () => {
 
       // The modal is displayed.
       cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
-      cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a node of type \'display\' because it cannot contain children.');
+      cy.get('lfb-confirm-dlg > div.modal-body')
+        .invoke('text')
+        .should('match', /Cannot drop into item 'Display Data Type' \(linkId: [^)]+\) of type 'display' because it cannot contain children\./);
 
       // Close the modal by clicking the close button
       cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
@@ -6226,7 +6228,10 @@ describe('enableWhen dependency validation', () => {
       cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
     });
 
-    cy.get('lfb-node-dialog').find('#moveTarget1').click();
+    cy.get('lfb-node-dialog').find('#moveTarget1')
+      .should('be.visible')
+      .should($el => expect($el).to.have.length(1))
+      .click();
     // Select 'New item 6' as a target location
     cy.get('lfb-node-dialog').find('#moveTarget1').type('{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{downarrow}{enter}');
 
@@ -6239,7 +6244,7 @@ describe('enableWhen dependency validation', () => {
 
     // The error modal is displayed.
     cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
-    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a node that contains an enableWhen question reference to the source node or any ancestor of the source node.');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into item \'Invalid item with enableWhen references display item\' (linkId: 587234105444) that contains an enableWhen question reference to the source node or any ancestor of the source node.');
 
     // Close the modal by clicking the close button
     cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
@@ -6275,7 +6280,7 @@ describe('enableWhen dependency validation', () => {
 
     // The modal is displayed.
     cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
-    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a node of type \'display\' because it cannot contain children.');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into item \'Display item\' (linkId: 969848586908) of type \'display\' because it cannot contain children.');
     // Close the modal by clicking the close button
     cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
 
@@ -6325,7 +6330,7 @@ describe('enableWhen dependency validation', () => {
 
     // The error modal is displayed.
     cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
-    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a descendant of a node that contains an enableWhen question reference to the source node.');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a descendant of item \'New item 7\'(linkId: 587234105553) that contains an enableWhen question reference to the source node.');
 
     // Close the modal by clicking the close button
     cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
@@ -6363,7 +6368,7 @@ describe('enableWhen dependency validation', () => {
 
     // The error modal is displayed.
     cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
-    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a descendant of a node that contains an enableWhen question reference to the source node.');
+    cy.get('lfb-confirm-dlg > div.modal-body').should('contain.text', 'Cannot drop into a descendant of item \'New item 7\'(linkId: 587234105553) that contains an enableWhen question reference to the source node.');
 
     // Close the modal by clicking the close button
     cy.get('lfb-confirm-dlg').contains('button', 'Close').click();

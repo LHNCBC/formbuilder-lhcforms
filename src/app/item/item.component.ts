@@ -688,9 +688,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         if (Array.isArray(errors) && errors.length > 0) {
           allEnableWhenErrors = allEnableWhenErrors.concat(errors);
           if (currentNode.data.linkId === targetNode.data.linkId) {
-            errorMessage = "Cannot drop into a node that contains an enableWhen question reference to the source node or any ancestor of the source node.";
+            errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${ targetNode.data.linkId }) that contains an enableWhen question reference to the source node or any ancestor of the source node.`;
           } else {
-            errorMessage = "Cannot drop into a descendant of a node that contains an enableWhen question reference to the source node.";
+            errorMessage = `Cannot drop into a descendant of item '${currentNode.data.text}'(linkId: ${ currentNode.data.linkId }) that contains an enableWhen question reference to the source node.`;
           }
           break; // Exit loop if any error is found
         }
@@ -713,9 +713,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (this.isDisplayTypeNodeOrAncestor(targetNode)) {
       hasError = true;
       if (targetNode.data.type === 'display') {
-        errorMessage = "Cannot drop into a node of type 'display' because it cannot contain children.";
+        errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${targetNode.data.linkId}) of type 'display' because it cannot contain children.`;
       } else {
-         errorMessage = "Cannot drop into a node or any ancestor of type 'display' because it cannot contain children.";
+        errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${targetNode.data.linkId}) because it has an ancestor of type 'display', which cannot contain children.`;
       }
     } else if (targetNode.data.linkId && contextNode.data.linkId !== targetNode.data.linkId) {
       const enableWhenResult = this.getEnableWhenAncestorValidationError(targetNode);
@@ -732,10 +732,16 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       }, 0);
     } else {
 
+      let moveIndex = targetNode.index + (position === 'AFTER' ? 1 : 0);
+      let moveParent = position === 'CHILD' ? targetNode : targetNode.parent;
+      if (position === 'CHILD') {
+        // Place as last child
+        moveIndex = (targetNode.data.item && Array.isArray(targetNode.data.item)) ? targetNode.data.item.length : 0;
+      }
       this.treeComponent.treeModel.moveNode(contextNode, {
         dropOnNode: position === 'CHILD',
-        parent: position === 'CHILD' ? targetNode : targetNode.parent,
-        index: targetNode.index + (position === 'AFTER' ? 1 : 0)
+        parent: moveParent,
+        index: moveIndex
       });
       this.treeComponent.treeModel.setFocusedNode(contextNode);
       this.treeComponent.treeModel.getFocusedNode().setActiveAndVisible(false);
