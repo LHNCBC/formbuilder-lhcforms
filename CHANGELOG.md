@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.3] 2025-07-25
+### Changed
+- Fixed the issue with quantity unit lookup.
+
 ## [10.3.2] 2025-07-21
 ### Added
 - Added the ability to create/update the Answer Expression.

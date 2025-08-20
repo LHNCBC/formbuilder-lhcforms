@@ -44,7 +44,6 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
   unitService = inject(UnitService);
 
   initializing = false;
-  // dataType: string;
 
   constructor() {
     super();
