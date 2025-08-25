@@ -732,7 +732,6 @@ describe('Home page', () => {
       cy.get('[id^="initial.1.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
     });
 
-
     describe('Answer expression', () => {
       beforeEach(() => {
         cy.loadHomePage();
