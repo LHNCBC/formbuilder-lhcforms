@@ -4,7 +4,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 
 ## [10.3.4] 2025-08-20
 ### Changed
-- Split Cypress item-level test file into smaller file.
+- Split the Cypress item-level test file into smaller files.
 
 ## [10.3.3] 2025-07-25
 ### Changed
