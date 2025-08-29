@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.5] 2025-08-29
+### Fixed
+- Fixed loading of LOINC panel from item level page.
+
 ## [10.3.4] 2025-08-20
 ### Changed
 - Split the Cypress item-level test file into smaller files.
