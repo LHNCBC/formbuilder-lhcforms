@@ -27,6 +27,22 @@ test.describe('item-level fields', async () => {
     await expect(page.locator('input[id^="units"]')).toHaveValue('kilogram');
   });
 
+  test('should add a LOINC panel', async ({page, browser}) => {
+    await page.getByRole('button', {name: 'Add new item from LOINC'}).click();
+    const dlg = page.getByRole('dialog', {name: 'Add LOINC item'});
+    await expect(dlg).toBeVisible();
+    await dlg.getByLabel('Panel').click();
+    const inputEl = dlg.getByLabel('Search for a LOINC item:');
+    await inputEl.fill('vital');
+    await expect(dlg.getByRole('listbox')).toBeVisible();
+    // await inputEl.fill('body weight');
+    await page.keyboard.press('Enter');
+    await expect(inputEl).toHaveValue('34565-2: Vital signs, weight & height panel');
+    await page.getByRole('button', {name: 'Add'}).click();
+
+    await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Vital signs, weight and height panel');
+  });
+
   test('should import help text item from file and localstorage', async ({page, browser}) => {
     const newHelpText = 'testing help text from localstorage';
     const helpTextInputEl = page.getByLabel('Help text', {exact: true});
