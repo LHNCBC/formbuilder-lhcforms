@@ -173,6 +173,7 @@ export class FetchService {
       const convertedLFormsItem = {
         question: form.name,
         questionCode: form.code,
+        linkId: form.code,
         dataType: 'SECTION',
         items: form.items
       };
