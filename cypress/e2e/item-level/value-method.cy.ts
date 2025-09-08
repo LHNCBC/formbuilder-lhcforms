@@ -219,6 +219,14 @@ describe('Home page', () => {
         // The error on the Pick Answer field should go away
         cy.get('@pickAnswer').should('not.have.class', 'invalid');
 
+        cy.get('lfb-pick-answer')
+          .find('small.text-danger')
+          .should('not.exist');
+
+        // Error display at the top of the content and at the bottom should go away.
+        cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('not.have.class', 'text-danger');
+        cy.get('mat-sidenav-content > ul > li').should('not.exist');
+
         // Select 'Example 2' option
         cy.get('@pickAnswer').then(($el: JQuery<HTMLInputElement>) => {
           cy.selectAutocompleteOption($el, false, null, 3, '{downarrow}{downarrow}{enter}', 'Example 2');
@@ -336,6 +344,14 @@ describe('Home page', () => {
         cy.get('@pickAnswer').should('have.value', '200');
 
         cy.get('@pickAnswer').should('not.have.class', 'invalid');
+
+        cy.get('lfb-pick-answer')
+          .find('small.text-danger')
+          .should('not.exist');
+
+        // Error display at the top of the content and at the bottom should go away.
+        cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('not.have.class', 'text-danger');
+        cy.get('mat-sidenav-content > ul > li').should('not.exist');
       });
 
       it('should create Initial compute value expression', () => {
@@ -817,6 +833,14 @@ describe('Home page', () => {
 
         // The error on the Pick Answer field should go away
         cy.get('@pickAnswer').should('not.have.class', 'invalid');
+
+        cy.get('lfb-pick-answer')
+          .find('small.text-danger')
+          .should('not.exist');
+
+        // Error display at the top of the content and at the bottom should go away.
+        cy.get('mat-sidenav-content > div.mt-1 > ul > li').should('not.have.class', 'text-danger');
+        cy.get('mat-sidenav-content > ul > li').should('not.exist');
 
         // Select 'Example 2' option
         cy.get('@pickAnswer').then(($el: JQuery<HTMLInputElement>) => {

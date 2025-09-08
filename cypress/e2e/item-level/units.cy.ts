@@ -120,7 +120,7 @@ describe('Home page', () => {
       });
       cy.get('@units').type('.').type('st');
       cy.contains('#completionOptions tr', 'stere').click();
-      cy.get('@units').should('have.value', 'Ampere/kilogram.stere');
+      cy.get('@units').should('have.value', '[Ampere/kilogram]*stere');
       cy.get('@unitCode').should('have.value', 'A/kg.st');
       cy.get('@unitSystem').should('have.value', 'http://unitsofmeasure.org');
       cy.questionnaireJSON().should((qJson) => {
@@ -144,26 +144,26 @@ describe('Home page', () => {
       });
       cy.get('@units').type('/').type('k');
       cy.contains('#completionOptions tr', 'kat/kg').click();
-      cy.get('@units').should('have.value', 'mean Gregorian year/katal per kilogram');
-      cy.get('@unitCode').should('have.value', 'a_g/kat/kg');
+      cy.get('@units').should('have.value', '[mean Gregorian year]/[katal/kilogram]');
+      cy.get('@unitCode').should('have.value', 'a_g/(kat/kg)');
       cy.get('@unitSystem').should('have.value', 'http://unitsofmeasure.org');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
-        expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/kat/kg');
-        expect(qJson.item[0].extension[0].valueCoding.display).equal('[[mean Gregorian year]/katal]/kilogram');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/(kat/kg)');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[mean Gregorian year]/[katal/kilogram]');
       });
 
       cy.get('@units').type('/').type('m');
       cy.contains('#completionOptions tr', 'meter').click();
-      cy.get('@units').should('have.value', 'mean Gregorian year/katal per kilogram/meter');
-      cy.get('@unitCode').should('have.value', 'a_g/kat/kg/m');
+      cy.get('@units').should('have.value', '[mean Gregorian year]/[katal/kilogram]/meter');
+      cy.get('@unitCode').should('have.value', '(a_g)/(kat/kg)/m');
       cy.get('@unitSystem').should('have.value', 'http://unitsofmeasure.org');
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
-        expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/kat/kg/m');
-        expect(qJson.item[0].extension[0].valueCoding.display).equal('[[[mean Gregorian year]/katal]/kilogram]/meter');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('(a_g)/(kat/kg)/m');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('[mean Gregorian year]/[katal/kilogram]/meter');
       });
     });
 
@@ -211,13 +211,6 @@ describe('Home page', () => {
       cy.get('[id^="__$units.0.valueCoding.code"]').should('have.value', 'L');
       cy.get('[id^="__$units.0.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
 
-      cy.questionnaireJSON().should((qJson) => {
-        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
-        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
-        expect(qJson.item[0].extension[0].valueCoding.code).equal('L');
-        expect(qJson.item[0].extension[0].valueCoding.display).equal('Liters');
-      });
-
       cy.get('@addUnitButton').click();
 
       cy.get('[id^="units"]').should('have.length', 2);
@@ -232,11 +225,93 @@ describe('Home page', () => {
       cy.get('[id^="__$units.1.valueCoding.code"]').should('have.value', '[oz_av]');
       cy.get('[id^="__$units.1.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
 
+      // Add m/s/J
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 3);
+      cy.get('[id^="units"]').eq(2).as('unit3');
+      cy.get('@unit3').should('be.visible');
+      cy.get('@unit3').type('m/s/J');
+      cy.get('[id^="__$units.2.valueCoding.code"]').click();
+      cy.get('@unit3').should('have.value', '[meter/[second - time]]/joule');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.2.valueCoding.code"]').should('have.value', 'm/s/J');
+      cy.get('[id^="__$units.2.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      // Add kg.m/s2
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 4);
+      cy.get('[id^="units"]').eq(3).as('unit4');
+      cy.get('@unit4').should('be.visible');
+      cy.get('@unit4').type('kg.m/s2');
+      cy.get('[id^="__$units.3.valueCoding.code"]').click();
+      cy.get('@unit4').should('have.value', '[kilogram*meter]/[second - time2]');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.3.valueCoding.code"]').should('have.value', 'kg.m/s2');
+      cy.get('[id^="__$units.3.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      // Add kg/(m.s2)
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 5);
+      cy.get('[id^="units"]').eq(4).as('unit5');
+      cy.get('@unit5').should('be.visible');
+      cy.get('@unit5').type('kg/(m.s2)');
+      cy.get('[id^="__$units.4.valueCoding.code"]').click();
+      cy.get('@unit5').should('have.value', 'kilogram/[meter*[second - time2]]');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.4.valueCoding.code"]').should('have.value', 'kg/(m.s2)');
+      cy.get('[id^="__$units.4.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+      // Add kg.m2/(s3.A)
+      cy.get('@addUnitButton').click();
+
+      cy.get('[id^="units"]').should('have.length', 6);
+      cy.get('[id^="units"]').eq(5).as('unit6');
+      cy.get('@unit6').should('be.visible');
+      cy.get('@unit6').type('kg.m2/(s3.A)');
+      cy.get('[id^="__$units.5.valueCoding.code"]').click();
+      cy.get('@unit6').should('have.value', '[kilogram*[square meter]]/[[second - time3]*Ampere]');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.5.valueCoding.code"]').should('have.value', 'kg.m2/(s3.A)');
+      cy.get('[id^="__$units.5.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
+
       cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[0].valueCoding.code).equal('L');
+        expect(qJson.item[0].extension[0].valueCoding.display).equal('Liters');
+
         expect(qJson.item[0].extension[1].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
         expect(qJson.item[0].extension[1].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[1].valueCoding.code).equal('[oz_av]');
         expect(qJson.item[0].extension[1].valueCoding.display).equal('ounce');
+
+        expect(qJson.item[0].extension[2].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[2].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[2].valueCoding.code).equal('m/s/J');
+        expect(qJson.item[0].extension[2].valueCoding.display).equal('[meter/[second - time]]/joule');
+
+        expect(qJson.item[0].extension[3].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[3].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[3].valueCoding.code).equal('kg.m/s2');
+        expect(qJson.item[0].extension[3].valueCoding.display).equal('[kilogram*meter]/[second - time2]');
+
+        expect(qJson.item[0].extension[4].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[4].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[4].valueCoding.code).equal('kg/(m.s2)');
+        expect(qJson.item[0].extension[4].valueCoding.display).equal('kilogram/[meter*[second - time2]]');
+
+        expect(qJson.item[0].extension[5].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption');
+        expect(qJson.item[0].extension[5].valueCoding.system).equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].extension[5].valueCoding.code).equal('kg.m2/(s3.A)');
+        expect(qJson.item[0].extension[5].valueCoding.display).equal('[kilogram*[square meter]]/[[second - time3]*Ampere]');
       });
     });
 
@@ -256,11 +331,26 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
         expect(qJson.item[0].extension[0].valueCoding.code).equal('a_g/kat/kg/m');
-        // The display is however a little different as it is coming from the UCUM instead of autocompleter
-        // So instead of 'mean Gregorian year/katal per kilogram/meter'
+        // The display is, however, slightly different, as it is coming from UCUM instead of the autocompleter.
+        // So instead of 'mean Gregorian year/katal per kilogram/meter', it is returned as
+        // [[[mean Gregorian year]/katal]/kilogram]/meter.
         expect(qJson.item[0].extension[0].valueCoding.display).equal('[[[mean Gregorian year]/katal]/kilogram]/meter');
       });
+
+      // Now try display that have multiple words.
+      cy.get('@units').clear().type('m/s/J');
+      cy.get('#lhc-tools-searchResults').should('be.visible');
+      cy.contains('#completionOptions tr', 'joule per liter').click();
+      // The result from the UCUM package for 'm/s/joule per liter' may not be correctly represented.
+      // It is returning as 'm/s/J/L - [[meter/[second - time]]/joule]/liters'.
+      // Therefore, Form Builder will submit the input as 'm/s/(J/L)' in this case to correct the order.
+      // The corrected result will be 'm/s/(J/L)' - [meter/[second - time]]/[joule/liters].
+      cy.get('@units').should('have.value', '[meter/[second - time]]/[joule/Liters]');
+      cy.get('[id^="__$units.0.valueCoding.code"]').should('have.value', 'm/s/(J/L)');
+      cy.get('[id^="__$units.0.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
     });
+
     it('should support lookup display string that contains wordBoundaryChars and no spaces between words', () => {
       cy.get('[id^="units"]').should('not.exist');
       cy.selectDataType('decimal');
@@ -269,6 +359,11 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('Ampere/kilogram.stere').type('{enter}');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.0.valueCoding.code"]').should('have.value', 'A/kg.st');
+      cy.get('[id^="__$units.0.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
@@ -284,6 +379,11 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('mean Gregorian year').type('{enter}');
+
+      // The unit should also now display the code and system.
+      cy.get('[id^="__$units.0.valueCoding.code"]').should('have.value', 'a_g');
+      cy.get('[id^="__$units.0.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].extension[0].url).equal('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
         expect(qJson.item[0].extension[0].valueCoding.system).equal('http://unitsofmeasure.org');
@@ -291,7 +391,8 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].valueCoding.display).equal('mean Gregorian year');
       });
     });
-    it('should NOT support lookup display string that contains wordBoundaryChars and spaces between words', () => {
+
+    it('should not reliably support lookup by typing keywords contain word boundary characters and spaces', () => {
       cy.get('[id^="units"]').should('not.exist');
       cy.selectDataType('decimal');
       cy.getTypeInitialValueValueMethodClick();
@@ -299,10 +400,15 @@ describe('Home page', () => {
       cy.get('@units').should('be.visible');
       cy.get('#lhc-tools-searchResults').should('not.be.visible');
       cy.get('@units').type('mean Gregorian year/katal per kilogram').type('{enter}');
-      cy.get('[id^="__$units.0.valueCoding.code"]').should('have.value', '');
-      cy.get('[id^="__$units.0.valueCoding.system"]').should('have.value', '');
+      cy.get('[id^="__$units.0.valueCoding.code').should('have.value', 'a_g/(kat/kg)', { timeout: 5000 });
+      cy.get('[id^="__$units.0.valueCoding.system').should('have.value', 'http://unitsofmeasure.org');
 
+      // Switching it around, and the result is not found.
+      cy.get('@units').clear().type('katal per kilogram/mean Gregorian year').type('{enter}');
+      cy.get('[id^="__$units.0.valueCoding.code').should('have.value', '');
+      cy.get('[id^="__$units.0.valueCoding.system').should('have.value', '');
     });
+
     it('should allow users to create their own valueCoding', () => {
       cy.get('[id^="units"]').should('not.exist');
       cy.selectDataType('decimal');
@@ -351,7 +457,6 @@ describe('Home page', () => {
       cy.get('[id^="units"]').eq(2).should('have.value', 'milligram');
       cy.get('[id^="__$units.2.valueCoding.code"]').should('have.value', 'mg');
       cy.get('[id^="__$units.2.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
-
     });
 
     it('should import decimal/integer units', () => {

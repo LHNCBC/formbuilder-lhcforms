@@ -732,7 +732,6 @@ describe('Home page', () => {
       cy.get('[id^="initial.1.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
     });
 
-
     describe('Answer expression', () => {
       beforeEach(() => {
         cy.loadHomePage();
@@ -916,6 +915,34 @@ describe('Home page', () => {
         // display the Answer expression.
         cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
 
+      });
+    });
+
+    describe('Accepting only LOINC terms of use', () => {
+      beforeEach(() => {
+        cy.loadHomePageWithLoincOnly();
+        cy.get('input[type="radio"][value="scratch"]').click();
+        cy.get('button').contains('Continue').click();
+        cy.get('button').contains('Create questions').click();
+        cy.get('.spinner-border').should('not.exist');
+      });
+      it('should not display SNOMED option in answerValueSet', () => {
+        cy.selectDataType('coding');
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+        cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
+        // SNOMED radio should not exist
+        cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').should('not.exist');
+        cy.get('#answerValueSet_non-snomed').should('not.exist');
+        cy.get('#answerValueSet_ecl').should('not.exist');
+        cy.get('#answerValueSet_edition').should('not.exist');
+        cy.get('#answerValueSet_version').should('not.exist');
+        cy.get('lfb-answer-option').should('be.visible');
+
+        cy.get('[for^="__\\$answerOptionMethods_value-set"]').click();
+        cy.get('#answerValueSet_non-snomed').should('be.visible');
+        cy.get('lfb-answer-option').should('not.exist');
       });
     });
   });

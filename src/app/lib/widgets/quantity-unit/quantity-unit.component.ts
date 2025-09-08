@@ -35,6 +35,12 @@ export class QuantityUnitComponent extends UnitsDisplayComponent implements Afte
         }
       };
 
+      // Only call if data contains a space
+      if (data && typeof data.final_val === 'string' && data.final_val.includes(' ')) {
+        const completionOptions = document.getElementById('completionOptions');
+        this.unitService.replaceTokensWithCompletionOptions(data, completionOptions, this.options.wordBoundaryChars);
+      }
+
       if (data.used_list || data.on_list) {
         if (data.item_code && !this.unitService.hasDelimiter(data.final_val)) {
           const selectedUnit = data.list.find((unit) => {

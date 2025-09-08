@@ -2,9 +2,25 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.3] 2025-07-23
+## [10.3.7] 2025-07-23
 ### Fixed
 - Fix invalid source item in enableWhen condition.
+
+## [10.3.6] 2025-08-26
+### Fixed
+- Fixed a validation issue with the initial value of the answer option.
+
+## [10.3.5] 2025-08-29
+### Fixed
+- Fixed loading of LOINC panel from item level page.
+
+## [10.3.4] 2025-08-20
+### Changed
+- Split the Cypress item-level test file into smaller files.
+
+## [10.3.3] 2025-07-25
+### Changed
+- Fixed the issue with quantity unit lookup.
 
 ## [10.3.2] 2025-07-21
 ### Added
