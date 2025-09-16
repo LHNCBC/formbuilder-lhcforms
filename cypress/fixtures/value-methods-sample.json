@@ -424,6 +424,84 @@
       ],
       "text": "Continuously Compute Value with decimal data type",
       "readOnly": true
+    },
+    {
+      "id": 4951063279999,
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "1",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "1"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "2",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "2"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a + %b"
+          }
+        }
+      ],
+      "linkId": "/itm10",
+      "text": "Compute Initial Value with variables without custom expression-editor-variable-type",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11871-3",
+            "display": "Underwear or less"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11872-1",
+            "display": "Street clothes, no shoes"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11873-9",
+            "display": "Street clothes & shoes"
+          }
+        }
+      ]
     }
   ]
 }
