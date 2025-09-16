@@ -155,10 +155,10 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
           this.formService._validationStatusChanged$.next(null);
         }
 
-        // When switching to "pick-initial" or "type-initial" value methods (and not using "answer-expression"),
+        // When switching to "pick-initial" or "type-initial" or "None" value methods (and not using "answer-expression"),
         // remove any lingering answer expression-related extensions from the root 'extension' property
         // to ensure the form state is consistent and does not retain
-        if ((val === CONSTANTS.VALUE_METHOD_PICK_INITIAL || val === CONSTANTS.VALUE_METHOD_TYPE_INITIAL) && this.answerOptionMethod !== CONSTANTS.ANSWER_OPTION_METHOD_ANSWER_EXPRESSION) {
+        if ((val !== CONSTANTS.VALUE_METHOD_COMPUTE_INITIAL && val !== CONSTANTS.VALUE_METHOD_COMPUTE_CONTINUOUSLY) && this.answerOptionMethod !== CONSTANTS.ANSWER_OPTION_METHOD_ANSWER_EXPRESSION) {
           const updatedExts = this.formService.removeExpressionsExtensions(exts);
           if (updatedExts.length !== exts.length) {
             this.formProperty.findRoot().getProperty('extension').setValue(updatedExts, false);

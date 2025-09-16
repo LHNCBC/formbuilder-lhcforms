@@ -790,6 +790,52 @@ describe('Home page', () => {
           );
         });
 
+        // Select 'None' option for 'Value method' field
+        // ---------------------------------------------------------------
+        cy.getNoneValueMethodClick();
+
+        cy.questionnaireJSON().should((qJson) => {
+          // The 'Initial expression' should be removed.
+          expect(qJson.item[7].extension).to.deep.equal([
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/variable",
+              "valueExpression": {
+                "name": "a",
+                "language": "text/fhirpath",
+                "expression": "1",
+                "extension": [
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                    "valueString": "simple"
+                  },
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                    "valueString": "1"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/variable",
+              "valueExpression": {
+                "name": "b",
+                "language": "text/fhirpath",
+                "expression": "2",
+                "extension": [
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                    "valueString": "simple"
+                  },
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                    "valueString": "2"
+                  }
+                ]
+              }
+            }
+          ]);
+        });
+
         // Select 'Pick initial value' option for 'Value method' field
         // ---------------------------------------------------------------
         // Switch to data type 'coding'
