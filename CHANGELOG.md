@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.7] 2025-09-16
+### Fixed
+- Ensure the 'Type initial value' option remains visible when toggling 'Create answer list' or switching items.
+
 ## [10.3.6] 2025-08-26
 ### Fixed
 - Fixed a validation issue with the initial value of the answer option.
