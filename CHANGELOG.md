@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.7] 2025-09-17
+### Fixed
+- Fixed issue with variable deletion not updating the list.
+
 ## [10.3.6] 2025-08-26
 ### Fixed
 - Fixed a validation issue with the initial value of the answer option.
