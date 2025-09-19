@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.7] 2025-09-19
+### Added
+- Added Cypress tests for form and item variables.
+
 ## [10.3.6] 2025-08-26
 ### Fixed
 - Fixed a validation issue with the initial value of the answer option.
