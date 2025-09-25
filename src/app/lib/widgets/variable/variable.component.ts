@@ -126,11 +126,14 @@ export class VariableComponent extends TableComponent implements OnInit {
    * @returns - Array of non-empty variables or an empty array.
    */
   get nonEmptyVariables() {
+    console.log('variable::nonEmptyVariables:: ', this.formProperty.value);
     return (this.formProperty.value ?? []).filter(v => v && (
-        (Array.isArray(v.extension) && v.extension.length > 0) ||
-        (v.valueExpression && Array.isArray(v.valueExpression.extension) && v.valueExpression.extension.length > 0)
-      )
-    );
+      (Array.isArray(v.extension) && v.extension.length > 0) ||
+      (v.valueExpression &&
+        'name' in v.valueExpression &&
+        'language' in v.valueExpression &&
+        'expression' in v.valueExpression)
+    ));
   }
 
   /**
