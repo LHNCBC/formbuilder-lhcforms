@@ -640,7 +640,7 @@ describe('Home page', () => {
           cy.get('#expression-editor-base-dialog').should('exist');
 
           // Variables section
-          cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.get('lhc-variables > h2').should('contain', 'Form Variables');
           cy.get('#variables-section .variable-row').should('have.length', 0);
 
           // Add a new variable 'a_fhir_exp'

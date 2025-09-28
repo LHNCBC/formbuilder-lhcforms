@@ -40,6 +40,7 @@ export const EXTENSION_URL_INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/Stru
 export const EXTENSION_URL_CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
 // formerly ANSWER_EXPRESSION
 export const EXTENSION_URL_ANSWER_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression';
+export const EXTENSION_URL_ENABLEWHEN_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression';
 
 // Unit
 // formerly questionUnitExtUrl

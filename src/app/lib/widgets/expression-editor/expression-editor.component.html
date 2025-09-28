@@ -1,31 +1,36 @@
 <div [ngClass]="{'row': true, 'm-0': true}">
-  <lfb-label *ngIf="!nolabel"
+  <lfb-label *ngIf="!noTableLabel"
              [attr.for]="elementId"
              [title]="schema.title"
              [helpMessage]="schema.description"
              class="col-2 ps-0 pe-1 ng-star-inserted"
              [ngClass]="labelClasses"
   ></lfb-label>
+  <div *ngIf="noTableLabel" class="col-2 ps-0 pe-1"></div>
 
-  <div [ngClass]="controlClasses" class="col p-0">
-    <div class="input-group">
-      <textarea
-        readonly
-        aria-label="FHIRPath"
-        id="outputExpression"
-        [(ngModel)]="expression"
-        class="flex-item textarea"
-        [formControl]="control"
-        class="grayed-out form-control form-control-sm"
-        *ngIf="schema.widget.showExpression" 
-      ></textarea>
+
+    <div [ngClass]="controlClasses" class="col p-0">
+      <lfb-label *ngIf="noTableLabel" [helpMessage]="schema.description" [title]="schema.title"
+                 [labelId]="'label_'+id" [for]="id"></lfb-label>
+      <div class="input-group">
+        <textarea
+          readonly
+          aria-label="FHIRPath"
+          [id]="getExpressionId()"
+          [(ngModel)]="expression"
+          class="flex-item textarea"
+          [formControl]="control"
+          class="grayed-out form-control form-control-sm"
+          *ngIf="schema.widget.showExpression"
+        ></textarea>
+      </div>
+      <button [id]="getEditExpressionId()" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button" style="width:100%"
+              triggers="manual" placement="bottom top"
+              popoverClass=""
+      >
+        <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> Create/edit expression
+      </button>
     </div>
-    <button id="editExpression" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button" style="width:100%"
-            triggers="manual" placement="bottom top"
-            popoverClass=""
-    >
-      <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> Create/edit expression
-    </button>
-  </div>
+
 </div>
 

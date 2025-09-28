@@ -145,9 +145,10 @@ export class VariableComponent extends TableComponent implements OnInit {
     modalRef.componentInstance.expressionUri = this.schema.widget.expressionUri;
     modalRef.componentInstance.questionnaire = this.questionnaire;
     modalRef.componentInstance.display = this.schema.widget.displayExpressionEditorSections;
+    modalRef.componentInstance.expressionLabel = this.schema.widget.expressionLabel;
     modalRef.result.then((result) => {
-      // Result returning from the Rule Editor is the whole questionnaire.
-      // Rule Editor returns false in the case changes were cancelled.
+      // Result returning from the Expression Editor is the whole questionnaire.
+      // Expression Editor returns false in the case changes were cancelled.
       if (result) {
         if (this.linkId) {
           this.resultExtensions = this.extractVariableExtensions(result.item, this.linkId);

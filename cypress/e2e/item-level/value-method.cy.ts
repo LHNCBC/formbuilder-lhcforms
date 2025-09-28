@@ -363,7 +363,7 @@ describe('Home page', () => {
 
         cy.get('@computeInitial').should('be.visible').click();
         cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editExpression').click();
+        cy.get('button#editInitialExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
 
@@ -444,7 +444,7 @@ describe('Home page', () => {
         });
 
         // Go back to the Expression Editor to check that the settings are still correct.
-        cy.get('button#editExpression').click();
+        cy.get('button#editInitialExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
@@ -469,7 +469,7 @@ describe('Home page', () => {
 
         cy.get('@computeContinuously').should('be.visible').click();
         cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editExpression').click();
+        cy.get('button#editCalculatedExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
 
@@ -550,7 +550,7 @@ describe('Home page', () => {
         });
 
         // Go back to the Expression Editor to check that the settings are still correct.
-        cy.get('button#editExpression').click();
+        cy.get('button#editCalculatedExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
@@ -575,7 +575,7 @@ describe('Home page', () => {
 
         cy.get('@computeInitial').should('be.visible').click();
         cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editExpression').click();
+        cy.get('button#editInitialExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
 

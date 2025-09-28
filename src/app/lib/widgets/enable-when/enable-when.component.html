@@ -22,6 +22,8 @@
     <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
   </div>
   <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
+    <lfb-label *ngIf="noTableLabel" [helpMessage]="schema.description" [title]="schema.title"
+               [labelId]="'label_'+id" [for]="id"></lfb-label>
     <table class="table table-borderless table-sm lfb-table" *ngIf="+formProperty.properties.length > 0">
       <thead *ngIf="!noHeader" class="table-active">
       <tr class="d-flex">

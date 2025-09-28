@@ -828,7 +828,7 @@ describe('Home page', () => {
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
 
         // Click the 'Create/edit expression' for the Answer expression
-        cy.get('button#editExpression').click();
+        cy.get('button#editAnswerExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Update the Output expression
           cy.get('textarea#final-expression').clear().type('%a | %b');
@@ -839,7 +839,7 @@ describe('Home page', () => {
         cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b');
 
         // Edit the Answer expression
-        cy.get('button#editExpression').click();
+        cy.get('button#editAnswerExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Update the Output expression
           cy.get('textarea#final-expression').clear().type('%a | %b | 999');
