@@ -2268,6 +2268,7 @@
           { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
           { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
         ],
+        "noTableLabel": true,
         "showExpression": true,
         "expressionLabel": "Output Expression",
         "displayExpressionEditorSections": {
@@ -2333,6 +2334,7 @@
           { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
           { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
         ],
+        "noTableLabel": true,
         "showExpression": true,
         "expressionLabel": "Output Expression",
         "displayExpressionEditorSections": {
@@ -2394,6 +2396,7 @@
       "widget": {
         "id": "expression-editor",
         "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+        "noTableLabel": true,
         "showExpression": true,
         "expressionLabel": "Answer Expression",
         "displayExpressionEditorSections": {
