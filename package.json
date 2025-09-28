@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "10.3.6",
+  "version": "10.3.8",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -59,7 +59,7 @@
     "@angular/platform-browser-dynamic": "~19.1.8",
     "@angular/router": "~19.1.8",
     "@bugsplat/angular-tree-component": "^13.0.1",
-    "@ctrl/ngx-codemirror": "^7.0.0",
+    "@ctrl/ngx-codemirror": "7.0.0",
     "@fortawesome/angular-fontawesome": "^1.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
