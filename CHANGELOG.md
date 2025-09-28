@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.9] 2025-09-29
+### Added
+- Implemented enableWhenExpression.
+
 ## [10.3.8] 2025-09-26
 ### Added
 - Added Cypress tests for form and item variables.
