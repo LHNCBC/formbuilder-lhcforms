@@ -19,9 +19,8 @@ test.describe('Contained resources table in form level page', async () => {
       'Contained resources'
     );
 
-    const dialog = page.locator('mat-dialog-container');
-
     await page.getByRole('button', { name: 'Add new ValueSet' }).click();
+    const dialog = page.locator('mat-dialog-container');
     await dialog.waitFor({ state: 'visible', timeout: 5000 });
 
     await expect(dialog).toBeVisible();
