@@ -446,7 +446,56 @@ describe('Home page', () => {
           });
       });
 
-      it.only('should display type as blank if the item does not contains custom variable type extension', () => {
+      it('should not allow saving an item variable with a missing value and display validation error', () => {
+        // Add a new item under the 'None'.
+        cy.clickTreeNode('None');
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.getItemTextField().clear().type('Variable validation');
+        cy.selectDataType('integer');
+
+        // Click the 'Create/edit variables' button and add two new variables
+        cy.get('button#editVariables').click();
+        cy.get('lhc-expression-editor').shadow().within(() => {
+          cy.get('#expression-editor-base-dialog').should('exist');
+
+          // Variables section
+          cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.get('#variables-section .variable-row').should('have.length', 0);
+          cy.get('lhc-variables div.no-variables').should('contain.text', 'There are currently no variables for this item.');
+
+          // Add a new variable 'a'
+          cy.get('#add-variable').click();
+          cy.get('#variables-section .variable-row').should('have.length', 1);
+          cy.get('#variable-label-0').clear().type('a');
+          cy.get('#variable-type-0').select('Easy Path Expression');
+          cy.get('input#simple-expression-0').type('10');
+
+          // Add a new variable 'b'
+          cy.get('#add-variable').click();
+          cy.get('#variables-section .variable-row').should('have.length', 2);
+          cy.get('#variable-label-1').clear().type('b');
+          cy.get('#variable-type-1').select('Easy Path Expression');
+          // Intentionally not filling the value
+
+          // Save (Export)
+          cy.get('#export').click();
+
+          // The validation should fail and display the error.
+          cy.get('input#simple-expression-1')
+            .should('have.class', 'field-error')
+            .should('have.class', 'ng-invalid');
+
+          // Check for error message in lhc-question with ng-reflect-index="1"
+          cy.get('lhc-syntax-converter#variable-expression-1').within(() => {
+            cy.get('div#expression-error > p').should('contain.text', 'Expression is required.');
+          });
+
+          // The Save button should be disabled
+          cy.get('button#export').should('have.class', 'disabled');
+        });
+      });
+
+      it('should display type as blank if the item does not contains custom variable type extension', () => {
         cy.clickTreeNode('Compute Initial Value with variables without custom expression-editor-variable-type');
 
         // Item Variables section should now show 2 variables
