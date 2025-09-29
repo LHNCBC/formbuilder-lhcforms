@@ -2,9 +2,17 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.7] 2025-09-16
+## [10.3.9] 2025-09-16
 ### Fixed
 - Fixed issue where expression wasn't cleared when switching to 'Value Method: None' option.
+
+## [10.3.8] 2025-09-26
+### Added
+- Added Cypress tests for form and item variables.
+
+## [10.3.7] 2025-09-25
+### Fixed
+- Lock in @ctrl/ngx-codemirror version to 7.0.0.
 
 ## [10.3.6] 2025-08-26
 ### Fixed
