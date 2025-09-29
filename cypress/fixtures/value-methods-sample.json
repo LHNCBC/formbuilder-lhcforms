@@ -123,20 +123,8 @@
     },
     {
       "id": 4951063278829,
-      "type": "choice",
+      "type": "integer",
       "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "drop-down",
-                "display": "Drop down"
-              }
-            ]
-          }
-        },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/variable",
           "valueExpression": {
@@ -182,47 +170,12 @@
         }
       ],
       "linkId": "/itm5",
-      "text": "Compute Initial Value",
-      "answerOption": [
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11871-3",
-            "display": "Underwear or less"
-          }
-        },
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11872-1",
-            "display": "Street clothes, no shoes"
-          }
-        },
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11873-9",
-            "display": "Street clothes & shoes"
-          }
-        }
-      ]
+      "text": "Compute Initial Value"
     },
     {
       "id": 4951063278829,
-      "type": "choice",
+      "type": "integer",
       "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "drop-down",
-                "display": "Drop down"
-              }
-            ]
-          }
-        },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/variable",
           "valueExpression": {
@@ -286,30 +239,7 @@
         }
       ],
       "linkId": "/itm6",
-      "text": "Continuously Compute Value",
-      "answerOption": [
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11871-3",
-            "display": "Underwear or less"
-          }
-        },
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11872-1",
-            "display": "Street clothes, no shoes"
-          }
-        },
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11873-9",
-            "display": "Street clothes & shoes"
-          }
-        }
-      ]
+      "text": "Continuously Compute Value"
     },
     {
       "id": 2610581014154,
@@ -427,20 +357,8 @@
     },
     {
       "id": 4951063279999,
-      "type": "choice",
+      "type": "decimal",
       "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "drop-down",
-                "display": "Drop down"
-              }
-            ]
-          }
-        },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/variable",
           "valueExpression": {
@@ -478,30 +396,7 @@
         }
       ],
       "linkId": "/itm10",
-      "text": "Compute Initial Value with variables without custom expression-editor-variable-type",
-      "answerOption": [
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11871-3",
-            "display": "Underwear or less"
-          }
-        },
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11872-1",
-            "display": "Street clothes, no shoes"
-          }
-        },
-        {
-          "valueCoding": {
-            "system": "http://loinc.org",
-            "code": "LA11873-9",
-            "display": "Street clothes & shoes"
-          }
-        }
-      ]
+      "text": "Compute Initial Value with variables without custom expression-editor-variable-type"
     }
   ]
 }
