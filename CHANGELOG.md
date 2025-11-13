@@ -2,9 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.9] 2025-09-16
+## [10.3.9] 2025-10-13
 ### Fixed
 - Fixed issue where expression wasn't cleared when switching to 'Value Method: None' option.
+### Changed
+- Replace 'Unknown' type with a blank if varaibles do not contain a custom variable type extension.
 
 ## [10.3.8] 2025-09-26
 ### Added
