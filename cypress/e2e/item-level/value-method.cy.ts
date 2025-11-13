@@ -78,16 +78,14 @@ describe('Home page', () => {
 
         // Compute Initial Value
         cy.clickTreeNode('Compute Initial Value');
-        cy.getItemTypeField().should('have.value', '9: coding');
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+        cy.getItemTypeField().should('have.value', '2: integer');
         cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
         cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
         // Continuously Compute Value
         cy.clickTreeNode('Continuously Compute Value');
-        cy.getItemTypeField().should('have.value', '9: coding');
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+        cy.getItemTypeField().should('have.value', '2: integer');
         cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
         cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b + %c');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
@@ -859,6 +857,52 @@ describe('Home page', () => {
               }
             }
           );
+        });
+
+        // Select 'None' option for 'Value method' field
+        // ---------------------------------------------------------------
+        cy.getNoneValueMethodClick();
+
+        cy.questionnaireJSON().should((qJson) => {
+          // The 'Initial expression' should be removed.
+          expect(qJson.item[7].extension).to.deep.equal([
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/variable",
+              "valueExpression": {
+                "name": "a",
+                "language": "text/fhirpath",
+                "expression": "1",
+                "extension": [
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                    "valueString": "simple"
+                  },
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                    "valueString": "1"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/variable",
+              "valueExpression": {
+                "name": "b",
+                "language": "text/fhirpath",
+                "expression": "2",
+                "extension": [
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                    "valueString": "simple"
+                  },
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                    "valueString": "2"
+                  }
+                ]
+              }
+            }
+          ]);
         });
 
         // Select 'Pick initial value' option for 'Value method' field

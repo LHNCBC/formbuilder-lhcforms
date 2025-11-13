@@ -204,7 +204,14 @@ test.describe('R4 to R5', () => {
     await page.goto('/');
     await page.getByLabel('Would you like to start from where you left off before?').click();
     await page.getByRole('button', {name: 'Continue'}).click();
-    await page.getByRole('button', {name: 'Edit questions'}).first().click();
+
+    const editButton = page.getByRole('button', { name: 'Edit questions' }).first();
+    // Wait for it to be attached and visible
+    await expect(editButton).toBeVisible({ timeout: 5000 });
+    // Optional: Ensure it's enabled
+    await expect(editButton).toBeEnabled();
+    await editButton.click();
+
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
 
     await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();

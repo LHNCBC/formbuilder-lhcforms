@@ -636,6 +636,13 @@ Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', () => {
 });
 
 /**
+ * Click a radio button for the 'None' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getNoneValueMethodClick', () => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_none"]').click();
+});
+
+/**
  * Handles the common workflow for interacting with an autocomplete input in Cypress tests.
  *
  * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
@@ -907,6 +914,7 @@ declare global {
       getPickInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
       getComputeInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
       getComputeContinuouslyValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
+      getNoneValueMethodClick(): Chainable<JQuery<HTMLElement>>;
       selectAutocompleteOption(
         autoCompleteInput: JQuery<HTMLInputElement>, clearBeforeTyping: boolean,
         searchKeyword: string, expectedListSize: number, specialCharacterSequencesText: string,
