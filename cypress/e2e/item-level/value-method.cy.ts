@@ -78,16 +78,14 @@ describe('Home page', () => {
 
         // Compute Initial Value
         cy.clickTreeNode('Compute Initial Value');
-        cy.getItemTypeField().should('have.value', '9: coding');
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+        cy.getItemTypeField().should('have.value', '2: integer');
         cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
         cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
         // Continuously Compute Value
         cy.clickTreeNode('Continuously Compute Value');
-        cy.getItemTypeField().should('have.value', '9: coding');
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+        cy.getItemTypeField().should('have.value', '2: integer');
         cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
         cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b + %c');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
