@@ -574,7 +574,7 @@ describe('Home page', () => {
         // Create Initial compute value
         cy.get('@computeInitial').should('be.visible').click();
         cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editExpression').click();
+        cy.get('button#editInitialExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
           cy.get('#add-variable').click();
@@ -608,7 +608,7 @@ describe('Home page', () => {
         // Create Continuously compute value
         cy.getComputeContinuouslyValueValueMethodClick();
         cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editExpression').click();
+        cy.get('button#editCalculatedExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
           cy.get('#add-variable').click();
