@@ -78,16 +78,14 @@ describe('Home page', () => {
 
         // Compute Initial Value
         cy.clickTreeNode('Compute Initial Value');
-        cy.getItemTypeField().should('have.value', '9: coding');
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+        cy.getItemTypeField().should('have.value', '2: integer');
         cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
         cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
         // Continuously Compute Value
         cy.clickTreeNode('Continuously Compute Value');
-        cy.getItemTypeField().should('have.value', '9: coding');
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+        cy.getItemTypeField().should('have.value', '2: integer');
         cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
         cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b + %c');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
@@ -140,7 +138,7 @@ describe('Home page', () => {
       });
 
       it('should type initial values', () => {
-        // Add a new item under the 'Race' item of data type 'display'.
+        // Add a new item under the 'None' item.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().clear().type('Type initial values');
@@ -175,7 +173,7 @@ describe('Home page', () => {
       });
 
       it('should pick initial values', () => {
-        // Add a new item under the 'Race' item of data type 'display'.
+        // Add a new item under the 'None' item.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().clear().type('Pick initial values');
@@ -259,7 +257,7 @@ describe('Home page', () => {
       });
 
       it('should retain valid state when toggling between "Pick initial value" and other value methods', () => {
-
+        // Add a new item under the 'None' item.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();
         cy.get('#text').clear().type('Test state');
@@ -306,7 +304,7 @@ describe('Home page', () => {
       });
 
       it('should remove the answer choices error when answer choices are added and selected for types other than "coding"', () => {
-
+        // Add a new item under the 'None' item.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();
         cy.get('#text').clear().type('Test answer choice error');
@@ -355,7 +353,7 @@ describe('Home page', () => {
       });
 
       it('should create Initial compute value expression', () => {
-        // Add a new item under the 'Race' item of data type 'display'.
+        // Add a new item under the 'None' item.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().clear().type('Compute initial value expression');
@@ -461,7 +459,7 @@ describe('Home page', () => {
       });
 
       it('should create Continuously compute value expression', () => {
-        // Add a new item under the 'Race' item of data type 'display'.
+        // Add a new item under the 'None' item.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().clear().type('Continuously compute value expression');
@@ -566,8 +564,79 @@ describe('Home page', () => {
         });
       });
 
+      it('should keep "Type initial value" visible after populating "Initial compute value" expression and toggling "Create answer list"', () => {
+        // Add a new item under the 'None' item.
+        cy.clickTreeNode('None');
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.getItemTextField().clear().type('Initial compute value');
+        cy.selectDataType('integer');
+
+        // Create Initial compute value
+        cy.get('@computeInitial').should('be.visible').click();
+        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
+        cy.get('button#editExpression').click();
+        cy.get('lhc-expression-editor').shadow().within(() => {
+          cy.get('#expression-editor-base-dialog').should('exist');
+          cy.get('#add-variable').click();
+          cy.get('#variable-label-0').clear().type('a');
+          cy.get('#variable-type-0').select('Easy Path Expression');
+          cy.get('input#simple-expression-0').type('1');
+          cy.get('#add-variable').click();
+          cy.get('#variable-label-1').clear().type('b');
+          cy.get('#variable-type-1').select('Easy Path Expression');
+          cy.get('input#simple-expression-1').type('2');
+          cy.get('textarea#final-expression').clear().type('%a + %b');
+          cy.get('#export').click();
+        });
+        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+
+        // Toggle 'Create answer list' from 'No' to 'Yes' and back
+        cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+        cy.getRadioButtonLabel('Create answer list', 'No').click();
+
+        // The 'Type initial value' field should be visible
+        cy.get('[id^="__$valueMethod_type-initial"]').should('exist');
+      });
+
+      it('should keep "Type initial value" visible after populating "Continuously compute value" expression and switching to another item and back', () => {
+        // Add a new item under the 'None' item.
+        cy.clickTreeNode('None');
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.getItemTextField().clear().type('Continuously compute value');
+        cy.selectDataType('integer');
+
+        // Create Continuously compute value
+        cy.getComputeContinuouslyValueValueMethodClick();
+        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
+        cy.get('button#editExpression').click();
+        cy.get('lhc-expression-editor').shadow().within(() => {
+          cy.get('#expression-editor-base-dialog').should('exist');
+          cy.get('#add-variable').click();
+          cy.get('#variable-label-0').clear().type('a');
+          cy.get('#variable-type-0').select('Easy Path Expression');
+          cy.get('input#simple-expression-0').type('1');
+          cy.get('#add-variable').click();
+          cy.get('#variable-label-1').clear().type('b');
+          cy.get('#variable-type-1').select('Easy Path Expression');
+          cy.get('input#simple-expression-1').type('2');
+          cy.get('textarea#final-expression').clear().type('%a + %b');
+          cy.get('lhc-syntax-preview>div>div>pre').should('not.have.text', 'Not valid');
+          cy.get('#export').click();
+        });
+        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+
+        // Click on a different item in the tree (simulate navigation away)
+        cy.clickTreeNode('None');
+
+        // Click back to the newly created item
+        cy.contains('Continuously compute value').click();
+
+        // The 'Type initial value' field should be visible
+        cy.get('[id^="__$valueMethod_type-initial"]').should('exist');
+      });
+
       it('should retain value or expression when switching between value methods', () => {
-        // Add a new item under the 'Race' item of data type 'display'.
+        // Add a new item under the 'None' item.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().clear().type('Test switching value methods');
@@ -788,6 +857,52 @@ describe('Home page', () => {
               }
             }
           );
+        });
+
+        // Select 'None' option for 'Value method' field
+        // ---------------------------------------------------------------
+        cy.getNoneValueMethodClick();
+
+        cy.questionnaireJSON().should((qJson) => {
+          // The 'Initial expression' should be removed.
+          expect(qJson.item[7].extension).to.deep.equal([
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/variable",
+              "valueExpression": {
+                "name": "a",
+                "language": "text/fhirpath",
+                "expression": "1",
+                "extension": [
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                    "valueString": "simple"
+                  },
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                    "valueString": "1"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/variable",
+              "valueExpression": {
+                "name": "b",
+                "language": "text/fhirpath",
+                "expression": "2",
+                "extension": [
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                    "valueString": "simple"
+                  },
+                  {
+                    "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                    "valueString": "2"
+                  }
+                ]
+              }
+            }
+          ]);
         });
 
         // Select 'Pick initial value' option for 'Value method' field
