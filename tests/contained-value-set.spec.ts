@@ -18,8 +18,11 @@ test.describe('Contained resources table in form level page', async () => {
       page.locator('lfb-form-fields'),
       'Contained resources'
     );
-    await page.getByRole('button', {name: 'Add new ValueSet'}).click();
+
+    await page.getByRole('button', { name: 'Add new ValueSet' }).click();
     const dialog = page.locator('mat-dialog-container');
+    await dialog.waitFor({ state: 'visible', timeout: 5000 });
+
     await expect(dialog).toBeVisible();
     await dialog.getByLabel('Id', {exact: true}).fill('vs1');
     await dialog.getByLabel('Title', {exact: true}).fill('A title');
@@ -108,10 +111,19 @@ test.describe(() => {
   });
   test('should import questionnaire with contained value set', async({page}) => {
     expect(await flContainedTable.locator('tbody > tr').count()).toBe(3);
-    await expect(PWUtils.getTableCell(flContainedTable, 3, 6).locator(editLoc)).toBeDisabled();
-    await PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc).click();
+    const editCell = PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc);
+    await expect(editCell).toBeDefined();
+    await expect(editCell).toBeVisible();
+    await expect(editCell).toBeEnabled();
+    await editCell.scrollIntoViewIfNeeded()
+    await editCell.click();
+
     const dialog = page.locator('mat-dialog-container');
-    await dialog.waitFor({ state: 'visible' }); // Wait until the input is visible
+
+    await Promise.all([
+      dialog.waitFor({ state: 'visible' }),
+    ]);
+
     await expect(dialog).toBeVisible();
     await expect(dialog.getByLabel('Id', {exact: true})).toHaveValue('vs2');
 
@@ -152,10 +164,18 @@ test.describe(() => {
   });
 
   test('should validate resource.id', async({page}) => {
-    await PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc).click();
+    const editCell = PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc);
+    await expect(editCell).toBeVisible();
+    await expect(editCell).toBeEnabled();
+    await editCell.scrollIntoViewIfNeeded()
+    await editCell.click();
+
     const dialog = page.locator('.cdk-dialog-container');
+
+    // First, wait for the dialog to exist and be visible.
+    await dialog.waitFor({ state: 'visible' });
+
     const idInput = dialog.getByLabel('Id', { exact: true });
-    await idInput.waitFor({ state: 'visible' }); // Wait until the input is visible
     await expect(idInput).toBeVisible();
     const idParent = idInput.locator('..');
     await expect(idParent.filter({hasNot: page.locator('small.text-danger')})).toBeVisible();

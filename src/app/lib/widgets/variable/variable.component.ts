@@ -62,7 +62,7 @@ export class VariableComponent extends TableComponent implements OnInit {
    */
   getVariableType(extensions: any): string {
     const match = extensions.find((ext) => ext.url === EXTENSION_URL_CUSTOM_VARIABLE_TYPE);
-    return this.variableTypeMapping[match?.valueString] ?? "Unknown";
+    return this.variableTypeMapping[match?.valueString] ?? "";
   }
 
   /**

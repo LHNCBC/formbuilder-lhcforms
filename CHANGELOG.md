@@ -2,9 +2,16 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.9] 2025-09-17
+## [10.3.10] 2025-11-13
 ### Fixed
 - Fixed issue with variable deletion not updating the list.
+
+## [10.3.9] 2025-10-13
+### Fixed
+- Ensure the 'Type initial value' option remains visible when toggling 'Create answer list' or switching items.
+- Fixed issue where expression wasn't cleared when switching to 'Value Method: None' option.
+### Changed
+- Replace 'Unknown' type with a blank if varaibles do not contain a custom variable type extension.
 
 ## [10.3.8] 2025-09-26
 ### Added
