@@ -2,9 +2,24 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.7] 2025-07-23
+## [10.3.10] 2025-11-13
 ### Fixed
 - Fix invalid source item in enableWhen condition.
+
+## [10.3.9] 2025-10-13
+### Fixed
+- Ensure the 'Type initial value' option remains visible when toggling 'Create answer list' or switching items.
+- Fixed issue where expression wasn't cleared when switching to 'Value Method: None' option.
+### Changed
+- Replace 'Unknown' type with a blank if varaibles do not contain a custom variable type extension.
+
+## [10.3.8] 2025-09-26
+### Added
+- Added Cypress tests for form and item variables.
+
+## [10.3.7] 2025-09-25
+### Fixed
+- Lock in @ctrl/ngx-codemirror version to 7.0.0.
 
 ## [10.3.6] 2025-08-26
 ### Fixed
