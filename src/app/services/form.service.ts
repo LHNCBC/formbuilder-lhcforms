@@ -1027,10 +1027,10 @@ export class FormService {
 
   /**
    * Checks if the focused node has sub-items.
-   * @returns True if the focused node's data contains sub-items. Otherwise false.
+   * @returns True if the focused node's data contains a non-empty 'item' array; otherwise, false.
    */
   hasSubItems(): boolean {
-    return !!this.treeModel?.getFocusedNode()?.data?.item;
+    return !!this.treeModel?.getFocusedNode()?.data?.item?.length;
   }
 
   /**

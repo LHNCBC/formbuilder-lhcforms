@@ -669,12 +669,15 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     return false;
   }
 
-  /**
-   * Checks targetNode and all ancestors for enableWhen validation errors.
-   * Returns the errors and the appropriate error message if any error is found.
-   * @param targetNode - The node to start checking from.
-   */
-  private getEnableWhenAncestorValidationError(targetNode: ITreeNode): { errors: any[], errorMessage?: string } {
+    /**
+     * Checks the target node and its ancestors for enableWhen validation errors related to the source node.
+     * If any such error is found, returns the errors and an appropriate error message describing the issue.
+     *
+     * @param sourceNode - The node being moved or referenced as the source.
+     * @param targetNode - The node to check for enableWhen validation errors, including its ancestors.
+     * @returns An object containing an array of errors and an optional error message if a validation error is found.
+     */
+  private getEnableWhenAncestorValidationError(sourceNode: ITreeNode, targetNode: ITreeNode): { errors: any[], errorMessage?: string } {
     let currentNode = targetNode;
     let allEnableWhenErrors = [];
     let errorMessage;
@@ -688,7 +691,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         if (Array.isArray(errors) && errors.length > 0) {
           allEnableWhenErrors = allEnableWhenErrors.concat(errors);
           if (currentNode.data.linkId === targetNode.data.linkId) {
-            errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${ targetNode.data.linkId }) that contains an enableWhen question reference to the source node or any ancestor of the source node.`;
+            errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${ targetNode.data.linkId }) that contains an enableWhen question reference to the source node '${sourceNode.data.text}' (linkId: ${ sourceNode.data.linkId }) or any ancestor of the source node.`;
           } else {
             errorMessage = `Cannot drop into a descendant of item '${currentNode.data.text}'(linkId: ${ currentNode.data.linkId }) that contains an enableWhen question reference to the source node.`;
           }
@@ -718,7 +721,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${targetNode.data.linkId}) because it has an ancestor of type 'display', which cannot contain children.`;
       }
     } else if (targetNode.data.linkId && contextNode.data.linkId !== targetNode.data.linkId) {
-      const enableWhenResult = this.getEnableWhenAncestorValidationError(targetNode);
+      const enableWhenResult = this.getEnableWhenAncestorValidationError(contextNode, targetNode);
       if (enableWhenResult.errorMessage) {
         hasError = true;
         errorMessage = enableWhenResult.errorMessage;

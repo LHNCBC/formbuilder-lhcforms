@@ -2122,6 +2122,43 @@ describe('Home page', () => {
       // Due to the data type 'display', the option 'Insert a new child item.' should be hidden.
       cy.get('div.dropdown-menu.show').should('not.contain', 'Insert a new child item');
     });
+
+    it.only('should show "display" data type if the last child is removed from the item', () => {
+      cy.toggleTreeNodeExpansion('Family member health history');
+      cy.getTreeNode('Race').click();
+
+      // Add a new item under the 'Race' item.
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.getItemTextField().clear().type('Item with child');
+      cy.getItemTypeField().as('dataTypes');
+      // Confirm that the data type 'display' is included in the list.
+      cy.get('@dataTypes').find('option').should('contain.text', 'display');
+
+      // Create a chid item.
+      cy.getTreeNode('Item with child').as('contextNode');
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Insert a new child item').click();
+      cy.getItemTextField().should('have.value', 'New item 2');
+
+      // Click back to the parent item 'Item with child'.
+      cy.getTreeNode('Item with child').click();
+      // The data type 'display' should no longer be on the list.
+      cy.getItemTypeField().as('dataTypes');
+      cy.get('@dataTypes').find('option').should('not.contain.text', 'display');
+
+      // Delete the child item
+      cy.getTreeNode('New item 2').as('childItem').click();
+      cy.get('@childItem').find('button.dropdown-toggle').click();
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Remove this item').click();
+      cy.contains('button', 'Yes').click();
+
+      // The parent item 'Item with child' should now be the focused node.
+      cy.get('#text').should('contain.value', 'Item with child');
+      // As the item 'Item with child' no longer has any children, the data type 'display' should once again be available.
+      cy.getItemTypeField().as('dataTypes');
+      cy.get('@dataTypes').find('option').should('contain.text', 'display');
+    });
+
   });
 });
 
