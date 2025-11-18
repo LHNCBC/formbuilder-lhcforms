@@ -2123,7 +2123,7 @@ describe('Home page', () => {
       cy.get('div.dropdown-menu.show').should('not.contain', 'Insert a new child item');
     });
 
-    it.only('should show "display" data type if the last child is removed from the item', () => {
+    it('should show "display" data type if the last child is removed from the item', () => {
       cy.toggleTreeNodeExpansion('Family member health history');
       cy.getTreeNode('Race').click();
 
