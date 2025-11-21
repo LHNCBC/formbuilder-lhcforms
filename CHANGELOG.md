@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.10] 2025-11-18
+### Added
+- Added support for observation extract extension for valueCode.
+
 ## [10.3.9] 2025-10-13
 ### Fixed
 - Ensure the 'Type initial value' option remains visible when toggling 'Create answer list' or switching items.
