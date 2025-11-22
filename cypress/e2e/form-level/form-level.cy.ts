@@ -548,7 +548,12 @@ describe('Home page', () => {
 
           cy.get('@datepicker').should('be.visible');
           cy.get('@datepicker').contains('Today').click();
-          cy.get('@approvalDtInput').should('have.prop', 'value').should('match', dateRE);
+          cy.get('@approvalDtInput')
+            .should(($input) => {
+              const value = $input.val() || $input.prop('value');
+              expect(value).to.match(/^\d{4}-\d{2}-\d{2}$/);
+            });
+
           cy.get('@approvalDtInput').clear().type('2021-01-01');
           cy.questionnaireJSON().then((previewJson) => {
             expect(previewJson.approvalDate).to.be.equal('2021-01-01');
