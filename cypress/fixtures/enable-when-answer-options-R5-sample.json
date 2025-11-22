@@ -216,7 +216,7 @@
     {
       "type": "coding",
       "linkId": "264603036166",
-      "text": "coding answerOptions restricted",
+      "text": "coding answerOptions",
       "answerConstraint": "optionsOnly",
       "answerOption": [
         {

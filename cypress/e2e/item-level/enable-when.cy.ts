@@ -1251,8 +1251,8 @@ describe('Home page', () => {
 
 
       // -------- CODING ANSWER OPTIONS --------
-      // text answerOptions
-      cy.getTreeNode('coding answerOptions restricted').click();
+      // coding answerOptions
+      cy.getTreeNode('coding answerOptions').click();
       cy.getItemTypeField().should('contain.value', 'coding');
       cy.get('lfb-label')
         .filter(':contains("Create answer list")')
@@ -1305,7 +1305,7 @@ describe('Home page', () => {
       });
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'coding answerOptions restricted (linkId: \'264603036166\')\' answerOptions for enableWhen condition 1.');
+        .should('contain.text', ' The answer value does not match any option in the \'coding answerOptions (linkId: \'264603036166\')\' answerOptions for enableWhen condition 1.');
 
       // Switch the answerConstraint to 'optionsOrType'
       cy.getTreeNode('coding answerOptions').click();
@@ -1330,7 +1330,7 @@ describe('Home page', () => {
         .should('exist');
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'coding answerOptions restricted (linkId: \'264603036166\')\' answerOptions or the answer constraint of type string for enableWhen condition 1.');
+        .should('contain.text', ' The answer value does not match any option in the \'coding answerOptions (linkId: \'264603036166\')\' answerOptions or the answer constraint of type string for enableWhen condition 1.');
     });
   });
 });
