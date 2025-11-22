@@ -491,6 +491,26 @@ export class Util {
   }
 
   /**
+   * Returns the appropriate answer[x] field name for a given type and data object.
+   * If the field for the primary type exists in the data object, it is returned.
+   * Otherwise, checks the alternate type and returns its field name if present.
+   * If neither is found, returns the field name for the primary type.
+   * @param type - The primary FHIR data type (e.g., 'string', 'integer', 'coding').
+   * @param altType - An alternate FHIR data type to check if the primary is not present.
+   * @param dataObj - The object to check for the presence of answer[x] fields.
+   * @returns The answer[x] field name found in the object, or the default for the primary type.
+   */
+  static resolveAnswerFieldName(type: string, altType: string, dataObj: object) {
+    const answerType = Util._answerTypeMap[type];
+    if (answerType in dataObj) {
+      return answerType;
+    } else {
+      const answerAltType = Util._answerTypeMap[altType];
+      return (answerAltType in dataObj) ? answerAltType : answerType;
+    }
+  }
+
+  /**
    * Compute tree hierarchy sequence numbering.
    * @param node - Target node of computation
    */
@@ -715,6 +735,58 @@ export class Util {
         arr.splice(i, 1);
       }
     }
+  }
+
+  /**
+   * Checks whether the provided value is a FHIR Coding object.
+   * Returns true if the value is an object (not an array) and contains at least one of the standard Coding fields:
+   * 'code', 'system', 'display', 'version', or 'userSelected'.
+   * @param value - The value to check.
+   * @returns True if the value is a FHIR Coding object; otherwise, false.
+   */
+  static isFhirCoding(value: any): boolean {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return false;
+    }
+
+    const hasCodingFields =
+      'code' in value ||
+      'system' in value ||
+      'display' in value ||
+      'version' in value ||
+      'userSelected' in value;
+
+    return hasCodingFields;
+  }
+
+  /**
+   * Compares two FHIR Coding objects for equality.
+   * Returns true if both are valid FHIR Coding objects, have matching 'system' and 'code' properties (type and value),
+   * and both properties are non-empty strings. Ignores other fields such as 'display', 'version', or 'userSelected'.
+   *
+   * Although 'system' and 'code' are not required fields for a FHIR Coding object, they are used here for comparison.
+   * @param a - The first FHIR Coding object.
+   * @param b - The second FHIR Coding object.
+   * @returns True if both codings are equal; otherwise, false.
+   */
+  static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
+    // Both must be fhir coding
+    if (!this.isFhirCoding(a)) return false;
+    if (!this.isFhirCoding(b)) return false;
+
+    // Both must have system and code,
+    if (!('system' in a) || !('system' in b)) return false;
+    if (!('code' in a) || !('code' in b)) return false;
+
+    // Types must match
+    if (typeof a.system !== typeof b.system) return false;
+    if (typeof a.code !== typeof b.code) return false;
+
+    // Equality check
+    return (
+      String(a.system).trim() === String(b.system).trim() &&
+      String(a.code).trim() === String(b.code).trim()
+    );
   }
 
   /**

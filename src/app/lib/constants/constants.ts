@@ -55,3 +55,8 @@ export const EXTENSION_URL_ITEM_CONTROL = 'http://hl7.org/fhir/StructureDefiniti
 export const EXTENSION_URL_RENDERING_STYLE = 'http://hl7.org/fhir/StructureDefinition/rendering-style';
 // formerly RENDERING_XHTML_EXT_URL
 export const EXTENSION_URL_RENDERING_XHTML = 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml';
+
+// answerConstraint
+export const ANSWER_CONSTRAINT_OPTIONS_ONLY = "optionsOnly";
+export const ANSWER_CONSTRAINT_OPTIONS_OR_TYPE = "optionsOrType";
+export const ANSWER_CONSTRAINT_OPTIONS_OR_STRING = "optionsOrString";

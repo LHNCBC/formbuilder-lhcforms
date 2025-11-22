@@ -13,8 +13,9 @@ import {ArrayProperty, FormComponent, FormProperty, PropertyGroup, ObjectPropert
 import {ExtensionsService} from '../services/extensions.service';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
-import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
+import { ValidationService, EnableWhenValidationObject, EnableWhenQuestionFieldValidationObject } from '../services/validation.service';
 import { TableService } from '../services/table.service';
+import { ITreeNode } from '@bugsplat/angular-tree-component/lib/defs/api';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -157,6 +158,30 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     };
   }
 
+
+  /**
+   * Populates the validation object for the EnableWhen 'question' field with relevant answer options and
+   * constraints from the associated question item. This ensures that the validation object contains all
+   * necessary data for downstream validation logic.
+   * @param enableWhenQuestionProperty - property object for the enableWhen question field.
+   * @param questionItem - tree node representing the question item.
+   * @returns - EnableWhen field validation object.
+   */
+  populateEnableWhenQuestionValidationFields(enableWhenQuestionProperty: any, questionItem: ITreeNode): EnableWhenQuestionFieldValidationObject {
+    if (questionItem) {
+      if ('text' in questionItem?.data) {
+        enableWhenQuestionProperty.text = questionItem.data.text;
+      }
+      if ('answerOption' in questionItem?.data) {
+        enableWhenQuestionProperty.answerOptions = questionItem.data.answerOption;
+      }
+      if ('answerConstraint' in questionItem?.data) {
+        enableWhenQuestionProperty.answerConstraint = questionItem.data.answerConstraint;
+      }
+    }
+    return enableWhenQuestionProperty;
+  }
+
   /**
    * Create a validation object specifically for the 'enableWhen' field validation using 'formProperty'.
    * @param formProperty - Object form property of the 'enableWhen' field.
@@ -171,24 +196,40 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     if (questionItem) {
       aType = questionItem.data.type;
     }
-
     // The condition key is used to differentiate between each enableWHen conditions.
     let condKey = '';
     if (q._canonicalPath) {
       const match = q._canonicalPath.match(/enableWhen\/(.*?)\/question/);
       condKey = match ? match[1] : '';
     }
+
+    if (condKey === '*') {
+      return null;
+    }
+
     const op = formProperty.getProperty('operator');
-    const aField = Util.getAnswerFieldName(aType || 'string');
+    let aField = Util.getAnswerFieldName(aType || 'string');
+
     const answerType = formProperty.getProperty('__$answerType').value;
-    const answerX = formProperty.getProperty(aField);
+    let answerX = formProperty.getProperty(aField);
+
+    if (Util.isEmpty(answerX.value) && questionItem && 'answerConstraint' in questionItem.data &&
+      questionItem.data.answerConstraint === "optionsOrString")
+    {
+      const altKey = Util.getAnswerFieldName('string');
+      answerX = formProperty.getProperty(altKey);
+
+      if (!Util.isEmpty(answerX.value)) {
+        aField = altKey;
+      }
+    }
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
 
     const enableWhenObj: EnableWhenValidationObject = {
       'id': this.model?.[FormService.TREE_NODE_ID],
       'linkId': linkIdProperty.value,
       'conditionKey': condKey,
-      'q': q,
+      'q': this.populateEnableWhenQuestionValidationFields(q, questionItem),
       'aType': aType,
       'answerTypeProperty': answerType,
       'op': op,
@@ -287,7 +328,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       return null;
 
     errors = this.validationService.validateEnableWhenSingle(enableWhenObj);
-
 
     if(errors && errors.length) {
       formProperty.extendErrors(errors);
