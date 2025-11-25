@@ -2,9 +2,45 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.4.0] 2025-07-17
+## [10.4.0] 2025-11-25
 ### Added
 - Added support for adding general extensions.
+
+## [10.3.9] 2025-10-13
+### Fixed
+- Ensure the 'Type initial value' option remains visible when toggling 'Create answer list' or switching items.
+- Fixed issue where expression wasn't cleared when switching to 'Value Method: None' option.
+### Changed
+- Replace 'Unknown' type with a blank if varaibles do not contain a custom variable type extension.
+
+## [10.3.8] 2025-09-26
+### Added
+- Added Cypress tests for form and item variables.
+
+## [10.3.7] 2025-09-25
+### Fixed
+- Lock in @ctrl/ngx-codemirror version to 7.0.0.
+
+## [10.3.6] 2025-08-26
+### Fixed
+- Fixed a validation issue with the initial value of the answer option.
+
+## [10.3.5] 2025-08-29
+### Fixed
+- Fixed loading of LOINC panel from item level page.
+
+## [10.3.4] 2025-08-20
+### Changed
+- Split the Cypress item-level test file into smaller files.
+
+## [10.3.3] 2025-07-25
+### Changed
+- Fixed the issue with quantity unit lookup.
+
+## [10.3.2] 2025-07-21
+### Added
+- Added the ability to create/update the Answer Expression.
+- Added question item control.
 
 ## [10.3.1] 2025-07-14
 ### Fixed
@@ -19,7 +55,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Added a time component for data type time.
 - Changed date and dateTime input fields to use their respective components in
   item level fields.
- 
+
 ## [10.2.0] 2025-06-25
 ### Changed
 - Updated to use new ID lhc-tools-searchResults.
@@ -204,11 +240,11 @@ Added detailed log statements when the tests fail.
 ## [9.4.1] 2024-04-29
 ### Added
 - Added notice for window opener invocation.
-### Fixed 
+### Fixed
 - Display error messages in preview reported by lforms widget.
 
 ## [9.4.0] 2024-04-01
-### Added 
+### Added
 - Added a feature to invoke formbuilder from a parent window,
   in a new child window and optionally initialize it with a questionnaire.
 - If opened from another window, the formbuilder will post a message
@@ -271,7 +307,7 @@ Added detailed log statements when the tests fail.
 
 ## [9.2.0] 2023-08-03
 ### Added
-- Added these fields to advanced section in the form level fields: 
+- Added these fields to advanced section in the form level fields:
   implicit rules, version, name, date, publisher, copyright, approvalDate, lastReviewDate
 ### Changed
 - Converted schema and layout json files to json5 format.

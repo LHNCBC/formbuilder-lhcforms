@@ -9,6 +9,10 @@ import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import { TableService, TableStatus } from 'src/app/services/table.service';
 import { AnswerValueSetComponent } from '../answer-value-set/answer-value-set.component';
 import { Util } from '../../util';
+import {
+  ANSWER_OPTION_METHOD_ANSWER_OPTION, ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET,
+  TYPE_STRING, TYPE_CODING
+} from '../../constants/constants';
 
 declare var LForms: any;
 
@@ -19,12 +23,12 @@ declare var LForms: any;
 })
 export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('codingDisplay') codingDisplay: ElementRef;
-  
+
   subscriptions: Subscription[] = [];
   answerOptions: any[] = [];
   _fhir = LForms.FHIR["R4"];
   sdc = this._fhir.SDC;
-  
+
   protected readonly warningIcon = faExclamationTriangle;
   errors: {code: string, originalMessage: string, modifiedMessage: string}[] = null;
   errorIcon = faExclamationTriangle;
@@ -55,8 +59,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   answerValuseSetConfigErrorMessage: string;
   autoComplete = false;
 
-  dataType = 'string';
-  answerMethod = 'answer-option';
+  dataType = TYPE_STRING;
+  answerMethod = ANSWER_OPTION_METHOD_ANSWER_OPTION;
 
   /**
    * Invoke super constructor.
@@ -71,6 +75,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
     const initValueCoding = this.formProperty.parent.value;
     if (!Util.isEmptyValueCoding(initValueCoding)) {
       this.model = initValueCoding;
+    } else {
+      this.model = {};
     }
     this.dataType = this.formProperty.findRoot().getProperty('type').value;
 
@@ -92,7 +98,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
     });
     this.subscriptions.push(sub);
 
-    
+
     sub = this.formProperty.searchProperty('/__$answerOptionMethods').valueChanges.subscribe((method) => {
       this.answerMethod = method;
       this.init(false);
@@ -131,7 +137,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   init(firstChange: boolean) {
     this.answerOptions = [];
 
-    if (this.dataType === 'coding' && (this.answerMethod === 'snomed-value-set' || this.answerMethod === 'value-set')) {
+    if (this.dataType === TYPE_CODING && (this.answerMethod === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET || this.answerMethod === ANSWER_OPTION_METHOD_VALUE_SET)) {
       const linkId = this.formProperty.findRoot().getProperty('linkId').value;
       const sourceNode = this.formService.getTreeNodeByLinkId(linkId);
       const answerValueSetUri = this.formProperty.findRoot().getProperty("answerValueSet").value;
@@ -141,8 +147,8 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
       // populated with a non-SNOMED value set. Therefore, it's necessary to check whether
       // 'answerValuetSetUri' contains the SNOMED base URI.
       if (answerValueSetUri && fhirServer &&
-           (this.answerMethod === 'value-set' ||
-            (this.answerMethod === 'snomed-value-set' && answerValueSetUri.indexOf(AnswerValueSetComponent.snomedBaseUri) > -1))) {
+           (this.answerMethod === ANSWER_OPTION_METHOD_VALUE_SET ||
+            (this.answerMethod === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET && answerValueSetUri.indexOf(AnswerValueSetComponent.snomedBaseUri) > -1))) {
         this.autoComplete = true;
         if (firstChange) {
           this.acOptions.fhirOptions.valueSetUri = decodeURI(answerValueSetUri);
@@ -161,7 +167,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
       } else {
         this.autoComplete = false;
 
-        if (this.answerMethod === 'snomed-value-set') {
+        if (this.answerMethod === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET) {
           if ((!answerValueSetUri ) || (answerValueSetUri && answerValueSetUri.indexOf(AnswerValueSetComponent.snomedBaseUri) === -1)) {
             this.answerValuseSetConfigErrorMessage = 'SNOMED ECL is not set.';
           }
@@ -206,11 +212,11 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
   }
 
   /**
-   * Handles the focusout event on an input elmeent. Retieves the text value from the event and 
+   * Handles the focusout event on an input elmeent. Retieves the text value from the event and
    * compares it with the model. If they differ, assigns the text value to the model and updates
    * the display field of the parent valueCoding. This handles cases where users enter off-list
    * values.
-   * @param event - The focusout event containing the current input element. 
+   * @param event - The focusout event containing the current input element.
    */
   onFocusOut(event: any) {
     if (event.target.value && event.target.value !== this.model) {
@@ -218,7 +224,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
 
       const coding = this.formProperty.parent.value;
       coding['display'] = event.target.value;
-  
+
       this.updateValueCoding(coding);
     }
 

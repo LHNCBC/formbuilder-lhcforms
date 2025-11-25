@@ -5,6 +5,10 @@ import {ExtensionsService} from '../../../services/extensions.service';
 import {fhirPrimitives} from '../../../fhir';
 import { UnitsComponent } from '../units/units.component';
 import { UnitService } from 'src/app/services/unit.service';
+import {
+  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, EXTENSION_URL_UCUM_SYSTEM,
+  TYPE_DECIMAL, TYPE_INTEGER, TYPE_QUANTITY, TYPE_STRING
+} from '../../constants/constants';
 
 declare var LForms: any;
 
@@ -22,7 +26,7 @@ interface UnitExtension {
   selector: 'lfb-units-display',
   template: `
       <div class="{{controlWidthClass}} p-0">
-        <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control" />
+        <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control" (input)="onInput($event)"  />
       </div>
   `,
   styles: [`
@@ -58,7 +62,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
   }
 
   autoComp: any;
-  dataType = 'string';
+  dataType = TYPE_STRING;
   unitStorage = [];
 
   unitService = inject(UnitService);
@@ -81,21 +85,21 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
     // Watch item type to setup autocomplete
     let sub = this.formProperty.searchProperty('/type')
       .valueChanges.subscribe((changedValue) => {
-      if(this.dataType !== changedValue && this.dataType !== "string") {
-        if(changedValue === 'quantity') {
+      if(this.dataType !== changedValue && this.dataType !== TYPE_STRING) {
+        if(changedValue === TYPE_QUANTITY) {
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.decimal);
         }
-        else if(changedValue === 'decimal' || changedValue === 'integer') {
+        else if(changedValue === TYPE_DECIMAL || changedValue === TYPE_INTEGER) {
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl[this.dataType]);
         }
         else {
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.decimal);
           this.extensionsService.removeExtensionsByUrl(UnitsComponent.unitsExtUrl.quantity);
         }
-        this.options.maxSelect = changedValue === 'quantity' ? '*' : 1;
+        this.options.maxSelect = changedValue === TYPE_QUANTITY ? '*' : 1;
         this.unitService.clearUnits();
       }
-      if(changedValue === 'quantity' || changedValue === 'decimal' || changedValue === 'integer') {
+      if(changedValue === TYPE_QUANTITY || changedValue === TYPE_DECIMAL || changedValue === TYPE_INTEGER) {
         this.resetAutocomplete();
       }
       this.dataType = changedValue;
@@ -121,6 +125,28 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
         }
       };
 
+      // Only call if data contains a space
+      if (data && typeof data.final_val === 'string') {
+        if (data.input_method === 'typed' && this.unitService.hasDelimiter(data.final_val)) {
+          const unit = this.unitService.getUnitByDisplayString(data.final_val);
+          if (unit) {
+            // Replace the data.final_val with the code found in the unitStorage.
+            data.final_val = unit[0];
+            // Remove 'no_match' CSS class set by Autcomplete from the input element if present
+            const inputElem = document.getElementById(this.elementId);
+            if (inputElem && inputElem.classList) {
+              inputElem.classList.remove('no_match');
+            }
+            return;
+          }
+        }
+
+        if (data.final_val.includes(' ')) {
+          const completionOptions = document.getElementById('completionOptions');
+          this.unitService.replaceTokensWithCompletionOptions(data, completionOptions, this.options.wordBoundaryChars);
+        }
+      }
+
       if (this.options.maxSelect === 1 && !(data.final_val?.trim())) {
         this.extensionsService.removeExtension((extProp) =>
           extProp.value.url === UnitsComponent.unitsExtUrl[this.dataType]
@@ -135,28 +161,28 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
           this.unitService.addUnit(selectedUnit);
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
-            UnitsComponent.ucumSystemUrl,
+            EXTENSION_URL_UCUM_SYSTEM,
             data.item_code,
             selectedUnit[1]
           ));
-          updateUnitFormProperty(data.item_code, UnitsComponent.ucumSystemUrl, selectedUnit[1]);
+          updateUnitFormProperty(data.item_code, EXTENSION_URL_UCUM_SYSTEM, selectedUnit[1]);
+          this.autoComp.setFieldVal( selectedUnit[1], false);
           return;
         }
 
         // Handle manual entry or tokenizer
         const orgFinalVal = data.final_val;
         data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
-
         const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
-
         if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
-            UnitsComponent.ucumSystemUrl,
+            EXTENSION_URL_UCUM_SYSTEM,
             parseResp.ucumCode,
             parseResp.unit.name
           ));
-          updateUnitFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
+          updateUnitFormProperty(parseResp.ucumCode, EXTENSION_URL_UCUM_SYSTEM, parseResp.unit.name);
+          this.autoComp.setFieldVal(parseResp.unit.name, false);
         } else {
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
@@ -171,18 +197,16 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
       const unitExt = this.getUnitExtension();
       if (unitExt?.valueCoding?.display !== data.final_val) {
         data.final_val = this.unitService.translateUnitDisplayToCode(data.final_val, data.list);
-
         const parseResp = this.unitService.validateWithUcumUnit(data.final_val);
-
         if (parseResp.status === "valid" || (parseResp.status === "invalid" && parseResp.ucumCode)) {
           this.addOrUpdateUnitExtension(this.createUnitExt(
             UnitsComponent.unitsExtUrl[this.dataType],
-            UnitsComponent.ucumSystemUrl,
+            EXTENSION_URL_UCUM_SYSTEM,
             parseResp.ucumCode,
             parseResp.unit.name
           ));
-          updateUnitFormProperty(parseResp.ucumCode, UnitsComponent.ucumSystemUrl, parseResp.unit.name);
-          this.autoComp.setFieldVal(parseResp.unit.name);
+          updateUnitFormProperty(parseResp.ucumCode, EXTENSION_URL_UCUM_SYSTEM, parseResp.unit.name);
+          this.autoComp.setFieldVal(parseResp.unit.name, false);
 
         } else {
           this.addOrUpdateUnitExtension(this.createUnitExt(
@@ -208,10 +232,10 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
    * @param unitExt - Extension object representing the appropriate unit extension.
    */
   addOrUpdateUnitExtension(unitExt: fhir.Extension) {
-    if(this.dataType === 'integer' || this.dataType === 'decimal') {
+    if(this.dataType === TYPE_INTEGER || this.dataType === TYPE_DECIMAL) {
       this.extensionsService.resetExtension(unitExt.url, unitExt, 'valueCoding', false);
     }
-    else if(this.dataType === 'quantity') {
+    else if(this.dataType === TYPE_QUANTITY) {
       // Use the id, for example __$units.0.valueCoding.display, to determine which
       // row the data is being updated. This only applies to 'quantity'.
       const idx = this.unitService.getUnitIndexFromId(this.id);
@@ -221,10 +245,10 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
       if (extensionLength < numberOfFormPropertyArray) {
         this.extensionsService.addExtension(unitExt, 'valueCoding');
       } else if (extensionLength === numberOfFormPropertyArray && idx > -1) {
-        const unitExts = this.extensionsService.getExtensionsByUrl(UnitsComponent.questionUnitOptionExtUrl);
+        const unitExts = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION);
         if (unitExts && unitExts.length > idx) {
           unitExts[idx] = unitExt;
-          this.extensionsService.replaceExtensions(UnitsComponent.questionUnitOptionExtUrl, unitExts);
+          this.extensionsService.replaceExtensions(EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, unitExts);
         } else {
           this.extensionsService.addExtension(unitExt, 'valueCoding');
         }
@@ -278,6 +302,24 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
       ret.valueCoding.display = display;
     }
     return ret;
+  }
+
+  /**
+   * Intercept and transform input before it is submitted.
+   * Converts '[' to '(', ']' to ')', and '*' to '.'.
+   *
+   * This transformation is necessary because the result returned from the UCUM package
+   * will group the Display text with square brackets and convert the multiplication '.' to '*'.
+   * If users try to search using the original UCUM output, it would fail because neither the autocompleter
+   * nor the UCUM package handle the square bracket or the '*' character. Converting to parenthesis and period
+   * allows search to be performed successfully.
+   */
+  onInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (typeof input.value !== 'string') {
+      return;
+    }
+    input.value = this.unitService.transformUnitInput(input.value);
   }
 
   /**

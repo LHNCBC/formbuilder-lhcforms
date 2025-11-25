@@ -1,3 +1,7 @@
+// Polyfill global for browser context (must be first!)
+if (typeof window !== 'undefined' && typeof global === 'undefined') {
+  (window as any).global = window;
+}
 // ***********************************************************
 // This example support/index.js is processed and
 // loaded automatically before your test files.
@@ -12,6 +16,13 @@
 // You can read more here:
 // https://on.cypress.io/configuration
 // ***********************************************************
+
+// Polyfill global for browser context (must be first!)
+// Moving the global assignment to the top of the file, trying to solve the
+// error "global is not defined" error.
+if (typeof window !== 'undefined' && typeof global === 'undefined') {
+  (window as any).global = window;
+}
 
 // Import commands.js using ES2015 syntax:
 import './commands';
@@ -34,5 +45,3 @@ const config = {
 
 installLogsCollector();
 failOnConsoleError(config);
-
-window.global = window;

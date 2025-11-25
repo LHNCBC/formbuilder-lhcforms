@@ -3,7 +3,6 @@
  */
 import {
   Component,
-  OnInit,
   Input,
   Output,
   EventEmitter,
@@ -11,13 +10,13 @@ import {
   ElementRef,
   OnDestroy,
   AfterViewInit,
-  SimpleChanges, OnChanges
+  SimpleChanges,
+  OnChanges
 } from '@angular/core';
 import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../../../fhir';
 import integer = fhirPrimitives.integer;
-import {HttpParams} from '@angular/common/http';
 declare var LForms: any;
 
 export interface FhirOptions {
@@ -70,8 +69,6 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
   removed = new EventEmitter<fhir.Coding>();
   @Output()
   selected = new EventEmitter<fhir.Coding>();
-  @Output()
-  typed_in = new EventEmitter<fhir.Coding>();
 
   @ViewChild('ac') acElementRef: ElementRef;
   el: HTMLInputElement;
@@ -132,7 +129,6 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
           this.selected.emit(coding);
         }
       }
-      this.typed_in.emit(data.val_typed_in);      
     });
   }
 

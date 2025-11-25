@@ -7,6 +7,6 @@
   </ng-container>
 </div>
 <ng-template #manualEntry>
-  <input [name]="name" [attr.id]="id" type="text" class="form-control" [(ngModel)]="model"
+  <input [name]="name" [attr.id]="id" type="text" class="form-control" [(ngModel)]="model.display"
          (ngModelChange)="fieldChanged($event)">
-</ng-template>  
+</ng-template>

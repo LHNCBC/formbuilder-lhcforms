@@ -7,6 +7,7 @@ import {Util} from '../../util';
 import { HttpParams } from "@angular/common/http";
 import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
+import { TYPE_CODING, ANSWER_OPTION_METHOD_ANSWER_OPTION } from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -114,7 +115,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       this.formProperty.updateValueAndValidity(true);
 
       // Added support for other data types.
-      if (this.type === 'coding') {
+      if (this.type === TYPE_CODING) {
         ansOpts = ansOpts.filter((ansOpt) => 'display' in ansOpt.valueCoding);
       } else {
         ansOpts = ansOpts.filter((ansOpt) => this.valueFieldName in ansOpt);
@@ -125,14 +126,14 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       if (!this.answerOptionDisplays || this.answerOptionDisplays.length !== ansOpts.length) {
         changed = true;
       } else {
-        if (this.type === 'coding') {
+        if (this.type === TYPE_CODING) {
           changed = this.answerOptionProp.some((ansOptProp, idx) => ansOptProp.valueCoding?.display !== ansOpts[idx].valueCoding?.display ||
                                                                     ansOptProp.valueCoding?.code !== ansOpts[idx].valueCoding?.code ||
                                                                     ansOptProp.valueCoding?.system !== ansOpts[idx].valueCoding?.system ||
                                                                     ansOptProp.valueCoding?.__$score !== ansOpts[idx].valueCoding?.__$score);
         } else {
           changed = this.answerOptionProp.some((ansOptProp, idx) => ansOptProp[this.valueFieldName] !== ansOpts[idx][this.valueFieldName]);
-          
+
         }
       }
 
@@ -211,7 +212,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
    * @param type - one of the fhir data types.
    */
   setAnswerOptionDisplaysByType(answerOptionProp: any, type: string ): void {
-    if (type === "coding") {
+    if (type === TYPE_CODING) {
       this.answerOptionDisplays = (answerOptionProp) ?
                                     answerOptionProp.filter(answer => "display" in answer.valueCoding)
                                                     .map(answer => answer?.valueCoding?.display) :
@@ -239,7 +240,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       for (let i=0, len=selectedAnswers.length; i<len; ++i) {
         if ((fromFormProperty === false && selectedAnswers[i].initialSelected) || (fromFormProperty)){
           let dispVal = '';
-          if (type === "coding") {
+          if (type === TYPE_CODING) {
             dispVal = selectedAnswers[i]?.valueCoding?.display || selectedAnswers[i]?.valueCoding?.code;
             if (dispVal) {
               this.autoComplete.storeSelectedItem(dispVal ?? '', selectedAnswers[i].valueCoding.code);
@@ -284,7 +285,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
     }
 
     if (this.answerOptionProp.length === 1) {
-      if (type === 'coding') {
+      if (type === TYPE_CODING) {
         const option = this.answerOptionProp[0].valueCoding;
         if (!option.display && !option.code && !option.system && !option.__$score) {
           return true;
@@ -342,7 +343,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       if (res?.list && res?.final_val) {
         const optionIdx = res.list.indexOf(res.final_val);
 
-        if (ansOptMthd === "answer-option") {
+        if (ansOptMthd === ANSWER_OPTION_METHOD_ANSWER_OPTION) {
           let changed = false;
           if (res.removed) {
             if ('initialSelected' in this.answerOptionProp[optionIdx]) {

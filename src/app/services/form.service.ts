@@ -39,6 +39,7 @@ import {ExtensionsService} from './extensions.service';
 import {SchemaService} from './schema.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {ISchema} from "@lhncbc/ngx-schema-form";
+import { EXTENSION_URL_VARIABLE, EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION } from '../lib/constants/constants';
 
 declare var LForms: any;
 
@@ -70,10 +71,6 @@ export class FormService {
   static _lformsLoaded$ = new Subject<string>();
   static readonly TREE_NODE_ID = "__$treeNodeId";
   _validationStatusChanged$: Subject<void> = new Subject<void>();
-
-  static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
-  static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
-  static VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
 
   private _loading = false;
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
@@ -783,7 +780,7 @@ export class FormService {
    * @returns - returns the array of extensions excluding the extensions of type Variable.
    */
   removeVariablesExtensions(extensions: any): any {
-    return extensions.filter(ext => (ext.url !== FormService.VARIABLE));
+    return extensions.filter(ext => (ext.url !== EXTENSION_URL_VARIABLE));
   }
 
   /**
@@ -792,7 +789,7 @@ export class FormService {
    * @returns - returns the array of extensions excluding the extensions of type Initial Expression or Calculated Expression.
    */
   removeExpressionsExtensions(extensions: any): any {
-    return extensions.filter(ext => (ext.url !== FormService.INITIAL_EXPRESSION && ext.url !== FormService.CALCULATED_EXPRESSION));
+    return extensions.filter(ext => (ext.url !== EXTENSION_URL_INITIAL_EXPRESSION && ext.url !== EXTENSION_URL_CALCULATED_EXPRESSION));
   }
 
   /**
@@ -801,7 +798,7 @@ export class FormService {
    * @returns - returns the array of extensions that is of type Variable.
    */
   filterVariableExtensions(extensions: any): any {
-    return extensions.filter(ext => (ext.url === FormService.VARIABLE));
+    return extensions.filter(ext => (ext.url === EXTENSION_URL_VARIABLE));
   }
 
   /**
@@ -810,7 +807,7 @@ export class FormService {
    * @returns - expression url.
    */
   getUrlByType(expressionType: string): string {
-    return (expressionType === "__$initialExpression") ? FormService.INITIAL_EXPRESSION : FormService.CALCULATED_EXPRESSION;
+    return (expressionType === "__$initialExpression") ? EXTENSION_URL_INITIAL_EXPRESSION : EXTENSION_URL_CALCULATED_EXPRESSION;
   }
 
   /**
@@ -824,10 +821,10 @@ export class FormService {
     let expression = null;
 
     for (const ext of extensions) {
-      if (ext.url === FormService.CALCULATED_EXPRESSION) {
+      if (ext.url === EXTENSION_URL_CALCULATED_EXPRESSION) {
         ext.url = this.getUrlByType(expressionType);
         return ext;
-      } else if (ext.url === FormService.INITIAL_EXPRESSION && !expression) {
+      } else if (ext.url === EXTENSION_URL_INITIAL_EXPRESSION && !expression) {
         expression = ext;
         expression.url = this.getUrlByType(expressionType);
       }
@@ -842,7 +839,7 @@ export class FormService {
    * @returns - True if the Initial Expression is found and false otherwise.
    */
   hasInitialComputeValueExpression(extensions: any): boolean {
-    return extensions.some(ext => (ext.url === FormService.INITIAL_EXPRESSION));
+    return extensions.some(ext => (ext.url === EXTENSION_URL_INITIAL_EXPRESSION));
   }
 
   /**
@@ -851,7 +848,7 @@ export class FormService {
    * @returns - True if the Calculated Expression is found and false otherwise.
    */
   hasContinuouslyComputeValueExpression(extensions: any): boolean {
-    return extensions.some(ext => (ext.url === FormService.CALCULATED_EXPRESSION));
+    return extensions.some(ext => (ext.url === EXTENSION_URL_CALCULATED_EXPRESSION));
   }
 
   /**

@@ -25,10 +25,10 @@
               <label [attr.for]="id+'css'" class="text-nowrap">Specify CSS Styles:</label>
               <textarea
                 rows="3"
-                (change)="extChanged($event.target.value, Util.RENDERING_STYLE_EXT_URL)"
+                (change)="extChanged($event.target.value, EXTENSION_URL_RENDERING_STYLE)"
                 class="form-control h-auto"
                 [attr.id]="id+'css'"
-              >{{extValObj[Util.RENDERING_STYLE_EXT_URL]}}</textarea>
+              >{{extValObj[EXTENSION_URL_RENDERING_STYLE]}}</textarea>
             </div>
             <button class="btn btn-sm btn-primary float-end m-1 mb-0" (click)="cssDropdown.close()">Close</button>
           </div>
@@ -40,10 +40,10 @@
               <label [attr.for]="id+'xhtml'" class="text-nowrap">Specify XHTML:</label>
               <textarea
                 rows="5"
-                (change)="extChanged($event.target.value, Util.RENDERING_XHTML_EXT_URL)"
+                (change)="extChanged($event.target.value, EXTENSION_URL_RENDERING_XHTML)"
                 class="form-control h-auto"
                 [attr.id]="id+'xhtml'"
-              >{{extValObj[Util.RENDERING_XHTML_EXT_URL]}}</textarea>
+              >{{extValObj[EXTENSION_URL_RENDERING_XHTML]}}</textarea>
             </div>
             <button class="btn btn-sm btn-primary float-end m-1 mb-0" (click)="xhtmlDropdown.close()">Close</button>
           </div>

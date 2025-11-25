@@ -131,7 +131,15 @@ test.describe('Open form builder in a new window', async () => {
       await page.getByRole('button', {name: 'Clear messages'}).click();
       await mainPO.titleLocator.fill('');
       await mainPO.titleLocator.fill('yyyy');
-      await mainPO.page.getByRole('button', {name: 'Save & Close'}).click();
+
+      const saveButton = mainPO.page.getByRole('button', { name: 'Save & Close' });
+      await expect(saveButton).toBeVisible();
+      await expect(saveButton).toBeEnabled();
+      await Promise.all([
+        mainPO.page.waitForEvent('close'),
+        await saveButton.click()
+      ]);
+
       messageData.data = await getMessage(page, 'closed');
       expect(messageData.data.questionnaire.title).toBe('yyyy');
       expect(messageData.data.questionnaire.meta.profile[0]).toBe(expectedProfile);

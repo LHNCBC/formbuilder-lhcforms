@@ -3,6 +3,7 @@ import {FormProperty} from "@lhncbc/ngx-schema-form";
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
 import {Util} from "../../util";
 import fhir from "fhir/r4";
+import { EXTENSION_URL_ITEM_CONTROL } from '../../constants/constants';
 
 type InputType = 'plain' | 'xhtml';
 
@@ -22,11 +23,11 @@ export class HelpTextComponent extends LfbControlWidgetComponent implements OnIn
     value.type = 'display'
     value.extension = value.extension || [];
     const ind = value.extension.findIndex((ext) => {
-      return ext.url === Util.ITEM_CONTROL_EXT_URL && ext.valueCodeableConcept.coding.some((coding) => coding.code === 'help');
+      return ext.url === EXTENSION_URL_ITEM_CONTROL && ext.valueCodeableConcept.coding.some((coding) => coding.code === 'help');
     });
     if(ind < 0) {
       value.extension.push({
-        url: Util.ITEM_CONTROL_EXT_URL,
+        url: EXTENSION_URL_ITEM_CONTROL,
         valueCodeableConcept: {
           text: 'Help-Button',
           coding: [

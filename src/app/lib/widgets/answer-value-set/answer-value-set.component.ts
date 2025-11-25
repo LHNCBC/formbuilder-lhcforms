@@ -7,6 +7,7 @@ import {TerminologyServerComponent} from '../terminology-server/terminology-serv
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
 import {Util} from '../../util';
+import { ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET } from '../../constants/constants';
 
 @Component({
   standalone: false,
@@ -67,10 +68,10 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
     const sub = asMethodsProp.valueChanges.subscribe((newVal) => {
       this.valueSetType = newVal;
       switch (this.valueSetType) {
-        case 'snomed-value-set':
+        case ANSWER_OPTION_METHOD_SNOMED_VALUE_SET:
           this.tsHint = AnswerValueSetComponent.snomedTSHint;
           break;
-        case 'value-set':
+        case ANSWER_OPTION_METHOD_VALUE_SET:
           this.tsHint = AnswerValueSetComponent.nonSnomedTSHint;
       }
       this.updateUI(this.formProperty.value);
@@ -83,7 +84,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    * @param answerValueSetValue - Value of answerValueSet. Checks if its snomed URI and sets appropriate radio button.
    */
   updateUI(answerValueSetValue: string) {
-    if(this.valueSetType === 'snomed-value-set') {
+    if(this.valueSetType === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET) {
       if(answerValueSetValue) {
         this.updateSnomedFields(answerValueSetValue);
         this.snomedUrl = answerValueSetValue;
@@ -92,7 +93,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
         this.snomedUrl = '';
       }
     }
-    else if(this.valueSetType === 'value-set') {
+    else if(this.valueSetType === ANSWER_OPTION_METHOD_VALUE_SET) {
       if(answerValueSetValue) {
         this.nonSnomedUrl = answerValueSetValue;
       }

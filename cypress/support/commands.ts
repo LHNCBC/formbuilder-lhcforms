@@ -529,7 +529,8 @@ Cypress.Commands.add('getRadioButton', (groupLabel, rLabel) => {
  * Get the label of radio input identified by the label of the field and the label of the radio button.
  */
 Cypress.Commands.add('getRadioButtonLabel', (fieldLabel, radioLabel) => {
-  const radioGroup = cy.get('lfb-label label').contains(fieldLabel).parent().next();
+  // Ensure the label is visible before proceeding
+  const radioGroup = cy.get('lfb-label label').contains(fieldLabel).should('be.visible').parent().next();
   return radioGroup.find('label').contains(radioLabel);
 });
 
@@ -635,6 +636,13 @@ Cypress.Commands.add('getComputeContinuouslyValueValueMethodClick', () => {
 });
 
 /**
+ * Click a radio button for the 'None' boolean field under the Value Method.
+ */
+Cypress.Commands.add('getNoneValueMethodClick', () => {
+  return cy.contains('div', 'Value method').find('[for^="__$valueMethod_none"]').click();
+});
+
+/**
  * Handles the common workflow for interacting with an autocomplete input in Cypress tests.
  *
  * @param autocompleteElement - The input element for the autocomplete (as a jQuery element).
@@ -691,7 +699,7 @@ function handleAutocomplete(autocompleteElement: JQuery<HTMLInputElement>, clear
  * @param specialCharacterSequencesText - Special key sequences to send (e.g., '{downarrow}{enter}').
  * @param expectedResults - (Optional) The expected array of texts for the selected results to assert.
  *
- * This command types an optional keyword into an autocomplete input, waits for the search results to appear,
+ * This command types an optional keyword into a multi-select autocomplete input, waits for the search results to appear,
  * optionally checks the number of results, selects an option using special key sequences,
  * and verifies that the expected results appear in the selection display.
  */
@@ -769,6 +777,90 @@ Cypress.Commands.add('selectAutocompleteOption',
   }
 );
 
+/**
+ * Custom command to check the Question Item Control UI logic for a given data type and expected UI state.
+ * @param {string} type - The data type to select (e.g., 'integer').
+ * @param {string[]} questionItemControlOptions - Expected labels for item control question options (before answer list is created).
+ * @param {string[]} itemControlOptions - Expected labels for item control options (after answer list is created).
+ * @param {string[]} itemControlOptionsAfterRepeat - Expected labels for item control options after repeat is set.
+ * @param {string[]} itemControlOptionsAfterAnswerValueSet - Expected something
+ */
+Cypress.Commands.add('checkQuestionItemControlUI',
+  (type, questionItemControlOptions, itemControlOptions, itemControlOptionsAfterRepeat,
+   itemControlOptionsAfterAnswerValueSet) => {
+  const createAnswerListLabel = 'Create answer list';
+  const questionItemControlLabel = 'Question item control';
+  const answerListLayoutLabel = 'Answer list layout';
+  const repeatLabel = 'Allow repeating question?';
+  const questionItemControlVisible = questionItemControlOptions;
+  const createAnswerListVisible = itemControlOptions;
+  const repeatVisible = itemControlOptionsAfterRepeat;
+  const answerValueSetOptionsVisible = itemControlOptionsAfterAnswerValueSet;
+
+  // Select the data type
+  cy.selectDataType(type);
+
+  // Check 'Create answer list' label visibility
+  if (createAnswerListVisible) {
+    cy.get('lfb-label label').contains(createAnswerListLabel).should('exist');
+  } else {
+    cy.get('lfb-label label').contains(createAnswerListLabel).should('not.exist');
+  }
+
+  // Reset the 'Create Answer List' back to 'No'
+  if (createAnswerListVisible) {
+    cy.getRadioButtonLabel(createAnswerListLabel, 'No').click();
+  }
+  // Reset the 'Allow repeating question?' back to 'Unspecified'
+  if (repeatVisible) {
+    cy.getRadioButtonLabel(repeatLabel, 'Unspecified').click();
+  }
+
+  // Check 'Question item control' label visibility
+  if (questionItemControlVisible) {
+    cy.get('lfb-label label').contains(questionItemControlLabel).should('exist');
+    cy.get('div#__\\$itemControlQuestion > div > input').as('itemControlQuestion');
+    cy.get('@itemControlQuestion').should('have.length', questionItemControlOptions.length);
+    questionItemControlOptions.forEach((label, idx) => {
+      cy.get('@itemControlQuestion').eq(idx).next('label').should('contain.text', label);
+    });
+  } else {
+    cy.get('lfb-label label').contains(questionItemControlLabel).should('not.exist');
+  }
+
+  // Click 'Yes' on the 'Create answer list' if requested
+  if (createAnswerListVisible) {
+    cy.getRadioButtonLabel(createAnswerListLabel, 'Yes').click();
+    // 'Question item control' should now be hidden
+    cy.get('lfb-label label').contains(questionItemControlLabel).should('not.exist');
+    // 'Answer list layout' should be displayed
+    cy.get('lfb-label label').contains(answerListLayoutLabel).should('exist');
+    cy.get('div#__\\$itemControl > div > input').as('itemControl');
+    cy.get('@itemControl').should('have.length', itemControlOptions.length);
+    itemControlOptions.forEach((label, idx) => {
+      cy.get('@itemControl').eq(idx).next('label').should('contain.text', label);
+    });
+    // Click 'Yes' on the 'Allow repeating question?' if requested
+    if (repeatVisible && createAnswerListVisible) {
+      cy.getRadioButtonLabel(repeatLabel, 'Yes').click();
+      // Check item control options after repeat
+      cy.get('@itemControl').should('have.length', itemControlOptionsAfterRepeat.length);
+      itemControlOptionsAfterRepeat.forEach((label, idx) => {
+        cy.get('@itemControl').eq(idx).next('label').should('contain.text', label);
+      });
+    }
+
+    if (answerValueSetOptionsVisible) {
+      // Click the 'Answer list source - SNOMED answer value set' radion option.
+      cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').click();
+      // Check item control options after Answer Valuet Set
+      cy.get('@itemControl').should('have.length', itemControlOptionsAfterAnswerValueSet.length);
+      itemControlOptionsAfterAnswerValueSet.forEach((label, idx) => {
+        cy.get('@itemControl').eq(idx).next('label').should('contain.text', label);
+      });
+    }
+  }
+});
 // Helps remove TypeScript errors and auto completing the Cypress commands in TypeScript
 declare global {
   namespace Cypress {
@@ -822,6 +914,7 @@ declare global {
       getPickInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
       getComputeInitialValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
       getComputeContinuouslyValueValueMethodClick(): Chainable<JQuery<HTMLElement>>;
+      getNoneValueMethodClick(): Chainable<JQuery<HTMLElement>>;
       selectAutocompleteOption(
         autoCompleteInput: JQuery<HTMLInputElement>, clearBeforeTyping: boolean,
         searchKeyword: string, expectedListSize: number, specialCharacterSequencesText: string,
@@ -829,7 +922,11 @@ declare global {
       selectAutocompleteOptions(
         autoCompleteInput: JQuery<HTMLInputElement>, clearBeforeTyping: boolean,
         searchKeyword: string, expectedListSize: number, specialCharacterSequencesText: string,
-        expectedResults: string []): Chainable<void>;
+        expectedResults: string[]): Chainable<void>;
+
+      checkQuestionItemControlUI(
+        type: string, questionItemControlOptions: string[], itemControlOptions: string[],
+        itemControlOptionsAfterRepeat: string[], itemControlOptionsAfterAnswerValueSet: string[]): Chainable<void>;
     }
   }
 }
