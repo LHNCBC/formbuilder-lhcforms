@@ -15,7 +15,7 @@ declare var LForms: any;
         </div>
       </ng-container>
       <ng-template #manualEntry>
-        <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control" placeholder="normal" [formControl]="control"
+        <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control" [formControl]="control"
           (ngModelChange)="fieldChanged($event)">
       </ng-template>
   `,
