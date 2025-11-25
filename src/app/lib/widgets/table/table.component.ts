@@ -20,13 +20,14 @@ import {
   OnInit, Renderer2,
   SimpleChanges
 } from '@angular/core';
-import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong, faEdit} from '@fortawesome/free-solid-svg-icons';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import { TableService, TableStatus } from 'src/app/services/table.service';
+import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   standalone: false,
@@ -438,6 +439,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       }
     }
     super.removeItem(props[index]);
+    this.cdr.markForCheck();
   }
 
   /**
@@ -646,7 +648,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * Returns false by default, but can be overridden in derived classes.
    * @param index - Index of the row in the table.
    */
-  isDisabled(index: number): boolean {
+  isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     return false;
   }
 }

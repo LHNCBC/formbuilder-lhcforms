@@ -9,7 +9,7 @@
                [helpMessage]="schema.description"
                [ngClass]="labelClasses"
     ></lfb-label>
-    <div class="col p-0 m-0">
+    <div class="{{controlClasses}}">
       <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em>{{tsHint}}</em></small></p>
       <ng-container *ngTemplateOutlet="valueSetType === 'snomed-value-set' ? snomed : vsInput"></ng-container>
     </div>
@@ -70,7 +70,7 @@
 
 <ng-template #vsInput>
   <input [name]="name" [readonly]="schema.readOnly"
-         [ngClass]="controlClasses"
+         class="form-control form-control-sm"
          type="url"
          [attr.id]="id+'_non-snomed'"  [formControl]="control" [attr.placeholder]="schema.placeholder"
          [lfbDisableControl]="valueSetType === 'snomed-value-set' || schema.disabled">

@@ -721,7 +721,7 @@ export class Util {
    */
   static isEmptyValueCoding(valueCoding: any): boolean {
     return !(valueCoding?.display && valueCoding?.code);
-  }   
+  }
 
   /**
    * Determines whether the provided array of answer options is empty for a given FHIR data type.
@@ -743,6 +743,68 @@ export class Util {
       const valueFieldName = this.getValueFieldName(type);
       return !ansOpts.some(ansOpt => ansOpt[valueFieldName]);
     }
+  }
+
+  /**
+   * Extracts the FHIR type from a field name that starts with a given prefix.
+   * @param prefix - Typical prefix is value | answer.
+   * @param field - The field name from which to extract the FHIR type, example: 'answerBoolean', 'valueString'.
+   * @param isPrimitive - If true, the first character of the extracted type will be converted to lowercase.
+   * @return - The FHIR type as a string, such as 'boolean', 'string', etc.
+   *   Returns null if the field does not start with the prefix.
+   */
+  static extractFhirType(prefix: string, field: string, isPrimitive: boolean = true): string {
+    // Extracts the FHIR type from a field name that starts with a prefix.
+    // For example, if the prefix is 'answer' and the field is 'answerBoolean', it returns 'boolean'.
+    let type = field;
+    if (field?.startsWith(prefix)) {
+      type = field.substring(prefix.length);
+    } else {
+      type = null;
+    }
+    if(isPrimitive && type) {
+      type = type.charAt(0).toLowerCase() + type.slice(1); // Convert first character to lowercase
+    }
+    return type;
+  }
+
+  /**
+   * Convert camel case string to title case string.
+   * @param str - Input camel case string.
+   * @returns - Title case string.
+   */
+  static titleFromCamelCase(str: string): string {
+    if(!str) {
+      return str;
+    }
+    return str
+      // Insert a space between lower & upper
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      // Insert a space between upper & upper followed by lower
+      .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+      // Uppercase the first character
+      .replace(/^./, function(str){ return str.toUpperCase(); });
+  }
+
+  /**
+   * Lowercase the first character of a string.
+   * @param str - Input string.
+   * @returns - String with the first character lowercased.
+   */
+  static lowerFirstChar(str: string): string {
+    if(!str) {
+      return str;
+    }
+    return str.charAt(0).toLowerCase() + str.slice(1);
+  }
+
+
+  static getIsRequired(formProperty: FormProperty): boolean {
+    const pathArray = formProperty?.canonicalPathNotation.split('.');
+    return !!formProperty?.parent?.schema?.required?.some((requiredField)  => {
+      return pathArray[pathArray.length - 1] === requiredField;
+    });
+
   }
 }
 

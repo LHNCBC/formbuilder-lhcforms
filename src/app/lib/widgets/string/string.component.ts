@@ -28,7 +28,7 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
       }, // uri
       {
         pattern: '^[^\\s]+(\\s[^\\s]+)*$',
-        message: 'Spaces are not allowed at the beginning or end.'
+        message: 'Spaces are not allowed at the beginning or end. Only a single space is allowed between words.'
       },       // code
       {
         pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$',
@@ -52,7 +52,7 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
 
   ngOnInit() {
     super.ngOnInit();
-    this.controlClasses = this.controlClasses || 'form-control form-control-sm';
+    this.controlClasses = this.controlClasses || '';
     this.formProperty.errorsChanges.subscribe((errors) => {
       this.errors = null;
       if(errors?.length) {

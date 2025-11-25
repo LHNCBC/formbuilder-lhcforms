@@ -25,7 +25,7 @@
           { "field": "__$calculatedExpression", "col": 12 },
           { "field": "__$itemControl", "col": 12 },
           { "field": "__$itemControlGroup", "col": 12 },
-          { "field": "__$itemControlDisplay", "col": 12 },          
+          { "field": "__$itemControlDisplay", "col": 12 },
           { "field": "__$units", "col": 12 }
         ]
       },
@@ -55,7 +55,8 @@
           { "field": "disabledDisplay", "col": 12 },
           { "field": "__$terminologyServer", "col": 12 },
           { "field": "__$observationLinkPeriod", "col": 12},
-          { "field": "__$observationExtract", "col": 12}
+          { "field": "__$observationExtract", "col": 12},
+          { "field": "extension", "col": 12 }
         ]
       }
     ],

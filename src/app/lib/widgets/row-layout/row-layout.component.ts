@@ -14,6 +14,7 @@ import {FormService} from '../../../services/form.service';
     <div [class]="gridClass(field)" class="lfb-row" *ngFor="let field of basicVisibleFields">
       <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
     </div>
+    <ng-container *ngIf="advancedVisibleFields?.length">
     <div class="d-flex pt-3">
       <button type="button" class="btn btn-link text-decoration-none ps-0 fw-bold" (click)="collapse.toggle()"
               [attr.aria-expanded]="!collapseAdvanced"
@@ -27,6 +28,7 @@ import {FormService} from '../../../services/form.service';
         <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
       </div>
     </div>
+    </ng-container>
   `,
   styles: [`
     .lfb-row {
@@ -64,8 +66,8 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
   ngOnInit() {
     this.widgetId = this.formProperty.schema.formLayout.targetPage;
     // Read rows from schema layout
-    this.basicRows = this.formProperty.schema.formLayout.basic;
-    this.advancedRows = this.formProperty.schema.formLayout.advanced;
+    this.basicRows = this.formProperty.schema.formLayout.basic || [];
+    this.advancedRows = this.formProperty.schema.formLayout.advanced || [];
     this.collapseAdvanced = (this.formService.isFocusNodeHasError()) ? false : !!this.formService[this.widgetId];
     this.basicVisibleFields = this.getVisibleFields(this.basicRows);
     this.advancedVisibleFields = this.getVisibleFields(this.advancedRows);
@@ -81,7 +83,7 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
   /**
    * Get visible fields from form the list of rows. The rows are typically
    * specified in /src/assets/*-layout.json files.
-   * 
+   *
    * @param rows - An array defined in layout file.
    * @return - Array of fields, after filtering out non-visible.
    */

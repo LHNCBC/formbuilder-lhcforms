@@ -707,9 +707,6 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "widget": {
-                  "id": "row-layout"
-                },
                 "fieldsets": [
                   {
                     "fields": [
@@ -793,9 +790,6 @@
           },
           "additionalProperties": false,
           "type": "object",
-          "widget": {
-            "id": "row-layout"
-          },
           "fieldsets": [
             {
               "fields": [
@@ -1172,9 +1166,6 @@
                     },
                     "additionalProperties": false,
                     "type": "object",
-                    "widget": {
-                      "id": "row-layout"
-                    },
                     "fieldsets": [
                       {
                         "fields": [
@@ -1723,9 +1714,6 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "widget": {
-                  "id": "row-layout"
-                },
                 "fieldsets": [
                   {
                     "fields": [
@@ -2287,9 +2275,6 @@
               },
               "additionalProperties": false,
               "type": "object",
-              "widget": {
-                "id": "row-layout"
-              },
               "fieldsets": [
                 {
                   "fields": [
@@ -2372,9 +2357,6 @@
                     },
                     "additionalProperties": false,
                     "type": "object",
-                    "widget": {
-                      "id": "row-layout"
-                    },
                     "fieldsets": [
                       {
                         "fields": [
@@ -2662,9 +2644,6 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "widget": {
-                  "id": "row-layout"
-                },
                 "fieldsets": [
                   {
                     "fields": [
@@ -2740,9 +2719,6 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "widget": {
-                  "id": "row-layout"
-                },
                 "fieldsets": [
                   {
                     "fields": [

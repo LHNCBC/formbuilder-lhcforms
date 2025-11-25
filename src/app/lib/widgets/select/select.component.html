@@ -43,12 +43,13 @@
               [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
     </select>
 
-    <ng-container *ngFor="let error of errors">
-      <fa-icon id="error" [icon]="errorIcon" style="color: red"></fa-icon>
-      <small *ngIf="formProperty.value && error"
-             class="text-danger form-text" role="alert"
-      >{{error.modifiedMessage || error.originalMessage}}</small>
-    </ng-container>
+    @if(errors) {
+      @for(error of errors; track $index) {
+        <fa-icon id="error" [icon]="errorIcon" style="color: red"></fa-icon>
+        <small class="text-danger form-text" role="alert"
+        >{{error.modifiedMessage || error.originalMessage}}</small>
+      }
+    }
 
     </div>
     <input *ngIf="schema.readOnly" name="{{name}}" type="hidden" [formControl]="control">

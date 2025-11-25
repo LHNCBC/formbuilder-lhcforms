@@ -12,7 +12,7 @@
         <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
                class="form-control"
                [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
-               [required]="schema.widget.required"
+               [required]="isRequired"
                [lfbDisableControl]="schema.disabled"
                [footerTemplate]="timeTemplate"
                [startDate]="this.dateTime.dateStruct"

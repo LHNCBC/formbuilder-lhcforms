@@ -77,8 +77,9 @@
                 (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"
             [ngbPopover]="'Please fill in the above fields before adding a new item'"
             #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
+            container="body"
             popoverClass=""
-            [attr.title]="schema.widget.addButtonTitle"
+            [attr.title]="schema.widget?.addButtonTitle"
     >
       <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
     </button>
@@ -140,7 +141,7 @@
         matTooltip="Edit this row"
         aria-label="Edit this row"
         (click)="onEditProperty(index)"
-        [disabled]="isDisabled(index)"
+        [disabled]="formProperty | isDisabledPipe : index : isDisabled | async"
       ><fa-icon [icon]="faEdit" aria-hidden="true"></fa-icon></button>
     </div>
 </ng-template>

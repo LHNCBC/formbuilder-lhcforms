@@ -2,9 +2,12 @@ import {ChangeDetectorRef, Component, Input, NgModule} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
 import {TreeModule} from '@bugsplat/angular-tree-component';
 import {
-  ISchema,
-  SchemaFormModule, WidgetFactory,
-  WidgetRegistry,
+  ActionRegistry, BindingRegistry,
+  DefaultLogService,
+  ExpressionCompilerFactory, FormProperty, FormPropertyFactory,
+  ISchema, JEXLExpressionCompilerFactory, LogService, PropertyBindingRegistry,
+  SchemaFormModule, SchemaValidatorFactory, TerminatorService, ValidatorRegistry, WidgetFactory,
+  WidgetRegistry, ZSchemaValidatorFactory, FormComponent
 } from '@lhncbc/ngx-schema-form';
 import {provideHttpClient} from "@angular/common/http";
 import {provideHttpClientTesting} from "@angular/common/http/testing";
@@ -23,13 +26,24 @@ import {FhirService} from '../services/fhir.service';
 
 declare var LForms: any;
 
+export function useFormPropertyFactory(schemaValidatorFactory: SchemaValidatorFactory,
+                           validatorRegistry: ValidatorRegistry,
+                           propertyBindingRegistry: PropertyBindingRegistry,
+                           expressionCompilerFactory: ExpressionCompilerFactory,
+                           logService: LogService) {
+  return new FormPropertyFactory(schemaValidatorFactory, validatorRegistry, propertyBindingRegistry, expressionCompilerFactory, logService);
+}
+
+
+
 @Component({
   standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sf-test',
   template: `
     <sf-form [schema]="schema" [(model)]="model"></sf-form>
-  `
+  `,
+  providers: [FormComponent]
 })
 export class TestComponent {
 
@@ -64,6 +78,8 @@ export class CommonTestingModule {
 
   static commonTestingDeclarations: any [] = [];
 
+  static formPropertyFactory: FormPropertyFactory;
+
   static commonTestProviders: any [] = [
     provideHttpClient(),
     provideHttpClientTesting(),
@@ -71,11 +87,19 @@ export class CommonTestingModule {
     {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
     NgbActiveModal,
     FormService,
-    FhirService
+    FhirService,
+    ActionRegistry,
+    BindingRegistry,
+    TerminatorService,
+    {provide: SchemaValidatorFactory, useClass: ZSchemaValidatorFactory},
+    ValidatorRegistry,
+    PropertyBindingRegistry,
+    {provide: ExpressionCompilerFactory, useClass: JEXLExpressionCompilerFactory},
+    {provide: LogService, useClass: DefaultLogService},
   ];
 
   static setUpTestBedConfig = (moduleConfig: any) => {
-    beforeEach(() => {
+    beforeEach(async () => {
       let declarations = CommonTestingModule.commonTestingDeclarations;
       let imports = CommonTestingModule.commonTestingImports;
       let providers = CommonTestingModule.commonTestProviders;
@@ -85,7 +109,7 @@ export class CommonTestingModule {
       const spy = spyOn(FormService.prototype, 'loadLFormsLib');
       spy.and.callFake(() => {return Promise.resolve(LForms.lformsVersion)});
 
-      TestBed.configureTestingModule({
+      await TestBed.configureTestingModule({
         declarations,
         imports,
         providers
@@ -93,7 +117,13 @@ export class CommonTestingModule {
     });
 
     beforeEach(() => {
-      TestBed.inject(FormService);
+      CommonTestingModule.formPropertyFactory = useFormPropertyFactory(
+        TestBed.inject(SchemaValidatorFactory),
+        TestBed.inject(ValidatorRegistry),
+        TestBed.inject(PropertyBindingRegistry),
+        TestBed.inject(ExpressionCompilerFactory),
+        TestBed.inject(LogService)
+      );
     });
   };
 
@@ -102,8 +132,16 @@ export class CommonTestingModule {
   };
 
   static setupTestBedWithTestForm = () => {
-    CommonTestingModule.setUpTestBedConfig({declarations: [TestComponent]});
+    CommonTestingModule.setUpTestBedConfig({imports: [TestComponent]});
   }
+
+  static createProperty(schema: ISchema, model: any): FormProperty {
+    const formProperty = this.formPropertyFactory.createProperty(schema, null, null);
+    formProperty.setValue(model, false);
+    formProperty.updateValueAndValidity();
+    return formProperty;
+  }
+
 }
 
 /**

@@ -29,12 +29,16 @@ import flLayout from '../../assets/fl-fields-layout.json5';
 import vsLayout from '../../assets/value-set-fields-layout.json5';
 // @ts-ignore
 import ngxVSSchema from '../../assets/ngx-vs.schema.json5';
+// @ts-ignore
+import extLayout from '../../assets/extension-fields-layout.json5';
 
 import {GuidingStep, Util, FHIR_VERSIONS, FHIR_VERSION_TYPE} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
+import {SchemaService} from './schema.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import {ISchema} from "@lhncbc/ngx-schema-form";
 
 declare var LForms: any;
 
@@ -87,6 +91,7 @@ export class FormService {
   itemSchema: any = {properties: {}};
   flSchema: any = {properties: {}};
   valueSetSchema: any = {properties: {}};
+  extensionSchema: any = {properties: {}};
   binarySchema: any = {properties: {}};
 
   snomedUser = false;
@@ -140,13 +145,15 @@ export class FormService {
     reference: this.operatorOptions2
   };
 
-  constructor(private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
+  constructor(private schemaService: SchemaService, private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
     const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
+    const extSchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Extension));
 
     [
       {schema: ngxItemSchema as any, layout: itemLayout},
       {schema: ngxFlSchema as any, layout: flLayout},
       {schema: ngxVSSchema as any, layout: vsLayout},
+      {schema: extSchema as any, layout: extLayout},
       {schema: binarySchema as any, layout: {}} // TODO - Place holder for Binary layout
     ].forEach((obj) => {
       if(!obj.schema.definitions) {
@@ -157,12 +164,18 @@ export class FormService {
       this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
       this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
     });
+    extSchema.widget = {id: 'row-layout', keyField: '/__$valueType'};
+    this.schemaService.addDefaultWidgets(extSchema, extLayout);
+    this.addValueXFieldsToExtensionLayout(extSchema);
+    this.addVisibleIfToExtensionSchema(extSchema);
+    this.schemaService.setValueXCategoryMap(extSchema);
     this.itemSchema = ngxItemSchema;
     this.flSchema = ngxFlSchema;
     this.valueSetSchema = ngxVSSchema;
     delete this.valueSetSchema.definitions.ValueSet;
     delete this.valueSetSchema.definitions.ResourceList;
     delete this.valueSetSchema.properties.contained;
+    this.extensionSchema = extSchema;
     this.binarySchema = binarySchema;
     delete this.binarySchema.definitions.Binary;
 
@@ -196,6 +209,68 @@ export class FormService {
     return ret;
   }
 
+  /**
+   * Add visibleIf condition to each value[x] in extension schema.
+   * This is used to show/hide the value[x] fields based on the valueType field.
+   * @param schema - Extension schema object.
+   */
+  addVisibleIfToExtensionSchema(schema: ISchema) {
+    if(!schema) {
+      return;
+    }
+    // Add visibleIf to the extension schema.
+    for(const key in schema.properties) {
+      if(key.startsWith('value')) {
+        schema.properties[key].visibleIf = {
+          "allOf": [
+            {
+              "__$valueType": [key],
+            },
+            {
+              "__$isValueX": [true],
+            },
+          ]
+        };
+      }
+    }
+    schema.properties.__$valueType.visibleIf = {
+      "__$isValueX": [true]
+    }
+    schema.properties.extension.visibleIf = {
+      "__$isValueX": [false]
+    }
+  }
+
+  addValueXFieldsToExtensionLayout(schema: ISchema) {
+    if(!schema) {
+      return;
+    }
+
+    schema.formLayout = schema.formLayout || {};
+    schema.formLayout.basic = schema.formLayout.basic || [];
+
+    const showFieldsObj = schema.formLayout.basic.find((el) => {
+      return !!el.showFields;
+    });
+    showFieldsObj.showFields  = showFieldsObj.showFields || [];
+
+
+    // Add value[x] fields to the extension layout.
+    const valueXFields = Object.keys(schema.properties)
+      .filter((key) => key.startsWith('value') || key.startsWith('__$valueType') || key.startsWith('__$stringify'))
+      .map((valueX) => {
+        return {field: valueX, col: 12};
+      });
+    showFieldsObj.showFields.push(...valueXFields);
+  }
+
+  /**
+   * Load LForms library.
+   * @returns Promise resolving to the loaded version of LForms.
+   */
+  getExtensionSchema() {
+    return this.extensionSchema;
+  }
   /**
    * Override schema.widget with widget definitions from layout.
    * @param schema - Schema object typically from *-schema.json file.
@@ -1106,6 +1181,7 @@ export class FormService {
    */
   updateFhirQuestionnaire(questionnaire: fhir.Questionnaire): fhir.Questionnaire {
 
+    const thisService = this;
     // Remove any meta.tag.code generated by LForms.
     if(questionnaire.meta?.tag) {
       questionnaire.meta.tag = questionnaire.meta.tag.filter((tag) => {
@@ -1131,6 +1207,12 @@ export class FormService {
         }
         if(x?.answerOption || x?.type === 'coding' || x?.answerValueSet || x?.answerConstraint) {
           x.__$isAnswerList = true;
+        }
+        if(x?.extension) {
+          // x.extension is an array.
+          x.extension.forEach((ext) => {
+            thisService.formLevelExtensionService.updateExtension(ext);
+          });
         }
     });
 

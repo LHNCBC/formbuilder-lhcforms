@@ -2166,7 +2166,7 @@ describe('Home page', () => {
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
-          expect(qJson.item[0].extension[3]).to.deep.equal({
+          expect(qJson.item[0].extension[2]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
             "valueString": "Enter value between 15.2 and 20.1"
           });
@@ -2314,10 +2314,6 @@ describe('Home page', () => {
           expect(qJson.item[0].type).equal('decimal');
           expect(qJson.item[0].extension[2]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-            "valueString": "#,###.##"
-          });
-          expect(qJson.item[0].extension[3]).to.deep.equal({
-            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
             "valueString": "Enter value between 15.2 and 20.1"
           });
         });
@@ -2342,16 +2338,15 @@ describe('Home page', () => {
         // popping up with the '#,###.##'.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension[2]).undefined;
-          expect(qJson.item[0].extension[3]).undefined;
         });
 
         // Re-enter the entry format.
-        cy.get('[id="__$entryFormat"]').type('Enter value between 15.2 and 20.1');
+        cy.get('[id="__$entryFormat"]').type('Enter value between 1.2 and 2.1');
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension[2]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-            "valueString": "Enter value between 15.2 and 20.1"
+            "valueString": "Enter value between 1.2 and 2.1"
           });
         });
 
@@ -2362,7 +2357,7 @@ describe('Home page', () => {
         cy.get('lhc-item lhc-item-question lhc-input > input:first')
           .first()
           .invoke('attr', 'placeholder')
-          .should('eq', 'Enter value between 15.2 and 20.1');
+          .should('eq', 'Enter value between 1.2 and 2.1');
 
         // Close the Preview dialog.
         cy.contains('mat-dialog-actions > button', 'Close').scrollIntoView().click();
@@ -4364,8 +4359,10 @@ describe('Home page', () => {
     it('should create various types of variables', () => {
       // Add a new item under the 'Race' item of data type 'display'.
       cy.clickTreeNode('None');
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.getItemTextField().clear().type('Variables');
+      cy.contains('Add new item').as('addNewItem').scrollIntoView();
+      cy.get('@addNewItem').click();
+      cy.getItemTextField().clear();
+      cy.getItemTextField().type('Variables');
       cy.selectDataType('integer');
 
       // Click the 'Create/edit variables' button and add five different types of variables
@@ -4380,14 +4377,16 @@ describe('Home page', () => {
         // Add a new variable 'a_fhir_exp'
         cy.get('#add-variable').click();
         cy.get('#variables-section .variable-row').should('have.length', 1);
-        cy.get('#variable-label-0').clear().type('a_fhir_exp');
+        cy.get('#variable-label-0').as('variableLabel0').clear();
+        cy.get('@variableLabel0').type('a_fhir_exp');
         cy.get('#variable-type-0').select('FHIRPath Expression');
         cy.get('input#variable-expression-0').type("%resource.item.where(linkId='/29453-7').answer.value");
         cy.get('input#variable-expression-0').should('not.have.class', 'field-error');
 
         // Add a new variable 'b_fhir_query'
         cy.get('#add-variable').click();
-        cy.get('#variable-label-1').clear().type('b_fhir_query');
+        cy.get('#variable-label-1').as('variableLabel1').clear();
+        cy.get('@variableLabel1').type('b_fhir_query');
         cy.get('#variable-type-1').select('FHIR Query');
         cy.get('input#variable-expression-1')
           .type("Observation.component.where(code.memberOf(%'vs-observation-vitalsignresult'))");
@@ -4395,7 +4394,8 @@ describe('Home page', () => {
 
         // Add a new variable 'c_fhir_query_obs'
         cy.get('#add-variable').click();
-        cy.get('#variable-label-2').clear().type('c_fhir_query_obs');
+        cy.get('#variable-label-2').as('variableLabel2').clear();
+        cy.get('@variableLabel2').type('c_fhir_query_obs');
         cy.get('#variable-type-2').select('FHIR Query (Observation)');
 
         cy.get('lhc-query-observation').shadow().find('#autocomplete-2').as('queryObs');
@@ -4410,17 +4410,18 @@ describe('Home page', () => {
 
         // Add a new variable 'd_question'
         cy.get('#add-variable').click();
-        cy.get('#variable-label-3').clear().type('d_question');
+        cy.get('#variable-label-3').as('variableLabel3').clear();
+        cy.get('@variableLabel3').type('d_question');
         cy.get('#variable-type-3').should('have.value', 'question');
-        cy.get('#question-3')
+        cy.get('#question-3').as('question3Input')
           .should('exist')
           .should('be.visible')
-          .type('Pick Initial Value (Single)')
-          .type('{downarrow}{enter}');
+        cy.get('@question3Input').type('Pick Initial Value (Single){downarrow}{enter}')
 
         // Add a new variable 'e_easy_path_exp'
         cy.get('#add-variable').click();
-        cy.get('#variable-label-4').clear().type('e_easy_path_exp');
+        cy.get('#variable-label-4').as('variableLabel4').clear();
+        cy.get('@variableLabel4').type('e_easy_path_exp');
         cy.get('#variable-type-4').select('Easy Path Expression');
         cy.get('input#simple-expression-4').type('1');
 
@@ -4548,11 +4549,14 @@ describe('Home page', () => {
     it('should display variables correctly on both Item Variables field and when editing expression in Expression Editor', () => {
       // Add a new item under the 'Race' item of data type 'display'.
       cy.clickTreeNode('None');
-      cy.contains('Add new item').scrollIntoView().click();
-      cy.getItemTextField().clear().type('Compute initial value expression');
+      cy.contains('Add new item').as('addNewItem').scrollIntoView();
+      cy.get('@addNewItem').click();
+      cy.getItemTextField().clear();
+      cy.getItemTextField().type('Compute initial value expression');
       cy.selectDataType('integer');
 
-      cy.get('@computeInitial').should('be.visible').click();
+      cy.get('@computeInitial').should('be.visible');
+      cy.get('@computeInitial').click();
       cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
@@ -4565,19 +4569,22 @@ describe('Home page', () => {
         // Add a new variable 'a'
         cy.get('#add-variable').click();
         cy.get('#variables-section .variable-row').should('have.length', 1);
-        cy.get('#variable-label-0').clear().type('a');
+        cy.get('#variable-label-0').as('variableLabel0').clear();
+        cy.get('@variableLabel0').type('a');
         cy.get('#variable-type-0').select('Easy Path Expression');
         cy.get('input#simple-expression-0').type('1');
 
         // Add a new variable 'b'
         cy.get('#add-variable').click();
         cy.get('#variables-section .variable-row').should('have.length', 2);
-        cy.get('#variable-label-1').clear().type('b');
+        cy.get('#variable-label-1').as('variableLabel1').clear();
+        cy.get('@variableLabel1').type('b');
         cy.get('#variable-type-1').select('Easy Path Expression');
         cy.get('input#simple-expression-1').type('2');
 
         // Output expression
-        cy.get('textarea#final-expression').clear().type('%a + %b');
+        cy.get('textarea#final-expression').as('finalExpInput').clear();
+        cy.get('@finalExpInput').type('%a + %b');
         cy.get('lhc-syntax-preview>div>div>pre').should('not.have.text', 'Not valid');
 
         // Save (Export) should output the questionnaire for the given Variable Type
@@ -4610,7 +4617,8 @@ describe('Home page', () => {
         // Add a new variable 'c'
         cy.get('#add-variable').click();
         cy.get('#variables-section .variable-row').should('have.length', 3);
-        cy.get('#variable-label-2').clear().type('c');
+        cy.get('#variable-label-2').as('variableLabel2').clear();
+        cy.get('@variableLabel2').type('c');
         cy.get('#variable-type-2').select('Easy Path Expression');
         cy.get('input#simple-expression-2').type('3');
 
@@ -5312,11 +5320,13 @@ describe('Home page', () => {
     it('should retain value or expression when switching between value methods', () => {
       // Add a new item under the 'Race' item of data type 'display'.
       cy.clickTreeNode('None');
-      cy.contains('Add new item').scrollIntoView().click();
+      cy.contains('Add new item').as('addNewItem').scrollIntoView();
+      cy.get('@addNewItem').click();
       cy.getItemTextField().clear().type('Test switching value methods');
       cy.selectDataType('decimal');
 
-      cy.get('@computeInitial').should('be.visible').click();
+      cy.get('@computeInitial').should('be.visible');
+      cy.get('@computeInitial').click();
       cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
       cy.get('button#editExpression').click();
       cy.get('lhc-expression-editor').shadow().within(() => {
@@ -5329,19 +5339,22 @@ describe('Home page', () => {
         // Add a new variable 'a'
         cy.get('#add-variable').click();
         cy.get('#variables-section .variable-row').should('have.length', 1);
-        cy.get('#variable-label-0').clear().type('a');
+        cy.get('#variable-label-0').as('variableLabel0').clear();
+        cy.get('@variableLabel0').type('a');
         cy.get('#variable-type-0').select('Easy Path Expression');
         cy.get('input#simple-expression-0').type('1');
 
         // Add a new variable 'b'
         cy.get('#add-variable').click();
         cy.get('#variables-section .variable-row').should('have.length', 2);
-        cy.get('#variable-label-1').clear().type('b');
+        cy.get('#variable-label-1').as('variableLabel1').clear();
+        cy.get('@variableLabel1').type('b');
         cy.get('#variable-type-1').select('Easy Path Expression');
         cy.get('input#simple-expression-1').type('2');
 
         // Output expression
-        cy.get('textarea#final-expression').clear().type('%a + %b');
+        cy.get('textarea#final-expression').as('finalExpInput').clear();
+        cy.get('@finalExpInput').type('%a + %b');
         cy.get('lhc-syntax-preview>div>div>pre').should('not.have.text', 'Not valid');
 
         // Save (Export) should output the questionnaire for the given Variable Type

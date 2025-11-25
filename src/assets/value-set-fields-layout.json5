@@ -39,13 +39,13 @@
       id: "string",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 form-control"
+      controlClasses: "col-sm-10 m-0 p-0"
     },
     idInput: {
       id: "string",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 form-control",
+      controlClasses: "col-sm-10 m-0 p-0",
       showEmptyError: true,
       "note": "*  This field is mandatory, and must be unique across the questionnaire. If you change it, make sure to update any places in the questionnaire that reference this field."
     },
@@ -53,7 +53,7 @@
       id: "textarea",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 form-control"
+      controlClasses: "col-sm-10 m-0 p-0"
     },
     "lb-radio": {
       "id": "lb-radio",

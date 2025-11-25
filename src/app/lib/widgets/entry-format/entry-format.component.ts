@@ -30,13 +30,15 @@ export class EntryFormatComponent extends StringComponent implements OnInit, Aft
 
     let sub = this.formProperty.valueChanges.subscribe((entryFormValue: string) => {
       if (entryFormValue) {
-        if (!this.entryFormat) {
-          this.entryFormat = {
-            url: ExtensionsService.ENTRY_FORMAT_URI
-          };
+        const ext = {
+          url: ExtensionsService.ENTRY_FORMAT_URI,
+          valueString: entryFormValue
         }
-        this.entryFormat.valueString = entryFormValue;
-        this.extensionsService.updateOrAppendExtensionByUrl(ExtensionsService.ENTRY_FORMAT_URI, this.entryFormat);
+        this.extensionsService.resetExtension(
+          ExtensionsService.ENTRY_FORMAT_URI,
+          ext,
+          'valueString',
+          false);
 
       } else {
         this.entryFormat = null;

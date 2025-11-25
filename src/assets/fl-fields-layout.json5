@@ -27,7 +27,8 @@
           { field:  "approvalDate", col:  12},
           { field:  "lastReviewDate", col:  12},
           { field:  "contained", "col": 12},
-          { field:  "__$variable", col: 12}
+          { field:  "__$variable", col: 12},
+          { field:  "extension", col: 12}
         ]
       }
     ],
@@ -35,6 +36,7 @@
   },
   // Please note that the jsonpath expression paths in the keys
   overridePropertyLabels: {
+    '$.properties.extension': 'General extensions',
     '$.properties.contained': 'Contained resources',
     '$.properties.name': 'Questionnaire name',
     '$.properties.date': 'Revision date',
@@ -49,13 +51,13 @@
       id: "string",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 form-control"
+      controlClasses: "col-sm-10 m-0 p-0"
     },
     textArea: {
       id: "textarea",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 form-control"
+      controlClasses: "col-sm-10 m-0 p-0"
     },
     inputDate: {
       id: "date",
@@ -76,8 +78,8 @@
       "placeholder": "Enter url for preferred terminology server",
       "note": "You may wish to set this if you want to provide an answer value set for any item in this questionnaire.",
       "labelPosition": "left",
-      "labelWidthClass": "col-sm-2",
-      "controlWidthClass": "col-sm-10"
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10 m-0 p-0"
     },
     coding: {
       "id": "table",
@@ -106,6 +108,21 @@
         {"field": "title", "col": 4, "nolabel": true},
         {"field": "date", "col": 2, "nolabel": true},
         {"field": "status", "col": 1, "nolabel": true}
+      ]
+    },
+    extension: {
+      "id": "extension",
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new extension",
+      "addButtonTitle": "Note that the extensions added by other UI elements will be disabled for editing here.",
+      "showFields": [
+        // The fields here are canonical paths of FormProperty.
+        {"field": "url", "col": 4, "nolabel": true},
+        {"field": "__$valueType", "col": 2, "nolabel": true},
+        {"field": "__$stringify", "col": 4, "nolabel": true},
       ]
     },
     valueSet: {
@@ -190,6 +207,9 @@
     ],
     coding: [
       '$.properties.meta.properties.tag',
+    ],
+    extension: [
+      '$.properties.extension'
     ],
     contained: [
       '$.properties.contained'

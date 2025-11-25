@@ -6,6 +6,8 @@ import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {Subscription} from 'rxjs';
 
+import {Util} from '../../util';
+
 @Component({
   standalone: false,
   selector: 'lfb-control-widget',
@@ -42,9 +44,14 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit {
   booleanControlledInitial = true;
 
   subscriptions: Subscription[] = [];
+  widgetInfo: {[key: string]: any};
+  isRequired = false;
 
   ngOnInit() {
+    // Determine if this field is required.
+    this.isRequired = Util.getIsRequired(this.formProperty);
     const widget = this.formProperty.schema.widget;
+    this.widgetInfo = widget || {};
     // Input is priority followed by widget definition and default
     this.labelPosition =
       this.labelPosition

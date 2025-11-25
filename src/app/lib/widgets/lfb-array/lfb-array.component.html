@@ -1,0 +1,55 @@
+<div [ngClass]="labelClasses">
+  <button *ngIf="!noCollapseButton" href="#" type="button"
+          [ngClass]="{'float-sm-end': labelPosition === 'left'}"
+          class="btn btn-sm m-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+          [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
+    <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
+  </button>
+  <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
+</div>
+
+<div class="ps-4 col-sm-12" [attr.id]="id">
+  <div class="row m-0 w-100">
+    <div *ngIf="!isCollapsed" class="col-sm-12 row m-0 p-0">
+      <ng-container *ngFor="let property of iterableProperties(); index as $index" >
+        <div class="col-sm-2 d-flex justify-content-end pe-0 pt-1">
+          <div class="px-0">
+            <button type="button"
+                    class="btn btn-sm m-0 btn-link remove-button py-0"
+                    (click)="removeProperty($index)"
+            >
+              <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon>
+            </button>
+          </div>
+          <lfb-label [title]="($index + 1).toString()" [for]="id"></lfb-label>
+        </div>
+        <div class="col-sm-10 p-0">
+          <lfb-form-element [formProperty]="property"></lfb-form-element>
+        </div>
+      </ng-container>
+    </div>
+    <div class="col-sm-2"></div>
+    <div class="col-sm-10 p-0 my-1">
+      <button
+        lfbPopover
+        #lfbPopover="lfbPopover"
+        [lfbPopoverContent]="'Please fill in the above fields before adding a new item.'"
+        (click)="addItemWithAlert1(lfbPopover, $event)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button w-100"
+        [attr.disabled]="isAddButtonDisabled() ? '' : null"
+        *ngIf="!singleItem &&
+               (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"
+        [attr.title]="schema.widget?.addButtonTitle"
+      >
+        <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
+      </button>
+    </div>
+  </div>
+
+  <div class="mt-2" *ngIf="tableStatus" role="alert">
+    <fa-icon [icon]="warningIcon" [ngStyle]="getStatusStyle()" aria-hidden="true"></fa-icon>
+    <span class="ms-2" [ngClass]="getStatusClass()">{{tableStatus.message}}</span>
+  </div>
+</div>
+
+<ng-template #lfbPopoverTemplate let-title="title" let-content="content">
+</ng-template>

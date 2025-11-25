@@ -240,4 +240,23 @@ describe('Util', () => {
     expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption3, "coding")).toBe(true);
     expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption4, "coding")).toBe(false);
   });
+
+  it('should extract FHIR type from field name', () => {
+    const testCases = [
+      {prefix: 'value', primitive: true, fieldName: 'valueString', expectedType: 'string'},
+      {prefix: 'answer', primitive: true, fieldName: 'answerDate', expectedType: 'date'},
+      {prefix: 'answer', primitive: false, fieldName: 'answerCoding', expectedType: 'Coding'},
+      {prefix: 'value', primitive: false, fieldName: 'valueAddress', expectedType: 'Address'},
+      {prefix: '', primitive: false, fieldName: 'SomeType', expectedType: 'SomeType'},
+      {prefix: '', primitive: true, fieldName: 'SomeType', expectedType: 'someType'},
+      {prefix: '', primitive: true, fieldName: '', expectedType: ''},
+      {prefix: 'xxx', primitive: true, fieldName: 'Xyz', expectedType: null},
+      {prefix: 'xxx', primitive: false, fieldName: 'abc', expectedType: null},
+      {prefix: '', primitive: true, fieldName: null, expectedType: null},
+    ];
+
+    testCases.forEach((testCase) => {
+      expect(Util.extractFhirType(testCase.prefix, testCase.fieldName, testCase.primitive)).toBe(testCase.expectedType);
+    });
+  });
 });

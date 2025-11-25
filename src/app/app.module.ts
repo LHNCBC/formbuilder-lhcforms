@@ -106,6 +106,7 @@ import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.co
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 
 import { environment } from '../environments/environment';
+import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
 
 @NgModule({
   declarations: [
@@ -212,7 +213,8 @@ import { environment } from '../environments/environment';
     LabelComponent,
     CdkCopyToClipboard,
     CodemirrorModule,
-    ExpressionEditorModule
+    ExpressionEditorModule,
+    IsDisabledPipe
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [

@@ -1,8 +1,10 @@
-import { Injectable } from '@angular/core';
+import {inject, Injectable } from '@angular/core';
 import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {fhirPrimitives} from '../fhir';
+import {SchemaService} from "./schema.service";
+import {FormService} from "./form.service";
 
 /**
  * This class is intended for components which needs to interact with extension field.
@@ -24,12 +26,22 @@ export class ExtensionsService {
   static INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression';
   static CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
 
+  extensionsEditedInWidgets: Set<string> = new Set([
+    ExtensionsService.ENTRY_FORMAT_URI,
+    ExtensionsService.VARIABLE,
+    ExtensionsService.CUSTOM_EXT_VARIABLE_TYPE,
+    ExtensionsService.INITIAL_EXPRESSION,
+    ExtensionsService.CALCULATED_EXPRESSION
+  ]);
+
   _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
   _propertyMap: Map<fhirPrimitives.url, FormProperty []> = new Map();
   _extMap: Map<fhirPrimitives.url, fhir.Extension []> = new Map();
   subscriptions: Subscription [] = [];
   extensionsChange$: Subject<fhir.Extension []> = new Subject<fhir.Extension []>();
+
+  schemaService = inject(SchemaService);
 
   constructor() {
     this._id = this._id + ExtensionsService.__ID++;
@@ -170,11 +182,11 @@ export class ExtensionsService {
   }
 
   /**
-   * Loop through the array of textensions that match the given url. If no match is found, appends the 
+   * Loop through the array of textensions that match the given url. If no match is found, appends the
    * new extension to the end of the array. If a match is found, replace the last matched extension
    * with the provided 'newExtensionJSON`.
    * @param extUrl - Url to identify the extension.
-   * @param newExtensionJSON -  
+   * @param newExtensionJSON -
    *  * If it returns true, that extension is included in the removal list.
    * @param match - New fhir.Extension to replace with.
    */
@@ -279,7 +291,7 @@ export class ExtensionsService {
   isEmptyValueExpression(valueExpression: any): boolean {
     return !(valueExpression?.url && valueExpression?.valueExpression?.expression);
   }
-  
+
   /**
    * Remove the first extension that matches a criteria. A callback method 'match` is called for each extension
    * The first extension that returns true is removed.
@@ -304,6 +316,7 @@ export class ExtensionsService {
    *
    */
   addExtension(ext: fhir.Extension, valueType: string): FormProperty {
+    this.updateExtension(ext);
     const extProp = this.extensionsProp.addItem(ext);
     if(valueType) {
       this.pruneUnusedValues(extProp, valueType);
@@ -348,5 +361,37 @@ export class ExtensionsService {
     else {
       this.addExtension(value, valueType);
     }
+  }
+
+  /**
+   * Check if the extension is editable in the extension dialog.
+   * @returns - True if the extension is not editable in dialog.
+   */
+  isNotEditableInDlg(url: fhirPrimitives.url): boolean {
+    return this.extensionsEditedInWidgets.has(url);
+  }
+
+  updateExtension(newValue: fhir.Extension) {
+    if(newValue) {
+
+      // If the new value is an extension, we need to set the __$isValueX and __$valueType properties
+      // so that the dialog can handle it correctly.
+      const valueX = Object.keys(newValue).find(key => key.startsWith('value'));
+      newValue['__$isValueX'] = !!valueX;
+      if(newValue['__$isValueX']) {
+        newValue['__$valueType'] = valueX;
+        // this.categoryTypeMap is initialized in ngOnInit.
+        // const categoryTypeMap = this.schemaService.getValueXCategoryMap(this.formService.getExtensionSchema());
+        const categoryMap = this.schemaService.valueXCategoryMap;
+        newValue[categoryMap[valueX]] = valueX;
+        newValue['__$stringify'] = JSON.stringify(newValue[valueX]);
+      }
+      else {
+        newValue['__$valueType'] = 'extension';
+        newValue['__$stringify'] = JSON.stringify(newValue.extension);
+      }
+
+    }
+    return newValue;
   }
 }

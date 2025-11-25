@@ -27,7 +27,7 @@
           <th *ngFor="let showHeaderField of getVariableFieldsStructure(true)" class="col-sm{{showHeaderField.col ? ('-'+showHeaderField.col) : ''}}" scope="col">
             <lfb-title
               [title]="showHeaderField.title"
-              [helpMessage]="getVariableProperty(formProperty.schema.items.properties, showHeaderField.field, true)"
+              [helpMessage]="getVariableProperty(extensionSchema.properties, showHeaderField.field, true)"
             ></lfb-title>
           </th>
           <th class="col-sm-1 action-column" ></th>

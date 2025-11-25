@@ -185,14 +185,15 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     if (option) {
       this.isItemControlDeprecated = this.checkDeprecatedItemControl(option);
 
-      if(!ext) {
-        this.extensionsService.addExtension(this.createExtension(option), 'valueCodeableConcept');
-      }
-      else {
-        delete ext.valueCodeableConcept.text;
-        ext.valueCodeableConcept.coding[0].code = option;
-        ext.valueCodeableConcept.coding[0].display = this.optionsObj[option];
-      }
+      this.extensionsService.resetExtension(
+        ItemControlComponent.itemControlUrl,
+        this.createExtension(option),
+        'valueCodeableConcept',
+        false
+      );
+    }
+    else {
+      this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl)
     }
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import { FormService } from '../../../services/form.service';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
@@ -7,6 +7,7 @@ import fhir from 'fhir/r4';
 import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {TableComponent} from '../table/table.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
+import {ISchema} from "@lhncbc/ngx-schema-form";
 
 @Component({
   standalone: false,
@@ -29,6 +30,7 @@ export class VariableComponent extends TableComponent implements OnInit {
   resultExtensions: any;
 
   buttonName: string;
+  extensionSchema: ISchema;
 
   /**
    * Invoke super constructor.
@@ -44,6 +46,7 @@ export class VariableComponent extends TableComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.extensionSchema = this.formService.getExtensionSchema();
     super.ngOnInit();
     this.linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     const sub = this.modelService.questionnaire$.subscribe((questionnaire) => {

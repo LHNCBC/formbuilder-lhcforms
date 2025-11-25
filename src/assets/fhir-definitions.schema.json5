@@ -430,6 +430,7 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
+                /*
                 "widget": {
                   "id": "row-layout"
                 },
@@ -462,6 +463,7 @@
                     ]
                   }
                 ]
+                */
               },
               "type": "array"
             },
@@ -516,6 +518,7 @@
           },
           "additionalProperties": false,
           "type": "object",
+          /*
           "widget": {
             "id": "row-layout"
           },
@@ -547,7 +550,8 @@
                 }
               ]
             }
-          ]
+          ],
+          */
         },
         "valueContactPoint": {
           "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
@@ -895,9 +899,6 @@
                     },
                     "additionalProperties": false,
                     "type": "object",
-                    "widget": {
-                      "id": "row-layout"
-                    },
                     "fieldsets": [
                       {
                         "fields": [
@@ -1446,9 +1447,6 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "widget": {
-                  "id": "row-layout"
-                },
                 "fieldsets": [
                   {
                     "fields": [
@@ -1790,11 +1788,12 @@
             "language": {
               "description": "The media type of the language for the expression.",
               "enum": [
-                "text/cql",
                 "text/fhirpath",
+                "text/cql",
                 "application/x-fhir-query"
               ],
-              "type": "string"
+              "type": "string",
+              "default": "text/fhirpath"
             },
             "expression": {
               "description": "An expression in the specified language that returns a value.",
@@ -2020,9 +2019,6 @@
               },
               "additionalProperties": false,
               "type": "object",
-              "widget": {
-                "id": "row-layout"
-              },
               "fieldsets": [
                 {
                   "fields": [
@@ -2105,9 +2101,6 @@
                     },
                     "additionalProperties": false,
                     "type": "object",
-                    "widget": {
-                      "id": "row-layout"
-                    },
                     "fieldsets": [
                       {
                         "fields": [
@@ -2395,9 +2388,6 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "widget": {
-                  "id": "row-layout"
-                },
                 "fieldsets": [
                   {
                     "fields": [
@@ -2473,9 +2463,6 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                "widget": {
-                  "id": "row-layout"
-                },
                 "fieldsets": [
                   {
                     "fields": [
@@ -2511,13 +2498,171 @@
           },
           "additionalProperties": false,
           "type": "object"
+        },
+        "__$isValueX": {
+          // Boolean to identify valueX/extension
+          "description": "Use one of the value types or an extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
+          "type": "boolean",
+          "default": true,
+          "widget": {
+            "id": "boolean-radio",
+            "optionLabels": [
+              [
+                true,
+                "Use a value type"
+              ],
+              [
+                false,
+                "Use an extension"
+              ]
+            ],
+            "labelClasses": "col-2 ps-0 pe-1",
+            "controlClasses": "col-auto btn-group btn-group-sm ps-0"
+          }
+        },
+        "__$valueTypeCategory": {
+          // Identify category.
+          "description": "The category of the value in this extension. This is used to determine how to interpret the value.",
+          "enum": [
+            "__$valueTypePrimitive",
+            "__$valueGeneralPurposeDatatype",
+            "__$valueMetadataType",
+            "__$valueSpecialPurposeDatatype",
+          ],
+          "title": "Pick a data type category",
+          "type": "string",
+          "default": "__$valueTypePrimitive",
+          "visibleIf": {
+            "__$isValueX": [true]
+          },
+        },
+        "__$valueTypePrimitive": {
+          // Enumerate primitive types
+          "description": "The primitive datatype of the value in this extension. This is used to determine how to interpret the value.",
+          "enum": [
+            "valueBase64Binary",
+            "valueBoolean",
+            "valueCanonical",
+            "valueCode",
+            "valueDate",
+            "valueDateTime",
+            "valueDecimal",
+            "valueId",
+            "valueInstant",
+            "valueInteger",
+            "valueMarkdown",
+            "valueOid",
+            "valuePositiveInt",
+            "valueString",
+            "valueTime",
+            "valueUnsignedInt",
+            "valueUri",
+            "valueUrl",
+            "valueUuid",
+          ],
+          "type": "string",
+          "default": "valueString",
+          "visibleIf": {
+            "__$valueTypeCategory": ["__$valueTypePrimitive"]
+          },
+          "widget": {
+            "id": "select",
+          }
+        },
+        "__$valueGeneralPurposeDatatype": {
+          // Enumerate general purpose types.
+          "description": "The general purpose datatype of the value in this extension. This is used to determine how to interpret the value.",
+          "enum": [
+            "valueAddress",
+            "valueAge",
+            "valueAnnotation",
+            "valueAttachment",
+            "valueCodeableConcept",
+            "valueCoding",
+            "valueContactPoint",
+            "valueCount",
+            "valueDistance",
+            "valueDuration",
+            "valueHumanName",
+            "valueIdentifier",
+            "valueMoney",
+            "valuePeriod",
+            "valueQuantity",
+            "valueRange",
+            "valueRatio",
+          ],
+          "type": "string",
+          "default": "valueAddress",
+          "visibleIf": {
+            "__$valueTypeCategory": ["__$valueGeneralPurposeDatatype"]
+          },
+          "widget": {
+            "id": "select",
+          }
+        },
+        "__$valueMetadataType": {
+          // Enumerate meta data types.
+          "description": "The metadata type of the value in this extension. This is used to determine how to interpret the value.",
+          "enum": [
+            "valueContactDetail",
+            "valueContributor",
+            "valueExpression",
+            "valueParameterDefinition",
+            "valueRelatedArtifact",
+            "valueSampledData",
+            "valueSignature",
+            "valueUsageContext",
+          ],
+          "type": "string",
+          "default": "valueContactDetail",
+          "visibleIf": {
+            "__$valueTypeCategory": ["__$valueMetadataType"]
+          },
+          "widget": {
+            "id": "select",
+          }
+        },
+        "__$valueSpecialPurposeDatatype": {
+          // Enumerate special purpose types.
+          "description": "The special purpose datatype of the value in this extension. This is used to determine how to interpret the value.",
+          "enum": [
+            "valueMeta",
+            "valueReference",
+          ],
+          "type": "string",
+          "default": "valueReference",
+          "visibleIf": {
+            "__$valueTypeCategory": ["__$valueSpecialPurposeDatatype"]
+          },
+          "widget": {
+            "id": "select",
+          }
+        },
+        "__$valueType": {
+          // Actual type used. i.e. one of valueX or 'extension'.
+          "title": "Value type",
+          "description": "The type of the value in this extension. This is used to determine how to interpret the value.",
+          "type": "string",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "__$stringify": {
+          // String representation of this extension.
+          "description": "String representation of the value.",
+          "title": "Value",
+          "type": "string",
+          "readOnly": true
         }
       },
       "additionalProperties": false,
       "type": "object",
+      "title": "Extensions",
+      /*
       "widget": {
         "id": "hidden"
       }
+      */
     },
     "uri": {
       "pattern": "^\\S*$",
@@ -4660,9 +4805,6 @@
           },
           "additionalProperties": false,
           "type": "object",
-          "widget": {
-            "id": "row-layout"
-          },
           "fieldsets": [
             {
               "fields": [
@@ -4897,9 +5039,6 @@
           },
           "additionalProperties": false,
           "type": "object",
-          "widget": {
-            "id": "row-layout"
-          },
           "fieldsets": [
             {
               "fields": [
