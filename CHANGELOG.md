@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.10] 2025-11-25
+### Added
+- Added autocomplete lookup functionality to the answerOptions.
+
 ## [10.3.9] 2025-10-13
 ### Fixed
 - Ensure the 'Type initial value' option remains visible when toggling 'Create answer list' or switching items.
