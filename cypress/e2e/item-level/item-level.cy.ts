@@ -1551,11 +1551,11 @@ describe('Home page', () => {
           cy.get(warningMsg).should('not.exist');
           cy.get(oeYesLabel).click();
           cy.get(warningMsg).should('be.visible');
-          cy.get('@codeYes').click();
+          cy.get(warningMsg).contains('Question code').click();
+          cy.get(firstCodeInput).type('C1');
           // Should default to none relationship.
           // None should change the extension to valueBoolean: true.
           cy.get(oeNoneRadio).should('be.checked');
-          cy.get(firstCodeInput).type('C1');
           cy.get(warningMsg).should('not.exist');
           cy.get(firstCodeInput).clear();
           cy.get(warningMsg).should('be.visible');

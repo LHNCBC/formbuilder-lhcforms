@@ -152,8 +152,8 @@ export class ExtensionsService {
 
   /**
    * Remove all extensions that match a given criteria.
-   * A callback method 'match` is called for each extension. Al
-   * If it returns true, that extension is included in the removal list.
+   * A callback method 'match` is called for each extension.
+   * If it returns true, the extension is removed.
    * @param match - Callback with arguments of FormProperty and its index in the ArrayProperty.
    *     arguments:
    *       e: FormProperty - Element in the array.
