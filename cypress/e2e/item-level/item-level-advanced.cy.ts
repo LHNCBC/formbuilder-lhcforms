@@ -799,196 +799,6 @@ describe('Home page', () => {
     });
   });
 
-  describe('Item level fields: advanced - Condition expression', () => {
-    beforeEach(() => {
-      const sampleFile = 'enable-when-expression-sample.json';
-      cy.uploadFile(sampleFile, false);
-      cy.getFormTitleField().should('have.value', 'enableWhen expression');
-      cy.contains('button', 'Edit questions').click();
-      cy.get('.spinner-border', { timeout: 10000 }).should('not.exist');
-    });
-
-    afterEach(() => {
-      cy.collapseAdvancedFields();
-    });
-
-    it('should display enableWhen condition', () => {
-      cy.clickTreeNode('enableWhen condition');
-      cy.expandAdvancedFields();
-
-      cy.getRadioButton('Conditional method', 'enableWhen condition and behavior').should('be.checked');
-      cy.get('[id^="enableWhen.0.question"]').should('have.value', '1 - Item 0');
-      cy.get('[id^="enableWhen.0.operator"]')
-        .find('option:selected').should('have.text', '>');
-      cy.get('[id^="enableWhen.0.answerInteger"]').should('have.value', '5');
-      cy.get('[id^="enableWhen.1.question"]').should('have.value', '2 - Item 1');
-      cy.get('[id^="enableWhen.1.operator"]')
-        .find('option:selected').should('have.text', '>');
-      cy.get('[id^="enableWhen.1.answerInteger"]').should('have.value', '5');
-
-      cy.get('input#enableBehavior\\.all').should('be.checked');
-      cy.get('input#disabledDisplay\\.hidden').should('be.checked');
-    });
-
-    it('should display enableWhen expression', () => {
-      cy.clickTreeNode('enableWhen expression');
-      cy.expandAdvancedFields();
-
-      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
-      cy.get('#enableWhenExpression').should('exist').should('have.value', '%a > 5 and %b > 5');
-    });
-
-    it('should display enableWhen and initial expressions', () => {
-      cy.clickTreeNode('enableWhen and initial expressions');
-      cy.expandAdvancedFields();
-
-      cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
-      cy.get('@valueMethod').find('[id^="__$valueMethod_compute-initial"]').as('computeInitialRadio');
-      cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
-      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%a + %b");
-
-      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
-      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
-    });
-
-    it('should display enableWhen and calculated expressions', () => {
-      cy.clickTreeNode('enableWhen and calculated expressions');
-      cy.expandAdvancedFields();
-
-      cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
-      cy.get('@valueMethod').find('[id^="__$valueMethod_compute-continuously"]').as('computeContinuously');
-      cy.get('@computeContinuously').should('be.visible').and('be.checked');
-      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%a * %b");
-
-      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
-      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
-    });
-
-    it('should display enableWhen and answer expressions', () => {
-      cy.clickTreeNode('enableWhen and answer expressions');
-      cy.expandAdvancedFields();
-
-      cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
-      cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
-      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "1");
-
-      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
-      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
-    });
-
-    it('should show/hide questions based on enableWhen condition and expression', () => {
-      cy.expandAdvancedFields();
-
-      // Assertions in preview.
-      cy.contains('button', 'Preview').click();
-      cy.get('lhc-item').as('lhc-item');
-
-      // There should be 5 items
-      cy.get('div.lhc-form-body > lhc-item').should('have.length', 5);
-
-      // The first lhc-item
-      cy.get('@lhc-item').first().within(() => {
-        // Check for element label
-        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
-          .should('have.text', 'Item 0');
-        // Check for element value
-        cy.get('.lhc-de-input-unit').within(() => {
-          cy.get('lhc-item-simple-type > lhc-input > input')
-            .should('have.value', '2');
-        });
-      });
-
-      // The 2nd lhc-item
-      cy.get('@lhc-item').eq(1).within(() => {
-        // Check for element label
-        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
-          .should('have.text', 'Item 1');
-        // Check for element value
-        cy.get('.lhc-de-input-unit').within(() => {
-          cy.get('lhc-item-simple-type > lhc-input > input')
-            .should('have.value', '3');
-        });
-      });
-
-      // The 3rd lhc-item
-      cy.get('@lhc-item').eq(2).within(() => {
-        // Check for element label
-        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
-          .should('have.text', 'enableWhen and initial expressions');
-        // Check for element value
-        cy.get('.lhc-de-input-unit').within(() => {
-          cy.get('lhc-item-simple-type > lhc-input > input')
-            .should('have.value', '5');
-        });
-      });
-
-      // The 4th lhc-item
-      cy.get('@lhc-item').eq(3).within(() => {
-        // Check for element label
-        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
-          .should('have.text', 'enableWhen and calculated expressions');
-        // Check for element value
-        cy.get('.lhc-de-input-unit').within(() => {
-          cy.get('lhc-item-simple-type > lhc-input > input')
-            .should('have.value', '6');
-        });
-      });
-
-      // The 5th lhc-item
-      cy.get('@lhc-item').eq(4).within(() => {
-        // Check for element label
-        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
-          .should('have.text', 'enableWhen and answer expressions');
-        // Check for element value
-        cy.get('.lhc-de-input-unit').within(() => {
-          cy.get('lhc-item-choice-autocomplete lhc-autocomplete input')
-            .should('have.value', '');
-        });
-      });
-
-      // Change the value of the first lhc-item
-      cy.get('@lhc-item').first().within(() => {
-        cy.get('.lhc-de-input-unit').within(() => {
-          cy.get('lhc-item-simple-type > lhc-input > input')
-            .clear()
-            .type('6');
-        });
-      });
-
-      // Only 2 items are displayed b/c of the enableWhen expression
-      cy.get('div.lhc-form-body > lhc-item').should('have.length', 2);
-
-      // Change the value of the second lhc-item
-      cy.get('@lhc-item').eq(1).within(() => {
-        cy.get('.lhc-de-input-unit').within(() => {
-          cy.get('lhc-item-simple-type > lhc-input > input')
-            .clear()
-            .type('6');
-        });
-      });
-
-      // 4 items are displayed b/c of the enableWhen condition and expression
-      cy.get('div.lhc-form-body > lhc-item').should('have.length', 4);
-
-      // The 3rd lhc-item
-      cy.get('@lhc-item').eq(2).within(() => {
-        // Check for element label
-        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
-          .should('have.text', 'enableWhen condition');
-      });
-
-      // The 4th lhc-item
-      cy.get('@lhc-item').eq(3).within(() => {
-        // Check for element label
-        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
-          .should('have.text', 'enableWhen expression');
-      });
-
-      cy.contains('mat-dialog-actions button', 'Close').click();
-    });
-
-  });
-
   describe('Item level fields: advanced - Editable Link Id', () => {
     const REQUIRED = 'Link Id is required.';
     const DUPLICATE_LINK_ID =  'Entered linkId is already used.';
@@ -1374,5 +1184,195 @@ describe('Home page', () => {
         .scrollIntoView()
         .should('have.value', '');
     });
+  });
+
+  describe('Item level fields: advanced - Condition expression', () => {
+    beforeEach(() => {
+      const sampleFile = 'enable-when-expression-sample.json';
+      cy.uploadFile(sampleFile, false);
+      cy.getFormTitleField().should('have.value', 'enableWhen expression');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('.spinner-border', { timeout: 10000 }).should('not.exist');
+    });
+
+    afterEach(() => {
+      cy.collapseAdvancedFields();
+    });
+
+    it('should display enableWhen condition', () => {
+      cy.clickTreeNode('enableWhen condition');
+      cy.expandAdvancedFields();
+
+      cy.getRadioButton('Conditional method', 'enableWhen condition and behavior').should('be.checked');
+      cy.get('[id^="enableWhen.0.question"]').should('have.value', '1 - Item 0');
+      cy.get('[id^="enableWhen.0.operator"]')
+        .find('option:selected').should('have.text', '>');
+      cy.get('[id^="enableWhen.0.answerInteger"]').should('have.value', '5');
+      cy.get('[id^="enableWhen.1.question"]').should('have.value', '2 - Item 1');
+      cy.get('[id^="enableWhen.1.operator"]')
+        .find('option:selected').should('have.text', '>');
+      cy.get('[id^="enableWhen.1.answerInteger"]').should('have.value', '5');
+
+      cy.get('input#enableBehavior\\.all').should('be.checked');
+      cy.get('input#disabledDisplay\\.hidden').should('be.checked');
+    });
+
+    it('should display enableWhen expression', () => {
+      cy.clickTreeNode('enableWhen expression');
+      cy.expandAdvancedFields();
+
+      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
+      cy.get('#enableWhenExpression').should('exist').should('have.value', '%a > 5 and %b > 5');
+    });
+
+    it('should display enableWhen and initial expressions', () => {
+      cy.clickTreeNode('enableWhen and initial expressions');
+      cy.expandAdvancedFields();
+
+      cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
+      cy.get('@valueMethod').find('[id^="__$valueMethod_compute-initial"]').as('computeInitialRadio');
+      cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%a + %b");
+
+      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
+      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
+    });
+
+    it('should display enableWhen and calculated expressions', () => {
+      cy.clickTreeNode('enableWhen and calculated expressions');
+      cy.expandAdvancedFields();
+
+      cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
+      cy.get('@valueMethod').find('[id^="__$valueMethod_compute-continuously"]').as('computeContinuously');
+      cy.get('@computeContinuously').should('be.visible').and('be.checked');
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%a * %b");
+
+      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
+      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
+    });
+
+    it('should display enableWhen and answer expressions', () => {
+      cy.clickTreeNode('enableWhen and answer expressions');
+      cy.expandAdvancedFields();
+
+      cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
+      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "1");
+
+      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
+      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
+    });
+
+    it('should show/hide questions based on enableWhen condition and expression', () => {
+      cy.expandAdvancedFields();
+
+      // Assertions in preview.
+      cy.contains('button', 'Preview').click();
+      cy.get('lhc-item').as('lhc-item');
+
+      // There should be 5 items
+      cy.get('div.lhc-form-body > lhc-item').should('have.length', 5);
+
+      // The first lhc-item
+      cy.get('@lhc-item').first().within(() => {
+        // Check for element label
+        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+          .should('have.text', 'Item 0');
+        // Check for element value
+        cy.get('.lhc-de-input-unit').within(() => {
+          cy.get('lhc-item-simple-type > lhc-input > input')
+            .should('have.value', '2');
+        });
+      });
+
+      // The 2nd lhc-item
+      cy.get('@lhc-item').eq(1).within(() => {
+        // Check for element label
+        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+          .should('have.text', 'Item 1');
+        // Check for element value
+        cy.get('.lhc-de-input-unit').within(() => {
+          cy.get('lhc-item-simple-type > lhc-input > input')
+            .should('have.value', '3');
+        });
+      });
+
+      // The 3rd lhc-item
+      cy.get('@lhc-item').eq(2).within(() => {
+        // Check for element label
+        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+          .should('have.text', 'enableWhen and initial expressions');
+        // Check for element value
+        cy.get('.lhc-de-input-unit').within(() => {
+          cy.get('lhc-item-simple-type > lhc-input > input')
+            .should('have.value', '5');
+        });
+      });
+
+      // The 4th lhc-item
+      cy.get('@lhc-item').eq(3).within(() => {
+        // Check for element label
+        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+          .should('have.text', 'enableWhen and calculated expressions');
+        // Check for element value
+        cy.get('.lhc-de-input-unit').within(() => {
+          cy.get('lhc-item-simple-type > lhc-input > input')
+            .should('have.value', '6');
+        });
+      });
+
+      // The 5th lhc-item
+      cy.get('@lhc-item').eq(4).within(() => {
+        // Check for element label
+        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+          .should('have.text', 'enableWhen and answer expressions');
+        // Check for element value
+        cy.get('.lhc-de-input-unit').within(() => {
+          cy.get('lhc-item-choice-autocomplete lhc-autocomplete input')
+            .should('have.value', '');
+        });
+      });
+
+      // Change the value of the first lhc-item
+      cy.get('@lhc-item').first().within(() => {
+        cy.get('.lhc-de-input-unit').within(() => {
+          cy.get('lhc-item-simple-type > lhc-input > input')
+            .clear()
+            .type('6');
+        });
+      });
+
+      // Only 2 items are displayed b/c of the enableWhen expression
+      cy.get('div.lhc-form-body > lhc-item').should('have.length', 2);
+
+      // Change the value of the second lhc-item
+      cy.get('@lhc-item').eq(1).within(() => {
+        cy.get('.lhc-de-input-unit').within(() => {
+          cy.get('lhc-item-simple-type > lhc-input > input')
+            .clear()
+            .type('6');
+        });
+      });
+
+      // 4 items are displayed b/c of the enableWhen condition and expression
+      cy.get('div.lhc-form-body > lhc-item').should('have.length', 4);
+
+      // The 3rd lhc-item
+      cy.get('@lhc-item').eq(2).within(() => {
+        // Check for element label
+        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+          .should('have.text', 'enableWhen condition');
+      });
+
+      // The 4th lhc-item
+      cy.get('@lhc-item').eq(3).within(() => {
+        // Check for element label
+        cy.get('lhc-item-question > div > lhc-item-question-text > div > span > label > span.question')
+          .should('have.text', 'enableWhen expression');
+      });
+
+      cy.contains('mat-dialog-actions button', 'Close').click();
+    });
+
   });
 });
