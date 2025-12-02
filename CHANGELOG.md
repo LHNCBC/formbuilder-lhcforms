@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.10] 2025-12-02
+### Fixed
+- Upgrade to angular 19.2.x and fix npm audit issues.
+
+- Ensure the 'Type initial value' option remains visible when toggling 'Create answer list' or switching items.
 ## [10.3.9] 2025-10-13
 ### Fixed
 - Ensure the 'Type initial value' option remains visible when toggling 'Create answer list' or switching items.
