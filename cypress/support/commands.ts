@@ -921,7 +921,7 @@ Cypress.Commands.add('removeAndCheckReferencedOption', (type: string, index: num
  * @param buttonName   The name of the button to click to close the dialog (e.g., 'Ok', 'Cancel').
  */
 Cypress.Commands.add('checkReferencedOptionDialog', (expectedText: string, buttonName: string) => {
-  cy.get('lfb-message-dlg').should('be.visible');
+  cy.get('lfb-message-dlg', {timeout: 5000}).should('exist').and('be.visible');
   cy.get('lfb-message-dlg #msgDlgTitle').should('contain.text', 'Option referenced by another item');
   cy.get('lfb-message-dlg .modal-body #msgContent')
     .invoke('text')

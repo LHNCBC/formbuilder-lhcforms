@@ -99,8 +99,15 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
         this.updateScoreExtensions(newValue);
 
         if (this.hasReferenced) {
-          const node = this.formService.getTreeNodeByLinkId(this.hasReferenced.enableWhenItemLinkId);
-          this.validationService.validateItem(node as TreeNode, true, '/enableWhen');
+          const refs = Array.isArray(this.hasReferenced)
+            ? this.hasReferenced
+            : [this.hasReferenced];
+          const nodes = refs
+            .map(ref => ref && ref.enableWhenItemLinkId ? this.formService.getTreeNodeByLinkId(ref.enableWhenItemLinkId) : null)
+            .filter((node): node is TreeNode => !!node);
+          if (nodes.length > 0) {
+            this.validationService.validateAllItems(nodes, 0, true, '/enableWhen');
+          }
           this.cdr.detectChanges();
         }
       }
@@ -360,8 +367,16 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
           setTimeout(() => {
             super.removeProperty(index);
           }, 0);
-          const node = this.formService.getTreeNodeByLinkId(actionResult.enableWhenReference.enableWhenItemLinkId);
-          this.validationService.validateItem(node as TreeNode, true, '/enableWhen');
+          // Collect all referenced TreeNodes and validate them in batch
+          const refs = Array.isArray(actionResult.enableWhenReference)
+            ? actionResult.enableWhenReference
+            : [actionResult.enableWhenReference];
+          const nodes = refs
+            .map(ref => ref && ref.enableWhenItemLinkId ? this.formService.getTreeNodeByLinkId(ref.enableWhenItemLinkId) : null)
+            .filter((node): node is TreeNode => !!node);
+          if (nodes.length > 0) {
+            this.validationService.validateAllItems(nodes, 0, true, '/enableWhen');
+          }
           this.cdr.detectChanges();
         } else {
           setTimeout(() => {

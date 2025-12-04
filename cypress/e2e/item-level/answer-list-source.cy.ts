@@ -778,6 +778,63 @@ describe('Home page', () => {
       );
     });
 
+    it.only('should display a warning that includes all items referencing the selected answerOption', () => {
+      const sampleFile = 'answer-option-validation-sample.json';
+      const OK = "Ok";
+      cy.uploadFile(sampleFile, true);
+      cy.getFormTitleField().should('have.value', 'Answer options validation');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('.spinner-border').should('not.exist');
+
+      // ------- string answerOptions -------
+      cy.getItemTypeField().should('contain.value', 'string');
+      cy.get('[id^="answerOption.1.valueString"]').click();
+
+      let enableWhenItems = [
+        { enableWhenItemName: 'Reference string option value b', enableWhenItemLinkId: '816000609340' },
+        { enableWhenItemName: 'Reference string option value b as well', enableWhenItemLinkId: '267515907402' },
+      ];
+
+      let msg = getReferencedOptionMsgMultiple(enableWhenItems, 'Modifying');
+      cy.checkReferencedOptionDialog(msg, OK);
+
+      // There appears to be an issue in headless mode when dialogs are supposed to appear consecutively.
+      // Adding cy.wait(1000) would solved the issue.
+      // Adding other checks to allow time for the warning dialog to work again.
+      cy.checkAnswerOptionLinkIcon(
+        'lfb-answer-option table > tbody > tr',
+        [2,3], // icon on 2nd and 3rd rows
+        'Option referenced by another item enableWhen.'
+      );
+      cy.get('[id^="answerOption.2.valueString"]').should('exist').should('have.value', 'c').click();
+      msg = getReferencedOptionMsg('Reference string option value c', '516220192689', 'Modifying');
+      cy.checkReferencedOptionDialog(msg, OK);
+
+      // ------- coding answerOptions -------
+      cy.getTreeNode('coding answerOptions').click();
+      cy.getItemTypeField().should('contain.value', 'coding');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').click();
+
+      enableWhenItems = [
+        { enableWhenItemName: 'Reference coding option value d2 (c2)', enableWhenItemLinkId: '321543291333' },
+        { enableWhenItemName: 'Reference coding option value d2 (c2) as well', enableWhenItemLinkId: '296534877584' },
+      ];
+      msg = getReferencedOptionMsgMultiple(enableWhenItems, 'Modifying');
+      cy.checkReferencedOptionDialog(msg, OK);
+
+      // There appears to be an issue in headless mode when dialogs are supposed to appear consecutively.
+      // Adding cy.wait(1000) would solved the issue.
+      // Adding other checks to allow time for the warning dialog to work again.
+      cy.checkAnswerOptionLinkIcon(
+        'lfb-answer-option table > tbody > tr',
+        [2,3], // icon on 2nd and 3rd rows
+        'Option referenced by another item enableWhen.'
+      );
+      cy.get('[id^="answerOption.2.valueCoding.system"]').should('exist').should('have.value', 's3').click();
+      msg = getReferencedOptionMsg('Reference coding option value d3 (c3)', '367425898269', 'Modifying');
+      cy.checkReferencedOptionDialog(msg, OK);
+    });
+
     it('should create answerValueSet', () => {
       cy.selectDataType('coding');
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
@@ -1284,9 +1341,31 @@ function getReferencedOptionMsg(item: string, linkId: string, action: string) {
          `option may affect that behavior.`
 }
 
+/**
+ * Returns a formatted warning message for answer options referenced by multiple items.
+ *
+ * @param refs   Array of referencing items, each with enableWhenItemName and enableWhenItemLinkId.
+ * @param action The action being performed (e.g., 'Modifying', 'Deleting').
+ * @returns      The formatted warning message string (HTML with bullets and indentation).
+ */
+function getReferencedOptionMsgMultiple(refs: { enableWhenItemName: string, enableWhenItemLinkId: string }[], action: string) {
+  return `This option is referenced by multiple items:` +
+    refs.map(ref => ` • '${ref.enableWhenItemName}' (linkId: '${ref.enableWhenItemLinkId}')`).join('') +
+    `for conditional display. ${action} this option may affect their behavior.`;
+}
 
 
-
+/**
+ * Modifies an answer option that is referenced by another item and checks for error icon after modification.
+ *
+ * @param type               The data type of the answer option (e.g., 'time', 'string', etc.).
+ * @param enableWhenNodeName The name of the referencing item node (enableWhen).
+ * @param answerOptionNodeName The name of the answer option node to modify.
+ * @param answerOptionSelector The selector for the answer option input element.
+ * @param referencedMsg      The warning message to display in the dialog.
+ * @param buttonText         The text of the button to confirm the dialog.
+ * @param editValue          The value to enter into the answer option input.
+ */
 function modifyReferencedData(type: string, enableWhenNodeName: string,
                               answerOptionNodeName: string, answerOptionSelector: string,
                               referencedMsg: string, buttonText: string, editValue: string) {
@@ -1308,23 +1387,3 @@ function modifyReferencedData(type: string, enableWhenNodeName: string,
     .should('exist');
 }
 
-
-/*
-function checkAnswerOptionAndError({
-  answerOptionSelector,
-  referencedMsg,
-  okText,
-  treeNodeLabel,
-  shouldHaveError
-}) {
-  cy.get(answerOptionSelector).click();
-  if (referencedMsg && okText) {
-    cy.checkReferencedOptionDialog(referencedMsg, okText);
-  } else {
-    cy.get('lfb-message-dlg').should('not.exist');
-  }
-  cy.getTreeNode(treeNodeLabel)
-    .find('fa-icon#error')
-    .should(shouldHaveError ? 'exist' : 'not.exist');
-}
- */

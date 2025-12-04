@@ -6,7 +6,7 @@ import { Util } from '../lib/util';
 export type ValidationResult = {
   valid: boolean;
   message?: string;
-  enableWhenReference?: EnableWhenReference
+  enableWhenReference?: EnableWhenReference | EnableWhenReference[];
 };
 
 export interface EnableWhenReference {
@@ -22,7 +22,11 @@ export interface EnableWhenReference {
 export class AnswerOptionService {
   private radioSelection = new Subject<number>();
   private checkboxSelection = new Subject<boolean[]>();
-  private enableWhenReferenceMap: { [linkId: string]: EnableWhenReference } = {};
+  private enableWhenReferenceMap: {
+    [answerOptionsItemLinkId: string]: {
+      [enableWhenItemLinkId: string]: EnableWhenReference
+    }
+  } = {};
 
   radioSelection$ = this.radioSelection.asObservable();
   checkboxSelection$ = this.checkboxSelection.asObservable();
@@ -45,8 +49,11 @@ export class AnswerOptionService {
    * @param enableWhenAnswerValue - The value used in the enableWhen condition.
    */
   addEnableWhenReference(answerOptionsItemLinkId: string, enableWhenItemLinkId: string,
-                         enableWhenItemName: string, enableWhenAnswerValue: any) {
-    this.enableWhenReferenceMap[answerOptionsItemLinkId] = {
+                        enableWhenItemName: string, enableWhenAnswerValue: any) {
+    if (!this.enableWhenReferenceMap[answerOptionsItemLinkId]) {
+      this.enableWhenReferenceMap[answerOptionsItemLinkId] = {};
+    }
+    this.enableWhenReferenceMap[answerOptionsItemLinkId][enableWhenItemLinkId] = {
       answerOptionsItemLinkId,
       enableWhenItemLinkId,
       enableWhenItemName,
@@ -69,12 +76,13 @@ export class AnswerOptionService {
     const valueKey = Util.getValueDataTypeName(type);
     const answerOptionValue = formProperty.value[index][valueKey];
 
+    const refsObj = this.enableWhenReferenceMap[linkId];
+    if (!refsObj) return false;
+    const refs: EnableWhenReference[] = Object.values(refsObj);
     if (type === "coding") {
-      return linkId in this.enableWhenReferenceMap &&
-             Util.areFhirCodingsEqual(this.enableWhenReferenceMap[linkId].enableWhenAnswerValue, answerOptionValue);
+      return refs.some(ref => Util.areFhirCodingsEqual(ref.enableWhenAnswerValue, answerOptionValue));
     } else {
-      return linkId in this.enableWhenReferenceMap &&
-             this.enableWhenReferenceMap[linkId].enableWhenAnswerValue === answerOptionValue;
+      return refs.some(ref => ref.enableWhenAnswerValue === answerOptionValue);
     }
   }
 
@@ -91,15 +99,38 @@ export class AnswerOptionService {
    */
   canPerformActionOnOption(formProperty: FormProperty, index: number, action: 'delete' | 'modify'): ValidationResult {
     const linkId = formProperty.parent.getProperty('linkId').value;
+    // Get the answerOption object and its value for filtering
+    const answerOptions = formProperty.value;
+    const answerOption = Array.isArray(answerOptions) ? answerOptions[index] : undefined;
+    const dataType = formProperty.parent.getProperty('type').value;
+    const valueField = Util.getValueFieldName(dataType);
+    const optionValue = answerOption ? answerOption[valueField] : undefined;
+
     if (this.isOptionReferenced(formProperty, index)) {
-      const ref = this.enableWhenReferenceMap[linkId];
+      const refsObj = this.enableWhenReferenceMap[linkId];
+      let refs: EnableWhenReference[] = refsObj ? Object.values(refsObj) : [];
+      // Filter refs to only those referencing the specific answerOption value
+      if (dataType === "coding") {
+        refs = refs.filter(ref => Util.areFhirCodingsEqual(ref.enableWhenAnswerValue, optionValue));
+      } else {
+        refs = refs.filter(ref => ref.enableWhenAnswerValue === optionValue);
+      }
       const actionVerb = action === 'delete' ? 'Deleting' : 'Modifying';
+      let message = '';
+      if (refs.length === 1) {
+        const ref = refs[0];
+        message = `This option is referenced by another item, '${ref.enableWhenItemName}' (linkId: ` +
+                  `'${ref.enableWhenItemLinkId}'), for conditional display. ${actionVerb} this ` +
+                  `option may affect that behavior.`;
+      } else if (refs.length > 1) {
+        message = `This option is referenced by multiple items:<br>` +
+          refs.map(ref => `&nbsp;&nbsp;&nbsp;&nbsp;&bull; '${ref.enableWhenItemName}' (linkId: '${ref.enableWhenItemLinkId}')`).join('<br>') +
+                          `<br>for conditional display. ${actionVerb} this option may affect their behavior.`;
+      }
       return {
         valid: false,
-        message: `This option is referenced by another item, '${ref.enableWhenItemName}' (linkId: ` +
-                 `'${ref.enableWhenItemLinkId}'), for conditional display. ${actionVerb} this ` +
-                 `option may affect that behavior.`,
-        enableWhenReference: ref
+        message,
+        enableWhenReference: refs
       };
     }
     return { valid: true };
