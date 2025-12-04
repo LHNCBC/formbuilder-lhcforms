@@ -1173,7 +1173,8 @@
           {"field": "valueCoding.system", "title": "System", "col": 2, "nolabel": true},
           {"field": "valueCoding.__$score", "title": "Score", "col": 2, "nolabel": true},
           {"field": "valueReference", "col": 9, "nolabel": true}
-        ]
+        ],
+        "showLinkStatus": true
       }
     },
     "__$itemControl": {

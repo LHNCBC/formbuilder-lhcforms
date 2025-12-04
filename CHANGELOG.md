@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.11] 2025-12-03
+### Added
+- Added answerOptions validation.
+
 ## [10.3.10] 2025-11-22
 ### Added
 - Added enableWhen answer validation to check values against answerOptions.

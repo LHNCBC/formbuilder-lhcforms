@@ -861,6 +861,78 @@ Cypress.Commands.add('checkQuestionItemControlUI',
     }
   }
 });
+
+/**
+ * Custom Cypress command to check the presence of link icons in answer option table rows and optionally validate tooltip text.
+ *
+ * @param rowSelector - Selector for the table rows containing answer options.
+ * @param iconRows - Array of row indices (1-based) that should have the link icon present.
+ * @param tooltipText - (Optional) Tooltip text to validate when hovering over the link icon.
+ *
+ * For each row, asserts whether the link icon exists based on iconRows, and if tooltipText is provided,
+ * triggers mouse events on the icon and checks the tooltip content.
+ */
+Cypress.Commands.add('checkAnswerOptionLinkIcon', (
+  rowSelector: string, iconRows: number[] = [], tooltipText?: string) => {
+  cy.get(rowSelector).each(($row, index) => {
+    const rowAlias = `option${index + 1}`;
+    cy.wrap($row).as(rowAlias);
+    if (iconRows.includes(index + 1)) {
+      cy.get(`@${rowAlias}`).find('fa-icon#link').should('exist');
+      if (tooltipText) {
+        cy.get(`@${rowAlias}`).find('fa-icon#link')
+          .trigger('mouseenter')
+          .trigger('mouseover')
+          .trigger('focus');
+        cy.get('.cdk-overlay-container')
+          .find('.mat-mdc-tooltip', { timeout: 2000 })
+          .should('be.visible')
+          .and('contain.text', tooltipText);
+      }
+    } else {
+      cy.get(`@${rowAlias}`).find('fa-icon#link').should('not.exist');
+    }
+  });
+});
+
+
+/**
+ * Removes an answer option row and checks for a referenced option warning dialog.
+ *
+ * @param type - The value type of the answer option (e.g., 'valueInteger', 'valueString').
+ * @param index - The index of the answer option row to remove.
+ * @param msg - The expected warning message if the option is referenced.
+ * @param buttonLabel - The label of the button to click in the dialog (e.g., 'Ok', 'Cancel').
+ */
+Cypress.Commands.add('removeAndCheckReferencedOption', (type: string, index: number, msg: string, buttonLabel: string) => {
+  const selector = `[id^="answerOption.${index}.${type}"]`;
+  cy.get(selector)
+    .closest('tr')
+    .find('td.action-column button[aria-label="Remove this row"]')
+    .should('exist')
+    .click();
+  cy.checkReferencedOptionDialog(msg, buttonLabel);
+});
+
+/**
+ * Asserts that the referenced option warning dialog appears with the expected message and closes it.
+ *
+ * @param expectedText The expected warning message text to verify in the dialog.
+ * @param buttonName   The name of the button to click to close the dialog (e.g., 'Ok', 'Cancel').
+ */
+Cypress.Commands.add('checkReferencedOptionDialog', (expectedText: string, buttonName: string) => {
+  cy.get('lfb-message-dlg').should('be.visible');
+  cy.get('lfb-message-dlg #msgDlgTitle').should('contain.text', 'Option referenced by another item');
+  cy.get('lfb-message-dlg .modal-body #msgContent')
+    .invoke('text')
+    .then(text => {
+      expect(text.replace(/\s+/g, ' ').trim()).to.equal(expectedText);
+    });
+  cy.get('lfb-message-dlg').contains(buttonName).click();
+  cy.get('lfb-message-dlg').should('not.exist');
+
+});
+
 // Helps remove TypeScript errors and auto completing the Cypress commands in TypeScript
 declare global {
   namespace Cypress {
@@ -927,6 +999,13 @@ declare global {
       checkQuestionItemControlUI(
         type: string, questionItemControlOptions: string[], itemControlOptions: string[],
         itemControlOptionsAfterRepeat: string[], itemControlOptionsAfterAnswerValueSet: string[]): Chainable<void>;
+
+      checkAnswerOptionLinkIcon(
+        rowSelector: string, iconRows?: number[], tooltipText?: string): Chainable<void>;
+
+      removeAndCheckReferencedOption(type: string, index: number, msg: string, buttonLabel: string): Chainable<void>;
+
+      checkReferencedOptionDialog(expectedText: string, buttonName: string): Chainable<void>;
     }
   }
 }

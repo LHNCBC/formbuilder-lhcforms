@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { FormService } from './form.service';
 import { Util } from '../lib/util';
 import {TreeNode} from '@bugsplat/angular-tree-component';
@@ -7,6 +7,7 @@ import {
   TYPE_CODING, TYPE_STRING, TYPE_TEXT, ANSWER_CONSTRAINT_OPTIONS_ONLY,
   ANSWER_CONSTRAINT_OPTIONS_OR_STRING, ANSWER_CONSTRAINT_OPTIONS_OR_TYPE
 } from '../lib/constants/constants';
+import { AnswerOptionService } from './answer-option.service';
 
 export interface EnableWhenQuestionFieldValidationObject {
   canonicalPath: string;
@@ -44,6 +45,8 @@ export class ValidationService {
   static readonly INITIAL_DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$/;
   static readonly INITIAL_INTEGER = /^-?([0]|([1-9][0-9]*))$/;
 
+  answerOptionService = inject(AnswerOptionService);
+
   constructor(private formService: FormService) { }
 
   validators = {
@@ -56,9 +59,11 @@ export class ValidationService {
    * Iterates through each node in the 'validationNodes' array and invokes the custom validators for each node.
    * @param validationNodes - list of tree nodes.
    * @param startIndex - starting index for validation.
+   * @param clearStatusOnValid - Whether to clear status on valid result.
+   * @param validatorKeyFilter - If provided, only this validator will run.
    * @returns - A promise that resolves when all items have been validated.
    */
-  validateAllItems(validationNodes: TreeNode[], startIndex = 0): Promise<any[]> {
+  validateAllItems(validationNodes: TreeNode[], startIndex = 0, clearStatusOnValid = false, validatorKeyFilter?: string): Promise<any[]> {
     const promises = [];
     const validatorKeys = Object.keys(this.validators);
     const self = this;
@@ -69,12 +74,13 @@ export class ValidationService {
 
       for (let j = 0; j < validatorKeys.length; j++) {
         const validatorKey = validatorKeys[j];
+        if (validatorKeyFilter && validatorKey !== validatorKeyFilter) continue;
         promises.push(new Promise((resolve) => {
           setTimeout(() => {
             itemData.cannoncial = validatorKey;
             itemData.canonicalPathNotation = self.convertToDotNotationPath(validatorKey);
             itemData.value = itemData[self.getLastPathSegment(itemData.canonicalPathNotation)];
-            const error = self.validators[validatorKey](itemData, false);
+            const error = self.validators[validatorKey](itemData, clearStatusOnValid);
 
             resolve( error ? error : {} );
           }, 0);
@@ -83,6 +89,36 @@ export class ValidationService {
     }
     return Promise.all(promises);
   };
+
+
+  /**
+   * Validates a single tree node using all or a specific validator.
+   * @param node - The tree node to validate.
+   * @param clearStatusOnValid - Whether to clear status on valid result.
+   * @param validatorKeyFilter - If provided, only this validator will run.
+   * @returns Promise resolving to array of validation results.
+   */
+  validateItem(node: TreeNode, clearStatusOnValid: boolean = false, validatorKeyFilter?: string): Promise<any[]> {
+    const promises: Promise<any>[] = [];
+    const validatorKeys = Object.keys(this.validators);
+    const itemData = JSON.parse(JSON.stringify(node.data));
+    itemData.id = '' + itemData[FormService.TREE_NODE_ID];
+
+    for (let j = 0; j < validatorKeys.length; j++) {
+      const validatorKey = validatorKeys[j];
+      if (validatorKeyFilter && validatorKey !== validatorKeyFilter) continue;
+      promises.push(new Promise((resolve) => {
+        setTimeout(() => {
+          itemData.cannoncial = validatorKey;
+          itemData.canonicalPathNotation = this.convertToDotNotationPath(validatorKey);
+          itemData.value = itemData[this.getLastPathSegment(itemData.canonicalPathNotation)];
+          const error = this.validators[validatorKey](itemData, clearStatusOnValid);
+          resolve(error ? error : {});
+        }, 0);
+      }));
+    }
+    return Promise.all(promises);
+  }
 
   /**
    * Create a validation object specifically for the 'enableWhen' field validation.
@@ -427,7 +463,9 @@ export class ValidationService {
         if (isSchemaFormValidation) {
           const i = enableWhenObj.q._errors?.findIndex((e) => e.code === errorCode);
           if(!(i >= 0)) { // Check if the error is already processed.
-            enableWhenObj.q.extendErrors(err);
+            if (enableWhenObj.q && typeof enableWhenObj.q.extendErrors === 'function') {
+              enableWhenObj.q.extendErrors(err);
+            }
           }
         }
       } else {
@@ -445,7 +483,9 @@ export class ValidationService {
           if (isSchemaFormValidation) {
             const i = enableWhenObj.op._errors?.findIndex((e) => e.code === errorCode);
             if (!(i >= 0)) { // Check if the error is already processed.
-              enableWhenObj.op.extendErrors(err);
+              if (enableWhenObj.op && typeof enableWhenObj.op.extendErrors === 'function') {
+                enableWhenObj.op.extendErrors(err);
+              }
             }
           }
         } else if (enableWhenObj.answerX) {
@@ -458,6 +498,8 @@ export class ValidationService {
             errorMsg = this.checkAnswerAgainstAnswerOptions(enableWhenObj);
             if (errorMsg) {
               errorCode = 'ENABLEWHEN_INVALID_ANSWER';
+            } else {
+              this.answerOptionService.addEnableWhenReference(enableWhenObj.q.value, node.data.linkId, node.data.text, enableWhenObj.answerX?.value);
             }
           }
 
@@ -473,7 +515,9 @@ export class ValidationService {
             if (isSchemaFormValidation) {
               const i = enableWhenObj.answerX._errors?.findIndex((e) => e.code === errorCode);
               if (!(i >= 0)) { // Check if the error is already processed.
-                enableWhenObj.answerX.extendErrors(err);
+                if (enableWhenObj.answerX && typeof enableWhenObj.answerX.extendErrors === 'function') {
+                  enableWhenObj.answerX.extendErrors(err);
+                }
               }
             }
           }
