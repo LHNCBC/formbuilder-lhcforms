@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.11] 2025-12-05
+### Fixed
+- Upgrade to angular 19.2.x and fix npm audit issues.
+ 
 ## [10.3.10] 2025-11-18
 ### Added
 - Added support for observation extract extension for valueCode.
