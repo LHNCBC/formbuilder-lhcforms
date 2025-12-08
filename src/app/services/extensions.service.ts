@@ -152,13 +152,16 @@ export class ExtensionsService {
 
   /**
    * Remove all extensions that match a given criteria.
-   * A callback method 'match` is called for each extension. Al
-   * If it returns true, that extension is included in the removal list.
-   * @param match - Callback with argument of FormProperty for an extension in the ArrayProperty.
+   * A callback method 'match` is called for each extension.
+   * If it returns true, the extension is removed.
+   * @param match - Callback with arguments of FormProperty and its index in the ArrayProperty.
+   *     arguments:
+   *       e: FormProperty - Element in the array.
+   *       index: number - Index of the element in the array.
    */
-  removeAllExtensions(match: (e: FormProperty)=>boolean): void {
-    const otherExts: any [] = (this.extensionsProp.properties as FormProperty[]).filter((ext) => {
-      return !match(ext);
+  removeAllExtensions(match: (e: FormProperty, index: number)=>boolean): void {
+    const otherExts: any [] = (this.extensionsProp.properties as FormProperty[]).filter((ext, ind) => {
+      return !match(ext, ind);
     }).map(p => p.value);
 
     if(otherExts.length !== this.extensionsProp.properties.length) {
