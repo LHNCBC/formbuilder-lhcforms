@@ -217,24 +217,30 @@ export class ExtensionsService {
       return;
     }
 
-    // Find the start and end indexes of the consecutive block of variable extensions.
-    let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
-    if (startIndex === -1) {
-      this.extensionsProp.reset([...newExtensionsJSON, ...originalExtensions]);
-      return;
-    };
+    if (newExtensionsJSON && newExtensionsJSON.length > 0) {
+      // Find the start and end indexes of the consecutive block of variable extensions.
+      let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
+      if (startIndex === -1) {
+        this.extensionsProp.reset([...newExtensionsJSON, ...originalExtensions]);
+        return;
+      };
 
-    let endIndex = startIndex + 1;
-    while (endIndex < originalExtensions.length && originalExtensions[endIndex].url === extUrl) {
-      endIndex++;
+      let endIndex = startIndex + 1;
+      while (endIndex < originalExtensions.length && originalExtensions[endIndex].url === extUrl) {
+        endIndex++;
+      }
+
+      // Replace the original extensions with the new ones.
+      this.extensionsProp.reset([
+        ...originalExtensions.slice(0, startIndex),
+        ...newExtensionsJSON,
+        ...originalExtensions.slice(endIndex)
+      ]);
+    } else {
+      // newExtensionsJSON is undefined, so reset it to empty.
+      // This is the case where all variables got deleted via the Expression Editor
+      this.extensionsProp.reset([]);
     }
-
-    // Replace the original extensions with the new ones.
-    this.extensionsProp.reset([
-      ...originalExtensions.slice(0, startIndex),
-      ...newExtensionsJSON,
-      ...originalExtensions.slice(endIndex)
-    ]);
   }
 
   /**
