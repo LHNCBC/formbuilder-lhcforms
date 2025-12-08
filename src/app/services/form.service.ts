@@ -1,7 +1,7 @@
 /**
  * Form related helper functions.
  */
-import {inject, Injectable, SimpleChange} from '@angular/core';
+import {Inject, inject, Injectable, SimpleChange} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
@@ -36,6 +36,7 @@ import {TerminologyServerComponent} from '../lib/widgets/terminology-server/term
 import {ExtensionsService} from './extensions.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { EXTENSION_URL_VARIABLE, EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION, EXTENSION_URL_CUSTOM_VARIABLE_TYPE } from '../lib/constants/constants';
+import {DOCUMENT} from "@angular/common";
 
 declare var LForms: any;
 
@@ -137,7 +138,7 @@ export class FormService {
     reference: this.operatorOptions2
   };
 
-  constructor(private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
+  constructor(@Inject(DOCUMENT) private _document: Document, private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
     const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
 
     [
@@ -305,6 +306,34 @@ export class FormService {
    */
   get guidingStep$(): Observable<string> {
     return this._guidingStep$.asObservable();
+  }
+
+  /**
+   * Scroll to Question Code field in the form.
+   */
+  scrollToCodeField(): void {
+    const fLabelsList = this._document.querySelectorAll('form div.lfb-row label');
+    if(fLabelsList) {
+      Array.from(fLabelsList).find((fLabel) => {
+        if((<HTMLElement>fLabel).innerText.trim().toLowerCase() === 'question code') {
+          const fieldRow = fLabel.closest('div.lfb-row');
+          const cLabelList = fLabel.closest('div.row')?.querySelectorAll('label');
+          if(cLabelList) {
+            Array.from(cLabelList).find((cLabel) => {
+              if((<HTMLElement>cLabel).innerText.trim().toLowerCase() === 'include code') {
+                cLabel.scrollIntoView({behavior: 'smooth'});
+                cLabel.click();
+                setTimeout(() => {
+                  (fieldRow.nextElementSibling.querySelector('table tbody tr td input') as HTMLElement).focus();
+                });
+                return true;
+              }
+            });
+          }
+          return true;
+        }
+      });
+    }
   }
 
   static get lformsLoaded$(): Observable<string> {

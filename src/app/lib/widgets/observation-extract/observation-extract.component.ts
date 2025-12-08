@@ -1,58 +1,44 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
 import fhir from 'fhir/r4';
-import {Subscription} from 'rxjs';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {BooleanRadioComponent} from '../boolean-radio/boolean-radio.component';
 import {fhirPrimitives} from '../../../fhir';
+import {CommonModule} from "@angular/common";
+import {LabelComponent} from "../label/label.component";
+import {FormsModule} from "@angular/forms";
+import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {FormService} from "../../../services/form.service";
+
+type ValueXType = 'valueBoolean' | 'valueCode';
+type ValueCodeType = 'component' | 'derived' | 'independent' | 'member' | null;
 
 @Component({
-  standalone: false,
   selector: 'lfb-observation-extract',
-  template: `
-    <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-      <lfb-label *ngIf="!nolabel"
-                 [for]="elementId"
-                 [title]="schema.title"
-                 [helpMessage]="schema.description"
-                 [ngClass]="labelClasses"
-                 [labelId]="'label_rg_'+elementId"
-      ></lfb-label>
-
-      <div class="{{controlClasses}}">
-
-        <div class="btn-group btn-group-sm" role="radiogroup" [attr.aria-labelledby]="'label_rg_'+elementId" [attr.id]="elementId">
-          <ng-container *ngFor="let option of ['No', 'Yes']">
-            <input type="radio" class="btn-check"
-                   name="value"
-                   [attr.id]="'radio_'+option+'_'+elementId"
-                   [value]="option === 'Yes'"
-                   [ngModelOptions]="{standalone: true}"
-                   [ngModel]="value"
-                   (ngModelChange)="onBooleanChange($event)"
-                   [attr.disabled]="schema.readOnly ? '' : null">
-            <label class="btn btn-sm btn-outline-success m-auto" [attr.for]="'radio_'+option+'_'+elementId">
-              {{option}}
-            </label>
-          </ng-container>
-        </div>
-        <div *ngIf="value">
-          <div *ngIf="!codePresent" class="row mt-1 ms-auto me-auto">
-            <p class="alert alert-warning mt-1" role="alert">Extraction to FHIR Observations requires a code assigned to this item. Please enter a code before setting this field.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
+  imports: [LabelComponent, FormsModule, CommonModule, FontAwesomeModule],
+  templateUrl: `./observation-extract.component.html`,
   styleUrls: []
 })
-export class ObservationExtractComponent extends BooleanRadioComponent implements OnInit {
+export class ObservationExtractComponent extends BooleanRadioComponent implements OnInit, AfterViewInit {
   static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
   static seqNum = 0;
+  static obExtractRelationshipOptions: {value: ValueCodeType, label: string}[] = [
+    {value: null, label: 'None'},
+    {value: 'component', label: 'Component'},
+    {value: 'member', label: 'Member'},
+    {value: 'derived', label: 'Derived'},
+    {value: 'independent', label: 'Independent'}
+  ];
+
   elementId: string;
-  value: boolean;
+  use: boolean = false;
+  valueCode: ValueCodeType = null;
   codePresent: boolean;
   adjustVAlignClass = 'd-flex';
   extensionsService: ExtensionsService = inject(ExtensionsService);
+  formService = inject(FormService);
+  ObservationExtractComponent = ObservationExtractComponent;
+  faWarning = faExclamationTriangle;
 
   constructor() {
     super();
@@ -65,25 +51,35 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
    */
   ngOnInit() {
     super.ngOnInit();
-    this.setValue();
+    this.init();
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
     this.extensionsService.extensionsObservable.subscribe(() => {
-      this.setValue();
+      this.init();
     });
     // Watch code for warning.
     this.formProperty.root.getProperty('code').valueChanges.subscribe((code) => {
-      this.codePresent = code?.length > 0 && code[0]?.code?.trim().length > 0;
-      this.adjustVAlignClass = !this.codePresent && this.value ? '' : 'd-flex';
-      this.updateExtension();
+      const visible = this.formProperty.root.getProperty('code').visible;
+      this.codePresent = visible && code?.length > 0 && code[0]?.code?.trim().length > 0;
+      this.adjustVAlignClass = !this.codePresent && this.use ? '' : 'd-flex';
     });
   }
 
   /**
-   * Set value based on extension.
+   * Initialize component properties based on extension.
    */
-  setValue() {
-    const oeExt = this.getExtension();
-    this.value = oeExt ? oeExt.valueBoolean : false;
+  init() {
+    const obsExt = this.getExtension();
+    if(obsExt?.valueBoolean || obsExt?.valueCode) {
+      this.use = true;
+    }
+    if(obsExt?.valueCode) {
+      this.valueCode = obsExt.valueCode as ValueCodeType;
+    }
   }
+
   /**
    * Get extension object.
    */
@@ -96,22 +92,36 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
    * Handle radio buttons for yes/no.
    * @param event - Angular event.
    */
-  onBooleanChange(event: boolean) {
-    this.value = event;
-    this.adjustVAlignClass = !this.codePresent && this.value ? '' : 'd-flex';
-    if(this.value && this.codePresent) {
-      this.updateExtension();
-    }
-    else {
-      this.extensionsService.removeExtensionsByUrl(ObservationExtractComponent.extUrl);
-    }
+  onUseChange(event: boolean) {
+    this.use = event;
+    this.adjustVAlignClass = !this.codePresent && this.use ? '' : 'd-flex';
+    this.updateExtension();
   }
 
+  /**
+   * Handle relationship type change.
+   * @param event
+   */
+  onRelationshipChange(event: ValueCodeType) {
+    this.valueCode = event;
+    this.updateExtension();
+  }
+
+  /**
+   * Handle scroll to code field link click.
+   */
+  onScrollToCode() {
+    this.formService.scrollToCodeField();
+  }
   /**
    * Update extension in the form property.
    */
   updateExtension() {
-    this.reset(this.createExtension(this.value));
+    const ext = this.getExtension();
+    const newExt = this.createExtension();
+    if(!(newExt?.valueCode === ext?.valueCode && newExt?.valueBoolean === ext?.valueBoolean)) {
+      this.reset(this.createExtension());
+    }
   }
 
 
@@ -120,11 +130,11 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
    * @param ext - fhir.Extension object representing observation extract.
    */
   reset(ext: fhir.Extension) {
-    if(ext.valueBoolean) {
-      this.extensionsService.resetExtension(ObservationExtractComponent.extUrl, ext, 'valueBoolean', false);
+    if(ext && (ext.valueBoolean || ext.valueCode)) {
+      this.extensionsService.updateOrAppendExtensionByUrl(ObservationExtractComponent.extUrl, ext);
     }
     else {
-      this.extensionsService.removeExtensionsByUrl(ext.url);
+      this.extensionsService.removeExtensionsByUrl(ObservationExtractComponent.extUrl);
     }
   }
 
@@ -132,13 +142,21 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
   /**
    * Create observation link period extension object
    *
-   * @param value - Boolean value.
    */
-  createExtension(value: boolean): fhir.Extension {
-    return {
-      valueBoolean: value,
+  createExtension(): fhir.Extension {
+    if(!this.use) {
+      return null;
+    }
+    const ret: fhir.Extension = {
       url: ObservationExtractComponent.extUrl
     };
+    if(this.valueCode) {
+      ret.valueCode = this.valueCode;
+    }
+    else {
+      ret.valueBoolean = true;
+    }
+    return ret;
   }
 
 }

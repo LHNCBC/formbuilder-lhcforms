@@ -35,7 +35,7 @@
       </thead>
 
       <tbody [ngbCollapse]="isCollapsed">
-        <tr *ngFor="let variable of formProperty.value; index as ind; first as isFirst; last as isLast"
+        <tr *ngFor="let variable of nonEmptyVariables; index as ind; first as isFirst; last as isLast"
             class="d-flex lfb-table-row">
           <td *ngFor="let showDataField of getVariableFieldsStructure(false)"
               class="col-sm{{showDataField.col ? ('-'+showDataField.col) : ''}}"

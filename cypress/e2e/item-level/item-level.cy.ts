@@ -1514,25 +1514,53 @@ describe('Home page', () => {
       });
 
       describe('Use FHIR Observation extraction?', () => {
+        let oeNoRadio, oeYesRadio, oeNoLabel, oeYesLabel;
+        let oeNoneRadio, oeCompRadio, oeMemberRadio, oeDerivedRadio, oeIndRadio;
+        let oeNoneLabel, oeCompLabel, oeMemberLabel, oeDerivedLabel, oeIndLabel;
+        let oeCodeGroup, warningMsg, firstCodeInput;
+
+        beforeEach(() => {
+          oeNoRadio = '[id^="radio_No_observationExtract"]';
+          oeYesRadio = '[id^="radio_Yes_observationExtract"]';
+          oeNoLabel = '[for^="radio_No_observationExtract"]';
+          oeYesLabel = '[for^="radio_Yes_observationExtract"]';
+          firstCodeInput = '[id^="code.0.code"]';
+          warningMsg = 'lfb-observation-extract p';
+          oeNoneRadio = '[id^="radio_obs_relation_null_observationExtract"]';
+          oeCompRadio ='[id^="radio_obs_relation_component_observationExtract"]';
+          oeMemberRadio = '[id^="radio_obs_relation_member_observationExtract"]';
+          oeDerivedRadio = '[id^="radio_obs_relation_derived_observationExtract"]';
+          oeIndRadio = '[id^="radio_obs_relation_independent_observationExtract"]';
+          oeNoneLabel = '[for^="radio_obs_relation_null_observationExtract"]';
+          oeCompLabel = '[for^="radio_obs_relation_component_observationExtract"]';
+          oeMemberLabel = '[for^="radio_obs_relation_member_observationExtract"]';
+          oeDerivedLabel = '[for^="radio_obs_relation_derived_observationExtract"]';
+          oeIndLabel = '[for^="radio_obs_relation_independent_observationExtract"]';
+          oeCodeGroup ='[aria-labelledby^="label_rg_obs_relation_"]';
+        });
 
         it('should create observation extraction', () => {
           // Yes/no option
-          cy.get('[for^="radio_No_observationExtract"]').as('oeNoLabel');
-          cy.get('[for^="radio_Yes_observationExtract"]').as('oeYesLabel').click();
+          cy.get(oeNoRadio).should('be.checked');
+          cy.get(oeCodeGroup).should('not.exist');
+          cy.get(oeYesLabel).click();
+          cy.get(oeCodeGroup).should('be.visible');
           // Code missing message.
-          cy.get('lfb-observation-extract p').as('warningMsg')
-            .should('contain.text', 'Extraction to FHIR Observations requires');
-          cy.get('@oeNoLabel').click();
-          cy.get('@warningMsg').should('not.exist');
-          cy.get('@oeYesLabel').click();
-          cy.get('@warningMsg').should('be.visible');
-          cy.get('@codeYes').click();
-          cy.get('[id^="code.0.code"]').type('C1');
-          cy.get('@warningMsg').should('not.exist');
-          cy.get('[id^="code.0.code"]').clear();
-          cy.get('@warningMsg').should('be.visible');
-          cy.get('[id^="code.0.code"]').type('C1');
-          cy.get('@warningMsg').should('not.exist');
+          cy.get(warningMsg).should('contain.text', 'Extraction to FHIR Observations requires');
+          cy.get(oeNoLabel).click();
+          cy.get(warningMsg).should('not.exist');
+          cy.get(oeYesLabel).click();
+          cy.get(warningMsg).should('be.visible');
+          cy.get(warningMsg).contains('Question code').click();
+          cy.get(firstCodeInput).type('C1');
+          // Should default to none relationship.
+          // None should change the extension to valueBoolean: true.
+          cy.get(oeNoneRadio).should('be.checked');
+          cy.get(warningMsg).should('not.exist');
+          cy.get(firstCodeInput).clear();
+          cy.get(warningMsg).should('be.visible');
+          cy.get(firstCodeInput).type('C1');
+          cy.get(warningMsg).should('not.exist');
 
           cy.questionnaireJSON().should((qJson) => {
             expect(qJson.item[0].code[0].code).to.equal('C1');
@@ -1542,11 +1570,23 @@ describe('Home page', () => {
             });
           });
 
-          cy.get('@oeNoLabel').click();
+          cy.get(oeNoLabel).click();
           cy.questionnaireJSON().should((qJson) => {
             expect(qJson.item[0].code[0].code).to.equal('C1');
             expect(qJson.item[0].extension).to.be.undefined;
           });
+
+          cy.get(oeYesLabel).click();
+          // Selecting any relationship should reflect it in the valueCode.
+          cy.get(oeCompLabel).click();
+          cy.questionnaireJSON().should((qJson) => {
+            expect(qJson.item[0].code[0].code).to.equal('C1');
+            expect(qJson.item[0].extension[0]).to.deep.equal({
+              url: observationExtractExtUrl,
+              valueCode: 'component'
+            });
+          });
+
         });
 
         it('should import item with observation-extract extension', () => {
@@ -1561,19 +1601,26 @@ describe('Home page', () => {
           cy.contains('button', 'Edit questions').click();
           cy.get('.spinner-border').should('not.exist');
           cy.get('@codeYesRadio').should('be.checked');
-          cy.get('[id^="code.0.code"]').should('have.value', 'Code1');
+          cy.get(firstCodeInput).should('have.value', 'Code1');
 
-          cy.get('[id^="radio_Yes_observationExtract"]').should('be.checked');
+          cy.get(oeYesRadio).should('be.checked');
+
+          cy.getTreeNode('Observation relationship - valueCode member').click();
+          cy.get('@codeYesRadio').should('be.checked');
+          cy.get(firstCodeInput).should('have.value', 'Code1');
+
+          cy.get(oeYesRadio).should('be.checked');
+          cy.get(oeMemberRadio).should('be.checked');
 
           cy.questionnaireJSON().should((qJson) => {
             expect(qJson.item).to.deep.equal(fixtureJson.item);
           });
 
           // Remove
-          cy.get('[for^="radio_No_observationExtract"]').click();
+          cy.get(oeNoLabel).click();
           cy.questionnaireJSON().should((qJson) => {
-            expect(qJson.item[0].extension.length).to.equal(2); // Other than oe extension.
-            const extExists = qJson.item[0].extension.some((ext) => {
+            expect(qJson.item[1].extension.length).to.equal(2); // Other than oe extension.
+            const extExists = qJson.item[1].extension.some((ext) => {
               return ext.url === observationExtractExtUrl;
             });
             expect(extExists).to.equal(false);
