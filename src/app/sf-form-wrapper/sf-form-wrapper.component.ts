@@ -9,7 +9,13 @@ import {
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
-import {ArrayProperty, FormComponent, FormProperty, PropertyGroup, ObjectProperty} from '@lhncbc/ngx-schema-form';
+import {
+  ArrayProperty,
+  FormComponent,
+  FormProperty,
+  PropertyGroup,
+  ObjectProperty,
+} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
@@ -167,9 +173,14 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const questionItem = this.formService.getTreeNodeByLinkId(q.value);
 
     let aType = '';
+    let invalid = true;
 
     if (questionItem) {
       aType = questionItem.data.type;
+      const validSources = this.formService.getSourcesExcludingFocusedTree();
+      invalid = !validSources.some((source) => {
+        return (source.data.linkId === questionItem.data.linkId);
+      });
     }
 
     // The condition key is used to differentiate between each enableWHen conditions.
@@ -180,8 +191,12 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     }
     const op = formProperty.getProperty('operator');
     const aField = Util.getAnswerFieldName(aType || 'string');
-    const answerType = formProperty.getProperty('__$answerType').value;
-    const answerX = formProperty.getProperty(aField);
+    let answerType = '';
+    let answerX = null;
+    if (aField !== undefined) {
+      answerType = formProperty.getProperty('__$answerType').value;
+      answerX = formProperty.getProperty(aField);
+    }
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
 
     const enableWhenObj: EnableWhenValidationObject = {
@@ -190,6 +205,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'conditionKey': condKey,
       'q': q,
       'aType': aType,
+      'invalid': invalid,
       'answerTypeProperty': answerType,
       'op': op,
       'aField': aField,
@@ -248,7 +264,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
    *                                             and not equal to 'exists', and the answer is empty.
    */
-  validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
+  validateEnableWhenAll(value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
     let errors = null;
     // iterate all properties
     arrayProperty.forEachChild((property: ObjectProperty) => {
@@ -275,7 +291,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
    *                                             and not equal to 'exists', and the answer is empty.
    */
-  validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
+  validateEnableWhenSingle(value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
     if (!this.model) {

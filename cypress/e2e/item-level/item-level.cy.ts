@@ -2015,6 +2015,31 @@ describe('Home page', () => {
         .scrollIntoView()
         .should('have.value', '');
     });
+
+    /*
+     * Verifies that when a new item is created after a focused item that has expanded children, the new item's
+     * linkId is properly populated. This ensures that the fix correctly assigns a linkId even when the previous
+     * node is expanded and has children.
+     */
+    it('should populate linkId when creating a new item after a focused item with expanded children', () => {
+      // Click on '2 Family member health history'
+      cy.getTreeNode('Family member health history').click();
+
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click the 'Add new item'
+      cy.contains('button', 'Add new item').click();
+      // Click on the new added item
+      cy.getTreeNode('New item 1').click();
+
+      // Go to the link id section
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .invoke('val')
+        .should('not.be.empty');
+    });
+
   });
 
   describe('Test descendant items and display/group type changes', () => {
@@ -2104,27 +2129,22 @@ describe('Home page', () => {
       cy.get('lfb-node-dialog').find('button.dropdown-item').should('exist').should('have.length', 1).click();
 
       cy.get('lfb-node-dialog').find('ul').within(() => {
-        cy.get('li').should('have.length', 2);
-        cy.get('li').eq(0).should('contain.text', 'After the target item.');
-        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
-      });
-
-      // Clear the target again. 3 drop locations should be presented.
-      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear();
-      cy.get('lfb-node-dialog form').click();
-      cy.get('lfb-node-dialog').find('ul').within(() => {
         cy.get('li').should('have.length', 3);
-        cy.get('li').eq(0).should('contain.text', 'After the target item.');
-        cy.get('li').eq(1).should('contain.text', 'Before the target item.');
-        cy.get('li').eq(2).should('contain.text', 'As a child of target item.');
-        // Select the 'As a child of target item.' option.
         cy.get('li').eq(2).should('contain.text', 'As a child of target item.')
           .find('input[type="radio"').check();
 
       });
-      // The 'Display Data Type' item should be excluded from the target item list.
-      cy.get('lfb-node-dialog').find('#moveTarget1').click().clear().type('Display Data Type');
-      cy.get('lfb-node-dialog').find('button.dropdown-item').should('not.exist');
+
+      cy.get('lfb-node-dialog').contains('button', 'Move').as('moveBtn').click();
+
+      // The modal is displayed.
+      cy.get('lfb-confirm-dlg > div.modal-header').should('contain.text', 'Move Not Allowed');
+      cy.get('lfb-confirm-dlg > div.modal-body')
+        .invoke('text')
+        .should('match', /Cannot drop into item 'Display Data Type' \(linkId: [^)]+\) of type 'display' because it cannot contain children\./);
+
+      // Close the modal by clicking the close button
+      cy.get('lfb-confirm-dlg').contains('button', 'Close').click();
     });
 
     it('should not be able to insert a new child item to an item of type "display"', () => {
@@ -2149,6 +2169,43 @@ describe('Home page', () => {
       // Due to the data type 'display', the option 'Insert a new child item.' should be hidden.
       cy.get('div.dropdown-menu.show').should('not.contain', 'Insert a new child item');
     });
+
+    it('should show "display" data type if the last child is removed from the item', () => {
+      cy.toggleTreeNodeExpansion('Family member health history');
+      cy.getTreeNode('Race').click();
+
+      // Add a new item under the 'Race' item.
+      cy.contains('Add new item').scrollIntoView().click();
+      cy.getItemTextField().clear().type('Item with child');
+      cy.getItemTypeField().as('dataTypes');
+      // Confirm that the data type 'display' is included in the list.
+      cy.get('@dataTypes').find('option').should('contain.text', 'display');
+
+      // Create a chid item.
+      cy.getTreeNode('Item with child').as('contextNode');
+      cy.get('@contextNode').find('button.dropdown-toggle').click();
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Insert a new child item').click();
+      cy.getItemTextField().should('have.value', 'New item 2');
+
+      // Click back to the parent item 'Item with child'.
+      cy.getTreeNode('Item with child').click();
+      // The data type 'display' should no longer be on the list.
+      cy.getItemTypeField().as('dataTypes');
+      cy.get('@dataTypes').find('option').should('not.contain.text', 'display');
+
+      // Delete the child item
+      cy.getTreeNode('New item 2').as('childItem').click();
+      cy.get('@childItem').find('button.dropdown-toggle').click();
+      cy.get('div.dropdown-menu.show').contains('button.dropdown-item', 'Remove this item').click();
+      cy.contains('button', 'Yes').click();
+
+      // The parent item 'Item with child' should now be the focused node.
+      cy.get('#text').should('contain.value', 'Item with child');
+      // As the item 'Item with child' no longer has any children, the data type 'display' should once again be available.
+      cy.getItemTypeField().as('dataTypes');
+      cy.get('@dataTypes').find('option').should('contain.text', 'display');
+    });
+
   });
 });
 

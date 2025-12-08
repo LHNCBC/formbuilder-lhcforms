@@ -5,6 +5,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [10.3.12] 2025-12-06
 ### Fixed
 - Fixed issue with variable deletion not updating the list.
+- Fix invalid source item in enableWhen condition.
 
 ## [10.3.11] 2025-12-05
 ### Fixed
