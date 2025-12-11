@@ -135,10 +135,11 @@ export class ObservationExtractComponent extends BooleanRadioComponent implement
    * @param value - Boolean value.
    */
   createExtension(value: boolean): fhir.Extension {
-    return {
+    const ret = {
       valueBoolean: value,
       url: ObservationExtractComponent.extUrl
     };
+    return this.extensionsService.updateExtension(ret);
   }
 
 }

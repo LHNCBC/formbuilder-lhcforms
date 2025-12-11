@@ -1,5 +1,6 @@
 {
   "formLayout": {
+    "targetPage": "extensionResource",
     "basic": [
       {
         "showFields": [
@@ -67,6 +68,12 @@
       labelClasses: "col-sm-2 m-0 px-1",
       controlClasses: "col-sm-10 m-0 p-0",
       rows: 3
+    },
+    jsonStringify: {
+      id: "string",
+      controlClasses: "col-sm-10 m-0 p-0",
+      tooltipClass: "custom-tooltip-class",
+      readonly: true
     },
     urlMandatory: {
       id: "url",
@@ -328,6 +335,9 @@
     ],
     valueTypeCategory: [
       '$.properties.__$valueTypeCategory',
+    ],
+    jsonStringify: [
+      '$.properties.__$stringify',
     ]
   }
 }

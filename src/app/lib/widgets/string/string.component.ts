@@ -1,7 +1,14 @@
 /**
  * Component for general input box
  */
-import {Component, inject, OnInit} from '@angular/core';
+import {
+  AfterViewChecked, AfterViewInit, ChangeDetectorRef,
+  Component,
+  ElementRef,
+  inject,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 
@@ -10,8 +17,10 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
   selector: 'lfb-string',
   templateUrl: './string.component.html'
 })
-export class StringComponent extends LfbControlWidgetComponent implements OnInit {
+export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewChecked {
 
+  @ViewChild('inputEl') inputElRef: ElementRef;
+  showTooltip = true;
   liveAnnouncer = inject(LiveAnnouncer);
 
   // Replace standard error messages from schema validator with customized messages.
@@ -46,6 +55,7 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
 
   Array = Array; // To use in templates.
 
+  cdr = inject(ChangeDetectorRef);
   constructor() {
     super();
   }
@@ -82,6 +92,13 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
         });
       }
     });
+  }
+
+  ngAfterViewChecked() {
+    if(this.inputElRef?.nativeElement.clientWidth) {
+      this.showTooltip = this.inputElRef.nativeElement.scrollWidth > this.inputElRef.nativeElement.clientWidth;
+      this.cdr.detectChanges();
+    }
   }
 
   /**

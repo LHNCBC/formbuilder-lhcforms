@@ -52,6 +52,10 @@ export class VariableComponent extends TableComponent implements OnInit {
     this.linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     const sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
+      setTimeout(() => {
+        const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
+        this.formProperty.setValue(variablesExtension, false);
+      });
     });
     this.subscriptions.push(sub);
 

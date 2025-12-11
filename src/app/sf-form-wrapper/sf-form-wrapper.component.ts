@@ -5,7 +5,7 @@ import {
   Component,
   EventEmitter, Input, OnChanges,
   Output, SimpleChanges,
-  ViewChild
+  ViewChild, OnDestroy
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
@@ -15,6 +15,7 @@ import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
 import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
 import { TableService } from '../services/table.service';
+import {Subscription} from "rxjs";
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -27,7 +28,7 @@ import { TableService } from '../services/table.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [ExtensionsService, TableService]
 })
-export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit {
+export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   @ViewChild('itemForm') itemForm: FormComponent;
 
   validators = {
@@ -75,6 +76,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   questionnaire;
   linkId;
 
+  subscriptions: Subscription [] = [];
+
   constructor(private extensionsService: ExtensionsService,
               private formService: FormService,
               private validationService: ValidationService,
@@ -85,9 +88,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   ngOnInit(): void {
     // Subscribe to changes to the questionnaire and obtain a set of
     // unique link ids as a result.
-    this.modelService.questionnaire$.subscribe((questionnaire) => {
+    let sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
     });
+    this.subscriptions.push(sub);
   };
 
   ngOnChanges(changes: SimpleChanges) {
@@ -427,6 +431,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     this.validationErrorsChanged.next(errors);
     return errors;
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(sub => sub?.unsubscribe());
   }
 
 }

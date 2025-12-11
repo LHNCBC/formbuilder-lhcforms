@@ -196,6 +196,6 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
     if(unitText) {
       ret.valueDuration.unit = unitText;
     }
-    return ret;
+    return this.extensionsService.updateExtension(ret);
   }
 }

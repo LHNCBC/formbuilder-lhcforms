@@ -2640,11 +2640,11 @@
         },
         "__$valueType": {
           // Actual type used. i.e. one of valueX or 'extension'.
-          "title": "Value type",
+          "title": "Type",
           "description": "The type of the value in this extension. This is used to determine how to interpret the value.",
           "type": "string",
           "widget": {
-            "id": "hidden"
+            "id": "string"
           }
         },
         "__$stringify": {

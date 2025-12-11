@@ -37,6 +37,7 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
   }
 
   ngOnInit() {
+    this.tsExtension = this.extensionService.updateExtension(this.tsExtension);
     super.ngOnInit();
     const ext = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
     if(ext?.valueUrl) {
@@ -50,6 +51,7 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
       const tsExt = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
       if(tsExt?.valueUrl) {
         this.tsExtension.valueUrl = tsExt.valueUrl;
+        this.tsExtension = this.extensionService.updateExtension(this.tsExtension);
       }
       else {
         this.tsExtension.valueUrl = '';

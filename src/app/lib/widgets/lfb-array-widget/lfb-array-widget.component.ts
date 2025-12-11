@@ -39,12 +39,13 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit, Afte
   booleanLabel: string;
   @Input()
   booleanControlledInitial = true;
+  addDefaultItemIfEmpty: boolean = true;
 
   isRequired = false;
 
   ngOnInit() {
     this.isRequired = Util.getIsRequired(this.formProperty);
-    if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0) {
+    if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0 && this.addDefaultItemIfEmpty) {
       this.formProperty.addItem();
     }
     const widget = this.formProperty.schema.widget;

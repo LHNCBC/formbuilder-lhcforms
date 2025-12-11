@@ -805,8 +805,8 @@ export class Util {
 
 
   static getIsRequired(formProperty: FormProperty): boolean {
-    const pathArray = formProperty?.canonicalPathNotation.split('.');
     return !!formProperty?.parent?.schema?.required?.some((requiredField) => {
+      const pathArray = formProperty.canonicalPathNotation.split('.');
       return pathArray[pathArray.length - 1] === requiredField;
     });
   }

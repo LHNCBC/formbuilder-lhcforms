@@ -57,6 +57,7 @@ import {ExtensionComponent} from "./widgets/extension/extension.component";
 import {TableEditRowInDlgComponent} from "./widgets/table-edit-row-in-dlg/table-edit-row-in-dlg.component";
 import {LfbObjectComponent} from "./widgets/lfb-object/lfb-object.component";
 import {LfbArrayComponent} from "./widgets/lfb-array/lfb-array.component";
+import {ExtensionContainerComponent} from "./widgets/extension-container/extension-container.component";
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -111,6 +112,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('entry-format', EntryFormatComponent);
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
     this.register('extension', ExtensionComponent);
+    this.register('extension-container', ExtensionContainerComponent);
     this.register('table-edit-row-in-dlg', TableEditRowInDlgComponent);
     this.register('lfb-object', LfbObjectComponent);
     this.register('array', LfbArrayComponent);

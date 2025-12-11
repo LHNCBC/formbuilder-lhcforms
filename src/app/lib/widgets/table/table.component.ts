@@ -82,6 +82,10 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   tableStatus: TableStatus;
   elementRef = inject(ElementRef);
 
+  // Used to store the indexes of rows to be hidden.
+  // Hiding is only for display purpose. The rows are still present in the form property.
+  _hideRows: Set<number> = new Set<number>();
+
   constructor() {
     super();
   }
@@ -645,5 +649,13 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    */
   isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     return false;
+  }
+
+  /**
+   * Get the map of hidden rows.
+   *
+   */
+  get hideRows(): Set<number> {
+    return this._hideRows;
   }
 }

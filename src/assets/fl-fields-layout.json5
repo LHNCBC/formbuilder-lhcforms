@@ -28,7 +28,7 @@
           { field:  "lastReviewDate", col:  12},
           { field:  "contained", "col": 12},
           { field:  "__$variable", col: 12},
-          { field:  "extension", col: 12}
+          { field:  "__$extensionContainer", col: 12}
         ]
       }
     ],
@@ -36,7 +36,7 @@
   },
   // Please note that the jsonpath expression paths in the keys
   overridePropertyLabels: {
-    '$.properties.extension': 'General extensions',
+    '$.properties.extension': 'Extensions',
     '$.properties.contained': 'Contained resources',
     '$.properties.name': 'Questionnaire name',
     '$.properties.date': 'Revision date',
@@ -109,6 +109,12 @@
         {"field": "date", "col": 2, "nolabel": true},
         {"field": "status", "col": 1, "nolabel": true}
       ]
+    },
+    "__$extensionContainer": {
+      "id": "extension-container",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
     },
     extension: {
       "id": "extension",
@@ -219,6 +225,9 @@
     ],
     __$variable: [
       '$.properties.__$variable'
+    ],
+    __$extensionContainer: [
+      '$.properties.__$extensionContainer'
     ]
   }
 }

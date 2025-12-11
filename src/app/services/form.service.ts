@@ -254,7 +254,8 @@ export class FormService {
 
     // Add value[x] fields to the extension layout.
     const valueXFields = Object.keys(schema.properties)
-      .filter((key) => key.startsWith('value') || key.startsWith('__$valueType') || key.startsWith('__$stringify'))
+      .filter((key) => key.startsWith('value'))
+      // .filter((key) => key.startsWith('value') || key.startsWith('__$valueType') || key.startsWith('__$stringify'))
       .map((valueX) => {
         return {field: valueX, col: 12};
       });

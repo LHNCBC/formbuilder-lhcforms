@@ -1,4 +1,13 @@
-import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges
+} from '@angular/core';
 import {ExtensionDlgComponent} from "../extension-dlg/extension-dlg.component";
 import {TableEditRowInDlgComponent} from "../table-edit-row-in-dlg/table-edit-row-in-dlg.component";
 import {AppFormElementComponent} from "../form-element/form-element.component";
@@ -20,7 +29,6 @@ import {MatTooltip} from "@angular/material/tooltip";
 import {ExtensionsService} from "../../../services/extensions.service";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
-import {SchemaService} from "../../../services/schema.service";
 import {FormService} from "../../../services/form.service";
 
 @Component({
@@ -43,11 +51,14 @@ import {FormService} from "../../../services/form.service";
   templateUrl: '../table/table.component.html',
   styleUrl: '../table/table.component.css',
 })
-export class ExtensionComponent extends TableEditRowInDlgComponent implements OnInit, AfterViewInit {
+export class ExtensionComponent extends TableEditRowInDlgComponent implements OnInit, AfterViewInit, OnChanges {
 
+  @Input()
+  templateFormProperty: ArrayProperty;
   extensionsService: ExtensionsService = inject(ExtensionsService);
   formService = inject(FormService);
-  schemaService = inject(SchemaService);
+  cdr = inject(ChangeDetectorRef);
+  extensionSchema: ISchema = {};
 
   constructor() {
     super();
@@ -55,9 +66,20 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
 
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if(changes.templateFormProperty) {
+      this.formProperty = this.templateFormProperty;
+    }
+    super.ngOnChanges(changes);
+  }
+
   ngOnInit(): void {
+    this.addDefaultItemIfEmpty = false;
+    this.extensionSchema = this.formService.getExtensionSchema();
     this._adjustControlClassesForTableCellWidgets();
     super.ngOnInit();
+    const valueArray = this.valueUpdate(this.formProperty.value);
+    this.formProperty.setValue(valueArray, true);
   }
 
   ngAfterViewInit() {
@@ -70,42 +92,13 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
 
   valueUpdate(valueArray: fhir.Extension[]) {
     (valueArray || []).forEach((ext: fhir.Extension) => {
-      this.updateExtension(ext);
+      this.extensionsService.updateExtension(ext);
     });
-  }
-
-  updateExtension(newValue: fhir.Extension ) {
-    if(newValue) {
-
-      const extSchema: ISchema = this.formService.getExtensionSchema();
-      const valueXCategoryMap = this.schemaService.valueXCategoryMap;
-      Object.keys(valueXCategoryMap).forEach(valueX => {
-        delete newValue['__$valueTypeCategory'];
-        delete newValue[valueXCategoryMap[valueX]];
-      });
-      // If the new value is an extension, we need to set the __$isValueX and __$valueType properties
-      // so that the dialog can handle it correctly.
-      const valueX = Object.keys(newValue).find(key => key.startsWith('value'));
-      newValue['__$isValueX'] = !!valueX;
-      if(newValue['__$isValueX']) {
-        newValue['__$valueType'] = valueX;
-        // this.categoryTypeMap is initialized in ngOnInit.
-        const categoryTypeMap = this.schemaService.valueXCategoryMap;
-        newValue['__$valueTypeCategory'] = categoryTypeMap[valueX];
-        newValue[categoryTypeMap[valueX]] = valueX;
-        newValue['__$stringify'] = JSON.stringify(newValue[valueX]);
-      }
-      else {
-        newValue['__$valueType'] = 'extension';
-        newValue['__$stringify'] = JSON.stringify(newValue.extension);
-      }
-
-    }
-    return newValue;
+    return valueArray;
   }
 
   override addNewItem(newValue: fhir.Extension) {
-    this.updateExtension(newValue);
+    this.extensionsService.updateExtension(newValue);
     super.addNewItem(newValue);
   }
 
@@ -116,12 +109,34 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
 
   _adjustControlClassesForTableCellWidgets() {
     const extSchema = this.formService.getExtensionSchema();
+    const mergeClasses = (list1: string, list2: string) => {
+      const s1 = new Set(list1?.split(/\s+/).filter(e => !!e));
+      const s2 = new Set(list2?.split(/\s+/).filter(e => !!e));
+      Array.from(s2).forEach((cls) => s1.add(cls));
+      const ret = Array.from(s1).join(' ');
+      return ret || null;
+    };
     Object.keys(extSchema.properties).forEach((key) => {
       const widgetObj = extSchema.properties[key].widget;
       if(widgetObj) {
-        widgetObj.controlClasses += ' p-0'
+        widgetObj.controlClasses = mergeClasses(widgetObj.controlClasses, 'p-0');
       }
     });
+  }
+
+  hideUneditableRows() {
+    const extArray = this.formProperty.value;
+    this.hideRows.clear();
+    for(let i = 0; i < extArray.length; i++) {
+      const ext = extArray[i];
+      if(this.extensionsService.isNotEditableInDlg(ext.url)) {
+        this.hideRows.add(i);
+      }
+    }
+  }
+
+  showAllRows() {
+    this.hideRows.clear();
   }
 
   override isDisabled = this._isDisabled.bind(this);

@@ -50,13 +50,9 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
    * Ng OnInit lifecycle hook.
    */
   ngOnInit() {
+    this.addDefaultItemIfEmpty = false; // Avoid adding default row.
     const rows = this.formProperty.properties.length;
     super.ngOnInit();
-    if (rows === 0) {
-      // Table component adds a row by default for the user to enter first row.
-      // In this component, the rows are in the dialog, so we don't want to add a row.
-      this.removeProperty(0);
-    }
   }
 
   /**

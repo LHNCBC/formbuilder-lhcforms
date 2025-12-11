@@ -24,8 +24,8 @@ test.describe('Table component', async () => {
     const mainPO = new MainPO(page);
 
     await page.getByLabel('Data type', {exact: true}).selectOption({label: 'coding'});
-    await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
-    await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list').click();
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
     const table = page.locator('lfb-answer-option table');
     // Load a table with data
@@ -153,14 +153,13 @@ test.describe('Table component', async () => {
 
     const table = page.locator('lfb-answer-option table');
     await page.getByLabel('Data type', {exact: true}).selectOption({label: 'coding'});
-    await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
-    await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list').click();
-    // await page.getByLabel('Allow repeating question?').getByText('Yes').click();
-    await page.getByRole('radiogroup', {name: 'Allow repeating question?'}).getByText('Yes').click();
-    
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
+    await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
+
     // Click on the Value Method - Pick Initial option
     await page.locator('[for*="valueMethod_pick-initial"]').click();
-    
+
     // Load a table with data
     await mainPO.loadTable(table, tableData);
 

@@ -23,15 +23,15 @@ test.describe('r5-features.spec.ts', async () => {
     // Unsupported type
     for (const listType of ['boolean', 'decimal', 'dateTime', 'url', 'quantity', 'group', 'display']) {
       await page.getByLabel('Data type', {exact: true}).selectOption({label: listType});
-      await expect(page.getByRole('radiogroup', {name: 'Create answer list'})).not.toBeVisible();
+      await expect(page.locator('lfb-label label').getByText('Create answer list')).not.toBeVisible();
     }
     // Supported type
     for (const listType of ['integer', 'date', 'time', 'string', 'text', 'coding']) {
       await page.getByLabel('Data type', {exact: true}).selectOption({label: listType});
-      await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click()
+      await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
 
       for(const constraintType of Object.keys(constraintLabels)) {
-        await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText(constraintLabels[constraintType]).click();
+        await PWUtils.clickRadioButton(page, 'Answer constraint', constraintLabels[constraintType]);
         let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(q.item[0].type).toBe(listType);
         expect(q.item[0].answerConstraint).toBe(constraintType);
@@ -45,20 +45,20 @@ test.describe('r5-features.spec.ts', async () => {
 
     await PWUtils.clickTreeNode(page, 'Integer type, optionsOrType');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Integer type, optionsOrType');
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
-    await expect(page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Allow off list')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer constraint', 'Allow off list')).toBeChecked();
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('1');
 
     await PWUtils.clickTreeNode(page, 'String type, optionsOrString');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('String type, optionsOrString');
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
-    await expect(page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Allow free text')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer constraint', 'Allow free text')).toBeChecked();
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('first');
 
     await PWUtils.clickTreeNode(page, 'Coding type, optionsOnly');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Coding type, optionsOnly');
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
-    await expect(page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer constraint', 'Restrict to the list')).toBeChecked();
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('First coding');
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(2) input')).toHaveValue('c1');
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(3) input')).toHaveValue('s1');
@@ -102,7 +102,7 @@ test.describe('r5-features.spec.ts', async () => {
     await elementLocatorInTable(parentEl, 2, 3, 'input').fill('b');
 
     for(const opt of Object.keys(disabledDisplayLabels)) {
-      await page.getByRole('radiogroup', {name: 'Hide or show this item when'}).getByText(disabledDisplayLabels[opt]).click();
+      await PWUtils.clickRadioButton(page, 'Hide or show this item when', disabledDisplayLabels[opt]);
       const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(q.item[1].disabledDisplay).toBe(opt);
     }
@@ -115,11 +115,11 @@ test.describe('r5-features.spec.ts', async () => {
 
     await PWUtils.clickTreeNode(page, 'Target 1');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 1');
-    await expect(page.getByRole('radiogroup', {name: 'Hide or show this item when'}).getByText('Hide')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Hide or show this item when', 'Hide')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'Target 2');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 2');
-    await expect(page.getByRole('radiogroup', {name: 'Hide or show this item when'}).getByText('Show as protected')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Hide or show this item when', 'Show as protected')).toBeChecked();
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[1].disabledDisplay).toBe('hidden');
     expect(q.item[2].disabledDisplay).toBe('protected');
@@ -131,27 +131,27 @@ test.describe('r5-features.spec.ts', async () => {
 
     await PWUtils.clickTreeNode(page, 'Integer type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/integer/);
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
-    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Drop down')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Drop down')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'Date type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/date/);
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
     await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Check-box')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'Time type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/time/);
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
     await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Radio Button')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'Coding type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
     await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Drop down')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'String type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/string/);
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
     await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Radio Button')).toBeChecked();
   });
 
@@ -214,7 +214,7 @@ test.describe('R4 to R5', () => {
 
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
 
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
     const helpString = /^A plain text instruction/;
     await expect(page.getByLabel('Help text', {exact: true})).toHaveValue(helpString);
     const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');

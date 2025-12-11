@@ -110,3 +110,11 @@ div.has-error > ul {
 div.has-error > ul:empty {
   display: none;
 }
+
+.lfb-tooltip-pre-wrap {
+  width: auto;
+  height: auto;
+  max-width: 300px;
+  white-space: pre-wrap;
+  text-align: left !important;
+}

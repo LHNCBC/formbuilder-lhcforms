@@ -12,6 +12,9 @@ import {
   EXTENSION_URL_CALCULATED_EXPRESSION,
   EXTENSION_URL_ANSWER_EXPRESSION
 } from '../lib/constants/constants';
+import {TerminologyServerComponent} from "../lib/widgets/terminology-server/terminology-server.component";
+import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
+import {ObservationExtractComponent} from "../lib/widgets/observation-extract/observation-extract.component";
 
 /**
  * This class is intended for components which needs to interact with extension field.
@@ -33,7 +36,11 @@ export class ExtensionsService {
     EXTENSION_URL_VARIABLE,
     EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
     EXTENSION_URL_INITIAL_EXPRESSION,
-    EXTENSION_URL_CALCULATED_EXPRESSION
+    EXTENSION_URL_CALCULATED_EXPRESSION,
+    EXTENSION_URL_ANSWER_EXPRESSION,
+    TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
+    ObservationLinkPeriodComponent.extUrl,
+    ObservationExtractComponent.extUrl
   ]);
 
   _id = 'extensionServiceInstance_';
@@ -385,11 +392,15 @@ export class ExtensionsService {
         // const categoryTypeMap = this.schemaService.getValueXCategoryMap(this.formService.getExtensionSchema());
         const categoryMap = this.schemaService.valueXCategoryMap;
         newValue[categoryMap[valueX]] = valueX;
-        newValue['__$stringify'] = JSON.stringify(newValue[valueX]);
+        newValue['__$valueTypeCategory'] = categoryMap[valueX];
+        newValue['__$stringify'] = JSON.stringify(newValue[valueX], null, 2);
       }
       else {
+        delete newValue[newValue['__$valueTypeCategory']];
+        delete newValue['__$valueTypeCategory'];
         newValue['__$valueType'] = 'extension';
-        newValue['__$stringify'] = JSON.stringify(newValue.extension);
+        newValue['__$stringify'] = JSON.stringify(newValue.extension,
+          (k, v) => k.startsWith('__$') ? undefined : v, 2);
       }
 
     }

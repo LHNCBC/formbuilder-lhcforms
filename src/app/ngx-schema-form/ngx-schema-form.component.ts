@@ -7,16 +7,20 @@ import {
   EventEmitter,
   Input, OnChanges,
   Output,
-  SimpleChanges,
+  SimpleChanges, ViewChild, ViewContainerRef,
 } from '@angular/core';
 import {SharedObjectService} from '../services/shared-object.service';
+import {SfFormWrapperComponent} from "../sf-form-wrapper/sf-form-wrapper.component";
 
 @Component({
   standalone: false,
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
+      <ng-container #sfFormWrapperHost></ng-container>
+      <!--
       <lfb-sf-form-wrapper *ngIf="instantiate" [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)" (validationErrorsChanged)="onValidationErrorsChange($event)"></lfb-sf-form-wrapper>
+      -->
     </div>
   `,
   styles: [`
@@ -52,17 +56,33 @@ export class NgxSchemaFormComponent implements OnChanges {
   @Output()
   validationErrorsChanged = new EventEmitter<any[]>();
 
+  @ViewChild('sfFormWrapperHost', {read: ViewContainerRef}) sfFormWrapperHost: ViewContainerRef;
+
   constructor(private modelService: SharedObjectService, private cdr: ChangeDetectorRef) {
   }
 
   ngOnChanges(changes: SimpleChanges) {
     // Destroy the current component and recreate new one.
+    if(changes.model.firstChange && !changes.model.currentValue) {
+      return;
+    }
+    this.createNewFormWrapper();
+    /*
     this.instantiate = false;
     this.cdr.detectChanges();
     this.instantiate = true;
     this.cdr.detectChanges();
+     */
   }
 
+  private createNewFormWrapper() {
+    this.sfFormWrapperHost.clear();
+    const componentRef = this.sfFormWrapperHost.createComponent<SfFormWrapperComponent>(SfFormWrapperComponent);
+    componentRef.instance.model = this.model;
+    componentRef.instance.valueChange.subscribe((value: any) => this.updateValue(value));
+    componentRef.instance.errorsChanged.subscribe((errors: any[]) => this.onErrorsChange(errors));
+    componentRef.instance.validationErrorsChanged.subscribe((errors: any[]) => this.onValidationErrorsChange(errors));
+  }
   /**
    * The model is changed, emit the event.
    * @param value - Event value.

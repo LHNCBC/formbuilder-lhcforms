@@ -30,7 +30,7 @@ import {Subscription} from "rxjs";
   providers: [TableService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExtensionObjComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
 
   subscriptions: Subscription [] = [];
   extensionsService = inject(ExtensionsService);
@@ -45,15 +45,8 @@ export class ExtensionObjComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private cdr: ChangeDetectorRef) {
   }
 
-  ngOnInit() {
-    // console.log(`ExtensionComponent ngOnInit model: ${JSON.stringify(this.model)}`);
-  }
-
   ngAfterViewInit() {
     this.sfFormRootProperty = this.sfForm.rootProperty as PropertyGroup;
-    this.sfForm.onErrorsChange.subscribe((errors) => {
-      // console.log(`Errors in extension-obj: ${JSON.stringify(errors)}`);
-    });
     const sub = this.sfFormRootProperty.getProperty('__$valueTypeCategory').valueChanges.subscribe((newCategory) => {
       this.handler(newCategory);
     });
@@ -77,6 +70,7 @@ export class ExtensionObjComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   handleChange(value: fhir.Extension) {
+    this.extensionsService.updateExtension(value);
     this.onChange.emit(value);
   }
 

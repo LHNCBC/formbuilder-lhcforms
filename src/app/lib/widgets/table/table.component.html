@@ -50,7 +50,7 @@
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
       <tr *ngFor="let itemProperty of formProperty.properties; index as ind; first as isFirst; last as isLast"
-        class="d-flex lfb-table-row" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
+        class="d-flex lfb-table-row" [ngClass]="{'d-none': _hideRows.has(ind)}" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
         <td *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
           <lfb-form-element [nolabel]="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
         </td>
@@ -96,13 +96,13 @@
   <td class="action-column col-sm-half center border-1" [ngClass]="{'edit-row': addEditAction}"> <!-- TODO conflict resolution: test this change. -->
     <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
       <button (click)="removeProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
-              [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
+              [attr.disabled]="isRemoveButtonDisabled() || isDisabled(formProperty, index) ? '' : null"
               *ngIf="!(schema.hasOwnProperty('minItems') &&
                                schema.hasOwnProperty('maxItems') &&
                                schema.minItems === schema.maxItems)"
               matTooltip="Remove this row" aria-label="Remove this row"
       ><fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-      <ng-container *ngTemplateOutlet="moveActions; context: {index, first, last, disabled: isEmpty(index), isNextEmpty: isNextItemEmpty(index)}"></ng-container>
+      <ng-container *ngTemplateOutlet="moveActions; context: {index, first, last, disabled: isEmpty(index) || isDisabled(formProperty, index), isNextEmpty: isNextItemEmpty(index)}"></ng-container>
       @if (addEditAction) {
         <ng-container *ngTemplateOutlet="editRow; context: {index}"></ng-container>
 
