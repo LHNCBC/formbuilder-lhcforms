@@ -371,7 +371,6 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].valueCoding.display).equal('[Ampere/kilogram]*stere');
       });
     });
-
     it('should support lookup display string that contains spaces between words', () => {
       cy.get('[id^="units"]').should('not.exist');
       cy.selectDataType('decimal');

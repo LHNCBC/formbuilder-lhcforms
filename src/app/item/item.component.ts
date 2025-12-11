@@ -14,7 +14,7 @@ import {
   SimpleChanges,
   ViewChild
 } from '@angular/core';
-import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent} from '@bugsplat/angular-tree-component';
+import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent, TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
 import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
@@ -81,14 +81,15 @@ export class LinkIdCollection {
 }
 
 export class ErrorTooltip {
-  dropErrorMessage = "Cannot drop into a node of type \'display\' because it cannot contain children.";
+  dropErrorMessage: string;
   showDropNotAllowedTooltip = false;
   tooltipMouseXLoc: number;
   tooltipMouseYLoc: number;
   tooltipXOffset: number;
   tooltipYOffset: number;
 
-  constructor() {
+  constructor(dropErrorMessage: string = "Cannot drop into a node of type 'display' because it cannot contain children.") {
+    this.dropErrorMessage = dropErrorMessage;
     this.tooltipMouseXLoc = 0;
     this.tooltipMouseYLoc = 0;
     this.tooltipXOffset = -15;
@@ -133,7 +134,7 @@ export class ErrorTooltip {
   standalone: false,
   selector: 'lfb-confirm-dlg',
   template: `
-    <div class="modal-header bg-primary">
+    <div class="modal-header" [ngClass]="{'bg-danger': type === MessageType.DANGER, 'bg-primary': type !== MessageType.DANGER}">
       <h4 class="modal-title text-white">{{title}}</h4>
       <button type="button" class="btn-close btn-close-white" aria-label="Close"
               (click)="activeModal.dismiss(false)"
@@ -144,14 +145,22 @@ export class ErrorTooltip {
       <p>{{message}}</p>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-primary"
-              (keydown.enter)="activeModal.dismiss(false)"
-              (click)="activeModal.dismiss(false)"
-      >No</button>
-      <button type="button" class="btn btn-primary"
-              (keydown.enter)="activeModal.close(true)"
-              (click)="activeModal.close(true)"
-      >Yes</button>
+      <ng-container *ngIf="type !== MessageType.DANGER; else closeBtn">
+        <button type="button" class="btn btn-primary"
+                (keydown.enter)="activeModal.dismiss(false)"
+                (click)="activeModal.dismiss(false)"
+        >No</button>
+        <button type="button" class="btn btn-primary"
+                (keydown.enter)="activeModal.close(true)"
+                (click)="activeModal.close(true)"
+        >Yes</button>
+      </ng-container>
+      <ng-template #closeBtn>
+        <button type="button" class="btn btn-primary"
+                (keydown.enter)="activeModal.dismiss(false)"
+                (click)="activeModal.dismiss(false)"
+        >Close</button>
+      </ng-template>
     </div>
   `
 })
@@ -160,6 +169,10 @@ export class ConfirmDlgComponent {
   title: string;
   @Input()
   message: string;
+  @Input()
+  type: MessageType;
+
+  MessageType = MessageType;
 
   constructor(public activeModal: NgbActiveModal) {
   }
@@ -197,7 +210,21 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
         dblClick: (tree, node, $event) => {
           if (node.hasChildren) { TREE_ACTIONS.TOGGLE_EXPANDED(tree, node, $event); }
         },
-        click: TREE_ACTIONS.ACTIVATE
+        click: TREE_ACTIONS.ACTIVATE,
+        drop: (tree: TreeModel, node: TreeNode, $event:any, {from, to}) => {
+          // Override the default drop behavior when a node is dropped as a child,
+          // and instead call moveItem, which performs necessary validation.
+
+          // Ensure that dropping onto itself does not trigger the move.
+          if (from.data.__$treeNodeId !== to.parent.data.__$treeNodeId) {
+            if (to?.dropOnNode && to.dropOnNode === true) {
+              this.moveItem(from, to.parent, 'CHILD', 'DROP');
+            } else {
+              TREE_ACTIONS.MOVE_NODE(tree, node, $event, { from, to });
+            }
+          }
+          delete node.data.__$isHovered;
+        }
       },
       keys: {
         [KEYS.SPACE]: TREE_ACTIONS.TOGGLE_EXPANDED,
@@ -213,7 +240,13 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       return true;
     },
     allowDrop: (node, { parent, index }) => {
-      return this.canDropNode(node, parent);
+      // A node can be dragged and dropped without being selected first,
+      // so we need to ensure the focus node is updated.
+      if (this.focusNode.data.linkId !== node.data.linkId) {
+        this.setFocusedNode(node);
+        this.treeComponent.treeModel.setFocusedNode(node);
+      }
+      return true;
     },
     // allowDragoverStyling: true,
     levelPadding: 10,
@@ -557,7 +590,12 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
 
       this.treeComponent.treeModel.update();
-      this.treeComponent.treeModel.focusNextNode();
+
+      // this.treeComponent.treeModel.focusNextNode() may not work here if the focused node
+      // has children. FocusNextNode will move to the first child rather than the next sibling.
+      const newNode = this.treeComponent.treeModel.getNodeById(item.__$treeNodeId);
+      this.treeComponent.treeModel.setFocusedNode(newNode);
+
       this.setNode(this.treeComponent.treeModel.getFocusedNode(), true);
       this.formService.addTreeNodeStatus(this.focusNode.id.toString(), this.focusNode.data.linkId);
       this.formService.addLinkIdToLinkIdTracker(this.focusNode.id.toString(), this.focusNode.data.linkId);
@@ -615,19 +653,102 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
+   * Checks if the given node or any of its ancestors is of type 'display'. It should
+   * never occur that a node of type 'display' contains children, but just in case.
+   * @param node - The node to check.
+   * @returns True if node or any ancestor is of type 'display', otherwise false.
+   */
+  private isDisplayTypeNodeOrAncestor(node: ITreeNode): boolean {
+    let current = node;
+    while (current) {
+      if (current.data && current.data.type === 'display') {
+        return true;
+      }
+      current = current.parent;
+    }
+    return false;
+  }
+
+    /**
+     * Checks the target node and its ancestors for enableWhen validation errors related to the source node.
+     * If any such error is found, returns the errors and an appropriate error message describing the issue.
+     *
+     * @param sourceNode - The node being moved or referenced as the source.
+     * @param targetNode - The node to check for enableWhen validation errors, including its ancestors.
+     * @returns An object containing an array of errors and an optional error message if a validation error is found.
+     */
+  private getEnableWhenAncestorValidationError(sourceNode: ITreeNode, targetNode: ITreeNode): { errors: any[], errorMessage?: string } {
+    let currentNode = targetNode;
+    let allEnableWhenErrors = [];
+    let errorMessage;
+    while (currentNode) {
+      if (currentNode.data && currentNode.data.enableWhen) {
+        const errors = this.validationService.validateEnableWhenAll({
+          'value': currentNode.data.enableWhen,
+          'id': currentNode.data.__$treeNodeId,
+          'linkId': currentNode.data.linkId
+        }, false, false);
+        if (Array.isArray(errors) && errors.length > 0) {
+          allEnableWhenErrors = allEnableWhenErrors.concat(errors);
+          if (currentNode.data.linkId === targetNode.data.linkId) {
+            errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${ targetNode.data.linkId }) that contains an enableWhen question reference to the source node '${sourceNode.data.text}' (linkId: ${ sourceNode.data.linkId }) or any ancestor of the source node.`;
+          } else {
+            errorMessage = `Cannot drop into a descendant of item '${currentNode.data.text}'(linkId: ${ currentNode.data.linkId }) that contains an enableWhen question reference to the source node.`;
+          }
+          break; // Exit loop if any error is found
+        }
+      }
+      currentNode = currentNode.parent;
+    }
+    return { errors: allEnableWhenErrors, errorMessage };
+  }
+
+  /**
    * Move the item in the data structure.
    * @param contextNode - The node to move
    * @param targetNode - Destination node
    * @param position - ('AFTER'|'BEFORE'|'CHILD')
+   * @param action - ('MOVE' | 'DROP')
    */
-  moveItem(contextNode: ITreeNode, targetNode: ITreeNode, position: ('AFTER'|'BEFORE'|'CHILD') = 'AFTER') {
-    this.treeComponent.treeModel.moveNode(contextNode, {
+  moveItem(contextNode: ITreeNode, targetNode: ITreeNode, position: ('AFTER'|'BEFORE'|'CHILD') = 'AFTER', action: ('MOVE'|'DROP') = 'MOVE') {
+    let errorMessage;
+    let hasError = false;
+    if (this.isDisplayTypeNodeOrAncestor(targetNode)) {
+      hasError = true;
+      if (targetNode.data.type === 'display') {
+        errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${targetNode.data.linkId}) of type 'display' because it cannot contain children.`;
+      } else {
+        errorMessage = `Cannot drop into item '${targetNode.data.text}' (linkId: ${targetNode.data.linkId}) because it has an ancestor of type 'display', which cannot contain children.`;
+      }
+    } else if (targetNode.data.linkId && contextNode.data.linkId !== targetNode.data.linkId) {
+      const enableWhenResult = this.getEnableWhenAncestorValidationError(contextNode, targetNode);
+      if (enableWhenResult.errorMessage) {
+        hasError = true;
+        errorMessage = enableWhenResult.errorMessage;
+      }
+    }
+
+    if (hasError) {
+      this.showDropNotAllowedDialog(action.charAt(0).toUpperCase() + action.slice(1).toLowerCase(), errorMessage);
+      setTimeout(() => {
+        this.liveAnnouncer.announce(errorMessage);
+      }, 0);
+    } else {
+
+      let moveIndex = targetNode.index + (position === 'AFTER' ? 1 : 0);
+      let moveParent = position === 'CHILD' ? targetNode : targetNode.parent;
+      if (position === 'CHILD') {
+        // Place as last child
+        moveIndex = (targetNode.data.item && Array.isArray(targetNode.data.item)) ? targetNode.data.item.length : 0;
+      }
+      this.treeComponent.treeModel.moveNode(contextNode, {
         dropOnNode: position === 'CHILD',
-        parent: position === 'CHILD' ? targetNode : targetNode.parent,
-        index: targetNode.index + (position === 'AFTER' ? 1 : 0)
+        parent: moveParent,
+        index: moveIndex
       });
-    this.treeComponent.treeModel.setFocusedNode(contextNode);
-    this.treeComponent.treeModel.getFocusedNode().setActiveAndVisible(false);
+      this.treeComponent.treeModel.setFocusedNode(contextNode);
+      this.treeComponent.treeModel.getFocusedNode().setActiveAndVisible(false);
+    }
   }
 
   /**
@@ -638,7 +759,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   onMoveDlg(domEvent: Event, contextNode: ITreeNode) {
     const modalRef = this.openNodeDlg(contextNode, 'Move');
     modalRef.result.then((result) => {
-      this.moveItem(contextNode, result.target, result.location);
+      this.moveItem(contextNode, result.target, result.location, 'MOVE');
     }, (reason) => {
     })
       .finally(() => {
@@ -686,9 +807,22 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   confirmItemDelete(): Promise<any> {
     const modalRef = this.modalService.open(ConfirmDlgComponent);
-    modalRef.componentInstance.title = 'Confirm deletion';
-    modalRef.componentInstance.message = 'Are you sure you want to delete this item?';
-    modalRef.componentInstance.type = MessageType.WARNING;
+    let errors = [];
+    let hasEnableWhenError = false;
+    if (this.focusNode.data.linkId) {
+      errors = this.validationService.validateItemDeletionForEnableWhenDependency(this.focusNode);
+      hasEnableWhenError = Array.isArray(errors) && errors.length > 0;
+    }
+
+    if (hasEnableWhenError) {
+      modalRef.componentInstance.title = 'Unable to delete item';
+      modalRef.componentInstance.message = errors[0].message;
+      modalRef.componentInstance.type = MessageType.DANGER;
+    } else {
+      modalRef.componentInstance.title = 'Confirm deletion';
+      modalRef.componentInstance.message = 'Are you sure you want to delete this item?';
+      modalRef.componentInstance.type = MessageType.WARNING;
+    }
     return modalRef.result.then(() => {
       this.deleteFocusedItem();
     })
@@ -1020,25 +1154,16 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
-   * Determines if a dragged node can be dropped onto a target node by checking the target
-   * node's data type. If the target node's data type is 'display', the drop is not allowed.
-   * In this case, the 'not-allowed' icon and an error tooltip are displayed. Additionally,
-   * the screen reader announces the message upon mouseup.
-   * @param draggedNode - The node that is being dragged.
-   * @param targetParentNode - The potential parent node where the dragged node may be dropped.
-   * @returns - True if the drop is allowed, otherwise false.
+   * Display a dialog indicating that the drop operation cannot be performed.
+   * @param action - Action being performed.
+   * @param message Optional custom message for the dialog.
    */
-  canDropNode(draggedNode, targetParentNode) {
-    if (targetParentNode && targetParentNode.data.type === 'display') {
-      this.errorTooltip.showTooltip(true);
-      setTimeout(() => {
-        this.liveAnnouncer.announce(this.errorTooltip.dropErrorMessage);
-      }, 0);
-    } else {
-      this.errorTooltip.showTooltip(false);
-    }
-
-    return !this.errorTooltip.showDropNotAllowedTooltip;
+  showDropNotAllowedDialog(action: string, message?: string): void {
+    const modalRef = this.modalService.open(ConfirmDlgComponent);
+    modalRef.componentInstance.title = `${action} Not Allowed`;
+    modalRef.componentInstance.message = message || "This item cannot be dropped here due to validation or type restrictions.";
+    modalRef.componentInstance.type = MessageType.DANGER;
+    // No further action needed on close; dialog is for information only.
   }
 
   /**
@@ -1047,7 +1172,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * correctly under the mouse cursor.
    * @param event - the 'dragover' event triggered by the mouse.
    */
-  onMouseDragOver(event: MouseEvent) {
+  onMouseDragOver(event: MouseEvent): void {
     this.errorTooltip.updateTooltipMouseLocation(event.pageX, event.pageY);
   }
 
@@ -1056,7 +1181,48 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Hides the tooltip that was displayed during the drag process.
    * @param event - the 'mouseover' event triggered by the mouse.
    */
-  onMouseOver(event: MouseEvent) {
+  onMouseOver(event: MouseEvent): void {
     this.errorTooltip.showTooltip(false);
   }
+
+
+
+  /**
+   * Sets the __$isHovered property to true on the node's data when a drag-over event occurs.
+   * This can be used to visually highlight the node as a potential drop target.
+   * @param node - The TreeNode being dragged over.
+   */
+  onDragOver(node: TreeNode): void {
+    node.data.__$isHovered = true;
+  }
+
+  /**
+   * Sets the __$isHovered property to false on the node's data when a drag-leave event occurs.
+   * This removes any visual highlight from the node as a drop target.
+   * @param node - The TreeNode that the drag has left.
+   */
+  onDragLeave(node: TreeNode) {
+    delete node.data.__$isHovered;
+  }
+
+  /**
+   * Retrieves all error messages for the currently focused node.
+   * Iterates through the node's error object and collects the first message from each error key.
+   * @returns An array of error message strings for display in the UI.
+   */
+  getNodeErrors(): string[] {
+    const nodeIdStr = this.focusNode.id.toString();
+    const nodeStatus = this.formService.getTreeNodeStatusById(nodeIdStr);
+    const errorMessages = [];
+    if (nodeStatus && nodeStatus.errors) {
+      const errorKeys = Object.keys(nodeStatus.errors);
+      for (const key of errorKeys) {
+        if (nodeStatus.errors[key] && nodeStatus.errors[key][0] && nodeStatus.errors[key][0].message) {
+          errorMessages.push(`${nodeStatus.errors[key][0].message}`);
+        }
+      }
+    }
+    return errorMessages;
+  }
+
 }

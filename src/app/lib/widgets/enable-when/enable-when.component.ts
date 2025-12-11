@@ -156,7 +156,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    * Collect enablewhen related errors from the field.
    * @param fieldProperty - FormProperty representing the field.
    */
-  getFieldErrors(fieldProperty: FormProperty): string [] {
+  getFieldErrors(fieldProperty: FormProperty): string[] {
     const messages = fieldProperty?._errors?.reduce((acc, error) => {
       if(error.code?.startsWith('ENABLEWHEN')) {
         acc.push(error.message);

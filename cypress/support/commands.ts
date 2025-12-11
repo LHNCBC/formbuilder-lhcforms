@@ -714,14 +714,18 @@ Cypress.Commands.add('selectAutocompleteOptions',
           cy.wrap(autocompleteElement)
             .parentsUntil('div.query-select')
             .parent()
-            .find('span.autocomp_selected > ul > li')
+            .find('span.autocomp_selected', { timeout: 5000 })
+            .should('exist')
+            .find('ul > li')
             .should('have.length', 0);
         } else if (Array.isArray(expectedResults)) {
           // Existing positive case
           cy.wrap(autocompleteElement)
             .parentsUntil('div.query-select')
             .parent()
-            .find('span.autocomp_selected > ul > li')
+            .find('span.autocomp_selected', { timeout: 5000 })
+            .should('exist')
+            .find('ul > li')
             .should(($lis) => {
               expect($lis.length, 'Number of results returned by the search').to.equal(expectedResults.length);
               expectedResults.forEach((text, idx) => {

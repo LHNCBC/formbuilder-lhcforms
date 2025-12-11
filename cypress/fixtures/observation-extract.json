@@ -32,6 +32,31 @@
         }
       ],
       "required": false
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueCode": "member"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 15.2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 20.1
+        }
+      ],
+      "linkId": "l2",
+      "text": "Observation relationship - valueCode member",
+      "type": "decimal",
+      "code": [
+        {
+          "code": "Code1"
+        }
+      ],
+      "required": false
     }
   ]
 }

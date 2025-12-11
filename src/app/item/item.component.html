@@ -41,7 +41,9 @@
                 </div>
               </ng-template>
               <ng-template #treeNodeTemplate let-node let-index="index">
-                <div [ngClass]="node.nodeClass" class="d-flex" #tooltip="matTooltip" [matTooltip]="node.displayField">
+                <div [ngClass]="node.nodeClass" class="d-flex" #tooltip="matTooltip" [matTooltip]="node.displayField"
+                     (dragover)="onDragOver(node)" (dragleave)="onDragLeave(node)"
+                     [ngClass]="{ 'drop-target': node.data?.__$isHovered }" >
                   <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span>
                   <span aria-hidden="true" class="text-truncate flex-fill node-display-field" [ngClass]="node.nodeClass">{{node.displayField}}</span>
                   <fa-icon id="error" *ngIf="hasError(node)" [icon]="errorIcon" style="color: red" aria-hidden="!!errors"></fa-icon>&nbsp;
@@ -67,7 +69,11 @@
                 The questions are organized in hierarchical tree on the left side. Select the desired item to edit their properties here.
               </li>
               <li *ngIf="(errors$ | async) || isTreeNodeError" class="text-danger list-group-item-warning"
-                  role="region" aria-live="assertive">{{errorMessage}}</li>
+                  role="region" aria-live="assertive">{{errorMessage}}
+                <ul>
+                  <li *ngFor="let errorMsg of getNodeErrors()">{{errorMsg}}</li>
+                </ul>
+              </li>
               <li *ngIf="isChildTreeNodeError" class="text-danger list-group-item-warning"
                   role="region" aria-live="assertive">{{childErrorMessage}}</li>
             </ul>

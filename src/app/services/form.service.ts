@@ -1,7 +1,7 @@
 /**
  * Form related helper functions.
  */
-import {inject, Injectable, SimpleChange} from '@angular/core';
+import {Inject, inject, Injectable, SimpleChange} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
@@ -40,6 +40,7 @@ import {SchemaService} from './schema.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {ISchema} from "@lhncbc/ngx-schema-form";
 import { EXTENSION_URL_VARIABLE, EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION } from '../lib/constants/constants';
+import {DOCUMENT} from "@angular/common";
 
 declare var LForms: any;
 
@@ -142,7 +143,7 @@ export class FormService {
     reference: this.operatorOptions2
   };
 
-  constructor(private schemaService: SchemaService, private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
+  constructor(@Inject(DOCUMENT) private _document: Document, private schemaService: SchemaService, private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
     const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
     const extSchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Extension));
 
@@ -383,6 +384,34 @@ export class FormService {
     return this._guidingStep$.asObservable();
   }
 
+  /**
+   * Scroll to Question Code field in the form.
+   */
+  scrollToCodeField(): void {
+    const fLabelsList = this._document.querySelectorAll('form div.lfb-row label');
+    if(fLabelsList) {
+      Array.from(fLabelsList).find((fLabel) => {
+        if((<HTMLElement>fLabel).innerText.trim().toLowerCase() === 'question code') {
+          const fieldRow = fLabel.closest('div.lfb-row');
+          const cLabelList = fLabel.closest('div.row')?.querySelectorAll('label');
+          if(cLabelList) {
+            Array.from(cLabelList).find((cLabel) => {
+              if((<HTMLElement>cLabel).innerText.trim().toLowerCase() === 'include code') {
+                cLabel.scrollIntoView({behavior: 'smooth'});
+                cLabel.click();
+                setTimeout(() => {
+                  (fieldRow.nextElementSibling.querySelector('table tbody tr td input') as HTMLElement).focus();
+                });
+                return true;
+              }
+            });
+          }
+          return true;
+        }
+      });
+    }
+  }
+
   static get lformsLoaded$(): Observable<string> {
     return FormService._lformsLoaded$.asObservable();
   }
@@ -513,6 +542,67 @@ export class FormService {
     }
 
     return validationNodes;
+  }
+
+
+  /**
+   * Recursively collects all linkIds from the given node and its descendant nodes.
+   * @param node - The starting ITreeNode.
+   * @returns An array of linkIds for the node and all its children.
+   */
+  getLinkIdsForNodeAndDescendants(node: ITreeNode): string[] {
+    const linkIds: string[] = [];
+    function recurse(n: ITreeNode): void {
+      linkIds.push(n.data.linkId);
+      if (n.hasChildren) {
+        for (const child of n.children) {
+          recurse(child);
+        }
+      }
+    }
+    if (node) {
+      recurse(node);
+    }
+    return linkIds;
+  }
+
+  /**
+   * Checks if any node in the tree (excluding the specified root node) has an enableWhen.question
+   * that matches any of the provided linkIds. Returns the matching linkId if found, otherwise null.
+   * @param excludedRootNodeId - The tree node id to exclude from the search.
+   * @param linkIds - Array of linkIds to check for references.
+   * @returns The matching linkId if found, otherwise null.
+   */
+  hasEnableWhenReferenceToLinkIds(excludedRootNodeId: string, linkIds: string[]): string | null {
+    let foundLinkId: string | null = null;
+    function recurse(node: TreeNode): boolean {
+      if ('enableWhen' in node.data && Array.isArray(node.data.enableWhen)) {
+        const enableWhenList = node.data.enableWhen;
+        for (let idx = 0; idx < enableWhenList.length; idx++) {
+          const ew = enableWhenList[idx];
+          if (linkIds.includes(ew.question)) {
+            foundLinkId = node.data.linkId;
+            return true; // Stop recursion immediately
+          }
+        }
+      }
+      if (node.hasChildren) {
+        for (const child of node.children) {
+          if (recurse(child)) return true;
+        }
+      }
+      return null;
+    }
+
+    const roots = this.treeModel.roots;
+    if (roots) {
+      for (const root of roots) {
+        if (root.data.__$treeNodeId !== excludedRootNodeId) {
+          if (recurse(root)) break;
+        }
+      }
+    }
+    return foundLinkId;
   }
 
   /**
@@ -653,6 +743,7 @@ export class FormService {
     }
 
     if (node.parent && !node.isRoot &&
+        (!('hasError' in this.treeNodeStatusMap[nodeIdStr]) || this.treeNodeStatusMap[nodeIdStr].hasError === false) &&
         (!('childHasError' in this.treeNodeStatusMap[nodeIdStr]) || !this.treeNodeStatusMap[nodeIdStr]['childHasError'])) {
 
       const siblingHasError = this.siblingHasError(node);
@@ -968,7 +1059,7 @@ export class FormService {
   /**
    * Get sources excluding the branch of a given node.
    * @param focusedNode
-   * @param treeModel?: Optional tree model to search. Default is this.treeModel.
+   * @param treeModel - Optional tree model to search. Default is this.treeModel.
    */
   getEnableWhenSources(focusedNode: ITreeNode, treeModel?: TreeModel): ITreeNode [] {
     if (!treeModel) {
@@ -1041,10 +1132,10 @@ export class FormService {
 
   /**
    * Checks if the focused node has sub-items.
-   * @returns True if the focused node's data contains sub-items. Otherwise false.
+   * @returns True if the focused node's data contains a non-empty 'item' array; otherwise, false.
    */
   hasSubItems(): boolean {
-    return !!this.treeModel?.getFocusedNode()?.data?.item;
+    return !!this.treeModel?.getFocusedNode()?.data?.item?.length;
   }
 
   /**
@@ -1387,5 +1478,26 @@ export class FormService {
       console.error(`lforms-loader.getSupportedLFormsVersions() failed: ${error.message}`);
       throw new Error(error);
     });
+  }
+
+  /**
+   * Given a node, traverse up its parent chain and return the topmost root node (where parent == null).
+   * @param node - The starting TreeNode.
+   * @returns The root TreeNode.
+   */
+  getRootNodeFromNode(node:ITreeNode): ITreeNode {
+    let current = node;
+    while (current && current.parent && 'linkId' in current.parent.data) {
+      current = current.parent;
+    }
+    return current;
+  }
+
+  /**
+   * Checks if there is a focused node in the tree model.
+   * @returns True if a focused node exists, otherwise false.
+   */
+  hasFocusedNode(): boolean {
+    return !!(this.treeModel && this.treeModel.getFocusedNode());
   }
 }
