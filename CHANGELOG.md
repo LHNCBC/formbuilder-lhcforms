@@ -2,9 +2,22 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.10] 2025-11-22
+## [10.3.13] 2025-12-15
 ### Added
 - Added enableWhen answer validation to check values against answerOptions.
+
+## [10.3.12] 2025-12-06
+### Fixed
+- Fixed issue with variable deletion not updating the list.
+- Fix invalid source item in enableWhen condition.
+
+## [10.3.11] 2025-12-05
+### Fixed
+- Upgrade to angular 19.2.x and fix npm audit issues.
+
+## [10.3.10] 2025-11-18
+### Added
+- Added support for observation extract extension for valueCode.
 
 ## [10.3.9] 2025-10-13
 ### Fixed

@@ -152,13 +152,16 @@ export class ExtensionsService {
 
   /**
    * Remove all extensions that match a given criteria.
-   * A callback method 'match` is called for each extension. Al
-   * If it returns true, that extension is included in the removal list.
-   * @param match - Callback with argument of FormProperty for an extension in the ArrayProperty.
+   * A callback method 'match` is called for each extension.
+   * If it returns true, the extension is removed.
+   * @param match - Callback with arguments of FormProperty and its index in the ArrayProperty.
+   *     arguments:
+   *       e: FormProperty - Element in the array.
+   *       index: number - Index of the element in the array.
    */
-  removeAllExtensions(match: (e: FormProperty)=>boolean): void {
-    const otherExts: any [] = (this.extensionsProp.properties as FormProperty[]).filter((ext) => {
-      return !match(ext);
+  removeAllExtensions(match: (e: FormProperty, index: number)=>boolean): void {
+    const otherExts: any [] = (this.extensionsProp.properties as FormProperty[]).filter((ext, ind) => {
+      return !match(ext, ind);
     }).map(p => p.value);
 
     if(otherExts.length !== this.extensionsProp.properties.length) {
@@ -214,24 +217,30 @@ export class ExtensionsService {
       return;
     }
 
-    // Find the start and end indexes of the consecutive block of variable extensions.
-    let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
-    if (startIndex === -1) {
-      this.extensionsProp.reset([...newExtensionsJSON, ...originalExtensions]);
-      return;
-    };
+    if (newExtensionsJSON && newExtensionsJSON.length > 0) {
+      // Find the start and end indexes of the consecutive block of variable extensions.
+      let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
+      if (startIndex === -1) {
+        this.extensionsProp.reset([...newExtensionsJSON, ...originalExtensions]);
+        return;
+      };
 
-    let endIndex = startIndex + 1;
-    while (endIndex < originalExtensions.length && originalExtensions[endIndex].url === extUrl) {
-      endIndex++;
+      let endIndex = startIndex + 1;
+      while (endIndex < originalExtensions.length && originalExtensions[endIndex].url === extUrl) {
+        endIndex++;
+      }
+
+      // Replace the original extensions with the new ones.
+      this.extensionsProp.reset([
+        ...originalExtensions.slice(0, startIndex),
+        ...newExtensionsJSON,
+        ...originalExtensions.slice(endIndex)
+      ]);
+    } else {
+      // newExtensionsJSON is undefined, so reset it to empty.
+      // This is the case where all variables got deleted via the Expression Editor
+      this.extensionsProp.reset([]);
     }
-
-    // Replace the original extensions with the new ones.
-    this.extensionsProp.reset([
-      ...originalExtensions.slice(0, startIndex),
-      ...newExtensionsJSON,
-      ...originalExtensions.slice(endIndex)
-    ]);
   }
 
   /**

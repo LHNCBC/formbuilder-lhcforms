@@ -28,6 +28,7 @@ export interface EnableWhenValidationObject {
   q: EnableWhenFieldValidationObject;
   qItem: QuestionItemObject;
   aType: string;
+  invalid?: boolean;
   answerTypeProperty?: string;
   op: EnableWhenFieldValidationObject;
   aField: string;
@@ -122,8 +123,28 @@ export class ValidationService {
   createEnableWhenValidationObj(id: string, linkId: string, enableWhen: any, index: number): EnableWhenValidationObject {
     const questionItem = this.formService.getTreeNodeByLinkId(enableWhen.question);
     let aType = '';
+    let invalid = true;
     if (questionItem) {
       aType = questionItem.data.type;
+      const validSources = this.formService.getSourcesExcludingFocusedTree();
+      if (this.formService.hasFocusedNode()) {
+        invalid = !validSources.some((source) => {
+          return (source.data.linkId === questionItem.data.linkId);
+        });
+      } else {
+        // This scenario occurs when the questionnaire is loaded from a file and no item is selected,
+        // resulting in a missing focused node. As a result, the call to this.formService.getSourcesExcludingFocusedTree()
+        // returns all nodes.
+        // If there is a match on the linkId, validate that the source.data.linkId is not a descendant of the questionItem.
+        const sourceItem = this.formService.getTreeNodeByLinkId(linkId);
+        const sourceIds = this.formService.getLinkIdsForNodeAndDescendants(sourceItem);
+        invalid = validSources.some((source) => {
+          if (source.data.linkId === questionItem.data.linkId) {
+            // now need to make sure that the source.data.linkId is not a child node of the questionItem
+            return sourceIds.indexOf(source.data.linkId) !== -1;
+          }
+        });
+      }
     }
 
     let aField;
@@ -140,6 +161,7 @@ export class ValidationService {
       'q': this.createEnableWhenFieldValidationObject(enableWhen, 'question', index),
       'qItem': this.populateQuestionItem(questionItem),
       'aType': aType,
+      'invalid': invalid,
       'op': this.createEnableWhenFieldValidationObject(enableWhen, 'operator', index),
       'aField': aField,
       'answerX': this.createEnableWhenFieldValidationObject(enableWhen, aField, index),
@@ -368,20 +390,19 @@ export class ValidationService {
    *                                 or a validation for all items (false).
    * @returns Array of errors if validation fails, or null if it passes.
    */
-  validateEnableWhenAll(validationObj: any, isSchemaFormValidation = true): any[] | null {
+  validateEnableWhenAll(validationObj: any, isSchemaFormValidation = true, displayError = true): any[] | null {
     let errors: any[] = [];
     const enableWhenList = validationObj.value;
-
     if (!validationObj.id || !validationObj.value) {
       return null;
     }
-
     enableWhenList.forEach((enableWhen, index) => {
       const enableWhenObj = this.createEnableWhenValidationObj(validationObj.id, validationObj.linkId, enableWhen, index);
+
       if (!enableWhenObj)
         return null;
 
-      const error = this.validateEnableWhenSingle(enableWhenObj, isSchemaFormValidation);
+      const error = this.validateEnableWhenSingle(enableWhenObj, isSchemaFormValidation, displayError);
       if (error) {
         errors = errors || []
         errors.push(error)
@@ -404,7 +425,7 @@ export class ValidationService {
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
    *                                             equal to 'exists', and the answer is empty.
    */
-  validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true): any[] | null {
+  validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true, displayError = true): any[] | null {
     let errors: any[] = [];
     if (enableWhenObj?.op?.value?.length > 0 || (!enableWhenObj?.aType && enableWhenObj?.answerTypeProperty)) {
       const aValue = enableWhenObj.answerX?.value;
@@ -412,18 +433,63 @@ export class ValidationService {
       const node = this.formService.getTreeNodeById(enableWhenObj.id);
       const indexPath = Util.getIndexPath(node).join('.');
       let err;
+      let errorCode;
+
+      const questionNode = this.formService.getTreeNodeByLinkId(enableWhenObj.q.value);
 
       // Validate whether the  'linkId' specified in the question exists.
       // If not, then throw the 'ENABLEWHEN_INVALID_QUESTION' error.
       if (!enableWhenObj.aType) {
-        const errorCode = 'ENABLEWHEN_INVALID_QUESTION';
-        err = this.createErrorObject(
+        errorCode = 'ENABLEWHEN_INVALID_QUESTION';
+        err = this.createErrorObj(
           errorCode,
           `#${enableWhenObj.q.canonicalPathNotation}`,
           `Question not found for the linkId '${enableWhenObj.q.value}'.`,
           indexPath,
-          [enableWhenObj.q.value, enableWhenObj.op.value, JSON.stringify(aValue)]
+          [enableWhenObj.q.value, enableWhenObj.op.value, JSON.stringify(aValue)],
+          isSchemaFormValidation,
+          enableWhenObj.q
         );
+        errors.push(err);
+
+        if (isSchemaFormValidation) {
+          const i = enableWhenObj.q._errors?.findIndex((e) => e.code === errorCode);
+          if (!(i >= 0)) { // Check if the error is already processed.
+            enableWhenObj.q.extendErrors(err);
+          }
+        }
+      } else if (enableWhenObj.aType === 'group' || enableWhenObj.aType === 'display') {
+        errorCode = 'ENABLEWHEN_INVALID_QUESTION';
+        err = this.createErrorObj(
+          errorCode,
+          `#${enableWhenObj.q.canonicalPathNotation}`,
+          `Invalid question: Referencing an item '${questionNode.data.text}' (linkId: ${enableWhenObj.q.value}) of type '${enableWhenObj.aType}' is not allowed.`,
+          indexPath,
+          [enableWhenObj.q.value, enableWhenObj.op.value, JSON.stringify(aValue)],
+          isSchemaFormValidation,
+          enableWhenObj.q
+        );
+        errors.push(err);
+
+        if (isSchemaFormValidation) {
+          const i = enableWhenObj.q._errors?.findIndex((e) => e.code === errorCode);
+          if (!(i >= 0)) { // Check if the error is already processed.
+            enableWhenObj.q.extendErrors(err);
+          }
+        }
+      } else if (enableWhenObj.invalid) {
+        errorCode = 'ENABLEWHEN_INVALID_QUESTION';
+        err = this.createErrorObj(
+          errorCode,
+          `#${enableWhenObj.q.canonicalPathNotation}`,
+          `Invalid question: Referencing a child or descendant item '${questionNode.data.text}' (linkId: ${enableWhenObj.q.value}) is not allowed.'`,
+          indexPath,
+          [enableWhenObj.q.value, enableWhenObj.op.value, JSON.stringify(aValue)],
+          isSchemaFormValidation,
+          enableWhenObj.q
+        );
+        errors.push(err);
+
         if (isSchemaFormValidation) {
           const i = enableWhenObj.q._errors?.findIndex((e) => e.code === errorCode);
           if (!(i >= 0)) { // Check if the error is already processed.
@@ -431,9 +497,9 @@ export class ValidationService {
           }
         }
       } else {
-        const opExists = enableWhenObj?.op ? enableWhenObj.operatorOptions.some(operatorOption => operatorOption.option === enableWhenObj.op.value) : false;
+        const opExists = enableWhenObj?.op ? enableWhenObj?.operatorOptions?.some(operatorOption => operatorOption.option === enableWhenObj.op.value) : false;
         if (!opExists) {
-          const errorCode = 'ENABLEWHEN_INVALID_OPERATOR';
+          errorCode = 'ENABLEWHEN_INVALID_OPERATOR';
           err = this.createErrorObject(
             errorCode,
             `#${enableWhenObj.op.canonicalPathNotation}`,
@@ -449,7 +515,7 @@ export class ValidationService {
             }
           }
         } else if (enableWhenObj.answerX) {
-          let errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
+          errorCode = 'ENABLEWHEN_ANSWER_REQUIRED';
           const errorPath = `#${enableWhenObj.answerX.canonicalPathNotation}`;
           let errorMsg;
           if (Util.isEmpty(aValue) && enableWhenObj.op?.value !== 'exists') {
@@ -489,13 +555,74 @@ export class ValidationService {
       errors = null;
 
     // Update validate status if there are errors or if 'isSchemaFormValidation' is true.
-    if (isSchemaFormValidation || errors)
+    if (displayError && (isSchemaFormValidation || errors))
       this.formService.updateValidationStatus(enableWhenObj.id, enableWhenObj.linkId,
                                               `enableWhen_${enableWhenObj.conditionKey}`,
                                               errors);
     return errors;
   }
 
+  /**
+   * Validates whether a tree node (and its descendants) can be safely deleted from the form.
+   * Checks if any other node in the questionnaire references the node or its descendants in an enableWhen condition.
+   * If such a dependency exists, returns an error blocking deletion; otherwise, returns null.
+   * @param node - The tree node to check for deletion.
+   * @returns Array of errors if deletion is blocked due to enableWhen references, or null if deletion is allowed.
+   */
+  validateItemDeletionForEnableWhenDependency(node: ITreeNode): any[] | null {
+    let errors: any[] = [];
+
+    // Get the top-most root node for the current node
+    const rootNode = this.formService.getRootNodeFromNode(node);
+    // Recursively collects all linkIds from the given node and its descendant nodes.
+    const linkIds = this.formService.getLinkIdsForNodeAndDescendants(node);
+    // Check for Enable When dependency
+    const dependencyLinkId = this.formService.hasEnableWhenReferenceToLinkIds(rootNode.data.__$treeNodeId, linkIds);
+
+    if (dependencyLinkId) {
+      const matchingNode = this.formService.getTreeNodeByLinkId(dependencyLinkId);
+
+      const err = this.createErrorObj(
+        'ITEM_DELETION_BLOCKED',
+        `#enableWhen.0.question`,
+        `This item cannot be deleted because it is referenced by an enableWhen condition in the item '${matchingNode.data.text}' (linkId: ${matchingNode.data.linkId}).`,
+        '',
+        [],
+        false,
+        null
+      );
+      errors.push(err);
+    }
+    return errors.length ? errors : null;
+  }
+
+  /**
+   * Create error object
+   *
+   * @param code - Error code
+   * @param path - Path to the field in the form.
+   * @param message - Error message to be displayed.
+   * @param indexPath -
+   * @param params - Array of parameters to be used in the error message.
+   * @param isSchemaFormValidation - Indicates whether this is a specific schema form validation (true)
+   * @param fieldProperty - FormProperty associated with the field.
+   */
+  createErrorObj(code: string, path: string, message: string, indexPath: string, params: any[], isSchemaFormValidation: boolean, fieldProperty: FormProperty): any {
+    const err: any = {};
+    err.code = code;
+    err.path = path;
+    err.message = message;
+    err.indexPath = indexPath;
+    err.params = params;
+
+    if (isSchemaFormValidation) {
+      const i = fieldProperty._errors?.findIndex((e) => e.code === code);
+      if(!(i >= 0)) { // Check if the error is already processed.
+        fieldProperty.extendErrors(err);
+      }
+    }
+    return err;
+  }
 
   /**
    * Custom validator for the 'linkId' field.

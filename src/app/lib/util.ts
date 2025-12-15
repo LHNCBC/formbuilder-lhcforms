@@ -818,6 +818,29 @@ export class Util {
   }
 
   /**
+   * Traverses up the tree from a given descendant node and invokes a callback function for each ancestor node. It
+   * returns the first ancestor node for which the callback returns true.
+   *
+   * @param descendant - The descendant node from which to start the search.
+   * @param callback - A function that takes a node as an argument and returns a boolean value.
+   * The search stops when this function returns true.
+   * @return - The first ancestor node for which the callback returns true, or null if no such node is found.
+   */
+  static findAncestralNode(descendant: ITreeNode, callback: (node: ITreeNode) => boolean): ITreeNode {
+    let ret: ITreeNode = null;
+    let targetNode = descendant?.parent;
+    while (targetNode) {
+      const found = callback(targetNode);
+      if (found) {
+        ret = targetNode; // Found the target node that meets the criteria.
+        break;
+      }
+      targetNode = targetNode.parent;
+    }
+    return ret;
+  }
+
+  /**
    * Determines whether the provided array of initials is empty for a given FHIR data type.
    * For 'coding' type, checks if any initial has a value for the corresponding value[x] field.
    *
