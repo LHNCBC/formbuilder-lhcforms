@@ -1,4 +1,4 @@
-import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {FormService} from '../../../services/form.service';
@@ -37,8 +37,10 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
   answerList = false;
 
+  liveAnnouncer = inject(LiveAnnouncer);
+
   constructor(private extensionsService: ExtensionsService, private formService: FormService,
-              private cdr: ChangeDetectorRef, private liveAnnouncer: LiveAnnouncer) {
+              private cdr: ChangeDetectorRef) {
     super();
   }
 

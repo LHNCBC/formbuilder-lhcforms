@@ -13,9 +13,8 @@ import {ArrayProperty, FormComponent, FormProperty, PropertyGroup, ObjectPropert
 import {ExtensionsService} from '../services/extensions.service';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
-import { ValidationService, EnableWhenValidationObject, EnableWhenQuestionFieldValidationObject } from '../services/validation.service';
+import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
 import { TableService } from '../services/table.service';
-import { ITreeNode } from '@bugsplat/angular-tree-component/lib/defs/api';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -159,28 +158,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   }
 
 
-  /**
-   * Populates the validation object for the EnableWhen 'question' field with relevant answer options and
-   * constraints from the associated question item. This ensures that the validation object contains all
-   * necessary data for downstream validation logic.
-   * @param enableWhenQuestionProperty - property object for the enableWhen question field.
-   * @param questionItem - tree node representing the question item.
-   * @returns - EnableWhen field validation object.
-   */
-  populateEnableWhenQuestionValidationFields(enableWhenQuestionProperty: any, questionItem: ITreeNode): EnableWhenQuestionFieldValidationObject {
-    if (questionItem) {
-      if ('text' in questionItem?.data) {
-        enableWhenQuestionProperty.text = questionItem.data.text;
-      }
-      if ('answerOption' in questionItem?.data) {
-        enableWhenQuestionProperty.answerOptions = questionItem.data.answerOption;
-      }
-      if ('answerConstraint' in questionItem?.data) {
-        enableWhenQuestionProperty.answerConstraint = questionItem.data.answerConstraint;
-      }
-    }
-    return enableWhenQuestionProperty;
-  }
 
   /**
    * Create a validation object specifically for the 'enableWhen' field validation using 'formProperty'.
@@ -221,6 +198,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
       if (!Util.isEmpty(answerX.value)) {
         aField = altKey;
+      } else {
+        // revert back to the original type
+        answerX = formProperty.getProperty(aField);
       }
     }
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
@@ -229,7 +209,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'id': this.model?.[FormService.TREE_NODE_ID],
       'linkId': linkIdProperty.value,
       'conditionKey': condKey,
-      'q': this.populateEnableWhenQuestionValidationFields(q, questionItem),
+      'q': q,
+      'qItem': this.validationService.populateQuestionItem(questionItem),
       'aType': aType,
       'answerTypeProperty': answerType,
       'op': op,
@@ -329,7 +310,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     errors = this.validationService.validateEnableWhenSingle(enableWhenObj);
 
-    if(errors && errors.length) {
+    if (errors && errors.length) {
       formProperty.extendErrors(errors);
     }
     return errors;

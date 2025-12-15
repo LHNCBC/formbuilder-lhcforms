@@ -162,6 +162,9 @@ export class Util {
     else if(typeof json === 'boolean') {
       ret = false; // Any boolean is non-empty
     }
+    else if(typeof json === 'string' && json.trim().length === 0) {
+      ret = true; // empty string or only whitespace is empty
+    }
     else if(!json) {
       ret = true; // empty string, null and undefined are empty
     }
@@ -555,7 +558,7 @@ export class Util {
    * @param value - value from formProperty, which is in ISO format.
    * @param formProperty - FormProperty of the field.
    */
-  static dateValidator(value: string, formProperty: FormProperty): any [] {
+  static dateValidator(value: string, formProperty: FormProperty): any[] {
     let errors: any[] = [];
     const dateValidation = DateUtil.validateDate(value);
     if(value?.trim().length > 0 && !dateValidation.validDate && dateValidation.validFormat) {
@@ -738,55 +741,47 @@ export class Util {
   }
 
   /**
-   * Checks whether the provided value is a FHIR Coding object.
-   * Returns true if the value is an object (not an array) and contains at least one of the standard Coding fields:
-   * 'code', 'system', 'display', 'version', or 'userSelected'.
-   * @param value - The value to check.
-   * @returns True if the value is a FHIR Coding object; otherwise, false.
+   * Checks if a value has FHIR Coding-like properties (system and code).
+   *
+   * @param value - The value to check
+   * @returns True if the value is an object containing 'system' and 'code'
    */
-  static isFhirCoding(value: any): boolean {
+  static hasSystemAndCode(value: any): value is Partial<fhir.Coding> {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return false;
     }
-
-    const hasCodingFields =
-      'code' in value ||
-      'system' in value ||
-      'display' in value ||
-      'version' in value ||
-      'userSelected' in value;
-
-    return hasCodingFields;
+    return 'code' in value && 'system' in value;
   }
 
   /**
    * Compares two FHIR Coding objects for equality.
-   * Returns true if both are valid FHIR Coding objects, have matching 'system' and 'code' properties (type and value),
-   * and both properties are non-empty strings. Ignores other fields such as 'display', 'version', or 'userSelected'.
+   * Returns true if both codings have system and code, and all of the following match:
+   *   - system (ignoring leading/trailing whitespace)
+   *   - code (ignoring leading/trailing whitespace)
+   *   - version (treats undefined, null, and empty as equivalent)
    *
-   * Although 'system' and 'code' are not required fields for a FHIR Coding object, they are used here for comparison.
    * @param a - The first FHIR Coding object.
    * @param b - The second FHIR Coding object.
-   * @returns True if both codings are equal; otherwise, false.
+   * @returns True if the codings are considered equal, otherwise false.
    */
   static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
-    // Both must be fhir coding
-    if (!this.isFhirCoding(a)) return false;
-    if (!this.isFhirCoding(b)) return false;
+    if (!this.hasSystemAndCode(a) || !this.hasSystemAndCode(b)) {
+      return false;
+    }
 
-    // Both must have system and code,
-    if (!('system' in a) || !('system' in b)) return false;
-    if (!('code' in a) || !('code' in b)) return false;
+    if (!a.system || !b.system || !a.code || !b.code) {
+      return false;
+    }
 
-    // Types must match
-    if (typeof a.system !== typeof b.system) return false;
-    if (typeof a.code !== typeof b.code) return false;
+    const systemMatch = a.system.trim() === b.system.trim();
+    const codeMatch = a.code.trim() === b.code.trim();
 
-    // Equality check
-    return (
-      String(a.system).trim() === String(b.system).trim() &&
-      String(a.code).trim() === String(b.code).trim()
-    );
+    // Treat undefined/null/empty the same way
+    const aVersion = a.version?.trim() || null;
+    const bVersion = b.version?.trim() || null;
+    const versionMatch = aVersion === bVersion;
+
+    return systemMatch && codeMatch && versionMatch;
   }
 
   /**

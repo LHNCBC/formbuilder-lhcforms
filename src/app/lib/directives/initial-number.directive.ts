@@ -9,7 +9,7 @@ import { FormProperty } from '@lhncbc/ngx-schema-form';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => InitialNumberDirective),
-      multi: true 
+      multi: true
     }
   ]
 })
@@ -97,14 +97,14 @@ export class InitialNumberDirective implements ControlValueAccessor {
   }
 
   /**
-   * Writes a new value to the input element. For this particular implementation, we want to 
+   * Writes a new value to the input element. For this particular implementation, we want to
    * preserve the user's input value and not overwrite it with the value from the form property.
    * The update of the input element will be done via set value method.
    * @param value - value to be assigned to the input element.
    */
   writeValue(value: any): void { }
 
-  /** 
+  /**
    * Registers a callback function that should be called when the control's value changes in the UI.
    * @param fn - callback function to be registered.
    */

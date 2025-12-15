@@ -19,10 +19,11 @@
                ngbDatepicker
                autoClose="false"
                #d="ngbDatepicker"
+               #dateInput
                #inputBox
                (dateSelect)="onDateSelected($event)"
                (keyup)="handleInput()"
-               (blur)="suppressInvalidDate($event)"
+               (blur)="suppressInvalidValue($event)"
         >
         <button class="btn btn-outline-secondary py-0" [attr.aria-label]="'Date time picker for '+schema.title"
                 (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>

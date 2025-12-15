@@ -10,21 +10,29 @@
                class="form-label"
     ></lfb-label>
     <div class="col p-0 position-relative">
-      <div class="input-group input-group-sm">
+      <ng-container *ngIf="hasAnswerOptions$ | async; else typeInput">
+        <div class="{{controlWidthClass}} p-0">
+          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
+        </div>
+      </ng-container>
+      <ng-template #typeInput>
 
-        <input [name]="name"
-               class="form-control-like"
-             type="time"
-             step="1"
-             [attr.id]="id"  [formControl]="control"
-             [required]="schema.isRequired"
-             [lfbDisableControl]="schema.disabled"
-        >
-        <button class="btn btn-sm btn-outline-primary"
-                title="Set current time" (click)="now()">Now</button>
-        <button class="btn btn-sm btn-outline-primary"
-                title="Removes the field from the output" (click)="clear()">Clear</button>
-      </div>
+        <div class="input-group input-group-sm">
+
+          <input [name]="name"
+                 class="form-control-like"
+               type="time"
+               step="1"
+               [attr.id]="id"  [formControl]="control"
+               [required]="schema.isRequired"
+               [lfbDisableControl]="schema.disabled"
+          >
+          <button class="btn btn-sm btn-outline-primary"
+                  title="Set current time" (click)="now()">Now</button>
+          <button class="btn btn-sm btn-outline-primary"
+                  title="Removes the field from the output" (click)="clear()">Clear</button>
+        </div>
+      </ng-template>
       <ng-container *ngFor="let error of errors">
         <small *ngIf="formProperty.value && error"
                class="text-danger form-text" role="alert"

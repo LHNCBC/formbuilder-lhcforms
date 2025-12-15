@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import {StringComponent} from "../string/string.component";
 import {LabelComponent} from "../label/label.component";
-import {NgForOf, NgIf, NgClass} from "@angular/common";
+import {NgIf, NgClass, CommonModule} from "@angular/common";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 
@@ -14,12 +14,12 @@ import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.d
   selector: 'lfb-time',
   imports: [
     LabelComponent,
-    NgForOf,
     NgIf,
     NgClass,
     LfbDisableControlDirective,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    CommonModule
   ],
   templateUrl: './time.component.html',
   styles: [`

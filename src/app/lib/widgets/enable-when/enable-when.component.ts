@@ -10,9 +10,19 @@ import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
 import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
-import {Observable, of, Subject} from 'rxjs';
+import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, map } from 'rxjs/operators';
+
+type ErrorItem = {
+  code: string;
+  originalMessage: string;
+  modifiedMessage: string;
+};
+
+type EwErrors = {
+  [key: string]: ErrorItem[];
+};
 
 @Component({
   standalone: false,
@@ -29,6 +39,37 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
 
   private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
+  enableWhenErrors: EwErrors [] = [];
+  public Object = Object;
+
+  modifiedMessages = {
+    PATTERN: [
+      {
+        pattern: "^[A-Za-z0-9\\-\\.]{1,64}$",
+        message: 'Only alphanumeric, hyphen and period characters are allowed in this field. Make sure any white space characters are not used.'
+      }, // id
+      {
+        pattern: '^\\S*$',
+        message: 'Spaces and other whitespace characters are not allowed in this field.'
+      }, // uri
+      {
+        pattern: '^[^\\s]+(\\s[^\\s]+)*$',
+        message: 'Spaces are not allowed at the beginning or end.'
+      },       // code
+      {
+        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$',
+        message: 'Valid format is yyyy-MM-dd.'
+      }, // Date
+      {
+        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$',
+        message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM).'
+      } // Datetime
+    ],
+    MIN_LENGTH: null,
+    MAX_LENGTH: null
+  }
+
+  private enableWhenReeval$ = new BehaviorSubject<void>(undefined);
 
   constructor(private formService: FormService) {
     super();
@@ -122,7 +163,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     const prop = rowProperty.getProperty(field);
     const enableWhenErrorPrefix = "ENABLEWHEN";
     const ret = prop._errors?.some((err) => {
-      return err.code?.startsWith(enableWhenErrorPrefix);
+      return err.code?.startsWith(enableWhenErrorPrefix) || err.code?.startsWith("PATTERN");
     });
     return !ret;
   }
@@ -132,34 +173,55 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    * @param rowProperty - Object property representing an enableWhen condition.
    * @returns - observable that emits a string created by joining the 'errorMessage' array.
    */
-  getEnableWhenFieldErrors(rowProperty: ObjectProperty): Observable<string> {
-    let errorMessages: string [] = [];
-    const fields = ["question", "operator", "__$answerType"];
+  getEnableWhenFieldErrors(rowIndex: number, rowProperty: ObjectProperty, fieldProperty: any []): Observable<string> {
+    this.enableWhenErrors[rowIndex] = {};
+    let errorMessages: string[] = [];
+    const fields = fieldProperty.map(f => f.field);
 
     for (const field of fields) {
-      const fieldValue = rowProperty.getProperty(field)?.value;
-      if (fieldValue || (!fieldValue && field === "question")) {
-        const fieldName = (field === '__$answerType') ? Util.getAnswerFieldName(fieldValue) : field;
-        const errors = this.getFieldErrors(rowProperty.getProperty(fieldName));
 
-        if (errors) {
-          errorMessages.push(...errors);
-          break;
-        }
+      const fieldProperty = rowProperty.getProperty(field);
+      const fieldValue = fieldProperty?.value;
+      const errors = this.getFieldErrors(fieldProperty);
+
+      if (errors) {
+        errorMessages.push(...errors);
+        break;
       }
     }
-
     return of(errorMessages.length ? errorMessages.join() : null);
   }
+
+  createErrorObject(errors: any): {code: string, originalMessage: string, modifiedMessage: string} [] | null {
+    let errorObjects;
+    if (errors?.length) {
+      errorObjects = Object.values(errors)
+        .filter(e => e['path'].startsWith('#/enableWhen') || e['path'].startsWith('#enableWhen') )
+        .map((e: any) => {
+          const modMessage = this.modifiedMessages[e.code]
+                                 .filter(m => m.pattern === e.params[0])
+                                 .map(m => m.message);
+          let ret = {code: e.code, originalMessage: e.message, modifiedMessage: modMessage[0]};
+          return ret;
+        });
+    }
+    return errorObjects;
+  }
+
 
   /**
    * Collect enablewhen related errors from the field.
    * @param fieldProperty - FormProperty representing the field.
    */
-  getFieldErrors(fieldProperty: FormProperty): string [] {
+  getFieldErrors(fieldProperty: FormProperty): string[] {
     const messages = fieldProperty?._errors?.reduce((acc, error) => {
-      if(error.code?.startsWith('ENABLEWHEN')) {
-        acc.push(error.message);
+      if (error.path.startsWith('#/enableWhen') || error.path.startsWith('#enableWhen')) {
+        const modMessage = this.modifiedMessages[error.code]?.filter(m => m.pattern === error.params[0])
+          .map(m => m.message) ?? [];
+        const message = (modMessage.length > 0) ? modMessage[0] : error.message;
+        if (!acc.includes(message)) {
+          acc.push(message);
+        }
       }
       return acc;
     }, []);
@@ -199,7 +261,6 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    */
   onError(rowIndex: number, colIndex: number, fieldProperty: FormProperty) {
     const errorMessages = this.getFieldErrors(fieldProperty);
-
     // Set dom attributes after the UI is updated.
     setTimeout(() => {
       this.setErrorState(!!errorMessages, rowIndex, colIndex);

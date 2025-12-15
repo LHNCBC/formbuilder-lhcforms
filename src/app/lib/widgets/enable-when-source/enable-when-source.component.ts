@@ -156,7 +156,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
       const enableWhenObj = this.formProperty.parent.value;
       enableWhenObj['question'] = '';
       enableWhenObj['operator'] = '';
-      
+
       const answerType = this.formProperty.parent.getProperty('__$answerType').value;
 
       if (answerType && answerType !== "coding") {

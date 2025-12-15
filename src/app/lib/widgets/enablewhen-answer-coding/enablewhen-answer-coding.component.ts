@@ -2,12 +2,13 @@
  * Answer coding component for enableWhen. The component is used for answer type coding for
  * selecting codes to satisfy a condition.
  */
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {ObjectWidget} from '@lhncbc/ngx-schema-form';
+import {AfterViewInit, Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
 import {Subscription} from 'rxjs';
-import {AutoCompleteOptions} from '../auto-complete/auto-complete.component';
+import { AutoCompleteOptions } from '../auto-complete/auto-complete.component';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lfb-option-control-widget.component';
 declare var LForms: any;
 
 @Component({
@@ -21,21 +22,15 @@ declare var LForms: any;
     </div>
 
     <ng-template #answerOption>
-      <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
-              name="{{name}}" [attr.id]="id"
-              class="form-control"
-      >
-        <ng-container>
-          <option *ngFor="let option of answerOptions" [ngValue]="option.valueCoding"
-          >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
-        </ng-container>
-      </select>
+      <div class="p-0">
+        <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control"  />
+      </div>
     </ng-template>
   `,
   styles: [
   ]
 })
-export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
+export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
 
   subscriptions: Subscription [] = [];
   answerOptions: any[] = [];
@@ -58,6 +53,8 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
   }
   model: fhir.Coding;
 
+  liveAnnouncer = inject(LiveAnnouncer);
+
   /**
    * Invoke super constructor.
    *
@@ -68,6 +65,8 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
   }
 
   ngOnInit() {
+    super.ngOnInit();
+
     const initValue = this.formProperty.value;
     if(initValue) {
       this.model = initValue;

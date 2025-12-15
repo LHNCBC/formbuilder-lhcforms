@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
@@ -25,7 +25,9 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
   @ViewChild('urlInput', {read: ElementRef}) urlInput: ElementRef;
   urlValid = true;
 
-  constructor(private extensionService: ExtensionsService, private liveAnnouncer: LiveAnnouncer) {
+  liveAnnouncer = inject(LiveAnnouncer);
+
+  constructor(private extensionService: ExtensionsService) {
     super();
   }
 

@@ -104,7 +104,7 @@ import { InitialNumberDirective } from './lib/directives/initial-number.directiv
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
-
+import { LfbOptionControlWidgetComponent } from './lib/widgets/lfb-option-control-widget/lfb-option-control-widget.component';
 import { environment } from '../environments/environment';
 
 @NgModule({
@@ -173,7 +173,8 @@ import { environment } from '../environments/environment';
     InitialNumberDirective,
     InitialNumberComponent,
     EntryFormatComponent,
-    AnswerValueSetCodingDisplayComponent
+    AnswerValueSetCodingDisplayComponent,
+    LfbOptionControlWidgetComponent
   ],
   imports: [
     AppFormElementComponent,

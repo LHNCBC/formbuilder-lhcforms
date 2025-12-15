@@ -30,7 +30,9 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   extensionsService: ExtensionsService = inject(ExtensionsService);
   tableService = inject(TableService);
 
-  constructor(private formService: FormService, private liveAnnouncer: LiveAnnouncer) {
+  liveAnnouncer = inject(LiveAnnouncer);
+
+  constructor(private formService: FormService) {
     super();
   }
 

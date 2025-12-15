@@ -10,16 +10,24 @@
                class="form-label"
     ></lfb-label>
     <div class="col p-0 position-relative">
-      <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
-             [ngClass]="controlClasses"
-             [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
-             [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
-             [attr.maxLength]="schema.maxLength || null"
-             [attr.minLength]="schema.minLength || null"
-             [required]="schema.isRequired"
-             [lfbDisableControl]="schema.disabled">
-      @if(control.dirty && errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
-        <ul class="mb-0">
+      <ng-container *ngIf="hasAnswerOptions$ | async; else typeInput">
+
+        <div class="{{controlWidthClass}} p-0">
+          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control"  />
+        </div>
+      </ng-container>
+      <ng-template #typeInput>
+        <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
+               [ngClass]="controlClasses"
+               [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
+               [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+               [attr.maxLength]="schema.maxLength || null"
+               [attr.minLength]="schema.minLength || null"
+               [required]="schema.isRequired"
+               [lfbDisableControl]="schema.disabled">
+      </ng-template>
+      @if( errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
+        <ul class="mb-0 ps-4">
           @for(error of errors; track $index) {
             <li>
               <small class="text-danger form-text" role="alert"

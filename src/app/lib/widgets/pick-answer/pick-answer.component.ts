@@ -12,7 +12,13 @@ import { TYPE_CODING, ANSWER_OPTION_METHOD_ANSWER_OPTION } from '../../constants
 @Component({
   standalone: false,
   selector: 'lfb-pick-answer',
-  templateUrl: './pick-answer.component.html'
+  templateUrl: './pick-answer.component.html',
+  // Add this to reduce the thickness of the red highlight when there is an error.
+  styles: [`
+    .ansList.invalid {
+      border: none;
+    }
+  `]
 })
 
 export class PickAnswerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy{

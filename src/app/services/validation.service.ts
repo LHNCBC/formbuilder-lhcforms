@@ -1,20 +1,13 @@
 import { Injectable } from '@angular/core';
 import { FormService } from './form.service';
 import { Util } from '../lib/util';
-import {TreeNode} from '@bugsplat/angular-tree-component';
+import { TreeNode } from '@bugsplat/angular-tree-component';
 import { ITreeNode } from '@bugsplat/angular-tree-component/lib/defs/api';
 import {
   TYPE_CODING, TYPE_STRING, TYPE_TEXT, ANSWER_CONSTRAINT_OPTIONS_ONLY,
   ANSWER_CONSTRAINT_OPTIONS_OR_STRING, ANSWER_CONSTRAINT_OPTIONS_OR_TYPE
 } from '../lib/constants/constants';
-
-export interface EnableWhenQuestionFieldValidationObject {
-  canonicalPath: string;
-  canonicalPathNotation: string;
-  value: any;
-  text: string;
-  answerOptions?: any[];
-}
+import { FormProperty } from '@lhncbc/ngx-schema-form';
 
 interface EnableWhenFieldValidationObject {
   canonicalPath: string;
@@ -22,17 +15,24 @@ interface EnableWhenFieldValidationObject {
   value: any;
 }
 
+export interface QuestionItemObject {
+  text?: string;
+  answerOption?: any[];
+  answerConstraint?: string;
+}
+
 export interface EnableWhenValidationObject {
   id: string;
   linkId: string;
   conditionKey: string;
-  q: EnableWhenQuestionFieldValidationObject;
+  q: EnableWhenFieldValidationObject;
+  qItem: QuestionItemObject;
   aType: string;
   answerTypeProperty?: string;
   op: EnableWhenFieldValidationObject;
   aField: string;
   answerX: EnableWhenFieldValidationObject;
-  operatorOptions: any [];
+  operatorOptions: any[];
 }
 
 @Injectable({
@@ -65,7 +65,7 @@ export class ValidationService {
 
     for (let i = startIndex; i < validationNodes.length; i++) {
       const itemData = JSON.parse(JSON.stringify(validationNodes[i].data));
-      itemData.id = ''+itemData[FormService.TREE_NODE_ID];
+      itemData.id = '' + itemData[FormService.TREE_NODE_ID];
 
       for (let j = 0; j < validatorKeys.length; j++) {
         const validatorKey = validatorKeys[j];
@@ -76,13 +76,40 @@ export class ValidationService {
             itemData.value = itemData[self.getLastPathSegment(itemData.canonicalPathNotation)];
             const error = self.validators[validatorKey](itemData, false);
 
-            resolve( error ? error : {} );
+            resolve(error ? error : {});
           }, 0);
         }));
       }
     }
     return Promise.all(promises);
   };
+
+  /**
+   * Populates a QuestionItemObject from an ITreeNode by extracting relevant data properties.
+   *
+   * Safely extracts text, answerOption, and answerConstraint properties from the questionItem's
+   * data object if they exist, and returns them in a new QuestionItemObject.
+   *
+   * @param questionItem - The tree node containing question data to extract
+   * @returns A QuestionItemObject containing the extracted properties (text, answerOption,
+   *          answerConstraint). Returns an empty object if questionItem is null/undefined or
+   *          if no matching properties are found.
+   */
+  populateQuestionItem(questionItem: ITreeNode): QuestionItemObject {
+    const qItem: QuestionItemObject = {};
+    if (questionItem) {
+      if ('text' in questionItem?.data) {
+        qItem.text = questionItem.data.text;
+      }
+      if ('answerOption' in questionItem?.data) {
+        qItem.answerOption = questionItem.data.answerOption;
+      }
+      if ('answerConstraint' in questionItem?.data) {
+        qItem.answerConstraint = questionItem.data.answerConstraint;
+      }
+    }
+    return qItem;
+  }
 
   /**
    * Create a validation object specifically for the 'enableWhen' field validation.
@@ -110,7 +137,8 @@ export class ValidationService {
       'id': id,
       'linkId': linkId,
       'conditionKey': '' + index,
-      'q': this.createEnableWhenQuestionFieldValidationObject(enableWhen, questionItem, index),
+      'q': this.createEnableWhenFieldValidationObject(enableWhen, 'question', index),
+      'qItem': this.populateQuestionItem(questionItem),
       'aType': aType,
       'op': this.createEnableWhenFieldValidationObject(enableWhen, 'operator', index),
       'aField': aField,
@@ -120,32 +148,6 @@ export class ValidationService {
     return enableWhenObj;
   }
 
-  /**
-   * Create sub-field validation object for the EnableWhen 'question' field.
-   * @param enableWhenObj - EnableWhen validation object.
-   * @param questionItem - tree node representing the question item.
-   * @param index - position within the 'EnableWhen' arrays to be validated.
-   * @returns - EnableWhen field validation object.
-   */
-  createEnableWhenQuestionFieldValidationObject(enableWhenObj: any, questionItem: ITreeNode, index: number): EnableWhenQuestionFieldValidationObject {
-    const result: any = {
-      canonicalPath: `/enableWhen/${index}/question`,
-      canonicalPathNotation: `enableWhen.${index}.question`,
-      value: enableWhenObj['question'],
-      text: questionItem?.data?.text
-    };
-
-    if (questionItem) {
-      if ('answerOption' in questionItem?.data) {
-        result.answerOptions = questionItem.data.answerOption;
-      }
-      if ('answerConstraint' in questionItem?.data) {
-        result.answerConstraint = questionItem.data.answerConstraint;
-      }
-    }
-
-    return result;
-  }
 
   /**
    * Create sub-field validation object for the EnableWhen field. The includes the sub-field: 'question', 'operator', or 'answer'.
@@ -266,15 +268,15 @@ export class ValidationService {
    * @returns An error if no match is found, or null if the answer is valid.
    */
   checkAnswerAgainstAnswerOptions(enableWhenObj: EnableWhenValidationObject): string | null {
-    if (Array.isArray(enableWhenObj.q.answerOptions) &&
-        enableWhenObj.q.answerOptions.length > 0 &&
+    if (Array.isArray(enableWhenObj.qItem.answerOption) &&
+        enableWhenObj.qItem.answerOption.length > 0 &&
         enableWhenObj.aType
     ) {
       const questionType = (enableWhenObj.aType === TYPE_TEXT) ? TYPE_STRING : enableWhenObj.aType;
       const key = Util.getValueDataTypeName(questionType);
       const answerValue = enableWhenObj.answerX?.value;
 
-      const foundMatchingOption = enableWhenObj.q.answerOptions.some(opt => {
+      const foundMatchingOption = enableWhenObj.qItem.answerOption.some(opt => {
         if (questionType === TYPE_CODING) {
           return Util.areFhirCodingsEqual(opt[key], answerValue);
         } else {
@@ -288,19 +290,17 @@ export class ValidationService {
 
       // If there is no answerConstraint, it can be either R4 or R5 version but without
       // any selection on the answerConstraint.  In that case, it will be treated as 'optionsOnly'
-      const errorMsg = `The answer value does not match any option in the '${enableWhenObj.q.text} (linkId: '${enableWhenObj.q.value}')' answerOptions`;
-      if (!('answerConstraint' in enableWhenObj.q) ||
-        ('answerConstraint' in enableWhenObj.q && enableWhenObj.q.answerConstraint === ANSWER_CONSTRAINT_OPTIONS_ONLY)
+      const errorMsg = `The answer value does not match any answer option in the '${enableWhenObj.qItem.text}' (linkId: '${enableWhenObj.q.value}')`;
+      if (!('answerConstraint' in enableWhenObj.qItem) ||
+        ('answerConstraint' in enableWhenObj.qItem && enableWhenObj.qItem.answerConstraint === ANSWER_CONSTRAINT_OPTIONS_ONLY)
       ) {
         return `${errorMsg}.`;
-      } else if (enableWhenObj.q.answerConstraint === ANSWER_CONSTRAINT_OPTIONS_OR_STRING) {
-        // We determine the aField (either value<Type> or valueString) earlier. If the answer does not
-        // match one of those two aFields, then enableWhenObj.answerX.value will be undefined.
-        if (!enableWhenObj.answerX.value || enableWhenObj.aField !== "answerString") {
+      } else if (enableWhenObj.qItem.answerConstraint === ANSWER_CONSTRAINT_OPTIONS_OR_STRING) {
+        if (!enableWhenObj.answerX.value) {
           return `${errorMsg} or the answer constraint of type string.`;
         }
-      } else if (enableWhenObj.q.answerConstraint === ANSWER_CONSTRAINT_OPTIONS_OR_TYPE) {
-        if ((questionType === TYPE_CODING && !Util.isFhirCoding(answerValue)) ||
+      } else if (enableWhenObj.qItem.answerConstraint === ANSWER_CONSTRAINT_OPTIONS_OR_TYPE) {
+        if ((questionType === TYPE_CODING && !Util.hasSystemAndCode(answerValue)) ||
             (questionType !== TYPE_CODING && !enableWhenObj.answerX.value)) {
           return `${errorMsg} or the answer constraint data type (${questionType}).`;
         }
@@ -342,7 +342,7 @@ export class ValidationService {
           `#${validationObj.canonicalPathNotation}`,
           `'${validationObj.value}' data type cannot contain sub-items.`,
           Util.getIndexPath(node).join('.'),
-          [{'linkId': validationObj.linkId, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}]
+          [{ 'linkId': validationObj.linkId, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation }]
         );
         errors.push(err);
       }
@@ -406,7 +406,7 @@ export class ValidationService {
    */
   validateEnableWhenSingle(enableWhenObj: any, isSchemaFormValidation = true): any[] | null {
     let errors: any[] = [];
-    if(enableWhenObj?.op?.value?.length > 0 || (!enableWhenObj?.aType && enableWhenObj?.answerTypeProperty)) {
+    if (enableWhenObj?.op?.value?.length > 0 || (!enableWhenObj?.aType && enableWhenObj?.answerTypeProperty)) {
       const aValue = enableWhenObj.answerX?.value;
 
       const node = this.formService.getTreeNodeById(enableWhenObj.id);
@@ -426,7 +426,7 @@ export class ValidationService {
         );
         if (isSchemaFormValidation) {
           const i = enableWhenObj.q._errors?.findIndex((e) => e.code === errorCode);
-          if(!(i >= 0)) { // Check if the error is already processed.
+          if (!(i >= 0)) { // Check if the error is already processed.
             enableWhenObj.q.extendErrors(err);
           }
         }
@@ -454,7 +454,7 @@ export class ValidationService {
           let errorMsg;
           if (Util.isEmpty(aValue) && enableWhenObj.op?.value !== 'exists') {
             errorMsg = `Answer field is required when you choose an operator other than 'Not empty' or 'Empty'.`;
-          } else if (enableWhenObj.op?.value !== 'exists' && 'answerOptions' in enableWhenObj.q) {
+          } else if (enableWhenObj.op?.value !== 'exists' && 'answerOption' in enableWhenObj.qItem) {
             errorMsg = this.checkAnswerAgainstAnswerOptions(enableWhenObj);
             if (errorMsg) {
               errorCode = 'ENABLEWHEN_INVALID_ANSWER';
@@ -522,7 +522,7 @@ export class ValidationService {
         `#${validationObj.canonicalPathNotation}`,
         `Link Id is required.`,
         indexPath,
-        [{'linkId': validationObj.prevLinkId, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}]
+        [{ 'linkId': validationObj.prevLinkId, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation }]
       );
     } else {
       if (!ValidationService.LINKID_PATTERN.test(validationObj.value)) {
@@ -531,7 +531,7 @@ export class ValidationService {
           `#${validationObj.canonicalPathNotation}`,
           `Spaces are not allowed at the beginning or end, and only a single space is allowed between words.`,
           indexPath,
-          [{'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}]
+          [{ 'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation }]
         );
       } else if (this.formService.treeNodeHasDuplicateLinkIdByLinkIdTracker(validationObj.value, validationObj.id)) {
         hasDuplicateError = true;
@@ -542,7 +542,7 @@ export class ValidationService {
           `#${validationObj.canonicalPathNotation}`,
           `Entered linkId is already used.`,
           indexPath,
-          [{'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}]
+          [{ 'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation }]
         );
       } else if (validationObj.value.length > 255) {
         err = this.createErrorObject(
@@ -550,7 +550,7 @@ export class ValidationService {
           `#${validationObj.canonicalPathNotation}`,
           `LinkId cannot exceed 255 characters.`,
           indexPath,
-          [{'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation}]
+          [{ 'linkId': validationObj.value, 'id': validationObj.id, 'field': validationObj.canonicalPathNotation }]
         );
       }
     }
