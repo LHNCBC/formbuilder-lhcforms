@@ -196,6 +196,7 @@ test.describe('R4 to R5', () => {
     const json = await PWUtils.readJSONFile('fixtures/local-storage-mock.R4.json');
     await page.evaluate((mockQ) => {
       window.localStorage.removeItem('state');
+      window.localStorage.removeItem('fhirQuestionnaire');
       window.localStorage.setItem('fhirQuestionnaire', JSON.stringify(mockQ));
     }, json);
   });

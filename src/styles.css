@@ -103,8 +103,8 @@ input.invalid {
 
 div.has-error > ul {
   list-style-type: none;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
 }
 
 div.has-error > ul:empty {
@@ -112,9 +112,10 @@ div.has-error > ul:empty {
 }
 
 .lfb-tooltip-pre-wrap {
-  width: auto;
-  height: auto;
-  max-width: 300px;
   white-space: pre-wrap;
   text-align: left !important;
+}
+
+.lfb-tooltip-pre-wrap .mdc-tooltip__surface {
+  max-width: 70vw;
 }

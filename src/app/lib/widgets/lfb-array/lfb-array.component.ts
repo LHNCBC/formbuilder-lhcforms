@@ -12,7 +12,7 @@ import {Util} from "../../util";
 import {LfbPopoverDirective} from "../../directives/lfb-popover.directive";
 
 @Component({
-  selector: 'lfb-lfb-array',
+  selector: 'lfb-array',
   imports: [
     AppFormElementComponent,
     LabelComponent,

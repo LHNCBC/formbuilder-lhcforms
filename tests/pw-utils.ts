@@ -179,9 +179,9 @@ export class PWUtils {
   }
 
   static getRadioButton(page: Page, groupLabel: string, buttonLabel: string, locator: Locator = null): Locator {
-    return page.getByLabel(groupLabel, {exact: false}).getByText(buttonLabel, {exact: true});
-    /*
     const parent = locator ? locator : page;
+    return parent.getByLabel(groupLabel, {exact: false}).getByText(buttonLabel, {exact: true});
+    /*
     const xpath = 'xpath=//lfb-label[.//*[text()="' + groupLabel + '"]]/following-sibling::div/descendant-or-self::div[@role="radiogroup"]';
     let loc = page.locator(xpath);
     // let loc = parent.locator('lfb-label', {has: page.getByText(groupLabel)});

@@ -40,7 +40,7 @@
     "e2e:cy-run-il": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-il",
     "e2e:cy-run": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run",
     "e2e:cy-run-log": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-log",
-    "cy-pw-run": "npm run cy-run && npm run pw-run"
+    "cy-pw-run": "npm run pw-run && npm run cy-run"
   },
   "files": [
     "dist/formbuilder-lhcforms"

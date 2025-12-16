@@ -42,7 +42,7 @@
     '$.properties.__$valueSpecialPurposeDatatype': 'Value Type',
     '$.properties.__$isValueX': 'Value or extension?',
     '$.properties.extension': 'Extensions',
-    '$.properties.valueExpression': 'Value string',
+    '$.properties.valueExpression': 'Value expression',
     '$.properties.valueExpression.properties.name': 'Name',
     '$.properties.valueExpression.properties.description': 'Description',
     '$.properties.valueExpression.properties.language': 'Language',
