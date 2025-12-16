@@ -62,7 +62,8 @@ test.describe('extension.component', async () => {
     // Verify the popup tooltip in the table cell
     await extRows.nth(0).locator('td:nth-of-type(3) input').hover();
     await expect(page.locator('.lfb-tooltip-pre-wrap')).toBeVisible();
-    await page.locator('body').hover();
+    // Hover over another element to dismiss the tooltip.
+    await page.locator('label').filter({has: page.getByText('Hide extensions that are')}).hover();
     // Check the disabled buttons of uneditable extensions
     await expect(extRows.nth(0).getByLabel('Remove this row')).toBeDisabled();
     await expect(extRows.nth(0).getByLabel('Move this row down')).toBeDisabled();

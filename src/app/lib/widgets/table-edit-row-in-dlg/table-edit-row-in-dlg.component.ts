@@ -21,6 +21,10 @@ export interface DialogData {
   [x: string ]: unknown;
 }
 
+/**
+ * A table component to edit array items in a dialog.
+ * Each row is read only and can be edited in a dialog.
+ */
 @Component({
   selector: 'lfb-table-edit-row-in-dlg',
   imports: [

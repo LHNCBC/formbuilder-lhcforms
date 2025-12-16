@@ -29,6 +29,9 @@ import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.compo
 import {Util} from "../../util";
 import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 
+/**
+ * A dialog component to edit a FHIR Extension object.
+ */
 @Component({
   selector: 'lfb-extension-dlg',
   imports: [ExtensionObjComponent, MatDialogTitle, MatDialogContent, MatIconButton, MatDialogActions, MatIconModule, MatTabsModule, MatTooltip ],
@@ -99,6 +102,9 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
 
+    /**
+     * Observe the dialog content for changes to the form's dirty state.
+     */
     this.dirtyObserver = new MutationObserver((mutationsList, observer) => {
       for(const mutation of mutationsList) {
         if (mutation.type === 'attributes' && (mutation.target as HTMLElement).classList?.contains('ng-dirty')) {
@@ -109,6 +115,9 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit {
       }
     });
 
+    /**
+     * Observe the form inside the dialog content for class attribute changes to detect dirty state.
+     */
     this.dirtyObserver.observe(
       this.dlgContent?.nativeElement.querySelector('form'),
       {attributes: true, attributeFilter: ['class'], subtree: true}
@@ -155,6 +164,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit {
       this.matDialogRef.close(false);
       return;
     } else {
+      // Ask for confirmation to discard changes
       const modalRef = this.ngbModalService.open(MessageDlgComponent, {scrollable: true});
       modalRef.componentInstance.options = {
         title: 'Confirm',
@@ -184,6 +194,4 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit {
     }
     return ret;
   }
-
-  // protected readonly FormProperty = FormProperty;
 }

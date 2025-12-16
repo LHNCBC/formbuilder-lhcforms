@@ -23,6 +23,8 @@ export class LfbObjectComponent extends ObjectLayoutWidget implements OnInit {
   showFields: {field: string, col: number}[] = [];
   formProperties: {[key: string]: FormProperty};
   isRequired = false;
+
+
   ngOnInit() {
     this.isRequired = Util.getIsRequired(this.formProperty);
     const schema = this.formProperty.schema;

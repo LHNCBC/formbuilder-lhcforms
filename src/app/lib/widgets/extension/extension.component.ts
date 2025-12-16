@@ -31,6 +31,11 @@ import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
 import {FormService} from "../../../services/form.service";
 
+/**
+ * A component to edit FHIR extensions as a table with each row representing an extension.
+ * Each row can be edited in a dialog.
+ *
+ */
 @Component({
   selector: 'lfb-extension',
   imports: [
@@ -90,6 +95,10 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
     this.subscriptions.push(sub);
   }
 
+  /**
+   * Update extension values in the given array.
+   * @param valueArray
+   */
   valueUpdate(valueArray: fhir.Extension[]) {
     (valueArray || []).forEach((ext: fhir.Extension) => {
       this.extensionsService.updateExtension(ext);
@@ -97,16 +106,28 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
     return valueArray;
   }
 
+  /**
+   * Override to update extension value before adding it to the table row.
+   * @param newValue
+   */
   override addNewItem(newValue: fhir.Extension) {
     this.extensionsService.updateExtension(newValue);
     super.addNewItem(newValue);
   }
 
+  /**
+   * Determine if the extension property at the given index is disabled (not editable) in the dialog.
+   * @param arrayProperty
+   * @param index
+   */
   _isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     const extensionProp = arrayProperty.properties[index] as ObjectProperty;
     return this.extensionsService.isNotEditableInDlg(extensionProp.value.url);
   }
 
+  /**
+   * Adjust controlClasses of extension property widgets to fit in table cells.
+   */
   _adjustControlClassesForTableCellWidgets() {
     const extSchema = this.formService.getExtensionSchema();
     const mergeClasses = (list1: string, list2: string) => {
@@ -116,6 +137,7 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
       const ret = Array.from(s1).join(' ');
       return ret || null;
     };
+    // Add padding 0 to all extension property widgets to fit in table cells.
     Object.keys(extSchema.properties).forEach((key) => {
       const widgetObj = extSchema.properties[key].widget;
       if(widgetObj) {
@@ -124,6 +146,11 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
     });
   }
 
+  /**
+   * Hide rows in the extension table that are not editable in the dialog.
+   * Used to hide standard extensions that should not be modified. These extensions are
+   * defined in the ExtensionsService.
+   */
   hideUneditableRows() {
     const extArray = this.formProperty.value;
     this.hideRows.clear();
@@ -135,6 +162,9 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
     }
   }
 
+  /**
+   * Show all rows in the extension table.
+   */
   showAllRows() {
     this.hideRows.clear();
   }

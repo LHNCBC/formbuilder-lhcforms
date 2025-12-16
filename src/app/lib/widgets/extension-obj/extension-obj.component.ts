@@ -18,6 +18,9 @@ import {FormService} from '../../../services/form.service';
 import {TableService} from "../../../services/table.service";
 import {Subscription} from "rxjs";
 
+/**
+ * A component to edit a FHIR Extension object.
+ */
 @Component({
   selector: 'lfb-extension-obj',
   imports: [
@@ -47,10 +50,13 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.sfFormRootProperty = this.sfForm.rootProperty as PropertyGroup;
+    // Subscribe to value type category changes to update the value[x] field accordingly.
+    // This observes the category radio buttons on the UI.
     const sub = this.sfFormRootProperty.getProperty('__$valueTypeCategory').valueChanges.subscribe((newCategory) => {
       this.handler(newCategory);
     });
     this.subscriptions.push(sub);
+    // These fields have their own select controls listing their value[x] options.
     ['__$valueTypePrimitive', '__$valueGeneralPurposeDatatype', '__$valueMetadataType', '__$valueSpecialPurposeDatatype'].forEach((category) => {
       const sub = this.sfFormRootProperty.getProperty(category).valueChanges.subscribe((valueX: string) => {
         this.handler(category);
@@ -61,6 +67,10 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  /**
+   *
+   * @param typeCategory
+   */
   handler (typeCategory: string)  {
     const valueXProp = this.sfFormRootProperty.getProperty('__$valueType');
     const categoryTypeProp = this.sfFormRootProperty.getProperty(typeCategory);
@@ -69,6 +79,10 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Handle changes to the <sf-form>.
+   * @param value
+   */
   handleChange(value: fhir.Extension) {
     this.extensionsService.updateExtension(value);
     this.onChange.emit(value);

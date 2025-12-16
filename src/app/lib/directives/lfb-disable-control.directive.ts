@@ -5,6 +5,9 @@
 import {Directive, Input, OnChanges, SimpleChanges} from '@angular/core';
 import { NgControl } from '@angular/forms';
 
+/**
+ * A directive to disable reactive form control.
+ */
 @Directive({
   standalone: true,
   selector: '[lfbDisableControl]'
@@ -15,6 +18,10 @@ export class LfbDisableControlDirective implements OnChanges {
   lfbDisableControl;
   constructor(private ngControl: NgControl) { }
 
+  /**
+   * On input changes, disable or enable the control.
+   * @param changes
+   */
   ngOnChanges(changes: SimpleChanges) {
     if(changes.lfbDisableControl) {
       const action = this.lfbDisableControl ? 'disable' : 'enable';

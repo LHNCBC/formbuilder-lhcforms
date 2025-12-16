@@ -1,5 +1,8 @@
 import {Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core';
 
+/**
+ * A component to show a popover using LfbPopoverDirective.
+ */
 @Component({
   selector: 'lfb-popover',
   template: `

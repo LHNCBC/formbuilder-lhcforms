@@ -10,6 +10,11 @@ import {
 } from '@angular/core';
 import { LfbPopoverComponent } from '../widgets/lfb-popover/lfb-popover.component';
 
+/**
+ * Directive to add popover functionality to any element using popper.js for positioning.
+ * For some reason, ngx-bootstrap/popover does not work well inside Angular components loaded dynamically.
+ * This is workaround using popper.js directly.
+ */
 @Directive({
   selector: '[lfbPopover]',
   exportAs: 'lfbPopover'
@@ -26,6 +31,10 @@ export class LfbPopoverDirective implements OnDestroy {
   ) {
   }
 
+  /**
+   * Create oppper instance
+   * @private
+   */
   private createPopover() {
     this.popoverRef = this.vcr.createComponent(LfbPopoverComponent);
     this.popoverRef.instance.title = this.popoverTitle;
@@ -56,13 +65,16 @@ export class LfbPopoverDirective implements OnDestroy {
   }
 
   private destroyPopover() {
-
     this.popperInstance?.destroy();
     this.popoverRef?.destroy();
     this.popperInstance = undefined;
     this.popoverRef = undefined;
   }
 
+  /**
+   * Click handler to close the popover when clicking outside.
+   * @param event
+   */
   @HostListener('document:click', ['$event'])
   onClick(event: MouseEvent) {
     if (this.popoverRef && !this.hostEl.nativeElement.contains(event.target)) {
@@ -72,6 +84,10 @@ export class LfbPopoverDirective implements OnDestroy {
     }
   }
 
+  /**
+   * API to toggle popover.
+   * @param event
+   */
   toggle(event: MouseEvent) {
     if (this.popoverRef) {
       this.destroyPopover();
@@ -81,18 +97,27 @@ export class LfbPopoverDirective implements OnDestroy {
     }
   }
 
+  /**
+   * API to open the popover.
+   */
   open() {
     if (!this.popoverRef) {
       this.createPopover();
     }
   }
 
+  /**
+   * API to close the popover.
+   */
   hide() {
     if (this.popoverRef) {
       this.destroyPopover();
     }
   }
 
+  /**
+   * Clean up on destroy.
+   */
   ngOnDestroy() {
     this.destroyPopover();
   }

@@ -32,6 +32,11 @@ export class LfbArrayComponent extends TableComponent implements OnInit {
   @ViewChild('addButton', {static: false}) addButton: ElementRef;
   @ViewChild('lfbPopover', {static: false, read: LfbPopoverDirective}) lfbPopover: LfbPopoverDirective;
 
+  /**
+   * Add an item with alert if the last item is empty.
+   * @param popoverRef
+   * @param event
+   */
   addItemWithAlert1(popoverRef: LfbPopoverDirective, event: MouseEvent) {
     this.isCollapsed = false;
     const properties = this.formProperty.properties as FormProperty[];
@@ -45,6 +50,9 @@ export class LfbArrayComponent extends TableComponent implements OnInit {
 
   }
 
+  /**
+   *  Get the iterable properties of the array.
+   */
   iterableProperties(): FormProperty[] {
     return this.formProperty.properties as FormProperty[] || [];
   }
