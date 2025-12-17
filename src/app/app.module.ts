@@ -176,7 +176,6 @@ import { environment } from '../environments/environment';
     InitialNumberComponent,
     EntryFormatComponent,
     AnswerValueSetCodingDisplayComponent,
-    CodingSystemComponent,
     CodingDisplayComponent
   ],
   imports: [
@@ -188,6 +187,7 @@ import { environment } from '../environments/environment';
     FormsModule,
     FontAwesomeModule,
     LayoutModule,
+    CodingSystemComponent,
     LfbDisableControlDirective,
     LfbSpinnerComponent,
     MatButtonModule,

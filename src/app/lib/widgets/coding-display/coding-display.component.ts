@@ -2,6 +2,9 @@ import {AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, ViewChil
 import fhir from 'fhir/r4';
 import { Subscription } from 'rxjs';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
+import { withComponentInputBinding } from '@angular/router';
+import { ExtensionsService } from 'src/app/services/extensions.service';
+import { AnswerOptionComponent } from '../answer-option/answer-option.component';
 
 declare var LForms: any;
 
@@ -57,6 +60,7 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
   autoComplete = false;
   selectedSystem;
   system;
+  initializing = true;
 
   constructor() {
     super();
@@ -85,10 +89,22 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
         return;
       }
 
+      if (this.system) {
+        this.initializing = false;
+      }
       this.system = system;
 
       this.selectedSystem = this.systemLookups.find((obj: any) => obj.systemUrl === system);
       if (this.selectedSystem) {
+
+        if (!this.initializing) {
+          const currentCodingObject = this.formProperty.parent.value;
+          currentCodingObject.system = this.system;
+          currentCodingObject.display = '';
+          currentCodingObject.code = '';
+          this.formProperty.parent.reset(currentCodingObject, false);
+        }
+
         this.autoComplete = true;
         this.cdr.detectChanges();
         setTimeout(() => {
@@ -125,12 +141,11 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
    * @param manualEntry - If true, indicates the value was entered manually; if false, indicates selection from autocomplete.
    */
   updateValueCoding(coding: fhir.Coding, manualEntry: boolean) {
-    if ((manualEntry && this.formProperty?.parent) || (!manualEntry && coding.display !== undefined && coding.display !== this.formProperty?.parent.value.display)) {
+    if (!manualEntry && this.formProperty.value !== coding.display) {
       this.formProperty.parent.reset(coding, false);
-    }
-
-    if (!manualEntry) {
-      this.control.setValue(coding.display || '');
+      this.control.setValue(coding.display);
+    } else if (manualEntry) {
+      this.formProperty.setValue(coding.display, false);
     }
   };
 

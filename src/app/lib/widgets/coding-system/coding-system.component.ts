@@ -1,15 +1,16 @@
 import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
 import { LfbArrayWidgetComponent } from '../lfb-array-widget/lfb-array-widget.component';
 
 declare var LForms: any;
 @Component({
-  standalone: false,
+  standalone: true,
   selector: 'lfb-coding-system',
+  imports: [MatTooltipModule],
   template: `
-
       <div class="{{controlWidthClass}} p-0">
-        <input autocomplete="off" #codingSystem type="text" [attr.id]="id" placeholder="Search by system or type your own." class="form-control"  />
+        <input autocomplete="off" #codingSystem type="text" [attr.id]="id" [matTooltip]="'Search by system or type your own.'" placeholder="Search by system or type your own." class="form-control"  />
       </div>
   `,
   styles: [`
@@ -49,9 +50,9 @@ export class CodingSystemComponent extends LfbArrayWidgetComponent implements Af
     this.systemUrls = systemLookups.map((obj: any) => obj.systemUrl);
 
     // Guard: ensure input element and id are valid before initializing autocomplete
-    const inputEl = this.codingSystem?.nativeElement;
-    const inputId = inputEl?.id || this.id;
-    if (!inputEl || !inputId || inputId === '"' || inputId.trim() === '') {
+    const inputEl = this.codingSystem?.nativeElement as HTMLInputElement;
+    const inputId = this.id;
+    if (!inputEl || !inputId || inputId.trim() === '') {
       return;
     }
 
