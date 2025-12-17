@@ -1,0 +1,148 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "enableWhen-dependency-validation-sample",
+  "status": "draft",
+  "item": [
+    {
+      "item": [
+        {
+          "item": [
+            {
+              "type": "string",
+              "linkId": "790053845245",
+              "text": "New item 2",
+              "item": [
+                {
+                  "type": "string",
+                  "linkId": "543640098457",
+                  "text": "New item 3",
+                  "item": [
+                    {
+                      "type": "string",
+                      "linkId": "793172287454",
+                      "text": "New item 4"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "type": "string",
+          "linkId": "269578934615",
+          "text": "New item 1"
+        }
+      ],
+      "type": "string",
+      "linkId": "587234105213",
+      "text": "Item 0"
+    },
+    {
+      "item": [
+        {
+          "type": "string",
+          "linkId": "863989562511",
+          "text": "New item 6",
+          "enableWhen": [
+            {
+              "question": "790053845245",
+              "operator": "exists",
+              "answerBoolean": true
+            }
+          ]
+        }
+      ],
+      "type": "string",
+      "linkId": "587234105333",
+      "text": "New item 5"
+    },
+    {
+      "item": [
+        {
+          "type": "string",
+          "linkId": "863989565554",
+          "text": "New item 8"
+        }
+      ],
+      "type": "string",
+      "linkId": "587234105553",
+      "text": "New item 7",
+      "enableWhen": [
+        {
+          "question": "790053845245",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "587234105444",
+      "text": "Invalid item with enableWhen references question id that does not exist",
+      "enableWhen": [
+        {
+          "question": "000000000000",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "963433838378",
+      "text": "Invalid item with enableWhen question references a child item",
+      "enableWhen": [
+        {
+          "question": "677718877639",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ],
+      "item": [
+        {
+          "type": "string",
+          "linkId": "677718877639",
+          "text": "New item 7"
+        }
+      ]
+    },
+    {
+      "type": "display",
+      "linkId": "969848586908",
+      "text": "Display item"
+    },
+    {
+      "type": "string",
+      "linkId": "587234105444",
+      "text": "Invalid item with enableWhen references display item",
+      "enableWhen": [
+        {
+          "question": "969848586908",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "linkId": "967213897865",
+      "text": "Group item"
+    },
+    {
+      "type": "string",
+      "linkId": "587234105555",
+      "text": "Invalid item with enableWhen references group item",
+      "enableWhen": [
+        {
+          "question": "967213897865",
+          "operator": "exists",
+          "answerBoolean": true
+        }
+      ]
+    }
+  ]
+}
