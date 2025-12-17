@@ -19,24 +19,26 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
         <table class="table table-sm table-striped table-bordered">
           <caption id="serverListCaption">List of available FHIR servers.</caption>
           <thead>
-          <tr>
-            <th scope="col"></th>
-            <th scope="col">Fhir Server</th>
-            <th scope="col">FHIR Version</th>
-            <th scope="col">Description</th>
-          </tr>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">Fhir Server</th>
+              <th scope="col">FHIR Version</th>
+              <th scope="col">Description</th>
+            </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let fhirServer of fhirServerList; index as i">
-            <th scope="row" class="align-middle">
-              <label class="m-0 p-0">
-                <input [attr.id]="fhirServer.endpoint" type="radio" [value]="fhirServer" name="fhirServer" [(ngModel)]="selectedServer" [ngModelOptions]="{standalone: true}">
-              </label>
-            </th>
-            <td class="align-middle"><label [attr.for]="fhirServer.endpoint">{{fhirServer.endpoint}}</label></td>
-            <td class="align-middle">{{ fhirServer.version}}</td>
-            <td class="align-middle">{{ fhirServer.desc}}</td>
-          </tr>
+            @for (fhirServer of fhirServerList; track fhirServer; let i = $index) {
+              <tr>
+                <th scope="row" class="align-middle">
+                  <label class="m-0 p-0">
+                    <input [attr.id]="fhirServer.endpoint" type="radio" [value]="fhirServer" name="fhirServer" [(ngModel)]="selectedServer" [ngModelOptions]="{standalone: true}">
+                  </label>
+                </th>
+                <td class="align-middle"><label [attr.for]="fhirServer.endpoint">{{fhirServer.endpoint}}</label></td>
+                <td class="align-middle">{{ fhirServer.version}}</td>
+                <td class="align-middle">{{ fhirServer.desc}}</td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>
@@ -46,7 +48,7 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
         <button type="button" class="btn btn-primary" (click)="dismiss()">Cancel</button>
       </div>
     </div>
-  `,
+    `,
   styles: [`
     caption {
       caption-side: top;

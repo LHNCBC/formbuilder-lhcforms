@@ -1,49 +1,53 @@
 <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-  <lfb-label *ngIf="!nolabel"
-             [title]="schema.title"
-             [helpMessage]="schema.description"
-             [ngClass]="labelClasses"
-             [labelId]="'label_rg_'+elementId"
-  ></lfb-label>
+  @if (!nolabel) {
+    <lfb-label
+      [title]="schema.title"
+      [helpMessage]="schema.description"
+      [ngClass]="labelClasses"
+      [labelId]="'label_rg_'+elementId"
+    ></lfb-label>
+  }
 
   <div class="{{controlClasses}}">
     <ng-container *ngTemplateOutlet="useExtraction"></ng-container>
-    <ng-container *ngIf="use">
+    @if (use) {
       <ng-container *ngTemplateOutlet="valueCodeTmpl"></ng-container>
-    </ng-container>
-    <ng-container *ngIf="use">
-      <div *ngIf="!codePresent" class="d-flex alert alert-warning p-1 mt-2 ms-auto me-auto">
-        <fa-icon [icon]="faWarning" class="pe-2"/>
-        <p class="m-0">
-          Extraction to FHIR Observations requires a code assigned to this item. In order for the extraction to work please enter a
-          <a href="#"
-            class="fst-italic text-decoration-underline"
-            aria-label="Go to question code field"
-            (click)="onScrollToCode()">
+    }
+    @if (use) {
+      @if (!codePresent) {
+        <div class="d-flex alert alert-warning p-1 mt-2 ms-auto me-auto">
+          <fa-icon [icon]="faWarning" class="pe-2"/>
+          <p class="m-0">
+            Extraction to FHIR Observations requires a code assigned to this item. In order for the extraction to work please enter a
+            <a href="#"
+              class="fst-italic text-decoration-underline"
+              aria-label="Go to question code field"
+              (click)="onScrollToCode()">
               Question code
-          </a>.
-        </p>
-      </div>
-    </ng-container>
+            </a>.
+          </p>
+        </div>
+      }
+    }
   </div>
 </div>
 
 <!-- For 'use' (valueBoolean) -->
 <ng-template #useExtraction>
   <div class="btn-group btn-group-sm" role="radiogroup" [attr.aria-labelledby]="'label_rg_'+elementId" [attr.id]="elementId">
-    <ng-container *ngFor="let option of ['No', 'Yes']">
+    @for (option of ['No', 'Yes']; track option) {
       <input type="radio" class="btn-check"
-             name="use"
-             [attr.id]="'radio_'+option+'_'+elementId"
-             [value]="option === 'Yes'"
-             [ngModelOptions]="{standalone: true}"
-             [ngModel]="use"
-             (ngModelChange)="onUseChange($event)"
-             [attr.disabled]="schema.readOnly ? '' : null">
+        name="use"
+        [attr.id]="'radio_'+option+'_'+elementId"
+        [value]="option === 'Yes'"
+        [ngModelOptions]="{standalone: true}"
+        [ngModel]="use"
+        (ngModelChange)="onUseChange($event)"
+        [attr.disabled]="schema.readOnly ? '' : null">
       <label class="btn btn-sm btn-outline-success m-auto" [attr.for]="'radio_'+option+'_'+elementId">
         {{option}}
       </label>
-    </ng-container>
+    }
   </div>
 </ng-template>
 
@@ -51,18 +55,18 @@
 <ng-template #valueCodeTmpl>
   <div id="label_rg_obs_relation_${elementId}" class="pt-2">Use extraction relationship:</div>
   <div class="btn-group btn-group-sm" role="radiogroup" [attr.aria-labelledby]="'label_rg_obs_relation_'+elementId">
-    <ng-container *ngFor="let option of ObservationExtractComponent.obExtractRelationshipOptions">
+    @for (option of ObservationExtractComponent.obExtractRelationshipOptions; track option) {
       <input type="radio" class="btn-check"
-             name="valueCode"
-             [attr.id]="'radio_obs_relation_'+option.value+'_'+elementId"
-             [value]="option.value"
-             [ngModelOptions]="{standalone: true}"
-             [ngModel]="valueCode"
-             (ngModelChange)="onRelationshipChange($event)"
-             [attr.disabled]="schema.readOnly ? '' : null">
+        name="valueCode"
+        [attr.id]="'radio_obs_relation_'+option.value+'_'+elementId"
+        [value]="option.value"
+        [ngModelOptions]="{standalone: true}"
+        [ngModel]="valueCode"
+        (ngModelChange)="onRelationshipChange($event)"
+        [attr.disabled]="schema.readOnly ? '' : null">
       <label class="btn btn-sm btn-outline-success m-auto" [attr.for]="'radio_obs_relation_'+option.value+'_'+elementId">
         {{option.label}}
       </label>
-    </ng-container>
+    }
   </div>
 </ng-template>

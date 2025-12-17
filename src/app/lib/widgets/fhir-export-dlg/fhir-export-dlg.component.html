@@ -4,11 +4,15 @@
     <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close(true)">
     </button>
   </div>
-  <div class="modal-body bg-light" aria-live="polite" *ngIf="serverResponse">
-    <span class="visually-hidden" role="alert">The questionnaire is successfully created on the server.</span>
-    <pre class="fhir-response">{{serverResponse | json }}</pre>
-  </div>
-  <div class="modal-body bg-light" *ngIf="error"><pre class="fhir-response" role="alert">{{error.message}}</pre></div>
+  @if (serverResponse) {
+    <div class="modal-body bg-light" aria-live="polite">
+      <span class="visually-hidden" role="alert">The questionnaire is successfully created on the server.</span>
+      <pre class="fhir-response">{{serverResponse | json }}</pre>
+    </div>
+  }
+  @if (error) {
+    <div class="modal-body bg-light"><pre class="fhir-response" role="alert">{{error.message}}</pre></div>
+  }
   <div class="modal-footer btn-group-sm">
     <button type="button" class="btn btn-primary" (click)="close(true)">Close</button>
   </div>

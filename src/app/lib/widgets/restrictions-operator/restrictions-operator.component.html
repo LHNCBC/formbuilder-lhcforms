@@ -1,12 +1,14 @@
 <select #mySelect
-        [ngModel]="model"
-        (ngModelChange)="modelChanged($event, alertSelected)"
-        name="{{name}}" [attr.id]="id"
-        [disabled]="schema.readOnly" class="form-control"
-        [ngbPopover]="'That restriction is already selected.'"
-        #alertSelected="ngbPopover" triggers="manual" placement="bottom top"
->
+  [ngModel]="model"
+  (ngModelChange)="modelChanged($event, alertSelected)"
+  name="{{name}}" [attr.id]="id"
+  [disabled]="schema.readOnly" class="form-control"
+  [ngbPopover]="'That restriction is already selected.'"
+  #alertSelected="ngbPopover" triggers="manual" placement="bottom top"
+  >
   <ng-container>
-    <option *ngFor="let option of options" [ngValue]="getOption(option.extUrl)" >{{option.display}}</option>
+    @for (option of options; track option) {
+      <option [ngValue]="getOption(option.extUrl)" >{{option.display}}</option>
+    }
   </ng-container>
 </select>

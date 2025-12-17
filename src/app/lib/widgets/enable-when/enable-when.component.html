@@ -1,4 +1,4 @@
-<ng-container *ngIf="booleanControlled">
+@if (booleanControlled) {
   <lfb-boolean-controlled
     [(bool)]="booleanControlledOption"
     [controlWidthClass]="controlWidthClass"
@@ -7,75 +7,99 @@
     [labelPosition]="labelPosition"
     [helpMessage]="schema.description"
   ></lfb-boolean-controlled>
-</ng-container>
+}
 
-<div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group m-0"
-     [ngClass]=
-       "{'row': labelPosition === 'left'}">
-  <div [ngClass]="labelWidthClass + ' ps-0 pe-1'">
-    <button *ngIf="!noCollapseButton" href="#" type="button"
-            [ngClass]="{'float-sm-right': labelPosition === 'left'}"
-            class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
-            [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
-      <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
-    </button>
-    <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
-  </div>
-  <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
-    <table class="table table-borderless table-sm lfb-table" *ngIf="+formProperty.properties.length > 0">
-      <thead *ngIf="!noHeader" class="table-active">
-      <tr class="d-flex">
-        <th *ngFor="let showField of showHeaderFields" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
-          <lfb-title
-            [title]="showField.title"
-            [helpMessage]="getProperty(formProperty.properties[0], 'answerString').schema.description"
-          ></lfb-title>
-        </th>
-        <th *ngIf="!singleItem" class="col-sm-1"></th>
-      </tr>
-      </thead>
-      <tbody [ngbCollapse]="isCollapsed">
-      <tr class="d-flex p-0 m-0" *ngFor="let rowProperty of rowProperties; let rowNum = index">
-        <td *ngFor="let showField of getFields(rowProperty); let colNum = index"
-            class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 pb-1 pe-1 m-0 align-self-center"
-            [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"
-            lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)"
-            (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
-        >
-          <lfb-form-element *ngIf="isShow(rowProperty, showField.field)" [nolabel]="true"
-                            [formProperty]="getProperty(rowProperty, showField.field)"
-          ></lfb-form-element>
-        </td>
-        <td class="col-sm-1 align-middle p-0 m-0 align-self-center">
-          <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="removeProperty(rowNum)" class="btn btn-default btn-link btn-sm array-remove-button"
-                  [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
-                  matTooltip="Remove" aria-label="Remove"
+@if (!booleanControlled || booleanControlledOption) {
+  <div class="widget form-group m-0"
+    [ngClass]=
+    "{'row': labelPosition === 'left'}">
+    <div [ngClass]="labelWidthClass + ' ps-0 pe-1'">
+      @if (!noCollapseButton) {
+        <button href="#" type="button"
+          [ngClass]="{'float-sm-right': labelPosition === 'left'}"
+          class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+          [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
+          <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
+        </button>
+      }
+      @if (!noTableLabel) {
+        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
+      }
+    </div>
+    <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
+      @if (+formProperty.properties.length > 0) {
+        <table class="table table-borderless table-sm lfb-table">
+          @if (!noHeader) {
+            <thead class="table-active">
+              <tr class="d-flex">
+                @for (showField of showHeaderFields; track showField) {
+                  <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
+                    <lfb-title
+                      [title]="showField.title"
+                      [helpMessage]="getProperty(formProperty.properties[0], 'answerString').schema.description"
+                    ></lfb-title>
+                  </th>
+                }
+                @if (!singleItem) {
+                  <th class="col-sm-1"></th>
+                }
+              </tr>
+            </thead>
+          }
+          <tbody [ngbCollapse]="isCollapsed">
+            @for (rowProperty of rowProperties; track rowProperty; let rowNum = $index) {
+              <tr class="d-flex p-0 m-0">
+                @for (showField of getFields(rowProperty); track showField; let colNum = $index) {
+                  <td
+                    class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 pb-1 pe-1 m-0 align-self-center"
+                    [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"
+                    lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)"
+                    (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
+                    >
+                    @if (isShow(rowProperty, showField.field)) {
+                      <lfb-form-element [nolabel]="true"
+                        [formProperty]="getProperty(rowProperty, showField.field)"
+                      ></lfb-form-element>
+                    }
+                  </td>
+                }
+                <td class="col-sm-1 align-middle p-0 m-0 align-self-center">
+                  <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="removeProperty(rowNum)" class="btn btn-default btn-link btn-sm array-remove-button"
+                    [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
+                    matTooltip="Remove" aria-label="Remove"
+                    >
+                    <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon>
+                  </button>
+                  @if (getEnableWhenFieldErrors(rowProperty) | async; as rowErrorMessage) {
+                    <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'"
+                      class="btn border-0 p-0 b-0 enable-when-errors"
+                      [matTooltip]="rowErrorMessage"
+                      >
+                      <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
+                      @if (!awaitingValidation) {
+                        <small class="text-danger form-text sr-only" role="alert">
+                          {{composeAccessibleErrorMessage(rowErrorMessage, rowNum)}}
+                        </small>
+                      }
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      @if (!singleItem &&
+        (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))) {
+        <button (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
+          [attr.disabled]="isAddButtonDisabled() ? '' : null"
+          [ngbPopover]="'Please fill in the above fields before adding a new item'"
+          #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
+          popoverClass=""
           >
-            <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon>
-          </button>
-          <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'" *ngIf="getEnableWhenFieldErrors(rowProperty) | async as rowErrorMessage"
-               class="btn border-0 p-0 b-0 enable-when-errors"
-               [matTooltip]="rowErrorMessage"
-          >
-            <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
-            <small class="text-danger form-text sr-only" role="alert" *ngIf="!awaitingValidation">
-              {{composeAccessibleErrorMessage(rowErrorMessage, rowNum)}}
-            </small>
-          </div>
-
-        </td>
-      </tr>
-      </tbody>
-    </table>
-    <button (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
-            [attr.disabled]="isAddButtonDisabled() ? '' : null"
-            *ngIf="!singleItem &&
-                (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"
-            [ngbPopover]="'Please fill in the above fields before adding a new item'"
-            #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
-            popoverClass=""
-    >
-      <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
-    </button>
+          <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
+        </button>
+      }
+    </div>
   </div>
-</div>
+}

@@ -1,81 +1,89 @@
 
-<input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
-       [name]="name" type="hidden" [formControl]="control">
-<ng-template #notHiddenFieldBlock>
+@if (schema.widget.id ==='hidden') {
+  <input
+    [name]="name" type="hidden" [formControl]="control">
+} @else {
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-    <lfb-label *ngIf="!nolabel"
-               [for]="id"
-               [title]="schema.title"
-               [helpMessage]="schema.description"
-               [ngClass]="labelClasses"
-    ></lfb-label>
+    @if (!nolabel) {
+      <lfb-label
+        [for]="id"
+        [title]="schema.title"
+        [helpMessage]="schema.description"
+        [ngClass]="labelClasses"
+      ></lfb-label>
+    }
     <div class="col p-0 m-0">
       <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em>{{tsHint}}</em></small></p>
       <ng-container *ngTemplateOutlet="valueSetType === 'snomed-value-set' ? snomed : vsInput"></ng-container>
     </div>
   </div>
-</ng-template>
+}
 
 <ng-template #snomed>
   <div class="p-0">
     <div class="row m-0 align-items-center">
       <label  class="col-3 ps-0 col-form-label">Enter SNOMED ECL
         <div tabindex="0" class="btn border-0 p-0 b-0" [ngbTooltip]="eclHelp" tooltipClass="custom-tooltip-class"
-            container="body" triggers="manual" [attr.aria-label]="getURLFreeAriaLabel('Tooltip for ECL: ' + eclHelpContent)" tablindex="0"
-            #eclTooltip
-            (mouseover)="eclTooltipOpen()"
-            (focus)="eclTooltipOpen()"
-            (blur)="eclTooltipClose($event)"
-      ><fa-icon [icon]="faInfo" aria-hidden="true"></fa-icon></div>:</label>
-      <div class="col input-group input-group-sm px-0">
-        <span class="input-group-text">ecl/</span>
-        <input type="text"
-             [name]="name+'_ecl'"
-             [ngModel]="snomedFhirVS"
-             (ngModelChange)="onEclUpdate($event)"
-             (change)="onEclChange($event)"
-             class="col form-control form-control-sm"
-             [attr.id]="id+'_ecl'"
-             placeholder="Enter SNOMED ECL">
-      </div>
-    </div>
-    <div class="row m-0 align-items-center">
-      <label [for]="id+'_edition'" class="col-3 ps-0 col-form-label">Select SNOMED edition:</label>
-      <select [attr.id]="id+'_edition'" class="col form-select form-select-sm"
-              [ngModel]="snomedEdition"
-              (ngModelChange)="onEditionUpdate($event)"
-              [ngModelOptions]="{standalone: true}"
-      >
-        <option *ngFor="let eid of snomedEditions?.keys()" [value]="eid">{{snomedEditions.get(eid).title + ' ('+eid+')'}}</option>
-      </select>
-    </div>
-    <div *ngIf="snomedEdition" class="row m-0 align-items-center">
-      <label [for]="id+'_version'" class="col-3 ps-0 col-form-label">Select SNOMED version:</label>
-      <select [attr.id]="id+'_version'" class="col form-select form-select-sm"
+          container="body" triggers="manual" [attr.aria-label]="getURLFreeAriaLabel('Tooltip for ECL: ' + eclHelpContent)" tablindex="0"
+          #eclTooltip
+          (mouseover)="eclTooltipOpen()"
+          (focus)="eclTooltipOpen()"
+          (blur)="eclTooltipClose($event)"
+          ><fa-icon [icon]="faInfo" aria-hidden="true"></fa-icon></div>:</label>
+          <div class="col input-group input-group-sm px-0">
+            <span class="input-group-text">ecl/</span>
+            <input type="text"
+              [name]="name+'_ecl'"
+              [ngModel]="snomedFhirVS"
+              (ngModelChange)="onEclUpdate($event)"
+              (change)="onEclChange($event)"
+              class="col form-control form-control-sm"
+              [attr.id]="id+'_ecl'"
+              placeholder="Enter SNOMED ECL">
+          </div>
+        </div>
+        <div class="row m-0 align-items-center">
+          <label [for]="id+'_edition'" class="col-3 ps-0 col-form-label">Select SNOMED edition:</label>
+          <select [attr.id]="id+'_edition'" class="col form-select form-select-sm"
+            [ngModel]="snomedEdition"
+            (ngModelChange)="onEditionUpdate($event)"
+            [ngModelOptions]="{standalone: true}"
+            >
+            @for (eid of snomedEditions?.keys(); track eid) {
+              <option [value]="eid">{{snomedEditions.get(eid).title + ' ('+eid+')'}}</option>
+            }
+          </select>
+        </div>
+        @if (snomedEdition) {
+          <div class="row m-0 align-items-center">
+            <label [for]="id+'_version'" class="col-3 ps-0 col-form-label">Select SNOMED version:</label>
+            <select [attr.id]="id+'_version'" class="col form-select form-select-sm"
               [ngModel]="snomedVersion"
               (ngModelChange)="onVersionUpdate($event)"
               [ngModelOptions]="{standalone: true}"
-      >
-        <option value="">Default</option>
-        <option *ngFor="let ver of snomedEditions?.get(snomedEdition)?.versions" [value]="ver">{{ver}}</option>
-      </select>
+              >
+              <option value="">Default</option>
+              @for (ver of snomedEditions?.get(snomedEdition)?.versions; track ver) {
+                <option [value]="ver">{{ver}}</option>
+              }
+            </select>
+          </div>
+        }
+        @if (formProperty.value) {
+          <div class="fst-italic text-decoration-underline text-black-50">Formatted answerValueSet URI:</div>
+          <span class="text-break text-black-50">{{formProperty.value}}</span>
+        }
+      </div>
+    </ng-template>
 
-    </div>
-    <ng-container *ngIf="formProperty.value">
-      <div class="fst-italic text-decoration-underline text-black-50">Formatted answerValueSet URI:</div>
-      <span class="text-break text-black-50">{{formProperty.value}}</span>
-    </ng-container>
-  </div>
-</ng-template>
+    <ng-template #vsInput>
+      <input [name]="name" [readonly]="schema.readOnly"
+        [ngClass]="controlClasses"
+        type="url"
+        [attr.id]="id+'_non-snomed'"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+        [lfbDisableControl]="valueSetType === 'snomed-value-set' || schema.disabled">
+    </ng-template>
 
-<ng-template #vsInput>
-  <input [name]="name" [readonly]="schema.readOnly"
-         [ngClass]="controlClasses"
-         type="url"
-         [attr.id]="id+'_non-snomed'"  [formControl]="control" [attr.placeholder]="schema.placeholder"
-         [lfbDisableControl]="valueSetType === 'snomed-value-set' || schema.disabled">
-</ng-template>
-
-<ng-template #eclHelp>
-  <div (mouseleave)="eclTooltipClose($event)" id="eclHelpContent" [innerHtml]="eclHelpContent"></div>
-</ng-template>
+    <ng-template #eclHelp>
+      <div (mouseleave)="eclTooltipClose($event)" id="eclHelpContent" [innerHtml]="eclHelpContent"></div>
+    </ng-template>

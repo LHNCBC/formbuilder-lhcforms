@@ -11,23 +11,27 @@ import {FormService} from '../../../services/form.service';
   standalone: false,
   selector: 'lfb-row-layout',
   template: `
-    <div [class]="gridClass(field)" class="lfb-row" *ngFor="let field of basicVisibleFields">
-      <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
-    </div>
+    @for (field of basicVisibleFields; track field) {
+      <div [class]="gridClass(field)" class="lfb-row">
+        <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
+      </div>
+    }
     <div class="d-flex pt-3">
       <button type="button" class="btn btn-link text-decoration-none ps-0 fw-bold" (click)="collapse.toggle()"
-              [attr.aria-expanded]="!collapseAdvanced"
-              aria-controls="advancedFields"
+        [attr.aria-expanded]="!collapseAdvanced"
+        aria-controls="advancedFields"
         >Advanced fields <fa-icon [icon]="collapseAdvanced ? faDown : faUp" aria-hidden="true"></fa-icon>
       </button>
     </div>
     <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced" (ngbCollapseChange)="handleAdvPanelCollapse($event)" id="advancedFields">
       <hr>
-      <div [class]="gridClass(field)" class="lfb-row" *ngFor="let field of advancedVisibleFields">
-        <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
+        @for (field of advancedVisibleFields; track field) {
+          <div [class]="gridClass(field)" class="lfb-row">
+            <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
+          </div>
+        }
       </div>
-    </div>
-  `,
+    `,
   styles: [`
     .lfb-row {
       border-bottom: lightgrey solid 1px;

@@ -1,7 +1,7 @@
 /**
  * Form related helper functions.
  */
-import {Inject, inject, Injectable, SimpleChange} from '@angular/core';
+import {Inject, inject, Injectable, SimpleChange, DOCUMENT} from '@angular/core';
 import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
@@ -36,7 +36,7 @@ import {TerminologyServerComponent} from '../lib/widgets/terminology-server/term
 import {ExtensionsService} from './extensions.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { EXTENSION_URL_VARIABLE, EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION, EXTENSION_URL_CUSTOM_VARIABLE_TYPE } from '../lib/constants/constants';
-import {DOCUMENT} from "@angular/common";
+
 
 declare var LForms: any;
 

@@ -1,47 +1,52 @@
 <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-  <lfb-label *ngIf="!nolabel"
-             [for]="'rg_'+elementId"
-             [title]="schema.title"
-             [helpMessage]="schema.description"
-             [ngClass]="labelClasses"
-             [labelId]="'label_rg_'+elementId"
-  ></lfb-label>
+  @if (!nolabel) {
+    <lfb-label
+      [for]="'rg_'+elementId"
+      [title]="schema.title"
+      [helpMessage]="schema.description"
+      [ngClass]="labelClasses"
+      [labelId]="'label_rg_'+elementId"
+    ></lfb-label>
+  }
 
   <div [ngClass]="controlClasses">
 
     <div class="btn-group btn-group-sm" role="radiogroup" [attr.id]="'rg_'+elementId" [attr.aria-labelledby]="'label_rg_'+elementId">
-      <ng-container *ngFor="let option of ['No', 'Yes']">
+      @for (option of ['No', 'Yes']; track option) {
         <input type="radio" class="btn-check" name="showOlp"
-               [attr.id]="'radio_'+option+'_'+elementId"
-               [ngModelOptions]="{standalone: true}"
-               [ngModel]="showOlp" (ngModelChange)="onBooleanChange($event)"
-               [value]="option === 'Yes'"
-               [attr.disabled]="schema.readOnly ? '' : null"
-               [attr.aria-controls]="'timeWindowGroup_'+elementId" >
+          [attr.id]="'radio_'+option+'_'+elementId"
+          [ngModelOptions]="{standalone: true}"
+          [ngModel]="showOlp" (ngModelChange)="onBooleanChange($event)"
+          [value]="option === 'Yes'"
+          [attr.disabled]="schema.readOnly ? '' : null"
+          [attr.aria-controls]="'timeWindowGroup_'+elementId" >
         <label class="btn btn-outline-success m-auto" [attr.for]="'radio_'+option+'_'+elementId">{{option}}</label>
-      </ng-container>
+      }
     </div>
 
-    <div *ngIf="showOlp">
-      <ng-container *ngIf="isCodePresent() else warning">
-        <div class="input-group input-group-sm mt-1" [attr.id]="'timeWindowGroup_'+elementId" role="region" aria-live="polite">
-          <span [attr.id]="'timeWindow_' + elementId" class="input-group-text py-0">Time window</span>
-          <input autocomplete="off" type="number" [ngModel]="value" (change)="onValueChange($event)" [attr.id]="elementId" [attr.aria-labelledby]="'timeWindow_' + elementId" placeholder="" class="form-control" />
-          <div class="btn-group btn-group-sm">
-            <select [ngModel]="unitIndex" (ngModelChange)="onUnitChange($event)" aria-label="Time window units"
-                    class="form-control form-select form-select-sm rounded-0 rounded-end" [attr.id]="'select_'+elementId">
-              <ng-container>
-                <option *ngFor="let option of unitOptions; index as i"
-                        [ngValue]="i">{{option.unit}}</option>
-              </ng-container>
-            </select>
+    @if (showOlp) {
+      <div>
+        @if (isCodePresent()) {
+          <div class="input-group input-group-sm mt-1" [attr.id]="'timeWindowGroup_'+elementId" role="region" aria-live="polite">
+            <span [attr.id]="'timeWindow_' + elementId" class="input-group-text py-0">Time window</span>
+            <input autocomplete="off" type="number" [ngModel]="value" (change)="onValueChange($event)" [attr.id]="elementId" [attr.aria-labelledby]="'timeWindow_' + elementId" placeholder="" class="form-control" />
+            <div class="btn-group btn-group-sm">
+              <select [ngModel]="unitIndex" (ngModelChange)="onUnitChange($event)" aria-label="Time window units"
+                class="form-control form-select form-select-sm rounded-0 rounded-end" [attr.id]="'select_'+elementId">
+                <ng-container>
+                  @for (option of unitOptions; track option; let i = $index) {
+                    <option
+                    [ngValue]="i">{{option.unit}}</option>
+                  }
+                </ng-container>
+              </select>
+            </div>
           </div>
-        </div>
-      </ng-container>
-    </div>
+        } @else {
+          <p class="alert alert-warning mt-1" role="alert">Linking to FHIR Observation requires a code assigned to this item. Please enter a code before entering the time window.</p>
+        }
+      </div>
+    }
 
-    <ng-template #warning>
-      <p class="alert alert-warning mt-1" role="alert">Linking to FHIR Observation requires a code assigned to this item. Please enter a code before entering the time window.</p>
-    </ng-template>
   </div>
 </div>

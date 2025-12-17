@@ -17,15 +17,17 @@ import { FormService } from 'src/app/services/form.service';
   selector: 'lfb-enable-operator',
   template: `
     <select #mySelect
-            [(ngModel)]="myModel"
-            (ngModelChange)="onModelChange($event)"
-            name="{{name}}" [attr.id]="id"
-            [disabled]="schema.readOnly" class="form-control">
+      [(ngModel)]="myModel"
+      (ngModelChange)="onModelChange($event)"
+      name="{{name}}" [attr.id]="id"
+      [disabled]="schema.readOnly" class="form-control">
       <ng-container>
-        <option *ngFor="let opt of selectOptionList" [ngValue]="opt.option" >{{opt.label}}</option>
+        @for (opt of selectOptionList; track opt) {
+          <option [ngValue]="opt.option" >{{opt.label}}</option>
+        }
       </ng-container>
     </select>
-  `,
+    `,
   styles: [
   ]
 })

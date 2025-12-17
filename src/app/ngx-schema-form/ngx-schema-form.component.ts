@@ -16,9 +16,11 @@ import {SharedObjectService} from '../services/shared-object.service';
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-      <lfb-sf-form-wrapper *ngIf="instantiate" [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)" (validationErrorsChanged)="onValidationErrorsChange($event)"></lfb-sf-form-wrapper>
+      @if (instantiate) {
+        <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)" (validationErrorsChanged)="onValidationErrorsChange($event)"></lfb-sf-form-wrapper>
+      }
     </div>
-  `,
+    `,
   styles: [`
 
     pre {

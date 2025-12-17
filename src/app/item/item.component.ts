@@ -137,32 +137,31 @@ export class ErrorTooltip {
     <div class="modal-header" [ngClass]="{'bg-danger': type === MessageType.DANGER, 'bg-primary': type !== MessageType.DANGER}">
       <h4 class="modal-title text-white">{{title}}</h4>
       <button type="button" class="btn-close btn-close-white" aria-label="Close"
-              (click)="activeModal.dismiss(false)"
-              (keydown.enter)="activeModal.dismiss(false)"
+        (click)="activeModal.dismiss(false)"
+        (keydown.enter)="activeModal.dismiss(false)"
       ></button>
     </div>
     <div class="modal-body">
       <p>{{message}}</p>
     </div>
     <div class="modal-footer">
-      <ng-container *ngIf="type !== MessageType.DANGER; else closeBtn">
+      @if (type !== MessageType.DANGER) {
         <button type="button" class="btn btn-primary"
-                (keydown.enter)="activeModal.dismiss(false)"
-                (click)="activeModal.dismiss(false)"
+          (keydown.enter)="activeModal.dismiss(false)"
+          (click)="activeModal.dismiss(false)"
         >No</button>
         <button type="button" class="btn btn-primary"
-                (keydown.enter)="activeModal.close(true)"
-                (click)="activeModal.close(true)"
+          (keydown.enter)="activeModal.close(true)"
+          (click)="activeModal.close(true)"
         >Yes</button>
-      </ng-container>
-      <ng-template #closeBtn>
+      } @else {
         <button type="button" class="btn btn-primary"
-                (keydown.enter)="activeModal.dismiss(false)"
-                (click)="activeModal.dismiss(false)"
+          (keydown.enter)="activeModal.dismiss(false)"
+          (click)="activeModal.dismiss(false)"
         >Close</button>
-      </ng-template>
+      }
     </div>
-  `
+    `
 })
 export class ConfirmDlgComponent {
   @Input()

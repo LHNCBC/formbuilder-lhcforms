@@ -1,38 +1,41 @@
-<input *ngIf="schema.widget.id ==='hidden'; else editableLinkId"
-       name="{{name}}" type="hidden" [formControl]="control">
-<ng-template #editableLinkId>
+@if (schema.widget.id ==='hidden') {
+  <input
+    name="{{name}}" type="hidden" [formControl]="control">
+} @else {
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
     <lfb-label
-               [for]="id"
-               [title]="schema.title"
-               [helpMessage]="schema.description"
-               [ngClass]="labelClasses"
-               class="form-label"
+      [for]="id"
+      [title]="schema.title"
+      [helpMessage]="schema.description"
+      [ngClass]="labelClasses"
+      class="form-label"
     ></lfb-label>
     <div class="col p-0" [class.has-error]="errors"
-         [class.has-success]="formProperty.valid">
+      [class.has-success]="formProperty.valid">
       <input [name]="name"
-             class="form-control form-control-sm"
-             [attr.type]="'text'"
-             [attr.id]="id"
-             maxlength="255"
-             [ngClass]="{invalid: errors}"
-             [attr.aria-invalid]="errors"
-             (focus)="announceErrors()"
-             [formControl]="control">
+        class="form-control form-control-sm"
+        [attr.type]="'text'"
+        [attr.id]="id"
+        maxlength="255"
+        [ngClass]="{invalid: errors}"
+        [attr.aria-invalid]="errors"
+        (focus)="announceErrors()"
+        [formControl]="control">
       <ul>
-        <ng-container *ngFor="let error of errors" id="errorMessages" role="alert" >
-          <li>
-            <fa-icon id="error" [icon]="errorIcon" style="color: red"></fa-icon>
-            <small *ngIf="error" class="text-danger form-text" role="alert">
-              {{error.modifiedMessage || error.originalMessage}}
-            </small>
-          </li>
-        </ng-container>
+        @for (error of errors; track error) {
+          <ng-container id="errorMessages" role="alert" >
+            <li>
+              <fa-icon id="error" [icon]="errorIcon" style="color: red"></fa-icon>
+              @if (error) {
+                <small class="text-danger form-text" role="alert">
+                  {{error.modifiedMessage || error.originalMessage}}
+                </small>
+              }
+            </li>
+          </ng-container>
+        }
       </ul>
-
       <p #note [attr.id]="'note_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
-
     </div>
   </div>
-</ng-template>
+}

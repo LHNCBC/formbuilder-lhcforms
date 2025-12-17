@@ -15,23 +15,24 @@ declare var LForms: any;
   selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
-      <ng-container *ngIf="autoComplete; else answerOption">
+      @if (autoComplete) {
         <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
-      </ng-container>
+      } @else {
+        <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
+          name="{{name}}" [attr.id]="id"
+          class="form-control"
+          >
+          <ng-container>
+            @for (option of answerOptions; track option) {
+              <option [ngValue]="option.valueCoding"
+              >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
+            }
+          </ng-container>
+        </select>
+      }
     </div>
-
-    <ng-template #answerOption>
-      <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
-              name="{{name}}" [attr.id]="id"
-              class="form-control"
-      >
-        <ng-container>
-          <option *ngFor="let option of answerOptions" [ngValue]="option.valueCoding"
-          >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
-        </ng-container>
-      </select>
-    </ng-template>
-  `,
+    
+    `,
   styles: [
   ]
 })

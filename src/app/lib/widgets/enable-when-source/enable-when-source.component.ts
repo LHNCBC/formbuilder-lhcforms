@@ -18,30 +18,36 @@ import {Util} from '../../util';
       <ngb-highlight [result]="r.name" [term]="t"></ngb-highlight>
     </ng-template>
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-
-      <lfb-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
-      <input *ngIf="schema.type !== 'array'"
-             name="{{name}}"
-             [attr.id]="id"
-             [attr.disabled]="schema.readOnly ? '' : null"
-             type="text"
-             [(ngModel)]="model"
-             [ngbTypeahead]="search"
-             [editable]="false"
-             [inputFormatter]="inputFormatter"
-             [resultFormatter]="resultListItemFormatter"
-             class="form-control"
-             (focus)="focus$.next($any($event).target.value)"
-             (click)="click$.next($any($event).target.value)"
-             (change)="validateQuestion()"
-             (selectItem)="onSelect($event)"
-             #instance="ngbTypeahead"
-             popupClass="add-scrolling"
-      >
-
-      <input *ngIf="schema.readOnly" name="{{name}}" type="hidden" [formControl]="control">
+    
+      @if (!nolabel) {
+        <lfb-label  [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
+      }
+      @if (schema.type !== 'array') {
+        <input
+          name="{{name}}"
+          [attr.id]="id"
+          [attr.disabled]="schema.readOnly ? '' : null"
+          type="text"
+          [(ngModel)]="model"
+          [ngbTypeahead]="search"
+          [editable]="false"
+          [inputFormatter]="inputFormatter"
+          [resultFormatter]="resultListItemFormatter"
+          class="form-control"
+          (focus)="focus$.next($any($event).target.value)"
+          (click)="click$.next($any($event).target.value)"
+          (change)="validateQuestion()"
+          (selectItem)="onSelect($event)"
+          #instance="ngbTypeahead"
+          popupClass="add-scrolling"
+          >
+      }
+    
+      @if (schema.readOnly) {
+        <input name="{{name}}" type="hidden" [formControl]="control">
+      }
     </div>
-  `,
+    `,
   styles: [
   ]
 })
