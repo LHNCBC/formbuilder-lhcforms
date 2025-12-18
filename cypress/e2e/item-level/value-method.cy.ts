@@ -80,14 +80,14 @@ describe('Home page', () => {
         cy.clickTreeNode('Compute Initial Value');
         cy.getItemTypeField().should('have.value', '2: integer');
         cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b');
+        cy.get('[id^="__\\$initialExpression"]').should('contain.value', '%a + %b');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
         // Continuously Compute Value
         cy.clickTreeNode('Continuously Compute Value');
         cy.getItemTypeField().should('have.value', '2: integer');
         cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%a + %b + %c');
+        cy.get('[id^="__\\$calculatedExpression"]').should('contain.value', '%a + %b + %c');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
         cy.clickTreeNode('None');
@@ -112,7 +112,7 @@ describe('Home page', () => {
         cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='measured_weight').answer.value");
 
         cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '%measured_weight-%normal_weight');
+        cy.get('[id^="__\\$initialExpression"]').should('contain.value', '%measured_weight-%normal_weight');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
 
         // Continuously Compute Value
@@ -133,7 +133,7 @@ describe('Home page', () => {
         cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', "%resource.item.where(linkId='weight_change').answer.value");
 
         cy.get('@computeContinuouslyRadio').should('be.visible').and('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('contain.value', '((%weight_change / %normal_weight).round(2))*100');
+        cy.get('[id^="__\\$calculatedExpression"]').should('contain.value', '((%weight_change / %normal_weight).round(2))*100');
         cy.get('@repeatUnspecifiedRadio').should('be.visible').and('be.checked');
       });
 
@@ -360,8 +360,8 @@ describe('Home page', () => {
         cy.selectDataType('integer');
 
         cy.get('@computeInitial').should('be.visible').click();
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editInitialExpression').click();
+        cy.get('[id^="__\\$initialExpression"]').should('be.empty');
+        cy.get('[id^="edit__\\$initialExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
 
@@ -390,7 +390,7 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+        cy.get('[id^="__\\$initialExpression"]').should('have.value', '%a + %b');
 
         // need to check the JSON
         cy.questionnaireJSON().should((qJson) => {
@@ -442,7 +442,7 @@ describe('Home page', () => {
         });
 
         // Go back to the Expression Editor to check that the settings are still correct.
-        cy.get('button#editInitialExpression').click();
+        cy.get('[id^="edit__\\$initialExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
@@ -466,8 +466,8 @@ describe('Home page', () => {
         cy.selectDataType('integer');
 
         cy.get('@computeContinuously').should('be.visible').click();
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editCalculatedExpression').click();
+        cy.get('[id^="__\\$calculatedExpression"]').should('be.empty');
+        cy.get('[id^="edit__\\$calculatedExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
 
@@ -496,7 +496,7 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+        cy.get('[id^="__\\$calculatedExpression"]').should('have.value', '%a + %b');
 
         // need to check the JSON
         cy.questionnaireJSON().should((qJson) => {
@@ -548,7 +548,7 @@ describe('Home page', () => {
         });
 
         // Go back to the Expression Editor to check that the settings are still correct.
-        cy.get('button#editCalculatedExpression').click();
+        cy.get('[id^="edit__\\$calculatedExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
@@ -573,8 +573,8 @@ describe('Home page', () => {
 
         // Create Initial compute value
         cy.get('@computeInitial').should('be.visible').click();
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editInitialExpression').click();
+        cy.get('[id^="__\\$initialExpression"]').should('be.empty');
+        cy.get('[id^="edit__\\$initialExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
           cy.get('#add-variable').click();
@@ -588,7 +588,7 @@ describe('Home page', () => {
           cy.get('textarea#final-expression').clear().type('%a + %b');
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+        cy.get('[id^="__\\$initialExpression"]').should('have.value', '%a + %b');
 
         // Toggle 'Create answer list' from 'No' to 'Yes' and back
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
@@ -607,8 +607,8 @@ describe('Home page', () => {
 
         // Create Continuously compute value
         cy.getComputeContinuouslyValueValueMethodClick();
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editCalculatedExpression').click();
+        cy.get('[id^="__\\$calculatedExpression"]').should('be.empty');
+        cy.get('[id^="edit__\\$calculatedExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
           cy.get('#add-variable').click();
@@ -623,7 +623,7 @@ describe('Home page', () => {
           cy.get('lhc-syntax-preview>div>div>pre').should('not.have.text', 'Not valid');
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+        cy.get('[id^="__\\$calculatedExpression"]').should('have.value', '%a + %b');
 
         // Click on a different item in the tree (simulate navigation away)
         cy.clickTreeNode('None');
@@ -643,8 +643,8 @@ describe('Home page', () => {
         cy.selectDataType('decimal');
 
         cy.get('@computeInitial').should('be.visible').click();
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editInitialExpression').click();
+        cy.get('[id^="__\\$initialExpression"]').should('be.empty');
+        cy.get('[id^="edit__\\$initialExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
 
@@ -673,7 +673,7 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+        cy.get('[id^="__\\$initialExpression"]').should('have.value', '%a + %b');
 
         // need to check the JSON
         cy.questionnaireJSON().should((qJson) => {
@@ -783,8 +783,7 @@ describe('Home page', () => {
         // -------------------------------------------------------------------
         cy.getComputeContinuouslyValueValueMethodClick();
 
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
-
+        cy.get('[id^="__\\$calculatedExpression"]').should('have.value', '%a + %b');
 
         cy.questionnaireJSON().should((qJson) => {
           // The 'initial' section should be removed.
@@ -843,8 +842,7 @@ describe('Home page', () => {
         // ---------------------------------------------------------------
         cy.getComputeInitialValueValueMethodClick();
 
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
-
+        cy.get('[id^="__\\$initialExpression"]').should('have.value', '%a + %b');
 
         cy.questionnaireJSON().should((qJson) => {
           // The output expression should show the URL as 'Initial expression'
@@ -976,7 +974,7 @@ describe('Home page', () => {
         // -------------------------------------------------------------------
         cy.getComputeContinuouslyValueValueMethodClick();
 
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+        cy.get('[id^="__\\$calculatedExpression"]').should('have.value', '%a + %b');
 
         cy.questionnaireJSON().should((qJson) => {
           // The 'initial' section should be removed.

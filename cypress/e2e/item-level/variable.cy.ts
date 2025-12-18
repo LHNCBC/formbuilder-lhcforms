@@ -226,8 +226,8 @@ describe('Home page', () => {
         cy.selectDataType('integer');
 
         cy.get('@computeInitial').should('be.visible').click();
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editInitialExpression').click();
+        cy.get('[id^="__\\$initialExpression"]').should('be.empty');
+        cy.get('[id^="edit__\\$initialExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
 
@@ -256,7 +256,7 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a + %b');
+        cy.get('[id^="__\\$initialExpression"]').should('have.value', '%a + %b');
 
         // Item Variables section should now show 2 variables that were created in the Expression Editor
         cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
@@ -300,7 +300,7 @@ describe('Home page', () => {
         cy.get('@thirdVariable').find('td:nth-child(3)').should('have.text', '3');
 
         // Go back to the Expression Editor to check that the settings are still correct.
-        cy.get('button#editInitialExpression').click();
+        cy.get('[id^="edit__\\$initialExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
@@ -327,8 +327,8 @@ describe('Home page', () => {
         cy.selectDataType('integer');
 
         cy.get('@computeInitial').should('be.visible').click();
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-        cy.get('button#editInitialExpression').click();
+        cy.get('[id^="__\\$initialExpression"]').should('be.empty');
+        cy.get('[id^="edit__\\$initialExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
 
@@ -342,7 +342,7 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '1 + 2');
+        cy.get('[id^="__\\$initialExpression"]').should('have.value', '1 + 2');
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[1].extension).to.deep.equal([
@@ -384,7 +384,7 @@ describe('Home page', () => {
         cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', '30');
 
         // Click the 'Create/edit expression' again
-        cy.get('button#editInitialExpression').click();
+        cy.get('[id^="edit__\\$initialExpression"]').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section should show variable 'a' that was created prior.
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
@@ -401,7 +401,7 @@ describe('Home page', () => {
           cy.get('#export').click();
         });
 
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '1 + 2 + %a');
+        cy.get('[id^="__\\$initialExpression"]').should('have.value', '1 + 2 + %a');
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[1].extension).to.deep.equal([

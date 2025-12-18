@@ -11,12 +11,12 @@
 
     <div [ngClass]="controlClasses" class="col p-0">
       <lfb-label *ngIf="noTableLabel" [helpMessage]="schema.description" [title]="schema.title"
-                 [labelId]="'label_'+id" [for]="id"></lfb-label>
+                 [labelId]="'label_'+id" [for]="id+_id"></lfb-label>
       <div class="input-group">
         <textarea
           readonly
           aria-label="FHIRPath"
-          [id]="getExpressionId()"
+          [attr.id]="id+_id"
           [(ngModel)]="expression"
           class="flex-item textarea"
           [formControl]="control"
@@ -24,7 +24,7 @@
           *ngIf="schema.widget.showExpression"
         ></textarea>
       </div>
-      <button [id]="getEditExpressionId()" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button" style="width:100%"
+      <button [attr.id]="'edit'+id+_id" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button" style="width:100%"
               triggers="manual" placement="bottom top"
               popoverClass=""
       >

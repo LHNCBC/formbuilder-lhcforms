@@ -1187,8 +1187,10 @@ describe('Home page', () => {
   });
 
   describe('Item level fields: advanced - Condition expression', () => {
+    let fixtureJson;
     beforeEach(() => {
       const sampleFile = 'enable-when-expression-sample.json';
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
       cy.uploadFile(sampleFile, false);
       cy.getFormTitleField().should('have.value', 'enableWhen expression');
       cy.contains('button', 'Edit questions').click();
@@ -1222,7 +1224,7 @@ describe('Home page', () => {
       cy.expandAdvancedFields();
 
       cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
-      cy.get('#enableWhenExpression').should('exist').should('have.value', '%a > 5 and %b > 5');
+      cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a > 5 and %b > 5');
     });
 
     it('should display enableWhen and initial expressions', () => {
@@ -1232,10 +1234,11 @@ describe('Home page', () => {
       cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
       cy.get('@valueMethod').find('[id^="__$valueMethod_compute-initial"]').as('computeInitialRadio');
       cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
-      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%a + %b");
+      cy.get('[id^="__\\$initialExpression"]').should('have.value', "%a + %b");
+
 
       cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
-      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
+      cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a < 5 and %b < 5');
     });
 
     it('should display enableWhen and calculated expressions', () => {
@@ -1245,10 +1248,11 @@ describe('Home page', () => {
       cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
       cy.get('@valueMethod').find('[id^="__$valueMethod_compute-continuously"]').as('computeContinuously');
       cy.get('@computeContinuously').should('be.visible').and('be.checked');
-      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%a * %b");
+      cy.get('[id^="__\\$calculatedExpression"]').should('have.value', "%a * %b");
+
 
       cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
-      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
+      cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a < 5 and %b < 5');
     });
 
     it('should display enableWhen and answer expressions', () => {
@@ -1257,10 +1261,15 @@ describe('Home page', () => {
 
       cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
       cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
-      cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "1");
+      cy.get('[id^="__\\$answerExpression"]').should('have.value', "1");
+
 
       cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
-      cy.get('lfb-expression-editor textarea#enableWhenExpression').should('exist').should('have.value', '%a < 5 and %b < 5');
+      cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a < 5 and %b < 5');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[6].extension).to.deep.equal(fixtureJson.item[6].extension);
+      });
     });
 
     it('should show/hide questions based on enableWhen condition and expression', () => {

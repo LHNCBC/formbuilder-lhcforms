@@ -750,7 +750,8 @@ describe('Home page', () => {
         cy.get('@type').contains('string');
         cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family");
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', "%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family");
+
         cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
         cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
@@ -760,7 +761,8 @@ describe('Home page', () => {
         cy.get('@type').contains('integer');
         cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "today().toDate().difference(%patient.birthDate.toDate()).years()");
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', "today().toDate().difference(%patient.birthDate.toDate()).years()");
+
         cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
         cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
@@ -770,7 +772,8 @@ describe('Home page', () => {
         cy.get('@type').contains('coding');
         cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%patient.gender");
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', "%patient.gender");
+
         cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
         cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
@@ -828,7 +831,8 @@ describe('Home page', () => {
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
 
         // Click the 'Create/edit expression' for the Answer expression
-        cy.get('button#editAnswerExpression').click();
+        cy.get('[id^="edit__\\$answerExpression"]').click();
+
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Update the Output expression
           cy.get('textarea#final-expression').clear().type('%a | %b');
@@ -836,10 +840,11 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b');
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', '%a | %b');
 
         // Edit the Answer expression
-        cy.get('button#editAnswerExpression').click();
+        cy.get('[id^="edit__\\$answerExpression"]').click();
+
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Update the Output expression
           cy.get('textarea#final-expression').clear().type('%a | %b | 999');
@@ -847,7 +852,7 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b | 999');
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', '%a | %b | 999');
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[3].extension).to.deep.equal([
@@ -913,8 +918,7 @@ describe('Home page', () => {
         cy.getComputeInitialValueValueMethodClick();
         // The expression for the Compute Initial Value should be blank. It should not
         // display the Answer expression.
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-
+        cy.get('[id^="__\\$initialExpression"]').should('be.empty');
       });
     });
 

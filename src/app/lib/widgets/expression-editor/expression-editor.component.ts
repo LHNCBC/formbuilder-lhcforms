@@ -213,38 +213,6 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   }
 
 
-  /**
-   * Returns the id string for the textarea based on the form property path.
-   * If the path is '/__$enableWhenExpression', returns 'enableWhenExpression'.
-   * Otherwise, returns 'outputExpression'.
-   * @returns {string} The id for the textarea element.
-   */
-  getExpressionId(): string {
-    if (this.formProperty.path === "/__$enableWhenExpression") {
-      return "enableWhenExpression";
-    }
-    return "outputExpression";
-  }
-
-  /**
-   * Returns a string for the edit action based on the FHIR extension URI.
-   * If the URI matches 'sdc-questionnaire-<Type>Expression', returns 'edit<Type>Expression',
-   * otherwise returns 'editExpression'.
-   * Example: 'sdc-questionnaire-enableWhenExpression' -> 'editEnableWhenExpression'.
-   * @returns {string} The edit action string for the expression type.
-   */
-  getEditExpressionId(): string {
-    const expressionUri = this.schema.widget.expressionUri;
-    if (typeof expressionUri !== 'string') return null;
-    // Match and return the <Type>Expression part
-    const match = expressionUri.match(/sdc-questionnaire-([a-zA-Z]+Expression)$/);
-    if (match) {
-      const type = match[1];
-      const capitalized = type.charAt(0).toUpperCase() + type.slice(1);
-      return `edit${capitalized}`;
-    }
-    return 'editExpression';
-  }
 
   /**
    * Open the Expression Editor widget to create/update variables and expression.

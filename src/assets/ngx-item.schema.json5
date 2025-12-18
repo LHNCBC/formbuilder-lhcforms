@@ -810,7 +810,7 @@
     },
     "__$enableWhenExpression": {
       "description": "An expression that evaluates to a boolean value to determine whether the item should be enabled.",
-      "title": "Complex expression",
+      "title": "Expression",
       "type": "object",
       "properties": {
         "id": {
