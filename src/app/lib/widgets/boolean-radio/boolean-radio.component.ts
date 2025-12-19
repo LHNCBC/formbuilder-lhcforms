@@ -38,7 +38,7 @@ export class BooleanRadioComponent  extends LfbControlWidgetComponent implements
     this.labelPosition = 'left';
 
     sub = this.formProperty.valueChanges.subscribe((val) => {
-      const changed = this.currentConditionalMethod ? val !== this.currentConditionalMethod : false;
+      const changed = (this.currentConditionalMethod != null && val !== this.currentConditionalMethod) ? true : false;
       this.currentConditionalMethod = val;
 
       if (changed && pathToUrl[this.formProperty.path] === EXTENSION_URL_ENABLEWHEN_EXPRESSION ) {
