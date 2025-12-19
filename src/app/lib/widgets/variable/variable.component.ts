@@ -122,6 +122,20 @@ export class VariableComponent extends TableComponent implements OnInit {
   }
 
   /**
+   * Filter out empty variables.
+   * @returns - Array of non-empty variables or an empty array.
+   */
+  get nonEmptyVariables() {
+    return (this.formProperty.value ?? []).filter(v => v && (
+      (Array.isArray(v.extension) && v.extension.length > 0) ||
+      (v.valueExpression &&
+        'name' in v.valueExpression &&
+        'language' in v.valueExpression &&
+        'expression' in v.valueExpression)
+    ));
+  }
+
+  /**
    * Open the Expression Editor as a modal to create or edit variables.
    */
   editVariables(): void {

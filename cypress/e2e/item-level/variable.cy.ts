@@ -433,7 +433,6 @@ describe('Home page', () => {
           ]);
         });
 
-
         // Click the 'Preview' button to see the initial value
         cy.contains('button', 'Preview').click();
         cy.get('wc-lhc-form').should('exist')
@@ -544,6 +543,99 @@ describe('Home page', () => {
         cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
         cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', "2");
 
+      });
+
+      it('should delete all variables and verify none remain', () => {
+        // Add a new item under the 'None'.
+        cy.clickTreeNode('None');
+        cy.contains('Add new item').scrollIntoView().click();
+        cy.getItemTextField().clear().type('Deleting Variables');
+        cy.selectDataType('integer');
+
+        // Click the 'Create/edit variables' button and add three new variables
+        cy.get('button#editVariables').click();
+        cy.get('lhc-expression-editor').shadow().within(() => {
+          cy.get('#expression-editor-base-dialog').should('exist');
+
+          // Variables section
+          cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.get('#variables-section .variable-row').should('have.length', 0);
+
+          // Add a new variable 'a'
+          cy.get('#add-variable').click();
+          cy.get('#variables-section .variable-row').should('have.length', 1);
+          cy.get('#variable-label-0').clear().type('a');
+          cy.get('#variable-type-0').select('Easy Path Expression');
+          cy.get('input#simple-expression-0').type('10');
+
+          // Add a new variable 'b'
+          cy.get('#add-variable').click();
+          cy.get('#variables-section .variable-row').should('have.length', 2);
+          cy.get('#variable-label-1').clear().type('b');
+          cy.get('#variable-type-1').select('Easy Path Expression');
+          cy.get('input#simple-expression-1').type('11');
+
+          // Save (Export)
+          cy.get('#export').click();
+        });
+
+        // Item Variables section should now show 2 variables
+        cy.get('lfb-variable table > tbody > tr').should('have.length', 2);
+        cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+        cy.get('lfb-variable table > tbody > tr:nth-of-type(2)').as('secondVariable');
+
+        cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'a');
+        cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
+        cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', '10');
+
+        cy.get('@secondVariable').find('td:nth-child(1)').should('have.text', 'b');
+        cy.get('@secondVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
+        cy.get('@secondVariable').find('td:nth-child(3)').should('have.text', '11');
+
+        // Click the 'Create/edit variables' button again
+        cy.get('button#editVariables').click();
+        cy.get('lhc-expression-editor').shadow().within(() => {
+          cy.get('#expression-editor-base-dialog').should('exist');
+
+          // Variables section
+          cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.get('#variables-section .variable-row').should('have.length', 2);
+
+          // Delete the 1st variable
+          cy.get('button#remove-variable-0').click();
+          cy.get('#variables-section .variable-row').should('have.length', 1);
+
+          // Save (Export)
+          cy.get('#export').click();
+        });
+
+        // Item Variables section should now show 1 variable
+        cy.get('lfb-variable table > tbody > tr').should('have.length', 1);
+        cy.get('lfb-variable table > tbody > tr:nth-of-type(1)').as('firstVariable');
+
+        cy.get('@firstVariable').find('td:nth-child(1)').should('have.text', 'b');
+        cy.get('@firstVariable').find('td:nth-child(2)').should('have.text', 'Easy Path Expression');
+        cy.get('@firstVariable').find('td:nth-child(3)').should('have.text', '11');
+
+        // Click the 'Create/edit variables' button again
+        cy.get('button#editVariables').click();
+        cy.get('lhc-expression-editor').shadow().within(() => {
+          cy.get('#expression-editor-base-dialog').should('exist');
+
+          // Variables section
+          cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.get('#variables-section .variable-row').should('have.length', 1);
+
+          // Delete the variable
+          cy.get('button#remove-variable-0').click();
+          cy.get('#variables-section .variable-row').should('have.length', 0);
+
+          // Save (Export)
+          cy.get('#export').click();
+        });
+
+        // Item Variables section should now be empty
+        cy.get('lfb-variable table > tbody > tr').should('not.exist');
       });
     });
   });

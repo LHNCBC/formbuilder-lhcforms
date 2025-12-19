@@ -1,3 +1,41 @@
+/* Style the internal drop slot for correct drag-over effect */
+:host ::ng-deep .node-drop-slot {
+  height: 4px !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-top: 0;
+  margin-bottom: 4px;
+  position: relative;
+}
+
+/* Hide a tree-node-drop-slot element that is:
+   - not at level 1 (root)
+   - is the last child (:last-of-type)
+*/
+:host ::ng-deep [class*="tree-node-level-"]:not(.tree-node-level-1) tree-node-drop-slot:last-of-type {
+  height: 0px !important;
+  display: none !important;
+}
+
+:host ::ng-deep .node-drop-slot.is-dragging-over {
+  height: 30px !important;
+  background: #ddffee;
+  border: 2px dotted #888;
+}
+
+/* Show a message during the `drag-over` event at the root level (level 1) */
+:host ::ng-deep  [class*="tree-node-level-1"] .node-drop-slot.is-dragging-over::after {
+  content: "Drop at root level";
+}
+
+/* Show a message during the `drag-over` event at the child level (level > 1) */
+:host ::ng-deep  [class*="tree-node-level-"]:not(.tree-node-level-1) .node-drop-slot.is-dragging-over::after {
+  content: "Drop at child level";
+}
 
 .node-content-wrapper {
   width: 100%;
@@ -98,4 +136,9 @@
   pointer-events: none;
   white-space: nowrap;
   z-index: 1500 !important;
+}
+
+.drop-target {
+  background-color: #d4f8e8;
+  border: 1px dashed #111111;
 }
