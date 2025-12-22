@@ -65,7 +65,7 @@
               </thead>
             }
             <tbody [ngbCollapse]="isCollapsed">
-              @for (itemProperty of formProperty.properties; track itemProperty; let ind = $index; let isFirst = $first; let isLast = $last) {
+              @for (itemProperty of (formProperty.properties ?? []); track itemProperty; let ind = $index; let isFirst = $first; let isLast = $last) {
                 <tr
                   class="d-flex lfb-table-row" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
                   @for (showField of getShowTableFields(); track showField) {

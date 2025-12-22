@@ -37,6 +37,8 @@ interface SearchField {
   templateUrl: 'fhir-search-dlg.component.html'
 })
 export class FhirSearchDlgComponent {
+  private activeModal = inject(NgbActiveModal);
+
 
   infoIcon = faInfoCircle;
   private _loading$ = new BehaviorSubject<boolean>(false);
@@ -72,7 +74,7 @@ export class FhirSearchDlgComponent {
     fhirServer: this.fhirService.getFhirServer()
   };
 
-  constructor(private activeModal: NgbActiveModal) {
+  constructor() {
     // Set up search pipeline
     this._search$.pipe(
       tap(() => this._loading$.next(true)),

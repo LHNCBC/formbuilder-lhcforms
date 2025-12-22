@@ -1,7 +1,7 @@
 /**
  * General purpose message dialog box.
  */
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, inject } from '@angular/core';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 export enum MessageType {
@@ -44,6 +44,8 @@ export interface MessageDlgOptions {
   ]
 })
 export class MessageDlgComponent implements OnInit {
+  activeModal = inject(NgbActiveModal);
+
 
 
   @Input()
@@ -56,9 +58,6 @@ export class MessageDlgComponent implements OnInit {
   options?: MessageDlgOptions;
 
   buttons = [{label: 'Close', value: 'close'}];
-
-
-  constructor(public activeModal: NgbActiveModal) {}
 
   ngOnInit() {
     this.title = this.title || this.options?.title;

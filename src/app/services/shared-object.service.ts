@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import {TreeNode} from '@bugsplat/angular-tree-component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
 import fhir from 'fhir/r4';
 
@@ -16,7 +16,7 @@ export class SharedObjectService {
 
   private questionnaireSource$ = new BehaviorSubject<fhir.Questionnaire>(null);
   private itemSource$ = new BehaviorSubject<fhir.QuestionnaireItem>(null);
-  private nodeSource$: BehaviorSubject<ITreeNode> = new BehaviorSubject<ITreeNode>(null);
+  private nodeSource$: BehaviorSubject<TreeNode> = new BehaviorSubject<TreeNode>(null);
   node$ = this.nodeSource$.asObservable();
   private objSource$: BehaviorSubject<any> = new BehaviorSubject<any>({});
   object$ = this.objSource$.asObservable();

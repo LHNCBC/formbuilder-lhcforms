@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
@@ -20,9 +20,13 @@ import {FormService} from '../../../services/form.service';
   providers: [RestrictionOperatorService] // A service for this instance of component.
 })
 export class RestrictionsComponent extends TableComponent implements OnInit {
+  private restrictionOperatorService = inject(RestrictionOperatorService);
+  private extensionsService = inject(ExtensionsService);
+  private formService = inject(FormService);
+
 
   // Map display strings and urls to restrictions.
-  static optionsDef = {
+  static optionsDef: {[key:string]: {extUrl: string, display: string}} = {
     maxLength: {
       extUrl: 'http://hl7.org/fhir/StructureDefinition/maxLength',
       display: 'Maximum length'
@@ -92,12 +96,6 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     return optKeys.map((opt) => {
       return RestrictionsComponent.optionsDef[opt];
     });
-  }
-
-  constructor(private restrictionOperatorService: RestrictionOperatorService,
-              private extensionsService: ExtensionsService,
-              private formService: FormService) {
-    super();
   }
 
 

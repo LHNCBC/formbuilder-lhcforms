@@ -4,7 +4,7 @@
 import traverse from 'traverse';
 import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
-import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import {TreeNode} from '@bugsplat/angular-tree-component';
 import copy from 'fast-copy';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
@@ -494,7 +494,7 @@ export class Util {
    * Compute tree hierarchy sequence numbering.
    * @param node - Target node of computation
    */
-  static getIndexPath(node: ITreeNode): number[] {
+  static getIndexPath(node: TreeNode): number[] {
     const ret: number [] = [];
     if (node) {
       ret.push(node.index + 1);
@@ -512,7 +512,7 @@ export class Util {
    * Format Node item for some display cases, for example search results of node items.
    * @param node - Input node to format the display.
    */
-  static formatNodeForDisplay(node: ITreeNode) {
+  static formatNodeForDisplay(node: TreeNode) {
     let ret: string;
     if (node && node.data) {
       ret = `${Util.getIndexPath(node).join('.')}: ${node.data.text}`;
@@ -573,7 +573,7 @@ export class Util {
    *
    * @return - Returns an array consisting the nodes in the order it visited.
    */
-  static traverseAncestors(sourceNode: ITreeNode, callback: (node: ITreeNode) => boolean): any[] {
+  static traverseAncestors(sourceNode: TreeNode, callback: (node: TreeNode) => boolean): any[] {
     const ret = [];
     let n = sourceNode;
     let traverseAncestor = true;
@@ -759,8 +759,8 @@ export class Util {
    * The search stops when this function returns true.
    * @return - The first ancestor node for which the callback returns true, or null if no such node is found.
    */
-  static findAncestralNode(descendant: ITreeNode, callback: (node: ITreeNode) => boolean): ITreeNode {
-    let ret: ITreeNode = null;
+  static findAncestralNode(descendant: TreeNode, callback: (node: TreeNode) => boolean): TreeNode {
+    let ret: TreeNode = null;
     let targetNode = descendant?.parent;
     while (targetNode) {
       const found = callback(targetNode);

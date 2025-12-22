@@ -8,7 +8,7 @@
  * It is updated programmatically in the class.
  */
 
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import { FormService } from 'src/app/services/form.service';
 
@@ -32,14 +32,12 @@ import { FormService } from 'src/app/services/form.service';
   ]
 })
 export class EnableOperatorComponent extends LfbControlWidgetComponent implements OnInit {
+  private formService = inject(FormService);
+
 
   myModel: string;
   answerType: string;
-  selectOptionList: any [];
-
-  constructor(private formService: FormService) {
-    super();
-  };
+  selectOptionList: any [];;
 
   /**
    * Initialize

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -14,14 +14,14 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   ]
 })
 export class ExpressionEditorDlgComponent {
+  private activeModal = inject(NgbActiveModal);
+
   linkId:string;
   expressionUri: string;
   userExpressionChoices: string;
   questionnaire:any;
   // Display the Expression Editor sections
-  display: any;
-
-  constructor(private activeModal: NgbActiveModal) {};
+  display: any;;
 
   /**
    * Close the Rule Editor modal dialog.

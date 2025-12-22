@@ -1,7 +1,7 @@
 /**
  * Dialog to select FHIR server from the list of servers.
  */
-import {Component, Input} from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FHIRServer, FhirService} from '../../../services/fhir.service';
 import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/user-specified-server-dlg.component';
@@ -57,14 +57,16 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
   `]
 })
 export class FhirServersDlgComponent {
+  private fhirService = inject(FhirService);
+  private modalService = inject(NgbModal);
+  private activeModal = inject(NgbActiveModal);
+
 
   @Input()
   fhirServerList: any [];
   selectedServer: any;
 
-  constructor(private fhirService: FhirService,
-              private modalService: NgbModal,
-              private activeModal: NgbActiveModal) {
+  constructor() {
     this.fhirServerList = this.fhirService.fhirServerList;
     this.selectedServer = this.fhirService.getFhirServer();
   }

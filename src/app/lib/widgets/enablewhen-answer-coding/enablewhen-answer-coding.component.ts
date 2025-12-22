@@ -2,7 +2,7 @@
  * Answer coding component for enableWhen. The component is used for answer type coding for
  * selecting codes to satisfy a condition.
  */
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
@@ -37,6 +37,8 @@ declare var LForms: any;
   ]
 })
 export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
+  private formService = inject(FormService);
+
 
   subscriptions: Subscription [] = [];
   answerOptions: any[] = [];
@@ -58,15 +60,6 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     }
   }
   model: fhir.Coding;
-
-  /**
-   * Invoke super constructor.
-   *
-   * @param formService - Inject form service
-   */
-  constructor(private formService: FormService) {
-    super();
-  }
 
   ngOnInit() {
     const initValue = this.formProperty.value;

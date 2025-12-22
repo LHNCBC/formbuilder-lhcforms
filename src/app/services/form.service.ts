@@ -1,8 +1,7 @@
 /**
  * Form related helper functions.
  */
-import {Inject, inject, Injectable, SimpleChange, DOCUMENT} from '@angular/core';
-import {IDType, ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import { inject, Injectable, SimpleChange, DOCUMENT } from '@angular/core';
 import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
@@ -65,6 +64,11 @@ export type LinkIdTrackerMap = {
   providedIn: 'root'
 })
 export class FormService {
+  private _document = inject<Document>(DOCUMENT);
+  private modalService = inject(NgbModal);
+  private http = inject(HttpClient);
+  private liveAnnouncer = inject(LiveAnnouncer);
+
   static _lformsLoaded$ = new Subject<string>();
   static readonly TREE_NODE_ID = "__$treeNodeId";
   _validationStatusChanged$: Subject<void> = new Subject<void>();
@@ -138,7 +142,7 @@ export class FormService {
     reference: this.operatorOptions2
   };
 
-  constructor(@Inject(DOCUMENT) private _document: Document, private modalService: NgbModal, private http: HttpClient, private liveAnnouncer: LiveAnnouncer ) {
+  constructor() {
     const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
 
     [
@@ -471,12 +475,12 @@ export class FormService {
 
   /**
    * Recursively collects all linkIds from the given node and its descendant nodes.
-   * @param node - The starting ITreeNode.
+   * @param node - The starting TreeNode.
    * @returns An array of linkIds for the node and all its children.
    */
-  getLinkIdsForNodeAndDescendants(node: ITreeNode): string[] {
+  getLinkIdsForNodeAndDescendants(node: TreeNode): string[] {
     const linkIds: string[] = [];
-    function recurse(n: ITreeNode): void {
+    function recurse(n: TreeNode): void {
       linkIds.push(n.data.linkId);
       if (n.hasChildren) {
         for (const child of n.children) {
@@ -645,7 +649,7 @@ export class FormService {
    * @param node - current tree node
    * @returns true if any of the sibling nodes contain errors, otherwise false.
    */
-  siblingHasError(node:ITreeNode): boolean {
+  siblingHasError(node:TreeNode): boolean {
     let siblingHasError = false;
     if (node.parent && !node.isRoot && node.parent.hasChildren) {
       siblingHasError = node.parent.children.some((n) => {
@@ -660,7 +664,7 @@ export class FormService {
    * Set the ancestor nodes' 'childHasError' status to 'false'.
    * @param node - Ancestor node.
    */
-  removeErrorFromAncestorNodes(node: ITreeNode): void {
+  removeErrorFromAncestorNodes(node: TreeNode): void {
     const nodeIdStr = node.data[FormService.TREE_NODE_ID];
     if (nodeIdStr in this.treeNodeStatusMap) {
       this.treeNodeStatusMap[nodeIdStr]['childHasError'] = false;
@@ -680,7 +684,7 @@ export class FormService {
    * Set the ancestor nodes' 'childHasError' status to 'true'.
    * @param node - Ancestor node.
    */
-  addErrorForAncestorNodes(node: ITreeNode): void {
+  addErrorForAncestorNodes(node: TreeNode): void {
     const nodeIdStr = node.data[FormService.TREE_NODE_ID];
 
     if (nodeIdStr in this.treeNodeStatusMap) {
@@ -962,7 +966,7 @@ export class FormService {
    * Intended to collect source items for enable when logic
    * Get sources for focused item.
    */
-  getSourcesExcludingFocusedTree(): ITreeNode [] {
+  getSourcesExcludingFocusedTree(): TreeNode [] {
     let ret = null;
     if (this.treeModel) {
       const fNode = this.treeModel.getFocusedNode();
@@ -985,7 +989,7 @@ export class FormService {
    * @param focusedNode
    * @param treeModel - Optional tree model to search. Default is this.treeModel.
    */
-  getEnableWhenSources(focusedNode: ITreeNode, treeModel?: TreeModel): ITreeNode [] {
+  getEnableWhenSources(focusedNode: TreeNode, treeModel?: TreeModel): TreeNode [] {
     if (!treeModel) {
       treeModel = this.treeModel;
     }
@@ -1003,8 +1007,8 @@ export class FormService {
    * @param focusedNode - Reference node to exclude the node and its descending branch
    * @private
    */
-  private getEnableWhenSources_(nodes: ITreeNode [], focusedNode: ITreeNode): ITreeNode [] {
-    const ret: ITreeNode [] = [];
+  private getEnableWhenSources_(nodes: TreeNode [], focusedNode: TreeNode): TreeNode [] {
+    const ret: TreeNode [] = [];
     for (const node of nodes) {
       if (node !== focusedNode) {
         if (node.data.type !== 'group' && node.data.type !== 'display') {
@@ -1032,7 +1036,7 @@ export class FormService {
    * Get node by its tree node id.
    * @param treeNodeId
    */
-  getTreeNodeById(treeNodeId: IDType): ITreeNode {
+  getTreeNodeById(treeNodeId: number | string): TreeNode {
     return this.treeModel.getNodeById(treeNodeId);
   }
 
@@ -1041,7 +1045,7 @@ export class FormService {
    * Get a node by linkId from entire tree.
    * @param linkId
    */
-  getTreeNodeByLinkId(linkId: string): ITreeNode {
+  getTreeNodeByLinkId(linkId: string): TreeNode {
     return this.findNodeByLinkId(this.treeModel?.roots, linkId);
   }
 
@@ -1067,7 +1071,7 @@ export class FormService {
    * @param sourceNode - Tree node to start the traversal.
    * @return - Returns the url of the terminology server extracted from the extension.
    */
-  getPreferredTerminologyServer(sourceNode: ITreeNode): string {
+  getPreferredTerminologyServer(sourceNode: TreeNode): string {
     let ret = null;
     Util.traverseAncestors(sourceNode, (node) => {
       const found = node.data.extension?.find((ext) => {
@@ -1089,8 +1093,8 @@ export class FormService {
    * @param targetNodes - Array of tree nodes
    * @param linkId - linkId associated with item of the node.
    */
-  findNodeByLinkId(targetNodes: ITreeNode [], linkId: string): ITreeNode {
-    let ret: ITreeNode;
+  findNodeByLinkId(targetNodes: TreeNode [], linkId: string): TreeNode {
+    let ret: TreeNode;
     if (!targetNodes || targetNodes.length === 0) {
       return null;
     }
@@ -1402,7 +1406,7 @@ export class FormService {
    * @param node - The starting TreeNode.
    * @returns The root TreeNode.
    */
-  getRootNodeFromNode(node:ITreeNode): ITreeNode {
+  getRootNodeFromNode(node:TreeNode): TreeNode {
     let current = node;
     while (current && current.parent && 'linkId' in current.parent.data) {
       current = current.parent;
