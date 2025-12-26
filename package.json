@@ -40,7 +40,7 @@
     "e2e:cy-run-il": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-il",
     "e2e:cy-run": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run",
     "e2e:cy-run-log": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-log",
-    "cy-pw-run": "npm run cy-run && npm run pw-run"
+    "cy-pw-run": "npm run pw-run && npm run cy-run"
   },
   "files": [
     "dist/formbuilder-lhcforms"
@@ -64,8 +64,8 @@
     "@fortawesome/free-regular-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fullcalendar/core": "^6.1.15",
-    "@lhncbc/expression-editor": "file:../rule-editor/ngx-expression-editor-4.1.1.tgz",
-    "@lhncbc/ngx-schema-form": "file:../lhncbc-ngx-schema-form/dist/schema-form/lhncbc-ngx-schema-form-2.14.1-forked.tgz",
+    "@lhncbc/expression-editor": "~5.0.1",
+    "@lhncbc/ngx-schema-form": "2.14.1-forked",
     "@ng-bootstrap/ng-bootstrap": "~19.0.1",
     "@types/fhir": "^0.0.36",
     "bootstrap": "^5.3.3",

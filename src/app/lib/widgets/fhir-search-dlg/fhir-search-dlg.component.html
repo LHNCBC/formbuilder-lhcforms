@@ -7,11 +7,11 @@
 Put search in modal header and results in modal body.
 It helps to keep the search visible while results are scrolling
 -->
-<div class="modal-header"><ng-container *ngTemplateOutlet="search"></ng-container></div>
+<div class="modal-header"><ng-container *ngTemplateOutlet="searchTmpl"></ng-container></div>
 <ng-container *ngTemplateOutlet="results"></ng-container>
 
 <!-- Search template -->
-<ng-template #search>
+<ng-template #searchTmpl>
   <form class="container" role="search" aria-label="Search selected FHIR server">
     <div class="row align-items-center mb-2">
       <div class="col">
@@ -50,7 +50,7 @@ It helps to keep the search visible while results are scrolling
         <div class="row float-end">
           <label for="SelectFHIRServer1" class="align-self-center col-auto col-form-label col-form-label-sm me-2 p-0 text-nowrap">FHIR Server:&nbsp;</label>
           <select class="col-auto form-select form-select-sm w-auto" id="SelectFHIRServer1" [(ngModel)]="selectedFHIRServer" [ngModelOptions]="{standalone: true}">
-            @for (server of getServerList(); track server) {
+            @for (server of getServerList(); track server.id) {
               <option [ngValue]="server">{{server.endpoint}}</option>
             }
           </select>
@@ -60,7 +60,7 @@ It helps to keep the search visible while results are scrolling
     <div class="m-0 mb-2 row align-items-center">
       <label for="searchField1" class="p-0 me-2  col-auto col-form-label text-nowrap">Search by term occurring in: </label>
       <select class="form-select form-select-sm col-auto w-auto" id="searchField1" [(ngModel)]="searchField" [ngModelOptions]="{standalone: true}">
-        @for (field of searchFieldList; track field) {
+        @for (field of searchFieldList; track field.field) {
           <option [ngValue]="field">{{field.display}}</option>
         }
       </select>
@@ -95,7 +95,7 @@ It helps to keep the search visible while results are scrolling
   @if (questionnaires) {
     <div class="modal-body bg-light" aria-live="polite">
       <div class="list-group list-group-flush">
-        @for (q of questionnaires; track q; let i = $index) {
+        @for (q of questionnaires; track q.id; let i = $index) {
           <a href="#" class="list-group-item list-group-item-action result-item" (click)="close(q.id)">
             <div class="row">
               <div class="col-1">{{resultsOffset + i + 1}}</div>

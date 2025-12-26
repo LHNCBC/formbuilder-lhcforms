@@ -27,7 +27,7 @@ import { UserSpecifiedServerDlgComponent } from '../user-specified-server-dlg/us
             </tr>
           </thead>
           <tbody>
-            @for (fhirServer of fhirServerList; track fhirServer; let i = $index) {
+            @for (fhirServer of fhirServerList; track fhirServer.id; let i = $index) {
               <tr>
                 <th scope="row" class="align-middle">
                   <label class="m-0 p-0">

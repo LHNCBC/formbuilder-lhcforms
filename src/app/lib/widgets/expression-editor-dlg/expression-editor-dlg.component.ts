@@ -7,7 +7,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './expression-editor-dlg.component.html',
   styles: [
     `::ng-deep .modal-dialog {
-      margin: 0px;
+      margin: 0;
       min-width: 100%;
       min-height: 100%;
     }`
@@ -21,7 +21,7 @@ export class ExpressionEditorDlgComponent {
   userExpressionChoices: string;
   questionnaire:any;
   // Display the Expression Editor sections
-  display: any;;
+  display: any;
 
   /**
    * Close the Rule Editor modal dialog.
