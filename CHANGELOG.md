@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [10.3.13] 2025-12-17
+### Added
+- Added autocomplete lookup functionality to the answerOptions.
+
 ## [10.3.12] 2025-12-06
 ### Fixed
 - Fixed issue with variable deletion not updating the list.
