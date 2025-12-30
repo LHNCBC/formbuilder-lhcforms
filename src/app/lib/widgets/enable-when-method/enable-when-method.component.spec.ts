@@ -11,6 +11,9 @@ describe('EnableWhenMethodComponent', () => {
     await TestBed.configureTestingModule({
       imports: [EnableWhenMethodComponent]
     })
+    .overrideComponent(EnableWhenMethodComponent, {
+      set: { template: '<div>Mock Template</div>' }
+    })
     .compileComponents();
 
     fixture = TestBed.createComponent(EnableWhenMethodComponent);
@@ -47,7 +50,6 @@ describe('EnableWhenMethodComponent', () => {
         value: null
       })
     } as any;
-
   });
 
   it('should create', () => {

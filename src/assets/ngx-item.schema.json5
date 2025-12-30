@@ -373,22 +373,10 @@
     "__$enableWhenMethod": {
       "description": "'enableWhen condition' is a structured way to control item visibility based on specific answers to previous questions, ideal for simple logic using built-in operators. 'enableWhenExpression' allows for more complex, custom visibility rules using FHIRPath expressions, and is preferred when logic goes beyond what enableWhen supports, such as referencing multiple values or applying calculations.",
       "title": "Conditional method",
-      "oneOf": [
-        {
-          "type": "string",
-          "enum": ["enablewhen-cond"],
-          "title": "enableWhen condition and behavior"
-        },
-        {
-          "type": "string",
-          "enum": ["enablewhen-expression"],
-          "title": "enableWhenExpression"
-        },
-        {
-          "type": "string",
-          "enum": ["none"],
-          "title": "None"
-        }
+      "enum": [
+        "enablewhen-cond",
+        "enablewhen-expression",
+        "none"
       ],
       "default": "none",
       "type": "string",
@@ -397,7 +385,12 @@
         "id": "enable-when-method",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0"
+        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0",
+        "labels": {
+          "enablewhen-cond": "enableWhen condition and behavior",
+          "enablewhen-expression": "enableWhenExpression",
+          "none": "None"
+        }
       }
     },
 

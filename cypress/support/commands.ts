@@ -602,6 +602,19 @@ Cypress.Commands.add('getByLabel', (parentSelector: string, label: string) => {
 });
 
 /**
+ * Gets a label radio input element by its value within a parent selector.
+ * @param parentSelector - The parent selector to search within. Helps to constrain
+ * the search to a specific part of the form.
+ * @param value - The value text of the radio input ID
+ * @returns Cypress chainable element matching the radio input
+ */
+Cypress.Commands.add('getLabelRadioInputByValue', (parentSelector: string, value: string) => {
+  return cy.get(parentSelector)
+    .find(`input[id^="labelRadio_"][id$="_${value}"]`)
+    .should('exist');
+});
+
+/**
  * Get the title field from the form level page.
  */
 Cypress.Commands.add('getFormTitleField', () => {
@@ -924,6 +937,7 @@ declare global {
       getBooleanFieldParent(fieldLabel: string): Chainable<JQuery<HTMLElement>>;
       getBooleanInput(fieldLabel: string, rbValue: boolean): Chainable<JQuery<HTMLElement>>;
       getByLabel(parentSelector: string, label: string): Cypress.Chainable<JQuery<HTMLElement>>;
+      getLabelRadioInputByValue(parentSelector: string, value: string): Cypress.Chainable<JQuery<HTMLElement>>;
       getCurrentForm(): Chainable<any>;
       getFormTitleField(): Cypress.Chainable<JQuery<HTMLElement>>;
       getInitialValueBooleanClick(rbValue: boolean): Chainable<JQuery<HTMLElement>>;

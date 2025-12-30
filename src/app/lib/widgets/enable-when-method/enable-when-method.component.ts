@@ -14,8 +14,15 @@ import { ExtensionsService } from 'src/app/services/extensions.service';
 @Component({
   selector: 'lfb-enable-when-method',
   imports: [ CommonModule, LabelComponent, ReactiveFormsModule ],
-  templateUrl: './enable-when-method.component.html',
-  styles: []
+  templateUrl: '../label-radio/label-radio.component.html',
+  styles: [`
+    span.ms-1 {
+      margin-left: 0 !important;
+    }
+    span.me-3 {
+      margin-right: 0 !important;
+    }
+  `]
 })
 export class EnableWhenMethodComponent extends LabelRadioComponent implements OnInit, AfterViewInit, OnDestroy {
   subscriptions: Subscription [] = [];

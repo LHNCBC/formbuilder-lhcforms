@@ -58,7 +58,7 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -83,7 +83,7 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -186,7 +186,7 @@ describe('Home page', () => {
       cy.clickTreeNode('Integer Type');
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -237,7 +237,7 @@ describe('Home page', () => {
       cy.clickTreeNode('Integer Type');
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -385,7 +385,7 @@ describe('Home page', () => {
       cy.getItemTextField().should('have.value', 'New item 2');
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -414,7 +414,7 @@ describe('Home page', () => {
       cy.getItemTextField().should('have.value', 'New item 1');
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -464,7 +464,7 @@ describe('Home page', () => {
       cy.getItemTextField().should('have.value', 'New item 2');
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -502,7 +502,7 @@ describe('Home page', () => {
       cy.getItemTextField().should('have.value', 'New item 1');
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -521,7 +521,7 @@ describe('Home page', () => {
       cy.getItemTextField().should('have.value', 'New item 1');
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -556,7 +556,7 @@ describe('Home page', () => {
       cy.getItemTextField().should('have.value', 'New item 1');
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -595,7 +595,7 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
 
       // New default for 'Conditional method' is now 'None'
-      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
 
       // Select the 'enableWhen condition and behavior' option
       cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
@@ -1295,7 +1295,7 @@ describe('Home page', () => {
       cy.clickTreeNode('enableWhen condition');
       cy.expandAdvancedFields();
 
-      cy.getRadioButton('Conditional method', 'enableWhen condition and behavior').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'enablewhen-cond').should('be.checked');
       cy.get('[id^="enableWhen.0.question"]').should('have.value', '1 - Item 0');
       cy.get('[id^="enableWhen.0.operator"]')
         .find('option:selected').should('have.text', '>');
@@ -1313,7 +1313,7 @@ describe('Home page', () => {
       cy.clickTreeNode('enableWhen expression');
       cy.expandAdvancedFields();
 
-      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'enablewhen-expression').should('be.checked');
       cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a > 5 and %b > 5');
     });
 
@@ -1326,8 +1326,7 @@ describe('Home page', () => {
       cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
       cy.get('[id^="__\\$initialExpression"]').should('have.value', "%a + %b");
 
-
-      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'enablewhen-expression').should('be.checked');
       cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a < 5 and %b < 5');
     });
 
@@ -1340,8 +1339,7 @@ describe('Home page', () => {
       cy.get('@computeContinuously').should('be.visible').and('be.checked');
       cy.get('[id^="__\\$calculatedExpression"]').should('have.value', "%a * %b");
 
-
-      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'enablewhen-expression').should('be.checked');
       cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a < 5 and %b < 5');
     });
 
@@ -1353,8 +1351,7 @@ describe('Home page', () => {
       cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
       cy.get('[id^="__\\$answerExpression"]').should('have.value', "1");
 
-
-      cy.getRadioButton('Conditional method', 'enableWhenExpression').should('be.checked');
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'enablewhen-expression').should('be.checked');
       cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a < 5 and %b < 5');
 
       cy.questionnaireJSON().should((qJson) => {
