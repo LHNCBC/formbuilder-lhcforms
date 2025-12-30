@@ -80,11 +80,13 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
     if (item && typeof item === 'object' && 'extension' in item) {
       // Always check for enableWhenExpression and set it if present
       if (this.formProperty.path === "/__$enableWhenExpression") {
-        const enableWhenExp = this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_ENABLEWHEN_EXPRESSION);
-        if (enableWhenExp) {
-          this.expression = enableWhenExp.valueExpression.expression;
-          this.formProperty.setValue(enableWhenExp, false);
-          //this.updateOutputExtensionUrl(enableWhenExp, itemIndex);
+        const enableWhenExt = this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_ENABLEWHEN_EXPRESSION);
+        if (enableWhenExt) {
+          this.expression = enableWhenExt.valueExpression.expression;
+          this.formProperty.setValue(enableWhenExt, false);
+
+          this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_ENABLEWHEN_EXPRESSION);
+          this.extensionsService.insertExtensionAfterURL(EXTENSION_URL_VARIABLE, [enableWhenExt]);
         }
       } else {
         let exp = null;

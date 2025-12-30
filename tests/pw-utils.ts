@@ -189,7 +189,7 @@ export class PWUtils {
     const id = await label.getAttribute('for');
     expect(id).not.toBeNull();
 
-    const radio = page.locator(`#${id}`);
+    const radio = page.locator(PWUtils.escapeIdForPlaywright(id));
     await expect(radio).toHaveAttribute('type', 'radio');
 
     return radio;
@@ -243,4 +243,12 @@ export class PWUtils {
     await expect(collapseIcon).toBeVisible();
     await collapseIcon.click();
   }
+
+  /**
+   * Escapes a DOM element ID so it can be safely used in a Playwright CSS selector.
+   */
+  static escapeIdForPlaywright(id: string): string {
+    return `[id="${id}"]`;
+  }
+
 }

@@ -746,8 +746,6 @@ describe('Home page', () => {
 
         cy.getItemTypeField().should('contain.value', 'string');
 
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
-
         // Invoke preview.
         cy.contains('button', 'Preview').click();
         cy.get('lhc-item').as('lhc-item');

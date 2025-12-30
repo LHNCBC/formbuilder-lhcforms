@@ -193,6 +193,13 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
   cy.selectDataType('coding');
   cy.getRadioButtonLabel('Create answer list', 'Yes').click();
   cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+  // New default for 'Answer list source' is now 'None'
+  cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+
+  // Select the 'Answer Options' option
+  cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
@@ -211,6 +218,14 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.selectDataType('coding');
   cy.getRadioButtonLabel('Create answer list', 'Yes').click();
   cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+  // New default for 'Answer list source' is now 'None'
+  cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+
+  // Select the 'Answer Options' option
+  cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+
+
   // No 'initial' widget for coding. User selects default radio in answer option table.
   // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
@@ -219,7 +234,6 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.get('[id^="answerOption.0.valueCoding.__$score"]').type('2.1');
 
   cy.questionnaireJSON().should((qJson) => {
-    console.log(JSON.stringify(qJson, null, 2));
     expect(qJson.item[0].type).equal('coding');
     expect(qJson.item[0].answerConstraint).equal('optionsOnly');
     expect(qJson.item[0].answerOption[0].valueCoding).to.deep.equal({display: 'd1', code: 'c1', system: 's1'});
@@ -520,7 +534,7 @@ Cypress.Commands.add('booleanFieldClick', (fieldLabel, rbValue) => {
 
 Cypress.Commands.add('getRadioButton', (groupLabel, rLabel) => {
   return cy.getRadioButtonLabel(groupLabel, rLabel).invoke('attr', 'for').then((id) => {
-    return cy.get('#'+id);
+    return cy.get(CypressUtil.escapeIdForCypress(id));
   }).should('have.attr', 'type', 'radio');
   // Confirm the radio input and return its label for mouse actions.
 });
@@ -839,6 +853,14 @@ Cypress.Commands.add('checkQuestionItemControlUI',
     cy.get('lfb-label label').contains(questionItemControlLabel).should('not.exist');
     // 'Answer list layout' should be displayed
     cy.get('lfb-label label').contains(answerListLayoutLabel).should('exist');
+
+    if (type === "coding") {
+      // New default for 'Answer list source' is now 'None'
+      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+      // Select the 'Answer Options' option
+      cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+    }
+
     cy.get('div#__\\$itemControl > div > input').as('itemControl');
     cy.get('@itemControl').should('have.length', itemControlOptions.length);
     itemControlOptions.forEach((label, idx) => {

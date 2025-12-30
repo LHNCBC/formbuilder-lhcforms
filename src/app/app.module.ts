@@ -104,6 +104,7 @@ import { InitialNumberDirective } from './lib/directives/initial-number.directiv
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
+import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
 
 import { environment } from '../environments/environment';
 
@@ -212,7 +213,8 @@ import { environment } from '../environments/environment';
     LabelComponent,
     CdkCopyToClipboard,
     CodemirrorModule,
-    ExpressionEditorModule
+    ExpressionEditorModule,
+    EnableWhenMethodComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [

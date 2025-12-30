@@ -369,18 +369,38 @@
         "id": "hidden"
       }
     },
+
     "__$enableWhenMethod": {
       "description": "'enableWhen condition' is a structured way to control item visibility based on specific answers to previous questions, ideal for simple logic using built-in operators. 'enableWhenExpression' allows for more complex, custom visibility rules using FHIRPath expressions, and is preferred when logic goes beyond what enableWhen supports, such as referencing multiple values or applying calculations.",
-      "default": false,
-      "type": "boolean",
       "title": "Conditional method",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["enablewhen-cond"],
+          "title": "enableWhen condition and behavior"
+        },
+        {
+          "type": "string",
+          "enum": ["enablewhen-expression"],
+          "title": "enableWhenExpression"
+        },
+        {
+          "type": "string",
+          "enum": ["none"],
+          "title": "None"
+        }
+      ],
+      "default": "none",
+      "type": "string",
+
       "widget": {
-        "id": "boolean-radio",
-        "optionLabels": [[false, "enableWhen condition and behavior"], [true, "enableWhenExpression"]],
+        "id": "enable-when-method",
+        "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
+        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0"
       }
     },
+
     "enableWhen": {
       "description": "A constraint indicating that this item should only be enabled (displayed/allow answers to be captured) when the specified condition is true.",
       "items": {
@@ -765,7 +785,7 @@
       "type": "array",
       "title": "Conditional display",
       "visibleIf": {
-        "__$enableWhenMethod": [false]
+        "__$enableWhenMethod": ["enablewhen-cond"]
       },
       "widget": {
         "noCollapseButton": true,
@@ -799,7 +819,7 @@
       "type": "string",
       "title": "Show this item when",
       "visibleIf": {
-        "__$enableWhenMethod": [false]
+        "__$enableWhenMethod": ["enablewhen-cond"]
       },
       "widget": {
         "id": "enable-behavior",
@@ -851,7 +871,7 @@
         }
       },
       "visibleIf": {
-        "__$enableWhenMethod": [true]
+        "__$enableWhenMethod": ["enablewhen-expression"]
       },
       "widget": {
         "id": "expression-editor",
@@ -960,9 +980,14 @@
           "type": "string",
           "enum": ["answer-expression"],
           "title": "Answer expression"
+        },
+        {
+          "type": "string",
+          "enum": ["none"],
+          "title": "None"
         }
       ],
-      "default": "answer-option",
+      "default": "none",
       "type": "string",
       "visibleIf": {
         "__$isAnswerList": [true]
@@ -2672,7 +2697,7 @@
       "type": "string",
       "title": "Hide or show this item when conditional display evaluates to 'false'?",
       "visibleIf": {
-        "__$enableWhenMethod": [false]
+        "__$enableWhenMethod": ["enablewhen-cond"]
       },
       "widget": {
         "id": "enable-behavior",

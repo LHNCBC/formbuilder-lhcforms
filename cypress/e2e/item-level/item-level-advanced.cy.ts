@@ -56,6 +56,13 @@ describe('Home page', () => {
     it('should support conditional display with answer coding source', () => {
       cy.addAnswerOptions();
       cy.contains('Add new item').scrollIntoView().click();
+
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
       cy.get('[id^="enableWhen.0.operator"]').select('=');
       cy.get('[id^="enableWhen.0.answerCoding"]').select('d1 (c1)');
@@ -74,6 +81,12 @@ describe('Home page', () => {
 
     it('should display error message for invalid answer in conditional display', () => {
       cy.contains('Add new item').scrollIntoView().click();
+
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
       const question1El = '[id^="enableWhen.0.question"]';
@@ -172,6 +185,12 @@ describe('Home page', () => {
 
       cy.clickTreeNode('Integer Type');
 
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       // Insert a valid enableWhen condition
       // Select question '3.1 Name'
       cy.get('[id^="enableWhen.0.question"]').type('{enter}');
@@ -216,6 +235,12 @@ describe('Home page', () => {
       const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
 
       cy.clickTreeNode('Integer Type');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       // Insert a valid enableWhen condition
       // Select question '3.1 Name'
@@ -345,9 +370,6 @@ describe('Home page', () => {
     });
 
     it('should show answer column if there is an answer option in any row of conditional display', () => {
-      cy.selectDataType('coding');
-      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
-      cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
       cy.enterAnswerOptions([
         {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
         {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
@@ -361,6 +383,12 @@ describe('Home page', () => {
       ]);
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 2');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
       cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
@@ -384,6 +412,12 @@ describe('Home page', () => {
     it('should show answer column if there is an answer in any row of conditional display', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 1');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const r1Question = '[id^="enableWhen.0.question"]';
       const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -429,6 +463,12 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 2');
 
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
       cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
 
@@ -461,6 +501,12 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 1');
 
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       const r1Question = '[id^="enableWhen.0.question"]';
       // First row operator='exist'
       cy.get(r1Question).type('{enter}');
@@ -473,6 +519,12 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 1');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const r1Question = '[id^="enableWhen.0.question"]';
       const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -502,6 +554,12 @@ describe('Home page', () => {
       cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 1');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const r1Question = '[id^="enableWhen.0.question"]';
       const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -535,6 +593,12 @@ describe('Home page', () => {
       cy.get('#answerValueSet_ecl').type(snomedEclText);
       cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
       cy.contains('Add new item').scrollIntoView().click();
+
+      // New default for 'Conditional method' is now 'None'
+      cy.get('[id^="__\\$enableWhenMethod_none"]').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const r1Question = '[id^="enableWhen.0.question"]';
       const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -1184,6 +1248,32 @@ describe('Home page', () => {
         .scrollIntoView()
         .should('have.value', '');
     });
+
+
+    /*
+     * Verifies that when a new item is created after a focused item that has expanded children, the new item's
+     * linkId is properly populated. This ensures that the fix correctly assigns a linkId even when the previous
+     * node is expanded and has children.
+     */
+    it('should populate linkId when creating a new item after a focused item with expanded children', () => {
+      // Click on '2 Family member health history'
+      cy.getTreeNode('Family member health history').click();
+
+      cy.toggleTreeNodeExpansion('Family member health history');
+
+      // Click the 'Add new item'
+      cy.contains('button', 'Add new item').click();
+      // Click on the new added item
+      cy.getTreeNode('New item 1').click();
+
+      // Go to the link id section
+      cy.editableLinkId()
+        .scrollIntoView()
+        .should('be.visible')
+        .invoke('val')
+        .should('not.be.empty');
+    });
+
   });
 
   describe('Item level fields: advanced - Condition expression', () => {
