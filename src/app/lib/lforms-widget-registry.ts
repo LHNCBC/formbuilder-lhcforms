@@ -53,6 +53,8 @@ import { InitialNumberComponent } from './widgets/initial-number/initial-number.
 import { EntryFormatComponent } from './widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 import { TimeComponent } from "./widgets/time/time.component";
+import { CodingSystemComponent } from './widgets/coding-system/coding-system.component';
+import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
 
 @Injectable()
@@ -107,6 +109,8 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('initial-number', InitialNumberComponent);
     this.register('entry-format', EntryFormatComponent);
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
+    this.register('coding-system', CodingSystemComponent);
+    this.register('coding-display', CodingDisplayComponent);
     this.register('enable-when-method', EnableWhenMethodComponent);
   }
 }

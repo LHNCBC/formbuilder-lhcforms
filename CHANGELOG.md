@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.13] 2025-12-18
+## [10.3.14] 2025-12-18
 ### Added
 - Implemented enableWhenExpression.
+
+## [10.3.13] 2025-12-17
+### Added
+- Added autocomplete lookup functionality to the answerOptions.
 
 ## [10.3.12] 2025-12-06
 ### Fixed

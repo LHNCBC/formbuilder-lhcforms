@@ -1149,7 +1149,15 @@
               "system": {
                 "description": "The identification of the code system that defines the meaning of the symbol in the code.",
                 "pattern": "^\\S*$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "coding-system",
+                  "systemLookups": [
+                    {"systemUrl": "http://snomed.info/sct", "lookupUrl": "https://snowstorm.ihtsdotools.org/fhir/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs"},
+                    {"systemUrl": "http://loinc.org", "lookupUrl": "https://clinicaltables.nlm.nih.gov/api/loinc_items/v3/search"},
+                    {"systemUrl": "http://unitsofmeasure.org", "lookupUrl": "https://clinicaltables.nlm.nih.gov/api/ucum/v3/search"}
+                  ]
+                }
               },
               "version": {
                 "description": "The version of the code system which was used when choosing this code. Note that a well-maintained code system does not need the version reported, because the meaning of codes is consistent across versions. However this cannot consistently be assured, and when the meaning is not guaranteed to be consistent, the version SHOULD be exchanged.",
@@ -1167,7 +1175,10 @@
               "display": {
                 "description": "A representation of the meaning of the code in the system, following the rules of the system.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "coding-display"
+                }
               },
               "__$score": {
                 "description": "If desired, enter a number to assign a numerical value to this answer for scoring purposes.",
@@ -1244,16 +1255,14 @@
       "type": "array",
       "title": "Answer choices",
       "visibleIf": {
-        "__$answerOptionMethods": ["answer-option"]
-/*
         "allOf": [
           {
-            "/__$answerOptionMethods": ["answer-option"]
+            "__$answerOptionMethods": ["answer-option"]
           },
           {
-            "__$valueMethod": ["$EXP$ target.value != 'compute-initial' && target.value != 'compute-continuously' "]
+            "type": ["$EXP$ target.value != 'coding22'"]
           }
-        ] */
+        ]
       },
       "widget": {
         "id": "answer-option",
@@ -1268,9 +1277,9 @@
           {"field": "valueDate", "col": 9, "nolabel": true},
           {"field": "valueTime", "col": 9, "nolabel": true},
           {"field": "valueString", "col": 9, "nolabel": true},
+          {"field": "valueCoding.system", "title": "System", "col": 2, "nolabel": true},
           {"field": "valueCoding.display", "title": "Display", "nolabel": true},
           {"field": "valueCoding.code", "title": "Code", "col": 2, "nolabel": true},
-          {"field": "valueCoding.system", "title": "System", "col": 2, "nolabel": true},
           {"field": "valueCoding.__$score", "title": "Score", "col": 2, "nolabel": true},
           {"field": "valueReference", "col": 9, "nolabel": true}
         ]

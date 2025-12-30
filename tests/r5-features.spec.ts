@@ -59,15 +59,15 @@ test.describe('r5-features.spec.ts', async () => {
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Coding type, optionsOnly');
     await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
     await expect(page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list')).toBeChecked();
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('First coding');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(2) input')).toHaveValue('c1');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(3) input')).toHaveValue('s1');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(1) input')).toHaveValue('Second coding');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(2) input')).toHaveValue('c2');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(3) input')).toHaveValue('s2');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(1) input')).toHaveValue('Third coding');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(2) input')).toHaveValue('c3');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(3) input')).toHaveValue('s3');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('s1');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(2) input')).toHaveValue('First coding');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(3) input')).toHaveValue('c1');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(1) input')).toHaveValue('s2');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(2) input')).toHaveValue('Second coding');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(3) input')).toHaveValue('c2');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(1) input')).toHaveValue('s3');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(2) input')).toHaveValue('Third coding');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(3) input')).toHaveValue('c3');
 
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerConstraint).toEqual('optionsOrType');
