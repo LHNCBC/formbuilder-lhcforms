@@ -1,40 +1,29 @@
 /**
  * Form related helper functions.
  */
-import { inject, Injectable, SimpleChange, DOCUMENT } from '@angular/core';
+import {DOCUMENT, inject, Injectable, SimpleChange} from '@angular/core';
 import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageDlgOptions, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {Observable, Subject} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import jsonTraverse from 'traverse';
 import {JsonPointer} from 'json-ptr';
 import {JSONPath} from 'jsonpath-plus';
-import {loadLForms, getSupportedLFormsVersions} from 'lforms-loader';
+import {getSupportedLFormsVersions, loadLForms} from 'lforms-loader';
 
-// Configuration files
-// @ts-ignore
-import ngxItemSchema from '../../assets/ngx-item.schema.json5';
-// @ts-ignore
-import fhirSchemaDefinitions from '../../assets/fhir-definitions.schema.json5';
-// @ts-ignore
-import itemLayout from '../../assets/items-layout.json5';
-// @ts-ignore
-import ngxFlSchema from '../../assets/ngx-fl.schema.json5';
-// @ts-ignore
-import flLayout from '../../assets/fl-fields-layout.json5';
-// @ts-ignore
-import vsLayout from '../../assets/value-set-fields-layout.json5';
-// @ts-ignore
-import ngxVSSchema from '../../assets/ngx-vs.schema.json5';
 
-import {GuidingStep, Util, FHIR_VERSIONS, FHIR_VERSION_TYPE} from '../lib/util';
+import {FHIR_VERSION_TYPE, FHIR_VERSIONS, GuidingStep, Util} from '../lib/util';
 import {FetchService} from './fetch.service';
 import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { EXTENSION_URL_VARIABLE, EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION, EXTENSION_URL_CUSTOM_VARIABLE_TYPE } from '../lib/constants/constants';
+import {LiveAnnouncer} from '@angular/cdk/a11y';
+import {
+  EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_INITIAL_EXPRESSION,
+} from '../lib/constants/constants';
+import {ISchema} from "@lhncbc/ngx-schema-form";
 
 
 declare var LForms: any;
@@ -58,6 +47,13 @@ export type TreeNodeStatusMap = {
 
 export type LinkIdTrackerMap = {
   [linkIdKey:string] : string[];
+}
+
+export type Layout = {
+  formLayout: any,
+  widgets: any,
+  widgetsMap: any,
+  overridePropertyLabels: any
 }
 
 @Injectable({
@@ -143,42 +139,78 @@ export class FormService {
   };
 
   constructor() {
-    const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
+  }
 
-    [
-      {schema: ngxItemSchema as any, layout: itemLayout},
-      {schema: ngxFlSchema as any, layout: flLayout},
-      {schema: ngxVSSchema as any, layout: vsLayout},
-      {schema: binarySchema as any, layout: {}} // TODO - Place holder for Binary layout
-    ].forEach((obj) => {
-      if(!obj.schema.definitions) {
-        obj.schema.definitions = {};
+  async initialize(): Promise<boolean> {
+    try {
+      // Load configuration files
+      let fhirSchemaDefinitions: ISchema,
+        flLayout: Layout,
+        itemLayout: Layout,
+        ngxFlSchema: ISchema,
+        ngxItemSchema: ISchema,
+        ngxVSSchema: ISchema,
+        vsLayout: Layout;
+
+      const assetPaths = [
+        '../../assets/fhir-definitions.schema.json5',
+        '../../assets/fl-fields-layout.json5',
+        '../../assets/items-layout.json5',
+        '../../assets/ngx-fl.schema.json5',
+        '../../assets/ngx-item.schema.json5',
+        '../../assets/ngx-vs.schema.json5',
+        '../../assets/value-set-fields-layout.json5'
+      ];
+      const results = await Util.loadJson5Assets(this.http, assetPaths);
+      fhirSchemaDefinitions = results[assetPaths[0]];
+      flLayout = results[assetPaths[1]];
+      itemLayout = results[assetPaths[2]];
+      ngxFlSchema = results[assetPaths[3]];
+      ngxItemSchema = results[assetPaths[4]];
+      ngxVSSchema = results[assetPaths[5]];
+      vsLayout = results[assetPaths[6]];
+      const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
+
+      [
+        {schema: ngxItemSchema as any, layout: itemLayout},
+        {schema: ngxFlSchema as any, layout: flLayout},
+        {schema: ngxVSSchema as any, layout: vsLayout},
+        {schema: binarySchema as any, layout: {} as Layout} // TODO - Place holder for Binary layout
+      ].forEach((obj) => {
+        if(!obj.schema.definitions) {
+          obj.schema.definitions = {};
+        }
+        obj.schema.definitions = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions));
+        obj.schema.formLayout = obj.layout.formLayout;
+        this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
+        this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
+      });
+      this.itemSchema = ngxItemSchema;
+      this.flSchema = ngxFlSchema;
+      this.valueSetSchema = ngxVSSchema;
+      delete this.valueSetSchema.definitions.ValueSet;
+      delete this.valueSetSchema.definitions.ResourceList;
+      delete this.valueSetSchema.properties.contained;
+      this.binarySchema = binarySchema;
+      delete this.binarySchema.definitions.Binary;
+      // Load lforms.
+      const ok = await this.loadLFormsLib();
+      if(ok) {
+        this._lformsVersion = LForms.lformsVersion;
+        FormService._lformsLoaded$.next(this._lformsVersion);
+        return true;
+      } else {
+        this._lformsVersion = 'ERROR';
+        console.error(`LForms failed to load`);
+        FormService._lformsLoaded$.error(new Error('LForms failed to load'));
+        return false;
       }
-      obj.schema.definitions = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions));
-      obj.schema.formLayout = obj.layout.formLayout;
-      this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
-      this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
-    });
-    this.itemSchema = ngxItemSchema;
-    this.flSchema = ngxFlSchema;
-    this.valueSetSchema = ngxVSSchema;
-    delete this.valueSetSchema.definitions.ValueSet;
-    delete this.valueSetSchema.definitions.ResourceList;
-    delete this.valueSetSchema.properties.contained;
-    this.binarySchema = binarySchema;
-    delete this.binarySchema.definitions.Binary;
-
-
-    // Load lforms.
-    this.loadLFormsLib().then((loadedVersion: string) => {
-      this._lformsVersion = LForms.lformsVersion;
-      FormService._lformsLoaded$.next(this._lformsVersion);
-    }).catch((error) => {
+    } catch(error) {
       console.error(error);
       this._lformsVersion = 'ERROR';
-      FormService._lformsLoaded$.error(error);
-    });
-
+      FormService._lformsLoaded$.error(new Error(`JSON5 resources failed to load: ${error}`));
+      return false;
+    }
   }
 
 
@@ -206,7 +238,7 @@ export class FormService {
    *   definition is replaced with widget definitions from the layout.
    *   See src/assets/*layout.json5 and src/assets/*schema.json5 files for more information.
    */
-  overrideSchemaWidgetFromLayout(schema, {widgets, widgetsMap}) {
+  overrideSchemaWidgetFromLayout(schema: ISchema, {widgets, widgetsMap}) {
     if(!widgetsMap || !widgets) {
       return;
     }
@@ -234,7 +266,7 @@ export class FormService {
    * @param schema - Schema object.
    * @param overridePropertyLabels - An object defined in layout file.
    */
-  overrideFieldLabelsFromLayout(schema, {overridePropertyLabels}) {
+  overrideFieldLabelsFromLayout(schema: ISchema, {overridePropertyLabels}) {
     if(!overridePropertyLabels) {
       return;
     }
@@ -272,10 +304,6 @@ export class FormService {
 
   set windowOpenerUrl(url: string) {
     this._windowOpenerUrl = url;
-  }
-
-  get windowOpenerFhirVersion(): FHIR_VERSION_TYPE {
-    return this._windowOpenerFhirVersion;
   }
 
   /**
@@ -794,82 +822,16 @@ export class FormService {
     this.treeNodeStatusMap = {};
   }
 
-  /**
-   * Loop through the array of extensions and filters out extensions that is a Variable.
-   * @param extensions - array of extensions
-   * @returns - returns the array of extensions excluding the extensions of type Variable.
-   */
-  removeVariablesExtensions(extensions: any): any {
-    return extensions.filter(ext => (ext.url !== EXTENSION_URL_VARIABLE));
-  }
 
   /**
    * Loop through the array of extensions and filters out extensions that is an Initial Expression, or Calculated Expression.
    * @param extensions - array of extensions
    * @returns - returns the array of extensions excluding the extensions of type Initial Expression or Calculated Expression.
    */
-  removeExpressionsExtensions(extensions: any): any {
+  removeExpressionsExtensions(extensions: fhir.Extension[]): any {
     return extensions.filter(ext => (ext.url !== EXTENSION_URL_INITIAL_EXPRESSION && ext.url !== EXTENSION_URL_CALCULATED_EXPRESSION));
   }
 
-  /**
-   * Loop through the array of extensions and retain only extensions that is a Variable.
-   * @param extensions - array of extensions
-   * @returns - returns the array of extensions that is of type Variable.
-   */
-  filterVariableExtensions(extensions: any): any {
-    return extensions.filter(ext => (ext.url === EXTENSION_URL_VARIABLE));
-  }
-
-  /**
-   * Return the expression url based on the type of the expression.
-   * @param expressionType - Initial expression or calculated expression.
-   * @returns - expression url.
-   */
-  getUrlByType(expressionType: string): string {
-    return (expressionType === "__$initialExpression") ? EXTENSION_URL_INITIAL_EXPRESSION : EXTENSION_URL_CALCULATED_EXPRESSION;
-  }
-
-  /**
-   * Return the expression extension based on the type of the expression. If multiple extensions
-   * are found, the calculated expression takes precedence.
-   * @param extensions - array of extensions.
-   * @param expressionType - Initial expression or calculated expression.
-   * @returns - expression extension.
-   */
-  getExpressionsExtensionByType(extensions: any, expressionType: string): any {
-    let expression = null;
-
-    for (const ext of extensions) {
-      if (ext.url === EXTENSION_URL_CALCULATED_EXPRESSION) {
-        ext.url = this.getUrlByType(expressionType);
-        return ext;
-      } else if (ext.url === EXTENSION_URL_INITIAL_EXPRESSION && !expression) {
-        expression = ext;
-        expression.url = this.getUrlByType(expressionType);
-      }
-
-    }
-    return expression;
-  }
-
-  /**
-   * Check whether the provided array of extensions contains the Initial Expression.
-   * @param extensions - array of extensions
-   * @returns - True if the Initial Expression is found and false otherwise.
-   */
-  hasInitialComputeValueExpression(extensions: any): boolean {
-    return extensions.some(ext => (ext.url === EXTENSION_URL_INITIAL_EXPRESSION));
-  }
-
-  /**
-   * Check whether the provided array of extensions contains the Calculated Expression.
-   * @param extensions - array of extensions
-   * @returns - True if the Calculated Expression is found and false otherwise.
-   */
-  hasContinuouslyComputeValueExpression(extensions: any): boolean {
-    return extensions.some(ext => (ext.url === EXTENSION_URL_CALCULATED_EXPRESSION));
-  }
 
   /**
    * Load and initialize the 'linkIdTracker' to track duplicate
@@ -898,14 +860,6 @@ export class FormService {
     return ((linkId || linkId === '') && linkId in this.linkIdTracker) ? this.linkIdTracker[linkId] : null;
   }
 
-  /**
-   * Check if the linkId exists in the Questionnaire/linkIdTracker.
-   * @param linkId - linkId associated with item of the node.
-   * @returns True if the linkId exists in the linkIdTracker.
-   */
-  isValidLinkId(linkId: string): boolean {
-    return !!this.getNodeIdsByLinkId(linkId);
-  }
 
   /**
    * Add the 'linkId' and associated tree node id to the 'linkIdTracker'.
@@ -1050,15 +1004,6 @@ export class FormService {
   }
 
   /**
-   * Checks if the focused node has an extension.
-   * @returns True if the focused node's data contains an extension. Otherwise false.
-   */
-  hasExtension(): boolean {
-    const ext = this.treeModel?.getFocusedNode()?.data?.extension;
-    return Array.isArray(ext) ? ext.length > 0 : !!ext;
-  }
-
-  /**
    * Checks if the focused node has sub-items.
    * @returns True if the focused node's data contains a non-empty 'item' array; otherwise, false.
    */
@@ -1074,7 +1019,7 @@ export class FormService {
   getPreferredTerminologyServer(sourceNode: TreeNode): string {
     let ret = null;
     Util.traverseAncestors(sourceNode, (node) => {
-      const found = node.data.extension?.find((ext) => {
+      const found = node.data.extension?.find((ext: fhir.Extension) => {
         return ext.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
       });
       ret = found ? found.valueUrl : null;
@@ -1231,14 +1176,6 @@ export class FormService {
 
 
   /**
-   * Remove questionnaire from local storage.
-   */
-  clearAutoSavedForm() {
-    localStorage.removeItem('fhirQuestionnaire');
-  }
-
-
-  /**
    * Save questionnaire in local storage
    * @param fhirQ - Questionnaire
    */
@@ -1331,8 +1268,8 @@ export class FormService {
    * @param type - localStorage | sessionStorage
    * @return boolean
    */
-  _storageAvailable(type): boolean {
-    let storage;
+  _storageAvailable(type: 'localStorage' | 'sessionStorage'): boolean {
+    let storage: any;
     try {
       storage = window[type];
       const x = '__storage_test__';
@@ -1388,10 +1325,10 @@ export class FormService {
    * Load LForms library at run time.
    * @return - A promise which resolves to version number loaded.
    */
-  loadLFormsLib(): Promise<string> {
-    return getSupportedLFormsVersions().then((versions) => {
+  async loadLFormsLib(): Promise<string> {
+    return getSupportedLFormsVersions().then((versions: string []) => {
       const latestVersion = versions[0] || '34.3.0';
-      return loadLForms(latestVersion).then(() => latestVersion).catch((error) => {
+      return loadLForms(latestVersion).then(() => latestVersion).catch((error: any) => {
         console.error(`lforms-loader.loadLForms() failed: ${error.message}`);
         throw new Error(error);
       });

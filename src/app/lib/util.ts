@@ -18,6 +18,9 @@ import {
   TYPE_DATE, TYPE_DATETIME, TYPE_TIME,
   EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION
 } from './constants/constants';
+import { HttpClient } from '@angular/common/http';
+import JSON5 from 'json5';
+import { firstValueFrom } from 'rxjs';
 
 
 declare var LForms: any;
@@ -91,6 +94,33 @@ export class Util {
     reference: 'valueReference',
     url: 'valueUri'
   };
+
+
+  /**
+   * A helper to fetch a `.json5` from a list of urls, intended to fetch json5
+   * files from `src/assets` and parse it. This replaces custom webpack loader
+   * previously used.
+   *
+   * @param http - HttpClient to use for fetching.
+   * @param assetUrls - Array of urls to fetch.
+   * @return - A promise resolving to an object with url as key and parsed
+   * content as value.
+   */
+  static async loadJson5Assets(http: HttpClient, assetUrls: string[]): Promise<any> {
+    const accumulator: {[key: string]: any} = {};
+    const promises: Promise<any>[] = [];
+    assetUrls.reduce((acc, url) => {
+      acc[url] = {};
+      const promise = firstValueFrom(http.get(url, {responseType: 'text'})).then((content: string) => {
+        acc[url] = JSON5.parse(content);
+        return acc[url];
+      });
+      promises.push(promise);
+      return acc;
+    }, accumulator);
+
+    return await Promise.all(promises).then(() => accumulator);
+  }
 
   /**
    * See if the guiding step is one of the defined type. The flag is store in localStorage/sessionStorage.

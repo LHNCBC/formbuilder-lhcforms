@@ -3,18 +3,19 @@ import { TestBed } from '@angular/core/testing';
 import { FormService } from './form.service';
 import sampleJson from '../../../tests/fixtures/help-text-sample1.json';
 import traverse from 'traverse';
-import {HttpClient, HttpHandler} from '@angular/common/http';
+import {provideHttpClient} from '@angular/common/http';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
 
-xdescribe('FormService', () => {
+describe('FormService', () => {
   let service: FormService;
 
-  CommonTestingModule.setUpTestBedConfig({providers: [NgbModal, HttpClient, HttpHandler]});
+  CommonTestingModule.setUpTestBedConfig({providers: [NgbModal, provideHttpClient()]});
 
   beforeEach(async () => {
-    service = await TestBed.inject(FormService);
+    service = TestBed.inject(FormService);
+    await service.initialize();
     expect(window['LForms']).toBeDefined();
   });
 

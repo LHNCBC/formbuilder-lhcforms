@@ -37,7 +37,7 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
 
   myModel: string;
   answerType: string;
-  selectOptionList: any [];;
+  selectOptionList: any [];
 
   /**
    * Initialize

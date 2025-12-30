@@ -24,9 +24,9 @@ import {FhirService} from '../services/fhir.service';
 declare var LForms: any;
 
 @Component({
-  standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sf-test',
+  imports: [SchemaFormModule],
   template: `
     <sf-form [schema]="schema" [(model)]="model"></sf-form>
   `
@@ -42,9 +42,9 @@ export class TestComponent {
 
 @NgModule({
   imports: [
-    SchemaFormModule
+    SchemaFormModule,
+    TestComponent
   ],
-  declarations: [TestComponent]
 })
 export class CommonTestingModule {
 
@@ -66,7 +66,6 @@ export class CommonTestingModule {
 
   static commonTestProviders: any [] = [
     provideHttpClient(),
-    provideHttpClientTesting(),
     WidgetFactory,
     {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
     NgbActiveModal,
@@ -75,7 +74,7 @@ export class CommonTestingModule {
   ];
 
   static setUpTestBedConfig = (moduleConfig: any) => {
-    beforeEach(() => {
+    beforeEach(async () => {
       let declarations = CommonTestingModule.commonTestingDeclarations;
       let imports = CommonTestingModule.commonTestingImports;
       let providers = CommonTestingModule.commonTestProviders;
@@ -85,24 +84,32 @@ export class CommonTestingModule {
       const spy = spyOn(FormService.prototype, 'loadLFormsLib');
       spy.and.callFake(() => {return Promise.resolve(LForms.lformsVersion)});
 
-      TestBed.configureTestingModule({
+      await TestBed.configureTestingModule({
         declarations,
         imports,
         providers
       }).compileComponents();
     });
 
-    beforeEach(() => {
-      TestBed.inject(FormService);
+    beforeEach(async () => {
+      const formService = TestBed.inject(FormService);
+      await formService.initialize();
     });
   };
 
-  static setUpTestBed = (TestingComponent: any) => {
-    CommonTestingModule.setUpTestBedConfig({declarations: [TestingComponent]});
+  static setUpTestBed = (TestingComponent: any, standalone = false) => {
+    const config: {imports?: [any], declarations?: [any]} = {};
+    if (standalone) {
+      config.imports = [TestingComponent];
+    }
+    else {
+      config.declarations = [TestingComponent];
+    }
+    CommonTestingModule.setUpTestBedConfig(config);
   };
 
   static setupTestBedWithTestForm = () => {
-    CommonTestingModule.setUpTestBedConfig({declarations: [TestComponent]});
+    CommonTestingModule.setUpTestBedConfig({imports: [TestComponent]});
   }
 }
 
