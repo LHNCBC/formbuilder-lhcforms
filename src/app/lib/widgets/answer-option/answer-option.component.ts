@@ -127,7 +127,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
       this.updateWithCheckboxSelections();
     });
     this.subscriptions.push(sub);
-    
+
     // The schema.widget.labelPosition is not populated after the 'Default' column in the table.component.html
     // has been excluded.
     this.cdr.detectChanges();
@@ -160,7 +160,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
           }
         }
       });
-    } 
+    }
 
     if(changed) {
       // This triggers valueChanges event on all observers.

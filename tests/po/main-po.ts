@@ -130,6 +130,8 @@ export class MainPO {
         const locator = table.locator(`tbody tr:nth-child(${rowIndex+1}) td:nth-child(${colIndex+1}) input`);
         await expect(locator).toBeEditable({editable: true, timeout: 30000});
         await locator.fill(tableData[rowIndex][colIndex]);
+        // This is required (mainly for the system) to fix the issue of answerOptions missing data.
+        await locator.press('Tab');
       }
       if(tableData.length - rowIndex > 1) {
         await table.locator('..').getByRole('button', {name: 'Add'}).click();
