@@ -10,7 +10,7 @@
     ></lfb-label>
   }
   <div [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="'label_'+id">
-    @for (option of filteredAnswerOptionMethods; track option) {
+    @for (option of filteredAnswerOptionMethods; track option.enum[0]) {
       <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" [name]="id"
         type="radio" [value]="option.enum[0]" autocomplete="off" (change)="handleChange()">
       <label class="btn btn-sm btn-outline-success" [attr.for]="id + '_' + option.enum[0]">{{option.title || option.description}}</label>

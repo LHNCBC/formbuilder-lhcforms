@@ -13,7 +13,7 @@
       ></lfb-label>
     }
     <div [attr.aria-labelledby]="'label_rg_'+_id" [ngClass]="controlClasses+' m-auto ms-0'" role="radiogroup" [attr.id]="'labelRadio_'+_id">
-      @for (option of schema.oneOf; track option) {
+      @for (option of schema.oneOf; track option.enum[0]) {
         <input [attr.id]="'labelRadio_'+_id + '_' + option.enum[0]" [formControl]="control" class="btn-check" name="{{'labelRadio_'+_id}}"
           type="radio" [value]="option.enum[0]" [attr.disabled]="(schema.readOnly || option.readOnly) ? '' : null" autocomplete="off">
         <label class="btn btn-sm btn-outline-success" [attr.for]="'labelRadio_'+_id + '_' + option.enum[0]">{{option.title || option.description}}</label>

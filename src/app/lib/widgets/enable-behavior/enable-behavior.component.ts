@@ -19,7 +19,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
           [labelId]="'label_'+id" [for]="id"></lfb-label>
           <div [ngClass]="{row: schema.widget.layout === 'row'}"
             role="radiogroup" [attr.aria-labelledby]="'label_'+id" [attr.id]="id">
-            @for (option of schema.oneOf; track option) {
+            @for (option of schema.oneOf; track option[0]) {
               <div>
                 <label class="horizontal control-label">
                   <input [formControl]="control" [attr.id]="id + '.' + option.enum[0]"

@@ -23,7 +23,8 @@ declare var LForms: any;
           class="form-control"
           >
           <ng-container>
-            @for (option of answerOptions; track option) {
+            <!-- Create some unique track argument -->
+            @for (option of answerOptions; track (option.valueCoding.display + ' ' + option.valueCoding.code)) {
               <option [ngValue]="option.valueCoding"
               >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
             }
@@ -31,7 +32,7 @@ declare var LForms: any;
         </select>
       }
     </div>
-    
+
     `,
   styles: [
   ]

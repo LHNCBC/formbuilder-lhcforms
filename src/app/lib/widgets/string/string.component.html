@@ -23,7 +23,7 @@
         [lfbDisableControl]="schema.disabled">
       @if(control.dirty && errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
         <ul class="mb-0">
-          @for(error of errors; track $index) {
+          @for(error of errors; track error.code) {
             <li>
               <small class="text-danger form-text" role="alert"
               >{{error.modifiedMessage || error.originalMessage}}</small>

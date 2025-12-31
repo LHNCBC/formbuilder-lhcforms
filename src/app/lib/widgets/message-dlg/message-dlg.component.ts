@@ -34,7 +34,7 @@ export interface MessageDlgOptions {
         <div id="msgContent" [innerHTML]="message"></div>
       </div>
       <div class="modal-footer">
-        @for(button of buttons; track $index) {
+        @for(button of buttons; track button.value) {
           <button type="button" class="btn btn-primary" (click)="activeModal.close(button.value)">{{button.label}}</button>
         }
       </div>

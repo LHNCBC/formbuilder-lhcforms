@@ -33,7 +33,7 @@
           @if (!noHeader) {
             <thead class="table-active">
               <tr class="d-flex">
-                @for (showField of getShowTableFields(); track showField) {
+                @for (showField of getShowTableFields(); track showField.field) {
                   <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
                     <lfb-title
                       [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
@@ -68,7 +68,7 @@
               @for (itemProperty of (formProperty.properties ?? []); track itemProperty; let ind = $index; let isFirst = $first; let isLast = $last) {
                 <tr
                   class="d-flex lfb-table-row" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
-                  @for (showField of getShowTableFields(); track showField) {
+                  @for (showField of getShowTableFields(); track showField.field) {
                     <td class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
                       <lfb-form-element [nolabel]="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
                     </td>

@@ -55,7 +55,7 @@
 <ng-template #valueCodeTmpl>
   <div id="label_rg_obs_relation_${elementId}" class="pt-2">Use extraction relationship:</div>
   <div class="btn-group btn-group-sm" role="radiogroup" [attr.aria-labelledby]="'label_rg_obs_relation_'+elementId">
-    @for (option of ObservationExtractComponent.obExtractRelationshipOptions; track option) {
+    @for (option of ObservationExtractComponent.obExtractRelationshipOptions; track option.value) {
       <input type="radio" class="btn-check"
         name="valueCode"
         [attr.id]="'radio_obs_relation_'+option.value+'_'+elementId"

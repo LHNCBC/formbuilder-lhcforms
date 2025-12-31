@@ -30,7 +30,7 @@
         (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
       </div>
 
-      @for (error of errors ? Array.from(errors).reverse() : null; track error) {
+      @for (error of errors ? Array.from(errors).reverse() : null; track error.code) {
         @if (formProperty.value && error) {
           <small
             class="text-danger form-text pe-1" role="alert"

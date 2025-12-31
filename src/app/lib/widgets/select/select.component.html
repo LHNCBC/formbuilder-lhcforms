@@ -20,12 +20,12 @@
           [attr.disabled]="schema.readOnly ? '' : null"
           class="form-select form-select-sm">
           @if (schema.oneOf) {
-            @for (option of schema.oneOf; track option) {
+            @for (option of schema.oneOf; track option.enum[0]) {
               <option
               [ngValue]="option.enum[0]" >{{option.description}}</option>
             }
           } @else {
-            @for (option of allowedOptions; track option) {
+            @for (option of allowedOptions; track option.value) {
               <option
               [ngValue]="option.value" >{{option.label}}</option>
             }
@@ -42,7 +42,7 @@
           [attr.aria-invalid]="errors"
           (focus)="announceErrors()"
           [attr.disabled]="schema.readOnly ? '' : null">
-          @for (option of schema.items.oneOf; track option) {
+          @for (option of schema.items.oneOf; track option.enum[0]) {
             <option
               [ngValue]="option.enum[0]"
             [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
@@ -50,8 +50,8 @@
         </select>
       }
 
-      @for (error of errors; track error) {
-        <fa-icon id="error" [icon]="errorIcon" style="color: red"></fa-icon>
+      @for (error of errors; track error.code) {
+        <fa-icon [attr.id]="error.code" [icon]="errorIcon" style="color: red"></fa-icon>
         @if (formProperty.value && error) {
           <small
             class="text-danger form-text" role="alert"

@@ -146,7 +146,7 @@
         <div class="form-group">
           <label for="loincTypeSelect1" class="align-middle" id="loincItemRadioGroupLabel">Select LOINC item type:</label>
           <div class="btn-group" id="loincTypeSelect1" role="radiogroup" aria-labelledby="loincItemRadioGroupLabel">
-            @for (opt of loincTypeOpts; track opt) {
+            @for (opt of loincTypeOpts; track opt.value) {
               <label class="btn">
                 <input type="radio" name="loincType"
                   [value]="opt.value"

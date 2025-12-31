@@ -71,7 +71,7 @@
               <div #errorsContainer class="overlay-container">
                 <div class="card bg-danger-subtle p-2 px-3">
                   <ul>
-                    @for(error of validationErrors[fhirVersion]; track $index) {
+                    @for(error of validationErrors[fhirVersion]; track error) {
                       <li>{{error}}</li>
                     }
                   </ul>

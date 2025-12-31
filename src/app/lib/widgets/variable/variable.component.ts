@@ -118,7 +118,7 @@ export class VariableComponent extends TableComponent implements OnInit {
    * Filter out empty variables.
    * @returns - Array of non-empty variables or an empty array.
    */
-  get nonEmptyVariables() {
+  get nonEmptyVariables(): fhir.Extension [] {
     return (this.formProperty.value ?? []).filter(v => v && (
       (Array.isArray(v.extension) && v.extension.length > 0) ||
       (v.valueExpression &&

@@ -10,7 +10,7 @@
   }
   <div [ngClass]="controlClasses+' m-auto ms-0 vertical-container d-flex flex-wrap'" >
     <div class="m-auto ms-0 btn-container d-flex flex-wrap" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="'label_'+id">
-      @for (opt of getItemControlOptions(); track opt) {
+      @for (opt of getItemControlOptions(); track opt.enum[0]) {
         @if (!opt?.deprecated) {
           <div class="btn-wrapper" >
             <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt.enum[0]"

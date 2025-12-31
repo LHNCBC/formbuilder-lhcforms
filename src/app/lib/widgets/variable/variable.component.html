@@ -28,7 +28,7 @@
       <table class="table table-borderless table-sm lfb-table">
         <thead class="table-active">
           <tr class="d-flex">
-            @for (showHeaderField of getVariableFieldsStructure(true); track showHeaderField) {
+            @for (showHeaderField of getVariableFieldsStructure(true); track showHeaderField.field) {
               <th class="col-sm{{showHeaderField.col ? ('-'+showHeaderField.col) : ''}}" scope="col">
                 <lfb-title
                   [title]="showHeaderField.title"
@@ -40,10 +40,10 @@
           </tr>
         </thead>
         <tbody [ngbCollapse]="isCollapsed">
-          @for (variable of nonEmptyVariables; track variable; let ind = $index; let isFirst = $first; let isLast = $last) {
+          @for (variable of nonEmptyVariables; track variable.url; let ind = $index; let isFirst = $first; let isLast = $last) {
             <tr
               class="d-flex lfb-table-row">
-              @for (showDataField of getVariableFieldsStructure(false); track showDataField) {
+              @for (showDataField of getVariableFieldsStructure(false); track showDataField.field) {
                 <td
                   class="col-sm{{showDataField.col ? ('-'+showDataField.col) : ''}}"
                 >{{getVariableProperty(variable, showDataField.field, false)}}</td>

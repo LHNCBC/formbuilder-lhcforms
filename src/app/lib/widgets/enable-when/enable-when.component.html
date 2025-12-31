@@ -32,7 +32,7 @@
           @if (!noHeader) {
             <thead class="table-active">
               <tr class="d-flex">
-                @for (showField of showHeaderFields; track showField) {
+                @for (showField of showHeaderFields; track showField.field) {
                   <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
                     <lfb-title
                       [title]="showField.title"
@@ -47,9 +47,9 @@
             </thead>
           }
           <tbody [ngbCollapse]="isCollapsed">
-            @for (rowProperty of rowProperties; track rowProperty; let rowNum = $index) {
+            @for (rowProperty of rowProperties; track rowProperty.canonicalPathNotation; let rowNum = $index) {
               <tr class="d-flex p-0 m-0">
-                @for (showField of getFields(rowProperty); track showField; let colNum = $index) {
+                @for (showField of getFields(rowProperty); track showField.field; let colNum = $index) {
                   <td
                     class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 pb-1 pe-1 m-0 align-self-center"
                     [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"

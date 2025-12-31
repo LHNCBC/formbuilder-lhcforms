@@ -21,7 +21,7 @@
         [attr.minLength]="schema.minLength || null"
         [required]="schema.isRequired" [lfbDisableControl]="schema.disabled"
       ></textarea>
-      @for (error of errors; track error) {
+      @for (error of errors; track error.code) {
         @if (formProperty.value && error) {
           <small
             class="text-danger form-text" role="alert"

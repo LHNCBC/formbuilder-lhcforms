@@ -22,7 +22,7 @@ import { FormService } from 'src/app/services/form.service';
       name="{{name}}" [attr.id]="id"
       [disabled]="schema.readOnly" class="form-control">
       <ng-container>
-        @for (opt of selectOptionList; track opt) {
+        @for (opt of selectOptionList; track opt.option) {
           <option [ngValue]="opt.option" >{{opt.label}}</option>
         }
       </ng-container>

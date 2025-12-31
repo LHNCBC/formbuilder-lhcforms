@@ -11,7 +11,7 @@ import {Util} from '../../util';
   standalone: false,
   selector: 'lfb-grid',
   template: `
-    @for (fieldset of formProperty.schema.fieldsets; track fieldset) {
+    @for (fieldset of formProperty.schema.fieldsets; track fieldset.fields) {
       <div>
         @if (fieldset.title) {
           <legend>{{fieldset.title}}</legend>
@@ -20,7 +20,7 @@ import {Util} from '../../util';
           <span data-toggle="tooltip" [title]="fieldset.description" class="glyphicon glyphicon-info" ></span>
         }
         <div class="form-row">
-          @for (field of getShowFields(fieldset); track field) {
+          @for (field of getShowFields(fieldset); track field.field) {
             <div [class]="gridClass(field)">
               <sf-form-element [formProperty]="getShowFieldProperty(field)"></sf-form-element>
             </div>

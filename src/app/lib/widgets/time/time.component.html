@@ -27,7 +27,7 @@
         <button class="btn btn-sm btn-outline-primary"
         title="Removes the field from the output" (click)="clear()">Clear</button>
       </div>
-      @for (error of errors; track error) {
+      @for (error of errors; track error.code) {
         @if (formProperty.value && error) {
           <small
             class="text-danger form-text" role="alert"

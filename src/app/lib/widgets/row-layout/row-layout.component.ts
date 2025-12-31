@@ -11,7 +11,7 @@ import {FormService} from '../../../services/form.service';
   standalone: false,
   selector: 'lfb-row-layout',
   template: `
-    @for (field of basicVisibleFields; track field) {
+    @for (field of basicVisibleFields; track field.field) {
       <div [class]="gridClass(field)" class="lfb-row">
         <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
       </div>
@@ -25,7 +25,7 @@ import {FormService} from '../../../services/form.service';
     </div>
     <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced" (ngbCollapseChange)="handleAdvPanelCollapse($event)" id="advancedFields">
       <hr>
-        @for (field of advancedVisibleFields; track field) {
+        @for (field of advancedVisibleFields; track field.field) {
           <div [class]="gridClass(field)" class="lfb-row">
             <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
           </div>
@@ -85,7 +85,7 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
   /**
    * Get visible fields from form the list of rows. The rows are typically
    * specified in /src/assets/*-layout.json files.
-   * 
+   *
    * @param rows - An array defined in layout file.
    * @return - Array of fields, after filtering out non-visible.
    */

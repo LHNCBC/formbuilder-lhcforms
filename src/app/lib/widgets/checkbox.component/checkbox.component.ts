@@ -33,7 +33,7 @@ import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 	    </div>
 	  }
 	  @if (schema.type==='array') {
-	    @for (option of schema.items.oneOf; track option) {
+	    @for (option of schema.items.oneOf; track option[0]) {
 	      <div class="checkbox">
 	        <label class="horizontal control-label">
 	          <input name="{{name}}"

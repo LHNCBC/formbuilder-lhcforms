@@ -34,7 +34,7 @@
               <select [ngModel]="unitIndex" (ngModelChange)="onUnitChange($event)" aria-label="Time window units"
                 class="form-control form-select form-select-sm rounded-0 rounded-end" [attr.id]="'select_'+elementId">
                 <ng-container>
-                  @for (option of unitOptions; track option; let i = $index) {
+                  @for (option of unitOptions; track option.unit; let i = $index) {
                     <option
                     [ngValue]="i">{{option.unit}}</option>
                   }
