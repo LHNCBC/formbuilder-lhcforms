@@ -58,6 +58,8 @@ import {TableEditRowInDlgComponent} from "./widgets/table-edit-row-in-dlg/table-
 import {LfbObjectComponent} from "./widgets/lfb-object/lfb-object.component";
 import {LfbArrayComponent} from "./widgets/lfb-array/lfb-array.component";
 import {ExtensionContainerComponent} from "./widgets/extension-container/extension-container.component";
+import { CodingSystemComponent } from './widgets/coding-system/coding-system.component';
+import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -116,5 +118,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('table-edit-row-in-dlg', TableEditRowInDlgComponent);
     this.register('lfb-object', LfbObjectComponent);
     this.register('array', LfbArrayComponent);
+    this.register('coding-system', CodingSystemComponent);
+    this.register('coding-display', CodingDisplayComponent);
   }
 }

@@ -197,7 +197,7 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
     Object.keys(coding).forEach((key) => {
-      cy.get('[id^="answerOption.'+index+'.valueCoding.'+key+'"]').type(coding[key]);
+      cy.get('[id^="answerOption.'+index+'.valueCoding.'+key+'"]').type(coding[key]).type('{enter}');
     });
     cy.contains('button', 'Add another answer').click();
   });
@@ -213,9 +213,9 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
   // No 'initial' widget for coding. User selects default radio in answer option table.
   // cy.get('[id^="initial"]').should('not.be.visible');
+  cy.get('[id^="answerOption.0.valueCoding.system"]').type('s1');
   cy.get('[id^="answerOption.0.valueCoding.display"]').type('d1');
   cy.get('[id^="answerOption.0.valueCoding.code"]').type('c1');
-  cy.get('[id^="answerOption.0.valueCoding.system"]').type('s1');
   cy.get('[id^="answerOption.0.valueCoding.__$score"]').type('2.1');
 
   cy.questionnaireJSON().should((qJson) => {
@@ -232,9 +232,9 @@ Cypress.Commands.add('addAnswerOptions', () => {
   // Add a second answerOption.
   cy.contains('button', 'Add another answer').click();
 
+  cy.get('[id^="answerOption.1.valueCoding.system"]').type('s2');
   cy.get('[id^="answerOption.1.valueCoding.display"]').type('d2');
   cy.get('[id^="answerOption.1.valueCoding.code"]').type('c2');
-  cy.get('[id^="answerOption.1.valueCoding.system"]').type('s2');
   cy.get('[id^="answerOption.1.valueCoding.__$score"]').type('3');
   // Select the first option
   cy.contains('div', 'Value method').find('[for^="__$valueMethod_pick-initial"]').click();

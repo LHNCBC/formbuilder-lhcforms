@@ -201,17 +201,17 @@ describe('Home page', () => {
 
         // Answer Option field is empty. Add 3 options.
         cy.contains('button', 'Add another answer').as('addAnswerButton');
+        cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
         cy.get('[id^="answerOption.0.valueCoding.display"]').type('Example 1');
         cy.get('[id^="answerOption.0.valueCoding.code"]').type('MD11871-1');
-        cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
         cy.get('@addAnswerButton').click();
+        cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
         cy.get('[id^="answerOption.1.valueCoding.display"]').type('Example 2');
         cy.get('[id^="answerOption.1.valueCoding.code"]').type('MD11871-2');
-        cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
         cy.get('@addAnswerButton').click();
+        cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
         cy.get('[id^="answerOption.2.valueCoding.display"]').type('Example 3');
         cy.get('[id^="answerOption.2.valueCoding.code"]').type('MD11871-3');
-        cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
         cy.get('[id^="answerOption.2.valueCoding.__$score"]').click();
 
         // The error on the Pick Answer field should go away
@@ -271,17 +271,17 @@ describe('Home page', () => {
 
         // Answer Option field is empty. Add 3 options.
         cy.contains('button', 'Add another answer').as('addAnswerButton');
+        cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
         cy.get('[id^="answerOption.0.valueCoding.display"]').type('Example 1');
         cy.get('[id^="answerOption.0.valueCoding.code"]').type('MD11871-1');
-        cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
         cy.get('@addAnswerButton').click();
+        cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
         cy.get('[id^="answerOption.1.valueCoding.display"]').type('Example 2');
         cy.get('[id^="answerOption.1.valueCoding.code"]').type('MD11871-2');
-        cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
         cy.get('@addAnswerButton').click();
+        cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org');
         cy.get('[id^="answerOption.2.valueCoding.display"]').type('Example 3');
         cy.get('[id^="answerOption.2.valueCoding.code"]').type('MD11871-3');
-        cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
         cy.get('[id^="answerOption.2.valueCoding.__$score"]').click();
 
         cy.get('[id^="pick-answer_"]').as('pickAnswer');
@@ -933,17 +933,17 @@ describe('Home page', () => {
 
         // Answer Option field is empty. Add 3 options.
         cy.contains('button', 'Add another answer').as('addAnswerButton');
+        cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
         cy.get('[id^="answerOption.0.valueCoding.display"]').type('Example 1');
         cy.get('[id^="answerOption.0.valueCoding.code"]').type('MD11871-1');
-        cy.get('[id^="answerOption.0.valueCoding.system"]').type('http://loinc.org');
         cy.get('@addAnswerButton').click();
+        cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
         cy.get('[id^="answerOption.1.valueCoding.display"]').type('Example 2');
         cy.get('[id^="answerOption.1.valueCoding.code"]').type('MD11871-2');
-        cy.get('[id^="answerOption.1.valueCoding.system"]').type('http://loinc.org');
         cy.get('@addAnswerButton').click();
+        cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org');
         cy.get('[id^="answerOption.2.valueCoding.display"]').type('Example 3');
         cy.get('[id^="answerOption.2.valueCoding.code"]').type('MD11871-3');
-        cy.get('[id^="answerOption.2.valueCoding.system"]').type('http://loinc.org{enter}');
         cy.get('[id^="answerOption.2.valueCoding.__$score"]').click();
 
         // The error on the Pick Answer field should go away

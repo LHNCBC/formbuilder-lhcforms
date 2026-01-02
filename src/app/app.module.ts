@@ -104,6 +104,8 @@ import { InitialNumberDirective } from './lib/directives/initial-number.directiv
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
+import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
+import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
 
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
@@ -173,7 +175,8 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     InitialNumberDirective,
     InitialNumberComponent,
     EntryFormatComponent,
-    AnswerValueSetCodingDisplayComponent
+    AnswerValueSetCodingDisplayComponent,
+    CodingDisplayComponent
   ],
   imports: [
     AppFormElementComponent,
@@ -184,6 +187,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     FormsModule,
     FontAwesomeModule,
     LayoutModule,
+    CodingSystemComponent,
     LfbDisableControlDirective,
     LfbSpinnerComponent,
     MatButtonModule,

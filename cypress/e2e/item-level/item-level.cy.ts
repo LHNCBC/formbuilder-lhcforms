@@ -1132,15 +1132,15 @@ describe('Home page', () => {
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
         cy.enterAnswerOptions([
-          {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
-          {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
+          {system: 's1', display: 'display 1', code: 'c1', __$score: 1},
+          {system: 's2', display: 'display 2', code: 'c2', __$score: 2}
         ]);
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().should('have.value', 'New item 1');
         cy.enterAnswerOptions([
-          {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
-          {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
-          {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
+          {system: 's1', display: 'display 1', code: 'c1', __$score: 1},
+          {system: 's2', display: 'display 2', code: 'c2', __$score: 2},
+          {system: 's3', display: 'display 3', code: 'c3', __$score: 3}
         ]);
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().should('have.value', 'New item 2');
@@ -1199,15 +1199,15 @@ describe('Home page', () => {
 
       it('should work with operator exists value in conditional display', () => {
         cy.enterAnswerOptions([
-          {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
-          {display: 'display 2', code: 'c2', system: 's2', __$score: 2}
+          {system: 's1', display: 'display 1', code: 'c1', __$score: 1},
+          {system: 's2', display: 'display 2', code: 'c2', __$score: 2}
         ]);
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().should('have.value', 'New item 1');
         cy.enterAnswerOptions([
-          {display: 'display 1', code: 'c1', system: 's1', __$score: 1},
-          {display: 'display 2', code: 'c2', system: 's2', __$score: 2},
-          {display: 'display 3', code: 'c3', system: 's3', __$score: 3}
+          {system: 's1', display: 'display 1', code: 'c1', __$score: 1},
+          {system: 's2', display: 'display 2', code: 'c2', __$score: 2},
+          {system: 's3', display: 'display 3', code: 'c3', __$score: 3}
         ]);
         cy.contains('Add new item').scrollIntoView().click();
         cy.getItemTextField().should('have.value', 'New item 2');
