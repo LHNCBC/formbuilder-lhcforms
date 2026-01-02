@@ -21,7 +21,8 @@ import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lf
         ></lfb-label>
         <ng-container *ngIf="hasAnswerOptions$ | async; else typeInput">
           <div class="{{controlWidthClass}} p-0">
-            <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control"  />
+            <input lfbInteger autocomplete="off" #enableWhenAnswerOptions type="number" [attr.id]="id" class="form-control"
+                   (input)="onInput($event)" (blur)="suppressInvalidValue($event)" [value]="control?.value ?? ''"/>
           </div>
         </ng-container>
 
@@ -34,7 +35,11 @@ import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lf
             [attr.maxLength]="schema.maxLength || null"
             [attr.minLength]="schema.minLength || null">
         </ng-template>
-
+        <ng-container *ngFor="let error of errors">
+          <small *ngIf="formProperty.value && error"
+                class="text-danger form-text" role="alert"
+          >{{error.modifiedMessage || error.originalMessage}}</small>
+        </ng-container>
       </div>
     </ng-template>
   `,

@@ -127,10 +127,16 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
             this.enableWhenAutocompleteOptions
           );
 
-          if (typeof this.formProperty.value !== "string") {
+          if (this.answerOptionService.answerOptionType === "integer") {
+            if (this.formProperty.value) {
+              this.autoComp.setFieldVal(String(this.formProperty.value), false);
+            } else {
+              this.autoComp.setFieldVal('', false);
+            }
+
+          } else if (typeof this.formProperty.value !== "string") {
             this.autoComp.setFieldVal(String(this.formProperty.value), false);
           } else {
-
             this.autoComp.setFieldVal(this.formProperty.value, false);
           }
         }
@@ -148,21 +154,32 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
                 if (code) {
                   this.formProperty.setValue(this.answerOptionService.codingAnswerOptionsHash[code], false);
                 } else {
-                  const newCoding = {
-                    system: null,
-                    display: data.final_val,
-                    code: data.final_val.toLowerCase().replace(/ /g, "_")
-                  };
-                  this.formProperty.setValue(newCoding, false);
+
+                  const newCoding = this.parseCoding(data.final_val);
+                  if (newCoding.code) {
+                    if (newCoding.code in this.answerOptionService.codingAnswerOptionsHash && this.answerOptionService.codingAnswerOptionsHash[newCoding.code].display === newCoding.display) {
+                      this.formProperty.setValue(this.answerOptionService.codingAnswerOptionsHash[newCoding.code], false);
+                    } else {
+                      this.formProperty.setValue(newCoding, false);
+                    }
+                  } else {
+
+                    this.formProperty.setValue(newCoding, false);
+                  }
+
                   this.autoComp.setFieldVal(this.answerOptionService.getAutocompleteItemFromCoding(newCoding), false);
+
                 }
               } else {
                 this.formProperty.setValue(data.final_val, false);
 
                 if (this.answerOptionService.answerOptionType === "integer") {
                   if (data.final_val !== this.formProperty.value) {
-                    console.log('formProperty.vlue - ', this.formProperty.value);
-                    this.autoComp.setFieldVal(this.formProperty.value, false);
+                    if (this.formProperty.value) {
+                      this.autoComp.setFieldVal(String(this.formProperty.value), false);
+                    } else {
+                      this.autoComp.setFieldVal('', false);
+                    }
                   }
                 }
               }
@@ -174,11 +191,45 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
   }
 
   /**
+   * Parses a coding string into a structured object.
+   *
+   * - If the input matches the pattern: "Display Text (CODE)",
+   *   the text before the parentheses is used as the display value
+   *   (first word only), and the text inside the parentheses is used
+   *   as the code.
+   * - If the input does not match the pattern, the entire value is
+   *   used as the display, and a normalized lowercase version
+   *   (spaces replaced with underscores) is used as the code.
+   *
+   * @param value - The input string to parse.
+   * @returns A coding object containing system, display, and code,
+   *          or null if parsing fails.
+   */
+  parseCoding(value: string): { system: string;  display: string; code: string } | null {
+    const match = value.match(/^(.+?)\s*\(([^)]*)\)/);
+    if (!match) {
+      return {
+        system: null,
+        display: value,
+        code: value.toLowerCase().replace(/ /g, "_")
+      };
+    }
+
+    const [, text1, text2] = match;
+    return {
+      system: null,
+      display: text1.trim().split(' ')[0],
+      code: text2.trim()
+    };
+  }
+
+
+  /**
    * Destroy autocomplete.
    * Make sure to reset value
    */
   destroyAutocomplete() {
-    if(this.autoComp) {
+    if (this.autoComp) {
       this.autoComp.setFieldVal('', false);
       this.autoComp.destroy();
       this.autoComp = null;
@@ -208,10 +259,11 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
    */
   suppressInvalidValue(event: Event) {
     const inputEl = event.target as HTMLInputElement;
-    if(inputEl.classList.contains('ng-invalid')) {
+    if (inputEl.classList.contains('ng-invalid')) {
       this.formProperty.setValue(null, false);
     } else if (this.findParentTdWithInvalid(inputEl)) {
       inputEl.value = '';
+      this.formProperty.setValue('', false);
     }
   }
 
@@ -224,11 +276,21 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
    */
   onInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-
     setTimeout(() => {
       // Set the formProperty value to match the UI input.
       // This will trigger the standard validation.
-      this.formProperty.setValue(input.value, true);
+
+      if (this.answerOptionService.answerOptionType === "integer") {
+       const intValue = Number(input.value);
+
+        if (Number.isInteger(intValue)) {
+          this.formProperty.setValue(intValue, true);
+        } else {
+          this.formProperty.setValue('', true);
+        }
+      } else {
+        this.formProperty.setValue(input.value, true);
+      }
       // Trigger the custom enableWhen validation
       this.formProperty.updateValueAndValidity(false, true);
     }, 0);

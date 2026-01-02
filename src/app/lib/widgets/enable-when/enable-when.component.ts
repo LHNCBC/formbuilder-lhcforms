@@ -163,7 +163,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     const prop = rowProperty.getProperty(field);
     const enableWhenErrorPrefix = "ENABLEWHEN";
     const ret = prop._errors?.some((err) => {
-      return err.code?.startsWith(enableWhenErrorPrefix) || err.code?.startsWith("PATTERN");
+      return err.code?.startsWith(enableWhenErrorPrefix);
     });
     return !ret;
   }

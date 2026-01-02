@@ -92,7 +92,7 @@ export class IntegerDirective {
         }
       }
     }
-    if(ignorePaste) {
+    if (ignorePaste) {
       event.preventDefault();
     }
   }
