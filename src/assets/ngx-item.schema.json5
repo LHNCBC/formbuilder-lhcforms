@@ -388,7 +388,7 @@
         "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0",
         "labels": {
           "enablewhen-cond": "enableWhen condition and behavior",
-          "enablewhen-expression": "enableWhenExpression",
+          "enablewhen-expression": "enableWhen expression",
           "none": "None"
         }
       }
