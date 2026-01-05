@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "10.3.13",
+  "version": "11.0.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -23,7 +23,7 @@
     "create-version-file": "echo {\\\"version\\\": \\\"${npm_package_version}\\\"} > ./src/assets/version.json",
     "build": "npm run create-version-file && npx ng build --configuration production",
     "test": "npm run unit-test && npm run e2e:prod",
-    "unit-test": "npx ng test --watch=false",
+    "unit-test": "npx ng test --watch=false | grep -v -E '^(chunk|spec-|Lazy chunk)'",
     "lint": "npx ng lint",
     "cy:verify": "npx cypress verify",
     "cy-run": "npx cypress run --browser chrome --config baseUrl=http://localhost:${npm_package_config_testPort}",
@@ -40,35 +40,35 @@
     "e2e:cy-run-il": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-il",
     "e2e:cy-run": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run",
     "e2e:cy-run-log": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-log",
-    "cy-pw-run": "npm run cy-run && npm run pw-run"
+    "cy-pw-run": "npm run pw-run && npm run cy-run"
   },
   "files": [
     "dist/formbuilder-lhcforms"
   ],
   "dependencies": {
-    "@angular-builders/custom-webpack": "^19.0.0",
-    "@angular/animations": "~19.2.0",
-    "@angular/cdk": "~19.2.0",
-    "@angular/common": "~19.2.0",
-    "@angular/compiler": "~19.2.0",
-    "@angular/core": "~19.2.0",
-    "@angular/forms": "~19.2.0",
-    "@angular/localize": "~19.2.0",
-    "@angular/material": "~19.2.0",
-    "@angular/platform-browser": "~19.2.0",
-    "@angular/platform-browser-dynamic": "~19.2.0",
-    "@angular/router": "~19.2.0",
+    "@angular-builders/custom-webpack": "^20.0.0",
+    "@angular/animations": "~20.3.15",
+    "@angular/cdk": "~20.2.14",
+    "@angular/common": "~20.3.15",
+    "@angular/compiler": "~20.3.15",
+    "@angular/core": "~20.3.15",
+    "@angular/forms": "~20.3.15",
+    "@angular/localize": "~20.3.15",
+    "@angular/material": "~20.2.14",
+    "@angular/platform-browser": "~20.3.15",
+    "@angular/router": "~20.3.15",
     "@bugsplat/angular-tree-component": "^13.0.1",
     "@ctrl/ngx-codemirror": "7.0.0",
-    "@fortawesome/angular-fontawesome": "^1.0.0",
-    "@fortawesome/fontawesome-svg-core": "^6.7.2",
-    "@fortawesome/free-regular-svg-icons": "^6.7.2",
-    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/angular-fontawesome": "^3.0.0",
+    "@fortawesome/fontawesome-svg-core": "^7.1.0",
+    "@fortawesome/free-regular-svg-icons": "^7.1.0",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fullcalendar/core": "^6.1.15",
-    "@lhncbc/expression-editor": "~4.0.0",
-    "@lhncbc/ngx-schema-form": "2.13.1-forked1",
-    "@ng-bootstrap/ng-bootstrap": "^18.0.0",
+    "@lhncbc/expression-editor": "~5.0.1",
+    "@lhncbc/ngx-schema-form": "2.14.1-forked",
+    "@ng-bootstrap/ng-bootstrap": "~19.0.1",
     "@types/fhir": "^0.0.36",
+    "@types/json5": "^2.2.0",
     "bootstrap": "^5.3.3",
     "codemirror": "^5.65.18",
     "date-fns": "^2.30.0",
@@ -91,15 +91,15 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~19.2.0",
-    "@angular-eslint/builder": "~19.1.0",
-    "@angular-eslint/eslint-plugin": "~19.1.0",
-    "@angular-eslint/eslint-plugin-template": "~19.1.0",
-    "@angular-eslint/schematics": "~19.1.0",
-    "@angular-eslint/template-parser": "~19.1.0",
-    "@angular/cli": "~19.2.0",
-    "@angular/compiler-cli": "~19.2.0",
-    "@angular/language-service": "~19.2.0",
+    "@angular-eslint/builder": "~20.7.0",
+    "@angular-eslint/eslint-plugin": "~20.7.0",
+    "@angular-eslint/eslint-plugin-template": "~20.7.0",
+    "@angular-eslint/schematics": "~20.7.0",
+    "@angular-eslint/template-parser": "~20.7.0",
+    "@angular/build": "^20.3.13",
+    "@angular/cli": "~20.3.13",
+    "@angular/compiler-cli": "~20.3.15",
+    "@angular/language-service": "~20.3.15",
     "@cypress/schematic": "^2.5.1",
     "@playwright/test": "^1.42.1",
     "@types/hapi": "18.0.8",
@@ -122,34 +122,12 @@
     "jsonpointer": "^5.0.1",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage-istanbul-reporter": "~3.0.3",
+    "karma-coverage": "^2.2.1",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "postcss": "^8.3.0",
     "start-server-and-test": "^2.0.10",
     "ts-node": "~9.1.1",
     "typescript": "^5.4.5"
-  },
-  "overrides": {
-    "@angular-builders/custom-webpack": {
-      "@angular-devkit/core": "~19.2.0",
-      "@angular-devkit/build-angular": "~19.2.0"
-    },
-    "@angular-devkit/architect": {
-      "@angular-devkit/core": "~19.2.0"
-    },
-    "@angular-eslint/builder": {
-      "@angular-devkit/core": "~19.2.0"
-    },
-    "@angular-eslint/schematics": {
-      "@angular-devkit/schematics": "~19.2.0"
-    },
-    "@lhncbc/expression-editor": {
-      "@angular/animations": "~19.2.0",
-      "@angular/cdk": "~19.2.0",
-      "@angular/common": "~19.2.0",
-      "@angular/core": "~19.2.0",
-      "@angular/material": "~19.2.0"
-    }
   }
 }

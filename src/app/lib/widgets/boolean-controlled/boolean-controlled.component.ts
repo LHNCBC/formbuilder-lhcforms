@@ -13,15 +13,15 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     <ng-template #controller>
       <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
         <lfb-label [title]="label"
-                   [for]="'booleanControlled_'+_id"
-                   [helpMessage]="helpMessage"
-                   [ngClass]="labelClasses"
-                   [labelId]="'label_booleanControlled_'+_id"
+          [for]="'booleanControlled_'+_id"
+          [helpMessage]="helpMessage"
+          [ngClass]="labelClasses"
+          [labelId]="'label_booleanControlled_'+_id"
         ></lfb-label>
-
+    
         <div [ngClass]="controlClasses" role="radiogroup"
-             [attr.aria-labelledby]="'label_booleanControlled_'+_id" [attr.id]="'booleanControlled_'+_id">
-          <ng-container *ngFor="let option of ['No', 'Yes']" >
+          [attr.aria-labelledby]="'label_booleanControlled_'+_id" [attr.id]="'booleanControlled_'+_id">
+          @for (option of ['No', 'Yes']; track option) {
             <input
               autocomplete="off"
               [attr.id]="'booleanControlled_'+option+_id"
@@ -32,11 +32,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
               [ngModelOptions]="{standalone: true}"
               [value]="option === 'Yes'" type="radio" [attr.disabled]="disabled ? '' : null">
             <label class="btn btn-outline-success" [attr.for]="'booleanControlled_'+option+_id">{{option}}</label>
-          </ng-container>
+          }
         </div>
       </div>
     </ng-template>
-
+    
     <ng-container *ngTemplateOutlet="controller"></ng-container>
     `
 })

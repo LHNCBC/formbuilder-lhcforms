@@ -102,11 +102,11 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   formValue: fhir.Questionnaire;
   formService: FormService = inject(FormService);
   extensionsService: ExtensionsService = inject(ExtensionsService);
-  constructor(
-    private http: HttpClient,
-    private dataSrv: FetchService,
-    private modal: NgbModal
-  ) {
+  http = inject(HttpClient);
+  dataSrv = inject(FetchService);
+  modal = inject(NgbModal);
+
+  constructor() {
     this.qlSchema = this.formService.getFormLevelSchema();
   }
 

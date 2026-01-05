@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, Input, OnInit, ViewChild, ChangeDetectorRef} from '@angular/core';
-import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import {TreeNode} from '@bugsplat/angular-tree-component';
 import {merge, Observable, Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, filter, map, switchMap, tap} from 'rxjs/operators';
 import {NgbActiveModal, NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
@@ -82,18 +82,18 @@ export type DialogMode = 'Move' | 'Insert' | 'Copy';
 export class NodeDialogComponent implements OnInit {
   @ViewChild('searchBox') searchBox: NgbTypeahead;
   @Input()
-  node: ITreeNode;
+  node: TreeNode;
   @Input()
   item: ItemComponent;
   @Input()
   mode: DialogMode;
 
-  targetNode: ITreeNode;
+  targetNode: TreeNode;
   targetLocation = 'AFTER';
   self: NodeDialogComponent;
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
-  sources: ITreeNode[] = [];
+  sources: TreeNode[] = [];
   title: string;
 
   constructor(public activeModal: NgbActiveModal, private validationService: ValidationService, private cdr: ChangeDetectorRef) {
@@ -115,7 +115,7 @@ export class NodeDialogComponent implements OnInit {
    * @param input$ - Observation for input string.
    */
 
-  search = (input$: Observable<string>): Observable<ITreeNode []> => {
+  search = (input$: Observable<string>): Observable<TreeNode []> => {
     const debouncedText$ = input$.pipe(debounceTime(100), distinctUntilChanged());
     const clicksWithClosedPopup$ = this.click$.pipe(filter(() => !this.searchBox.isPopupOpen()));
     const inputFocus$ = this.focus$;
@@ -135,11 +135,11 @@ export class NodeDialogComponent implements OnInit {
    * Format item in the results popup.
    * @param item - TreeNode object of the item.
    */
-  formatter(item: ITreeNode): string {
+  formatter(item: TreeNode): string {
     return Util.formatNodeForDisplay(item);
   }
 
-  resultFormatter(item: ITreeNode): string {
+  resultFormatter(item: TreeNode): string {
     return Util.truncateString(Util.formatNodeForDisplay(item), 50);
   }
 

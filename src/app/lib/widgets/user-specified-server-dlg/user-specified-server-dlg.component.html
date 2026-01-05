@@ -5,16 +5,24 @@
     </button>
   </div>
   <div class="modal-body">
-    <div *ngIf="!valid" class="ng-invalid"></div>
-    <div *ngIf="valid" class="ng-valid"></div>
-    <p class="text-success" *ngIf="message" role="alert" aria-atomic="true">{{message}}</p>
-    <p class="text-danger" *ngIf="errorMessage" role="alert" aria-atomic="true">{{errorMessage}}</p>
+    @if (!valid) {
+      <div class="ng-invalid"></div>
+    }
+    @if (valid) {
+      <div class="ng-valid"></div>
+    }
+    @if (message) {
+      <p class="text-success" role="alert" aria-atomic="true">{{message}}</p>
+    }
+    @if (errorMessage) {
+      <p class="text-danger" role="alert" aria-atomic="true">{{errorMessage}}</p>
+    }
     <label for="urlInputId">Specify base URL of your FHIR server</label>
     <div class="input-group input-group-sm">
       <input id="urlInputId" ngModel #urlInput="ngModel" type="url" required class="form-control"
-             placeholder="Enter valid url of your FHIR server"
-             aria-label=""
-             aria-describedby="filterHelp">
+        placeholder="Enter valid url of your FHIR server"
+        aria-label=""
+        aria-describedby="filterHelp">
       <button
         class="align-self-baseline btn btn-sm btn-primary input-group-append"
         type="button"

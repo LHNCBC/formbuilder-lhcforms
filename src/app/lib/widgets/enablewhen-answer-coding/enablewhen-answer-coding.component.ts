@@ -2,7 +2,7 @@
  * Answer coding component for enableWhen. The component is used for answer type coding for
  * selecting codes to satisfy a condition.
  */
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
@@ -15,27 +15,31 @@ declare var LForms: any;
   selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
-      <ng-container *ngIf="autoComplete; else answerOption">
+      @if (autoComplete) {
         <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
-      </ng-container>
+      } @else {
+        <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
+          name="{{name}}" [attr.id]="id"
+          class="form-control"
+          >
+          <ng-container>
+            <!-- Create some unique track argument -->
+            @for (option of answerOptions; track (option.valueCoding.display + ' ' + option.valueCoding.code)) {
+              <option [ngValue]="option.valueCoding"
+              >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
+            }
+          </ng-container>
+        </select>
+      }
     </div>
 
-    <ng-template #answerOption>
-      <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
-              name="{{name}}" [attr.id]="id"
-              class="form-control"
-      >
-        <ng-container>
-          <option *ngFor="let option of answerOptions" [ngValue]="option.valueCoding"
-          >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
-        </ng-container>
-      </select>
-    </ng-template>
-  `,
+    `,
   styles: [
   ]
 })
 export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
+  private formService = inject(FormService);
+
 
   subscriptions: Subscription [] = [];
   answerOptions: any[] = [];
@@ -57,15 +61,6 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     }
   }
   model: fhir.Coding;
-
-  /**
-   * Invoke super constructor.
-   *
-   * @param formService - Inject form service
-   */
-  constructor(private formService: FormService) {
-    super();
-  }
 
   ngOnInit() {
     const initValue = this.formProperty.value;

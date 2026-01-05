@@ -19,6 +19,9 @@ import {
   templateUrl: './answer-option-methods.component.html'
 })
 export class AnswerOptionMethodsComponent extends LabelRadioComponent implements OnInit, AfterViewInit, OnDestroy {
+  private formService = inject(FormService);
+  private liveAnnouncer = inject(LiveAnnouncer);
+
 
   subscriptions: Subscription [] = [];
   @ViewChild('answerOption', {static: true, read: AnswerOptionComponent}) answerOption: AnswerOptionComponent;
@@ -29,10 +32,6 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   isAnswerList = false;
   extensionsService: ExtensionsService = inject(ExtensionsService);
   tableService = inject(TableService);
-
-  constructor(private formService: FormService, private liveAnnouncer: LiveAnnouncer) {
-    super();
-  }
 
   /**
    * Initialize

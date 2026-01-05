@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ElementRef, ChangeDetectorRef, inject } from '@angular/core';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import { FormService } from '../../../services/form.service';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
@@ -16,6 +16,12 @@ import { EXTENSION_URL_VARIABLE, EXTENSION_URL_CUSTOM_VARIABLE_TYPE } from '../.
   styleUrl: './variable.component.css'
 })
 export class VariableComponent extends TableComponent implements OnInit {
+  private formService = inject(FormService);
+  private modalService = inject(NgbModal);
+  cdr = inject(ChangeDetectorRef);
+  private modelService = inject(SharedObjectService);
+  private extensionsService = inject(ExtensionsService);
+
   elementId: string;
   questionnaire = null;
   faAdd = faPlusCircle;
@@ -30,19 +36,6 @@ export class VariableComponent extends TableComponent implements OnInit {
   resultExtensions: any;
 
   buttonName: string;
-
-  /**
-   * Invoke super constructor.
-   *
-   * @param formService - Inject form service
-   */
-  constructor(private formService: FormService,
-    private modalService: NgbModal,
-    public cdr: ChangeDetectorRef,
-    private modelService: SharedObjectService,
-    private extensionsService: ExtensionsService) {
-    super();
-  }
 
   ngOnInit(): void {
     super.ngOnInit();
@@ -125,7 +118,7 @@ export class VariableComponent extends TableComponent implements OnInit {
    * Filter out empty variables.
    * @returns - Array of non-empty variables or an empty array.
    */
-  get nonEmptyVariables() {
+  get nonEmptyVariables(): fhir.Extension [] {
     return (this.formProperty.value ?? []).filter(v => v && (
       (Array.isArray(v.extension) && v.extension.length > 0) ||
       (v.valueExpression &&
