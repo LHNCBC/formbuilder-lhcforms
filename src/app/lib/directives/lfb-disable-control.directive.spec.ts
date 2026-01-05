@@ -21,7 +21,6 @@ describe('LfbDisableControlDirective', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TestHostComponent, FormsModule, ReactiveFormsModule],
-      // providers: [NgControl]
     }).compileComponents();
     fixture = TestBed.createComponent(TestHostComponent);
     debugElement = fixture.debugElement.query(By.directive(LfbDisableControlDirective));

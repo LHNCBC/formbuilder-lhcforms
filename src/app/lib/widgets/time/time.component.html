@@ -23,9 +23,9 @@
           [lfbDisableControl]="schema.disabled"
           >
         <button class="btn btn-sm btn-outline-primary"
-        title="Set current time" (click)="now()">Now</button>
+          title="Set current time" (click)="now()">Now</button>
         <button class="btn btn-sm btn-outline-primary"
-        title="Removes the field from the output" (click)="clear()">Clear</button>
+          title="Removes the field from the output" (click)="clear()">Clear</button>
       </div>
       @for (error of errors; track error.code) {
         @if (formProperty.value && error) {

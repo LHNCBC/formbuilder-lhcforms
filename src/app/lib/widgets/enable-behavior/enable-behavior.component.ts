@@ -16,7 +16,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
         <div [ngClass]="schema.widget.labelWidthClass"></div>
         <div [ngClass]="schema.widget.controlWidthClass">
           <lfb-label [helpMessage]="schema.description" [title]="schema.title"
-          [labelId]="'label_'+id" [for]="id"></lfb-label>
+            [labelId]="'label_'+id" [for]="id"></lfb-label>
           <div [ngClass]="{row: schema.widget.layout === 'row'}"
             role="radiogroup" [attr.aria-labelledby]="'label_'+id" [attr.id]="id">
             @for (option of schema.oneOf; track option[0]) {

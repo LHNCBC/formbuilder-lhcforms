@@ -12,8 +12,6 @@
     <ng-container *ngTemplateOutlet="useExtraction"></ng-container>
     @if (use) {
       <ng-container *ngTemplateOutlet="valueCodeTmpl"></ng-container>
-    }
-    @if (use) {
       @if (!codePresent) {
         <div class="d-flex alert alert-warning p-1 mt-2 ms-auto me-auto">
           <fa-icon [icon]="faWarning" class="pe-2"/>

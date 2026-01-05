@@ -22,8 +22,6 @@
       <div style="display: inline-block;">
         @if ((loading$ | async)) {
           <span class="spinner-grow spinner-grow-sm text-primary " role="status" aria-hidden="true"></span>
-        }
-        @if ((loading$ | async); as status) {
           <span >Loading...</span>
         }
       </div>
