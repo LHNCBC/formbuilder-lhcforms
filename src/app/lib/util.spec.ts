@@ -1,4 +1,6 @@
 import {Util} from './util';
+import {TestBed} from "@angular/core/testing";
+import {HttpClient, provideHttpClient} from "@angular/common/http";
 
 describe('Util', () => {
   it('should traverse to ancestors', () => {
@@ -239,5 +241,17 @@ describe('Util', () => {
     expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption2, "coding")).toBe(true);
     expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption3, "coding")).toBe(true);
     expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption4, "coding")).toBe(false);
+  });
+
+  it('should load JSON5 files', async () => {
+    TestBed.configureTestingModule({providers: [provideHttpClient()]});
+    const httpClient = TestBed.inject(HttpClient);
+    const json5Files = ['/assets/ngx-item.schema.json5', '/assets/ngx-fl.schema.json5'];
+
+    const results = await Util.loadJson5Assets(httpClient, json5Files);
+    const itemSchema = results[json5Files[0]];
+    const flSchema = results[json5Files[1]];
+    expect(itemSchema.properties.linkId.type).toBe('string');
+    expect(flSchema.properties.resourceType.enum).toEqual(['Questionnaire']);
   });
 });

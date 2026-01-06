@@ -1,9 +1,12 @@
-<div *ngIf="openerUrl" class="bg-warning-subtle border border-black text-center">Notice: This page is sending changes back to the page that opened it, <span class="text-primary">{{openerUrl}}</span></div>
+@if (openerUrl) {
+  <div class="bg-warning-subtle border border-black text-center">Notice: This page is sending changes back to the page that opened it, <span class="text-primary">{{openerUrl}}</span></div>
+}
 <div class="page-defaults container bg-white shadow">
-    <lfb-header id="fixedTop" [isFirebaseEnabled]="false"></lfb-header>
-    <div id="resizableMiddle">
+  <lfb-header id="fixedTop" [isFirebaseEnabled]="false"></lfb-header>
+  <div id="resizableMiddle">
 
-      <nav class="navbar navbar-light bg-light ps-2" aria-label="Menu bar" *ngIf="guidingStep !== 'home'">
+    @if (guidingStep !== 'home') {
+      <nav class="navbar navbar-light bg-light ps-2" aria-label="Menu bar">
         <div class="btn-group-sm me-2" ngbDropdown role="group" aria-label="Export menu">
           <button class="btn btn-sm btn-secondary" ngbDropdownToggle>
             Export
@@ -15,8 +18,8 @@
             <button ngbDropdownItem (click)="saveToFile('LHC-Forms')">Export to file in LHC-Forms internal (and volatile) format</button>
             <button ngbDropdownItem (click)="exportToServer('CREATE')">Create a new questionnaire on a FHIR server...</button>
             <button ngbDropdownItem
-                    (click)="exportToServer('UPDATE')"
-                    [disabled]="!questionnaire || !questionnaire.id"
+              (click)="exportToServer('UPDATE')"
+              [disabled]="!questionnaire || !questionnaire.id"
             >Update the questionnaire on the server ({{fhirService.getFhirServer().endpoint}})</button>
           </div>
         </div>
@@ -32,28 +35,27 @@
             <form class="px-4 py-3">
               <label for="searchLoincBox">Import LOINC forms:</label>
               <input type="text"
-                     id="searchLoincBox"
-                     class="form-control form-control-sm"
-                     container="body"
-                     placeholder="Search LOINC"
-                     [(ngModel)]="acResult"
-                     [ngModelOptions]="{standalone: true}"
-                     [ngbTypeahead]="acSearch"
-                     (selectItem)="getLoincForm($event.item.id)"
-                     [resultFormatter]="formatter"
-                     [inputFormatter]="formatter"
-                     [editable]='false' />
+                id="searchLoincBox"
+                class="form-control form-control-sm"
+                container="body"
+                placeholder="Search LOINC"
+                [(ngModel)]="acResult"
+                [ngModelOptions]="{standalone: true}"
+                [ngbTypeahead]="acSearch"
+                (selectItem)="getLoincForm($event.item.id)"
+                [resultFormatter]="formatter"
+                [inputFormatter]="formatter"
+                [editable]='false' />
             </form>
           </div>
         </div>
-
         <div class="btn-group-sm me-2" role="group" [attr.aria-label]="editMenuLabel()">
           <button type="button" class="btn btn-secondary"
-                  (click)="toggleGuidingStep()">{{editMenuLabel()}}</button>
+          (click)="toggleGuidingStep()">{{editMenuLabel()}}</button>
         </div>
         <div class="btn-group-sm me-2 ms-auto" role="group" aria-label="Preview">
           <button type="button" class="btn btn-secondary"
-                  (click)="showPreviewDlg()">Preview</button>
+          (click)="showPreviewDlg()">Preview</button>
         </div>
         @if(openerUrl) {
           <div class="btn-group-sm me-2" role="group" aria-label="Save and close editor">
@@ -68,24 +70,27 @@
           </div>
         }
       </nav>
-      <a target="_self" id="exportAnchor" class="d-none">Export</a>
-      <input #fileInput class="d-none" type="file" (change)="onFileSelected($event)" (click)="fileInput.value = null;">
-      <div class="card bg-danger-subtle m-auto w-75" *ngIf="lformsErrorMessage">
+    }
+    <a target="_self" id="exportAnchor" class="d-none">Export</a>
+    <input #fileInput class="d-none" type="file" (change)="onFileSelected($event)" (click)="fileInput.value = null;">
+    @if (lformsErrorMessage) {
+      <div class="card bg-danger-subtle m-auto w-75">
         <div class="card-header d-flex justify-content-center"><h6 class="card-title">Error</h6></div>
         <div class="card-body">{{lformsErrorMessage}}</div>
       </div>
+    }
 
-      <ng-container *ngIf="guidingStep === 'home'">
-        <ng-container *ngTemplateOutlet="home"></ng-container>
-      </ng-container>
-      <ng-container *ngIf="guidingStep === 'fl-editor'">
-        <ng-container *ngTemplateOutlet="formLevelFields"></ng-container>
-      </ng-container>
-      <ng-container *ngIf="guidingStep === 'item-editor'">
-        <ng-container *ngTemplateOutlet="itemLevelFields"></ng-container>
-      </ng-container>
-    </div>
-    <lfb-footer id="fixedBottom"></lfb-footer>
+    @if (guidingStep === 'home') {
+      <ng-container *ngTemplateOutlet="home"></ng-container>
+    }
+    @if (guidingStep === 'fl-editor') {
+      <ng-container *ngTemplateOutlet="formLevelFields"></ng-container>
+    }
+    @if (guidingStep === 'item-editor') {
+      <ng-container *ngTemplateOutlet="itemLevelFields"></ng-container>
+    }
+  </div>
+  <lfb-footer id="fixedBottom"></lfb-footer>
 </div>
 
 <ng-template #home>
@@ -93,127 +98,131 @@
     <div class="card-body">
       <p class="lead" id="starting_header">How do you want to create your form?</p>
       <ul class="list-unstyled ms-5" role="radiogroup" aria-labelledby="starting_header">
-        <li *ngIf="isAutoSaved() && !isDefaultForm()">
-          <label class="btn">
-            <input type="radio" name="startOption" value="from_autosave"
-                   [(ngModel)]="startOption" [ngModelOptions]="{standalone: true}">
-            Would you like to start from where you left off before?
-          </label>
-        </li>
+        @if (isAutoSaved() && !isDefaultForm()) {
+          <li>
+            <label class="btn">
+              <input type="radio" name="startOption" value="from_autosave"
+                [(ngModel)]="startOption" [ngModelOptions]="{standalone: true}">
+              Would you like to start from where you left off before?
+            </label>
+          </li>
+        }
         <li>
           <label class="btn">
             <input type="radio" name="startOption" value="scratch"
-                   [(ngModel)]="startOption" [ngModelOptions]="{standalone: true}">
+              [(ngModel)]="startOption" [ngModelOptions]="{standalone: true}">
             Start from scratch
           </label>
         </li>
         <li>
           <label class="btn" id="start_option_existing_label">
             <input type="radio" name="startOption" value="existing"
-                   [(ngModel)]="startOption" [ngModelOptions]="{standalone: true}">
+              [(ngModel)]="startOption" [ngModelOptions]="{standalone: true}">
             Start with existing form
           </label>
-          <ul *ngIf="startOption === 'existing'" class="list-unstyled ms-5" role="radiogroup" aria-labelledby="start_option_existing_label">
-            <li>
-              <label class="btn">
-                <input type="radio" name="importOption" value="local"
-                       [(ngModel)]="importOption" [ngModelOptions]="{standalone: true}">
-                Import from local file
-              </label>
-            </li>
-            <li>
-              <label class="btn">
-                <input type="radio" name="importOption" value="fhirServer"
-                       [(ngModel)]="importOption" [ngModelOptions]="{standalone: true}">
-                Import from FHIR server
-              </label>
-            </li>
-            <li>
-              <label class="btn">
-                <input type="radio" name="importOption" value="loinc"
-                       [(ngModel)]="importOption" [ngModelOptions]="{standalone: true}">
-                Import from LOINC
-              </label>
-            </li>
-          </ul>
+          @if (startOption === 'existing') {
+            <ul class="list-unstyled ms-5" role="radiogroup" aria-labelledby="start_option_existing_label">
+              <li>
+                <label class="btn">
+                  <input type="radio" name="importOption" value="local"
+                    [(ngModel)]="importOption" [ngModelOptions]="{standalone: true}">
+                  Import from local file
+                </label>
+              </li>
+              <li>
+                <label class="btn">
+                  <input type="radio" name="importOption" value="fhirServer"
+                    [(ngModel)]="importOption" [ngModelOptions]="{standalone: true}">
+                  Import from FHIR server
+                </label>
+              </li>
+              <li>
+                <label class="btn">
+                  <input type="radio" name="importOption" value="loinc"
+                    [(ngModel)]="importOption" [ngModelOptions]="{standalone: true}">
+                  Import from LOINC
+                </label>
+              </li>
+            </ul>
+          }
         </li>
       </ul>
       <hr>
-      <div class="btn-toolbar float-end mb-2" role="toolbar" aria-label="Toolbar with button groups">
-        <div class="btn-group" role="group" aria-label="Last group">
-          <button type="button" class="btn btn-sm btn-primary" (click)="onContinue()">Continue</button>
+        <div class="btn-toolbar float-end mb-2" role="toolbar" aria-label="Toolbar with button groups">
+          <div class="btn-group" role="group" aria-label="Last group">
+            <button type="button" class="btn btn-sm btn-primary" (click)="onContinue()">Continue</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</ng-template>
+  </ng-template>
 
-<ng-template #formLevelFields>
-  <lfb-form-fields
-                   [questionnaire]="formFields"
-                   (questionnaireChange)="formFieldsChanged($event)"
-                   [questionsButtonLabel]="createButtonLabel()"
-  ></lfb-form-fields>
-</ng-template>
+  <ng-template #formLevelFields>
+    <lfb-form-fields
+      [questionnaire]="formFields"
+      (questionnaireChange)="formFieldsChanged($event)"
+      [questionsButtonLabel]="createButtonLabel()"
+    ></lfb-form-fields>
+  </ng-template>
 
-<ng-template #itemLevelFields>
-  <button type="button"
-          class="ms-2 fw-bold btn btn-link"
-          (click)="setStep('fl-editor')"
-          [class.attention]="!questionnaire?.title"
-          [attr.aria-label]="getTitleAriaLabel(questionnaire?.title)"
-  >{{questionnaire?.title || 'Untitled Form'}}</button>
-  <lfb-item-component [questionnaire]="questionnaire"
-                      (itemChange)="itemComponentChanged($event)"
-  ></lfb-item-component>
-</ng-template>
-<ng-template #loincSearchDlg let-modal>
-  <div class="modal-header btn-primary">
-    <h4 class="modal-title" id="loinc-search-dlg-title">Import a LOINC Form</h4>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()">
-    </button>
-  </div>
-  <div class="modal-body">
-    <form class="px-4 py-3">
-      <label for="loincSearch"><span class="p-1">Search LOINC form:</span></label>
-      <input type="text"
-             id="loincSearch"
-             placeholder="Search LOINC forms"
-             [ngbTypeahead]="acSearch"
-             (selectItem)="modal.close($event.item.id)"
-             [resultFormatter]="formatter"
-             [inputFormatter]="formatter"
-             [editable]='false' />
-    </form>
-  </div>
-</ng-template>
+  <ng-template #itemLevelFields>
+    <button type="button"
+      class="ms-2 fw-bold btn btn-link"
+      (click)="setStep('fl-editor')"
+      [class.attention]="!questionnaire?.title"
+      [attr.aria-label]="getTitleAriaLabel(questionnaire?.title)"
+    >{{questionnaire?.title || 'Untitled Form'}}</button>
+    <lfb-item-component [questionnaire]="questionnaire"
+      (itemChange)="itemComponentChanged($event)"
+    ></lfb-item-component>
+  </ng-template>
+  <ng-template #loincSearchDlg let-modal>
+    <div class="modal-header btn-primary">
+      <h4 class="modal-title" id="loinc-search-dlg-title">Import a LOINC Form</h4>
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()">
+      </button>
+    </div>
+    <div class="modal-body">
+      <form class="px-4 py-3">
+        <label for="loincSearch"><span class="p-1">Search LOINC form:</span></label>
+        <input type="text"
+          id="loincSearch"
+          placeholder="Search LOINC forms"
+          [ngbTypeahead]="acSearch"
+          (selectItem)="modal.close($event.item.id)"
+          [resultFormatter]="formatter"
+          [inputFormatter]="formatter"
+          [editable]='false' />
+      </form>
+    </div>
+  </ng-template>
 
-<ng-template #warnFormLoading let-modal>
-  <div role="dialog" aria-labelledby="warningDlgTitle" class="modal-header bg-primary">
-    <h4 id="warningDlgTitle" class="modal-title text-white">Replace existing form?</h4>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()">
-    </button>
-  </div>
-  <div class="modal-body">
-    This will overwrite the content currently in the form builder. If you wish to save the form currently in the form builder, select Cancel. Otherwise, select Continue to overwrite the current form.
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="modal.close(true)">Continue</button>
-    <button type="button" class="btn btn-primary" (click)="modal.dismiss()">Cancel</button>
-  </div>
-</ng-template>
+  <ng-template #warnFormLoading let-modal>
+    <div role="dialog" aria-labelledby="warningDlgTitle" class="modal-header bg-primary">
+      <h4 id="warningDlgTitle" class="modal-title text-white">Replace existing form?</h4>
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()">
+      </button>
+    </div>
+    <div class="modal-body">
+      This will overwrite the content currently in the form builder. If you wish to save the form currently in the form builder, select Cancel. Otherwise, select Continue to overwrite the current form.
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="modal.close(true)">Continue</button>
+      <button type="button" class="btn btn-primary" (click)="modal.dismiss()">Cancel</button>
+    </div>
+  </ng-template>
 
-<ng-template #confirmCancel let-modal>
-  <div role="alertdialog" aria-labelledby="cancelDlgTitle" class="modal-header bg-primary">
-    <h4 id="cancelDlgTitle" class="modal-title text-white">Confirm cancel</h4>
-    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()">
-    </button>
-  </div>
-  <div class="modal-body">
-    This closes this window without saving your changes. If you are sure, please select Yes. Otherwise, select No to continue the session.
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="modal.close(true)">Yes</button>
-    <button type="button" class="btn btn-primary" (click)="modal.dismiss()">No</button>
-  </div>
-</ng-template>
+  <ng-template #confirmCancel let-modal>
+    <div role="alertdialog" aria-labelledby="cancelDlgTitle" class="modal-header bg-primary">
+      <h4 id="cancelDlgTitle" class="modal-title text-white">Confirm cancel</h4>
+      <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()">
+      </button>
+    </div>
+    <div class="modal-body">
+      This closes this window without saving your changes. If you are sure, please select Yes. Otherwise, select No to continue the session.
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" (click)="modal.close(true)">Yes</button>
+      <button type="button" class="btn btn-primary" (click)="modal.dismiss()">No</button>
+    </div>
+  </ng-template>

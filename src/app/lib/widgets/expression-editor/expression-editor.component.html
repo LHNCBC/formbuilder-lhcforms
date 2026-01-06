@@ -1,18 +1,24 @@
 <div [ngClass]="{'row': true, 'm-0': true}">
-  <lfb-label *ngIf="!noTableLabel"
-             [attr.for]="elementId"
-             [title]="schema.title"
-             [helpMessage]="schema.description"
-             class="col-2 ps-0 pe-1 ng-star-inserted"
-             [ngClass]="labelClasses"
-  ></lfb-label>
-  <div *ngIf="noTableLabel" class="col-2 ps-0 pe-1"></div>
+  @if (!noTableLabel) {
+    <lfb-label
+      [attr.for]="elementId"
+      [title]="schema.title"
+      [helpMessage]="schema.description"
+      class="col-2 ps-0 pe-1 ng-star-inserted"
+      [ngClass]="labelClasses"
+    ></lfb-label>
+  }
 
-
-    <div [ngClass]="controlClasses" class="col p-0">
-      <lfb-label *ngIf="noTableLabel" [helpMessage]="schema.description" [title]="schema.title"
-                 [labelId]="'label_'+id" [for]="id+_id"></lfb-label>
-      <div class="input-group">
+  @if (noTableLabel) {
+    <div class="col-2 ps-0 pe-1"></div>
+  }
+  <div [ngClass]="controlClasses" class="col p-0 card">
+    @if (noTableLabel) {
+      <lfb-label [helpMessage]="schema.description" [title]="schema.title"
+                [labelId]="'label_'+id" [for]="id+_id"></lfb-label>
+    }
+    <div class="input-group">
+      @if (schema.widget.showExpression) {
         <textarea
           readonly
           aria-label="FHIRPath"
@@ -21,16 +27,15 @@
           class="flex-item textarea"
           [formControl]="control"
           class="grayed-out form-control form-control-sm"
-          *ngIf="schema.widget.showExpression"
         ></textarea>
-      </div>
-      <button [attr.id]="'edit'+id+_id" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button" style="width:100%"
-              triggers="manual" placement="bottom top"
-              popoverClass=""
-      >
-        <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> Create/edit expression
-      </button>
+      }
     </div>
-
+    <button [attr.id]="'edit'+id+_id" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
+            triggers="manual" placement="bottom top"
+            popoverClass=""
+      >
+      <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> Create/edit expression
+    </button>
+  </div>
 </div>
 

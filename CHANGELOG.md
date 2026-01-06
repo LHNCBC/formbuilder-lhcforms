@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.14] 2025-12-18
+## [11.0.1] 2025-12-18
 ### Added
 - Implemented enableWhenExpression.
+
+## [11.0.0] 2025-12-31
+### Changed
+- Updated angular framework to version 20.x.x
 
 ## [10.3.13] 2025-12-17
 ### Added

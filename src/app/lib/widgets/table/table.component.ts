@@ -644,4 +644,6 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   isDisabled(index: number): boolean {
     return false;
   }
+
+  protected readonly FormProperty = FormProperty;
 }

@@ -7,36 +7,42 @@
 Put search in modal header and results in modal body.
 It helps to keep the search visible while results are scrolling
 -->
-<div class="modal-header"><ng-container *ngTemplateOutlet="search"></ng-container></div>
+<div class="modal-header"><ng-container *ngTemplateOutlet="searchTmpl"></ng-container></div>
 <ng-container *ngTemplateOutlet="results"></ng-container>
 
 <!-- Search template -->
-<ng-template #search>
+<ng-template #searchTmpl>
   <form class="container" role="search" aria-label="Search selected FHIR server">
     <div class="row align-items-center mb-2">
       <div class="col">
         <div class="align-items-center d-inline-flex">
           <div class="input-group input-group-sm">
             <input type="text" class="form-control"
-                   [(ngModel)]="inputTerm"
-                   [ngModelOptions]="{standalone: true}"
-                   [placeholder]="searchField.searchFieldPlaceholder"
-                   aria-label="Search term"
-                   aria-describedby="filterHelp">
+              [(ngModel)]="inputTerm"
+              [ngModelOptions]="{standalone: true}"
+              [placeholder]="searchField.searchFieldPlaceholder"
+              aria-label="Search term"
+              aria-describedby="filterHelp">
             <button
               class="align-self-baseline btn btn-sm btn-primary input-group-append"
               type="button"
               id="button-addon2"
               (click)="searchInput()"
               [disabled]="loading$ | async">
-              <span *ngIf="loading$ | async" class="spinner-border spinner-border-sm me-2" aria-hidden="true" role="status"></span>
-              <span *ngIf="loading$ | async">Loading...</span>
-              <span *ngIf="(loading$ | async) === false">Search</span>
+              @if (loading$ | async) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true" role="status"></span>
+              }
+              @if (loading$ | async) {
+                <span>Loading...</span>
+              }
+              @if ((loading$ | async) === false) {
+                <span>Search</span>
+              }
             </button>
           </div>
           <div class="ms-1" ngbTooltip="Choose a search field and enter the search term. Choosing 'Any text field' implies searching '_content'. Please refer to FHIR REST API for details.">
-          <fa-icon [icon]="infoIcon"></fa-icon>
-        </div>
+            <fa-icon [icon]="infoIcon"></fa-icon>
+          </div>
         </div>
         <!-- <small id="filterHelp" class="form-text text-muted">Enter a term to narrow down the result set.</small> -->
       </div>
@@ -44,7 +50,9 @@ It helps to keep the search visible while results are scrolling
         <div class="row float-end">
           <label for="SelectFHIRServer1" class="align-self-center col-auto col-form-label col-form-label-sm me-2 p-0 text-nowrap">FHIR Server:&nbsp;</label>
           <select class="col-auto form-select form-select-sm w-auto" id="SelectFHIRServer1" [(ngModel)]="selectedFHIRServer" [ngModelOptions]="{standalone: true}">
-            <option *ngFor="let server of getServerList()" [ngValue]="server">{{server.endpoint}}</option>
+            @for (server of getServerList(); track server.id) {
+              <option [ngValue]="server">{{server.endpoint}}</option>
+            }
           </select>
         </div>
       </div>
@@ -52,42 +60,66 @@ It helps to keep the search visible while results are scrolling
     <div class="m-0 mb-2 row align-items-center">
       <label for="searchField1" class="p-0 me-2  col-auto col-form-label text-nowrap">Search by term occurring in: </label>
       <select class="form-select form-select-sm col-auto w-auto" id="searchField1" [(ngModel)]="searchField" [ngModelOptions]="{standalone: true}">
-        <option *ngFor="let field of searchFieldList" [ngValue]="field">{{field.display}}</option>
+        @for (field of searchFieldList; track field.field) {
+          <option [ngValue]="field">{{field.display}}</option>
+        }
       </select>
     </div>
-    <div *ngIf="bundle$ | async" class="row">
-      <div class="col">
-        <h4 *ngIf="total === 1" role="alert">{{ total }} resource was found.</h4>
-        <h4 *ngIf="total > 1" role="alert">{{ total }} resources were found.</h4>
-        <h4 *ngIf="total === 0" role="alert">No resources were found.</h4>
-        <h4 *ngIf="total === undefined" role="alert">The following resources were found.</h4>
+    @if (bundle$ | async) {
+      <div class="row">
+        <div class="col">
+          @if (total === 1) {
+            <h4 role="alert">{{ total }} resource was found.</h4>
+          }
+          @if (total > 1) {
+            <h4 role="alert">{{ total }} resources were found.</h4>
+          }
+          @if (total === 0) {
+            <h4 role="alert">No resources were found.</h4>
+          }
+          @if (total === undefined) {
+            <h4 role="alert">The following resources were found.</h4>
+          }
+        </div>
+        <div class="col-auto btn-group btn-group-sm btn-sm float-end m-auto p-0" role="group" aria-label="Navigation">
+          <button type="button" class="btn btn-outline-primary" [disabled]="!prevUrl" (click)="prevPage()">Previous</button>
+          <button type="button" class="btn btn-outline-primary" [disabled]="!nextUrl" (click)="nextPage()">Next</button>
+        </div>
       </div>
-      <div class="col-auto btn-group btn-group-sm btn-sm float-end m-auto p-0" role="group" aria-label="Navigation">
-        <button type="button" class="btn btn-outline-primary" [disabled]="!prevUrl" (click)="prevPage()">Previous</button>
-        <button type="button" class="btn btn-outline-primary" [disabled]="!nextUrl" (click)="nextPage()">Next</button>
-      </div>
-    </div>
+    }
   </form>
 </ng-template>
 
 <!-- Results template -->
 <ng-template #results>
-  <ng-container *ngIf="questionnaires">
+  @if (questionnaires) {
     <div class="modal-body bg-light" aria-live="polite">
       <div class="list-group list-group-flush">
-        <a href="#" class="list-group-item list-group-item-action result-item" *ngFor="let q of questionnaires; index as i" (click)="close(q.id)">
-          <div class="row">
-            <div class="col-1">{{resultsOffset + i + 1}}</div>
-            <div class="col-11">
-              <div *ngIf="q.title || q.name">{{q.title || q.name}}</div>
-              <div *ngIf="(!q.title && !q.name)">(No title or name assigned)</div>
-              <div>ID: {{q.id}} <span *ngIf="q.version">(version: {{q.version}})</span></div>
-              <div *ngIf="q.publisher">Publisher: {{q.publisher}}</div>
-              <div *ngIf="q.date">Last changed: {{q.date}}</div>
+        @for (q of questionnaires; track q.id; let i = $index) {
+          <a href="#" class="list-group-item list-group-item-action result-item" (click)="close(q.id)">
+            <div class="row">
+              <div class="col-1">{{resultsOffset + i + 1}}</div>
+              <div class="col-11">
+                @if (q.title || q.name) {
+                  <div>{{q.title || q.name}}</div>
+                }
+                @if ((!q.title && !q.name)) {
+                  <div>(No title or name assigned)</div>
+                }
+                <div>ID: {{q.id}} @if (q.version) {
+                  <span>(version: {{q.version}})</span>
+                }</div>
+                @if (q.publisher) {
+                  <div>Publisher: {{q.publisher}}</div>
+                }
+                @if (q.date) {
+                  <div>Last changed: {{q.date}}</div>
+                }
+              </div>
             </div>
-          </div>
-        </a>
+          </a>
+        }
       </div>
     </div>
-  </ng-container>
+  }
 </ng-template>

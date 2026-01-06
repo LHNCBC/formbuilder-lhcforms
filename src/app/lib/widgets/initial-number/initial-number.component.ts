@@ -11,22 +11,24 @@ import { InitialNumberDirective } from '../../directives/initial-number.directiv
   selector: 'lfb-initial-number',
   template: `
       <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}" [class.has-error]="errors">
-        <lfb-label *ngIf="!nolabel"
-                   [for]="id"
-                   [title]="schema.title"
-                   [helpMessage]="schema.description"
-                   [ngClass]="labelWidthClass + ' ps-0 pe-1'"
-        ></lfb-label>
+        @if (!nolabel) {
+          <lfb-label
+            [for]="id"
+            [title]="schema.title"
+            [helpMessage]="schema.description"
+            [ngClass]="labelWidthClass + ' ps-0 pe-1'"
+          ></lfb-label>
+        }
         <input lfbInitialNumber [propType]="propType" [formProperty]="formProperty"
-               [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
-               [attr.id]="id"
-               class="form-control {{controlWidthClass}}" [formControl]="control"
-               type="text"
-               [attr.placeholder]="schema.placeholder"
-               [ngClass]="{invalid: errors}"
-               [attr.aria-invalid]="errors">
+          [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
+          [attr.id]="id"
+          class="form-control {{controlWidthClass}}" [formControl]="control"
+          type="text"
+          [attr.placeholder]="schema.placeholder"
+          [ngClass]="{invalid: errors}"
+          [attr.aria-invalid]="errors">
       </div>
-  `
+      `
 })
 
 export class InitialNumberComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {

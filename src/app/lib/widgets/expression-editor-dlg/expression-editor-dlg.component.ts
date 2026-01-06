@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -7,13 +7,15 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './expression-editor-dlg.component.html',
   styles: [
     `::ng-deep .modal-dialog {
-      margin: 0px;
+      margin: 0;
       min-width: 100%;
       min-height: 100%;
     }`
   ]
 })
 export class ExpressionEditorDlgComponent {
+  private activeModal = inject(NgbActiveModal);
+
   linkId:string;
   expressionUri = "Output Expression";
   userExpressionChoices: string;
@@ -21,8 +23,6 @@ export class ExpressionEditorDlgComponent {
   // Display the Expression Editor sections
   display: any;
   expressionLabel: string;
-
-  constructor(private activeModal: NgbActiveModal) {};
 
   /**
    * Close the Expression Editor modal dialog.

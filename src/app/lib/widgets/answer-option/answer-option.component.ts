@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, inject } from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {TreeService} from '../../../services/tree.service';
 import { Subscription } from 'rxjs';
@@ -20,17 +13,15 @@ import { AnswerOptionService } from 'src/app/services/answer-option.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
+  private formService = inject(FormService);
+  private answerOptionService = inject(AnswerOptionService);
+
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
   static ITEM_WEIGHT_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
 
   // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
   initializing = false;
-
-  constructor(private formService: FormService,
-              private answerOptionService: AnswerOptionService) {
-    super();
-  }
 
   /**
    * Angular life cycle event - Initialize attributes.
