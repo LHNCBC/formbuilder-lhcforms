@@ -2199,6 +2199,7 @@
           titleSection: true,
           uneditableVariablesSection: true,
           itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -2263,6 +2264,7 @@
           titleSection: true,
           uneditableVariablesSection: true,
           itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -2322,7 +2324,8 @@
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: false,
-          itemVariablesSection: false,
+          itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",

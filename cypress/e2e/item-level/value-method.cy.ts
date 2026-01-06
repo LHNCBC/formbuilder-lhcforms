@@ -367,6 +367,8 @@ describe('Home page', () => {
 
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#variables-section .variable-row').should('have.length', 0);
 
           // Add a new variable 'a'
@@ -446,6 +448,8 @@ describe('Home page', () => {
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#variables-section .variable-row').should('have.length', 2);
 
           cy.get('#variable-label-0').should('have.value', 'a');
@@ -473,6 +477,8 @@ describe('Home page', () => {
 
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#variables-section .variable-row').should('have.length', 0);
 
           // Add a new variable 'a'
@@ -552,6 +558,8 @@ describe('Home page', () => {
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#variables-section .variable-row').should('have.length', 2);
 
           cy.get('#variable-label-0').should('have.value', 'a');
@@ -576,6 +584,10 @@ describe('Home page', () => {
         cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
         cy.get('button#editExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
+          // Variables section
+          cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#expression-editor-base-dialog').should('exist');
           cy.get('#add-variable').click();
           cy.get('#variable-label-0').clear().type('a');
@@ -611,6 +623,11 @@ describe('Home page', () => {
         cy.get('button#editExpression').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');
+
+          // Variables section
+          cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#add-variable').click();
           cy.get('#variable-label-0').clear().type('a');
           cy.get('#variable-type-0').select('Easy Path Expression');
@@ -650,6 +667,8 @@ describe('Home page', () => {
 
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#variables-section .variable-row').should('have.length', 0);
 
           // Add a new variable 'a'

@@ -865,6 +865,31 @@ Cypress.Commands.add('checkQuestionItemControlUI',
     }
   }
 });
+
+/**
+ * Expands the Item Variables section in the Expression Editor
+ * by clicking the expand arrow when it is in the collapsed state.
+ */
+Cypress.Commands.add('expandExpressionItemVariablesSection', () => {
+  cy.get('#variables-section span.arrow')
+    .should('be.visible')
+    .should('have.text', '›')
+    .should('have.css', 'transform', 'none')
+    .click();
+});
+
+/**
+ * Collapse the Item Variables section in the Expression Editor
+ * by clicking the collapse arrow when it is in the expanded state.
+ */
+Cypress.Commands.add('collapseExpressionItemVariablesSection', () => {
+  cy.get('#variables-section span.arrow')
+    .should('be.visible')
+    .should('have.text', '›')
+    .should('have.css', 'transform')
+    .click();
+});
+
 // Helps remove TypeScript errors and auto completing the Cypress commands in TypeScript
 declare global {
   namespace Cypress {
@@ -931,6 +956,8 @@ declare global {
       checkQuestionItemControlUI(
         type: string, questionItemControlOptions: string[], itemControlOptions: string[],
         itemControlOptionsAfterRepeat: string[], itemControlOptionsAfterAnswerValueSet: string[]): Chainable<void>;
+      expandExpressionItemVariablesSection(): Cypress.Chainable<JQuery<HTMLElement>>;
+      collapseExpressionItemVariablesSection(): Cypress.Chainable<JQuery<HTMLElement>>;
     }
   }
 }
