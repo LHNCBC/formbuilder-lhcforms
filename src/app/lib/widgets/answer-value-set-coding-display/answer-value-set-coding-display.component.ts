@@ -22,6 +22,10 @@ declare var LForms: any;
   templateUrl: './answer-value-set-coding-display.component.html'
 })
 export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
+  private formService = inject(FormService);
+  private cdr = inject(ChangeDetectorRef);
+  private renderer = inject(Renderer2);
+
   @ViewChild('codingDisplay') codingDisplay: ElementRef;
 
   subscriptions: Subscription[] = [];
@@ -61,15 +65,6 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
 
   dataType = TYPE_STRING;
   answerMethod = ANSWER_OPTION_METHOD_ANSWER_OPTION;
-
-  /**
-   * Invoke super constructor.
-   *
-   * @param formService - Inject form service
-   */
-  constructor(private formService: FormService, private cdr: ChangeDetectorRef, private renderer: Renderer2) {
-    super();
-  }
 
   ngOnInit() {
     const initValueCoding = this.formProperty.parent.value;

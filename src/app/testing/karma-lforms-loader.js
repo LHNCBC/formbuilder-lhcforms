@@ -1,23 +1,29 @@
-import {getSupportedLFormsVersions, loadLForms} from '../../../node_modules/lforms-loader/dist/lformsLoader.js';
+// 1) Instrument 'src/app/testing/karma-lforms-loader.js'
+if (window.__karma__) {
+  window.__karma__.lformsLoaderProbe = 'evaluated';
+}
 
-// Suppress loading karma, until LForms is loaded.
+import {getSupportedLFormsVersions, loadLForms} from 'lforms-loader/dist/lformsLoader.js';
+
+// Suppress automatic start until we finish (best effort; Angular test shim may reassign this).
 window.__karma__.loaded = () => {}
 
 (async () => {
-  const lfVersions = await getSupportedLFormsVersions().catch((error) => {
-    const msg = `lformsLoader.getSupportedLFormsVersions() failed.`;
-    console.error(`${Date.now()}: ${msg}`);
-    throw error;
-  });
-
-  console.log(`${Date.now()}: The latest LForms version is ${lfVersions[0]}`);
-  const loadedVersion = await loadLForms(lfVersions[0]).catch((errorEvent) => {
-    const msg = `lformsLoader.loadLForms(${lfVersions[0]}) failed.`;
-    console.error(`${Date.now()}: ${msg}`);
-    throw new Error(msg, {cause: errorEvent.error}); // 'error' is an instance of ErrorEvent.
-  });
-
-  console.log(`${Date.now()}: Successfully Loaded LForms libraries - ${loadedVersion}`);
-  setTimeout(() => window.__karma__.start(), 1000);
-
+  try {
+    const lfVersions = await getSupportedLFormsVersions();
+    console.log('[lforms-loader] latest version:', lfVersions[0]);
+    const loadedVersion = await loadLForms(lfVersions[0]);
+    console.log('[lforms-loader] loaded:', loadedVersion);
+    if (window.__karma__) {
+      window.__karma__.lformsLoaderReady = true;
+    }
+  } catch (e) {
+    console.error('[lforms-loader] failed:', e);
+    if (window.__karma__) {
+      window.__karma__.lformsLoaderReady = false;
+      window.__karma__.lformsLoaderError = e;
+    }
+  } finally {
+    setTimeout(() => window.__karma__.start(), 1000);
+  }
 })();

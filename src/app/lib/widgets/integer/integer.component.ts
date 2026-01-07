@@ -9,16 +9,19 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
   standalone: false,
   selector: 'lfb-integer-widget',
   template: `
-    <input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
-           name="{{name}}" type="hidden" [formControl]="control">
-    <ng-template #notHiddenFieldBlock>
+    @if (schema.widget.id ==='hidden') {
+      <input
+        name="{{name}}" type="hidden" [formControl]="control">
+    } @else {
       <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-        <lfb-label *ngIf="!nolabel"
-                   [for]="id"
-                   [title]="schema.title"
-                   [helpMessage]="schema.description"
-                   [ngClass]="labelClasses"
-        ></lfb-label>
+        @if (!nolabel) {
+          <lfb-label
+            [for]="id"
+            [title]="schema.title"
+            [helpMessage]="schema.description"
+            [ngClass]="labelClasses"
+          ></lfb-label>
+        }
         <div class="{{controlClasses}}">
           <input lfbInteger [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
                  [attr.id]="id"
@@ -29,8 +32,8 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
                  [attr.minLength]="schema.minLength || null">
         </div>
       </div>
-    </ng-template>
-  `,
+    }
+    `,
   styles: []
 })
 export class IntegerComponent extends LfbControlWidgetComponent {

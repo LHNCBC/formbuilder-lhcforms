@@ -4,7 +4,7 @@
 import {
   ChangeDetectorRef,
   Component,
-  EventEmitter,
+  EventEmitter, inject,
   Input, OnChanges,
   Output,
   SimpleChanges, ViewChild, ViewContainerRef,
@@ -19,10 +19,12 @@ import {SfFormWrapperComponent} from "../sf-form-wrapper/sf-form-wrapper.compone
     <div class="container">
       <ng-container #sfFormWrapperHost></ng-container>
       <!--
-      <lfb-sf-form-wrapper *ngIf="instantiate" [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)" (validationErrorsChanged)="onValidationErrorsChange($event)"></lfb-sf-form-wrapper>
+      @if (instantiate) {
+        <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)" (validationErrorsChanged)="onValidationErrorsChange($event)"></lfb-sf-form-wrapper>
+      }
       -->
     </div>
-  `,
+    `,
   styles: [`
 
     pre {
@@ -58,7 +60,9 @@ export class NgxSchemaFormComponent implements OnChanges {
 
   @ViewChild('sfFormWrapperHost', {read: ViewContainerRef}) sfFormWrapperHost: ViewContainerRef;
 
-  constructor(private modelService: SharedObjectService, private cdr: ChangeDetectorRef) {
+  private modelService = inject(SharedObjectService);
+  private cdr = inject(ChangeDetectorRef);
+  constructor() {
   }
 
   ngOnChanges(changes: SimpleChanges) {

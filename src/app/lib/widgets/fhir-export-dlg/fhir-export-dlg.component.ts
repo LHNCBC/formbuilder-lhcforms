@@ -20,6 +20,8 @@ enum ExportType {
   styleUrls: ['./fhir-export-dlg.component.css']
 })
 export class FhirExportDlgComponent {
+  private activeModal = inject(NgbActiveModal);
+
 
   private _loading$ = new BehaviorSubject<boolean>(false);
   serverResponse: any;
@@ -32,9 +34,6 @@ export class FhirExportDlgComponent {
   private _state: State = {
     fhirServer: this.fhirService.getFhirServer()
   };
-
-  constructor(private activeModal: NgbActiveModal) {
-  }
 
   // Getters and setters
   get loading$() { return this._loading$.asObservable(); }

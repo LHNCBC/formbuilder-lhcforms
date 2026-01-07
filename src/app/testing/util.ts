@@ -1,4 +1,3 @@
-import {ENTER} from '@angular/cdk/keycodes';
 import fhir from 'fhir/r4';
 import {DebugElement} from '@angular/core';
 import {fhirPrimitives} from '../fhir';

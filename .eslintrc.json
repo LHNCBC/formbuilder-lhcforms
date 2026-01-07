@@ -6,6 +6,14 @@
   "overrides": [
     {
       "files": [
+        "src/app/testing/karma-lforms-loader.js"
+      ],
+      "parserOptions": {
+        "sourceType": "module"
+      }
+    },
+    {
+      "files": [
         "*.ts"
       ],
       "parserOptions": {

@@ -11,16 +11,24 @@ import {Util} from '../../util';
   standalone: false,
   selector: 'lfb-grid',
   template: `
-    <div *ngFor="let fieldset of formProperty.schema.fieldsets">
-      <legend *ngIf="fieldset.title">{{fieldset.title}}</legend>
-      <span *ngIf="fieldset.description" data-toggle="tooltip" [title]="fieldset.description" class="glyphicon glyphicon-info" ></span>
-      <div class="form-row">
-        <div [class]="gridClass(field)" *ngFor="let field of getShowFields(fieldset)">
-          <sf-form-element [formProperty]="getShowFieldProperty(field)"></sf-form-element>
+    @for (fieldset of formProperty.schema.fieldsets; track fieldset.fields) {
+      <div>
+        @if (fieldset.title) {
+          <legend>{{fieldset.title}}</legend>
+        }
+        @if (fieldset.description) {
+          <span data-toggle="tooltip" [title]="fieldset.description" class="glyphicon glyphicon-info" ></span>
+        }
+        <div class="form-row">
+          @for (field of getShowFields(fieldset); track field.field) {
+            <div [class]="gridClass(field)">
+              <sf-form-element [formProperty]="getShowFieldProperty(field)"></sf-form-element>
+            </div>
+          }
         </div>
       </div>
-    </div>
-  `,
+    }
+    `,
   styles: [`
     .grid-border {
       border: lightgray 1px solid;

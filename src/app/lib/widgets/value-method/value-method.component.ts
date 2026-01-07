@@ -13,6 +13,8 @@ import * as CONSTANTS from '../../constants/constants';
   templateUrl: './value-method.component.html'
 })
 export class ValueMethodComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+  private formService = inject(FormService);
+
   type = CONSTANTS.TYPE_STRING;
   linkId: string;
   answerOptions;
@@ -25,10 +27,6 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
 
   valueMethodOptions: any[];
   extensionsService: ExtensionsService = inject(ExtensionsService);
-
-  constructor(private formService: FormService) {
-    super();
-  }
 
   /**
    * Initialize

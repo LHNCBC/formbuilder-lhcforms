@@ -9,12 +9,12 @@ label {
 
 /* tooltip background-color, text color, and font */
 .cdk-overlay-container .mat-mdc-tooltip {
-  --mdc-plain-tooltip-container-color: lightyellow;
-  --mdc-plain-tooltip-supporting-text-color: black;
-  --mdc-plain-tooltip-container-shape: 4px;
-  --mdc-plain-tooltip-supporting-text-line-height: 18px;
-  --mdc-plain-tooltip-supporting-text-size: 12px;
-  --mdc-plain-tooltip-supporting-text-weight: normal;
+  --mat-tooltip-container-color: lightyellow;
+  --mat-tooltip-supporting-text-color: black;
+  --mat-tooltip-container-shape: 4px;
+  --mat-tooltip-supporting-text-line-height: 18px;
+  --mat-tooltip-supporting-text-size: 12px;
+  --mat-tooltip-supporting-text-weight: normal;
 }
 
 /* tooltip border */

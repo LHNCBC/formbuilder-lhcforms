@@ -4,7 +4,7 @@
  *
  */
 
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject } from '@angular/core';
 import {UnitsComponent} from '../units/units.component';
 import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
@@ -30,6 +30,8 @@ interface ObservationLinkPeriodExtension {
   templateUrl: './observation-link-period.component.html'
 })
 export class ObservationLinkPeriodComponent extends StringComponent implements OnInit {
+  private extensionsService = inject(ExtensionsService);
+
   static extUrl: fhirPrimitives.url = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
   static seqNum = 0;
   elementId: string;
@@ -49,7 +51,7 @@ export class ObservationLinkPeriodComponent extends StringComponent implements O
     {code: 'ms', unit: 'milliseconds'}
   ];
 
-  constructor(private extensionsService: ExtensionsService) {
+  constructor() {
     super();
     this.elementId = 'observationLinkPeriod_'+ObservationLinkPeriodComponent.seqNum++;
     this.subscriptions = [];

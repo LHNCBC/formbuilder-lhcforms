@@ -54,15 +54,6 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
    */
   ngOnInit() {
     super.ngOnInit();
-  }
-
-  /**
-   * Setup required observers
-   */
-  ngAfterViewInit() {
-    super.ngAfterViewInit();
-    let sub: Subscription;
-
     // Handle data if loaded from a file
     this.dataType = this.formProperty.findRoot().getProperty('type').value;
     // if unit extensions are available, then load them into form property
@@ -79,8 +70,17 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
         this.includeActionColumn = true;
       }
 
-      this.cdr.detectChanges();
+      // this.cdr.detectChanges();
     }
+
+  }
+
+  /**
+   * Setup required observers
+   */
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    let sub: Subscription;
 
     // Handle scenario when switching from one valueCoding data type to another.
     sub = this.formProperty.searchProperty("type")?.valueChanges.subscribe((changedValue) => {

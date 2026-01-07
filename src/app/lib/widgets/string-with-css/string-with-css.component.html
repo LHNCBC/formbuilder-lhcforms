@@ -1,13 +1,16 @@
-<input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
-       name="{{name}}" type="hidden" [formControl]="control">
-<ng-template #notHiddenFieldBlock>
+@if (schema.widget.id ==='hidden') {
+  <input
+    name="{{name}}" type="hidden" [formControl]="control">
+} @else {
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-    <lfb-label *ngIf="!nolabel"
-               [for]="id"
-               [title]="schema.title"
-               [helpMessage]="schema.description"
-               [ngClass]="labelClasses+' ps-0 pe-1'"
-    ></lfb-label>
+    @if (!nolabel) {
+      <lfb-label
+        [for]="id"
+        [title]="schema.title"
+        [helpMessage]="schema.description"
+        [ngClass]="labelClasses+' ps-0 pe-1'"
+      ></lfb-label>
+    }
     <div [ngClass]="controlClasses">
       <div class="input-group">
         <input [name]="name" [attr.readonly]="(schema.widget.id!=='color') && schema.readOnly?true:null"
@@ -51,5 +54,5 @@
       </div>
     </div>
   </div>
-</ng-template>
+}
 

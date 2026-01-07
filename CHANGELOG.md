@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.0] 2025-12-31
+### Changed
+- Updated angular framework to version 20.x.x
+
 ## [10.4.0] 2025-11-25
 ### Added
 - Added support for adding general extensions.

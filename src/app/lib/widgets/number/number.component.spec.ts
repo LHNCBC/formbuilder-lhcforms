@@ -9,7 +9,7 @@ describe('NumberComponent', () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 
-  CommonTestingModule.setUpTestBed(TestComponent);
+  CommonTestingModule.setUpTestBed(TestComponent, true);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestComponent);

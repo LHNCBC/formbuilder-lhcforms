@@ -15,6 +15,19 @@ describe('AppComponent', () => {
     app = fixture.debugElement.componentInstance;
   });
 
+  describe('karma-lforms-loader probe', () => {
+    it('loader file should be evaluated', () => {
+      // proves the module tag ran at all
+      // @ts-ignore
+      expect(window.__karma__?.lformsLoaderProbe).toBe('evaluated');
+    });
+
+    it('loader should attempt to load LForms', () => {
+      // @ts-ignore
+      expect(window.__karma__?.lformsLoaderReady).toBeTrue();
+    });
+  });
+
   it('should create the app', () => {
     expect(app).toBeTruthy();
   });

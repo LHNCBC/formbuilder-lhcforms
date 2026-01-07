@@ -1,9 +1,8 @@
-import { ChangeDetectorRef, Injectable } from '@angular/core';
+import { ChangeDetectorRef, Injectable, inject } from '@angular/core';
 import { FormService } from './form.service';
 import { Util } from '../lib/util';
 import {TreeNode} from '@bugsplat/angular-tree-component';
 import {FormProperty} from "@lhncbc/ngx-schema-form";
-import { ITreeNode } from '@bugsplat/angular-tree-component/lib/defs/api';
 
 interface EnableWhenFieldValidationObject {
   canonicalPath: string;
@@ -30,11 +29,13 @@ export interface EnableWhenValidationObject {
 })
 
 export class ValidationService {
+  private formService = inject(FormService);
+
   static readonly LINKID_PATTERN = /^[^\s]+(\s[^\s]+)*$/;
   static readonly INITIAL_DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$/;
   static readonly INITIAL_INTEGER = /^-?([0]|([1-9][0-9]*))$/;
 
-  constructor(private formService: FormService) { }
+  constructor() { }
 
   validators = {
     '/type': this.validateType.bind(this),
@@ -415,7 +416,7 @@ export class ValidationService {
    * @param node - The tree node to check for deletion.
    * @returns Array of errors if deletion is blocked due to enableWhen references, or null if deletion is allowed.
    */
-  validateItemDeletionForEnableWhenDependency(node: ITreeNode): any[] | null {
+  validateItemDeletionForEnableWhenDependency(node: TreeNode): any[] | null {
     let errors: any[] = [];
 
     // Get the top-most root node for the current node

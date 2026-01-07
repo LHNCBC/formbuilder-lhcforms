@@ -14,28 +14,38 @@ import appVersion from '../../assets/version.json';
       <div id="siteNameBox" class="d-flex flex-column align-self-baseline ps-2">
         <div class="fs-4"><a class="btn btn-link p-0" id="siteName" href="/">NLM Form Builder</a></div>
         <div class="fs-6">A tool for building HL7<sup>®</sup> FHIR<sup>®</sup> Questionnaires</div>
-
+    
       </div>
-      <div *ngIf="appVersion" class="float-lg-right version-info align-self-end fw-bold pb-1"
-        >Version: <a target="_blank" rel="noopener noreferrer"
-                     href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
-      <div class="float-lg-right" *ngIf="isFirebaseEnabled">
-        <div *ngIf="!isUserSignedIn">
-          <button class="btn btn-sm btn-primary" (click)="showSignInDialog()">
-            <button class="btn border-0 m-0 p-0" matTooltip="Login with OAuth authenticators">Sign in</button>
-          </button>
+      @if (appVersion) {
+        <div class="float-lg-right version-info align-self-end fw-bold pb-1"
+          >Version: <a target="_blank" rel="noopener noreferrer"
+        href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
+      }
+      @if (isFirebaseEnabled) {
+        <div class="float-lg-right">
+          @if (!isUserSignedIn) {
+            <div>
+              <button class="btn btn-sm btn-primary" (click)="showSignInDialog()">
+                <button class="btn border-0 m-0 p-0" matTooltip="Login with OAuth authenticators">Sign in</button>
+              </button>
+            </div>
+          }
+          @if (isUserSignedIn) {
+            <div>
+              <span>{{userProfile.displayName}}</span>
+              <button class="btn btn-sm btn-primary" (click)="signOut()">
+                <button class="btn border-0 m-0 p-0"
+                [ngbTooltip]="userProfile.displayName + userProfile.email ? (' : ' + userProfile.email) : ''">Sign out</button>
+              </button>
+            </div>
+          }
+          @if (loginError) {
+            <div>{{loginError.message}}</div>
+          }
         </div>
-        <div *ngIf="isUserSignedIn">
-          <span>{{userProfile.displayName}}</span>
-          <button class="btn btn-sm btn-primary" (click)="signOut()">
-            <button class="btn border-0 m-0 p-0"
-                  [ngbTooltip]="userProfile.displayName + userProfile.email ? (' : ' + userProfile.email) : ''">Sign out</button>
-          </button>
-        </div>
-        <div *ngIf="loginError">{{loginError.message}}</div>
-      </div>
-</nav>
-  `,
+      }
+    </nav>
+    `,
   styles: [`
     #header {
       /* margin-bottom: 20px; */

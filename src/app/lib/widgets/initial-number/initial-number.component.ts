@@ -11,12 +11,14 @@ import { InitialNumberDirective } from '../../directives/initial-number.directiv
   selector: 'lfb-initial-number',
   template: `
       <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}" [class.has-error]="errors">
-        <lfb-label *ngIf="!nolabel"
-                   [for]="id"
-                   [title]="schema.title"
-                   [helpMessage]="schema.description"
-                   [ngClass]="labelClasses + ' ps-0 pe-1'"
-        ></lfb-label>
+        @if (!nolabel) {
+          <lfb-label
+            [for]="id"
+            [title]="schema.title"
+            [helpMessage]="schema.description"
+            [ngClass]="labelClasses + ' ps-0 pe-1'"
+          ></lfb-label>
+        }
         <div class="{{controlClasses}}">
           <input lfbInitialNumber [propType]="propType" [formProperty]="formProperty"
                  [attr.readonly]="schema.readOnly?true:null" name="{{name}}"

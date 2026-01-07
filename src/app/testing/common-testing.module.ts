@@ -37,9 +37,9 @@ export function useFormPropertyFactory(schemaValidatorFactory: SchemaValidatorFa
 
 
 @Component({
-  standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sf-test',
+  imports: [SchemaFormModule],
   template: `
     <sf-form [schema]="schema" [(model)]="model"></sf-form>
   `,
@@ -56,9 +56,9 @@ export class TestComponent {
 
 @NgModule({
   imports: [
-    SchemaFormModule
+    SchemaFormModule,
+    TestComponent
   ],
-  declarations: [TestComponent]
 })
 export class CommonTestingModule {
 
@@ -82,7 +82,6 @@ export class CommonTestingModule {
 
   static commonTestProviders: any [] = [
     provideHttpClient(),
-    provideHttpClientTesting(),
     WidgetFactory,
     {provide: WidgetRegistry, useClass: LformsWidgetRegistry},
     NgbActiveModal,
@@ -125,10 +124,22 @@ export class CommonTestingModule {
         TestBed.inject(LogService)
       );
     });
+
+    beforeEach(async () => {
+      const formService = TestBed.inject(FormService);
+      await formService.initialize();
+    });
   };
 
-  static setUpTestBed = (TestingComponent: any) => {
-    CommonTestingModule.setUpTestBedConfig({declarations: [TestingComponent]});
+  static setUpTestBed = (TestingComponent: any, standalone = false) => {
+    const config: {imports?: [any], declarations?: [any]} = {};
+    if (standalone) {
+      config.imports = [TestingComponent];
+    }
+    else {
+      config.declarations = [TestingComponent];
+    }
+    CommonTestingModule.setUpTestBedConfig(config);
   };
 
   static setupTestBedWithTestForm = () => {

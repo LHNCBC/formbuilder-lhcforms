@@ -10,11 +10,9 @@ import { EXTENSION_URL_ENTRY_FORMAT } from '../../constants/constants';
   templateUrl: './entry-format.component.html'
 })
 export class EntryFormatComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
-  entryFormat;
+  private extensionsService = inject(ExtensionsService);
 
-  constructor(private extensionsService: ExtensionsService) {
-    super();
-  }
+  entryFormat;
 
   /**
    * Setup required observers

@@ -1,4 +1,4 @@
-import {Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 import fhir from 'fhir/r4';
 import {FHIRServer, FhirService} from '../../../services/fhir.service';
@@ -34,6 +34,11 @@ export interface PreviewData {
   styleUrls: ['./preview-dlg.component.css']
 })
 export class PreviewDlgComponent implements OnInit, OnDestroy {
+  formService = inject(FormService);
+  private fhirService = inject(FhirService);
+  dialogRef = inject<MatDialogRef<PreviewDlgComponent>>(MatDialogRef);
+  data = inject<PreviewData>(MAT_DIALOG_DATA);
+
 
   @ViewChild('lhcForm', {read: ElementRef}) wcForm: ElementRef;
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
@@ -90,12 +95,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   subscriptions: Subscription[] = [];
 
-  constructor(
-    public formService: FormService,
-    private fhirService: FhirService,
-    public dialogRef: MatDialogRef<PreviewDlgComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: PreviewData,
-  ) {
+  constructor() {
     LForms.Util.setFHIRContext(this.fhirService.getSmartClient());
   }
 

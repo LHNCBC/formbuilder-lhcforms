@@ -8,22 +8,24 @@ import {GridComponent} from '../grid.component/grid.component';
   standalone: false,
   selector: 'lfb-left-label-form-group',
   template: `
-      <div class="form-group row" *ngFor="let field of getShowFields()">
-        <div [ngClass]="labelWidthClass + ' ps-0 pe-1'">
-          <lfb-label
-            [for]="getShowFieldProperty(field).id"
-            [title]="getSchema(field).title"
-            [helpMessage]="getSchema(field).description"
-          ></lfb-label>
+      @for (field of getShowFields(); track field) {
+        <div class="form-group row">
+          <div [ngClass]="labelWidthClass + ' ps-0 pe-1'">
+            <lfb-label
+              [for]="getShowFieldProperty(field).id"
+              [title]="getSchema(field).title"
+              [helpMessage]="getSchema(field).description"
+            ></lfb-label>
+          </div>
+          <div [class]="controlWidthClass" >
+            <lfb-form-element
+              [nolabel]="true"
+              [formProperty]="getShowFieldProperty(field)"
+            ></lfb-form-element>
+          </div>
         </div>
-        <div [class]="controlWidthClass" >
-          <lfb-form-element
-            [nolabel]="true"
-            [formProperty]="getShowFieldProperty(field)"
-          ></lfb-form-element>
-        </div>
-      </div>
-  `,
+      }
+      `,
   styles: [`
     .form-group {
       margin: 0;

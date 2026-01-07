@@ -1,28 +1,27 @@
-import { Directive, HostListener, ElementRef, forwardRef, Input } from '@angular/core';
+import { Directive, HostListener, ElementRef, forwardRef, Input, inject } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { FormProperty } from '@lhncbc/ngx-schema-form';
 
 @Directive({
-  standalone: false,
   selector: '[lfbInitialNumber]',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => InitialNumberDirective),
-      multi: true 
+      multi: true
     }
   ]
 })
 
 export class InitialNumberDirective implements ControlValueAccessor {
+  private el = inject(ElementRef);
+
   @Input() propType: string = '';
   @Input() formProperty: FormProperty;
   private allowedDecimalKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', 'e', 'E', 'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'];
   private allowedIntegerKeys = this.allowedDecimalKeys.filter(key => !['.', 'e', 'E'].includes(key));
   static readonly INITIAL_INTEGER = /^-?([0]|([1-9][0-9]*))$/;
   static readonly INITIAL_DECIMAL = /^[-]?(0|[1-9][0-9]*|[0-9]*\.[0-9]+)([eE][-+]?[0-9]+)?$/;
-
-  constructor(private el: ElementRef) { }
 
   @HostListener('input', ['$event.target.value'])
   onInputChange(value: string | null) {
@@ -97,14 +96,14 @@ export class InitialNumberDirective implements ControlValueAccessor {
   }
 
   /**
-   * Writes a new value to the input element. For this particular implementation, we want to 
+   * Writes a new value to the input element. For this particular implementation, we want to
    * preserve the user's input value and not overwrite it with the value from the form property.
    * The update of the input element will be done via set value method.
    * @param value - value to be assigned to the input element.
    */
   writeValue(value: any): void { }
 
-  /** 
+  /**
    * Registers a callback function that should be called when the control's value changes in the UI.
    * @param fn - callback function to be registered.
    */

@@ -1,4 +1,4 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import { Component, ElementRef, ViewChild, inject } from '@angular/core';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 import {FHIRServer, FHIRServerValidityResponse, FhirService} from '../../../services/fhir.service';
 import {fhirPrimitives} from '../../../fhir';
@@ -10,14 +10,16 @@ import {fhirPrimitives} from '../../../fhir';
 })
 
 export class UserSpecifiedServerDlgComponent {
+  private fhirService = inject(FhirService);
+  activeModal = inject(NgbActiveModal);
+
   inputUrl: fhirPrimitives.url;
   message: string;
   errorMessage: string;
   @ViewChild('inputEl', {read: ElementRef}) inputElRef: ElementRef;
   valid: boolean = null;
   newServerObj: FHIRServer = null;
-  constructor(private fhirService: FhirService,
-              public activeModal: NgbActiveModal) {
+  constructor() {
     this.newServerObj = null;
   }
 

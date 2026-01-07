@@ -5,30 +5,34 @@ import {Component, Input} from '@angular/core';
 import {FormElementComponent, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { Widget } from '@lhncbc/ngx-schema-form';
 import { ElementChooserComponent } from '../element-chooser/element-chooser.component';
-import { CommonModule } from '@angular/common';
+
 
 
 @Component({
   standalone: true,
-  imports: [SchemaFormModule, ElementChooserComponent, CommonModule],
+  imports: [SchemaFormModule, ElementChooserComponent],
   selector: 'lfb-form-element',
   template: `
-    <div *ngIf="formProperty.visible"
-         [class.has-error]="!formProperty.valid"
-         [class.has-success]="formProperty.valid">
-      <lfb-element-chooser
-        [nolabel]="nolabel"
-        [layout]="layout"
-        [labelWidthClass]="labelWidthClass"
-        [booleanControlled]="booleanControlled"
-        [booleanLabel]="booleanLabel"
-        (widgetInstanciated)="onWidgetInstanciated($event)"
-        [widgetInfo]="formProperty.schema.widget">
-      </lfb-element-chooser>
-      <sf-form-element-action *ngFor="let button of buttons" [button]="button"
-                              [formProperty]="formProperty"></sf-form-element-action>
-    </div>
-  `,
+    @if (formProperty.visible) {
+      <div
+        [class.has-error]="!formProperty.valid"
+        [class.has-success]="formProperty.valid">
+        <lfb-element-chooser
+          [nolabel]="nolabel"
+          [layout]="layout"
+          [labelWidthClass]="labelWidthClass"
+          [booleanControlled]="booleanControlled"
+          [booleanLabel]="booleanLabel"
+          (widgetInstanciated)="onWidgetInstanciated($event)"
+          [widgetInfo]="formProperty.schema.widget">
+        </lfb-element-chooser>
+        @for (button of buttons; track button) {
+          <sf-form-element-action [button]="button"
+          [formProperty]="formProperty"></sf-form-element-action>
+        }
+      </div>
+    }
+    `,
   styles: []
 })
 export class AppFormElementComponent extends FormElementComponent {

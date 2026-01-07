@@ -1,12 +1,11 @@
 <div #codingDisplay class="widget form-group form-group-sm m-0 p-0">
-  <ng-container *ngIf="autoComplete; else manualEntry">
+  @if (autoComplete) {
     <lfb-auto-complete [name]="name" [attr.id]="id" [options]="acOptions" [model]="model"
-                       [returnUnmatchedValue]="'true'" (selected)="modelChanged($event)"
-                       (removed)="modelChanged(null)" (focusout)="onFocusOut($event)">
+      [returnUnmatchedValue]="'true'" (selected)="modelChanged($event)"
+      (removed)="modelChanged(null)" (focusout)="onFocusOut($event)">
     </lfb-auto-complete>
-  </ng-container>
+  } @else {
+    <input [name]="name" [attr.id]="id" type="text" class="form-control" [(ngModel)]="model.display"
+      (ngModelChange)="fieldChanged($event)">
+  }
 </div>
-<ng-template #manualEntry>
-  <input [name]="name" [attr.id]="id" type="text" class="form-control" [(ngModel)]="model.display"
-         (ngModelChange)="fieldChanged($event)">
-</ng-template>

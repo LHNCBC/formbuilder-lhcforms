@@ -1,7 +1,7 @@
 /**
  * A service to fetch data from clinical tables search service and lforms-fhir servers.
  */
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {HttpClient, HttpErrorResponse, HttpParams} from '@angular/common/http';
 import {Observable, of, retry, throwError} from 'rxjs';
 import {catchError, map, tap} from 'rxjs/operators';
@@ -37,6 +37,8 @@ export enum LoincItemType {
   providedIn: 'root'
 })
 export class FetchService {
+  private http = inject(HttpClient);
+
   static loincBaseUrl = 'https://clinicaltables.nlm.nih.gov';
   static loincSearchUrl = FetchService.loincBaseUrl + '/api/loinc_items/v3/search';
   static loincFormsUrl = FetchService.loincBaseUrl + '/loinc_form_definitions';
@@ -45,7 +47,8 @@ export class FetchService {
   _snomedEditions: SNOMEDEditions = null;
 
   assetsUrl = '/assets';
-  constructor(private http: HttpClient) { }
+
+  constructor() { }
 
   /**
    * Getter for _snomedEditions

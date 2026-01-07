@@ -1,32 +1,40 @@
 <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-  <lfb-label *ngIf="!nolabel"
-             [for]="id"
-             [title]="schema.title"
-             [helpMessage]="schema.description"
-             [ngClass]="labelClasses"
-             [labelId]="'label_'+id">
-  </lfb-label>
+  @if (!nolabel) {
+    <lfb-label
+      [for]="id"
+      [title]="schema.title"
+      [helpMessage]="schema.description"
+      [ngClass]="labelClasses"
+      [labelId]="'label_'+id">
+    </lfb-label>
+  }
   <div [ngClass]="controlClasses+' m-auto ms-0 vertical-container d-flex flex-wrap'" >
     <div class="m-auto ms-0 btn-container d-flex flex-wrap" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="'label_'+id">
-      <ng-container *ngFor="let opt of getItemControlOptions()">
-        <div class="btn-wrapper" *ngIf="!opt?.deprecated" >
-          <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt.enum[0]"
-                 value="{{opt.enum[0]}}" type="radio" [(ngModel)]="option"
-                 (ngModelChange)="updateItemControlExt($event)"
-                 [attr.aria-label]="composeCodeSystemItemControlLabel(opt)" tabindex="0" >
-          <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt.enum[0]"
-                [matTooltip]="((opt.support) ? '' : '(not yet supported in LHC-Forms): ') + opt.description">
-            {{opt.display}}
-            <sup *ngIf="!opt.support">(1)</sup>
-          </label>
-        </div>
-      </ng-container>
+      @for (opt of getItemControlOptions(); track opt.enum[0]) {
+        @if (!opt?.deprecated) {
+          <div class="btn-wrapper" >
+            <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.' + opt.enum[0]"
+              value="{{opt.enum[0]}}" type="radio" [(ngModel)]="option"
+              (ngModelChange)="updateItemControlExt($event)"
+              [attr.aria-label]="composeCodeSystemItemControlLabel(opt)" tabindex="0" >
+            <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.' + opt.enum[0]"
+              [matTooltip]="((opt.support) ? '' : '(not yet supported in LHC-Forms): ') + opt.description">
+              {{opt.display}}
+              @if (!opt.support) {
+                <sup>(1)</sup>
+              }
+            </label>
+          </div>
+        }
+      }
 
       <ng-container *ngTemplateOutlet="unspecifiedOption"></ng-container>
     </div>
     <div class="text-container">
       <p #hint [attr.id]="'hint_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
-      <p #deprecated_hint *ngIf="isItemControlDeprecated" [attr.id]="'deprecated_hint_'+id" class="mb-1 ps-0"><small><em>{{composeDeprecatedMessage()}}</em></small></p>
+      @if (isItemControlDeprecated) {
+        <p #deprecated_hint [attr.id]="'deprecated_hint_'+id" class="mb-1 ps-0"><small><em>{{composeDeprecatedMessage()}}</em></small></p>
+      }
     </div>
   </div>
 </div>
@@ -34,11 +42,11 @@
 <ng-template #unspecifiedOption>
   <div class="btn-wrapper">
     <input class="btn-check" [name]="id" autocomplete="off" [attr.id]="id + '.unspecified'"
-           value="" type="radio" [(ngModel)]="option"
-           (click)="clearExtensionItemControlSelection()"
-           [attr.aria-label]="'Unspecified'" tabindex="0" >
+      value="" type="radio" [(ngModel)]="option"
+      (click)="clearExtensionItemControlSelection()"
+      [attr.aria-label]="'Unspecified'" tabindex="0" >
     <label class="btn btn-sm btn-outline-success" [attr.for]="id + '.unspecified'"
-          [matTooltip]="'Select this if you do not want to specify an item control.'">
+      [matTooltip]="'Select this if you do not want to specify an item control.'">
       Unspecified
     </label>
   </div>

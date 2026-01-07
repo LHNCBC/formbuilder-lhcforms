@@ -20,8 +20,8 @@ describe('AppJsonPipe', () => {
       b: 'b',
       __$b: '_b'
     },
-    // question is referring to ITreeNode.
-    // {question: [ITreeNode]} should be translated to {question: [linkId]}.
+    // question is referring to TreeNode.
+    // {question: [TreeNode]} should be translated to {question: [linkId]}.
     question: {
       // data => questionnaire.item
       data: {
