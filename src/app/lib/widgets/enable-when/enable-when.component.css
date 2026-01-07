@@ -4,3 +4,18 @@ lfb-enable-when td.invalid select {
   outline: 2px solid red;
 }
 
+/*
+  .sr-only can fail in modern browsers due to deprecated clip;
+  replacing it with clip-path fixes the issue.
+*/
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

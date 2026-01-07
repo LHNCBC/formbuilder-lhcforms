@@ -31,7 +31,7 @@
         <table class="table table-borderless table-sm lfb-table">
           @if (!noHeader) {
             <thead class="table-active">
-              <tr class="d-flex">
+              <tr>
                 @for (showField of showHeaderFields; track showField.field) {
                   <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
                     <lfb-title
@@ -49,17 +49,16 @@
 
           <tbody [ngbCollapse]="isCollapsed">
             @for (rowProperty of rowProperties; track rowProperty.canonicalPathNotation; let rowNum = $index) {
-              <tr class="d-flex p-0 m-0">
+              <tr class="p-0 m-0">
                 @for (showField of getFields(rowProperty); track showField.field; let colNum = $index) {
-                  <td
-                    class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 pb-1 pe-1 m-0 align-self-center"
-                    [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"
-                    lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)"
-                    (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
+                  <td class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 pb-1 pe-1 m-0 align-self-center"
+                      [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"
+                      lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)"
+                      (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
                     >
                     @if (isShow(rowProperty, showField.field)) {
                       <lfb-form-element [nolabel]="true"
-                        [formProperty]="getProperty(rowProperty, showField.field)"
+                                        [formProperty]="getProperty(rowProperty, showField.field)"
                       ></lfb-form-element>
                     }
                   </td>

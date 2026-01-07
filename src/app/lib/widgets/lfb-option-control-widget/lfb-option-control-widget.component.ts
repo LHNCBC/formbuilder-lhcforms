@@ -71,23 +71,27 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
           return acc;
         }, errorsObj);
 
-        // Filtering out ENABLEWHEN_ errors which is being handled in enablewhen component
         this.errors = Object.values(errorsObj)
+          .filter((e: any) =>
+            !(e.code === 'PATTERN' && this.answerOptionService.answerOptionType === 'time')
+          )
           .map((e: any) => {
           let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
-          if(!e.params[1]?.trim() && this.schema.widget.showEmptyError) {
-            // If the error is caused by an empty value, use a generic message.
-            ret.code = 'EMPTY_ERROR';
-            ret.modifiedMessage = 'This field is required.';
-          } else {
-            const modifiedMessage = e.code === 'PATTERN'
-              ? this.getModifiedErrorForPatternMismatch(e.params[0])
-              : this.modifiedMessages[e.code];
-            ret.code = e.code;
-            ret.originalMessage = e.message;
-            ret.modifiedMessage = modifiedMessage;
-          }
-          return ret;
+
+            if(!e.params[1]?.trim() && this.schema.widget.showEmptyError) {
+              // If the error is caused by an empty value, use a generic message.
+              ret.code = 'EMPTY_ERROR';
+              ret.modifiedMessage = 'This field is required.';
+            } else {
+
+              const modifiedMessage = e.code === 'PATTERN'
+                ? this.getModifiedErrorForPatternMismatch(e.params[0])
+                : this.modifiedMessages[e.code];
+              ret.code = e.code;
+              ret.originalMessage = e.message;
+              ret.modifiedMessage = modifiedMessage;
+            }
+            return ret;
         });
       }
     });
