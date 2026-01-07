@@ -2,7 +2,8 @@
  * Answer coding component for enableWhen. The component is used for answer type coding for
  * selecting codes to satisfy a condition.
  */
-import {AfterViewInit, Component, inject, OnDestroy, OnInit} from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
 import {Subscription} from 'rxjs';
@@ -13,31 +14,36 @@ import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
 declare var LForms: any;
 
+// TODO: THE HTML NEEDS TO CHANGE>>>>>
+
 @Component({
   standalone: false,
   selector: 'lfb-enablewhen-answer-coding',
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
-      <ng-container *ngIf="autoComplete; else answerOption">
+      @if (autoComplete) {
         <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
-      </ng-container>
+      } @else {
+        <div class="p-0">
+          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
+        </div>
+      }
     </div>
 
-    <ng-template #answerOption>
-      <div class="p-0">
-        <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
-      </div>
-    </ng-template>
-    <ng-container *ngFor="let error of errors">
-      <small *ngIf="!isFormPropertyEmpty() && error"
-              class="text-danger form-text" role="alert"
-      >{{error.modifiedMessage || error.originalMessage}}</small>
-    </ng-container>
+    @if (errors?.length && !isFormPropertyEmpty()) {
+      @for (error of errors; track error.code) {
+        <small class="text-danger form-text" role="alert"
+        >{{error.modifiedMessage || error.originalMessage}}</small>
+      }
+    }
+
   `,
   styles: [
   ]
 })
+
 export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+  private formService = inject(FormService);
 
   subscriptions: Subscription [] = [];
   answerOptions: any[] = [];
@@ -59,17 +65,6 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
     }
   }
   model: fhir.Coding;
-
-  liveAnnouncer = inject(LiveAnnouncer);
-
-  /**
-   * Invoke super constructor.
-   *
-   * @param formService - Inject form service
-   */
-  constructor(private formService: FormService) {
-    super();
-  }
 
   ngOnInit() {
     super.ngOnInit();

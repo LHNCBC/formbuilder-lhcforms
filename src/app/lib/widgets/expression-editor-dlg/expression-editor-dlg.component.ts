@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -7,21 +7,21 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './expression-editor-dlg.component.html',
   styles: [
     `::ng-deep .modal-dialog {
-      margin: 0px;
+      margin: 0;
       min-width: 100%;
       min-height: 100%;
     }`
   ]
 })
 export class ExpressionEditorDlgComponent {
+  private activeModal = inject(NgbActiveModal);
+
   linkId:string;
   expressionUri: string;
   userExpressionChoices: string;
   questionnaire:any;
   // Display the Expression Editor sections
   display: any;
-
-  constructor(private activeModal: NgbActiveModal) {};
 
   /**
    * Close the Rule Editor modal dialog.

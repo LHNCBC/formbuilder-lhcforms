@@ -1,9 +1,8 @@
-import { Directive, HostListener, ElementRef, forwardRef, Input } from '@angular/core';
+import { Directive, HostListener, ElementRef, forwardRef, Input, inject } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { FormProperty } from '@lhncbc/ngx-schema-form';
 
 @Directive({
-  standalone: false,
   selector: '[lfbInitialNumber]',
   providers: [
     {
@@ -15,14 +14,14 @@ import { FormProperty } from '@lhncbc/ngx-schema-form';
 })
 
 export class InitialNumberDirective implements ControlValueAccessor {
+  private el = inject(ElementRef);
+
   @Input() propType: string = '';
   @Input() formProperty: FormProperty;
   private allowedDecimalKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', 'e', 'E', 'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'];
   private allowedIntegerKeys = this.allowedDecimalKeys.filter(key => !['.', 'e', 'E'].includes(key));
   static readonly INITIAL_INTEGER = /^-?([0]|([1-9][0-9]*))$/;
   static readonly INITIAL_DECIMAL = /^[-]?(0|[1-9][0-9]*|[0-9]*\.[0-9]+)([eE][-+]?[0-9]+)?$/;
-
-  constructor(private el: ElementRef) { }
 
   @HostListener('input', ['$event.target.value'])
   onInputChange(value: string | null) {

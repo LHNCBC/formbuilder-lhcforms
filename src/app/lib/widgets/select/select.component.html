@@ -1,57 +1,68 @@
 <ng-template #baseSelect>
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-    <lfb-label  *ngIf="!nolabel"
-                [for]="id+_id"
-                [title]="schema.title"
-                [helpMessage]="schema.description"
-                [ngClass]="labelClasses"
-    ></lfb-label>
+    @if (!nolabel) {
+      <lfb-label
+        [for]="id+_id"
+        [title]="schema.title"
+        [helpMessage]="schema.description"
+        [ngClass]="labelClasses"
+      ></lfb-label>
+    }
     <div [ngClass]="controlClasses">
-    <select *ngIf="schema.type !== 'array'"
-            [formControl]="control"
-            name="{{name}}"
-            [attr.id]="id+_id"
+      @if (schema.type !== 'array') {
+        <select
+          [formControl]="control"
+          name="{{name}}"
+          [attr.id]="id+_id"
+          [ngClass]="{invalid: errors}"
+          [attr.aria-invalid]="errors"
+          (focus)="announceErrors()"
+          [attr.disabled]="schema.readOnly ? '' : null"
+          class="form-select form-select-sm">
+          @if (schema.oneOf) {
+            @for (option of schema.oneOf; track option.enum[0]) {
+              <option
+              [ngValue]="option.enum[0]" >{{option.description}}</option>
+            }
+          } @else {
+            @for (option of allowedOptions; track option.value) {
+              <option
+              [ngValue]="option.value" >{{option.label}}</option>
+            }
+          }
+        </select>
+      }
 
-            [ngClass]="{invalid: errors}"
-            [attr.aria-invalid]="errors"
-            (focus)="announceErrors()"
-
-            [attr.disabled]="schema.readOnly ? '' : null"
-            class="form-select form-select-sm">
-      <ng-container *ngIf="schema.oneOf; else use_enum">
-        <option *ngFor="let option of schema.oneOf"
-                [ngValue]="option.enum[0]" >{{option.description}}</option>
-      </ng-container>
-      <ng-template #use_enum>
-        <option *ngFor="let option of allowedOptions"
-                [ngValue]="option.value" >{{option.label}}</option>
-      </ng-template>
-    </select>
-
-    <select *ngIf="schema.type==='array'" multiple
-            [formControl]="control"
-            name="{{name}}"
-            [attr.id]="id+_id"
-
-            [ngClass]="{invalid: errors}"
-            [attr.aria-invalid]="errors"
-            (focus)="announceErrors()"
-
-            [attr.disabled]="schema.readOnly ? '' : null">
-      <option *ngFor="let option of schema.items.oneOf"
+      @if (schema.type==='array') {
+        <select multiple
+          [formControl]="control"
+          name="{{name}}"
+          [attr.id]="id+_id"
+          [ngClass]="{invalid: errors}"
+          [attr.aria-invalid]="errors"
+          (focus)="announceErrors()"
+          [attr.disabled]="schema.readOnly ? '' : null">
+          @for (option of schema.items.oneOf; track option.enum[0]) {
+            <option
               [ngValue]="option.enum[0]"
-              [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
-    </select>
+            [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
+          }
+        </select>
+      }
 
-    <ng-container *ngFor="let error of errors">
-      <fa-icon id="error" [icon]="errorIcon" style="color: red"></fa-icon>
-      <small *ngIf="formProperty.value && error"
-             class="text-danger form-text" role="alert"
-      >{{error.modifiedMessage || error.originalMessage}}</small>
-    </ng-container>
+      @for (error of errors; track error.code) {
+        <fa-icon [attr.id]="error.code" [icon]="errorIcon" style="color: red"></fa-icon>
+        @if (formProperty.value && error) {
+          <small
+            class="text-danger form-text" role="alert"
+          >{{error.modifiedMessage || error.originalMessage}}</small>
+        }
+      }
 
     </div>
-    <input *ngIf="schema.readOnly" name="{{name}}" type="hidden" [formControl]="control">
+    @if (schema.readOnly) {
+      <input name="{{name}}" type="hidden" [formControl]="control">
+    }
   </div>
 </ng-template>
 

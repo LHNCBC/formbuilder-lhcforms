@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, AfterViewInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, Output, EventEmitter, ChangeDetectorRef, inject } from '@angular/core';
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
 import { FormControl } from '@angular/forms';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
@@ -20,6 +20,11 @@ import {
   styleUrl: './expression-editor.component.css'
 })
 export class ExpressionEditorComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
+  private modalService = inject(NgbModal);
+  private cdr = inject(ChangeDetectorRef);
+  private modelService = inject(SharedObjectService);
+  private extensionsService = inject(ExtensionsService);
+
   @Input() model: any;
   @Input() exp: string;
   @Output() questionnaireChange = new EventEmitter<fhir4.Questionnaire>();
@@ -34,20 +39,6 @@ export class ExpressionEditorComponent extends LfbControlWidgetComponent impleme
   valueMethod: string;
   itemId: number;
   faAdd = faPlusCircle;
-////  name: string;
-////  answerOptionMethod: string;
-
-  // name: string;
-  /**
-   * Invoke super constructor.
-   *
-   */
-  constructor(private modalService: NgbModal,
-              private cdr: ChangeDetectorRef,
-              private modelService: SharedObjectService,
-              private extensionsService: ExtensionsService) {
-    super();
-  }
 
   /**
    * Initialize the component

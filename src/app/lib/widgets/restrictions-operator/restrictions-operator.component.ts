@@ -1,4 +1,4 @@
-import {Component, ElementRef, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild, inject } from '@angular/core';
 import {SelectComponent} from '../select/select.component';
 import {RestrictionsComponent} from '../restrictions/restrictions.component';
 import {RestrictionOperatorService} from '../../../services/restriction-operator.service';
@@ -25,17 +25,14 @@ export interface AcceptChange {
   styleUrls: ['./restrictions-operator.component.css']
 })
 export class RestrictionsOperatorComponent extends SelectComponent implements OnInit {
+  private operatorService = inject(RestrictionOperatorService);
 
-  options: [];
+  options: [{extUrl: string, display: string}];
   model: string;
   disable = false;
   @Output()
   rejectChange = new EventEmitter<{reject: boolean}>();
   @ViewChild('mySelect', {static: true}) mySelect: ElementRef;
-
-  constructor(private operatorService: RestrictionOperatorService) {
-    super();
-  }
 
   ngOnInit() {
     super.ngOnInit();

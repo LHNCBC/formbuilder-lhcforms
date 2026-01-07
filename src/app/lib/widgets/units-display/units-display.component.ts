@@ -41,6 +41,8 @@ interface UnitExtension {
   `]
 })
 export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+  private extensionsService = inject(ExtensionsService);
+
   static seqNum = 0;
   cdr = inject(ChangeDetectorRef);
 
@@ -67,7 +69,7 @@ export class UnitsDisplayComponent extends LfbArrayWidgetComponent implements On
 
   unitService = inject(UnitService);
 
-  constructor(private extensionsService: ExtensionsService) {
+  constructor() {
     super();
     this.elementId = 'units'+UnitsComponent.seqNum++;
     this.subscriptions = [];

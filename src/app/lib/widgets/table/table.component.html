@@ -1,4 +1,4 @@
-<ng-container *ngIf="booleanControlled">
+@if (booleanControlled) {
   <lfb-boolean-controlled
     [bool]="booleanControlledOption"
     (boolChange)="onBooleanControlledChange($event)"
@@ -8,152 +8,182 @@
     [labelPosition]="labelPosition"
     [helpMessage]="schema.description"
   ></lfb-boolean-controlled>
-</ng-container>
+}
 
-<div *ngIf="!booleanControlled || booleanControlledOption" class="widget form-group m-0"
-     [ngClass]=
-       "{'row': labelPosition === 'left'}">
-  <div [ngClass]="labelClasses">
-    <button *ngIf="!noCollapseButton" href="#" type="button"
-            [ngClass]="{'float-sm-end': labelPosition === 'left'}"
-            class="btn btn-sm m-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
-            [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
-      <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
-    </button>
-    <lfb-label *ngIf="!noTableLabel" [title]="schema.title" [helpMessage]="schema.description" [for]="tableId"></lfb-label>
-  </div>
-  <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
-    <table class="table table-borderless table-sm lfb-table" *ngIf="+formProperty.properties.length > 0">
-      <thead *ngIf="!noHeader" class="table-active">
-      <tr class="d-flex">
-        <th *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
-          <lfb-title
-            [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
-            [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
-          ></lfb-title>
-        </th>
-        <th *ngIf="(rowSelectionType === 'radio' || rowSelectionType === 'checkbox')  && id !=='answerOption'" class="col-sm-2 default-column">
-          <lfb-title
-            title="Default"
-            helpMessage="Pick a default item"
-            (focus)="onHideHeaderAriaLabel(false)"
-          ></lfb-title>
-          <button type="button" class="btn btn-link p-0 ps-1 border-0 unselect" matTooltip="Clear selection"
-                  [attr.aria-hidden]="hideHeaderAriaLabel"
-                  [attr.aria-label]="getClearSelectionLabel(getShowTableFields().length + 1)"
-                  (focus)="onHideHeaderAriaLabel(false)"
-                  (click)="clearSelections()"><i class="material-icons align-top">backspace</i></button>
-        </th>
-        <th *ngIf="includeActionColumn" class="col-sm-half action-column" [ngClass]="{'edit-row': addEditAction}"></th>
-        <th *ngIf="includeErrorColumn" class="col-sm-quarter error-column" ></th>
-      </tr>
-      </thead>
-      <tbody [ngbCollapse]="isCollapsed">
-      <tr *ngFor="let itemProperty of formProperty.properties; index as ind; first as isFirst; last as isLast"
-        class="d-flex lfb-table-row" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
-        <td *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
-          <lfb-form-element [nolabel]="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
-        </td>
-        <td *ngIf="rowSelectionType === 'radio' && id !=='answerOption'" class="col-sm-2 text-center align-self-center default-column">
-          <input type="radio" [attr.id]="'radio_'+itemProperty.canonicalPathNotation" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
-                 [ngModelOptions]="{standalone: true}" name="selectionRadio"  (focus)="onHideHeaderAriaLabel(true)">
-        </td>
-        <td *ngIf="rowSelectionType === 'checkbox' && id !=='answerOption'" class="col-sm-2 text-center align-self-center default-column">
-          <input type="checkbox" [attr.id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]"
-                 (ngModelChange)="checkboxSelection($event)"  (focus)="onHideHeaderAriaLabel(true)">
-        </td>
-        @if(includeActionColumn) {
-          <ng-container *ngTemplateOutlet="actionColumn; context: {index: ind, first: isFirst, last: isLast}"></ng-container>
+@if (!booleanControlled || booleanControlledOption) {
+  <div class="widget form-group m-0"
+    [ngClass]=
+    "{'row': labelPosition === 'left'}">
+    <div [ngClass]="labelClasses">
+      @if (!noCollapseButton) {
+        <button href="#" type="button"
+          [ngClass]="{'float-sm-end': labelPosition === 'left'}"
+          class="btn btn-sm m-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+          [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
+          <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
+        </button>
+      }
+      @if (!noTableLabel) {
+        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="tableId"></lfb-label>
+      }
+    </div>
+    <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
+      @if (+formProperty.properties.length > 0) {
+        <table class="table table-borderless table-sm lfb-table">
+          @if (!noHeader) {
+            <thead class="table-active">
+              <tr class="d-flex">
+                @for (showField of getShowTableFields(); track showField.field) {
+                  <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
+                    <lfb-title
+                      [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
+                      [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
+                    ></lfb-title>
+                  </th>
+                }
+                @if ((rowSelectionType === 'radio' || rowSelectionType === 'checkbox')  && id !=='answerOption') {
+                  <th class="col-sm-2 default-column">
+                    <lfb-title
+                      title="Default"
+                      helpMessage="Pick a default item"
+                      (focus)="onHideHeaderAriaLabel(false)"
+                    ></lfb-title>
+                    <button type="button" class="btn btn-link p-0 ps-1 border-0 unselect" matTooltip="Clear selection"
+                      [attr.aria-hidden]="hideHeaderAriaLabel"
+                      [attr.aria-label]="getClearSelectionLabel(getShowTableFields().length + 1)"
+                      (focus)="onHideHeaderAriaLabel(false)"
+                      (click)="clearSelections()"><i class="material-icons align-top">backspace</i></button>
+                    </th>
+                  }
+                  @if (includeActionColumn) {
+                    <th class="col-sm-half action-column" [ngClass]="{'edit-row': addEditAction}"></th>
+                  }
+                  @if (includeErrorColumn) {
+                    <th class="col-sm-quarter error-column" ></th>
+                  }
+                </tr>
+              </thead>
+            }
+            <tbody [ngbCollapse]="isCollapsed">
+              @for (itemProperty of (formProperty.properties ?? []); track itemProperty; let ind = $index; let isFirst = $first; let isLast = $last) {
+                <tr
+                  class="d-flex lfb-table-row" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
+                  @for (showField of getShowTableFields(); track showField.field) {
+                    <td class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
+                      <lfb-form-element [nolabel]="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
+                    </td>
+                  }
+                  @if (rowSelectionType === 'radio' && id !=='answerOption') {
+                    <td class="col-sm-2 text-center align-self-center default-column">
+                      <input type="radio" [attr.id]="'radio_'+itemProperty.canonicalPathNotation" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
+                        [ngModelOptions]="{standalone: true}" name="selectionRadio"  (focus)="onHideHeaderAriaLabel(true)">
+                    </td>
+                  }
+                  @if (rowSelectionType === 'checkbox' && id !=='answerOption') {
+                    <td class="col-sm-2 text-center align-self-center default-column">
+                      <input type="checkbox" [attr.id]="'checkbox_'+itemProperty.canonicalPathNotation" [(ngModel)]="selectionCheckbox[ind]"
+                        (ngModelChange)="checkboxSelection($event)"  (focus)="onHideHeaderAriaLabel(true)">
+                    </td>
+                  }
+                  @if(includeActionColumn) {
+                    <ng-container *ngTemplateOutlet="actionColumn; context: {index: ind, first: isFirst, last: isLast}"></ng-container>
+                  }
+                  @if(includeErrorColumn) {
+                    <ng-container *ngTemplateOutlet="errorColumn; context: {index: ind}"></ng-container>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
         }
-        @if(includeErrorColumn) {
-          <ng-container *ngTemplateOutlet="errorColumn; context: {index: ind}"></ng-container>
-        }
-      </tr>
-      </tbody>
-    </table>
-    <button (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
+        @if (!singleItem &&
+          (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))) {
+          <button (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
             [attr.disabled]="isAddButtonDisabled() ? '' : null"
-            *ngIf="!singleItem &&
-                (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))"
             [ngbPopover]="'Please fill in the above fields before adding a new item'"
             #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
             popoverClass=""
             [attr.title]="schema.widget.addButtonTitle"
-    >
-      <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
-    </button>
-
-    <div class="mt-2" *ngIf="tableStatus" role="alert">
-      <fa-icon [icon]="warningIcon" [ngStyle]="getStatusStyle()" aria-hidden="true"></fa-icon>
-      <span class="ms-2" [ngClass]="getStatusClass()">{{tableStatus.message}}</span>
+            >
+            <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
+          </button>
+        }
+        @if (tableStatus) {
+          <div class="mt-2" role="alert">
+            <fa-icon [icon]="warningIcon" [ngStyle]="getStatusStyle()" aria-hidden="true"></fa-icon>
+            <span class="ms-2" [ngClass]="getStatusClass()">{{tableStatus.message}}</span>
+          </div>
+        }
+      </div>
     </div>
+  }
 
-  </div>
-</div>
+  <ng-template #actionColumn let-index="index" let-first="first" let-last="last">
+    <td class="action-column col-sm-half center border-1" [ngClass]="{'edit-row': addEditAction}"> <!-- TODO conflict resolution: test this change. -->
+      <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
+        @if (!(schema.hasOwnProperty('minItems') &&
+          schema.hasOwnProperty('maxItems') &&
+          schema.minItems === schema.maxItems)) {
+          <button (click)="removeProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
+            [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
+            matTooltip="Remove this row" aria-label="Remove this row"
+            ><fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
+          }
+          <ng-container *ngTemplateOutlet="moveActions; context: {index, first, last, disabled: isEmpty(index), isNextEmpty: isNextItemEmpty(index)}"></ng-container>
+          @if (addEditAction) {
+            <ng-container *ngTemplateOutlet="editRow; context: {index}"></ng-container>
 
-<ng-template #actionColumn let-index="index" let-first="first" let-last="last">
-  <td class="action-column col-sm-half center border-1" [ngClass]="{'edit-row': addEditAction}"> <!-- TODO conflict resolution: test this change. -->
-    <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
-      <button (click)="removeProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
-              [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
-              *ngIf="!(schema.hasOwnProperty('minItems') &&
-                               schema.hasOwnProperty('maxItems') &&
-                               schema.minItems === schema.maxItems)"
-              matTooltip="Remove this row" aria-label="Remove this row"
-      ><fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-      <ng-container *ngTemplateOutlet="moveActions; context: {index, first, last, disabled: isEmpty(index), isNextEmpty: isNextItemEmpty(index)}"></ng-container>
-      @if (addEditAction) {
-        <ng-container *ngTemplateOutlet="editRow; context: {index}"></ng-container>
+          }
+        </div>
+      </td>
+    </ng-template>
 
-      }
-    </div>
-  </td>
-</ng-template>
+    <ng-template #moveActions let-index="index" let-first="first" let-last="last" let-disabled="disabled" let-nextEmpty="isNextEmpty">
+      <div class="ps-1 btn-group btn-group-sm">
+        <button type="button"
+          [disabled]="disabled"
+          matTooltip="Move this row up"
+          aria-label="Move this row up"
+          [ngClass]="{invisible: first}"
+          class="btn btn-link btn-sm p-0 border-0 rounded-0"
+          (click)="onMoveUp(index)">
+          <fa-icon [icon]="faMoveUp"></fa-icon>
+        </button>
+        <button type="button"
+          [disabled]="disabled || nextEmpty"
+          matTooltip="Move this row down"
+          aria-label="Move this row down"
+          [ngClass]="{invisible: last}"
+          class="btn btn-link btn-sm p-0 border-0 rounded-0"
+          (click)="onMoveDown(index)">
+          <fa-icon [icon]="faMoveDown"></fa-icon>
+        </button>
+      </div>
+    </ng-template>
 
-<ng-template #moveActions let-index="index" let-first="first" let-last="last" let-disabled="disabled" let-nextEmpty="isNextEmpty">
-  <div class="ps-1 btn-group btn-group-sm">
-      <button type="button"
-              [disabled]="disabled"
-              matTooltip="Move this row up"
-              aria-label="Move this row up"
-              [ngClass]="{invisible: first}"
-              class="btn btn-link btn-sm p-0 border-0 rounded-0"
-              (click)="onMoveUp(index)">
-        <fa-icon [icon]="faMoveUp"></fa-icon>
-      </button>
-      <button type="button"
-              [disabled]="disabled || nextEmpty"
-              matTooltip="Move this row down"
-              aria-label="Move this row down"
-              [ngClass]="{invisible: last}"
-              class="btn btn-link btn-sm p-0 border-0 rounded-0"
-              (click)="onMoveDown(index)">
-        <fa-icon [icon]="faMoveDown"></fa-icon>
-      </button>
-  </div>
-</ng-template>
+    <ng-template #editRow let-index="index">
+      <div class="btn-group btn-group-sm p-0 pt-0 pe-0 ps-1">
+        <button type="button"
+          class="btn btn-link btn-sm p-0 rounded-0"
+          matTooltip="Edit this row"
+          aria-label="Edit this row"
+          (click)="onEditProperty(index)"
+          [disabled]="isDisabled(index)"
+          ><fa-icon [icon]="faEdit" aria-hidden="true"></fa-icon></button>
+        </div>
+      </ng-template>
 
-<ng-template #editRow let-index="index">
-    <div class="btn-group btn-group-sm p-0 pt-0 pe-0 ps-1">
-      <button type="button"
-        class="btn btn-link btn-sm p-0 rounded-0"
-        matTooltip="Edit this row"
-        aria-label="Edit this row"
-        (click)="onEditProperty(index)"
-        [disabled]="isDisabled(index)"
-      ><fa-icon [icon]="faEdit" aria-hidden="true"></fa-icon></button>
-    </div>
-</ng-template>
-
-<ng-template #errorColumn let-index="index">
-  <td class="error-column col-sm-quarter center">
-    <span tabindex="0" *ngIf="getFieldErrorsByIndex(index) | async as rowErrorMessage" [attr.id]="formProperty.canonicalPathNotation+'.'+index+'.err'"
-      class="btn border-0 p-0 b-0 errors" [matTooltip]="rowErrorMessage"
-    >
-      <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
-      <small class="text-danger form-text sr-only" role="alert">
-        {{rowErrorMessage}}
-      </small>
-    </span>
-  </td>
-</ng-template>
+      <ng-template #errorColumn let-index="index">
+        <td class="error-column col-sm-quarter center">
+          @if (getFieldErrorsByIndex(index) | async; as rowErrorMessage) {
+            <span tabindex="0" [attr.id]="formProperty.canonicalPathNotation+'.'+index+'.err'"
+              class="btn border-0 p-0 b-0 errors" [matTooltip]="rowErrorMessage"
+              >
+              <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
+              <small class="text-danger form-text sr-only" role="alert">
+                {{rowErrorMessage}}
+              </small>
+            </span>
+          }
+        </td>
+      </ng-template>

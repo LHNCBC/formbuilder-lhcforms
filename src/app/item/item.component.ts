@@ -17,7 +17,6 @@ import {
 import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent, TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import {FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
-import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {NgbActiveModal, NgbDropdown, NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
@@ -137,32 +136,31 @@ export class ErrorTooltip {
     <div class="modal-header" [ngClass]="{'bg-danger': type === MessageType.DANGER, 'bg-primary': type !== MessageType.DANGER}">
       <h4 class="modal-title text-white">{{title}}</h4>
       <button type="button" class="btn-close btn-close-white" aria-label="Close"
-              (click)="activeModal.dismiss(false)"
-              (keydown.enter)="activeModal.dismiss(false)"
+        (click)="activeModal.dismiss(false)"
+        (keydown.enter)="activeModal.dismiss(false)"
       ></button>
     </div>
     <div class="modal-body">
       <p>{{message}}</p>
     </div>
     <div class="modal-footer">
-      <ng-container *ngIf="type !== MessageType.DANGER; else closeBtn">
+      @if (type !== MessageType.DANGER) {
         <button type="button" class="btn btn-primary"
-                (keydown.enter)="activeModal.dismiss(false)"
-                (click)="activeModal.dismiss(false)"
+          (keydown.enter)="activeModal.dismiss(false)"
+          (click)="activeModal.dismiss(false)"
         >No</button>
         <button type="button" class="btn btn-primary"
-                (keydown.enter)="activeModal.close(true)"
-                (click)="activeModal.close(true)"
+          (keydown.enter)="activeModal.close(true)"
+          (click)="activeModal.close(true)"
         >Yes</button>
-      </ng-container>
-      <ng-template #closeBtn>
+      } @else {
         <button type="button" class="btn btn-primary"
-                (keydown.enter)="activeModal.dismiss(false)"
-                (click)="activeModal.dismiss(false)"
+          (keydown.enter)="activeModal.dismiss(false)"
+          (click)="activeModal.dismiss(false)"
         >Close</button>
-      </ng-template>
+      }
     </div>
-  `
+    `
 })
 export class ConfirmDlgComponent {
   @Input()
@@ -199,7 +197,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('formSearch') sInput: MatInput;
   @ViewChild('drawer', { read: ElementRef }) sidenavEl: ElementRef;
   // qItem: any;
-  focusNode: ITreeNode;
+  focusNode: TreeNode;
   itemData: fhir.QuestionnaireItem = null;
   treeOptions: ITreeOptions = {
     displayField: 'text',
@@ -518,7 +516,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    *                              If set to 'true', the function will check if the 'linkId' is empty and
    *                              assign a default value. If set to 'false', the validation will be skipped.
    */
-  setNode(node: ITreeNode, checkForEmptyLinkId: boolean = false): void {
+  setNode(node: TreeNode, checkForEmptyLinkId: boolean = false): void {
     this.startTime = Date.now();
     this.focusNode = node;
     this.itemData = this.focusNode ? this.focusNode.data : null;
@@ -555,7 +553,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   /**
    * Returns the tree node id as the default linkId.
    */
-  defaultLinkId(node: ITreeNode): string {
+  defaultLinkId(node: TreeNode): string {
     return node.data[FormService.TREE_NODE_ID];
   }
 
@@ -564,7 +562,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Compute tree hierarchy sequence numbering.
    * @param node - Target node of computation
    */
-  getIndexPath(node: ITreeNode): number[] {
+  getIndexPath(node: TreeNode): number[] {
     return Util.getIndexPath(node);
   }
 
@@ -610,7 +608,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param contextNode - Context node
    * @param position - Insertion point.
    */
-  onInsertItem(dropdown: NgbDropdown, domEvent: Event, contextNode: ITreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
+  onInsertItem(dropdown: NgbDropdown, domEvent: Event, contextNode: TreeNode, position: ('BEFORE'|'AFTER'|'CHILD') = 'AFTER') {
     const newItem: any = {
       text: 'New item ' + this.id++,
       type: 'string',
@@ -658,7 +656,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param node - The node to check.
    * @returns True if node or any ancestor is of type 'display', otherwise false.
    */
-  private isDisplayTypeNodeOrAncestor(node: ITreeNode): boolean {
+  private isDisplayTypeNodeOrAncestor(node: TreeNode): boolean {
     let current = node;
     while (current) {
       if (current.data && current.data.type === 'display') {
@@ -677,7 +675,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
      * @param targetNode - The node to check for enableWhen validation errors, including its ancestors.
      * @returns An object containing an array of errors and an optional error message if a validation error is found.
      */
-  private getEnableWhenAncestorValidationError(sourceNode: ITreeNode, targetNode: ITreeNode): { errors: any[], errorMessage?: string } {
+  private getEnableWhenAncestorValidationError(sourceNode: TreeNode, targetNode: TreeNode): { errors: any[], errorMessage?: string } {
     let currentNode = targetNode;
     let allEnableWhenErrors = [];
     let errorMessage;
@@ -710,7 +708,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param position - ('AFTER'|'BEFORE'|'CHILD')
    * @param action - ('MOVE' | 'DROP')
    */
-  moveItem(contextNode: ITreeNode, targetNode: ITreeNode, position: ('AFTER'|'BEFORE'|'CHILD') = 'AFTER', action: ('MOVE'|'DROP') = 'MOVE') {
+  moveItem(contextNode: TreeNode, targetNode: TreeNode, position: ('AFTER'|'BEFORE'|'CHILD') = 'AFTER', action: ('MOVE'|'DROP') = 'MOVE') {
     let errorMessage;
     let hasError = false;
     if (this.isDisplayTypeNodeOrAncestor(targetNode)) {
@@ -756,7 +754,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param domEvent - DOM event.
    * @param contextNode - Context node.
    */
-  onMoveDlg(domEvent: Event, contextNode: ITreeNode) {
+  onMoveDlg(domEvent: Event, contextNode: TreeNode) {
     const modalRef = this.openNodeDlg(contextNode, 'Move');
     modalRef.result.then((result) => {
       this.moveItem(contextNode, result.target, result.location, 'MOVE');
@@ -775,7 +773,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param domEvent - DOM event.
    * @param contextNode - Context node.
    */
-  onCopyDlg(domEvent: Event, contextNode: ITreeNode) {
+  onCopyDlg(domEvent: Event, contextNode: TreeNode) {
     const modalRef = this.openNodeDlg(contextNode, 'Copy');
     modalRef.result.then((result) => {
       this.copyItem(contextNode, result.target, result.location);
@@ -793,7 +791,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param contextNode - Context node
    * @param mode - Move or insert.
    */
-  openNodeDlg(contextNode: ITreeNode, mode: DialogMode): NgbModalRef {
+  openNodeDlg(contextNode: TreeNode, mode: DialogMode): NgbModalRef {
     const modalRef = this.modalService.open(NodeDialogComponent, {ariaLabelledBy: 'modal-move-title'});
     modalRef.componentInstance.node = contextNode;
     modalRef.componentInstance.item = this;
@@ -1025,7 +1023,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * Read out for screen reader when the tree node is focused.
    * @param node - Focused node.
    */
-  treeNodeFocusAnnounce(node: ITreeNode) {
+  treeNodeFocusAnnounce(node: TreeNode) {
     const promises = [];
     if (node?.data && node.id !== this.treeComponent.treeModel.getActiveNode()?.id) {
       // console.log(`${Util.formatNodeForDisplay(node)} is focused`);
@@ -1086,7 +1084,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param targetNode - Context node where the item to add.
    */
   private addNewItem(position: 'AFTER' | 'BEFORE' | 'CHILD',
-                     newItem: QuestionnaireItem, targetNode: ITreeNode) {
+                     newItem: QuestionnaireItem, targetNode: TreeNode) {
     switch (position) {
       case 'CHILD':
         if (!targetNode.data.item) {
@@ -1112,7 +1110,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param targetNode - Destination node
    * @param position - ('AFTER'|'BEFORE'|'CHILD')
    */
-  private copyItem(contextNode: ITreeNode, targetNode: ITreeNode, position: ('AFTER' | 'BEFORE' | 'CHILD') = 'AFTER') {
+  private copyItem(contextNode: TreeNode, targetNode: TreeNode, position: ('AFTER' | 'BEFORE' | 'CHILD') = 'AFTER') {
     const nodeData = contextNode.data;
     const newItem = copy(nodeData);
     newItem.text = 'Copy of ' + newItem.text;
@@ -1147,7 +1145,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param node - Selected node.
    * @returns True if the select node contains error, otherwise false.
    */
-  hasError(node: ITreeNode): boolean {
+  hasError(node: TreeNode): boolean {
     if (this.isViewInited)
       return this.formService.isTreeNodeHasErrorById(node.id.toString(), true);
     return false;

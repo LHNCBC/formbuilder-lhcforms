@@ -1,12 +1,12 @@
 import { Injectable, EventEmitter } from '@angular/core';
-import {ITreeModel} from '@bugsplat/angular-tree-component/lib/defs/api';
+import {TreeModel} from '@bugsplat/angular-tree-component';
 import {Subject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TreeService {
-  treeModel: ITreeModel;
+  treeModel: TreeModel;
 
   _nodeFocus = new Subject<any>();
   constructor() { }

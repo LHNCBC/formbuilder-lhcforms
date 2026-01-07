@@ -51,7 +51,7 @@ export class AnswerOptionService {
     map(fp => {
       const match = fp.__canonicalPathNotation.match(/^enableWhen\.(\d+)\.answer(\w+).*$/);
 
-      if (!match) {
+      if (!match || !fp.parent) {
         return false;
       }
 

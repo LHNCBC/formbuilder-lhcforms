@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
+import { ChangeDetectorRef, Injectable, inject } from '@angular/core';
 import { FormService } from './form.service';
 import { Util } from '../lib/util';
 import { TreeNode } from '@bugsplat/angular-tree-component';
-import { ITreeNode } from '@bugsplat/angular-tree-component/lib/defs/api';
 import {
   TYPE_CODING, TYPE_STRING, TYPE_TEXT, ANSWER_CONSTRAINT_OPTIONS_ONLY,
   ANSWER_CONSTRAINT_OPTIONS_OR_STRING, ANSWER_CONSTRAINT_OPTIONS_OR_TYPE
@@ -41,11 +40,13 @@ export interface EnableWhenValidationObject {
 })
 
 export class ValidationService {
+  private formService = inject(FormService);
+
   static readonly LINKID_PATTERN = /^[^\s]+(\s[^\s]+)*$/;
   static readonly INITIAL_DECIMAL = /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$/;
   static readonly INITIAL_INTEGER = /^-?([0]|([1-9][0-9]*))$/;
 
-  constructor(private formService: FormService) { }
+  constructor() { }
 
   validators = {
     '/type': this.validateType.bind(this),
@@ -96,7 +97,7 @@ export class ValidationService {
    *          answerConstraint). Returns an empty object if questionItem is null/undefined or
    *          if no matching properties are found.
    */
-  populateQuestionItem(questionItem: ITreeNode): QuestionItemObject {
+  populateQuestionItem(questionItem: TreeNode): QuestionItemObject {
     const qItem: QuestionItemObject = {};
     if (questionItem) {
       if ('text' in questionItem?.data) {
@@ -569,7 +570,7 @@ export class ValidationService {
    * @param node - The tree node to check for deletion.
    * @returns Array of errors if deletion is blocked due to enableWhen references, or null if deletion is allowed.
    */
-  validateItemDeletionForEnableWhenDependency(node: ITreeNode): any[] | null {
+  validateItemDeletionForEnableWhenDependency(node: TreeNode): any[] | null {
     let errors: any[] = [];
 
     // Get the top-most root node for the current node

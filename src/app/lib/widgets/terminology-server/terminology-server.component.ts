@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
@@ -14,6 +14,7 @@ import {CommonModule} from '@angular/common';
   styleUrls: ['./terminology-server.component.css']
 })
 export class TerminologyServerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+  private extensionService = inject(ExtensionsService);
 
   static PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
   tsExtension: fhir4.Extension = {
@@ -24,12 +25,6 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
   @ViewChild('hint', {read: ElementRef}) hintEl: ElementRef;
   @ViewChild('urlInput', {read: ElementRef}) urlInput: ElementRef;
   urlValid = true;
-
-  liveAnnouncer = inject(LiveAnnouncer);
-
-  constructor(private extensionService: ExtensionsService) {
-    super();
-  }
 
   /**
    * Announce hint text. Used on focus event of input element.

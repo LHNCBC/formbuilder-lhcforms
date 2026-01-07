@@ -2,9 +2,17 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [10.3.13] 2025-12-15
+## [11.0.1] 2025-12-15
 ### Added
 - Added enableWhen answer validation to check values against answerOptions.
+
+## [11.0.0] 2025-12-31
+### Changed
+- Updated angular framework to version 20.x.x
+
+## [10.3.13] 2025-12-17
+### Added
+- Added autocomplete lookup functionality to the answerOptions.
 
 ## [10.3.12] 2025-12-06
 ### Fixed

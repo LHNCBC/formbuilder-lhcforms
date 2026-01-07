@@ -1,4 +1,4 @@
-import {Directive, ElementRef, HostListener} from '@angular/core';
+import { Directive, ElementRef, HostListener, inject } from '@angular/core';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
 import { Renderer2 } from '@angular/core';
 
@@ -7,19 +7,13 @@ import { Renderer2 } from '@angular/core';
  * It is intended to be used on <input type="number"> element.
  */
 @Directive({
-  standalone: false,
   selector: '[lfbInteger]'
 })
 export class IntegerDirective {
+  private hostEl = inject(ElementRef);
+  liveAnnouncer = inject(LiveAnnouncer);
+  private renderer = inject(Renderer2);
 
-  /**
-   * Constructor
-   * @param hostEl - Host element
-   * @param liveAnnouncer - Angular Live Announcer service
-   * @param renderer - service to interact with the DOM
-   */
-  constructor(private hostEl: ElementRef, public liveAnnouncer: LiveAnnouncer, private renderer: Renderer2) {
-  }
 
   @HostListener('focusout', ['$event'])
   onFocusOut(event: FocusEvent): void {

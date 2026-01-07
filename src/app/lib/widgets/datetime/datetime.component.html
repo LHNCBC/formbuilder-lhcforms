@@ -1,12 +1,14 @@
 
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-    <lfb-label *ngIf="!nolabel"
-               [for]="id+_id"
-               [title]="schema.title"
-               [helpMessage]="schema.description"
-               [ngClass]="labelClasses"
-               class="form-label"
-    ></lfb-label>
+    @if (!nolabel) {
+      <lfb-label
+        [for]="id+_id"
+        [title]="schema.title"
+        [helpMessage]="schema.description"
+        [ngClass]="labelClasses"
+        class="form-label"
+      ></lfb-label>
+    }
     <div class="position-relative input-group-sm px-0" [ngClass]="controlClasses">
       <div class="input-group input-group-sm">
         <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
@@ -29,33 +31,35 @@
                 (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
       </div>
 
-      <ng-container *ngFor="let error of errors ? Array.from(errors).reverse() : null">
-        <small *ngIf="formProperty.value && error"
-               class="text-danger form-text pe-1" role="alert"
-        >{{error.modifiedMessage || error.originalMessage}}</small>
-      </ng-container>
+      @for (error of errors ? Array.from(errors).reverse() : null; track error.code) {
+        @if (formProperty.value && error) {
+          <small
+            class="text-danger form-text pe-1" role="alert"
+          >{{error.modifiedMessage || error.originalMessage}}</small>
+        }
+      }
     </div>
   </div>
 
 
-<ng-template #timeTemplate>
-  <div class="text-center"><button (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
-  <hr class="my-0" />
-  <div class="container">
-    <span class="d-block text-center">Time</span>
-    <div class="d-flex">
-      <div class="flex-grow-1">
-        <input [attr.id]="'ignoreTimeCheckBox_'+_id" type="checkbox" [(ngModel)]="includeTime" (click)="updateValue()" class="me-1 form-check-input form-check-inline">
-        <label [attr.for]="'ignoreTimeCheckBox_'+_id">Include time</label>
+  <ng-template #timeTemplate>
+    <div class="text-center"><button (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
+    <hr class="my-0" />
+    <div class="container">
+      <span class="d-block text-center">Time</span>
+      <div class="d-flex">
+        <div class="flex-grow-1">
+          <input [attr.id]="'ignoreTimeCheckBox_'+_id" type="checkbox" [(ngModel)]="includeTime" (click)="updateValue()" class="me-1 form-check-input form-check-inline">
+          <label [attr.for]="'ignoreTimeCheckBox_'+_id">Include time</label>
+        </div>
+        <div>
+          <button class="btn btn-sm btn-link" (click)="d.navigateTo(); now()">Now</button>
+        </div>
       </div>
-      <div>
-        <button class="btn btn-sm btn-link" (click)="d.navigateTo(); now()">Now</button>
-      </div>
+      <ngb-timepicker class="form-control-sm p-0"
+        [disabled]="!includeTime"
+        [(ngModel)]="dateTime.timeStruct"
+        (ngModelChange)="updateValue($event)" [seconds]="true" [meridian]="true"
+      [size]="'small'"></ngb-timepicker>
     </div>
-    <ngb-timepicker class="form-control-sm p-0"
-                    [disabled]="!includeTime"
-                    [(ngModel)]="dateTime.timeStruct"
-                    (ngModelChange)="updateValue($event)" [seconds]="true" [meridian]="true"
-                    [size]="'small'"></ngb-timepicker>
-  </div>
-</ng-template>
+  </ng-template>

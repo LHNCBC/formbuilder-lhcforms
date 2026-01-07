@@ -1,7 +1,7 @@
 /**
  * Customize spinner to disable interaction while the spinner is on.
  */
-import {Component, Input, OnChanges, SimpleChanges, TemplateRef, ViewChild} from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, TemplateRef, ViewChild, inject } from '@angular/core';
 import {NgbModal, NgbModalOptions, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -11,6 +11,8 @@ import {NgbModal, NgbModalOptions, NgbModalRef} from '@ng-bootstrap/ng-bootstrap
   styleUrls: ['./lfb-spinner.component.css']
 })
 export class LfbSpinnerComponent implements OnChanges {
+  private modalService = inject(NgbModal);
+
 
   @Input()
   show: boolean;
@@ -30,7 +32,6 @@ export class LfbSpinnerComponent implements OnChanges {
   };
 
   modalRef: NgbModalRef;
-  constructor(private modalService: NgbModal) { }
 
 
   /**

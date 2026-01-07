@@ -1,10 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
-@import '~bootstrap/dist/css/bootstrap.min.css';
-@import '~codemirror/lib/codemirror.css';
-@import '~codemirror/theme/idea.css';
-@import '~codemirror/addon/fold/foldgutter.css';
-@import '~codemirror/addon/lint/lint.css';
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'codemirror/lib/codemirror.css';
+@import 'codemirror/theme/idea.css';
+@import 'codemirror/addon/fold/foldgutter.css';
+@import 'codemirror/addon/lint/lint.css';
 
 .cm-s-code-editor {
   background-color: rgb(248, 249, 250);

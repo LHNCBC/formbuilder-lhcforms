@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import {ApplicationRef, CUSTOM_ELEMENTS_SCHEMA, DoBootstrap, NgModule} from '@angular/core';
 import { SchemaFormModule, WidgetRegistry } from '@lhncbc/ngx-schema-form';
-import { ExpressionEditorModule, ENVIRONMENT_TOKEN } from '@lhncbc/expression-editor';
+import { ExpressionEditorModule, ENVIRONMENT_TOKEN } from '@lhncbc/expression-editor/ngx-expression-editor';
 import { Util } from "./lib/util";
 
 import { AppComponent } from './app.component';
@@ -105,6 +105,9 @@ import { InitialNumberComponent } from './lib/widgets/initial-number/initial-num
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 import { LfbOptionControlWidgetComponent } from './lib/widgets/lfb-option-control-widget/lfb-option-control-widget.component';
+import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
+import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
+
 import { environment } from '../environments/environment';
 
 @NgModule({
@@ -128,7 +131,6 @@ import { environment } from '../environments/environment';
     LfbArrayWidgetComponent,
     SideLabelCheckboxComponent,
     EnablewhenAnswerCodingComponent,
-    AppJsonPipe,
     BasePageComponent,
     FormFieldsComponent,
     LabelRadioComponent,
@@ -152,10 +154,8 @@ import { environment } from '../environments/environment';
     ObservationLinkPeriodComponent,
     EnableWhenComponent,
     QuantityUnitComponent,
-    EwValidateDirective,
     NodeDialogComponent,
     NumberComponent,
-    IntegerDirective,
     AnswerOptionMethodsComponent,
     AnswerValueSetComponent,
     ItemControlComponent,
@@ -169,21 +169,26 @@ import { environment } from '../environments/environment';
     ExpressionEditorComponent,
     ExpressionEditorDlgComponent,
     VariableComponent,
-    InitialNumberDirective,
     InitialNumberComponent,
     EntryFormatComponent,
     AnswerValueSetCodingDisplayComponent,
-    LfbOptionControlWidgetComponent
+    LfbOptionControlWidgetComponent,
+    CodingDisplayComponent
   ],
   imports: [
     AppFormElementComponent,
+    AppJsonPipe,
     BooleanControlledComponent,
     BrowserModule,
     BrowserAnimationsModule,
     ElementChooserComponent,
+    EwValidateDirective,
     FormsModule,
     FontAwesomeModule,
+    InitialNumberDirective,
+    IntegerDirective,
     LayoutModule,
+    CodingSystemComponent,
     LfbDisableControlDirective,
     LfbSpinnerComponent,
     MatButtonModule,

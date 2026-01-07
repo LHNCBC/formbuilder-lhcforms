@@ -1,29 +1,34 @@
-<input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
-       name="{{name}}" type="hidden" [formControl]="control">
-<ng-template #notHiddenFieldBlock>
+@if (schema.widget.id ==='hidden') {
+  <input
+    name="{{name}}" type="hidden" [formControl]="control">
+} @else {
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-    <lfb-label *ngIf="!nolabel"
-               [for]="id+_id"
-               [title]="schema.title"
-               [helpMessage]="schema.description"
-               [ngClass]="labelClasses"
-               class="form-label"
-    ></lfb-label>
+    @if (!nolabel) {
+      <lfb-label
+        [for]="id+_id"
+        [title]="schema.title"
+        [helpMessage]="schema.description"
+        [ngClass]="labelClasses"
+        class="form-label"
+      ></lfb-label>
+    }
     <div class="col p-0 position-relative">
       <textarea [name]="name" [readonly]="schema.readOnly"
-             [ngClass]="controlClasses"
-             [attr.type]="schema.widget.id"
-             [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
-             [attr.maxLength]="schema.maxLength || null"
-             [attr.minLength]="schema.minLength || null"
-             [required]="schema.isRequired" [lfbDisableControl]="schema.disabled"
+        [ngClass]="controlClasses"
+        [attr.type]="schema.widget.id"
+        [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+        [attr.maxLength]="schema.maxLength || null"
+        [attr.minLength]="schema.minLength || null"
+        [required]="schema.isRequired" [lfbDisableControl]="schema.disabled"
       ></textarea>
-      <ng-container *ngFor="let error of errors">
-        <small *ngIf="formProperty.value && error"
-               class="text-danger form-text" role="alert"
-        >{{error.modifiedMessage || error.originalMessage}}</small>
-      </ng-container>
+      @for (error of errors; track error.code) {
+        @if (formProperty.value && error) {
+          <small
+            class="text-danger form-text" role="alert"
+          >{{error.modifiedMessage || error.originalMessage}}</small>
+        }
+      }
     </div>
   </div>
-</ng-template>
+}
 

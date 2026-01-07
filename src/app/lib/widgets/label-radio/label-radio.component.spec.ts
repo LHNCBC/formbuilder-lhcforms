@@ -32,7 +32,7 @@ const model: any = {fieldA: 'two'};
 describe('formProperty: lb-radio', () => {
   let fixture: ComponentFixture<TestComponent>;
 
-  CommonTestingModule.setUpTestBed(TestComponent);
+  CommonTestingModule.setUpTestBed(TestComponent, true);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestComponent);

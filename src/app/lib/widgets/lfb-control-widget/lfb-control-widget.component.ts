@@ -44,7 +44,7 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
 
   subscriptions: Subscription[] = [];
 
-  liveAnnouncer = inject(LiveAnnouncer);
+  liveAnnouncer: LiveAnnouncer = inject(LiveAnnouncer);
   errors: { code: string, originalMessage: string, modifiedMessage: string }[] = null;
 
   // Replace standard error messages from schema validator with customized messages.
