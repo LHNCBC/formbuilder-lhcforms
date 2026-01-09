@@ -50,10 +50,10 @@
       </tr>
       </thead>
       <tbody [ngbCollapse]="isCollapsed">
-      <tr *ngFor="let itemProperty of formProperty.properties; index as ind; first as isFirst; last as isLast"
+      <tr *ngFor="let itemProperty of formProperty.properties; index as ind; first as isFirst; last as isLast;"
         class="d-flex lfb-table-row" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
-        <td *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" (focusin)="onEdit($event, ind)">
-          <lfb-form-element [nolabel]="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
+        <td *ngFor="let showField of getShowTableFields()" class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" >
+          <lfb-form-element [nolabel]="true" [formProperty]="getProperty(itemProperty, showField.field)" (focusin)="onEdit($event, ind)"></lfb-form-element>
         </td>
         <td *ngIf="rowSelectionType === 'radio' && id !=='answerOption'" class="col-sm-2 text-center align-self-center default-column">
           <input type="radio" [attr.id]="'radio_'+itemProperty.canonicalPathNotation" [ngModel]="selectionRadio" (ngModelChange)="radioSelection($event)" [value]="ind"
@@ -152,7 +152,7 @@
 <ng-template #statusColumn let-index="index">
   <td class="col-sm-half center">
     <span tabindex="0" class=" border-0 pl-5 b-0" *ngIf="isReferencedByOtherItem(index)">
-      <fa-icon id="link" [icon]="linkIcon" class="btn btn-link btn-sm p-0 border-0 rounded-0" matTooltip="Option referenced by another item enableWhen."></fa-icon>
+      <fa-icon id="link" [icon]="linkIcon" class="icon-link btn-sm p-0 border-0 rounded-0" matTooltip="Option referenced by other item's text and linkId."></fa-icon>
     </span>
   </td>
 </ng-template>

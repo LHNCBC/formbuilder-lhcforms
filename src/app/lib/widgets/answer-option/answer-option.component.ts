@@ -358,9 +358,9 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    * @param index - Index of the formProperty to be removed from the array.
    */
   removeProperty(index: number) {
-    const actionResult = this.answerOptionService.canPerformActionOnOption(this.formProperty, index, 'delete');
+    const actionResult = this.answerOptionService.validateAnswerOptionAction(this.formProperty, index, 'delete');
     if (!actionResult.valid) {
-      const modalRef = this.dialogService.showDialog(MessageType.WARNING, 'Option referenced by another item', actionResult.message, this.buttons);
+      const modalRef = this.dialogService.showDialog(MessageType.WARNING, 'Option referenced by other item\'s text and linkId.', actionResult.message, this.buttons);
       modalRef.closed.subscribe(result => {
         if (result === 'continue') {
           // Optionally re-focus the select element
@@ -399,13 +399,17 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    * @param index - The index of the answer option to edit.
    */
   onEdit(event: Event, index: number) {
-    const result = this.answerOptionService.canPerformActionOnOption(this.formProperty, index, 'modify');
+    if (this.isReordering) {
+      return;
+    }
+
+    const result = this.answerOptionService.validateAnswerOptionAction(this.formProperty, index, 'modify');
     if (!result.valid) {
       this.hasReferenced = result.enableWhenReference;
       if (!this.isDialogOpen) {
         this.isDialogOpen = true;
 
-        const modalRef = this.dialogService.showDialog(MessageType.WARNING, 'Option referenced by another item', result.message, this.buttonOk);
+        const modalRef = this.dialogService.showDialog(MessageType.WARNING, 'Option referenced by other item\'s text and linkId.', result.message, this.buttonOk);
         if (modalRef && modalRef.closed) {
           modalRef.closed.subscribe(() => {
             setTimeout(() => {

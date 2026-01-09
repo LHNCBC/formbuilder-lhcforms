@@ -84,6 +84,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   tableStatus: TableStatus;
   elementRef = inject(ElementRef);
 
+  isReordering = false;
+
   constructor() {
     super();
   }
@@ -495,6 +497,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param index - Index of the row to be moved up.
    */
   onMoveUp(index) {
+    this.isReordering = true;
     const props = this.formProperty.properties as FormProperty [];
     if(props.length > 1) {
       this.changeSelectionOnMove(index, -1);
@@ -503,6 +506,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.formProperty.updateValueAndValidity();
       setTimeout(() => {
         this.getInputElementInTable(index - 1, 0).focus();
+        this.isReordering = false;
       });
     }
   }
@@ -512,6 +516,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param index - Index of the row to be moved down.
    */
   onMoveDown(index) {
+    this.isReordering = true;
     const props = this.formProperty.properties as FormProperty [];
     if(props.length > 1) {
       this.changeSelectionOnMove(index, 1);
@@ -520,6 +525,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.formProperty.updateValueAndValidity();
       setTimeout(() => {
         this.getInputElementInTable(index + 1, 0).focus();
+        this.isReordering = false;
       });
     }
   }

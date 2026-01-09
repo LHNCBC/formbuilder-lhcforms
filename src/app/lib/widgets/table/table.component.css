@@ -116,3 +116,7 @@ tr {
 .text-warning {
   color: darkorange !important;
 }
+
+.icon-link {
+  color: #4B5563;
+}

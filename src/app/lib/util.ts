@@ -760,42 +760,17 @@ export class Util {
   }
 
   /**
-   * Compares two FHIR Coding objects for equality.
-   * Returns true if both are valid FHIR Coding objects, have matching 'system' and 'code' properties (type and value),
-   * and both properties are non-empty strings. Ignores other fields such as 'display', 'version', or 'userSelected'.
-   *
-   * Although 'system' and 'code' are not required fields for a FHIR Coding object, they are used here for comparison.
+   * Compare if the two given codings are equal. A "coding" is a hash that may have any or all of the
+   * following three fields: code, system, and text. Two codings are considered equal if and only if:
+   * 1) The code systems are equal or unspecified, and
+   * 2) Either the codes are specified and equal, or, the codes are not specified and the texts are
+   *    specified and equal.
    * @param a - The first FHIR Coding object.
    * @param b - The second FHIR Coding object.
    * @returns True if both codings are equal; otherwise, false.
    */
   static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
-    // Both must be fhir coding
-    if (!this.isFhirCoding(a)) return false;
-    if (!this.isFhirCoding(b)) return false;
-
-    // Both must have system and code
-    if (!('system' in a) || !('system' in b)) return false;
-    if (!('code' in a) || !('code' in b)) return false;
-
-    // Types must match
-    if (typeof a.system !== typeof b.system) return false;
-    if (typeof a.code !== typeof b.code) return false;
-
-    // If display is present in both, compare it as well
-    if ('display' in a && 'display' in b) {
-      return (
-        String(a.system).trim() === String(b.system).trim() &&
-        String(a.code).trim() === String(b.code).trim() &&
-        String(a.display).trim() === String(b.display).trim()
-      );
-    } else {
-      // Equality check
-      return (
-        String(a.system).trim() === String(b.system).trim() &&
-        String(a.code).trim() === String(b.code).trim()
-      );
-    }
+    return LForms.LFormsData.prototype._codingsEqual.call(this, a, b);
   }
 
   /**

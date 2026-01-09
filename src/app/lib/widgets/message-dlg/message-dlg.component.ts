@@ -25,7 +25,7 @@ export interface MessageDlgOptions {
   selector: 'lfb-message-dlg',
   template: `
     <div role="dialog" aria-labelledby="msgDlgTitle" aria-describedby="msgContent">
-      <div class="modal-header" [ngClass]="{'bg-danger': type === MessageType.DANGER, 'bg-warning': type === MessageType.WARNING, 'bg-primary': type !== MessageType.DANGER}" >
+      <div class="modal-header" [ngClass]="{'bg-danger': type === MessageType.DANGER, 'bg-warning': type === MessageType.WARNING, 'bg-primary': type === MessageType.INFO}" >
         <h4 class="modal-title text-white" id="msgDlgTitle">{{title}}</h4>
         <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
         </button>

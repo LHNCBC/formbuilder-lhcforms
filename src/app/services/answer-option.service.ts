@@ -88,20 +88,46 @@ export class AnswerOptionService {
 
 
   /**
-   * Determines if an action (delete or modify) can be performed on an answer option.
-   * Checks if the option is referenced by another item's enableWhen condition.
-   * Returns a ValidationResult indicating validity and a message if blocked.
+   * Validates an answer option to determine if it is referenced by other items’ enableWhen conditions.
+   * Returns a ValidationResult containing a warning message if references exist.
+   *
+   * This function **does not block or allow any actions** (delete/modify); it only reports potential issues.
+   * The decision to perform the action is handled elsewhere in the application logic.
    *
    * @param formProperty - The FormProperty containing the answer options.
-   * @param index - The index of the answer option to check.
-   * @param action - The action to perform ('delete' or 'modify').
-   * @returns ValidationResult - valid: true if allowed, false with message if blocked.
+   * @param index - The index of the answer option to validate.
+   * @param action - The action being considered ('delete' or 'modify'), used to tailor the warning message.
+   * @returns ValidationResult -
+   *   - valid: true if no warnings (option not referenced)
+   *   - valid: false if the option is referenced, with a warning message describing potential impact
    */
-  canPerformActionOnOption(formProperty: FormProperty, index: number, action: 'delete' | 'modify'): ValidationResult {
+  validateAnswerOptionAction(formProperty: FormProperty, index: number, action: 'delete' | 'modify'): ValidationResult {
+    // Validate formProperty
+    if (!formProperty?.parent) {
+      return { valid: false, message: 'Invalid form property structure.' };
+    }
+
     const linkId = formProperty.parent.getProperty('linkId').value;
     // Get the answerOption object and its value for filtering
     const answerOptions = formProperty.value;
+
+    if (!answerOptions) {
+      return { valid: false, message: 'No answer options found.' };
+    }
+
+    if (!Array.isArray(answerOptions)) {
+      return { valid: false, message: 'Answer options must be an array.' };
+    }
+
+    if (index >= answerOptions.length) {
+      return { valid: false, message: 'Answer option not found.' };
+    }
     const answerOption = Array.isArray(answerOptions) ? answerOptions[index] : undefined;
+
+    if (!answerOption) {
+      return { valid: false, message: 'Answer option not found.' };
+    }
+
     const dataType = formProperty.parent.getProperty('type').value;
     const valueField = Util.getValueFieldName(dataType);
     const optionValue = answerOption ? answerOption[valueField] : undefined;

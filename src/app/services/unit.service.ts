@@ -307,6 +307,7 @@ export class UnitService {
       let tokenToAdd = newTokens[i];
       if (
         typeof tokenToAdd === 'string' &&
+        !tokenToAdd.startsWith('/') &&
         Array.isArray(wordBoundaryChars) &&
         wordBoundaryChars.some(char => tokenToAdd.includes(char))
       ) {

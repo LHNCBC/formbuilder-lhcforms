@@ -458,259 +458,9 @@ describe('Home page', () => {
       });
     });
 
-    it('should show a link icon on an answerOption that is referenced by another item', () => {
-      const sampleFile = 'enable-when-answer-options-R5-sample.json';
-      cy.uploadFile(sampleFile, true);
-      cy.getFormTitleField().should('have.value', 'R5 enableWhen AnswerOptions optionsOnly');
-      cy.contains('button', 'Edit questions').click();
-      cy.get('.spinner-border').should('not.exist');
-
-      // ------- integer answerOptions -------
-      cy.getItemTypeField().should('exist').should('contain.value', 'integer');
-      cy.get('lfb-label')
-        .filter(':contains("Create answer list")')
-        .parent()
-        .find('label:contains("Yes")')
-        .prev('input[type="radio"]')
-        .should('be.checked');
-      cy.questionnaireJSON().should((q) => {
-        expect(q.item[0].answerOption[0].valueInteger).equal(1);
-        expect(q.item[0].answerOption[1].valueInteger).equal(2);
-        expect(q.item[0].answerOption[2].valueInteger).equal(3);
-      });
-
-      cy.checkAnswerOptionLinkIcon(
-        'lfb-answer-option table > tbody > tr',
-        [2], // icon on 2nd row
-        'Option referenced by another item enableWhen.'
-      );
-
-      // ------- date answerOptions -------
-      cy.getTreeNode('date answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'date');
-      cy.get('lfb-label')
-        .filter(':contains("Create answer list")')
-        .parent()
-        .find('label:contains("Yes")')
-        .prev('input[type="radio"]')
-        .should('be.checked');
-      cy.questionnaireJSON().should((q) => {
-        expect(q.item[3].answerOption[0].valueDate).equal("2025-11-03");
-        expect(q.item[3].answerOption[1].valueDate).equal("2025-11-04");
-        expect(q.item[3].answerOption[2].valueDate).equal("2025-11-05");
-      });
-
-      cy.checkAnswerOptionLinkIcon(
-        'lfb-answer-option table > tbody > tr',
-        [2], // icon on 2nd row
-        'Option referenced by another item enableWhen.'
-      );
-
-      // ------- time answerOptions -------
-      cy.getTreeNode('time answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'time');
-      cy.get('lfb-label')
-        .filter(':contains("Create answer list")')
-        .parent()
-        .find('label:contains("Yes")')
-        .prev('input[type="radio"]')
-        .should('be.checked');
-      cy.questionnaireJSON().should((q) => {
-        expect(q.item[6].answerOption[0].valueTime).equal("16:00:00");
-        expect(q.item[6].answerOption[1].valueTime).equal("17:00:00");
-        expect(q.item[6].answerOption[2].valueTime).equal("18:00:00");
-      });
-
-      cy.checkAnswerOptionLinkIcon(
-        'lfb-answer-option table > tbody > tr',
-        [2], // icon on 2nd row
-        'Option referenced by another item enableWhen.'
-      );
-
-      // ------- string answerOptions -------
-      cy.getTreeNode('string answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'string');
-      cy.get('lfb-label')
-        .filter(':contains("Create answer list")')
-        .parent()
-        .find('label:contains("Yes")')
-        .prev('input[type="radio"]')
-        .should('be.checked');
-      cy.questionnaireJSON().should((q) => {
-        expect(q.item[9].answerOption[0].valueString).equal("A");
-        expect(q.item[9].answerOption[1].valueString).equal("B");
-        expect(q.item[9].answerOption[2].valueString).equal("C");
-      });
-
-      cy.checkAnswerOptionLinkIcon(
-        'lfb-answer-option table > tbody > tr',
-        [2], // icon on 2nd row
-        'Option referenced by another item enableWhen.'
-      );
-
-      // ------- text answerOptions -------
-      cy.getTreeNode('text answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'text');
-      cy.get('lfb-label')
-        .filter(':contains("Create answer list")')
-        .parent()
-        .find('label:contains("Yes")')
-        .prev('input[type="radio"]')
-        .should('be.checked');
-      cy.questionnaireJSON().should((q) => {
-        expect(q.item[12].answerOption[0].valueString).equal("AAAAAAAA");
-        expect(q.item[12].answerOption[1].valueString).equal("BBBBBBBBB");
-        expect(q.item[12].answerOption[2].valueString).equal("CCCCCCCCC");
-      });
-
-      cy.checkAnswerOptionLinkIcon(
-        'lfb-answer-option table > tbody > tr',
-        [2], // icon on 2nd row
-        'Option referenced by another item enableWhen.'
-      );
-
-      // ------- coding answerOptions -------
-      cy.getTreeNode('coding answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'coding');
-      cy.get('lfb-label')
-        .filter(':contains("Create answer list")')
-        .parent()
-        .find('label:contains("Yes")')
-        .prev('input[type="radio"]')
-        .should('be.checked');
-      cy.questionnaireJSON().should((q) => {
-        expect(q.item[15].answerOption[0].valueCoding.system).equal("a");
-        expect(q.item[15].answerOption[0].valueCoding.display).equal("a1");
-        expect(q.item[15].answerOption[0].valueCoding.code).equal("a1");
-
-        expect(q.item[15].answerOption[1].valueCoding.system).equal("b");
-        expect(q.item[15].answerOption[1].valueCoding.display).equal("b1");
-        expect(q.item[15].answerOption[1].valueCoding.code).equal("b1");
-
-        expect(q.item[15].answerOption[2].valueCoding.system).equal("c");
-        expect(q.item[15].answerOption[2].valueCoding.display).equal("c1");
-        expect(q.item[15].answerOption[2].valueCoding.code).equal("c1");
-      });
-
-      cy.checkAnswerOptionLinkIcon(
-        'lfb-answer-option table > tbody > tr',
-        [2], // icon on 2nd row
-        'Option referenced by another item enableWhen.'
-      );
-
-    });
-
-    it('should show a warning message dialog when clicking the answerOption text input that is referenced by another item', () => {
+    it('should show link icon, warnng on modify and delete for referenced answerOptions', () => {
       const sampleFile = 'enable-when-answer-options-R5-sample.json';
       const OK = "Ok";
-      cy.uploadFile(sampleFile, true);
-      cy.getFormTitleField().should('have.value', 'R5 enableWhen AnswerOptions optionsOnly');
-      cy.contains('button', 'Edit questions').click();
-      cy.get('.spinner-border').should('not.exist');
-
-      // ------- integer answerOptions -------
-      cy.getItemTypeField().should('exist').should('contain.value', 'integer');
-      cy.get('[id^="answerOption.0.valueInteger"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      cy.get('[id^="answerOption.1.valueInteger"]').click();
-      let msg = getReferencedOptionMsg('enableWhen integer on-list', '600338559566', 'Modifying');
-      cy.checkReferencedOptionDialog(msg, OK);
-      cy.get('[id^="answerOption.2.valueInteger"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      // The 'enableWhen integer on-list' has enableWhen that reference the answerOption of
-      // 'integer answerOptions'. Since the value is on the answerOptions, there is no error.
-      modifyReferencedData('integer', 'enableWhen integer on-list', 'integer answerOptions',
-                           '[id^="answerOption.1.valueInteger"]', msg, OK, '100{enter}');
-
-      // ------- date answerOptions -------
-      cy.getTreeNode('date answerOptions').click();
-      cy.getItemTypeField().should('exist').should('contain.value', 'date');
-      cy.get('[id^="answerOption.0.valueDate"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      cy.get('[id^="answerOption.1.valueDate"]').click();
-      msg = getReferencedOptionMsg('enableWhen date on-list', '360117504487', 'Modifying');
-      cy.checkReferencedOptionDialog(msg, OK);
-      cy.get('[id^="answerOption.2.valueDate"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      // The 'enableWhen date on-list' has enableWhen that reference the answerOption of
-      // 'date answerOptions'. Since the value is on the answerOptions, there is no error.
-      modifyReferencedData('date', 'enableWhen date on-list', 'date answerOptions',
-                           '[id^="answerOption.1.valueDate"]', msg, OK, '2025-01-01{enter}');
-
-      // ------- time answerOptions -------
-      cy.getTreeNode('time answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'time');
-      cy.get('[id^="answerOption.0.valueTime"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      cy.get('[id^="answerOption.1.valueTime"]').click();
-      msg = getReferencedOptionMsg('enableWhen time on-list', '877781889993', 'Modifying');
-      cy.checkReferencedOptionDialog(msg, OK);
-      cy.get('[id^="answerOption.2.valueTime"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      // The 'enableWhen time on-list' has enableWhen that reference the answerOption of
-      // 'time answerOptions'. Since the value is on the answerOptions, there is no error.
-      modifyReferencedData('time', 'enableWhen time on-list', 'time answerOptions',
-                           '[id^="answerOption.1.valueTime"]', msg, OK, '09:00:00{enter}');
-
-      // ------- string answerOptions -------
-      cy.getTreeNode('string answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'string');
-      cy.get('[id^="answerOption.0.valueString"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      cy.get('[id^="answerOption.1.valueString"]').click();
-      msg = getReferencedOptionMsg('enableWhen string on-list', '242477867005', 'Modifying');
-      cy.checkReferencedOptionDialog(msg, OK);
-      cy.get('[id^="answerOption.2.valueString"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      // The 'enableWhen string on-list' has enableWhen that reference the answerOption of
-      // 'string answerOptions'. Since the value is on the answerOptions, there is no error.
-      modifyReferencedData('string', 'enableWhen string on-list', 'string answerOptions',
-                           '[id^="answerOption.1.valueString"]', msg, OK, 'N{enter}');
-
-      // ------- text answerOptions -------
-      cy.getTreeNode('text answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'text');
-      cy.get('[id^="answerOption.0.valueString"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      cy.get('[id^="answerOption.1.valueString"]').click();
-      msg = getReferencedOptionMsg('enableWhen text on-list', '800004427766', 'Modifying');
-      cy.checkReferencedOptionDialog(msg, OK);
-      cy.get('[id^="answerOption.2.valueString"]').click();
-      cy.get('lfb-message-dlg').should('not.exist');
-      // The 'enableWhen text on-list' has enableWhen that reference the answerOption of
-      // 'string answerOptions'. Since the value is on the answerOptions, there is no error.
-      modifyReferencedData('text', 'enableWhen text on-list', 'text answerOptions',
-                           '[id^="answerOption.1.valueString"]', msg, OK, 'NNNNNNN{enter}');
-
-      // ------- coding answerOptions -------
-      cy.getTreeNode('coding answerOptions').click();
-      cy.getItemTypeField().should('contain.value', 'coding');
-
-      const codingInputs = [
-        '[id^="answerOption.1.valueCoding.system"]',
-        '[id^="answerOption.1.valueCoding.display"]',
-        '[id^="answerOption.1.valueCoding.code"]'
-      ];
-      msg = getReferencedOptionMsg('enableWhen coding on-list', '171991128943', 'Modifying');
-      cy.wrap(codingInputs).each(selector => {
-        cy.get(selector).click({force: true});
-        //cy.get('[id^="answerOption.1.valueCoding.system"]').click({force: true});
-        cy.get('lfb-message-dlg', { timeout: 8000 }).should('exist');
-
-        cy.checkReferencedOptionDialog(msg, OK);
-        cy.get('lfb-message-dlg').should('not.exist');
-        // This is unfortunately necessary
-        cy.wait(1000);
-      });
-      // The 'enableWhen coding on-list' has enableWhen that reference the answerOption of
-      // 'coding answerOptions'. Since the value is on the answerOptions, there is no error.
-      modifyReferencedData('coding', 'enableWhen coding on-list', 'coding answerOptions',
-                           '[id^="answerOption.1.valueCoding.system"]', msg, OK, 'HHH{enter}');
-
-    });
-
-    it('should show a warning message dialog when attempting to delete an answerOption that is referenced by another item', () => {
-      const sampleFile = 'enable-when-answer-options-R5-sample.json';
       const CANCEL = "Cancel";
 
       cy.uploadFile(sampleFile, true);
@@ -718,67 +468,148 @@ describe('Home page', () => {
       cy.contains('button', 'Edit questions').click();
       cy.get('.spinner-border').should('not.exist');
 
-      // ------- integer answerOptions -------
-      cy.getItemTypeField().should('exist').should('contain.value', 'integer');
-      cy.removeAndCheckReferencedOption(
-        'valueInteger',
-        1,
-        getReferencedOptionMsg('enableWhen integer on-list', '600338559566', 'Deleting'),
-        CANCEL
-      );
+      // Test configuration for each answer option type
+      const answerOptionTests = [
+        {
+          nodeName: 'integer answerOptions',
+          type: 'integer',
+          valueField: 'valueInteger',
+          expectedValues: [1, 2, 3],
+          referencingItem: 'enableWhen integer on-list',
+          referencingLinkId: '600338559566',
+          modifyValue: '100{enter}'
+        },
+        {
+          nodeName: 'date answerOptions',
+          type: 'date',
+          valueField: 'valueDate',
+          expectedValues: ["2025-11-03", "2025-11-04", "2025-11-05"],
+          referencingItem: 'enableWhen date on-list',
+          referencingLinkId: '360117504487',
+          modifyValue: '2025-01-01{enter}'
+        },
+        {
+          nodeName: 'time answerOptions',
+          type: 'time',
+          valueField: 'valueTime',
+          expectedValues: ["16:00:00", "17:00:00", "18:00:00"],
+          referencingItem: 'enableWhen time on-list',
+          referencingLinkId: '877781889993',
+          modifyValue: '09:00:00{enter}'
+        },
+        {
+          nodeName: 'string answerOptions',
+          type: 'string',
+          valueField: 'valueString',
+          expectedValues: ["A", "B", "C"],
+          referencingItem: 'enableWhen string on-list',
+          referencingLinkId: '242477867005',
+          modifyValue: 'N{enter}'
+        },
+        {
+          nodeName: 'text answerOptions',
+          type: 'text',
+          valueField: 'valueString',
+          expectedValues: ["AAAAAAAA", "BBBBBBBBB", "CCCCCCCCC"],
+          referencingItem: 'enableWhen text on-list',
+          referencingLinkId: '800004427766',
+          modifyValue: 'NNNNNNN{enter}'
+        },
+        {
+          nodeName: 'coding answerOptions',
+          type: 'coding',
+          valueField: 'valueCoding',
+          expectedValues: [
+            { system: "a", display: "a1", code: "a1" },
+            { system: "b", display: "b1", code: "b1" },
+            { system: "c", display: "c1", code: "c1" }
+          ],
+          referencingItem: 'enableWhen coding on-list',
+          referencingLinkId: '171991128943',
+          modifyValue: 'HHH{enter}',
+          subFields: ['code']
+        }
+      ];
 
-      // ------- date answerOptions -------
-      cy.getTreeNode('date answerOptions').click();
-      cy.getItemTypeField().should('exist').should('contain.value', 'date');
-      cy.removeAndCheckReferencedOption(
-        'valueDate',
-        1,
-        getReferencedOptionMsg('enableWhen date on-list', '360117504487', 'Deleting'),
-        CANCEL
-      );
+      answerOptionTests.forEach((test, idx) => {
+        // Navigate to tree node
+        if (idx > 0) cy.getTreeNode(test.nodeName).click();
 
-      // ------- time answerOptions -------
-      cy.getTreeNode('time answerOptions').click();
-      cy.getItemTypeField().should('exist').should('contain.value', 'time');
-      cy.removeAndCheckReferencedOption(
-        'valueTime',
-        1,
-        getReferencedOptionMsg('enableWhen time on-list', '877781889993', 'Deleting'),
-        CANCEL
-      );
+        cy.getItemTypeField().should('contain.value', test.type);
 
-      // ------- string answerOptions -------
-      cy.getTreeNode('string answerOptions').click();
-      cy.getItemTypeField().should('exist').should('contain.value', 'string');
-      cy.removeAndCheckReferencedOption(
-        'valueString',
-        1,
-        getReferencedOptionMsg('enableWhen string on-list', '242477867005', 'Deleting'),
-        CANCEL
-      );
+        // Verify Create answer list = Yes
+        cy.get('lfb-label')
+          .filter(`:contains("Create answer list")`)
+          .parent()
+          .find('label:contains("Yes")')
+          .prev('input[type="radio"]')
+          .should('be.checked');
 
-      // ------- text answerOptions -------
-      cy.getTreeNode('text answerOptions').click();
-      cy.getItemTypeField().should('exist').should('contain.value', 'text');
-      cy.removeAndCheckReferencedOption(
-        'valueString',
-        1,
-        getReferencedOptionMsg('enableWhen text on-list', '800004427766', 'Deleting'),
-        CANCEL
-      );
+        // Verify JSON
+        cy.questionnaireJSON().should((q) => {
+          const itemIndex = idx * 3;
+          if (test.type === 'coding') {
+            test.expectedValues.forEach((val, i) => {
+              expect(q.item[15].answerOption[i].valueCoding.system).equal(val.system);
+              expect(q.item[15].answerOption[i].valueCoding.display).equal(val.display);
+              expect(q.item[15].answerOption[i].valueCoding.code).equal(val.code);
+            });
+          } else {
+            test.expectedValues.forEach((val, i) => {
+              expect(q.item[itemIndex].answerOption[i][test.valueField]).equal(val);
+            });
+          }
+        });
 
-      // ------- coding answerOptions -------
-      cy.getTreeNode('coding answerOptions').click();
-      cy.getItemTypeField().should('exist').should('contain.value', 'coding');
-      cy.removeAndCheckReferencedOption(
-        'valueCoding',
-        1,
-        getReferencedOptionMsg('enableWhen coding on-list', '171991128943', 'Deleting'),
-        CANCEL
-      );
+        // Link icon
+        cy.checkAnswerOptionLinkIcon(
+          'lfb-answer-option table > tbody > tr',
+          [2],
+          'Option referenced by other item\'s text and linkId.'
+        );
+
+        // Warning dialog on delete
+        const deleteMsg = getReferencedOptionMsg(test.referencingItem, test.referencingLinkId, 'Deleting');
+        cy.removeAndCheckReferencedOption(test.valueField, 1, deleteMsg, CANCEL);
+
+        // Warning dialog on modify
+        if (test.type === 'coding') {
+          const modifyMsg = getReferencedOptionMsg(test.referencingItem, test.referencingLinkId, 'Modifying');
+          cy.get(`[id^="answerOption.1.${test.valueField}.system"]`).click();
+          cy.checkReferencedOptionDialog(modifyMsg, OK);
+          cy.get(`[id^="answerOption.2.${test.valueField}.system"]`).click();
+          cy.get('lfb-message-dlg').should('not.exist');
+          modifyReferencedData(
+            test.type,
+            test.referencingItem,
+            test.nodeName,
+            `[id^="answerOption.1.${test.valueField}.system"]`,
+            modifyMsg,
+            OK,
+            test.modifyValue
+          );
+        } else {
+          cy.get(`[id^="answerOption.0.${test.valueField}"]`).click();
+          cy.get('lfb-message-dlg').should('not.exist');
+          cy.get(`[id^="answerOption.1.${test.valueField}"]`).click();
+          const modifyMsg = getReferencedOptionMsg(test.referencingItem, test.referencingLinkId, 'Modifying');
+          cy.checkReferencedOptionDialog(modifyMsg, OK);
+          cy.get(`[id^="answerOption.2.${test.valueField}"]`).click();
+          cy.get('lfb-message-dlg').should('not.exist');
+          modifyReferencedData(
+            test.type,
+            test.referencingItem,
+            test.nodeName,
+            `[id^="answerOption.1.${test.valueField}"]`,
+            modifyMsg,
+            OK,
+            test.modifyValue
+          );
+        }
+      });
     });
 
-    it.only('should display a warning that includes all items referencing the selected answerOption', () => {
+    it('should display a warning that includes all items referencing the selected answerOption', () => {
       const sampleFile = 'answer-option-validation-sample.json';
       const OK = "Ok";
       cy.uploadFile(sampleFile, true);
@@ -804,7 +635,7 @@ describe('Home page', () => {
       cy.checkAnswerOptionLinkIcon(
         'lfb-answer-option table > tbody > tr',
         [2,3], // icon on 2nd and 3rd rows
-        'Option referenced by another item enableWhen.'
+        'Option referenced by other item\'s text and linkId.'
       );
       cy.get('[id^="answerOption.2.valueString"]').should('exist').should('have.value', 'c').click();
       msg = getReferencedOptionMsg('Reference string option value c', '516220192689', 'Modifying');
@@ -828,7 +659,7 @@ describe('Home page', () => {
       cy.checkAnswerOptionLinkIcon(
         'lfb-answer-option table > tbody > tr',
         [2,3], // icon on 2nd and 3rd rows
-        'Option referenced by another item enableWhen.'
+        'Option referenced by other item\'s text and linkId.'
       );
       cy.get('[id^="answerOption.2.valueCoding.system"]').should('exist').should('have.value', 's3').click();
       msg = getReferencedOptionMsg('Reference coding option value d3 (c3)', '367425898269', 'Modifying');

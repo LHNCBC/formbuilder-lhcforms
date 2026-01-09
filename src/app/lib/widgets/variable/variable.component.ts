@@ -131,14 +131,6 @@ export class VariableComponent extends TableComponent implements OnInit {
       fullscreen: 'lg'
     };
 
-    if (this.linkId) {
-      const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
-      if (itemIndex > -1) {
-        if (this.formProperty.value) {
-          this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;
-        }
-      }
-    }
     const modalRef = this.modalService.open(ExpressionEditorDlgComponent, modalConfig);
     const linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     modalRef.componentInstance.linkId = linkId;

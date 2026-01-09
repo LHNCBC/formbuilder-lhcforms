@@ -64,32 +64,21 @@ export class ValidationService {
    * @returns - A promise that resolves when all items have been validated.
    */
   validateAllItems(validationNodes: TreeNode[], startIndex = 0, clearStatusOnValid = false, validatorKeyFilter?: string): Promise<any[]> {
-    const promises = [];
-    const validatorKeys = Object.keys(this.validators);
-    const self = this;
+    const promises: Promise<any[]>[] = [];
 
     for (let i = startIndex; i < validationNodes.length; i++) {
-      const itemData = JSON.parse(JSON.stringify(validationNodes[i].data));
-      itemData.id = ''+itemData[FormService.TREE_NODE_ID];
-
-      for (let j = 0; j < validatorKeys.length; j++) {
-        const validatorKey = validatorKeys[j];
-        if (validatorKeyFilter && validatorKey !== validatorKeyFilter) continue;
-        promises.push(new Promise((resolve) => {
-          setTimeout(() => {
-            itemData.cannoncial = validatorKey;
-            itemData.canonicalPathNotation = self.convertToDotNotationPath(validatorKey);
-            itemData.value = itemData[self.getLastPathSegment(itemData.canonicalPathNotation)];
-            const error = self.validators[validatorKey](itemData, clearStatusOnValid);
-
-            resolve( error ? error : {} );
-          }, 0);
-        }));
-      }
+      promises.push(
+        this.validateItem(
+          validationNodes[i],
+          clearStatusOnValid,
+          validatorKeyFilter
+        )
+      );
     }
-    return Promise.all(promises);
-  };
 
+    // Flatten results into a single array (matches original behavior)
+    return Promise.all(promises).then(results => results.flat());
+  }
 
   /**
    * Validates a single tree node using all or a specific validator.

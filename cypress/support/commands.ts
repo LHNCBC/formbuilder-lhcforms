@@ -922,7 +922,7 @@ Cypress.Commands.add('removeAndCheckReferencedOption', (type: string, index: num
  */
 Cypress.Commands.add('checkReferencedOptionDialog', (expectedText: string, buttonName: string) => {
   cy.get('lfb-message-dlg', {timeout: 5000}).should('exist').and('be.visible');
-  cy.get('lfb-message-dlg #msgDlgTitle').should('contain.text', 'Option referenced by another item');
+  cy.get('lfb-message-dlg #msgDlgTitle').should('contain.text', 'Option referenced by other item\'s text and linkId.');  //'Option referenced by another item');
   cy.get('lfb-message-dlg .modal-body #msgContent')
     .invoke('text')
     .then(text => {
@@ -930,7 +930,6 @@ Cypress.Commands.add('checkReferencedOptionDialog', (expectedText: string, butto
     });
   cy.get('lfb-message-dlg').contains(buttonName).click();
   cy.get('lfb-message-dlg').should('not.exist');
-
 });
 
 // Helps remove TypeScript errors and auto completing the Cypress commands in TypeScript
