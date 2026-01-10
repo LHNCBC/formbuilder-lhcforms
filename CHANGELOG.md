@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.1] 2026-01-09
+### Fixed
+- Fixed issue with unit autocomplete lookup for units that start with '/'.
+
 ## [11.0.0] 2025-12-31
 ### Changed
 - Updated angular framework to version 20.x.x
