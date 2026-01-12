@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.2] 2026-01-12
+### Fixed
+- Fixed an issue in preview json tabs where `no errors` message is
+  displayed before running the validation.
+
 ## [11.0.1] 2026-01-09
 ### Fixed
 - Fixed issue with unit autocomplete lookup for units that start with '/'.
