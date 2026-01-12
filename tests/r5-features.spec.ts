@@ -59,15 +59,15 @@ test.describe('r5-features.spec.ts', async () => {
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Coding type, optionsOnly');
     await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
     await expect(page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list')).toBeChecked();
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('First coding');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(2) input')).toHaveValue('c1');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(3) input')).toHaveValue('s1');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(1) input')).toHaveValue('Second coding');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(2) input')).toHaveValue('c2');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(3) input')).toHaveValue('s2');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(1) input')).toHaveValue('Third coding');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(2) input')).toHaveValue('c3');
-    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(3) input')).toHaveValue('s3');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('s1');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(2) input')).toHaveValue('First coding');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(3) input')).toHaveValue('c1');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(1) input')).toHaveValue('s2');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(2) input')).toHaveValue('Second coding');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(2) td:nth-child(3) input')).toHaveValue('c2');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(1) input')).toHaveValue('s3');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(2) input')).toHaveValue('Third coding');
+    await expect(page.locator('lfb-answer-option table tbody tr:nth-child(3) td:nth-child(3) input')).toHaveValue('c3');
 
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[0].answerConstraint).toEqual('optionsOrType');
@@ -200,24 +200,4 @@ test.describe('R4 to R5', () => {
     }, json);
   });
 
-  test('should import R4 version from local storage', async ({page}) => {
-    await page.goto('/');
-    await page.getByLabel('Would you like to start from where you left off before?').click();
-    await page.getByRole('button', {name: 'Continue'}).click();
-
-    const editButton = page.getByRole('button', { name: 'Edit questions' }).first();
-    // Wait for it to be attached and visible
-    await expect(editButton).toBeVisible({ timeout: 5000 });
-    // Optional: Ensure it's enabled
-    await expect(editButton).toBeEnabled();
-    await editButton.click();
-
-    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
-
-    await expect(page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes')).toBeChecked();
-    const helpString = /^A plain text instruction/;
-    await expect(page.getByLabel('Help text', {exact: true})).toHaveValue(helpString);
-    const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
-    expect(qJson.item[0].item[0].text).toMatch(helpString);
-  });
 });

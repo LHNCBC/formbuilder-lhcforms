@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnDestroy,
-  OnInit
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import { Subscription } from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
@@ -23,6 +16,10 @@ import { TreeNode } from '@bugsplat/angular-tree-component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
+  private formService = inject(FormService);
+  private answerOptionService = inject(AnswerOptionService);
+  dialogService = inject(DialogService);
+  validationService = inject(ValidationService);
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
   static ITEM_WEIGHT_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
@@ -31,10 +28,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   initializing = false;
   isDialogOpen = false;
   ignoreNextFocus = false;
-
-  answerOptionService = inject(AnswerOptionService);
-  dialogService = inject(DialogService);
-  validationService = inject(ValidationService);
 
   buttons = [
     { label: 'Continue', value: 'continue' },
@@ -46,10 +39,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   ]
 
   hasReferenced: any;
-
-  constructor(private formService: FormService) {
-    super();
-  }
 
   /**
    * Angular life cycle event - Initialize attributes.

@@ -122,6 +122,9 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
   ]
 })
 export class DatetimeComponent extends DateComponent implements OnInit {
+  private dateAdapter = inject<NgbDateAdapter<string>>(NgbDateAdapter);
+  private parserFormatter = inject(NgbDateParserFormatter);
+  private timeAdapter = inject<NgbTimeAdapter<NgbTimeStruct>>(NgbTimeAdapter);
 
   dateTime: DateTime = {dateStruct: null, timeStruct: null, millis: NaN};
   includeTime = true;
@@ -131,11 +134,6 @@ export class DatetimeComponent extends DateComponent implements OnInit {
   @ViewChild('d', {read: NgbInputDatepicker}) dp: NgbInputDatepicker;
 
   calendar = inject(NgbCalendar);
-  constructor(private dateAdapter: NgbDateAdapter<string>,
-              private parserFormatter: NgbDateParserFormatter,
-              private timeAdapter: NgbTimeAdapter<NgbTimeStruct>) {
-    super();
-  }
   ngOnInit() {
     super.ngOnInit();
     const dTime = DateUtil.parseISOToDateTime(this.formProperty.value);

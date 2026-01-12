@@ -9,12 +9,7 @@ describe('AutoCompleteComponent', () => {
   let component: AutoCompleteComponent;
   let fixture: ComponentFixture<AutoCompleteComponent>;
 
-  CommonTestingModule.setUpTestBedConfig({
-    providers: [
-      provideHttpClient(),
-      provideHttpClientTesting()
-    ]
-  });
+  CommonTestingModule.setUpTestBed(AutoCompleteComponent, true);
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AutoCompleteComponent);

@@ -5,17 +5,23 @@ import {
   Component,
   EventEmitter, Input, OnChanges,
   Output, SimpleChanges,
-  ViewChild
+  ViewChild,
+  inject
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
-import {ArrayProperty, FormComponent, FormProperty, PropertyGroup, ObjectProperty} from '@lhncbc/ngx-schema-form';
+import {
+  ArrayProperty,
+  FormComponent,
+  FormProperty,
+  PropertyGroup,
+  ObjectProperty,
+} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
-import { ValidationService, EnableWhenValidationObject, EnableWhenQuestionFieldValidationObject } from '../services/validation.service';
+import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
 import { TableService } from '../services/table.service';
-import { ITreeNode } from '@bugsplat/angular-tree-component/lib/defs/api';
 
 /**
  * This class is intended to isolate customization of sf-form instance.
@@ -76,11 +82,13 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   questionnaire;
   linkId;
 
-  constructor(private extensionsService: ExtensionsService,
-              private formService: FormService,
-              private validationService: ValidationService,
-              private modelService: SharedObjectService) {
-    this.mySchema = formService.getItemSchema();
+  extensionsService = inject(ExtensionsService);
+  formService = inject(FormService);
+  validationService = inject(ValidationService);
+  modelService = inject(SharedObjectService);
+
+  constructor() {
+    this.mySchema = this.formService.getItemSchema();
   }
 
   ngOnInit(): void {
@@ -159,28 +167,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   }
 
 
-  /**
-   * Populates the validation object for the EnableWhen 'question' field with relevant answer options and
-   * constraints from the associated question item. This ensures that the validation object contains all
-   * necessary data for downstream validation logic.
-   * @param enableWhenQuestionProperty - property object for the enableWhen question field.
-   * @param questionItem - tree node representing the question item.
-   * @returns - EnableWhen field validation object.
-   */
-  populateEnableWhenQuestionValidationFields(enableWhenQuestionProperty: any, questionItem: ITreeNode): EnableWhenQuestionFieldValidationObject {
-    if (questionItem) {
-      if ('text' in questionItem?.data) {
-        enableWhenQuestionProperty.text = questionItem.data.text;
-      }
-      if ('answerOption' in questionItem?.data) {
-        enableWhenQuestionProperty.answerOptions = questionItem.data.answerOption;
-      }
-      if ('answerConstraint' in questionItem?.data) {
-        enableWhenQuestionProperty.answerConstraint = questionItem.data.answerConstraint;
-      }
-    }
-    return enableWhenQuestionProperty;
-  }
 
   /**
    * Create a validation object specifically for the 'enableWhen' field validation using 'formProperty'.
@@ -192,9 +178,14 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     const questionItem = this.formService.getTreeNodeByLinkId(q.value);
 
     let aType = '';
+    let invalid = true;
 
     if (questionItem) {
       aType = questionItem.data.type;
+      const validSources = this.formService.getSourcesExcludingFocusedTree();
+      invalid = !validSources.some((source) => {
+        return (source.data.linkId === questionItem.data.linkId);
+      });
     }
     // The condition key is used to differentiate between each enableWHen conditions.
     let condKey = '';
@@ -221,6 +212,9 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
       if (!Util.isEmpty(answerX.value)) {
         aField = altKey;
+      } else {
+        // revert back to the original type
+        answerX = formProperty.getProperty(aField);
       }
     }
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
@@ -229,8 +223,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'id': this.model?.[FormService.TREE_NODE_ID],
       'linkId': linkIdProperty.value,
       'conditionKey': condKey,
-      'q': this.populateEnableWhenQuestionValidationFields(q, questionItem),
+      'q': q,
+      'qItem': this.validationService.populateQuestionItem(questionItem),
       'aType': aType,
+      'invalid': invalid,
       'answerTypeProperty': answerType,
       'op': op,
       'aField': aField,
@@ -289,7 +285,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
    *                                             and not equal to 'exists', and the answer is empty.
    */
-  validateEnableWhenAll (value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
+  validateEnableWhenAll(value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
     let errors = null;
     // iterate all properties
     arrayProperty.forEachChild((property: ObjectProperty) => {
@@ -316,7 +312,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
    *                                             and not equal to 'exists', and the answer is empty.
    */
-  validateEnableWhenSingle (value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
+  validateEnableWhenSingle(value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
     if (!this.model) {
@@ -329,7 +325,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     errors = this.validationService.validateEnableWhenSingle(enableWhenObj);
 
-    if(errors && errors.length) {
+    if (errors && errors.length) {
       formProperty.extendErrors(errors);
     }
     return errors;

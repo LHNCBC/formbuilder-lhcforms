@@ -12,10 +12,20 @@ import { TYPE_CODING, ANSWER_OPTION_METHOD_ANSWER_OPTION } from '../../constants
 @Component({
   standalone: false,
   selector: 'lfb-pick-answer',
-  templateUrl: './pick-answer.component.html'
+  templateUrl: './pick-answer.component.html',
+  // Add this to reduce the thickness of the red highlight when there is an error.
+  styles: [`
+    .ansList.invalid {
+      border: none;
+    }
+  `]
 })
 
 export class PickAnswerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy{
+  private cdr = inject(ChangeDetectorRef);
+  private formService = inject(FormService);
+  private answerOptionService = inject(AnswerOptionService);
+
   @ViewChild('autoComplete') autoCompleteElement;
 
   static snomedValueSetUrl = "https://snowstorm.ihtsdotools.org/fhir/ValueSet/$expand?url=";
@@ -53,12 +63,6 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
       .set('_format', 'json')
       .set('_elements', 'fhirVersion,implementation') // Gives a small response. Is this reliable?
   };
-
-  constructor( private cdr: ChangeDetectorRef,
-               private formService: FormService,
-               private answerOptionService: AnswerOptionService) {
-    super();
-  }
 
   // Loading spinner
   get loading$() { return this._loading$.asObservable(); }

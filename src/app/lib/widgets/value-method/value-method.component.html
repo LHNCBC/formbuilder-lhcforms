@@ -1,19 +1,21 @@
 <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-  <lfb-label *ngIf="!nolabel"
-             [for]="id"
-             [title]="schema.title"
-             [helpMessage]="schema.description"
-             [ngClass]="labelClasses"
-  ></lfb-label>
+  @if (!nolabel) {
+    <lfb-label
+      [for]="id"
+      [title]="schema.title"
+      [helpMessage]="schema.description"
+      [ngClass]="labelClasses"
+    ></lfb-label>
+  }
 
   <div [ngClass]="controlClasses+' m-auto ms-0'" role="group">
-    <ng-container *ngFor="let option of valueMethodOptions">
-      <ng-container *ngIf="(type === 'boolean' && option.enum[0] !== 'type-initial' || (displayPickInitial && option.enum[0] !== 'type-initial') || (displayTypeInitial && option.enum[0] !== 'pick-initial'))">
+    @for (option of valueMethodOptions; track option.enum[0]) {
+      @if ((type === 'boolean' && option.enum[0] !== 'type-initial' || (displayPickInitial && option.enum[0] !== 'type-initial') || (displayTypeInitial && option.enum[0] !== 'pick-initial'))) {
         <input [attr.id]="id + '_' + option.enum[0]" [formControl]="control" class="btn-check" [name]="id"
-               type="radio" [value]="option.enum[0]" autocomplete="off">
+          type="radio" [value]="option.enum[0]" autocomplete="off">
         <label class="btn btn-sm btn-outline-success" [attr.for]="id + '_' + option.enum[0]">{{option.title || option.description}}</label>
-      </ng-container>
-    </ng-container>
+      }
+    }
   </div>
 </div>
 

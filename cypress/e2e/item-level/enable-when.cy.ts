@@ -26,7 +26,7 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
       cy.get('[id^="enableWhen.0.operator"]').select('=');
-      cy.get('[id^="enableWhen.0.answerCoding"]').select('d1 (c1)');
+      cy.get('[id^="enableWhen.0.answerCoding"]').type('d1 (c1)').type('{downarrow}{enter}');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item.length).equal(2);
@@ -205,7 +205,7 @@ describe('Home page', () => {
 
       cy.get('[id^="enableWhen.2.question"]').type('{downarrow}{enter}');
       cy.get('[id^="enableWhen.2.operator"]').select('=');
-      cy.get('[id^="enableWhen.2.answerCoding"]').select('Street clothes, no shoes (LA11872-1)');
+      cy.get('[id^="enableWhen.2.answerCoding"]').type('Street clothes, no shoes (LA11872-1)').type('{downarrow}{enter}');
       // Verify the questionnaire JSON.
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item.length).equal(12);
@@ -338,7 +338,7 @@ describe('Home page', () => {
 
       cy.get('[id^="enableWhen.1.question"]').as('r2Question').type('{downarrow}{enter}');
       cy.get('[id^="enableWhen.1.operator"]').as('r2Operator').select('=');
-      cy.get('[id^="enableWhen.1.answerCoding"]').as('r2Answer').select('display 3 (c3)');
+      cy.get('[id^="enableWhen.1.answerCoding"]').as('r2Answer').type('display 3 (c3)').type('{downarrow}{enter}');
 
       cy.get('[id^="enableWhen.0.answerCoding"]').should('not.exist');
 
@@ -346,7 +346,7 @@ describe('Home page', () => {
       cy.get('@r2Answer').should('not.exist');
       cy.get('@r1Operator').select('=');
       cy.get('[id^="enableWhen.0.answerCoding"]').as('r1Answer').should('be.visible');
-      cy.get('@r1Answer').select('display 1 (c1)');
+      cy.get('@r1Answer').type('display 1 (c1)').type('{downarrow}{enter}');
     });
 
     it('should show answer column if there is an answer in any row of conditional display', () => {
@@ -569,7 +569,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.operator"]')
         .find('option:selected').should('have.text', '=');
       cy.get('[id^="enableWhen.0.answerCoding"]')
-        .find('option:selected').should('have.text', 'Yes (LA33-6)');
+        .should('have.value', 'Yes (LA33-6)');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].item[0].enableWhen)
@@ -579,10 +579,8 @@ describe('Home page', () => {
   });
 
 
-
-
   describe('enableWhen answer pointing to answerOptions validation', () => {
-    // R4 Questionnaire does not contain answerConstraint, but it will be have like 'optionsOnly'.
+    // The R4 Questionnaire does not include answerConstraint, but its behavior is equivalent to 'optionsOnly'.
     // Except for the type 'open-choice' which will behave like 'optionOrString'
     it('should display a validation error if the answer does not match any of the answerOptions for R4 questionnaire', () => {
       const sampleFile = 'enable-when-answer-options-R4-sample.json';
@@ -628,8 +626,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerInteger"]').should('have.value', 4);
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'integer answerOptions (linkId: \'779085650305\')\' answerOptions for enableWhen condition 1.');
-
+        .should('contain.text', enableWhenErrorMsg('integer answerOptions', '779085650305'));
 
       // -------- DATE ANSWER OPTIONS --------
       // date answerOptions
@@ -669,8 +666,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerDate"]').should('have.value', "2025-11-20");
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'date answerOptions (linkId: \'759608001746\')\' answerOptions for enableWhen condition 1.');
-
+        .should('contain.text', enableWhenErrorMsg('date answerOptions', '759608001746'));
 
       // -------- TIME ANSWER OPTIONS --------
       // time answerOptions
@@ -710,8 +706,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerTime"]').should('have.value', "08:00:00");
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'time answerOptions (linkId: \'657367236699\')\' answerOptions for enableWhen condition 1.');
-
+        .should('contain.text', enableWhenErrorMsg('time answerOptions', '657367236699'));
 
       // -------- STRING ANSWER OPTIONS --------
       // string answerOptions
@@ -751,8 +746,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerString"]').should('have.value', "Z");
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'string answerOptions (linkId: \'820906264719\')\' answerOptions for enableWhen condition 1.');
-
+        .should('contain.text', enableWhenErrorMsg('string answerOptions', '820906264719'));
 
       // -------- TEXT ANSWER OPTIONS --------
       // text answerOptions
@@ -791,8 +785,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerString"]').should('have.value', "ZZZZZZZZZ");
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'text answerOptions (linkId: \'174788656639\')\' answerOptions for enableWhen condition 1.');
-
+        .should('contain.text', enableWhenErrorMsg('text answerOptions', '174788656639'));
 
       // -------- CODING ANSWER OPTIONS - CHOICE --------
       // text answerOptions
@@ -849,8 +842,7 @@ describe('Home page', () => {
       });
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'coding answerOptions restricted (linkId: \'264603036166\')\' answerOptions for enableWhen condition 1.');
-
+        .should('contain.text', enableWhenErrorMsg('coding answerOptions restricted', '264603036166'));
 
       // -------- CODING ANSWER OPTIONS - OPEN-CHOICE --------
       // open-choice behaves like 'optionsOrString'
@@ -911,7 +903,7 @@ describe('Home page', () => {
       });
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'coding answerOptions restricted (linkId: \'264603036166\')\' answerOptions for enableWhen condition 1.');
+        .should('contain.text', enableWhenErrorMsg('coding answerOptions restricted', '264603036166'));
     });
 
 
@@ -962,8 +954,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerInteger"]').should('have.value', 4);
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'integer answerOptions (linkId: \'779085650305\')\' answerOptions for enableWhen condition 1.');
-
+        .should('contain.text', enableWhenErrorMsg('integer answerOptions', '779085650305'));
 
       // Switch the answerConstraint to 'optionsOrType'
       cy.getTreeNode('integer answerOptions').click();
@@ -981,15 +972,12 @@ describe('Home page', () => {
       cy.getTreeNode('integer answerOptions').click();
       cy.getRadioButtonLabel('Answer constraint', 'Allow free text').click();
 
-      // The error reappeared because the answer value matches neither an answerOption nor the string type.
+      // The error should not reappeared because the answer value is valid.
       cy.getTreeNode('enableWhen integer off-list')
         .click()
         .find('fa-icon#error')
-        .should('exist');
-      cy.get('[id^="enableWhen.0_err"]')
-        .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'integer answerOptions (linkId: \'779085650305\')\' answerOptions or the answer constraint of type string for enableWhen condition 1.');
-
+        .should('not.exist');
+      cy.get('[id^="enableWhen.0_err"]').should('not.exist');
 
       // -------- DATE ANSWER OPTIONS --------
       // date answerOptions
@@ -1029,7 +1017,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerDate"]').should('have.value', "2025-11-20");
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'date answerOptions (linkId: \'759608001746\')\' answerOptions for enableWhen condition 1.');
+        .should('contain.text', enableWhenErrorMsg('date answerOptions', '759608001746'));
 
       // Switch the answerConstraint to 'optionsOrType'
       cy.getTreeNode('date answerOptions').click();
@@ -1047,15 +1035,12 @@ describe('Home page', () => {
       cy.getTreeNode('date answerOptions').click();
       cy.getRadioButtonLabel('Answer constraint', 'Allow free text').click();
 
-      // The error reappeared because the answer value matches neither an answerOption nor the string type.
+      // The error should not reappeared because the answer value is valid.
       cy.getTreeNode('enableWhen date off-list')
         .click()
         .find('fa-icon#error')
-        .should('exist');
-      cy.get('[id^="enableWhen.0_err"]')
-        .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'date answerOptions (linkId: \'759608001746\')\' answerOptions or the answer constraint of type string for enableWhen condition 1.');
-
+        .should('not.exist');
+      cy.get('[id^="enableWhen.0_err"]').should('not.exist');
 
       // -------- TIME ANSWER OPTIONS --------
       // time answerOptions
@@ -1095,7 +1080,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerTime"]').should('have.value', "08:00:00");
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'time answerOptions (linkId: \'657367236699\')\' answerOptions for enableWhen condition 1.');
+        .should('contain.text', enableWhenErrorMsg('time answerOptions', '657367236699'));
 
       // Switch the answerConstraint to 'optionsOrType'
       cy.getTreeNode('time answerOptions').click();
@@ -1113,15 +1098,12 @@ describe('Home page', () => {
       cy.getTreeNode('time answerOptions').click();
       cy.getRadioButtonLabel('Answer constraint', 'Allow free text').click();
 
-      // The error reappeared because the answer value matches neither an answerOption nor the string type.
+      // The error should not reappeared because the answer value is valid.
       cy.getTreeNode('enableWhen time off-list')
         .click()
         .find('fa-icon#error')
-        .should('exist');
-      cy.get('[id^="enableWhen.0_err"]')
-        .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'time answerOptions (linkId: \'657367236699\')\' answerOptions or the answer constraint of type string for enableWhen condition 1.');
-
+        .should('not.exist');
+      cy.get('[id^="enableWhen.0_err"]').should('not.exist');
 
       // -------- STRING ANSWER OPTIONS --------
       // string answerOptions
@@ -1161,7 +1143,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerString"]').should('have.value', "Z");
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'string answerOptions (linkId: \'820906264719\')\' answerOptions for enableWhen condition 1.');
+        .should('contain.text', enableWhenErrorMsg('string answerOptions', '820906264719'));
 
       // Switch the answerConstraint to 'optionsOrType'
       cy.getTreeNode('string answerOptions').click();
@@ -1224,7 +1206,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.answerString"]').should('have.value', "ZZZZZZZZZ");
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'text answerOptions (linkId: \'174788656639\')\' answerOptions for enableWhen condition 1.');
+        .should('contain.text', enableWhenErrorMsg('text answerOptions', '174788656639'));
 
       // Switch the answerConstraint to 'optionsOrType'
       cy.getTreeNode('text answerOptions').click();
@@ -1305,7 +1287,7 @@ describe('Home page', () => {
       });
       cy.get('[id^="enableWhen.0_err"]')
         .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'coding answerOptions (linkId: \'264603036166\')\' answerOptions for enableWhen condition 1.');
+        .should('contain.text', enableWhenErrorMsg('coding answerOptions', '264603036166'));
 
       // Switch the answerConstraint to 'optionsOrType'
       cy.getTreeNode('coding answerOptions').click();
@@ -1323,14 +1305,29 @@ describe('Home page', () => {
       cy.getTreeNode('coding answerOptions').click();
       cy.getRadioButtonLabel('Answer constraint', 'Allow free text').click();
 
-      // The error reappeared because the answer value matches neither an answerOption nor the string type.
+      // The error should not reappeared because the answer value is valid.
       cy.getTreeNode('enableWhen coding off-list')
         .click()
         .find('fa-icon#error')
-        .should('exist');
-      cy.get('[id^="enableWhen.0_err"]')
-        .find('small')
-        .should('contain.text', ' The answer value does not match any option in the \'coding answerOptions (linkId: \'264603036166\')\' answerOptions or the answer constraint of type string for enableWhen condition 1.');
+        .should('not.exist');
+      cy.get('[id^="enableWhen.0_err"]').should('not.exist');
     });
   });
 });
+
+
+/**
+ * Generates a standardized error message for enableWhen answer option validation.
+ * @param itemName - The name of the item or answerOptions group.
+ * @param linkId - The linkId associated with the item.
+ * @param optionsOrString - If true, includes additional text for constraints like "optionsOrString" (e.g., "or the answer constraint of type string").
+ * @param conditionNum - The enableWhen condition number (default is 1).
+ * @returns The formatted error message string for assertion in Cypress tests.
+ */
+function enableWhenErrorMsg(itemName, linkId, optionsOrString = false, conditionNum = 1) {
+  if (optionsOrString) {
+    return ` The answer value does not match any answer option in the '${itemName}' (linkId: '${linkId}') or the answer constraint of type string for enableWhen condition ${conditionNum}.`;
+  } else {
+    return ` The answer value does not match any answer option in the '${itemName}' (linkId: '${linkId}') for enableWhen condition ${conditionNum}.`;
+  }
+}

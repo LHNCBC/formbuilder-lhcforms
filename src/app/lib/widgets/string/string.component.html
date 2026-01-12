@@ -1,34 +1,52 @@
-<input *ngIf="schema.widget.id ==='hidden'; else notHiddenFieldBlock"
-       name="{{name}}" type="hidden" [formControl]="control">
-<ng-template #notHiddenFieldBlock>
+@if (schema.widget.id ==='hidden') {
+  <input
+    name="{{name}}" type="hidden" [formControl]="control">
+} @else {
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-    <lfb-label *ngIf="!nolabel"
-               [for]="id+_id"
-               [title]="schema.title"
-               [helpMessage]="schema.description"
-               [ngClass]="labelClasses"
-               class="form-label"
-    ></lfb-label>
+    @if (!nolabel) {
+      <lfb-label
+        [for]="id+_id"
+        [title]="schema.title"
+        [helpMessage]="schema.description"
+        [ngClass]="labelClasses"
+        class="form-label"
+      ></lfb-label>
+    }
     <div class="col p-0 position-relative">
-      <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
-             [ngClass]="controlClasses"
-             [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
-             [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
-             [attr.maxLength]="schema.maxLength || null"
-             [attr.minLength]="schema.minLength || null"
-             [required]="schema.isRequired"
-             [lfbDisableControl]="schema.disabled">
-      @if(control.dirty && errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
-        <ul class="mb-0">
-          @for(error of errors; track $index) {
-            <li>
-              <small class="text-danger form-text" role="alert"
-              >{{error.modifiedMessage || error.originalMessage}}</small>
-            </li>
+      @if (hasAnswerOptions$ | async) {
+        <div class="{{controlWidthClass}} p-0">
+          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
+        </div>
+        @if (errors?.length && formProperty.value) {
+          @for (error of errors; track error.code) {
+            <small class="text-danger form-text" role="alert"
+            >{{error.modifiedMessage || error.originalMessage}}</small>
           }
-        </ul>
+        }
+      } @else {
+          <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
+                 [ngClass]="controlClasses"
+                 [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
+                 [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+                 [attr.maxLength]="schema.maxLength || null"
+                 [attr.minLength]="schema.minLength || null"
+                 [required]="schema.isRequired"
+                 [lfbDisableControl]="schema.disabled">
+          @if (errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
+            <ul class="mb-0 ps-4">
+              @for (error of errors; track error.code) {
+                <li>
+                  <small class="text-danger form-text" role="alert"
+                  >{{error.modifiedMessage || error.originalMessage}}</small>
+                </li>
+              }
+            </ul>
+          }
       }
-      <p *ngIf="formProperty.schema.widget?.note" #note [attr.id]="'note_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
+
+      @if (formProperty.schema.widget?.note) {
+        <p #note [attr.id]="'note_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget?.note}}</em></small></p>
+      }
     </div>
   </div>
-</ng-template>
+}

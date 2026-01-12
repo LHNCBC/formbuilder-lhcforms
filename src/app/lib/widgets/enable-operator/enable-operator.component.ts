@@ -8,7 +8,7 @@
  * It is updated programmatically in the class.
  */
 
-import {Component, OnInit} from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import { FormService } from 'src/app/services/form.service';
 
@@ -17,27 +17,27 @@ import { FormService } from 'src/app/services/form.service';
   selector: 'lfb-enable-operator',
   template: `
     <select #mySelect
-            [(ngModel)]="myModel"
-            (ngModelChange)="onModelChange($event)"
-            name="{{name}}" [attr.id]="id"
-            [disabled]="schema.readOnly" class="form-control">
+      [(ngModel)]="myModel"
+      (ngModelChange)="onModelChange($event)"
+      name="{{name}}" [attr.id]="id"
+      [disabled]="schema.readOnly" class="form-control">
       <ng-container>
-        <option *ngFor="let opt of selectOptionList" [ngValue]="opt.option" >{{opt.label}}</option>
+        @for (opt of selectOptionList; track opt.option) {
+          <option [ngValue]="opt.option" >{{opt.label}}</option>
+        }
       </ng-container>
     </select>
-  `,
+    `,
   styles: [
   ]
 })
 export class EnableOperatorComponent extends LfbControlWidgetComponent implements OnInit {
+  private formService = inject(FormService);
+
 
   myModel: string;
   answerType: string;
   selectOptionList: any [];
-
-  constructor(private formService: FormService) {
-    super();
-  };
 
   /**
    * Initialize

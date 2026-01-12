@@ -1,11 +1,11 @@
 /**
  * An input box for enableWhen's source to search eligible source items listed in the tree.
  */
-import {Component, OnInit, ViewChild} from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import {merge, Observable, Subject} from 'rxjs';
 import {FormService} from '../../../services/form.service';
 import {debounceTime, distinctUntilChanged, filter, map} from 'rxjs/operators';
-import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import {TreeNode} from '@bugsplat/angular-tree-component';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
@@ -19,39 +19,47 @@ import {Util} from '../../util';
     </ng-template>
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
 
-      <lfb-label  *ngIf="!nolabel" [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
-      <input *ngIf="schema.type !== 'array'"
-             name="{{name}}"
-             [attr.id]="id"
-             [attr.disabled]="schema.readOnly ? '' : null"
-             type="text"
-             [(ngModel)]="model"
-             [ngbTypeahead]="search"
-             [editable]="false"
-             [inputFormatter]="inputFormatter"
-             [resultFormatter]="resultListItemFormatter"
-             class="form-control"
-             (focus)="focus$.next($any($event).target.value)"
-             (click)="click$.next($any($event).target.value)"
-             (change)="validateQuestion()"
-             (selectItem)="onSelect($event)"
-             #instance="ngbTypeahead"
-             popupClass="add-scrolling"
-      >
+      @if (!nolabel) {
+        <lfb-label  [for]="id" [title]="schema.title" [helpMessage]="schema.description"></lfb-label>
+      }
+      @if (schema.type !== 'array') {
+        <input
+          name="{{name}}"
+          [attr.id]="id"
+          [attr.disabled]="schema.readOnly ? '' : null"
+          type="text"
+          [(ngModel)]="model"
+          [ngbTypeahead]="search"
+          [editable]="false"
+          [inputFormatter]="inputFormatter"
+          [resultFormatter]="resultListItemFormatter"
+          class="form-control"
+          (focus)="focus$.next($any($event).target.value)"
+          (click)="click$.next($any($event).target.value)"
+          (change)="validateQuestion()"
+          (selectItem)="onSelect($event)"
+          #instance="ngbTypeahead"
+          popupClass="add-scrolling"
+          >
+      }
 
-      <input *ngIf="schema.readOnly" name="{{name}}" type="hidden" [formControl]="control">
+      @if (schema.readOnly) {
+        <input name="{{name}}" type="hidden" [formControl]="control">
+      }
     </div>
-  `,
+    `,
   styles: [
   ]
 })
 export class EnableWhenSourceComponent extends LfbControlWidgetComponent implements OnInit {
+  private formService = inject(FormService);
+
   // Info icon.
   faInfo = faInfoCircle;
   nolabel = false;
-  model: ITreeNode;
+  model: TreeNode;
 
-  sources: ITreeNode [];
+  sources: TreeNode [];
 
   @ViewChild('instance') instance: NgbTypeahead;
 
@@ -59,11 +67,11 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   click$ = new Subject<string>();
 
   /**
-   * Search through text of the source items, with input string. For empty term, show  all items.
+   * Search through text of the source items, with input string. For empty term, show all items.
    *
    * @param input$ - Observation for input string.
    */
-  search = (input$: Observable<string>): Observable<ITreeNode []> => {
+  search = (input$: Observable<string>): Observable<TreeNode []> => {
     const debouncedText$ = input$.pipe(debounceTime(100), distinctUntilChanged());
     const clicksWithClosedPopup$ = this.click$.pipe(filter(() => !this.instance.isPopupOpen()));
     const inputFocus$ = this.focus$;
@@ -73,16 +81,6 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
         : this.sources.filter(el => el.data.text.toLowerCase().indexOf(term.toLowerCase()) > -1)))
     );
   };
-
-
-  /**
-   * Invoke super class constructor.
-   *
-   * @param formService - Service to help with collection of sources
-   */
-  constructor(private formService: FormService) {
-    super();
-  }
 
 
   /**
@@ -118,7 +116,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
    * Format the input after selection
    * @param item - TreeNode object of the item.
    */
-  inputFormatter(item: ITreeNode): string {
+  inputFormatter(item: TreeNode): string {
     let ret: string;
     if (item && item.data) {
       ret = Util.getIndexPath(item).join('.') + ' - ' + item.data.text;
@@ -131,7 +129,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
    * Format item in the results popup.
    * @param item - TreeNode object of the item.
    */
-  resultListItemFormatter(item: ITreeNode): string {
+  resultListItemFormatter(item: TreeNode): string {
     let indent = '';
     let ret: string;
     if (item && item.data) {
@@ -156,7 +154,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
       const enableWhenObj = this.formProperty.parent.value;
       enableWhenObj['question'] = '';
       enableWhenObj['operator'] = '';
-      
+
       const answerType = this.formProperty.parent.getProperty('__$answerType').value;
 
       if (answerType && answerType !== "coding") {

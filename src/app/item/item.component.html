@@ -1,195 +1,225 @@
-<div *ngIf="errorTooltip.showDropNotAllowedTooltip" class="not-allowed-tooltip"
-     [ngStyle]="{ top: errorTooltip.tooltipMouseYLoc + 'px', left: errorTooltip.tooltipMouseXLoc + 'px' }">
-     {{errorTooltip.dropErrorMessage}}
-</div>
+@if (errorTooltip.showDropNotAllowedTooltip) {
+  <div class="not-allowed-tooltip"
+    [ngStyle]="{ top: errorTooltip.tooltipMouseYLoc + 'px', left: errorTooltip.tooltipMouseXLoc + 'px' }">
+    {{errorTooltip.dropErrorMessage}}
+  </div>
+}
 
 <mat-sidenav-container>
-        <mat-sidenav #drawer mode="side" opened class="p-1 bg-light" disableClose>
-          <div class="sidenav-header p-1">Questions Tree&nbsp;<div tabindex="0" class="btn border-0 p-0 b-0" [matTooltip]="treeHelpMessage"
-                                                                      [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage"
-          ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></div
-          ></div>
-          <span (focusin)="treeInitialFocus($event)"
-                (mouseover)="onMouseOver($event)"
-                (dragover)="onMouseDragOver($event)" >
-            <tree-root
-              #tree
-              [nodes]="itemList"
-              [options]="treeOptions"
-              (event)="onTreeEvent($event)"
-              role="tree"
-            >
-              <ng-template #treeNodeWrapperTemplate let-node let-index="index">
-                <div class="node-wrapper" [style.padding-left]="node.getNodePadding()" role="group">
-                  <tree-node-expander [node]="node"></tree-node-expander>
-                  <div class="node-content-wrapper"
-                       [class.node-content-wrapper-focused]="node.isFocused && !node.isActive"
-                       [class.node-content-wrapper-active]="node.isActive"
-                       (click)="node.mouseAction('click', $event)"
-                       (dblclick)="node.mouseAction('dblClick', $event)"
-                       (contextmenu)="node.mouseAction('contextMenu', $event)"
-                       (treeDrop)="node.onDrop($event)"
-                       [treeAllowDrop]="node.allowDrop"
-                       [treeDrag]="node"
-                       [treeDragEnabled]="node.allowDrag()"
-                       [attr.tabindex]="node.isActive ? '0' : null"
-                       role="treeitem"
-                       [attr.aria-selected]="node.isActive"
-                  >
-                    <tree-node-content [node]="node" [index]="index" [template]="treeNodeTemplate"></tree-node-content>
-                  </div>
-                </div>
-              </ng-template>
-              <ng-template #treeNodeTemplate let-node let-index="index">
-                <div [ngClass]="node.nodeClass" class="d-flex" #tooltip="matTooltip" [matTooltip]="node.displayField">
-                  <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span>
-                  <span aria-hidden="true" class="text-truncate flex-fill node-display-field" [ngClass]="node.nodeClass">{{node.displayField}}</span>
-                  <fa-icon id="error" *ngIf="hasError(node)" [icon]="errorIcon" style="color: red" aria-hidden="!!errors"></fa-icon>&nbsp;
-                  <ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container>
-                </div>
-              </ng-template>
-              <ng-template #loadingTemplate><span></span></ng-template>
-            </tree-root>
-            <small class="text-danger form-text cdk-visually-hidden" role="alert" *ngIf="validationErrorsAllItemsErrorStr !== ''" >
-              {{validationErrorsAllItemsErrorStr}}
-            </small>
-          </span>
-        </mat-sidenav>
-        <mat-sidenav-content>
-          <div class="sidenav-header p-1" aria-live="polite" aria-atomic="true" id="itemContent">Current Item <span *ngIf="focusNode?.data?.text">({{focusNode.data.text}})</span></div>
-          <div class="mt-1">
-            <div>
-              <span>Edit item (question or header)</span>
-              <small *ngIf="devMode" class="float-end font-italic">{{loadingTime}} seconds</small>
-            </div>
-            <ul>
-              <li>
-                The questions are organized in hierarchical tree on the left side. Select the desired item to edit their properties here.
-              </li>
-              <li *ngIf="(errors$ | async) || isTreeNodeError" class="text-danger list-group-item-warning"
-                  role="region" aria-live="assertive">{{errorMessage}}</li>
-              <li *ngIf="isChildTreeNodeError" class="text-danger list-group-item-warning"
-                  role="region" aria-live="assertive">{{childErrorMessage}}</li>
-            </ul>
-          </div>
-          <hr/>
-          <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
-          <lfb-ngx-schema-form #uiEditor [model]="itemData" (valueChange)="itemChanged($event)"
-                                 (errorsChanged)="onErrorsChanged($event)"
-                                 (validationErrorsChanged)="onValidationErrorsChanged($event)"></lfb-ngx-schema-form>
-          <ul>
-            <li *ngIf="(errors$ | async) || isTreeNodeError" class="text-danger list-group-item-warning"
-                aria-hidden="true">{{errorMessage}}</li>
-            <li *ngIf="isChildTreeNodeError" class="text-danger list-group-item-warning"
-                role="region" aria-live="assertive">{{childErrorMessage}}</li>
-          </ul>
-          <hr/>
-          <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with item action buttons">
-            <div class="btn-group-sm" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary"
-                      [disabled]="!(focusNode && focusNode.parent)"
-                      aria-label="Delete this item"
-                      (click)="confirmItemDelete()">Delete this item</button>
-            </div>
-            <div class="btn-group-sm ms-2 ms-auto" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary"
-                      (click)="addItem($event)"
-                      aria-label="Add new item"
-                      aria-controls="itemContent"
-              >Add new item</button>
-            </div>
-            <div class="btn-group-sm ms-2" role="group" aria-label="Last group">
-              <button type="button" class="btn btn-primary"
-                      (click)="addLoincItem(addItemDlg)"
-                      aria-label="Add new item from LOINC"
-                      aria-controls="itemContent"
-              >Add new item from LOINC</button>
+  <mat-sidenav #drawer mode="side" opened class="p-1 bg-light" disableClose>
+    <div class="sidenav-header p-1">Questions Tree&nbsp;<div tabindex="0" class="btn border-0 p-0 b-0" [matTooltip]="treeHelpMessage"
+      [attr.aria-label]="'Tooltip for tree: '+treeHelpMessage"
+      ><fa-icon [icon]="helpIcon" class="text-white"></fa-icon></div
+    ></div>
+    <span (focusin)="treeInitialFocus($event)"
+      (mouseover)="onMouseOver($event)"
+      (dragover)="onMouseDragOver($event)" >
+      <tree-root
+        #tree
+        [nodes]="itemList"
+        [options]="treeOptions"
+        (event)="onTreeEvent($event)"
+        role="tree"
+        >
+        <ng-template #treeNodeWrapperTemplate let-node let-index="index">
+          <div class="node-wrapper" [style.padding-left]="node.getNodePadding()" role="group">
+            <tree-node-expander [node]="node"></tree-node-expander>
+            <div class="node-content-wrapper"
+              [class.node-content-wrapper-focused]="node.isFocused && !node.isActive"
+              [class.node-content-wrapper-active]="node.isActive"
+              (click)="node.mouseAction('click', $event)"
+              (dblclick)="node.mouseAction('dblClick', $event)"
+              (contextmenu)="node.mouseAction('contextMenu', $event)"
+              (treeDrop)="node.onDrop($event)"
+              [treeAllowDrop]="node.allowDrop"
+              [treeDrag]="node"
+              [treeDragEnabled]="node.allowDrag()"
+              [attr.tabindex]="node.isActive ? '0' : null"
+              role="treeitem"
+              [attr.aria-selected]="node.isActive"
+              >
+              <tree-node-content [node]="node" [index]="index" [template]="treeNodeTemplate"></tree-node-content>
             </div>
           </div>
-        </mat-sidenav-content>
-</mat-sidenav-container>
-
-<ng-template #addItemDlg let-modal>
-  <div class="modal-header btn-primary">
-    <h4 class="modal-title" id="modal-basic-title">Add LOINC item</h4>
-    <button type="button" class="btn-close btn-primary" aria-label="Close" (click)="modal.dismiss('Cross click')">
-    </button>
-  </div>
-  <div class="modal-body">
-    <form>
-      <div class="form-group">
-        <label for="loincTypeSelect1" class="align-middle" id="loincItemRadioGroupLabel">Select LOINC item type:</label>
-        <div class="btn-group" id="loincTypeSelect1" role="radiogroup" aria-labelledby="loincItemRadioGroupLabel">
-          <label *ngFor="let opt of loincTypeOpts" class="btn">
-            <input type="radio" name="loincType"
-                   [value]="opt.value"
-                   [(ngModel)]="loincType"
-                   [ngModelOptions]="{standalone: true}"> {{ opt.display }}
-          </label>
+        </ng-template>
+        <ng-template #treeNodeTemplate let-node let-index="index">
+          <div [ngClass]="node.nodeClass" class="d-flex" #tooltip="matTooltip" [matTooltip]="node.displayField"
+            (dragover)="onDragOver(node)" (dragleave)="onDragLeave(node)"
+            [ngClass]="{ 'drop-target': node.data?.__$isHovered }" >
+            <span class="node-display-prefix" aria-hidden="true">{{getIndexPath(node).join('.')}}</span>
+            <span aria-hidden="true" class="text-truncate flex-fill node-display-field" [ngClass]="node.nodeClass">{{node.displayField}}</span>
+            @if (hasError(node)) {
+              <fa-icon id="error" [icon]="errorIcon" style="color: red" aria-hidden="!!errors"></fa-icon>
+              }&nbsp;
+              <ng-container *ngTemplateOutlet="nodeMenu; context: {node: node, tooltip: tooltip}"></ng-container>
+            </div>
+          </ng-template>
+          <ng-template #loadingTemplate><span></span></ng-template>
+        </tree-root>
+        @if (validationErrorsAllItemsErrorStr !== '') {
+          <small class="text-danger form-text cdk-visually-hidden" role="alert" >
+            {{validationErrorsAllItemsErrorStr}}
+          </small>
+        }
+      </span>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <div class="sidenav-header p-1" aria-live="polite" aria-atomic="true" id="itemContent">Current Item @if (focusNode?.data?.text) {
+        <span>({{focusNode.data.text}})</span>
+      }</div>
+      <div class="mt-1">
+        <div>
+          <span>Edit item (question or header)</span>
+          @if (devMode) {
+            <small class="float-end font-italic">{{loadingTime}} seconds</small>
+          }
         </div>
-        <label class="" for="acSearchBoxId">Search for a LOINC item:</label>
-        <input id="acSearchBoxId"  type="text" class="form-control"
-               [(ngModel)]="loincItem"
-               [ngModelOptions]="{standalone: true}"
-               [ngbTypeahead]="acSearch"
-               [resultFormatter]="formatter"
-               [inputFormatter]="formatter"
-               [editable]='false' />
+        <ul>
+          <li>
+            The questions are organized in hierarchical tree on the left side. Select the desired item to edit their properties here.
+          </li>
+          @if ((errors$ | async) || isTreeNodeError) {
+            <li class="text-danger list-group-item-warning"
+              role="region" aria-live="assertive">{{errorMessage}}
+              <ul>
+                @for (errorMsg of getNodeErrors(); track errorMsg) {
+                  <li>{{errorMsg}}</li>
+                }
+              </ul>
+            </li>
+          }
+          @if (isChildTreeNodeError) {
+            <li class="text-danger list-group-item-warning"
+            role="region" aria-live="assertive">{{childErrorMessage}}</li>
+          }
+        </ul>
       </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="modal.dismiss(false)">Cancel</button>
-    <button type="button" class="btn btn-primary" (click)="modal.close(loincItem)">Add</button>
-  </div>
-</ng-template>
+      <hr/>
+      <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
+      <lfb-ngx-schema-form #uiEditor [model]="itemData" (valueChange)="itemChanged($event)"
+        (errorsChanged)="onErrorsChanged($event)"
+      (validationErrorsChanged)="onValidationErrorsChanged($event)"></lfb-ngx-schema-form>
+      <ul>
+        @if ((errors$ | async) || isTreeNodeError) {
+          <li class="text-danger list-group-item-warning"
+          aria-hidden="true">{{errorMessage}}</li>
+        }
+        @if (isChildTreeNodeError) {
+          <li class="text-danger list-group-item-warning"
+          role="region" aria-live="assertive">{{childErrorMessage}}</li>
+        }
+      </ul>
+      <hr/>
+      <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with item action buttons">
+        <div class="btn-group-sm" role="group" aria-label="Last group">
+          <button type="button" class="btn btn-primary"
+            [disabled]="!(focusNode && focusNode.parent)"
+            aria-label="Delete this item"
+          (click)="confirmItemDelete()">Delete this item</button>
+        </div>
+        <div class="btn-group-sm ms-2 ms-auto" role="group" aria-label="Last group">
+          <button type="button" class="btn btn-primary"
+            (click)="addItem($event)"
+            aria-label="Add new item"
+            aria-controls="itemContent"
+          >Add new item</button>
+        </div>
+        <div class="btn-group-sm ms-2" role="group" aria-label="Last group">
+          <button type="button" class="btn btn-primary"
+            (click)="addLoincItem(addItemDlg)"
+            aria-label="Add new item from LOINC"
+            aria-controls="itemContent"
+          >Add new item from LOINC</button>
+        </div>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+
+  <ng-template #addItemDlg let-modal>
+    <div class="modal-header btn-primary">
+      <h4 class="modal-title" id="modal-basic-title">Add LOINC item</h4>
+      <button type="button" class="btn-close btn-primary" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      </button>
+    </div>
+    <div class="modal-body">
+      <form>
+        <div class="form-group">
+          <label for="loincTypeSelect1" class="align-middle" id="loincItemRadioGroupLabel">Select LOINC item type:</label>
+          <div class="btn-group" id="loincTypeSelect1" role="radiogroup" aria-labelledby="loincItemRadioGroupLabel">
+            @for (opt of loincTypeOpts; track opt.value) {
+              <label class="btn">
+                <input type="radio" name="loincType"
+                  [value]="opt.value"
+                  [(ngModel)]="loincType"
+                  [ngModelOptions]="{standalone: true}"> {{ opt.display }}
+                </label>
+              }
+            </div>
+            <label class="" for="acSearchBoxId">Search for a LOINC item:</label>
+            <input id="acSearchBoxId"  type="text" class="form-control"
+              [(ngModel)]="loincItem"
+              [ngModelOptions]="{standalone: true}"
+              [ngbTypeahead]="acSearch"
+              [resultFormatter]="formatter"
+              [inputFormatter]="formatter"
+              [editable]='false' />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="modal.dismiss(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="modal.close(loincItem)">Add</button>
+      </div>
+    </ng-template>
 
 
-<ng-template #nodeMenu let-node="node" let-parentTooltip="tooltip">
-  <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown" container="body"
-       role="group"
-       (openChange)="handleContextMenuOpen($event)"
-       (mouseenter)="parentTooltip.hide()"
-       (mouseleave)="parentTooltip.show()">
-    <button ngbDropdownToggle
-            class="btn btn-sm p-0 border px-1 align-baseline"
-            matTooltip="More options"
-            [attr.tabindex]="node.isActive ? null : '-1'"
-            (keydown.arrowDown)="preventEventPropagation($event)"
-            (keydown.arrowUp)="preventEventPropagation($event)"
-            (keydown.enter)="myDrop.toggle()"
-    ><fa-icon [icon]="nodeMenuIcon"></fa-icon></button
-    ><div class="dropdown-menu" ngbDropdownMenu role="menu"
+    <ng-template #nodeMenu let-node="node" let-parentTooltip="tooltip">
+      <div class="d-inline-block" ngbDropdown #myDrop="ngbDropdown" container="body"
+        role="group"
+        (openChange)="handleContextMenuOpen($event)"
+        (mouseenter)="parentTooltip.hide()"
+        (mouseleave)="parentTooltip.show()">
+        <button ngbDropdownToggle
+          class="btn btn-sm p-0 border px-1 align-baseline"
+          matTooltip="More options"
+          [attr.tabindex]="node.isActive ? null : '-1'"
           (keydown.arrowDown)="preventEventPropagation($event)"
           (keydown.arrowUp)="preventEventPropagation($event)"
-  >
-      <button ngbDropdownItem role="menuitem"
-              (keyup.enter)="onInsertItem(myDrop, $event, node, 'BEFORE')"
-              (click)="onInsertItem(myDrop, $event, node, 'BEFORE')"
-      >Insert a new item <b>before</b> this</button>
-      <button ngbDropdownItem role="menuitem"
+          (keydown.enter)="myDrop.toggle()"
+          ><fa-icon [icon]="nodeMenuIcon"></fa-icon></button
+          ><div class="dropdown-menu" ngbDropdownMenu role="menu"
+          (keydown.arrowDown)="preventEventPropagation($event)"
+          (keydown.arrowUp)="preventEventPropagation($event)"
+          >
+          <button ngbDropdownItem role="menuitem"
+            (keyup.enter)="onInsertItem(myDrop, $event, node, 'BEFORE')"
+            (click)="onInsertItem(myDrop, $event, node, 'BEFORE')"
+            >Insert a new item <b>before</b> this</button>
+            <button ngbDropdownItem role="menuitem"
               (keyup.enter)="onInsertItem(myDrop, $event, node, 'AFTER')"
               (click)="onInsertItem(myDrop, $event, node, 'AFTER')"
-      >Insert a new item <b>after</b> this</button>
-      <button ngbDropdownItem role="menuitem" *ngIf="node.data.type !== 'display'"
-              (keyup.enter)="onInsertItem(myDrop, $event, node, 'CHILD')"
-              (click)="onInsertItem(myDrop, $event, node, 'CHILD')"
-      >Insert a new <b>child</b> item</button>
-      <div class="dropdown-divider" role="separator"></div>
-      <button ngbDropdownItem role="menuitem"
-              (keyup.enter)="onMoveDlg($event, node); myDrop.close()"
-              (click)="onMoveDlg($event, node)"
-      >Move this item ...</button>
-      <div class="dropdown-divider" role="separator"></div>
-      <button ngbDropdownItem role="menuitem"
-              (keyup.enter)="onCopyDlg($event, node); myDrop.close()"
-              (click)="onCopyDlg($event, node)"
-      >Copy this item ...</button>
-      <div class="dropdown-divider" role="separator"></div>
-      <button ngbDropdownItem role="menuitem"
-              (keyup.enter)="confirmItemDelete();myDrop.close()"
-              (click)="confirmItemDelete()"
-      >Remove this item</button>
-    </div>
-  </div>
-</ng-template>
+              >Insert a new item <b>after</b> this</button>
+              @if (node.data.type !== 'display') {
+                <button ngbDropdownItem role="menuitem"
+                  (keyup.enter)="onInsertItem(myDrop, $event, node, 'CHILD')"
+                  (click)="onInsertItem(myDrop, $event, node, 'CHILD')"
+                  >Insert a new <b>child</b> item</button>
+                }
+                <div class="dropdown-divider" role="separator"></div>
+                <button ngbDropdownItem role="menuitem"
+                  (keyup.enter)="onMoveDlg($event, node); myDrop.close()"
+                  (click)="onMoveDlg($event, node)"
+                >Move this item ...</button>
+                <div class="dropdown-divider" role="separator"></div>
+                <button ngbDropdownItem role="menuitem"
+                  (keyup.enter)="onCopyDlg($event, node); myDrop.close()"
+                  (click)="onCopyDlg($event, node)"
+                >Copy this item ...</button>
+                <div class="dropdown-divider" role="separator"></div>
+                <button ngbDropdownItem role="menuitem"
+                  (keyup.enter)="confirmItemDelete();myDrop.close()"
+                  (click)="confirmItemDelete()"
+                >Remove this item</button>
+              </div>
+            </div>
+          </ng-template>

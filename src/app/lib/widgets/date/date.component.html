@@ -1,40 +1,60 @@
 
-<input *ngIf="schema.widget.id ==='hidden'; else dateBlock"
-       [name]="name" type="hidden" [formControl]="control">
-<ng-template #dateBlock>
+@if (schema.widget.id ==='hidden') {
+  <input
+    [name]="name" type="hidden" [formControl]="control">
+} @else {
   <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
-    <lfb-label *ngIf="!nolabel"
-               [for]="id+_id"
-               [title]="schema.title"
-               [helpMessage]="schema.description"
-               [ngClass]="labelClasses"
-               class="form-label"
-    ></lfb-label>
+    @if (!nolabel) {
+      <lfb-label
+        [for]="id+_id"
+        [title]="schema.title"
+        [helpMessage]="schema.description"
+        [ngClass]="labelClasses"
+        class="form-label"
+      ></lfb-label>
+    }
     <div class="position-relative px-0" [ngClass]="controlClasses">
-      <div class="input-group input-group-sm">
-        <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
-               class="form-control"
-               [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
-               [required]="schema.widget.required"
-               [lfbDisableControl]="schema.disabled"
-               [footerTemplate]="footerTemplate"
-               ngbDatepicker
-               #d="ngbDatepicker"
-               (blur)="suppressInvalidDate($event)"
-        >
-        <button class="btn btn-outline-secondary py-0" [attr.aria-label]="'Date picker for '+schema.title"
-                (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
-      </div>
 
-      <ng-container *ngFor="let error of errors ? Array.from(errors).reverse() : null">
-        <small *ngIf="formProperty.value && error"
-               class="text-danger form-text pe-1" role="alert"
-        >{{error.modifiedMessage || error.originalMessage}}</small>
-      </ng-container>
+      @if (hasAnswerOptions$ | async) {
+        <div class="{{controlWidthClass}} p-0">
+          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
+        </div>
+      } @else {
+        <div class="input-group input-group-sm">
+          <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
+                 class="form-control"
+                 [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
+                 [required]="schema.widget.required"
+                 [lfbDisableControl]="schema.disabled"
+                 [footerTemplate]="footerTemplate"
+                 ngbDatepicker
+                 #d="ngbDatepicker"
+                 #dateInput
+                 (blur)="suppressInvalidValue($event)"
+          >
+          <button class="btn btn-outline-secondary py-0" [attr.aria-label]="'Date picker for '+schema.title"
+                  (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
+        </div>
+        @for (error of errors ? Array.from(errors).reverse() : null; track error.code) {
+          @if (formProperty.value && error) {
+            <small class="text-danger form-text pe-1" role="alert"
+            >{{error.modifiedMessage || error.originalMessage}}</small>
+          }
+        }
+      }
     </div>
-  </div>
-  <ng-template #footerTemplate>
-    <div class="text-center"><button (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
-  </ng-template>
-</ng-template>
 
+    @if (hasAnswerOptions$ | async) {
+      @for (error of errors ? Array.from(errors).reverse() : null; track error.code) {
+        @if (formProperty.value && error) {
+          <small class="text-danger form-text pe-1" role="alert"
+          >{{error.modifiedMessage || error.originalMessage}}</small>
+        }
+      }
+    }
+  </div>
+
+  <ng-template #footerTemplate>
+    <div class="text-center"><button (click)="navigateToToday()" class="btn btn-sm btn-link">Today</button></div>
+  </ng-template>
+}

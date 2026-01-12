@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -8,13 +8,14 @@ import {NgbActiveModal} from '@ng-bootstrap/ng-bootstrap';
   styleUrls: ['./loinc-notice.component.css']
 })
 export class LoincNoticeComponent {
+  private activeModal = inject(NgbActiveModal);
+
 
   acceptedTerms: {acceptedLoinc: boolean, acceptedSnomed: boolean} = {
     acceptedLoinc: false,
     acceptedSnomed: false
   };
   useSnomed: false;
-  constructor(private activeModal: NgbActiveModal) { }
 
 
   /**

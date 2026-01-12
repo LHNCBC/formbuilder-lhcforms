@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, Input, OnInit, ViewChild} from '@angular/core';
-import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import {ChangeDetectionStrategy, Component, Input, OnInit, ViewChild, ChangeDetectorRef} from '@angular/core';
+import {TreeNode} from '@bugsplat/angular-tree-component';
 import {merge, Observable, Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged, filter, map, switchMap, tap} from 'rxjs/operators';
 import {NgbActiveModal, NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import {ItemComponent} from './item.component';
 import {Util} from '../lib/util';
+import { ValidationService } from '../services/validation.service';
 
 export type DialogMode = 'Move' | 'Insert' | 'Copy';
 
@@ -53,7 +54,7 @@ export type DialogMode = 'Move' | 'Insert' | 'Copy';
                 Before the target item.
               </label>
             </li>
-            <li *ngIf="targetNode?.data?.type !== 'display'">
+            <li>
               <label class="btn">
                 <input value="CHILD" type="radio" [(ngModel)]="targetLocation" name="targetLocation" [ngModelOptions]="{standalone: true}">
                 As a child of target item.
@@ -81,21 +82,21 @@ export type DialogMode = 'Move' | 'Insert' | 'Copy';
 export class NodeDialogComponent implements OnInit {
   @ViewChild('searchBox') searchBox: NgbTypeahead;
   @Input()
-  node: ITreeNode;
+  node: TreeNode;
   @Input()
   item: ItemComponent;
   @Input()
   mode: DialogMode;
 
-  targetNode: ITreeNode;
+  targetNode: TreeNode;
   targetLocation = 'AFTER';
   self: NodeDialogComponent;
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
-  sources: ITreeNode [] = [];
+  sources: TreeNode[] = [];
   title: string;
 
-  constructor(public activeModal: NgbActiveModal) {
+  constructor(public activeModal: NgbActiveModal, private validationService: ValidationService, private cdr: ChangeDetectorRef) {
   }
 
   ngOnInit() {
@@ -114,7 +115,7 @@ export class NodeDialogComponent implements OnInit {
    * @param input$ - Observation for input string.
    */
 
-  search = (input$: Observable<string>): Observable<ITreeNode []> => {
+  search = (input$: Observable<string>): Observable<TreeNode []> => {
     const debouncedText$ = input$.pipe(debounceTime(100), distinctUntilChanged());
     const clicksWithClosedPopup$ = this.click$.pipe(filter(() => !this.searchBox.isPopupOpen()));
     const inputFocus$ = this.focus$;
@@ -122,9 +123,9 @@ export class NodeDialogComponent implements OnInit {
     return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
       map(term => {
         return this.sources.filter(source =>
-                 (term === '' || source.data.text.toLowerCase().includes(term.toLowerCase())) &&
-                 (this.targetLocation !== 'CHILD' || source.data.type !== 'display')
-               );
+          (term === '' || source.data.text.toLowerCase().includes(term.toLowerCase())) &&
+          (this.targetLocation !== 'CHILD' || source.data.type !== 'display')
+        );
       })
     );
   };
@@ -134,12 +135,53 @@ export class NodeDialogComponent implements OnInit {
    * Format item in the results popup.
    * @param item - TreeNode object of the item.
    */
-  formatter(item: ITreeNode): string {
+  formatter(item: TreeNode): string {
     return Util.formatNodeForDisplay(item);
   }
 
-  resultFormatter(item: ITreeNode): string {
+  resultFormatter(item: TreeNode): string {
     return Util.truncateString(Util.formatNodeForDisplay(item), 50);
+  }
+
+  /**
+   * Determines whether the "As a child of target item" option should be shown in the dialog.
+   * The option is hidden if the target node is of type 'display' or if there are validation errors
+   * that prevent child insertion (e.g., invalid enableWhen conditions).
+   * If the option is not allowed and currently selected, it resets the selection to 'AFTER'.
+   *
+   * @returns {boolean} True if the child option can be shown; otherwise, false.
+   */
+  canDisplayChildOption(): boolean {
+
+    if (this.targetNode?.data?.type === 'display') {
+      // Reset it back to 'AFTER'
+      if (this.targetLocation === 'CHILD') {
+        setTimeout(() => {
+            this.targetLocation = 'AFTER';
+          this.cdr.markForCheck();
+        });
+      }
+      return false;
+    }
+
+    const errors = this.validationService.validateEnableWhenAll({
+      'value': this.targetNode?.data?.enableWhen,
+      'id': this.targetNode?.data?.__$treeNodeId,
+      'linkId': this.targetNode?.data?.linkId
+    }, false, false);
+
+    if (errors === null || (Array.isArray(errors) && errors.length === 0)) {
+      return true;
+    } else {
+      // Reset it back to 'AFTER'
+      if (this.targetLocation === 'CHILD') {
+        setTimeout(() => {
+            this.targetLocation = 'AFTER';
+          this.cdr.markForCheck();
+        });
+      }
+      return false;
+    }
   }
 
 }

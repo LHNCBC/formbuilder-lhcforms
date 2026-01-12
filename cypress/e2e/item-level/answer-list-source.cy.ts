@@ -61,10 +61,6 @@ describe('Home page', () => {
         expect(qJson.item[0].type).equal('integer');
         expect(qJson.item[0].initial[0].valueDecimal).undefined;
         expect(qJson.item[0].initial[0].valueInteger).not.undefined;
-        // TODO -
-        //  There is a bug in IntegerComponent, which moves the cursor to starting position
-        // when '.' is entered, although
-        // Refer to issue LF-2485.
         expect(qJson.item[0].initial[0].valueInteger).not.undefined;
       });
 
@@ -107,9 +103,9 @@ describe('Home page', () => {
         .should('contain.text', 'SNOMED ECL is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
 
       // An initial value can still be typed in manually.
+      cy.get('[id^="initial.0.valueCoding.system"]').type('http://example.org');
       cy.get('[id^="initial.0.valueCoding.display"]').type('example');
       cy.get('[id^="initial.0.valueCoding.code"]').type('123');
-      cy.get('[id^="initial.0.valueCoding.system"]').type('http://example.org');
 
       // Enter the 'SNOMED answer value set' URI.
       cy.get('#answerValueSet_ecl').type("< 429019009 |Finding related to biological sex|");
@@ -183,9 +179,9 @@ describe('Home page', () => {
         .should('contain.text', 'The Answer value set URL is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
 
       // An initial value can still be typed in manually.
+      cy.get('[id^="initial.0.valueCoding.system"]').type('http://example.org');
       cy.get('[id^="initial.0.valueCoding.display"]').type('example');
       cy.get('[id^="initial.0.valueCoding.code"]').type('123');
-      cy.get('[id^="initial.0.valueCoding.system"]').type('http://example.org');
 
       // Enter the 'Answer value set' URI.
       cy.get('#answerValueSet_non-snomed').type('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
@@ -244,14 +240,14 @@ describe('Home page', () => {
       cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption');
       cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption');
 
-      cy.get('@firstOption').find('td:nth-child(1) input').should('have.value', 'd1');
-      cy.get('@firstOption').find('td:nth-child(2) input').should('have.value', 'a');
-      cy.get('@firstOption').find('td:nth-child(3) input').should('have.value', 's');
+      cy.get('@firstOption').find('td:nth-child(1) input').should('have.value', 's');
+      cy.get('@firstOption').find('td:nth-child(2) input').should('have.value', 'd1');
+      cy.get('@firstOption').find('td:nth-child(3) input').should('have.value', 'a');
       cy.get('@firstOption').find('td:nth-child(4) input').should('have.value', '1');
 
-      cy.get('@secondOption').find('td:nth-child(1) input').should('have.value', 'd2');
-      cy.get('@secondOption').find('td:nth-child(2) input').should('have.value', 'b');
-      cy.get('@secondOption').find('td:nth-child(3) input').should('have.value', 's');
+      cy.get('@secondOption').find('td:nth-child(1) input').should('have.value', 's');
+      cy.get('@secondOption').find('td:nth-child(2) input').should('have.value', 'd2');
+      cy.get('@secondOption').find('td:nth-child(3) input').should('have.value', 'b');
       cy.get('@secondOption').find('td:nth-child(4) input').as('secondScore');
       cy.get('@secondScore').should('have.value', '2');
       cy.getPickInitialValueValueMethodClick();
@@ -266,9 +262,9 @@ describe('Home page', () => {
 
       cy.get('lfb-answer-option table+button').click();
       cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption').should('be.visible');
-      cy.get('@thirdOption').find('td:nth-child(1) input').type('d3');
-      cy.get('@thirdOption').find('td:nth-child(2) input').type('c');
-      cy.get('@thirdOption').find('td:nth-child(3) input').type('s');
+      cy.get('@thirdOption').find('td:nth-child(1) input').type('s');
+      cy.get('@thirdOption').find('td:nth-child(2) input').type('d3');
+      cy.get('@thirdOption').find('td:nth-child(3) input').type('c');
       cy.get('@thirdOption').find('td:nth-child(4) input').type('33');
       cy.get('@pickAnswer').click();
       cy.get('#lhc-tools-searchResults ul > li').should('have.length', 3);
@@ -278,15 +274,15 @@ describe('Home page', () => {
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].answerOption).to.deep.equal([
           {
-            valueCoding: {display: 'd1', code: 'a', system: 's'},
+            valueCoding: {system: 's', display: 'd1', code: 'a'},
             extension: [{url: SCORE_URI, valueDecimal: 1}]
           },
           {
-            valueCoding: {display: 'd2', code: 'b', system: 's'},
+            valueCoding: {system: 's', display: 'd2', code: 'b'},
             extension: [{url: SCORE_URI, valueDecimal: 22}]
           },
           {
-            valueCoding: {display: 'd3', code: 'c', system: 's'},
+            valueCoding: {system: 's', display: 'd3', code: 'c'},
             extension: [{url: SCORE_URI, valueDecimal: 33}],
             initialSelected: true
           },
@@ -430,6 +426,139 @@ describe('Home page', () => {
         );
       });
     });
+
+
+    it('should display the answerOptions lookup', () => {
+      const sampleFile = 'answer-option-lookup-sample.json';
+      let fixtureJson;
+      cy.readFile('cypress/fixtures/'+sampleFile).should((json) => {fixtureJson = json});
+      cy.uploadFile(sampleFile, true);
+      cy.getFormTitleField().should('have.value', 'Answer options lookup form');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('.spinner-border').should('not.exist');
+
+      // The Data type should be 'coding'
+      cy.getItemTypeField().should('contain.value', 'coding');
+      // 'Create answer list' should be set to 'yes'
+      cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
+
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(1)').as('firstOption');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(2)').as('secondOption');
+      cy.get('lfb-answer-option table > tbody > tr:nth-of-type(3)').as('thirdOption');
+
+      cy.get('@firstOption').find('td:nth-child(1) input').should('have.value', 'http://snomed.info/sct');
+      cy.get('@firstOption').find('td:nth-child(2) input').should('have.value', 'Heart beat');
+      cy.get('@firstOption').find('td:nth-child(3) input').should('have.value', '248646004');
+
+      cy.get('@secondOption').find('td:nth-child(1) input').should('have.value', 'http://loinc.org');
+      cy.get('@secondOption').find('td:nth-child(2) input').should('have.value', 'Newborn hearing screening panel');
+      cy.get('@secondOption').find('td:nth-child(3) input').should('have.value', '54111-0');
+
+      cy.get('@thirdOption').find('td:nth-child(1) input').should('have.value', 'http://example.com');
+      cy.get('@thirdOption').find('td:nth-child(2) input').should('have.value', 'visceral fat');
+      cy.get('@thirdOption').find('td:nth-child(3) input').should('have.value', 'vf');
+
+      // Pick initial value should be selected for the Value method section.
+      cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
+      cy.get('@valueMethod').find('[id^="__$valueMethod_pick-initial"]').as('pickInitialRadio');
+      cy.get('@pickInitialRadio').should('be.visible').and('be.checked');
+
+      cy.get('[id^="pick-answer_"]').as('pickAnswer');
+      cy.get('@pickAnswer').should('have.value', 'Newborn hearing screening panel');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerOption).to.deep.equal(fixtureJson.item[0].answerOption);
+      });
+    });
+
+    it('should create answerOptions lookup', () => {
+      cy.selectDataType('coding');
+      cy.getRadioButtonLabel('Create answer list', 'Yes').click();
+
+      // Select 'http://loinc.org'
+      cy.get('[id^="answerOption.0.valueCoding.system"]').click().type('{downarrow}{downarrow}{enter}');
+      cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
+      cy.get('[id^="answerOption.0.valueCoding.display"]').type('heart');
+
+      // Autocomplete should show options.
+      cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
+      // Select 'Heart rate'
+      cy.get('[id^="answerOption.0.valueCoding.display"]').type('{downarrow}{downarrow}{downarrow}{enter}');
+
+      // Verify that code and system are filled in.
+      cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
+      cy.get('[id^="answerOption.0.valueCoding.display"]').should('have.value', 'Heart rate');
+      cy.get('[id^="answerOption.0.valueCoding.code"]').should('have.value', '18708-8');
+
+      // Add another answerOption value.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('@addAnswerButton').click();
+
+      // Select 'http://unitsofmeasure.org'
+      cy.get('[id^="answerOption.1.valueCoding.system"]').click().type('{downarrow}{downarrow}{downarrow}{enter}');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+      cy.get('[id^="answerOption.1.valueCoding.display"]').type('kat');
+
+      // Autocomplete should show options.
+      cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
+      // Select 'katal'
+      cy.get('[id^="answerOption.1.valueCoding.display"]').type('{downarrow}{enter}');
+
+      // Verify that code and system are filled in.
+      cy.get('[id^="answerOption.1.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
+      cy.get('[id^="answerOption.1.valueCoding.display"]').should('have.value', 'kat - katal');
+      cy.get('[id^="answerOption.1.valueCoding.code"]').should('have.value', 'kat');
+
+      // Add another answerOption value.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('@addAnswerButton').click();
+
+      // Type your own 'http://example.org'
+      cy.get('[id^="answerOption.2.valueCoding.system"]').click().type('http://example.org{enter}');
+      cy.get('[id^="answerOption.2.valueCoding.display"]').click().type('abcd123');
+      cy.get('[id^="answerOption.2.valueCoding.code"]').click().type('123');
+
+      // Add another answerOption value.
+      cy.contains('button', 'Add another answer').as('addAnswerButton');
+      cy.get('@addAnswerButton').click();
+
+      // Select 'http://snomed.info/sct'
+      cy.get('[id^="answerOption.3.valueCoding.system"]').click().type('{downarrow}{enter}');
+      cy.get('[id^="answerOption.3.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
+
+      // Use mock data for the SNOMED ECL expression request.
+      cy.intercept('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', { fixture: 'snomed-ecl-expression-mock.json' }).as('snomedReq');
+      cy.get('[id^="answerOption.3.valueCoding.display"]').click().type('Intersex');
+      cy.wait('@snomedReq');
+
+      // Autocomplete should show options.
+      cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
+      cy.get('[id^="answerOption.3.valueCoding.display"]').type('{downarrow}{enter}');
+
+      // Verify that code and system are filled in.
+      cy.get('[id^="answerOption.3.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
+      cy.get('[id^="answerOption.3.valueCoding.display"]').should('have.value', 'Intersex');
+      cy.get('[id^="answerOption.3.valueCoding.code"]').should('have.value', '32570691000036108');
+
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[0].answerOption[0].valueCoding.system).to.equal('http://loinc.org');
+        expect(qJson.item[0].answerOption[0].valueCoding.display).to.equal('Heart rate');
+        expect(qJson.item[0].answerOption[0].valueCoding.code).to.equal('18708-8');
+
+        expect(qJson.item[0].answerOption[1].valueCoding.system).to.equal('http://unitsofmeasure.org');
+        expect(qJson.item[0].answerOption[1].valueCoding.display).to.equal('kat - katal');
+        expect(qJson.item[0].answerOption[1].valueCoding.code).to.equal('kat');
+
+        expect(qJson.item[0].answerOption[2].valueCoding.system).to.equal('http://example.org');
+        expect(qJson.item[0].answerOption[2].valueCoding.display).to.equal('abcd123');
+        expect(qJson.item[0].answerOption[2].valueCoding.code).to.equal('123');
+
+        expect(qJson.item[0].answerOption[3].valueCoding.system).to.equal('http://snomed.info/sct');
+        expect(qJson.item[0].answerOption[3].valueCoding.display).to.equal('Intersex');
+        expect(qJson.item[0].answerOption[3].valueCoding.code).to.equal('32570691000036108');
+      });
+    });
+
 
     it('should fix initial input box when switched data type from coding to decimal', () => {
       const sampleFile = 'initial-component-bugfix.json';
@@ -577,6 +706,9 @@ describe('Home page', () => {
           const modifyMsg = getReferencedOptionMsg(test.referencingItem, test.referencingLinkId, 'Modifying');
           cy.get(`[id^="answerOption.1.${test.valueField}.system"]`).click();
           cy.checkReferencedOptionDialog(modifyMsg, OK);
+
+          cy.get('body').click(0, 0);
+
           cy.get(`[id^="answerOption.2.${test.valueField}.system"]`).click();
           cy.get('lfb-message-dlg').should('not.exist');
           modifyReferencedData(
@@ -661,6 +793,8 @@ describe('Home page', () => {
         [2,3], // icon on 2nd and 3rd rows
         'Option referenced by other item\'s text and linkId.'
       );
+      cy.get('body').click(0, 0);
+
       cy.get('[id^="answerOption.2.valueCoding.system"]').should('exist').should('have.value', 's3').click();
       msg = getReferencedOptionMsg('Reference coding option value d3 (c3)', '367425898269', 'Modifying');
       cy.checkReferencedOptionDialog(msg, OK);
@@ -688,8 +822,8 @@ describe('Home page', () => {
       cy.get('#answerValueSet_non-snomed').should('not.exist');
       cy.get('lfb-answer-option').should('be.visible');
       const aOptions = [
-        {display: 'display 1', code: 'c1', system: 's1'},
-        {display: 'display 2', code: 'c2', system: 's2'}
+        {system: 's1', display: 'display 1', code: 'c1'},
+        {system: 's2', display: 'display 2', code: 'c2'}
       ];
       cy.enterAnswerOptions(aOptions);
       cy.questionnaireJSON().should((q) => {
@@ -1209,9 +1343,15 @@ function modifyReferencedData(type: string, enableWhenNodeName: string,
   cy.checkReferencedOptionDialog(referencedMsg, buttonText);
   if (type !== "time") {
     cy.get(answerOptionSelector).clear().type(editValue);
+    if (type === "coding") {
+      cy.get(answerOptionSelector).blur();
+    }
   } else {
+    //cy.get(answerOptionSelector).type(editValue);
     cy.get(answerOptionSelector).type(editValue);
+    cy.get(answerOptionSelector).blur();
   }
+
   // The 'enableWhen integer on-list' should now have an error.
   cy.getTreeNode(enableWhenNodeName)
     .find('fa-icon#error')

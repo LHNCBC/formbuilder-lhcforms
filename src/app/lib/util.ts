@@ -4,7 +4,7 @@
 import traverse from 'traverse';
 import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
-import {ITreeNode} from '@bugsplat/angular-tree-component/lib/defs/api';
+import {TreeNode} from '@bugsplat/angular-tree-component';
 import copy from 'fast-copy';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
@@ -18,6 +18,9 @@ import {
   TYPE_DATE, TYPE_DATETIME, TYPE_TIME,
   EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION
 } from './constants/constants';
+import { HttpClient } from '@angular/common/http';
+import JSON5 from 'json5';
+import { firstValueFrom } from 'rxjs';
 
 
 declare var LForms: any;
@@ -92,6 +95,33 @@ export class Util {
     url: 'valueUri'
   };
 
+
+  /**
+   * A helper to fetch a `.json5` from a list of urls, intended to fetch json5
+   * files from `src/assets` and parse it. This replaces custom webpack loader
+   * previously used.
+   *
+   * @param http - HttpClient to use for fetching.
+   * @param assetUrls - Array of urls to fetch.
+   * @return - A promise resolving to an object with url as key and parsed
+   * content as value.
+   */
+  static async loadJson5Assets(http: HttpClient, assetUrls: string[]): Promise<any> {
+    const accumulator: {[key: string]: any} = {};
+    const promises: Promise<any>[] = [];
+    assetUrls.reduce((acc, url) => {
+      acc[url] = {};
+      const promise = firstValueFrom(http.get(url, {responseType: 'text'})).then((content: string) => {
+        acc[url] = JSON5.parse(content);
+        return acc[url];
+      });
+      promises.push(promise);
+      return acc;
+    }, accumulator);
+
+    return await Promise.all(promises).then(() => accumulator);
+  }
+
   /**
    * See if the guiding step is one of the defined type. The flag is store in localStorage/sessionStorage.
    * This function is to help sanitize the stored values.
@@ -161,6 +191,9 @@ export class Util {
     }
     else if(typeof json === 'boolean') {
       ret = false; // Any boolean is non-empty
+    }
+    else if(typeof json === 'string' && json.trim().length === 0) {
+      ret = true; // empty string or only whitespace is empty
     }
     else if(!json) {
       ret = true; // empty string, null and undefined are empty
@@ -514,7 +547,7 @@ export class Util {
    * Compute tree hierarchy sequence numbering.
    * @param node - Target node of computation
    */
-  static getIndexPath(node: ITreeNode): number[] {
+  static getIndexPath(node: TreeNode): number[] {
     const ret: number [] = [];
     if (node) {
       ret.push(node.index + 1);
@@ -532,7 +565,7 @@ export class Util {
    * Format Node item for some display cases, for example search results of node items.
    * @param node - Input node to format the display.
    */
-  static formatNodeForDisplay(node: ITreeNode) {
+  static formatNodeForDisplay(node: TreeNode) {
     let ret: string;
     if (node && node.data) {
       ret = `${Util.getIndexPath(node).join('.')}: ${node.data.text}`;
@@ -555,7 +588,7 @@ export class Util {
    * @param value - value from formProperty, which is in ISO format.
    * @param formProperty - FormProperty of the field.
    */
-  static dateValidator(value: string, formProperty: FormProperty): any [] {
+  static dateValidator(value: string, formProperty: FormProperty): any[] {
     let errors: any[] = [];
     const dateValidation = DateUtil.validateDate(value);
     if(value?.trim().length > 0 && !dateValidation.validDate && dateValidation.validFormat) {
@@ -593,7 +626,7 @@ export class Util {
    *
    * @return - Returns an array consisting the nodes in the order it visited.
    */
-  static traverseAncestors(sourceNode: ITreeNode, callback: (node: ITreeNode) => boolean): any[] {
+  static traverseAncestors(sourceNode: TreeNode, callback: (node: TreeNode) => boolean): any[] {
     const ret = [];
     let n = sourceNode;
     let traverseAncestor = true;
@@ -738,25 +771,16 @@ export class Util {
   }
 
   /**
-   * Checks whether the provided value is a FHIR Coding object.
-   * Returns true if the value is an object (not an array) and contains at least one of the standard Coding fields:
-   * 'code', 'system', 'display', 'version', or 'userSelected'.
-   * @param value - The value to check.
-   * @returns True if the value is a FHIR Coding object; otherwise, false.
+   * Checks if a value has FHIR Coding-like properties (system and code).
+   *
+   * @param value - The value to check
+   * @returns True if the value is an object containing 'system' and 'code'
    */
-  static isFhirCoding(value: any): boolean {
+  static hasSystemAndCode(value: any): value is Partial<fhir.Coding> {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return false;
     }
-
-    const hasCodingFields =
-      'code' in value ||
-      'system' in value ||
-      'display' in value ||
-      'version' in value ||
-      'userSelected' in value;
-
-    return hasCodingFields;
+    return 'code' in value && 'system' in value;
   }
 
   /**
@@ -767,7 +791,7 @@ export class Util {
    *    specified and equal.
    * @param a - The first FHIR Coding object.
    * @param b - The second FHIR Coding object.
-   * @returns True if both codings are equal; otherwise, false.
+   * @returns True if the codings are considered equal, otherwise false.
    */
   static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
     return LForms.LFormsData.prototype._codingsEqual.call(this, a, b);
@@ -804,6 +828,29 @@ export class Util {
       const valueFieldName = this.getValueFieldName(type);
       return !ansOpts.some(ansOpt => ansOpt[valueFieldName]);
     }
+  }
+
+  /**
+   * Traverses up the tree from a given descendant node and invokes a callback function for each ancestor node. It
+   * returns the first ancestor node for which the callback returns true.
+   *
+   * @param descendant - The descendant node from which to start the search.
+   * @param callback - A function that takes a node as an argument and returns a boolean value.
+   * The search stops when this function returns true.
+   * @return - The first ancestor node for which the callback returns true, or null if no such node is found.
+   */
+  static findAncestralNode(descendant: TreeNode, callback: (node: TreeNode) => boolean): TreeNode {
+    let ret: TreeNode = null;
+    let targetNode = descendant?.parent;
+    while (targetNode) {
+      const found = callback(targetNode);
+      if (found) {
+        ret = targetNode; // Found the target node that meets the criteria.
+        break;
+      }
+      targetNode = targetNode.parent;
+    }
+    return ret;
   }
 
   /**
