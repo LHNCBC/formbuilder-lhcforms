@@ -3,7 +3,7 @@
   [itemLinkId]="linkId"
   [submitButtonName]="'Save'"
   [titleName]="'Expression Editor'"
-  [expressionLabel]="'Output Expression'"
+  [expressionLabel]="expressionLabel"
   [expressionUri]="expressionUri"
   [userExpressionChoices]="userExpressionChoices"
   [lhcStyle]="{
@@ -23,6 +23,6 @@
   }"
   [display]="display"
   [doNotAskToCalculateScore]="'false'"
-  (save)="onSaveRuleEditor($event)"
-  (cancel)="closeRuleEditorDialog()">
+  (save)="onSaveExpressionEditor($event)"
+  (cancel)="closeExpressionEditorDialog()">
 </lhc-expression-editor>

@@ -18,6 +18,7 @@ export const ANSWER_OPTION_METHOD_ANSWER_OPTION = "answer-option";
 export const ANSWER_OPTION_METHOD_SNOMED_VALUE_SET = "snomed-value-set";
 export const ANSWER_OPTION_METHOD_VALUE_SET = "value-set";
 export const ANSWER_OPTION_METHOD_ANSWER_EXPRESSION = "answer-expression";
+export const ANSWER_OPTION_METHOD_NONE = "none";
 
 // Value Method
 export const VALUE_METHOD_TYPE_INITIAL = "type-initial";
@@ -26,6 +27,10 @@ export const VALUE_METHOD_COMPUTE_INITIAL = "compute-initial";
 export const VALUE_METHOD_COMPUTE_CONTINUOUSLY = "compute-continuously";
 export const VALUE_METHOD_NONE = "none";
 
+// Conditional Method
+export const CONDITIONAL_METHOD_ENABLEWHEN = "enablewhen-cond";
+export const CONDITIONAL_METHOD_ENABLEWHEN_EXPRESSION = "enablewhen-expression";
+export const CONDITIONAL_METHOD_NONE = "none";
 
 // Extension URL
 // formerly ENTRY_FORMAT_URI
@@ -40,6 +45,7 @@ export const EXTENSION_URL_INITIAL_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/Stru
 export const EXTENSION_URL_CALCULATED_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression';
 // formerly ANSWER_EXPRESSION
 export const EXTENSION_URL_ANSWER_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression';
+export const EXTENSION_URL_ENABLEWHEN_EXPRESSION = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression';
 
 // Unit
 // formerly questionUnitExtUrl

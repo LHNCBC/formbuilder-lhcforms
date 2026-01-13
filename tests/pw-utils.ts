@@ -2,7 +2,7 @@
  * Util functions for playwright scripts
  */
 
-import {Locator, Page} from "@playwright/test";
+import {Locator, Page, expect} from "@playwright/test";
 import fhir from "fhir/r4";
 import path from "path";
 import fs from "node:fs/promises";
@@ -170,4 +170,85 @@ export class PWUtils {
   static getTableByFieldLabel(locator: Locator, label: string): Locator {
     return locator.getByText(label, {exact: true}).locator('xpath=../../following-sibling::div[1]/table');
   }
+
+  /**
+   * Get a radio button identified by the label of the group and the label of the radio button.
+   *
+   * Use a radio input element to make assertions on input status, such as selected or not. It is not
+   * suitable for mouse actions as it is hidden from a mouse-pointer, instead use its label to perform
+   * mouse actions.
+   * @param page - Browser page
+   * @param groupLabel - The visible label identifying the radio group
+   * @param radioLabel - The visible label of the desired radio button
+   * @returns A Playwright Locator for the matching radio button label
+   */
+  static async getRadioButton(page: Page, groupLabel: string, radioLabel: string): Promise<Locator> {
+    // assumes you already have a helper that finds the label
+    const label = await PWUtils.getRadioButtonLabel(page, groupLabel, radioLabel);
+
+    const id = await label.getAttribute('for');
+    expect(id).not.toBeNull();
+
+    const radio = page.locator(PWUtils.escapeIdForPlaywright(id));
+    await expect(radio).toHaveAttribute('type', 'radio');
+
+    return radio;
+  }
+
+  /**
+   * Get the label of radio input identified by the label of the field and the label of the radio button.
+   * @param page - Browser page
+   * @param fieldLabel - The visible label identifying the radio group
+   * @param radioLabel - The visible label of the desired radio button
+   * @returns A Playwright Locator for the matching radio button label
+   */
+  static async getRadioButtonLabel(page: Page, fieldLabel: string, radioLabel: string): Promise<Locator> {
+    const fieldLabelEl = page.locator('lfb-label label').filter({ hasText: fieldLabel });
+
+    await expect(fieldLabelEl).toBeVisible();
+
+    const radioGroup = fieldLabelEl.locator('..').locator('xpath=following-sibling::*[1]');
+
+    const radioLabelEl = radioGroup.locator('label').filter({ hasText: radioLabel });
+
+    await expect(radioLabelEl).toBeVisible();
+
+    return radioLabelEl;
+  }
+
+  /**
+   * Expands the Advanced fields panel by clicking the down-angle icon
+   * inside the "Advanced fields" button.
+   *
+   * @param page - The Playwright Page instance.
+   */
+  static async expandAdvancedFields(page: Page): Promise<void> {
+    const button = page.getByRole('button', { name: 'Advanced fields' });
+    const expandIcon = button.locator('svg.fa-angle-down');
+
+    await expect(expandIcon).toBeVisible();
+    await expandIcon.click();
+  }
+
+  /**
+   * Collapses the Advanced fields panel by clicking the up-angle icon
+   * inside the "Advanced fields" button.
+   *
+   * @param page - The Playwright Page instance.
+   */
+  static async collapseAdvancedFields(page: Page): Promise<void> {
+    const button = page.getByRole('button', { name: 'Advanced fields' });
+    const collapseIcon = button.locator('svg.fa-angle-up');
+
+    await expect(collapseIcon).toBeVisible();
+    await collapseIcon.click();
+  }
+
+  /**
+   * Escapes a DOM element ID so it can be safely used in a Playwright CSS selector.
+   */
+  static escapeIdForPlaywright(id: string): string {
+    return `[id="${id}"]`;
+  }
+
 }

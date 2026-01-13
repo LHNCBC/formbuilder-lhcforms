@@ -87,6 +87,9 @@ test.describe('r5-features.spec.ts', async () => {
     const elementLocatorInTable = (parent: Locator, row: number, col: number, selector: string)=> {
       return parent.locator(`table > tbody > tr:nth-child(${row}) > td:nth-child(${col}) ${selector}`);
     }
+
+    await page.getByRole('radiogroup', {name: 'Conditional method'}).getByText('enableWhen condition and behavior').click();
+
     const parentEl = page.locator('lfb-enable-when');
     parentEl.locator('')
     await elementLocatorInTable(parentEl, 1, 1, 'input').click();
