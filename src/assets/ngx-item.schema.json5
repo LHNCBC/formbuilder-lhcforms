@@ -1453,7 +1453,7 @@
           'enum': ["tab-container"],
           'display': 'Tab Container',
           'description': 'A group with this designation represents a collection of tabs. All child items must be of type \'group\'. Child groups cannot directly declare item controls. Each child group serves as a tab within the tab container, with its \'item.text\' property used as the tab label.',
-          'support': false
+          'support': true
         }
       ],
       "default": "list",

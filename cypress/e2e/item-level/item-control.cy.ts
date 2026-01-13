@@ -457,9 +457,6 @@ describe('Home page', () => {
         // Select 'Tab Container' Group Item Control
         cy.get(tabContainerBtn).click();
         cy.get(tabContainerRadio).should('be.checked');
-        // The button label should display superscript (1) indicating that the item control is not  yet supported
-        // by LForms Preview.
-        cy.get(tabContainerBtn).find('sup').should('exist').should('contain.text', '(1)');
         // Extension should be added
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension).to.deep.equal([groupItemControlExtensions['tab-container']]);
