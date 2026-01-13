@@ -27,6 +27,8 @@ test.describe('Table component', async () => {
     await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
     await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list').click();
 
+    await page.getByRole('radiogroup', {name: 'Answer list source'}).getByText('Answer options').click();
+
     const table = page.locator('lfb-answer-option table');
     // Load a table with data
     await mainPO.loadTable(table, tableData);
@@ -163,7 +165,10 @@ test.describe('Table component', async () => {
     const table = page.locator('lfb-answer-option table');
     await page.getByLabel('Data type', {exact: true}).selectOption({label: 'coding'});
     await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
-    await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list').click();
+    await page.getByRole('radiogroup', { name: 'Answer constraint' }).getByText('Restrict to the list').click();
+
+    await page.getByRole('radiogroup', { name: 'Answer list source' }).getByText('Answer options').click();
+
     // await page.getByLabel('Allow repeating question?').getByText('Yes').click();
     await page.getByRole('radiogroup', {name: 'Allow repeating question?'}).getByText('Yes').click();
 
