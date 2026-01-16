@@ -33,7 +33,7 @@
     "e2e": "npx ng e2e",
     "e2e:start-server": "npm run build-with-test-html && angular-http-server --silent --path ./dist/formbuilder-lhcforms -p ${npm_package_config_testPort}",
     "e2e:start-second-server": "npm run build-with-test-html && npx angular-http-server --silent --path ./dist/formbuilder-lhcforms -p ${npm_package_config_testPortSecond}",
-    "pw-run": "npx playwright test ./tests/answer-list-source.spec.ts --headed",
+    "pw-run": "npx playwright test",
     "e2e:pw-run": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:start-second-server http://localhost:${npm_package_config_testPortSecond} pw-run",
     "e2e:prod": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} e2e:start-second-server http://localhost:${npm_package_config_testPortSecond} cy-pw-run",
     "e2e:cy-run-fl": "npx start-test e2e:start-server http://localhost:${npm_package_config_testPort} cy-run-fl",
