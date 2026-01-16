@@ -1,0 +1,115 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Answer options form",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "type": "coding",
+      "linkId": "258551383902",
+      "text": "Item with answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "182201002",
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "81765008",
+            "display": "No pain"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383903",
+      "text": "Item with missing system answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "182201002",
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "81765008",
+            "display": "No pain"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383904",
+      "text": "Item with missing display answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "182201002"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "81765008"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383905",
+      "text": "Item with missing code answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "No pain"
+          }
+        }
+      ]
+    }
+  ]
+}
