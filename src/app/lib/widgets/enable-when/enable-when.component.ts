@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, DoCheck, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { AfterViewChecked, Component, DoCheck, NgZone, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
 import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
@@ -16,7 +16,7 @@ import { debounceTime, take } from 'rxjs/operators';
 })
 export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck, AfterViewChecked, OnDestroy {
   private formService = inject(FormService);
-
+  private ngZone = inject(NgZone);
 
   showFieldNames: string[] = ['question', 'operator', 'answerString'];
   showHeaderFields: any[];
@@ -24,7 +24,6 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
 
   private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
-  ngZone: any;
 
   ngOnInit() {
     super.ngOnInit();
