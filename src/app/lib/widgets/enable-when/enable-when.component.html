@@ -67,13 +67,15 @@
                     }
                   </td>
                 }
-                <td class="col-sm-1 align-middle p-0 m-0 align-self-center">
+                <td class="col-sm-half align-middle p-0 m-0 align-self-center">
                   <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="removeProperty(rowNum)" class="btn btn-default btn-link btn-sm array-remove-button"
                     [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
                     matTooltip="Remove" aria-label="Remove"
                     >
                     <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon>
                   </button>
+                </td>
+                <td class="col-sm-half align-middle p-0 m-0 align-self-center">
                   @if (getEnableWhenFieldErrors(rowProperty) | async; as rowErrorMessage) {
                     <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'"
                       class="btn border-0 p-0 b-0 enable-when-errors"
