@@ -5,7 +5,7 @@ import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-fo
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {Observable, of, Subject} from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, take } from 'rxjs/operators';
 
 @Component({
   standalone: false,
@@ -24,6 +24,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
 
   private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
+  ngZone: any;
 
   ngOnInit() {
     super.ngOnInit();
@@ -42,15 +43,17 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
       return schemaDef;
     });
 
-    // 'viewChecked$' is a Subject that emits events after the 'ngAfterViewChecked' lifecycle
-    // hook is called. This Subject incorporates a 'debounceTime' which delays the emission of
-    // the last update event. This is meant to minimizing rapid updates and to wait until the
-    // last validation is completed before the screen reader cna read the message.
-    this.viewChecked$
-      .pipe(debounceTime(300))
+    // this.viewChecked$ stopped working after the Angular upgrade to version 20 which caused the
+    // error message to display next to the enableWhen error icon. Replaced this.viewChecked$ with
+    // this.ngZone to fix the issue.
+    this.ngZone.onStable
+      .pipe(
+        debounceTime(300),
+        take(1)
+      )
       .subscribe(() => {
         this.awaitingValidation = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       });
   }
 
