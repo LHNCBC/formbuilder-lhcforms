@@ -1,9 +1,9 @@
-import { AfterViewChecked, Component, DoCheck, NgZone, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { Component, DoCheck, NgZone, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import {TableComponent} from '../table/table.component';
 import {Util} from '../../util';
 import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
-import {Observable, of, Subject} from 'rxjs';
+import {Observable, of} from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 import { debounceTime, take } from 'rxjs/operators';
 
@@ -14,15 +14,13 @@ import { debounceTime, take } from 'rxjs/operators';
   styleUrls: ['../table/table.component.css', './enable-when.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck, AfterViewChecked, OnDestroy {
+export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck {
   private formService = inject(FormService);
   private ngZone = inject(NgZone);
 
   showFieldNames: string[] = ['question', 'operator', 'answerString'];
   showHeaderFields: any[];
   warningIcon = faExclamationTriangle;
-
-  private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
 
   ngOnInit() {
@@ -60,19 +58,6 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     if(this.formProperty.properties.length === 0) {
       this.addItem();
     }
-  }
-
-  /**
-   * Call after the view and its child views has been checked
-   * by the change detection mechanism. The lifecycle hook is
-   * triggered whenever Angular completes a change detection
-   * cycle involving a view.
-   *
-   * The 'viewChecked$' Subject emits each time this function
-   * is called.
-   */
-  ngAfterViewChecked() {
-    this.viewChecked$.next();
   }
 
   get rowProperties(): ObjectProperty [] {
@@ -248,12 +233,5 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    */
   composeAccessibleErrorMessage(errorMessage: string, rowIndex: number): string {
     return `${errorMessage.slice(0, -1)} for enableWhen condition ${rowIndex + 1}.`;
-  }
-
-  /**
-   * Implement OnDestroy
-   */
-  ngOnDestroy() {
-    this.viewChecked$.complete();
   }
 }
