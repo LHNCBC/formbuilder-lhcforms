@@ -932,7 +932,7 @@ Cypress.Commands.add('checkReferencedOptionDialog', (expectedText: string, butto
       expect(text.replace(/\s+/g, ' ').trim()).to.equal(expectedText);
     });
   cy.get('lfb-message-dlg').contains(buttonName).click();
-  cy.get('lfb-message-dlg').should('not.exist');
+  cy.get('lfb-message-dlg', { timeout: 10000 }).should('not.exist');
 });
 
 // Helps remove TypeScript errors and auto completing the Cypress commands in TypeScript

@@ -23,9 +23,14 @@ test.describe('form-level fields', async () => {
       .filter({has: page.getByLabel('Tags')}).getByRole('table');
     await mainPO.loadTable(tableLoc, tableData);
 
+    await expect.poll(async () => {
+      const q = await PWUtils.getQuestionnaireJSON(page, 'R4');
+      return q?.meta?.tag;
+    }).toBeTruthy();
+
     const q = await PWUtils.getQuestionnaireJSON(page, 'R4');
-    // Ignore the generated tag.
-    const inputTags = q.meta.tag.filter((e, i) => i < 4);
+    const inputTags = q.meta.tag.slice(0, 4);
+
     expect(inputTags).toStrictEqual([{
       display: '1a',
       code: '1b',

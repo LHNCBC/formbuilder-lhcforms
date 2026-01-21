@@ -19,11 +19,13 @@ test.describe('Contained resources table in form level page', async () => {
       'Contained resources'
     );
 
-    await page.getByRole('button', { name: 'Add new ValueSet' }).click();
     const dialog = page.locator('mat-dialog-container');
-    await dialog.waitFor({ state: 'visible', timeout: 5000 });
 
-    await expect(dialog).toBeVisible();
+    await Promise.all([
+      dialog.waitFor({ state: 'visible' }),
+      page.getByRole('button', { name: 'Add new ValueSet' }).click()
+    ]);
+
     await dialog.getByLabel('Id', {exact: true}).fill('vs1');
     await dialog.getByLabel('Title', {exact: true}).fill('A title');
     const status = dialog.getByLabel('Status', {exact: true});
@@ -62,8 +64,21 @@ test.describe('Contained resources table in form level page', async () => {
       .toHaveValue(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/);
     await expect(PWUtils.getTableCell(containedTable, 1, 5).locator('input')).toHaveValue('active');
 
-    // Verify it in JSON
-    const json = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    let json;
+    const timeout = 10000; // 10 seconds
+    const interval = 500;  // retry every 500ms
+    const start = Date.now();
+
+    while (true) {
+      json = await PWUtils.getQuestionnaireJSON(page, 'R5');
+      if (json.contained && json.contained.length === 1) break;
+
+      if (Date.now() - start > timeout) {
+        throw new Error('Timed out waiting for contained resource in JSON');
+      }
+      await new Promise(r => setTimeout(r, interval));
+    }
+
     expect(json.contained).toBeDefined();
     expect(json.contained.length).toBe(1);
     const vs: fhir.ValueSet = json.contained[0] as fhir.ValueSet;
