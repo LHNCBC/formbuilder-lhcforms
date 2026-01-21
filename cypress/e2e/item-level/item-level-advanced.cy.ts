@@ -171,6 +171,15 @@ describe('Home page', () => {
       cy.get(errorIcon4El)
         .find('small')
         .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 4. ');
+
+      // When the operator is not 'exists' or 'notexists' and no answer is provided,
+      // the enableWhen entry will be excluded from the JSON output.
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[5].enableWhen.length).to.equal(1);
+        expect(qJson.item[5].enableWhen[0].question).to.equal('/itm4');
+        expect(qJson.item[5].enableWhen[0].operator).to.equal('=');
+        expect(qJson.item[5].enableWhen[0].answerInteger).to.equal(5);
+      });
     });
 
     it('should clear invalid question field on focusout for new enableWhen condition', () => {

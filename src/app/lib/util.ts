@@ -389,6 +389,18 @@ export class Util {
         if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);
         }
+
+        // Remove invalid enableWhen entries that require an answer but do not contain the expected answer field.
+        if (node && typeof node === 'object' && 'enableWhen' in node) {
+          node.enableWhen = node.enableWhen.filter(ew => {
+            const answerKey = Object.keys(ew).find(k => k.startsWith('answer'));
+            return !('operator' in ew &&
+                     ew.operator !== 'exists' &&
+                     ew.operator !== 'notexists' &&
+                     !answerKey
+                    )
+          });
+        }
       });
 
       this.after(function () {
