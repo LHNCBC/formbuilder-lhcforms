@@ -1,13 +1,12 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {LabelComponent} from "../label/label.component";
-import {NgClass, NgForOf, NgIf, NgStyle} from "@angular/common";
+import {NgClass, NgStyle} from "@angular/common";
 import {FaIconComponent} from "@fortawesome/angular-fontawesome";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {TableComponent} from "../table/table.component";
-import {NgbPopover, NgbPopoverModule} from "@ng-bootstrap/ng-bootstrap";
+import {NgbPopoverModule} from "@ng-bootstrap/ng-bootstrap";
 import {FormProperty} from "@lhncbc/ngx-schema-form";
-import {Options as PopperOptions} from "@popperjs/core";
 import {Util} from "../../util";
 import {LfbPopoverDirective} from "../../directives/lfb-popover.directive";
 
@@ -16,8 +15,6 @@ import {LfbPopoverDirective} from "../../directives/lfb-popover.directive";
   imports: [
     AppFormElementComponent,
     LabelComponent,
-    NgIf,
-    NgForOf,
     FaIconComponent,
     FormsModule,
     NgbPopoverModule,

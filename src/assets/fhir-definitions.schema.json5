@@ -430,40 +430,6 @@
                 },
                 "additionalProperties": false,
                 "type": "object",
-                /*
-                "widget": {
-                  "id": "row-layout"
-                },
-                "fieldsets": [
-                  {
-                    "fields": [
-                      "id",
-                      "system",
-                      "version",
-                      "code",
-                      "display",
-                      "userSelected"
-                    ],
-                    "showFields": [
-                      {
-                        "code": {
-                          "col": 2
-                        }
-                      },
-                      {
-                        "system": {
-                          "col": 6
-                        }
-                      },
-                      {
-                        "display": {
-                          "col": 4
-                        }
-                      }
-                    ]
-                  }
-                ]
-                */
               },
               "type": "array"
             },
@@ -518,40 +484,6 @@
           },
           "additionalProperties": false,
           "type": "object",
-          /*
-          "widget": {
-            "id": "row-layout"
-          },
-          "fieldsets": [
-            {
-              "fields": [
-                "id",
-                "system",
-                "version",
-                "code",
-                "display",
-                "userSelected"
-              ],
-              "showFields": [
-                {
-                  "code": {
-                    "col": 2
-                  }
-                },
-                {
-                  "system": {
-                    "col": 6
-                  }
-                },
-                {
-                  "display": {
-                    "col": 4
-                  }
-                }
-              ]
-            }
-          ],
-          */
         },
         "valueContactPoint": {
           "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
@@ -2649,7 +2581,7 @@
         },
         "__$stringify": {
           // String representation of this extension.
-          "description": "String representation of the value.",
+          "description": "Value of the extension.",
           "title": "Value",
           "type": "string",
           "readOnly": true

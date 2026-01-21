@@ -40,6 +40,15 @@ mat-tab-group.preview-json-tabs, mat-tab-group.preview-json-tabs mat-tab-header 
   display:none !important;
 }
 
+/*
+When form control is focussed, the focus ring could be offset by nearby
+form control. Change the z-index temporarily while it is on focus.
+*/
+.form-control:focus {
+  position: relative;
+  z-index: 100;
+}
+
 .add-scrolling {
   max-height: 200px;
   max-width: 240%;
@@ -118,4 +127,5 @@ div.has-error > ul:empty {
 
 .lfb-tooltip-pre-wrap .mdc-tooltip__surface {
   max-width: 70vw;
+  text-align: left !important;
 }

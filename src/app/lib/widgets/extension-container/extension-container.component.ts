@@ -27,7 +27,6 @@ export class ExtensionContainerComponent extends LfbControlWidgetComponent imple
   extensionsProperty: ArrayProperty;
   @ViewChild('extContainer', {read: AppFormElementComponent, static: true}) extContainer: AppFormElementComponent;
   extComponent: ExtensionComponent;
-  cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
   ngOnInit(): void {
     // Get the extensions property to pass to the lfb-form-element, which will create an ExtensionComponent reading the
     // schema.widget and widget registry.
@@ -43,7 +42,7 @@ export class ExtensionContainerComponent extends LfbControlWidgetComponent imple
 
   /**
    * Handle hide/show uneditable rows checkbox change event.
-   * @param event
+   * @param event - Generic DOM event fired on change.
    */
   onHideChange(event: Event) {
     const bool = (event.target as HTMLInputElement).checked;

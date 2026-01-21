@@ -5,7 +5,7 @@
       (removed)="modelChanged(null)" (focusout)="onFocusOut($event)">
     </lfb-auto-complete>
   } @else {
-    <input [name]="name" [attr.id]="id" type="text" class="form-control" [(ngModel)]="model.display"
+    <input [name]="name" [attr.id]="id" type="text" class="form-control form-control-sm" [(ngModel)]="model.display"
       (ngModelChange)="fieldChanged($event)">
   }
 </div>

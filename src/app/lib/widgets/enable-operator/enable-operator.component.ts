@@ -20,7 +20,7 @@ import { FormService } from 'src/app/services/form.service';
       [(ngModel)]="myModel"
       (ngModelChange)="onModelChange($event)"
       name="{{name}}" [attr.id]="id"
-      [disabled]="schema.readOnly" class="form-control">
+      [disabled]="schema.readOnly" class="form-control form-control-sm">
       <ng-container>
         @for (opt of selectOptionList; track opt.option) {
           <option [ngValue]="opt.option" >{{opt.label}}</option>

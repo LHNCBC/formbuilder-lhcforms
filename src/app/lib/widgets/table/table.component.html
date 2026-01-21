@@ -24,11 +24,11 @@
         </button>
       }
       @if (!noTableLabel) {
-        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="tableId"></lfb-label>
+        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [labelId]="tableId+'_tableLabel'"></lfb-label>
       }
     </div>
-    <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
-      @if (+formProperty.properties.length > 0) {
+    <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId" [attr.aria-labelledby]="tableId+'_tableLabel'">
+      @if (+rowProperties.length > 0) {
         <table class="table table-borderless table-sm lfb-table">
           @if (!noHeader) {
             <thead class="table-active">
@@ -36,8 +36,8 @@
               @for (showField of getShowTableFields(); track showField.field) {
                 <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
                   <lfb-title
-                    [title]="showField.title || getTitle(formProperty.properties[0], showField.field)"
-                    [helpMessage]="getProperty(formProperty.properties[0], showField.field).schema.description"
+                    [title]="showField.title || getTitle(rowProperties[0], showField.field)"
+                    [helpMessage]="getProperty(rowProperties[0], showField.field).schema.description"
                   ></lfb-title>
                 </th>
               }
@@ -56,21 +56,21 @@
                 </th>
               }
               @if (includeActionColumn) {
-                <th class="col-sm-half action-column" [ngClass]="{'edit-row': addEditAction}"></th>
+                <th class="col-sm-1" [ngClass]="{'edit-row': addEditAction}"></th>
               }
               @if (includeErrorColumn) {
-                <th class="col-sm-quarter error-column" ></th>
+                <th class="col-sm-1 error-column" ></th>
               }
             </tr>
             </thead>
           }
           <tbody [ngbCollapse]="isCollapsed">
-            @for (itemProperty of (formProperty.properties ?? []); track itemProperty; let ind = $index; let isFirst = $first; let isLast = $last) {
+            @for (itemProperty of rowProperties; track itemProperty; let ind = $index; let isFirst = $first; let isLast = $last) {
               <tr
                 class="d-flex lfb-table-row" [ngClass]="{'d-none': _hideRows.has(ind)}" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
                 @for (showField of getShowTableFields(); track showField.field) {
                   <td class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
-                    <lfb-form-element [nolabel]="true" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
+                    <lfb-form-element [nolabel]="true" [controlClasses]="filterOutClasses(getProperty(itemProperty, showField.field), 'col-')" [labelPosition]="'none'" [formProperty]="getProperty(itemProperty, showField.field)"></lfb-form-element>
                   </td>
                 }
                 @if (rowSelectionType === 'radio' && id !=='answerOption') {
@@ -120,7 +120,7 @@
 }
 
 <ng-template #actionColumn let-index="index" let-first="first" let-last="last">
-  <td class="action-column col-sm-half center border-1" [ngClass]="{'edit-row': addEditAction}"> <!-- TODO conflict resolution: test this change. -->
+  <td class="justify-content-sm-start col-sm-1 center border-1" [ngClass]="{'edit-row': addEditAction}"> <!-- TODO conflict resolution: test this change. -->
     <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
       @if (!(schema.hasOwnProperty('minItems') &&
         schema.hasOwnProperty('maxItems') &&
@@ -128,7 +128,7 @@
         <button (click)="removeProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
                 [attr.disabled]="isRemoveButtonDisabled() || isDisabled(formProperty, index) ? '' : null"
                 matTooltip="Remove this row" aria-label="Remove this row"
-        ><fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
+        ><fa-icon [icon]="faRemove" class="fa-sm" aria-hidden="true"></fa-icon></button>
       }
       <ng-container *ngTemplateOutlet="moveActions; context: {index, first, last, disabled: isEmpty(index) || isDisabled(formProperty, index), isNextEmpty: isNextItemEmpty(index)}"></ng-container>
       @if (addEditAction) {
@@ -148,7 +148,7 @@
             [ngClass]="{invisible: first}"
             class="btn btn-link btn-sm p-0 border-0 rounded-0"
             (click)="onMoveUp(index)">
-      <fa-icon [icon]="faMoveUp"></fa-icon>
+      <fa-icon [icon]="faMoveUp" class="fa-sm"></fa-icon>
     </button>
     <button type="button"
             [disabled]="disabled || nextEmpty"
@@ -157,7 +157,7 @@
             [ngClass]="{invisible: last}"
             class="btn btn-link btn-sm p-0 border-0 rounded-0"
             (click)="onMoveDown(index)">
-      <fa-icon [icon]="faMoveDown"></fa-icon>
+      <fa-icon [icon]="faMoveDown" class="fa-sm"></fa-icon>
     </button>
   </div>
 </ng-template>
@@ -170,17 +170,17 @@
             aria-label="Edit this row"
             (click)="onEditProperty(index)"
             [disabled]="formProperty | isDisabledPipe : index : isDisabled | async"
-    ><fa-icon [icon]="faEdit" aria-hidden="true"></fa-icon></button>
+    ><fa-icon [icon]="faEdit" class="fa-sm" aria-hidden="true"></fa-icon></button>
   </div>
 </ng-template>
 
 <ng-template #errorColumn let-index="index">
-  <td class="error-column col-sm-quarter center">
+  <td class="error-column col-sm center">
     @if (getFieldErrorsByIndex(index) | async; as rowErrorMessage) {
       <span tabindex="0" [attr.id]="formProperty.canonicalPathNotation+'.'+index+'.err'"
             class="btn border-0 p-0 b-0 errors" [matTooltip]="rowErrorMessage"
       >
-              <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
+              <fa-icon [icon]="warningIcon" class="fa-sm" style="color: red" aria-hidden="true"></fa-icon>
               <small class="text-danger form-text sr-only" role="alert">
                 {{rowErrorMessage}}
               </small>

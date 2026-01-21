@@ -19,11 +19,12 @@ export class LfbDisableControlDirective implements OnChanges {
   lfbDisableControl: boolean;
 
   /**
-   * On input changes, disable or enable the control.
-   * @param changes
+   * An angular life-cycle hook. On input change, disable or enable the control.
+   * @param changes - SimpleChanges object.
    */
   ngOnChanges(changes: SimpleChanges) {
     if(changes.lfbDisableControl) {
+      // Call NgControl's disable()/enable() method.
       const action = this.lfbDisableControl ? 'disable' : 'enable';
       this.ngControl.control[action]();
     }

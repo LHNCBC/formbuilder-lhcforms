@@ -658,4 +658,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   get hideRows(): Set<number> {
     return this._hideRows;
   }
+
+  filterOutClasses(formProperty: FormProperty, classPrefix: string) {
+    const classes = formProperty.schema.widget?.controlClasses;
+    const otherClasses = classes?.split(/\s+/).filter((cls) => {
+      return !cls.startsWith(classPrefix);
+    });
+    return otherClasses?.join(' ');
+  }
 }

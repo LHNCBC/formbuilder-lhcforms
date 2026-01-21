@@ -96,8 +96,8 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
   }
 
   /**
-   * Update extension values in the given array.
-   * @param valueArray
+   * Update extension values of __$[x] fields in the given array.
+   * @param valueArray - The array of extensions to update.
    */
   valueUpdate(valueArray: fhir.Extension[]) {
     (valueArray || []).forEach((ext: fhir.Extension) => {
@@ -117,8 +117,9 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
 
   /**
    * Determine if the extension property at the given index is disabled (not editable) in the dialog.
-   * @param arrayProperty
-   * @param index
+   * @param arrayProperty - The array property representing the extensions.
+   * @param index - The index of the extension property in the array.
+   * @returns true if the extension is not editable in the dialog, false otherwise.
    */
   _isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     const extensionProp = arrayProperty.properties[index] as ObjectProperty;
@@ -129,7 +130,6 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
    * Adjust controlClasses of extension property widgets to fit in table cells.
    */
   _adjustControlClassesForTableCellWidgets() {
-    const extSchema = this.formService.getExtensionSchema();
     const mergeClasses = (list1: string, list2: string) => {
       const s1 = new Set(list1?.split(/\s+/).filter(e => !!e));
       const s2 = new Set(list2?.split(/\s+/).filter(e => !!e));
@@ -138,8 +138,8 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
       return ret || null;
     };
     // Add padding 0 to all extension property widgets to fit in table cells.
-    Object.keys(extSchema.properties).forEach((key) => {
-      const widgetObj = extSchema.properties[key].widget;
+    Object.keys(this.extensionSchema.properties).forEach((key) => {
+      const widgetObj = this.extensionSchema.properties[key].widget;
       if(widgetObj) {
         widgetObj.controlClasses = mergeClasses(widgetObj.controlClasses, 'p-0');
       }

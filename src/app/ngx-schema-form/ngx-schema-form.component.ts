@@ -71,12 +71,6 @@ export class NgxSchemaFormComponent implements OnChanges {
       return;
     }
     this.createNewFormWrapper();
-    /*
-    this.instantiate = false;
-    this.cdr.detectChanges();
-    this.instantiate = true;
-    this.cdr.detectChanges();
-     */
   }
 
   private createNewFormWrapper() {

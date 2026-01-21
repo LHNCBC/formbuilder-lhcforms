@@ -21,10 +21,10 @@
         </button>
       }
       @if (!noTableLabel) {
-        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
+        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [labelId]="tableId+'_variablesLabel'"></lfb-label>
       }
     </div>
-    <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
+    <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId" [attr.aria-labelledby]="tableId+'_variablesLabel'">
       <table class="table table-borderless table-sm lfb-table">
         <thead class="table-active">
           <tr class="d-flex">
@@ -36,7 +36,7 @@
                 ></lfb-title>
               </th>
             }
-            <th class="col-sm-1 action-column" ></th>
+            <th class="col-sm-1" ></th>
           </tr>
         </thead>
         <tbody [ngbCollapse]="isCollapsed">
@@ -66,11 +66,11 @@
 }
 
 <ng-template #actionColumn let-index="index" let-first="first" let-last="last">
-  <td class="action-column col-sm-1">
+  <td class="justify-content-sm-start col-sm-1 center border-1">
     <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
       <button (click)="deleteVariable(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
               matTooltip="Delete this variable" aria-label="Delete this variable"
-      ><fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
+      ><fa-icon [icon]="faRemove" class="fa-sm" aria-hidden="true"></fa-icon></button>
     </div>
   </td>
 </ng-template>

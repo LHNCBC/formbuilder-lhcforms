@@ -29,7 +29,6 @@ import {Subscription} from "rxjs";
     SchemaFormModule
   ],
   templateUrl: './extension-obj.component.html',
-  styleUrl: './extension-obj.component.css',
   providers: [TableService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

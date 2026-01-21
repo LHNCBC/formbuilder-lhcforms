@@ -23,10 +23,10 @@
         </button>
       }
       @if (!noTableLabel) {
-        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
+        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [labelId]="tableId+'_enableWhenLabel'"></lfb-label>
       }
     </div>
-    <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
+    <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId" [attr.aria-labelledby]="tableId+'_enableWhenLabel'">
       @if (+formProperty.properties.length > 0) {
         <table class="table table-borderless table-sm lfb-table">
           @if (!noHeader) {
@@ -51,7 +51,7 @@
               <tr class="d-flex p-0 m-0">
                 @for (showField of getFields(rowProperty); track showField.field; let colNum = $index) {
                   <td
-                    class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 pb-1 pe-1 m-0 align-self-center"
+                    class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 m-0 align-self-center"
                     [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"
                     lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)"
                     (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
@@ -63,12 +63,12 @@
                     }
                   </td>
                 }
-                <td class="col-sm-1 align-middle p-0 m-0 align-self-center">
+                <td class="col-sm-1 align-middle p-0 m-0 align-self-center border-1">
                   <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="removeProperty(rowNum)" class="btn btn-default btn-link btn-sm array-remove-button"
                     [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
                     matTooltip="Remove" aria-label="Remove"
                     >
-                    <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon>
+                    <fa-icon [icon]="faRemove" class="fa-sm" aria-hidden="true"></fa-icon>
                   </button>
                   @if (getEnableWhenFieldErrors(rowProperty) | async; as rowErrorMessage) {
                     <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'"

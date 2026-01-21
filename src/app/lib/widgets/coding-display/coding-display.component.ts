@@ -14,11 +14,11 @@ declare var LForms: any;
   template: `
       <ng-container *ngIf="autoComplete; else manualEntry">
         <div class="{{controlWidthClass}} p-0">
-          <input autocomplete="off" #codingDisplay type="text" [attr.id]="id" placeholder="Search or type your own" class="form-control"/>
+          <input autocomplete="off" #codingDisplay type="text" [attr.id]="id" placeholder="Search or type your own" class="form-control form-control-sm"/>
         </div>
       </ng-container>
       <ng-template #manualEntry>
-        <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control" [formControl]="control"
+        <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control form-control-sm" [formControl]="control"
           (ngModelChange)="fieldChanged($event)">
       </ng-template>
   `,

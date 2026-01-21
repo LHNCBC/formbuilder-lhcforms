@@ -24,7 +24,7 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
         <div class="{{controlClasses}}">
           <input [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
                  [attr.id]="id"
-                 class="form-control" [formControl]="control"
+                 class="form-control form-control-sm" [formControl]="control"
                  type="number" [attr.min]="schema.minimum" [attr.max]="schema.maximum" step="any"
                  [attr.placeholder]="schema.placeholder"
                  [attr.maxLength]="schema.maxLength || null"

@@ -53,7 +53,7 @@ export interface AutoCompleteResult {
   standalone: true,
   selector: 'lfb-auto-complete',
   template: `
-    <input #ac [attr.id]="elId" type="text" autocomplete="off" class="form-control">
+    <input #ac [attr.id]="elId" type="text" autocomplete="off" class="form-control form-control-sm"/>
   `
 })
 export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestroy {

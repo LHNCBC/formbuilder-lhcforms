@@ -10,7 +10,10 @@ declare var LForms: any;
   imports: [MatTooltipModule],
   template: `
       <div class="{{controlWidthClass}} p-0">
-        <input autocomplete="off" #codingSystem type="text" [attr.id]="id" [matTooltip]="'Search by system or type your own.'" placeholder="Search by system or type your own." class="form-control"  />
+        <input autocomplete="off" #codingSystem type="text" [attr.id]="id"
+               [matTooltip]="'Search by system or type your own.'"
+               placeholder="Search by system or type your own."
+               class="form-control form-control-sm"  />
       </div>
   `,
   styles: [`

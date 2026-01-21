@@ -397,8 +397,6 @@ export class ExtensionsService {
       newValue['__$isValueX'] = !!valueX;
       if(newValue['__$isValueX']) {
         newValue['__$valueType'] = valueX;
-        // this.categoryTypeMap is initialized in ngOnInit.
-        // const categoryTypeMap = this.schemaService.getValueXCategoryMap(this.formService.getExtensionSchema());
         const categoryMap = this.schemaService.valueXCategoryMap;
         newValue[categoryMap[valueX]] = valueX;
         newValue['__$valueTypeCategory'] = categoryMap[valueX];

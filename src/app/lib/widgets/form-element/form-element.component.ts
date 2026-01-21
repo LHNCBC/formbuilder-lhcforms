@@ -5,6 +5,7 @@ import {Component, Input} from '@angular/core';
 import {FormElementComponent, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { Widget } from '@lhncbc/ngx-schema-form';
 import { ElementChooserComponent } from '../element-chooser/element-chooser.component';
+import {Util} from "../../util";
 
 
 
@@ -44,6 +45,12 @@ export class AppFormElementComponent extends FormElementComponent {
   layout: string;
   @Input()
   labelWidthClass: string;
+  @Input()
+  labelPosition: string;
+  @Input()
+  labelClasses: string;
+  @Input()
+  controlClasses: string;
   @Input()
   controlWidthClass: string;
   @Input()
@@ -88,9 +95,26 @@ export class AppFormElementComponent extends FormElementComponent {
     // @ts-ignore
     this.widget.layout = this.layout;
     // @ts-ignore
+    this.widget.labelPosition = this.labelPosition;
+    // @ts-ignore
+    this.widget.labelClasses = this.labelClasses;
+    // @ts-ignore
     this.widget.labelWidthClass = this.labelWidthClass;
     // @ts-ignore
     this.widget.controlWidthClass = this.controlWidthClass;
+
+    // @ts-ignore
+    this.widget.controlClasses = this.controlClasses;
+    /*
+    if(this.nolabel && this.labelPosition !== 'left') {
+      // @ts-ignore
+      this.widget.controlClasses = Util.removeClasses(this.controlClasses, 'col-');
+    }
+    else {
+      // @ts-ignore
+      this.widget.controlClasses = this.controlClasses;
+    }
+    */
   }
 
 

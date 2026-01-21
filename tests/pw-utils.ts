@@ -171,6 +171,16 @@ export class PWUtils {
     return locator.getByText(label, {exact: true}).locator('xpath=../../following-sibling::div[1]/table');
   }
 
+  /**
+   * Find the radio button from the radio group and click it.
+   * The actual input radio element is hidden, so click its label element. If
+   * the locator is provided, search within the locator, otherwise search the whole page.
+   *
+   * @param page - Page object
+   * @param groupLabel - Group label, matches substring
+   * @param buttonLabel - Button label, matches exact text
+   * @param locator - Optional locator to constrain the search.
+   */
   static async clickRadioButton(page: Page, groupLabel: string, buttonLabel: string, locator: Locator = null) {
     const parent = locator ? locator : page;
     await parent.locator('lfb-label', {has: page.getByText(groupLabel)})
@@ -178,20 +188,18 @@ export class PWUtils {
       .getByText(buttonLabel, {exact: true}).click();
   }
 
+  /**
+   * Get the locator of radio button from the radio group.
+   * The actual input radio element is hidden, so click the label element. If
+   * the locator is provided, search within the locator, otherwise search the whole page.
+   *
+   * @param page - Page object
+   * @param groupLabel - Group label, matches substring
+   * @param buttonLabel - Button label, matches exact text
+   * @param locator - Optional locator to constrain the search.
+   */
   static getRadioButton(page: Page, groupLabel: string, buttonLabel: string, locator: Locator = null): Locator {
     const parent = locator ? locator : page;
     return parent.getByLabel(groupLabel, {exact: false}).getByText(buttonLabel, {exact: true});
-    /*
-    const xpath = 'xpath=//lfb-label[.//*[text()="' + groupLabel + '"]]/following-sibling::div/descendant-or-self::div[@role="radiogroup"]';
-    let loc = page.locator(xpath);
-    // let loc = parent.locator('lfb-label', {has: page.getByText(groupLabel)});
-    // loc = loc.locator('xpath=..');
-    // loc = loc.locator('xpath=descendant::*[@role="radiogroup"]');
-    // loc = loc.locator('xpath=//div[@role="radiogroup"]');
-    // loc = loc.locator('xpath=//following-sibling::div[@role="radiogroup"]').or
-    //  (loc.locator('xpath=//div[@role="radiogroup"]'));
-    loc = loc.getByRole('radio', {name: buttonLabel, exact: true});
-    return loc;
-    */
   }
 }

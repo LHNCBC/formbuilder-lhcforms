@@ -32,7 +32,7 @@ export class LfbPopoverDirective implements OnDestroy {
   }
 
   /**
-   * Create oppper instance
+   * Create popper instance
    * @private
    */
   private createPopover() {

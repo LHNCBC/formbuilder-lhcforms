@@ -65,8 +65,8 @@ td.default-column {
 /* Hide borders for the action column */
 td.action-column {
   margin-left: 4px;
-  border-left: 0px;
-  border-bottom: 0px;
+  border-left: 0;
+  border-bottom: 0;
 }
 
 .col-sm-half {
@@ -91,8 +91,8 @@ td.action-column {
 td.error-column {
   min-width: 20px;
   margin-top: 5px;
-  border-left: 0px;
-  border-bottom: 0px;
+  border-left: 0;
+  border-bottom: 0;
 }
 
 /* Center the error icon */
@@ -105,11 +105,6 @@ td.error-column {
 /* Move the add button down 2px */
 .array-add-button {
   margin-top: 2px;
-}
-
-/* Separate each row by 2px */
-tr {
-  margin-bottom: 2px;
 }
 
 /* override the default bootstrap color that is too light */

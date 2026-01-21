@@ -128,7 +128,7 @@
         // The fields here are canonical paths of FormProperty.
         {"field": "url", "col": 4, "nolabel": true},
         {"field": "__$valueType", "col": 2, "nolabel": true},
-        {"field": "__$stringify", "col": 4, "nolabel": true},
+        {"field": "__$stringify", "col": 5, "nolabel": true},
       ]
     },
     valueSet: {

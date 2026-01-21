@@ -1,8 +1,8 @@
 import {Component, OnInit} from '@angular/core';
-import {FormProperty, ObjectLayoutWidget, PropertyGroup} from "@lhncbc/ngx-schema-form";
+import {FormProperty, ObjectLayoutWidget} from "@lhncbc/ngx-schema-form";
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {LabelComponent} from "../label/label.component";
-import {NgClass, NgIf} from "@angular/common";
+import {NgClass} from "@angular/common";
 import {ReactiveFormsModule} from "@angular/forms";
 import {Util} from "../../util";
 
@@ -11,7 +11,6 @@ import {Util} from "../../util";
   imports: [
     AppFormElementComponent,
     LabelComponent,
-    NgIf,
     ReactiveFormsModule,
     NgClass,
   ],
@@ -29,9 +28,7 @@ export class LfbObjectComponent extends ObjectLayoutWidget implements OnInit {
     this.isRequired = Util.getIsRequired(this.formProperty);
     const schema = this.formProperty.schema;
     this.widgetInfo = schema.widget;
-    const propertyIds = Object.keys(schema.properties).filter((id) => {
-      return schema.properties.hasOwnProperty(id);
-    });
+    const propertyIds = Object.keys(schema.properties);
     // If no showFields are defined, show all properties
     if (!this.widgetInfo.showFields) {
       this.showFields = propertyIds.map((id) => ({field: id, col: 12}));

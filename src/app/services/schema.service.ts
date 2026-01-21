@@ -2,22 +2,6 @@ import { Injectable } from '@angular/core';
 import jsonTraverse from "traverse";
 
 import { Util } from '../lib/util';
-// @ts-ignore
-import flSchema from "../../assets/ngx-fl.schema.json5";
-// @ts-ignore
-import ilSchema from "../../assets/ngx-item.schema.json5";
-// @ts-ignore
-import schemaDefinitions from "../../assets/fhir-definitions.schema.json5";
-// @ts-ignore
-import vsSchema from "../../assets/value-set-fields-layout.json5";
-// @ts-ignore
-import flLayout from "../../assets/fl-fields-layout.json5";
-// @ts-ignore
-import ilLayout from "../../assets/items-layout.json5";
-// @ts-ignore
-import extLayout from "../../assets/extension-fields-layout.json5";
-// @ts-ignore
-import vsLayout from "../../assets/value-set-fields-layout.json5";
 import {ISchema} from "@lhncbc/ngx-schema-form";
 import {JSONPath} from "jsonpath-plus";
 import {JsonPointer} from "json-ptr";
@@ -29,11 +13,9 @@ export interface PageSchema {
   layout: any,
 }
 
-export type PageInfo = Record<PageType, PageSchema>;
 export const patternToFHIRPrimitiveType = {
   "^(\\s*([0-9a-zA-Z\\+/=]){4}\\s*)+$": "base64Binary",
   "^true|false$": "boolean",
-  // "^\\S*$": "canonical", // canonical, uri, and url are identical
   "^[^\\s]+(\\s[^\\s]+)*$": "code",
   "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$": "date",
   "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$": "dateTime",
@@ -41,13 +23,11 @@ export const patternToFHIRPrimitiveType = {
   "^[A-Za-z0-9\\-\\.]{1,64}$": "id",
   "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))$": "instant",
   "^-?([0]|([1-9][0-9]*))$": "integer",
-  // "^[ \\r\\n\\t\\S]+$": "markdown", // Markdown and string are identical.
   "^urn:oid:[0-2](\\.(0|[1-9][0-9]*))+$": "oid",
   "^[1-9][0-9]*$": "positiveInt",
   "^[ \\r\\n\\t\\S]+$": "string", // Markdown and string are identical.
   "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$": "time",
   "^[0]|([1-9][0-9]*)$": "unsignedInt",
-  // "^\\S*$": "uri", // canonical, uri, and url are identical
   "^\\S*$": "url", // canonical, uri, and url are identical
   "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$": "uuid",
 }
@@ -56,28 +36,6 @@ export const patternToFHIRPrimitiveType = {
   providedIn: 'root'
 })
 export class SchemaService {
-/*
-  pageInfo: PageInfo = {
-    FORM_LEVEL: {
-      schema: flSchema,
-      layout: flLayout
-    },
-    ITEM_LEVEL: {
-      schema: ilLayout,
-      layout: ilLayout,
-    },
-    EXTENSION: {
-      schema: schemaDefinitions.Extension,
-      layout: extLayout,
-    },
-    VALUE_SET: {
-      schema: vsLayout,
-      layout: vsLayout,
-    }
-  };
-
-*/
-  // valueXCategories: string[];
   _valueXCategoryMap: {};
   primitiveFHIRTypeToWidgetMap = {
     base64Binary: 'textarea',
@@ -118,23 +76,6 @@ export class SchemaService {
     return this._valueXCategoryMap;
   }
 
-/*
-  overrideSchemaWidgetsForFormLevelFields() {
-    this.overrideSchemaWidgetsFromLayout(this.pageInfo.FORM_LEVEL.schema, this.pageInfo.FORM_LEVEL.layout);
-  }
-
-  overrideSchemaWidgetsForItemLevelFields() {
-    this.overrideSchemaWidgetsFromLayout(this.pageInfo.ITEM_LEVEL.schema, this.pageInfo.ITEM_LEVEL.layout);
-  }
-
-  overrideSchemaWidgetsForVSFields() {
-    this.overrideSchemaWidgetsFromLayout(this.pageInfo.VALUE_SET.schema, this.pageInfo.VALUE_SET.layout);
-  }
-
-  overrideSchemaWidgetForExtFields() {
-    this.overrideSchemaWidgetsFromLayout(this.pageInfo.EXTENSION.schema, this.pageInfo.EXTENSION.layout);
-  }
-*/
   /**
    * Override schema.widget with widget definitions from layout.
    * @param schema - Schema object typically from *-schema.json file.
@@ -165,30 +106,12 @@ export class SchemaService {
     });
   }
 
-  /**
-   *
-   * @param schema
-   * /
-  addWidgetsByValueType(schema: ISchema) {
-    const thisService = this;
-    jsonTraverse(schema).forEach(function (node) {
-      this.before(function () {
-        const type = Util.extractFhirType('value', this.key);
-        // Map data types to widget ids.
-        if(type) {
-          thisService.addDefaultWidgets(node as ISchema, thisService.pageInfo.EXTENSION.layout);
-        }
-      });
-    });
-  }
-    */
 
   /**
    *
    * @param schema
    * @param layout
    */
-
   addDefaultWidgets(schema: ISchema, layout: any) {
     const thisService = this;
     jsonTraverse(schema).forEach(function (node) {

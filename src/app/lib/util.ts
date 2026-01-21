@@ -788,7 +788,7 @@ export class Util {
    * @return - The FHIR type as a string, such as 'boolean', 'string', etc.
    *   Returns null if the field does not start with the prefix.
    */
-  static extractFhirType(prefix: string, field: string, isPrimitive: boolean = true): string {
+  static extractFhirType(prefix: string, field: string, isPrimitive: boolean = true): string | null {
     // Extracts the FHIR type from a field name that starts with a prefix.
     // For example, if the prefix is 'answer' and the field is 'answerBoolean', it returns 'boolean'.
     let type = field;
@@ -834,6 +834,11 @@ export class Util {
   }
 
 
+  /**
+   * Check to see if this is a required field as per schema.
+   * @param formProperty - Form Property of the field to check.
+   * @return - true if required.
+   */
   static getIsRequired(formProperty: FormProperty): boolean {
     return !!formProperty?.parent?.schema?.required?.some((requiredField) => {
       const pathArray = formProperty.canonicalPathNotation.split('.');
@@ -880,6 +885,19 @@ export class Util {
 
     const valueFieldName = this.getValueFieldName(type);
     return !initials.some(initial => initial[valueFieldName]);
+  }
+
+  /**
+   * Remove classes from a class list using a prefix.
+   * @param classes - class list string.
+   * @param filterPrefix - prefix to filter out.
+   * @returns - class list string after removal.
+   */
+  static removeClasses(classes: string, filterPrefix: string) {
+    const otherClasses = classes?.split(/\s+/).filter((cls) => {
+      return !cls.startsWith(filterPrefix);
+    });
+    return otherClasses?.join(' ');
   }
 }
 

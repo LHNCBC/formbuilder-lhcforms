@@ -29,7 +29,6 @@ describe('ExtensionDlgComponent', () => {
   });
 
   beforeEach(() => {
-    // formPropertyFactory = TestBed.inject<FormPropertyFactory>(FormPropertyFactory);
     formPropertyFactory = CommonTestingModule.formPropertyFactory;
     formService = TestBed.inject<FormService>(FormService);
     extSchema = formService.getFormLevelSchema();

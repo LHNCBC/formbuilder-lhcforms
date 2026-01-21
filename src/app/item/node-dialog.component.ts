@@ -22,7 +22,7 @@ export type DialogMode = 'Move' | 'Insert' | 'Copy';
     </div>
     <div class="modal-body">
       <form>
-        <div class="form-group">
+        <div class="form-group form-group-sm">
           <label for="moveTarget1" class="">Pick a target item to {{mode.toLocaleLowerCase()}} to:</label>
           <input
                  name="name"

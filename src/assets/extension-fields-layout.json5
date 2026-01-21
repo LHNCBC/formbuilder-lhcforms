@@ -12,23 +12,6 @@
           {"field": "__$valueMetadataType", "col": 12},
           {"field": "__$valueSpecialPurposeDatatype", "col": 12},
           {"field": "extension", "col": 12 },
-          /*
-          { "field": "valueBase64Binary", "col": 12},
-          { "field": "valueBoolean", "col": 12},
-          { "field": "valueCanonical", "col": 12},
-          { "field": "valueCode", "col": 12},
-          { "field": "valueDate", "col": 12},
-          { "field": "valueDateTime", "col": 12},
-          { "field": "valueTime", "col": 12},
-          { "field": "valueCoding", "col": 12},
-          { "field": "valueId", "col": 12},
-          { "field": "valueMarkdown", "col": 12},
-          { "field": "valueOid", "col": 12},
-          { "field": "valueString", "col": 12},
-          { "field": "valueUuid", "col": 12},
-          { "field": "valueUrl", "col": 12},
-          { "field": "valueUri", "col": 12}
-          */
         ]
       }
     ],
@@ -216,7 +199,7 @@
         // The fields here are canonical paths of FormProperty.
         {"field": "url", "col": 4, "nolabel": true},
         {"field": "__$valueType", "col": 2, "nolabel": true},
-        {"field": "__$stringify", "col": 4, "nolabel": true}
+        {"field": "__$stringify", "col": 5, "nolabel": true}
       ]
     },
     valueTypeCategory: {

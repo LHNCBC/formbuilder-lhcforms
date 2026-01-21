@@ -24,7 +24,6 @@ describe('TableEditRowInDlgComponent', () => {
 
   beforeEach(() => {
     formService = TestBed.inject<FormService>(FormService);
-    // formPropertyFactory = TestBed.inject<FormPropertyFactory>(FormPropertyFactory);
     const schema = formService.getItemSchema();
     const rootProperty = CommonTestingModule.createProperty(schema, sampleQ.item[0]) as PropertyGroup;
 

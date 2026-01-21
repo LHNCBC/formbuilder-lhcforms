@@ -33,7 +33,7 @@ import {Util} from '../../util';
           [editable]="false"
           [inputFormatter]="inputFormatter"
           [resultFormatter]="resultListItemFormatter"
-          class="form-control"
+          class="form-control form-control-sm"
           (focus)="focus$.next($any($event).target.value)"
           (click)="click$.next($any($event).target.value)"
           (change)="validateQuestion()"
