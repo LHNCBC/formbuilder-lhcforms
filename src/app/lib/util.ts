@@ -391,7 +391,7 @@ export class Util {
         }
 
         // Keep only valid enableWhen entries that contain question, operator, and an answer[x] value.
-        if (node && typeof node === 'object' && 'enableWhen' in node) {
+        if (node && typeof node === 'object' && Array.isArray(node.enableWhen)) {
           node.enableWhen = node.enableWhen.filter(ew => {
             const keys = Object.keys(ew);
             return (
