@@ -389,6 +389,18 @@ export class Util {
         if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);
         }
+
+        // Keep only valid enableWhen entries that contain question, operator, and an answer[x] value.
+        if (node && typeof node === 'object' && Array.isArray(node.enableWhen)) {
+          node.enableWhen = node.enableWhen.filter(ew => {
+            const keys = Object.keys(ew);
+            return (
+              keys.includes('question') &&
+              keys.includes('operator') &&
+              keys.some(k => k.startsWith('answer'))
+            );
+          });
+        }
       });
 
       this.after(function () {

@@ -148,6 +148,7 @@ describe('Home page', () => {
 
       const errorIcon3El = '[id^="enableWhen.2_err"]';
 
+      const answer4El = '[id^="enableWhen.3.answer"]';
       const errorIcon4El = '[id^="enableWhen.3_err"]';
 
       cy.clickTreeNode('EnableWhen');
@@ -171,6 +172,44 @@ describe('Home page', () => {
       cy.get(errorIcon4El)
         .find('small')
         .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 4. ');
+
+      // Although four enableWhen conditions are displayed on the screen, three contain errors. The JSON should inlcude only the valid condition.
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[5].enableWhen.length).to.equal(1);
+        expect(qJson.item[5].enableWhen[0].question).to.equal('/itm4');
+        expect(qJson.item[5].enableWhen[0].operator).to.equal('=');
+        expect(qJson.item[5].enableWhen[0].answerInteger).to.equal(5);
+      });
+
+      // Clear the answer field to invalidate the enableWhen condition.
+      cy.get(answer1El).click().clear();
+      cy.get(errorIcon1El).should('exist');
+      cy.get(errorIcon1El)
+        .find('small')
+        .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 1. ');
+
+      // As there are no valid enableWhen conditions, enableWhen is omitted from the JSON data.
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[5].enableWhen).to.be.undefined
+      });
+
+      // Fix the 1st and the 4th conditions.
+      cy.get(answer1El).click().type('5');
+      cy.get(answer4El).click().type('15');
+      cy.get(errorIcon1El).should('not.exist');
+      cy.get(errorIcon4El).should('not.exist');
+
+      // The JSON data should contains two enableWhen conditions.
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[5].enableWhen.length).to.equal(2);
+        expect(qJson.item[5].enableWhen[0].question).to.equal('/itm4');
+        expect(qJson.item[5].enableWhen[0].operator).to.equal('=');
+        expect(qJson.item[5].enableWhen[0].answerInteger).to.equal(5);
+
+        expect(qJson.item[5].enableWhen[1].question).to.equal('/itm4');
+        expect(qJson.item[5].enableWhen[1].operator).to.equal('=');
+        expect(qJson.item[5].enableWhen[1].answerInteger).to.equal(15);
+      });
     });
 
     it('should clear invalid question field on focusout for new enableWhen condition', () => {
