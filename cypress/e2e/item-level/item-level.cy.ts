@@ -825,8 +825,6 @@ describe('Home page', () => {
       });
 
     });
-
-
   });
 
 
