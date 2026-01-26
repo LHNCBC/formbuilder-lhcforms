@@ -169,21 +169,22 @@
           aria-label="Edit this row"
           (click)="onEditProperty(index)"
           [disabled]="isDisabled(index)"
-          ><fa-icon [icon]="faEdit" aria-hidden="true"></fa-icon></button>
-        </div>
-      </ng-template>
+          ><fa-icon [icon]="faEdit" aria-hidden="true"></fa-icon>
+        </button>
+      </div>
+    </ng-template>
 
-      <ng-template #errorColumn let-index="index">
-        <td class="error-column col-sm-quarter center">
-          @if (getFieldErrorsByIndex(index) | async; as rowErrorMessage) {
-            <span tabindex="0" [attr.id]="formProperty.canonicalPathNotation+'.'+index+'.err'"
-              class="btn border-0 p-0 b-0 errors" [matTooltip]="rowErrorMessage"
-              >
-              <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
-              <small class="text-danger form-text sr-only" role="alert">
-                {{rowErrorMessage}}
-              </small>
-            </span>
-          }
-        </td>
-      </ng-template>
+    <ng-template #errorColumn let-index="index">
+      <td class="error-column col-sm-quarter center">
+        @if (getFieldErrorsByIndex(index) | async; as rowErrorMessage) {
+          <span tabindex="0" [attr.id]="formProperty.canonicalPathNotation+'.'+index+'.err'"
+            class="btn border-0 p-0 b-0 errors" [matTooltip]="rowErrorMessage"
+            >
+            <fa-icon [icon]="warningIcon" style="color: red" aria-hidden="true"></fa-icon>
+            <small class="text-danger form-text sr-only" role="alert">
+              {{rowErrorMessage}}
+            </small>
+          </span>
+        }
+      </td>
+    </ng-template>

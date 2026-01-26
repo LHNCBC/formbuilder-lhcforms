@@ -10,7 +10,7 @@ import { ExtensionsService } from 'src/app/services/extensions.service';
 import { TableService, TableStatus } from 'src/app/services/table.service';
 import {
   ANSWER_OPTION_METHOD_ANSWER_OPTION, ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET, ANSWER_OPTION_METHOD_ANSWER_EXPRESSION,
-  EXTENSION_URL_ANSWER_EXPRESSION
+  EXTENSION_URL_ANSWER_EXPRESSION, ANSWER_OPTION_METHOD_NONE
 } from '../../constants/constants';
 
 @Component({
@@ -53,11 +53,15 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   get filteredAnswerOptionMethods(): any[] {
     return this.schema.oneOf.filter(option => {
       if (this.isSnomedUser) {
-        return (
-          (this.schema.widget.supportedDataType[option.enum[0]][0] === 'all' ||
-          this.isTypeSupportedForKey(option.enum[0], this.type)) &&
-          this.isAnswerList
-        );
+        if (option.enum[0] === "none") {
+          return true;
+        } else {
+          return (
+            (this.schema.widget.supportedDataType[option.enum[0]][0] === 'all' ||
+            this.isTypeSupportedForKey(option.enum[0], this.type)) &&
+            this.isAnswerList
+          );
+        }
       } else {
         return option.enum[0] !== 'snomed-value-set';
       }
@@ -142,8 +146,12 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
    * in which case it will update the formProperty of __$answerOptionMethods.
    */
   updateUI() {
+    const answerOptions = this.formProperty.searchProperty('answerOption').value;
     const valueSetUrl = this.formProperty.searchProperty('answerValueSet').value;
-    if(valueSetUrl?.length > 0) {
+
+    if (Array.isArray(answerOptions) && answerOptions.length > 0) {
+      this.formProperty.setValue(ANSWER_OPTION_METHOD_ANSWER_OPTION, false);
+    } else if(valueSetUrl?.length > 0) {
       let valueSetType = ANSWER_OPTION_METHOD_VALUE_SET;
       if(this.isSnomedUser &&
         (valueSetUrl.startsWith(AnswerValueSetComponent.snomedBaseUri))) {

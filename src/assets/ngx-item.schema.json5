@@ -369,6 +369,31 @@
         "id": "hidden"
       }
     },
+
+    "__$enableWhenMethod": {
+      "description": "'enableWhen condition' is a structured way to control item visibility based on specific answers to previous questions, ideal for simple logic using built-in operators. 'enableWhenExpression' allows for more complex, custom visibility rules using FHIRPath expressions, and is preferred when logic goes beyond what enableWhen supports, such as referencing multiple values or applying calculations.",
+      "title": "Conditional method",
+      "enum": [
+        "enablewhen-cond",
+        "enablewhen-expression",
+        "none"
+      ],
+      "default": "none",
+      "type": "string",
+
+      "widget": {
+        "id": "enable-when-method",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm m-auto p-0",
+        "labels": {
+          "enablewhen-cond": "enableWhen condition and behavior",
+          "enablewhen-expression": "enableWhen expression",
+          "none": "None"
+        }
+      }
+    },
+
     "enableWhen": {
       "description": "A constraint indicating that this item should only be enabled (displayed/allow answers to be captured) when the specified condition is true.",
       "items": {
@@ -752,8 +777,12 @@
       },
       "type": "array",
       "title": "Conditional display",
+      "visibleIf": {
+        "__$enableWhenMethod": ["enablewhen-cond"]
+      },
       "widget": {
         "noCollapseButton": true,
+        "noTableLabel": true,
         "labelPosition": "left",
         "labelWidthClass": "col-sm-2 pe-1",
         "controlWidthClass": "col-sm-10",
@@ -782,6 +811,9 @@
       ],
       "type": "string",
       "title": "Show this item when",
+      "visibleIf": {
+        "__$enableWhenMethod": ["enablewhen-cond"]
+      },
       "widget": {
         "id": "enable-behavior",
         "layout": "row",
@@ -789,6 +821,69 @@
         "controlWidthClass": "col-sm-7"
       }
     },
+    "__$enableWhenExpression": {
+      "description": "An expression that evaluates to a boolean value to determine whether the item should be enabled.",
+      "title": "Expression",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
+      },
+      "visibleIf": {
+        "__$enableWhenMethod": ["enablewhen-expression"]
+      },
+      "widget": {
+        "id": "expression-editor",
+        "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+        "expressionLabel": "enableWhen Expression",
+        "noTableLabel": true,
+        "showExpression": true,
+        "displayExpressionEditorSections": {
+          titleSection: true,
+          uneditableVariablesSection: true,
+          itemVariablesSection: true,
+          outputExpressionSection: true
+        },
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col form-control form-control-sm"
+      }
+    },
+
     "required": {
       "description": "An indication, if true, that the item must be present in a \"completed\" QuestionnaireResponse.  If false, the item may be skipped when answering the questionnaire.",
       "title": "Answer required",
@@ -878,9 +973,14 @@
           "type": "string",
           "enum": ["answer-expression"],
           "title": "Answer expression"
+        },
+        {
+          "type": "string",
+          "enum": ["none"],
+          "title": "None"
         }
       ],
-      "default": "answer-option",
+      "default": "none",
       "type": "string",
       "visibleIf": {
         "__$isAnswerList": [true]
@@ -1353,7 +1453,7 @@
           'enum': ["tab-container"],
           'display': 'Tab Container',
           'description': 'A group with this designation represents a collection of tabs. All child items must be of type \'group\'. Child groups cannot directly declare item controls. Each child group serves as a tab within the tab container, with its \'item.text\' property used as the tab label.',
-          'support': false
+          'support': true
         }
       ],
       "default": "list",
@@ -2120,6 +2220,7 @@
         "id": "variable",
         "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
         "showExpression": false,
+        "expressionLabel": "",
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: false,
@@ -2143,7 +2244,7 @@
       }
     },
     "__$initialExpression": {
-      "description": "Initial expression.",
+      "description": "A FHIRPath expression used to compute the initial (default) value of a questionnaire item when the form is first rendered.",
       "title": "Expression",
       "type": "object",
       "properties": {
@@ -2194,7 +2295,9 @@
           { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
           { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
         ],
+        "noTableLabel": true,
         "showExpression": true,
+        "expressionLabel": "Output Expression",
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: true,
@@ -2207,7 +2310,7 @@
       }
     },
     "__$calculatedExpression": {
-      "description": "Initial expression.",
+      "description": "A FHIRPath expression that determines the current value of a Questionnaire item based on other answers or context.",
       "title": "Expression",
       "type": "object",
       "properties": {
@@ -2258,7 +2361,9 @@
           { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
           { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
         ],
+        "noTableLabel": true,
         "showExpression": true,
+        "expressionLabel": "Output Expression",
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: true,
@@ -2318,7 +2423,9 @@
       "widget": {
         "id": "expression-editor",
         "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+        "noTableLabel": true,
         "showExpression": true,
+        "expressionLabel": "Answer Expression",
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: false,
@@ -2591,6 +2698,9 @@
       ],
       "type": "string",
       "title": "Hide or show this item when conditional display evaluates to 'false'?",
+      "visibleIf": {
+        "__$enableWhenMethod": ["enablewhen-cond"]
+      },
       "widget": {
         "id": "enable-behavior",
         "layout": "row",
@@ -2924,6 +3034,17 @@
     },
     {
       "fields": [
+        "__$enableWhenMethod"
+      ],
+      "showFields": [
+        {
+          "field": "__$enableWhenMethod",
+          "col": 12
+        }
+      ]
+    },
+    {
+      "fields": [
         "enableWhen"
       ],
       "showFields": [
@@ -2941,6 +3062,17 @@
         {
           "field": "enableBehavior",
           "col": 3
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$enableWhenExpression"
+      ],
+      "showFields": [
+        {
+          "field": "__$enableWhenExpression",
+          "col": 12
         }
       ]
     },

@@ -171,48 +171,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
 
   /**
-   * Compare two FHIR Coding objects.
-   * Matching rules:
-   *   1. When only code exists, match code
-   *   2. When only display exists, match display
-   *   2. When code and system exists, match both
-   *   3. When code and display exists, match both
-   *   4. When code, display and system exists, match all three.
-   * @param coding1 - First coding object
-   * @param coding2 - second coding object
-   */
-/*
-  isEqualCoding(coding1: fhir.Coding, coding2: fhir.Coding) {
-    if(!coding1 && !coding2) {
-      return true; // Match if both are undefined
-    }
-
-    if(!coding1 || !coding2) {
-       return false; // null vs non-null;
-    }
-
-    let ret = false;
-    if(coding1.code || coding2.code) {
-      ret = coding1.code === coding2.code;
-    }
-    else if(coding1.display || coding2.display) {
-      ret = coding1.display === coding2.display;
-    }
-
-    if(ret && (coding1.system || coding2.system)) {
-      ret = coding1.system === coding2.system; // code/display and system are match
-    }
-
-    if (ret && (coding1.display || coding2.display)) {
-      ret = coding1.display === coding2.display; // code and display are match
-    }
-
-    return ret;
-  }
-*/
-
-
-  /**
    * Set up defaults column reading 'initialSelected' flag.
    */
   updateDefaultSelections(answerOptionArray: any []) {

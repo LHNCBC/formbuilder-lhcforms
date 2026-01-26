@@ -52,9 +52,11 @@
       {
         "showFields": [
           { "field": "linkId", "col": 12 },
+          { "field": "__$enableWhenMethod", "col": 12 },
           { "field": "enableWhen", "col": 12 },
           { "field": "enableBehavior", "col": 12 },
           { "field": "disabledDisplay", "col": 12 },
+          { "field": "__$enableWhenExpression", "col": 12 },
           { "field": "__$terminologyServer", "col": 12 },
           { "field": "__$observationLinkPeriod", "col": 12},
           { "field": "__$observationExtract", "col": 12}

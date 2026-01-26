@@ -24,15 +24,13 @@ type EwErrors = {
   styleUrls: ['../table/table.component.css', './enable-when.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck, AfterViewChecked, OnDestroy {
+export class EnableWhenComponent extends TableComponent implements OnInit, DoCheck {
   private formService = inject(FormService);
   private ngZone = inject(NgZone);
 
   showFieldNames: string[] = ['question', 'operator', 'answerString'];
   showHeaderFields: any[];
   warningIcon = faExclamationTriangle;
-
-  private viewChecked$ = new Subject<void>();
   awaitingValidation: boolean;
   enableWhenErrors: EwErrors [] = [];
   public Object = Object;
@@ -83,6 +81,9 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
       return schemaDef;
     });
 
+    // this.viewChecked$ stopped working after the Angular upgrade to version 20 which caused the
+    // error message to display next to the enableWhen error icon. Replaced this.viewChecked$ with
+    // this.ngZone to fix the issue.
     this.ngZone.onStable
       .pipe(
         debounceTime(300),
@@ -98,19 +99,6 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     if(this.formProperty.properties.length === 0) {
       this.addItem();
     }
-  }
-
-  /**
-   * Call after the view and its child views has been checked
-   * by the change detection mechanism. The lifecycle hook is
-   * triggered whenever Angular completes a change detection
-   * cycle involving a view.
-   *
-   * The 'viewChecked$' Subject emits each time this function
-   * is called.
-   */
-  ngAfterViewChecked() {
-    this.viewChecked$.next();
   }
 
   get rowProperties(): ObjectProperty [] {
@@ -306,12 +294,5 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    */
   composeAccessibleErrorMessage(errorMessage: string, rowIndex: number): string {
     return `${errorMessage.slice(0, -1)} for enableWhen condition ${rowIndex + 1}.`;
-  }
-
-  /**
-   * Implement OnDestroy
-   */
-  ngOnDestroy() {
-    this.viewChecked$.complete();
   }
 }

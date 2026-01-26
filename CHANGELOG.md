@@ -2,9 +2,30 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.0.1] 2025-12-15
+## [11.0.5] 2026-01-25
 ### Added
 - Added enableWhen answer validation to check values against answerOptions.
+
+## [11.0.4] 2026-01-16
+### Fixed
+- Fixed an issue causing the display field to not appear when the system field is blank for answer options.
+- Fixed an issue where the Angular 20 upgrade caused viewChecked$ to fail, resulting in the enableWhen
+  error message appearing next to the icon.
+- Fixed the enableWhen error icon appearing in the action column.
+- Fixed action column icon overflow caused by increased width in the FortAwesome library upgrade.
+
+## [11.0.3] 2026-01-13
+### Added
+- Implemented enableWhenExpression.
+
+## [11.0.2] 2026-01-12
+### Fixed
+- Fixed an issue in preview json tabs where `no errors` message is
+  displayed before running the validation.
+
+## [11.0.1] 2026-01-09
+### Fixed
+- Fixed issue with unit autocomplete lookup for units that start with '/'.
 
 ## [11.0.0] 2025-12-31
 ### Changed

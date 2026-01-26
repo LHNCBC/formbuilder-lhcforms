@@ -193,6 +193,13 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
   cy.selectDataType('coding');
   cy.getRadioButtonLabel('Create answer list', 'Yes').click();
   cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+  // New default for 'Answer list source' is now 'None'
+  cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+
+  // Select the 'Answer Options' option
+  cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+
   cy.get('[id^="answerOption"]').should('be.visible');
   codings.forEach((coding, index) => {
     cy.get('[id^="answerOption.'+index+'."]').should('be.visible');
@@ -211,6 +218,14 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.selectDataType('coding');
   cy.getRadioButtonLabel('Create answer list', 'Yes').click();
   cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
+
+  // New default for 'Answer list source' is now 'None'
+  cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+
+  // Select the 'Answer Options' option
+  cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+
+
   // No 'initial' widget for coding. User selects default radio in answer option table.
   // cy.get('[id^="initial"]').should('not.be.visible');
   cy.get('[id^="answerOption.0.valueCoding.system"]').type('s1');
@@ -519,7 +534,7 @@ Cypress.Commands.add('booleanFieldClick', (fieldLabel, rbValue) => {
 
 Cypress.Commands.add('getRadioButton', (groupLabel, rLabel) => {
   return cy.getRadioButtonLabel(groupLabel, rLabel).invoke('attr', 'for').then((id) => {
-    return cy.get('#'+id);
+    return cy.get(CypressUtil.escapeIdForCypress(id));
   }).should('have.attr', 'type', 'radio');
   // Confirm the radio input and return its label for mouse actions.
 });
@@ -584,6 +599,19 @@ Cypress.Commands.add('getByLabel', (parentSelector: string, label: string) => {
     .contains(label).invoke('attr', 'for').then((id) => {
       return cy.get('#' + id);
     });
+});
+
+/**
+ * Gets a label radio input element by its value within a parent selector.
+ * @param parentSelector - The parent selector to search within. Helps to constrain
+ * the search to a specific part of the form.
+ * @param value - The value text of the radio input ID
+ * @returns Cypress chainable element matching the radio input
+ */
+Cypress.Commands.add('getLabelRadioInputByValue', (parentSelector: string, value: string) => {
+  return cy.get(parentSelector)
+    .find(`input[id^="labelRadio_"][id$="_${value}"]`)
+    .should('exist');
 });
 
 /**
@@ -838,6 +866,14 @@ Cypress.Commands.add('checkQuestionItemControlUI',
     cy.get('lfb-label label').contains(questionItemControlLabel).should('not.exist');
     // 'Answer list layout' should be displayed
     cy.get('lfb-label label').contains(answerListLayoutLabel).should('exist');
+
+    if (type === "coding") {
+      // New default for 'Answer list source' is now 'None'
+      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+      // Select the 'Answer Options' option
+      cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+    }
+
     cy.get('div#__\\$itemControl > div > input').as('itemControl');
     cy.get('@itemControl').should('have.length', itemControlOptions.length);
     itemControlOptions.forEach((label, idx) => {
@@ -901,6 +937,7 @@ declare global {
       getBooleanFieldParent(fieldLabel: string): Chainable<JQuery<HTMLElement>>;
       getBooleanInput(fieldLabel: string, rbValue: boolean): Chainable<JQuery<HTMLElement>>;
       getByLabel(parentSelector: string, label: string): Cypress.Chainable<JQuery<HTMLElement>>;
+      getLabelRadioInputByValue(parentSelector: string, value: string): Cypress.Chainable<JQuery<HTMLElement>>;
       getCurrentForm(): Chainable<any>;
       getFormTitleField(): Cypress.Chainable<JQuery<HTMLElement>>;
       getInitialValueBooleanClick(rbValue: boolean): Chainable<JQuery<HTMLElement>>;

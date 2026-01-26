@@ -27,6 +27,10 @@
     </div>
 
     <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
+      @if (noTableLabel) {
+        <lfb-label [helpMessage]="schema.description" [title]="schema.title"
+                   [labelId]="'label_'+id" [for]="id"></lfb-label>
+      }
       @if (+formProperty.properties.length > 0) {
         <table class="table table-borderless table-sm lfb-table">
           @if (!noHeader) {
