@@ -797,33 +797,40 @@ export class Util {
 
   /**
    * Compares two FHIR Coding objects for equality.
-   * Returns true if both codings have system and code, and all of the following match:
-   *   - system (ignoring leading/trailing whitespace)
-   *   - code (ignoring leading/trailing whitespace)
-   *   - version (treats undefined, null, and empty as equivalent)
    *
-   * @param a - The first FHIR Coding object.
-   * @param b - The second FHIR Coding object.
-   * @returns True if the codings are considered equal, otherwise false.
+   * A "coding" is an object that may contain any of the following fields:
+   * 'code', 'system', 'display', and/or 'text'.
+   *
+   * This method normalizes both codings before comparison by copying
+   * 'display' into 'text' when 'text' is not present. This is required
+   * because the underlying LForms comparison logic
+   * ('LFormsData.prototype._codingsEqual') compares codings using the
+   * 'text' field rather than 'display'.
+   *
+   * After normalization, two codings are considered equal if and only if:
+   * 1) The code systems are equal or unspecified, and
+   * 2) Either:
+   *    a) The codes are specified and equal, or
+   *    b) The codes are not specified and the texts are specified and equal.
+   *
+   * @param a The first coding to compare
+   * @param b The second coding to compare
+   * @returns True if the codings are considered equal; otherwise, false.
    */
-  static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
-    if (!this.hasSystemAndCode(a) || !this.hasSystemAndCode(b)) {
-      return false;
+  static areFhirCodingsEqual(a: any, b: any): boolean {
+    // Normalize codings: copy display to text if display exists
+    const normalizedA = { ...a };
+    const normalizedB = { ...b };
+
+    if (normalizedA.display && !normalizedA.text) {
+      normalizedA.text = normalizedA.display;
     }
 
-    if (!a.system || !b.system || !a.code || !b.code) {
-      return false;
+    if (normalizedB.display && !normalizedB.text) {
+      normalizedB.text = normalizedB.display;
     }
 
-    const systemMatch = a.system.trim() === b.system.trim();
-    const codeMatch = a.code.trim() === b.code.trim();
-
-    // Treat undefined/null/empty the same way
-    const aVersion = a.version?.trim() || null;
-    const bVersion = b.version?.trim() || null;
-    const versionMatch = aVersion === bVersion;
-
-    return systemMatch && codeMatch && versionMatch;
+    return LForms.LFormsData.prototype._codingsEqual.call(this, normalizedA, normalizedB);
   }
 
   /**
