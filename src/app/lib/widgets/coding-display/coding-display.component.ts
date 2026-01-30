@@ -85,10 +85,9 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
     this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
 
     const sub = this.formProperty.parent.getProperty('system').valueChanges.subscribe((system) => {
-      if (!system || this.system === system) {
+      if (this.system === system) {
         return;
       }
-
       if (this.system) {
         this.initializing = false;
       }

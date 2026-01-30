@@ -163,6 +163,8 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     };
   }
 
+
+
   /**
    * Create a validation object specifically for the 'enableWhen' field validation using 'formProperty'.
    * @param formProperty - Object form property of the 'enableWhen' field.
@@ -182,20 +184,35 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
         return (source.data.linkId === questionItem.data.linkId);
       });
     }
-
     // The condition key is used to differentiate between each enableWHen conditions.
     let condKey = '';
     if (q._canonicalPath) {
       const match = q._canonicalPath.match(/enableWhen\/(.*?)\/question/);
       condKey = match ? match[1] : '';
     }
+
+    if (condKey === '*') {
+      return null;
+    }
+
     const op = formProperty.getProperty('operator');
-    const aField = Util.getAnswerFieldName(aType || 'string');
-    let answerType = '';
-    let answerX = null;
-    if (aField !== undefined) {
-      answerType = formProperty.getProperty('__$answerType').value;
-      answerX = formProperty.getProperty(aField);
+    let aField = Util.getAnswerFieldName(aType || 'string');
+
+    const answerType = formProperty.getProperty('__$answerType').value;
+    let answerX = formProperty.getProperty(aField);
+
+    if (Util.isEmpty(answerX.value) && questionItem && 'answerConstraint' in questionItem.data &&
+      questionItem.data.answerConstraint === "optionsOrString")
+    {
+      const altKey = Util.getAnswerFieldName('string');
+      answerX = formProperty.getProperty(altKey);
+
+      if (!Util.isEmpty(answerX.value)) {
+        aField = altKey;
+      } else {
+        // revert back to the original type
+        answerX = formProperty.getProperty(aField);
+      }
     }
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
 
@@ -204,6 +221,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
       'linkId': linkIdProperty.value,
       'conditionKey': condKey,
       'q': q,
+      'qItem': this.validationService.populateQuestionItem(questionItem),
       'aType': aType,
       'invalid': invalid,
       'answerTypeProperty': answerType,
@@ -304,8 +322,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     errors = this.validationService.validateEnableWhenSingle(enableWhenObj);
 
-
-    if(errors && errors.length) {
+    if (errors && errors.length) {
       formProperty.extendErrors(errors);
     }
     return errors;

@@ -2,9 +2,21 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.0.4] 2026-01-13
+## [11.0.6] 2026-01-30
 ### Changed
 - Updated the Expression Item Variables section to be collapsed by default.
+
+## [11.0.5] 2026-01-25
+### Added
+- Added enableWhen answer validation to check values against answerOptions.
+
+## [11.0.4] 2026-01-16
+### Fixed
+- Fixed an issue causing the display field to not appear when the system field is blank for answer options.
+- Fixed an issue where the Angular 20 upgrade caused viewChecked$ to fail, resulting in the enableWhen
+  error message appearing next to the icon.
+- Fixed the enableWhen error icon appearing in the action column.
+- Fixed action column icon overflow caused by increased width in the FortAwesome library upgrade.
 
 ## [11.0.3] 2026-01-13
 ### Added

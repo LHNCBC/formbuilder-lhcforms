@@ -15,8 +15,6 @@ import {CommonModule} from '@angular/common';
 })
 export class TerminologyServerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   private extensionService = inject(ExtensionsService);
-  private liveAnnouncer = inject(LiveAnnouncer);
-
 
   static PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
   tsExtension: fhir4.Extension = {

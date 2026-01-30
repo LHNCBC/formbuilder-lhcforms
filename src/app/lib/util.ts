@@ -192,6 +192,9 @@ export class Util {
     else if(typeof json === 'boolean') {
       ret = false; // Any boolean is non-empty
     }
+    else if(typeof json === 'string' && json.trim().length === 0) {
+      ret = true; // empty string or only whitespace is empty
+    }
     else if(!json) {
       ret = true; // empty string, null and undefined are empty
     }
@@ -389,6 +392,18 @@ export class Util {
         if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);
         }
+
+        // Keep only valid enableWhen entries that contain question, operator, and an answer[x] value.
+        if (node && typeof node === 'object' && Array.isArray(node.enableWhen)) {
+          node.enableWhen = node.enableWhen.filter(ew => {
+            const keys = Object.keys(ew);
+            return (
+              keys.includes('question') &&
+              keys.includes('operator') &&
+              keys.some(k => k.startsWith('answer'))
+            );
+          });
+        }
       });
 
       this.after(function () {
@@ -521,6 +536,26 @@ export class Util {
   }
 
   /**
+   * Returns the appropriate answer[x] field name for a given type and data object.
+   * If the field for the primary type exists in the data object, it is returned.
+   * Otherwise, checks the alternate type and returns its field name if present.
+   * If neither is found, returns the field name for the primary type.
+   * @param type - The primary FHIR data type (e.g., 'string', 'integer', 'coding').
+   * @param altType - An alternate FHIR data type to check if the primary is not present.
+   * @param dataObj - The object to check for the presence of answer[x] fields.
+   * @returns The answer[x] field name found in the object, or the default for the primary type.
+   */
+  static resolveAnswerFieldName(type: string, altType: string, dataObj: object) {
+    const answerType = Util._answerTypeMap[type];
+    if (answerType in dataObj) {
+      return answerType;
+    } else {
+      const answerAltType = Util._answerTypeMap[altType];
+      return (answerAltType in dataObj) ? answerAltType : answerType;
+    }
+  }
+
+  /**
    * Compute tree hierarchy sequence numbering.
    * @param node - Target node of computation
    */
@@ -565,7 +600,7 @@ export class Util {
    * @param value - value from formProperty, which is in ISO format.
    * @param formProperty - FormProperty of the field.
    */
-  static dateValidator(value: string, formProperty: FormProperty): any [] {
+  static dateValidator(value: string, formProperty: FormProperty): any[] {
     let errors: any[] = [];
     const dateValidation = DateUtil.validateDate(value);
     if(value?.trim().length > 0 && !dateValidation.validDate && dateValidation.validFormat) {
@@ -745,6 +780,50 @@ export class Util {
         arr.splice(i, 1);
       }
     }
+  }
+
+  /**
+   * Checks if a value has FHIR Coding-like properties (system and code).
+   *
+   * @param value - The value to check
+   * @returns True if the value is an object containing 'system' and 'code'
+   */
+  static hasSystemAndCode(value: any): value is Partial<fhir.Coding> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return false;
+    }
+    return 'code' in value && 'system' in value;
+  }
+
+  /**
+   * Compares two FHIR Coding objects for equality.
+   * Returns true if both codings have system and code, and all of the following match:
+   *   - system (ignoring leading/trailing whitespace)
+   *   - code (ignoring leading/trailing whitespace)
+   *   - version (treats undefined, null, and empty as equivalent)
+   *
+   * @param a - The first FHIR Coding object.
+   * @param b - The second FHIR Coding object.
+   * @returns True if the codings are considered equal, otherwise false.
+   */
+  static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
+    if (!this.hasSystemAndCode(a) || !this.hasSystemAndCode(b)) {
+      return false;
+    }
+
+    if (!a.system || !b.system || !a.code || !b.code) {
+      return false;
+    }
+
+    const systemMatch = a.system.trim() === b.system.trim();
+    const codeMatch = a.code.trim() === b.code.trim();
+
+    // Treat undefined/null/empty the same way
+    const aVersion = a.version?.trim() || null;
+    const bVersion = b.version?.trim() || null;
+    const versionMatch = aVersion === bVersion;
+
+    return systemMatch && codeMatch && versionMatch;
   }
 
   /**

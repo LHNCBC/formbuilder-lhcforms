@@ -137,7 +137,7 @@ test.describe('Open form builder in a new window', async () => {
       await expect(saveButton).toBeEnabled();
       await Promise.all([
         mainPO.page.waitForEvent('close'),
-        await saveButton.click()
+        saveButton.click()
       ]);
 
       messageData.data = await getMessage(page, 'closed');
