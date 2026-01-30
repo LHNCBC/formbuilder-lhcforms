@@ -33,6 +33,8 @@ export enum FHIR_VERSIONS {
 }
 export type FHIR_VERSION_TYPE = keyof typeof FHIR_VERSIONS;
 
+type ComparableCoding = fhir.Coding & { text?: string };
+
 export class Util {
   static HELP_BUTTON_EXTENSION = {
       url: EXTENSION_URL_ITEM_CONTROL,
@@ -817,10 +819,10 @@ export class Util {
    * @param b The second coding to compare
    * @returns True if the codings are considered equal; otherwise, false.
    */
-  static areFhirCodingsEqual(a: any, b: any): boolean {
+  static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
     // Normalize codings: copy display to text if display exists
-    const normalizedA = { ...a };
-    const normalizedB = { ...b };
+    const normalizedA: ComparableCoding = { ...a };
+    const normalizedB: ComparableCoding = { ...b };
 
     if (normalizedA.display && !normalizedA.text) {
       normalizedA.text = normalizedA.display;

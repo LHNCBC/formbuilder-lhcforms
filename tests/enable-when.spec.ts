@@ -101,9 +101,6 @@ test.describe('enableWhen answerCoding', async () => {
     }
     await answerCoding.press('Enter');
 
-    // Wait for the autocomplete to close
-    await page.waitForSelector('ngb-typeahead-window', { state: 'hidden' });
-
     // Get and verify the JSON
     const qJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
     const enableWhenJson = qJson.item[itemIndex + 1].enableWhen;
@@ -338,7 +335,7 @@ test.describe('enableWhen answerCoding', async () => {
     await expect(initialValues).toHaveCount(2);
   });
 
-  test('should load and idisplay enableWhen answer coding', async ({ page }) => {
+  test('should load and display enableWhen answer coding', async ({ page }) => {
     await PWUtils.clickTreeNode(page, "enableWhen answer coding");
     // Expand the Advanced fields section.
     await PWUtils.expandAdvancedFields(page);

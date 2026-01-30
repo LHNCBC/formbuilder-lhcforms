@@ -69,19 +69,19 @@ export class AnswerOptionService {
 
           this.codingAnswerOptionsHash = {};
           this.codingAnswerOptionsCodes = [];
-          this.codingAnswerOptionsBySystem = {}; // New: index by system
+          this.codingAnswerOptionsBySystem = {};
 
           node.data.answerOption.forEach((obj, index) => {
             const coding = obj[valueName];
 
             if (coding) {
               // Use code if available, otherwise create a fallback key
-              const key = `ansOpt_${index}`;//coding.code ?? `_no_code_${index}`;
+              const key = `ansOpt_${index}`;
               this.codingAnswerOptionsHash[key] = coding;
 
               // Only add real codes to the codes array
               if (coding.code != null) {
-                this.codingAnswerOptionsCodes.push(key); //.push(coding.code);
+                this.codingAnswerOptionsCodes.push(key);
               }
 
               // Index by system for better lookup
@@ -98,7 +98,7 @@ export class AnswerOptionService {
         this.answerOptions = [...new Set(
           node.data.answerOption
             .map(ao => ao[valueName])
-            .filter(v => v !== null && v !== undefined)   // remove nulls
+            .filter(v => v !== null && v !== undefined)
             .map(v => {
               if (typeof v === 'string') {
                 return v;
@@ -109,7 +109,7 @@ export class AnswerOptionService {
               if (typeof v === 'object' && valueName === "valueCoding") {
                 return this.getAutocompleteItemFromCoding(v);
               }
-              return undefined; // Explicitly return undefined for unsupported types
+              return undefined;
             })
             .filter(v => v !== undefined)
         )];
