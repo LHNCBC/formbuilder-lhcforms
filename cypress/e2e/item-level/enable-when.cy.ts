@@ -33,7 +33,7 @@ describe('Home page', () => {
 
       cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
       cy.get('[id^="enableWhen.0.operator"]').select('=');
-      cy.get('[id^="enableWhen.0.answerCoding"]').type('d1 (c1)').type('{downarrow}{enter}');
+      cy.get('[id^="enableWhen.0.answerCoding"]').type('d1 (c1 : s1)').type('{downarrow}{enter}');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item.length).equal(2);
@@ -285,7 +285,7 @@ describe('Home page', () => {
 
         expect(qJson.item[3].enableWhen[2].question).equal(qJson.item[4].linkId);
         expect(qJson.item[3].enableWhen[2].operator).equal('=');
-        expect(qJson.item[3].enableWhen[2].answerCoding.display).equal('Street clothes, no shoes');
+        expect(qJson.item[3].enableWhen[2].answerCoding.display).equal('Street clothes, no shoes (LA11872-1)');
       });
 
       // Change the 2nd enableWhen Question to an invalid one.
@@ -675,7 +675,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.operator"]')
         .find('option:selected').should('have.text', '=');
       cy.get('[id^="enableWhen.0.answerCoding"]')
-        .should('have.value', 'Yes (LA33-6)');
+        .should('have.value', 'Yes (LA33-6 : http://loinc.org)');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].item[0].enableWhen)

@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.6] 2026-01-29
+### Fixed
+- Fixed an issue with enableWhen answer coding when the coding was missing properties.
+
 ## [11.0.5] 2026-01-25
 ### Added
 - Added enableWhen answer validation to check values against answerOptions.
