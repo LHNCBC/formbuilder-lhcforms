@@ -1,6 +1,6 @@
 {
   "resourceType": "Questionnaire",
-  "title": "Answer options form",
+  "title": "enableWhen answer coding",
   "status": "draft",
   "meta": {
     "profile": [
@@ -272,6 +272,95 @@
         },
         {
           "valueCoding": {
+            "code": "47078008"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "787951768847",
+      "text": "enableWhen answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383902",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "291519646727",
+      "text": "enableWhen missing system answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383903",
+          "operator": "=",
+          "answerCoding": {
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "123515567593",
+      "text": "enableWhen missing display answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383904",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "759834427235",
+      "text": "enableWhen missing code answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383905",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "459971556501",
+      "text": "enableWhen missing system and code answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383906",
+          "operator": "=",
+          "answerCoding": {
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "642789009580",
+      "text": "enableWhen missing system and display answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383907",
+          "operator": "=",
+          "answerCoding": {
             "code": "47078008"
           }
         }

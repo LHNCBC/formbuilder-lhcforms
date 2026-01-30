@@ -18,6 +18,7 @@ export class AnswerOptionService {
   private formProperty$ = new BehaviorSubject<FormProperty | ObjectProperty | null>(null);
   codingAnswerOptionsHash: { [code: string]: any } = {};
   codingAnswerOptionsCodes: any[] = [];
+  codingAnswerOptionsBySystem: { [system: string]: any } = {};
   answerOptions: any[] = [];
   answerConstraint = "optionsOnly";
   answerOptionItemLinkId;
@@ -65,29 +66,53 @@ export class AnswerOptionService {
       // Save answerOptions separately (we'll handle below)
       if (hasOptions) {
         if (valueName === "valueCoding") {
-          this.codingAnswerOptionsHash = node.data.answerOption.reduce((acc, obj) => {
-            acc[obj[valueName].code] = obj[valueName];
-            return acc;
-          }, {});
-          this.codingAnswerOptionsCodes = node.data.answerOption.map(c => c[valueName].code);
+
+          this.codingAnswerOptionsHash = {};
+          this.codingAnswerOptionsCodes = [];
+          this.codingAnswerOptionsBySystem = {};
+
+          node.data.answerOption.forEach((obj, index) => {
+            const coding = obj[valueName];
+
+            if (coding) {
+              // Use code if available, otherwise create a fallback key
+              const key = `ansOpt_${index}`;
+              this.codingAnswerOptionsHash[key] = coding;
+
+              // Only add real codes to the codes array
+              if (coding.code != null) {
+                this.codingAnswerOptionsCodes.push(key);
+              }
+
+              // Index by system for better lookup
+              if (coding.system) {
+                if (!this.codingAnswerOptionsBySystem[coding.system]) {
+                  this.codingAnswerOptionsBySystem[coding.system] = [];
+                }
+                this.codingAnswerOptionsBySystem[coding.system].push(coding);
+              }
+            }
+          });
         }
 
-        this.answerOptions = node.data.answerOption
-          .map(ao => ao[valueName])
-          .filter(v => v !== null && v !== undefined)   // remove nulls
-          .map(v => {
-            if (typeof v === 'string') {
-              return v;
-            }
-            if (typeof v === 'number') {
-              return String(v);
-            }
-            if (typeof v === 'object' && valueName === "valueCoding") {
-              return this.getAutocompleteItemFromCoding(v);
-            }
-            return undefined; // Explicitly return undefined for unsupported types
-          })
-          .filter(v => v !== undefined); // Remove undefined values
+        this.answerOptions = [...new Set(
+          node.data.answerOption
+            .map(ao => ao[valueName])
+            .filter(v => v !== null && v !== undefined)
+            .map(v => {
+              if (typeof v === 'string') {
+                return v;
+              }
+              if (typeof v === 'number') {
+                return String(v);
+              }
+              if (typeof v === 'object' && valueName === "valueCoding") {
+                return this.getAutocompleteItemFromCoding(v);
+              }
+              return undefined;
+            })
+            .filter(v => v !== undefined)
+        )];
       }
 
       if (hasOptions && 'answerConstraint' in node.data) {
@@ -112,13 +137,28 @@ export class AnswerOptionService {
    */
   getAutocompleteItemFromCoding(coding: any): string {
     const code = coding.code ?? '';
-    const hashEntry = this.codingAnswerOptionsHash?.[code];
+    let hashEntry = this.codingAnswerOptionsHash?.[code];
     let display = coding.display;
+
+    // If not found by code, try finding by system match
+    if (!display && !hashEntry && coding.system) {
+      const systemMatches = this.codingAnswerOptionsBySystem?.[coding.system] || [];
+
+      // Try to find exact match by display or other properties
+      hashEntry = systemMatches.find(c =>
+        (!code || c.code === code) &&
+        (!coding.display || c.display === coding.display)
+      );
+    }
+
+    // Use hash entry display if available and systems match
     if (!display && hashEntry && hashEntry.system === coding.system) {
       display = hashEntry.display;
     }
-    if (display && code) return `${display} (${code})`;
-    if (display) return display;
-    return code;
+
+    // Format output
+    const system = coding.system ?? '';
+    const codePart = [code, system].filter(Boolean).join(' : ');
+    return [display, codePart && `(${codePart})`].filter(Boolean).join(' ');
   }
 }

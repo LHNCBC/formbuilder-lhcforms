@@ -3,6 +3,8 @@
 This project follows [Semantic Versioning](http://semver.org/).
 
 ## [11.0.6] 2026-01-30
+### Fixed
+- Fixed an issue with enableWhen answer coding when the coding was missing properties.
 ### Changed
 - Updated the Expression Item Variables section to be collapsed by default.
 
