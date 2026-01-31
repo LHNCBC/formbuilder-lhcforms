@@ -2223,7 +2223,7 @@
         "expressionLabel": "",
         "displayExpressionEditorSections": {
           titleSection: true,
-          uneditableVariablesSection: false,
+          uneditableVariablesSection: true,
           itemVariablesSection: true,
           outputExpressionSection: false
         },
@@ -2301,7 +2301,9 @@
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: true,
+          uneditableVariablesSectionExpanded: false,
           itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -2367,7 +2369,9 @@
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: true,
+          uneditableVariablesSectionExpanded: false,
           itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -2429,7 +2433,9 @@
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: false,
-          itemVariablesSection: false,
+          uneditableVariablesSectionExpanded: false,
+          itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
