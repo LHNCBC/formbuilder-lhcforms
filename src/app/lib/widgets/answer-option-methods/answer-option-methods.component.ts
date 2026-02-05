@@ -20,8 +20,6 @@ import {
 })
 export class AnswerOptionMethodsComponent extends LabelRadioComponent implements OnInit, AfterViewInit, OnDestroy {
   private formService = inject(FormService);
-  private liveAnnouncer = inject(LiveAnnouncer);
-
 
   subscriptions: Subscription [] = [];
   @ViewChild('answerOption', {static: true, read: AnswerOptionComponent}) answerOption: AnswerOptionComponent;

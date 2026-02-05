@@ -34,14 +34,14 @@ export class EwValidateDirective implements OnChanges, OnDestroy {
    * Validate form property errors. Look for only ENABLEWHEN* errors.
    */
   validate() {
-      let ret = this.formProperty?._errors?.reduce((acc, error) => {
-        if(error.code?.startsWith('ENABLEWHEN')) {
-          acc.push(error.message);
-        }
-        return acc;
-      }, []);
-      ret = ret?.length ? ret : null;
-      this.isError.emit(!ret);
+    let ret = this.formProperty?._errors?.reduce((acc, error) => {
+      if(error.code?.startsWith('ENABLEWHEN')) {
+        acc.push(error.message);
+      }
+      return acc;
+    }, []);
+    ret = ret?.length ? ret : null;
+    this.isError.emit(!ret);
   }
 
   /**

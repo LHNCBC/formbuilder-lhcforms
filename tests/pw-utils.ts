@@ -7,11 +7,25 @@ import fhir from "fhir/r4";
 import path from "path";
 import fs from "node:fs/promises";
 
+export type ExpressionInput =
+  | { kind: 'text'; selector: string; value: string }
+  | { kind: 'autocomplete'; selector: string; search: string }
+  | { kind: 'dropdown'; selector: string; search: string }
+  | { kind: 'none' };
+
+export interface VariableTestCase {
+  name: string;
+  label: string;
+  type: string;
+  input: ExpressionInput;
+  expectedType: string;
+  expectedValue: string;
+}
+
 /**
  * Class for playwright utilities.
  */
 export class PWUtils {
-
   static helpTextExtension = [{
     url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl',
     valueCodeableConcept: {
@@ -251,4 +265,73 @@ export class PWUtils {
     return `[id="${id}"]`;
   }
 
+  /**
+   * Creates a single item variable in the expression editor.
+   *
+   * This function opens the "Create/edit variables" dialog, fills in the variable
+   * label and type, handles the expression input based on its kind
+   * (text, autocomplete, dropdown, or none), saves the variable, and verifies
+   * that it appears correctly in the variables table.
+   *
+   * @param {Page} page - The Playwright Page object to interact with the UI.
+   * @param {VariableTestCase} test - The test case defining the variable's
+   *        name, label, type, input details, and expected values for verification.
+   */
+  static async createSingleVariable(
+    page: Page,
+    test: VariableTestCase
+  ) {
+    await page.getByRole('button', {
+      name: 'Create/edit variables',
+      exact: true,
+    }).click();
+
+    const shadow = page.locator('lhc-expression-editor');
+
+    await expect(
+      shadow.locator('#expression-editor-base-dialog')
+    ).toBeVisible();
+
+    // Add variable
+    await shadow.locator('#add-variable').click();
+    await shadow.locator('#variable-label-0').fill(test.label);
+    await shadow.locator('#variable-type-0').selectOption(test.type);
+
+    // Expression input (type-dependent)
+    switch (test.input.kind) {
+      case 'text': {
+        const input = shadow.locator(test.input.selector);
+        await input.fill(test.input.value);
+        await expect(input).not.toHaveClass(/field-error/);
+        break;
+      }
+
+      case 'autocomplete': {
+        const input = shadow.locator(test.input.selector);
+        await input.fill(test.input.search);
+        await input.press('ArrowDown');
+        await input.press('Enter');
+        break;
+      }
+
+      case 'dropdown': {
+        const input = shadow.locator(test.input.selector);
+        await input.fill(test.input.search);
+        break;
+      }
+
+      case 'none':
+        break;
+    }
+
+    // Save
+    await shadow.locator('#export').click();
+
+    // Verify table
+    const row = page.locator('lfb-variable table > tbody > tr').first();
+
+    await expect(row.locator('td').nth(0)).toHaveText(test.label);
+    await expect(row.locator('td').nth(1)).toHaveText(test.expectedType);
+    await expect(row.locator('td').nth(2)).toHaveText(test.expectedValue);
+  }
 }

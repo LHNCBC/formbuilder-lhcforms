@@ -33,6 +33,8 @@ export enum FHIR_VERSIONS {
 }
 export type FHIR_VERSION_TYPE = keyof typeof FHIR_VERSIONS;
 
+type ComparableCoding = fhir.Coding & { text?: string };
+
 export class Util {
   static HELP_BUTTON_EXTENSION = {
       url: EXTENSION_URL_ITEM_CONTROL,
@@ -191,6 +193,9 @@ export class Util {
     }
     else if(typeof json === 'boolean') {
       ret = false; // Any boolean is non-empty
+    }
+    else if(typeof json === 'string' && json.trim().length === 0) {
+      ret = true; // empty string or only whitespace is empty
     }
     else if(!json) {
       ret = true; // empty string, null and undefined are empty
@@ -533,6 +538,26 @@ export class Util {
   }
 
   /**
+   * Returns the appropriate answer[x] field name for a given type and data object.
+   * If the field for the primary type exists in the data object, it is returned.
+   * Otherwise, checks the alternate type and returns its field name if present.
+   * If neither is found, returns the field name for the primary type.
+   * @param type - The primary FHIR data type (e.g., 'string', 'integer', 'coding').
+   * @param altType - An alternate FHIR data type to check if the primary is not present.
+   * @param dataObj - The object to check for the presence of answer[x] fields.
+   * @returns The answer[x] field name found in the object, or the default for the primary type.
+   */
+  static resolveAnswerFieldName(type: string, altType: string, dataObj: object) {
+    const answerType = Util._answerTypeMap[type];
+    if (answerType in dataObj) {
+      return answerType;
+    } else {
+      const answerAltType = Util._answerTypeMap[altType];
+      return (answerAltType in dataObj) ? answerAltType : answerType;
+    }
+  }
+
+  /**
    * Compute tree hierarchy sequence numbering.
    * @param node - Target node of computation
    */
@@ -577,7 +602,7 @@ export class Util {
    * @param value - value from formProperty, which is in ISO format.
    * @param formProperty - FormProperty of the field.
    */
-  static dateValidator(value: string, formProperty: FormProperty): any [] {
+  static dateValidator(value: string, formProperty: FormProperty): any[] {
     let errors: any[] = [];
     const dateValidation = DateUtil.validateDate(value);
     if(value?.trim().length > 0 && !dateValidation.validDate && dateValidation.validFormat) {
@@ -757,6 +782,57 @@ export class Util {
         arr.splice(i, 1);
       }
     }
+  }
+
+  /**
+   * Checks if a value has FHIR Coding-like properties (system and code).
+   *
+   * @param value - The value to check
+   * @returns True if the value is an object containing 'system' and 'code'
+   */
+  static hasSystemAndCode(value: any): value is Partial<fhir.Coding> {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return false;
+    }
+    return 'code' in value && 'system' in value;
+  }
+
+  /**
+   * Compares two FHIR Coding objects for equality.
+   *
+   * A "coding" is an object that may contain any of the following fields:
+   * 'code', 'system', 'display', and/or 'text'.
+   *
+   * This method normalizes both codings before comparison by copying
+   * 'display' into 'text' when 'text' is not present. This is required
+   * because the underlying LForms comparison logic
+   * ('LFormsData.prototype._codingsEqual') compares codings using the
+   * 'text' field rather than 'display'.
+   *
+   * After normalization, two codings are considered equal if and only if:
+   * 1) The code systems are equal or unspecified, and
+   * 2) Either:
+   *    a) The codes are specified and equal, or
+   *    b) The codes are not specified and the texts are specified and equal.
+   *
+   * @param a The first coding to compare
+   * @param b The second coding to compare
+   * @returns True if the codings are considered equal; otherwise, false.
+   */
+  static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
+    // Normalize codings: copy display to text if display exists
+    const normalizedA: ComparableCoding = { ...a };
+    const normalizedB: ComparableCoding = { ...b };
+
+    if (normalizedA.display && !normalizedA.text) {
+      normalizedA.text = normalizedA.display;
+    }
+
+    if (normalizedB.display && !normalizedB.text) {
+      normalizedB.text = normalizedB.display;
+    }
+
+    return LForms.LFormsData.prototype._codingsEqual.call(this, normalizedA, normalizedB);
   }
 
   /**

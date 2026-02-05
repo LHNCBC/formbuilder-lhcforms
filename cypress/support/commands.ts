@@ -297,7 +297,7 @@ Cypress.Commands.add('includeExcludeCodeField', {prevSubject: true}, (codeOption
   const coding = {code: 'c1', system: 's1', display: 'd1'}
   cy.get('@codeYes').click();
   cy.get('[id^="code.0.code_"]').as('code');
-  cy.get('@code').type('ab ');
+  cy.get('@code').type('ab {enter}');
   cy.get('@code').next('ul').find('small').as('codeError');
   cy.get('@codeError').should('be.visible');
   cy.get('@codeError').contains('Spaces are not allowed at the beginning or end.');
@@ -900,6 +900,31 @@ Cypress.Commands.add('checkQuestionItemControlUI',
     }
   }
 });
+
+/**
+ * Expands the Item Variables section in the Expression Editor
+ * by clicking the expand arrow when it is in the collapsed state.
+ */
+Cypress.Commands.add('expandExpressionItemVariablesSection', () => {
+  cy.get('#variables-section span.arrow')
+    .should('be.visible')
+    .should('have.text', '›')
+    .should('have.css', 'transform', 'none')
+    .click();
+});
+
+/**
+ * Collapse the Item Variables section in the Expression Editor
+ * by clicking the collapse arrow when it is in the expanded state.
+ */
+Cypress.Commands.add('collapseExpressionItemVariablesSection', () => {
+  cy.get('#variables-section span.arrow')
+    .should('be.visible')
+    .should('have.text', '›')
+    .should('have.css', 'transform')
+    .click();
+});
+
 // Helps remove TypeScript errors and auto completing the Cypress commands in TypeScript
 declare global {
   namespace Cypress {
@@ -967,6 +992,8 @@ declare global {
       checkQuestionItemControlUI(
         type: string, questionItemControlOptions: string[], itemControlOptions: string[],
         itemControlOptionsAfterRepeat: string[], itemControlOptionsAfterAnswerValueSet: string[]): Chainable<void>;
+      expandExpressionItemVariablesSection(): Cypress.Chainable<JQuery<HTMLElement>>;
+      collapseExpressionItemVariablesSection(): Cypress.Chainable<JQuery<HTMLElement>>;
     }
   }
 }

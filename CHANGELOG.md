@@ -2,6 +2,16 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.6] 2026-01-30
+### Fixed
+- Fixed an issue with enableWhen answer coding when the coding was missing properties.
+### Changed
+- Updated the Expression Item Variables section to be collapsed by default.
+
+## [11.0.5] 2026-01-25
+### Added
+- Added enableWhen answer validation to check values against answerOptions.
+
 ## [11.0.4] 2026-01-16
 ### Fixed
 - Fixed an issue causing the display field to not appear when the system field is blank for answer options.
