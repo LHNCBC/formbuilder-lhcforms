@@ -346,7 +346,7 @@ describe('Home page', () => {
         },
         {
           fixtureFile: 'initial-sample.STU3.json',
-          serverBaseUrl: 'https://hapi.fhir.org/baseDstu3',
+          serverBaseUrl: 'https://lforms-fhir.nlm.nih.gov/baseDstu3',
           version: 'STU3',
         }
       ].forEach((testConfig) => {

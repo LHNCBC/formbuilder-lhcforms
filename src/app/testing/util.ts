@@ -17,23 +17,44 @@ export interface BundleOptions {
  * Holds utility methods. Avoid non-static methods.
  */
 export class TestUtil {
+
+  /**
+   * Set value of an input element and dispatch input and keydown events.
+   * @param inputEl - HTMLInputElement
+   * @param value - Value to set.
+   */
   static setValue(inputEl: HTMLInputElement, value: string): void {
     inputEl.value = value;
     inputEl.dispatchEvent(new Event('input'));
     inputEl.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
   }
 
-  static checkRadio(radioEl: HTMLInputElement): void {
-    radioEl.dispatchEvent(new Event('change'));
-  }
-
+  /**
+   * Click an element.
+   * @param el - HTMLElement
+   */
   static click(el: HTMLElement): void {
     el.dispatchEvent(new Event('click'));
   }
 
+  /**
+   * Select an option by index.
+   * @param selectEl - HTMLSelectElement
+   * @param optionIndex - Index of the option to select.
+   */
   static select(selectEl: HTMLSelectElement, optionIndex: number): void {
     selectEl.value = selectEl.options[optionIndex].value;
     selectEl.dispatchEvent(new Event('change'));
+  }
+
+  /**
+   * Select an option by text content.
+   * @param selectEla - HTMLSelectElement
+   * @param optionText - Exact visible text content of the option.
+   */
+  static selectText(selectEl: HTMLSelectElement, optionText: string): void {
+    const optionIndex = Array.from(selectEl.options).findIndex((option) => option.text === optionText);
+    TestUtil.select(selectEl, optionIndex);
   }
 
   static withButtonText(contextEl: DebugElement, text: string): DebugElement {

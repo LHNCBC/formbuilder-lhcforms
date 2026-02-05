@@ -115,3 +115,33 @@ div.has-error > ul {
 div.has-error > ul:empty {
   display: none;
 }
+
+/* Change the tooltip body background */
+.lfb-custom-tooltip .tooltip-inner {
+  background-color: lightyellow;
+  color: black;
+  border: 1px solid black;
+  text-align: left;
+}
+
+/* Change the arrow color for all directions */
+.lfb-custom-tooltip.bs-tooltip-start .tooltip-arrow::before {
+  border-left-color: lightyellow !important;
+  filter: drop-shadow(1px 0 0 black);
+}
+
+.lfb-custom-tooltip.bs-tooltip-top .tooltip-arrow::before {
+  border-top-color: lightyellow !important;
+  filter: drop-shadow(0 1px 0 black);
+}
+
+.lfb-custom-tooltip.bs-tooltip-end .tooltip-arrow::before {
+  border-right-color: lightyellow !important;
+  filter: drop-shadow(-1px 0 0 black);
+}
+
+.lfb-custom-tooltip.bs-tooltip-bottom .tooltip-arrow::before {
+  border-bottom-color: lightyellow !important;
+  filter: drop-shadow(0 -1px 0 black);
+}
+
