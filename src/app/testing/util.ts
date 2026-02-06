@@ -49,7 +49,8 @@ export class TestUtil {
 
   /**
    * Select an option by text content.
-   * @param selectEla - HTMLSelectElement
+   *
+   * @param selectEl - HTMLSelectElement
    * @param optionText - Exact visible text content of the option.
    */
   static selectText(selectEl: HTMLSelectElement, optionText: string): void {
@@ -57,6 +58,12 @@ export class TestUtil {
     TestUtil.select(selectEl, optionIndex);
   }
 
+  /**
+   * Find button element with the specified text content.
+   *
+   * @param contextEl - Context element
+   * @param text - Text content of the button to find.
+   */
   static withButtonText(contextEl: DebugElement, text: string): DebugElement {
     return contextEl.query((de) => {
       return (de.name === 'button') && (de.nativeElement.textContent === text);
