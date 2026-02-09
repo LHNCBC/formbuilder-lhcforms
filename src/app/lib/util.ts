@@ -33,6 +33,8 @@ export enum FHIR_VERSIONS {
 }
 export type FHIR_VERSION_TYPE = keyof typeof FHIR_VERSIONS;
 
+type ComparableCoding = fhir.Coding & { text?: string };
+
 export class Util {
   static HELP_BUTTON_EXTENSION = {
       url: EXTENSION_URL_ITEM_CONTROL,
@@ -391,6 +393,18 @@ export class Util {
         // Internally the question is target TreeNode. Change that to node's linkId.
         if (this.key === 'question' && typeof node?.data === 'object') {
           this.update(node.data.linkId);
+        }
+
+        // Keep only valid enableWhen entries that contain question, operator, and an answer[x] value.
+        if (node && typeof node === 'object' && Array.isArray(node.enableWhen)) {
+          node.enableWhen = node.enableWhen.filter(ew => {
+            const keys = Object.keys(ew);
+            return (
+              keys.includes('question') &&
+              keys.includes('operator') &&
+              keys.some(k => k.startsWith('answer'))
+            );
+          });
         }
       });
 
@@ -784,17 +798,41 @@ export class Util {
   }
 
   /**
-   * Compare if the two given codings are equal. A "coding" is a hash that may have any or all of the
-   * following three fields: code, system, and text. Two codings are considered equal if and only if:
+   * Compares two FHIR Coding objects for equality.
+   *
+   * A "coding" is an object that may contain any of the following fields:
+   * 'code', 'system', 'display', and/or 'text'.
+   *
+   * This method normalizes both codings before comparison by copying
+   * 'display' into 'text' when 'text' is not present. This is required
+   * because the underlying LForms comparison logic
+   * ('LFormsData.prototype._codingsEqual') compares codings using the
+   * 'text' field rather than 'display'.
+   *
+   * After normalization, two codings are considered equal if and only if:
    * 1) The code systems are equal or unspecified, and
-   * 2) Either the codes are specified and equal, or, the codes are not specified and the texts are
-   *    specified and equal.
-   * @param a - The first FHIR Coding object.
-   * @param b - The second FHIR Coding object.
-   * @returns True if the codings are considered equal, otherwise false.
+   * 2) Either:
+   *    a) The codes are specified and equal, or
+   *    b) The codes are not specified and the texts are specified and equal.
+   *
+   * @param a The first coding to compare
+   * @param b The second coding to compare
+   * @returns True if the codings are considered equal; otherwise, false.
    */
   static areFhirCodingsEqual(a: fhir.Coding, b: fhir.Coding): boolean {
-    return LForms.LFormsData.prototype._codingsEqual.call(this, a, b);
+    // Normalize codings: copy display to text if display exists
+    const normalizedA: ComparableCoding = { ...a };
+    const normalizedB: ComparableCoding = { ...b };
+
+    if (normalizedA.display && !normalizedA.text) {
+      normalizedA.text = normalizedA.display;
+    }
+
+    if (normalizedB.display && !normalizedB.text) {
+      normalizedB.text = normalizedB.display;
+    }
+
+    return LForms.LFormsData.prototype._codingsEqual.call(this, normalizedA, normalizedB);
   }
 
   /**

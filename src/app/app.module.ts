@@ -107,6 +107,7 @@ import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value
 import { LfbOptionControlWidgetComponent } from './lib/widgets/lfb-option-control-widget/lfb-option-control-widget.component';
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
+import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
 
 import { environment } from '../environments/environment';
 
@@ -145,7 +146,6 @@ import { environment } from '../environments/environment';
     UnitsDisplayComponent,
     AnswerOptionComponent,
     SfFormWrapperComponent,
-    PreviewDlgComponent,
     FhirExportDlgComponent,
     LoincNoticeComponent,
     StringWithCssComponent,
@@ -207,6 +207,7 @@ import { environment } from '../environments/environment';
     MatTooltipModule,
     NgbModule,
     ObservationExtractComponent,
+    PreviewDlgComponent,
     SchemaFormModule.forRoot(),
     TitleComponent,
     TreeModule,
@@ -218,7 +219,8 @@ import { environment } from '../environments/environment';
     LabelComponent,
     CdkCopyToClipboard,
     CodemirrorModule,
-    ExpressionEditorModule
+    ExpressionEditorModule,
+    EnableWhenMethodComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [

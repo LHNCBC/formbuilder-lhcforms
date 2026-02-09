@@ -475,6 +475,8 @@ describe('Home page', () => {
       cy.selectDataType('coding');
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
 
+      cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+
       // Select 'http://loinc.org'
       cy.get('[id^="answerOption.0.valueCoding.system"]').click().type('{downarrow}{downarrow}{enter}');
       cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
@@ -804,9 +806,16 @@ describe('Home page', () => {
       cy.selectDataType('coding');
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
       cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
+      // New default for 'Answer list source' is now 'None'
+      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+
       cy.get('#answerValueSet_non-snomed').should('not.exist');
+
+      // Select the 'Answer Options' option
+      cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+
       cy.get('lfb-answer-option').should('be.visible');
 
       cy.get('[for^="__\\$answerOptionMethods_value-set"]').click();
@@ -818,9 +827,9 @@ describe('Home page', () => {
         expect(q.item[0].answerOption).to.be.undefined;
       });
 
-      cy.get('[for^="__\\$answerOptionMethods_answer-option"]').click();
+      cy.get('[for^="__\\$answerOptionMethods_none"]').click();
       cy.get('#answerValueSet_non-snomed').should('not.exist');
-      cy.get('lfb-answer-option').should('be.visible');
+      //cy.get('lfb-answer-option').should('be.visible');
       const aOptions = [
         {system: 's1', display: 'display 1', code: 'c1'},
         {system: 's2', display: 'display 2', code: 'c2'}
@@ -967,6 +976,12 @@ describe('Home page', () => {
       cy.get('lfb-answer-option').should('not.exist');
 
       cy.clickTreeNode('Item with answer option');
+      // New default for 'Answer list source' is now 'None'
+      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+
+      // Select the 'Answer Options' option
+      cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       cy.get('lfb-answer-option').should('be.visible');
       cy.get('@ecl').should('not.exist');
@@ -978,6 +993,7 @@ describe('Home page', () => {
       cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('be.checked');
       cy.clickTreeNode('Item with answer option');
       cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+
       cy.get('lfb-answer-option').should('be.visible');
       cy.clickTreeNode('Item with non-snomed');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.checked');
@@ -1092,7 +1108,8 @@ describe('Home page', () => {
         cy.get('@type').contains('string');
         cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family");
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', "%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family");
+
         cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
         cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
@@ -1102,7 +1119,8 @@ describe('Home page', () => {
         cy.get('@type').contains('integer');
         cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "today().toDate().difference(%patient.birthDate.toDate()).years()");
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', "today().toDate().difference(%patient.birthDate.toDate()).years()");
+
         cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
         cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
@@ -1112,7 +1130,8 @@ describe('Home page', () => {
         cy.get('@type').contains('coding');
         cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', "%patient.gender");
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', "%patient.gender");
+
         cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
         cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
@@ -1170,7 +1189,8 @@ describe('Home page', () => {
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
 
         // Click the 'Create/edit expression' for the Answer expression
-        cy.get('button#editExpression').click();
+        cy.get('[id^="edit__\\$answerExpression"]').click();
+
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Update the Output expression
           cy.get('textarea#final-expression').clear().type('%a | %b');
@@ -1178,10 +1198,11 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b');
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', '%a | %b');
 
         // Edit the Answer expression
-        cy.get('button#editExpression').click();
+        cy.get('[id^="edit__\\$answerExpression"]').click();
+
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Update the Output expression
           cy.get('textarea#final-expression').clear().type('%a | %b | 999');
@@ -1189,7 +1210,7 @@ describe('Home page', () => {
           // Save (Export) should output the questionnaire for the given Variable Type
           cy.get('#export').click();
         });
-        cy.get('lfb-expression-editor textarea#outputExpression').should('have.value', '%a | %b | 999');
+        cy.get('[id^="__\\$answerExpression"]').should('have.value', '%a | %b | 999');
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[3].extension).to.deep.equal([
@@ -1255,8 +1276,7 @@ describe('Home page', () => {
         cy.getComputeInitialValueValueMethodClick();
         // The expression for the Compute Initial Value should be blank. It should not
         // display the Answer expression.
-        cy.get('lfb-expression-editor textarea#outputExpression').should('be.empty');
-
+        cy.get('[id^="__\\$initialExpression"]').should('be.empty');
       });
     });
 
@@ -1272,8 +1292,14 @@ describe('Home page', () => {
         cy.selectDataType('coding');
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
         cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
+        // New default for 'Answer list source' is now 'None'
+        cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+
+        // Select the 'Answer Options' option
+        cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+
         // SNOMED radio should not exist
         cy.get('[for^="__\\$answerOptionMethods_snomed-value-set"]').should('not.exist');
         cy.get('#answerValueSet_non-snomed').should('not.exist');

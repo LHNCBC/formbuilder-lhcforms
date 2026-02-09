@@ -250,4 +250,14 @@ export class CypressUtil {
       win.navigator.clipboard.readText().then((text) => callback(text));
     });
   }
+
+  /**
+   * Escapes an element ID so it can be safely used in a Cypress/jQuery CSS selector.
+   * Handles special characters (such as `$`, `:`, `[`, `]`, etc.) that would otherwise
+   * cause selector parsing errors.
+   * An alternative method is to format the id to return `[id="${id}"]` string.
+   */
+  static escapeIdForCypress(id: string): string {
+    return `#${CSS.escape(id)}`;
+  }
 }

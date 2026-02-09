@@ -305,12 +305,10 @@ export class UnitService {
         lastIndex = idx;
       }
       let tokenToAdd = newTokens[i];
-      if (
-        typeof tokenToAdd === 'string' &&
-        !tokenToAdd.startsWith('/') &&
-        Array.isArray(wordBoundaryChars) &&
-        wordBoundaryChars.some(char => tokenToAdd.includes(char))
-      ) {
+      if (typeof tokenToAdd === 'string' &&
+          !tokenToAdd.startsWith('/') &&
+          Array.isArray(wordBoundaryChars) &&
+          wordBoundaryChars.some(char => tokenToAdd.includes(char))) {
         tokenToAdd = '(' + tokenToAdd + ')';
       }
       rebuilt += tokenToAdd;

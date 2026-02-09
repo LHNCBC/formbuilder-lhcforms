@@ -120,8 +120,7 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
             this.enableWhenAutocompleteOptions
           );
 
-          if (typeof this.formProperty.value === "object" &&
-            Util.hasSystemAndCode(this.formProperty.value)) {
+          if (typeof this.formProperty.value === "object") {
             this.autoComp.setFieldVal(this.answerOptionService.getAutocompleteItemFromCoding(this.formProperty.value), false);
           }
         } else {
@@ -159,7 +158,7 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
                   this.formProperty.setValue(this.answerOptionService.codingAnswerOptionsHash[code], false);
                 } else {
 
-                  const newCoding = this.parseCoding(data.final_val);
+                  const newCoding = this.parseCoding(data);
                   if (newCoding.code) {
                     if (newCoding.code in this.answerOptionService.codingAnswerOptionsHash && this.answerOptionService.codingAnswerOptionsHash[newCoding.code].display === newCoding.display) {
                       this.formProperty.setValue(this.answerOptionService.codingAnswerOptionsHash[newCoding.code], false);
@@ -195,38 +194,41 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
   }
 
   /**
-   * Parses a coding string into a structured object.
+   * Resolves a selected answer value into a coding object.
    *
-   * - If the input matches the pattern: "Display Text (CODE)",
-   *   the text before the parentheses is used as the display value
-   *   (first word only), and the text inside the parentheses is used
-   *   as the code.
-   * - If the input does not match the pattern, the entire value is
-   *   used as the display, and a normalized lowercase version
-   *   (spaces replaced with underscores) is used as the code.
+   * If the value comes from a predefined list ('on_list === true'), the function
+   * attempts to look up the corresponding coding in `codingAnswerOptionsHash`
+   * using the index of 'final_val' in the source list (e.g. 'ansOpt_<index>').
    *
-   * @param value - The input string to parse.
+   * If the value does not come from a list ('on_list === false'), a display-only
+   * coding is returned using the entered value, with no code.
+   *
+   * @param data - An object describing the selected or entered answer value.
+   *               Expected fields include:
+   *               - 'on_list': whether the value originates from a predefined list
+   *               - 'final_val': the displayed value
+   *               - 'list': the source list of possible values
    * @returns A coding object containing system, display, and code,
-   *          or null if parsing fails.
+   *          or null if no matching coding can be resolved.
    */
-  parseCoding(value: string): { system: string;  display: string; code: string } | null {
-    const match = value.match(/^(.+?)\s*\(([^)]*)\)/);
-    if (!match) {
+  parseCoding(data: any): { system: string | null; display: string; code: string | null } | null {
+    if (data.on_list) {
+      const idx = data.list.indexOf(data.final_val);
+      if (idx > -1) {
+        const keyName = `ansOpt_${idx}`;
+        if (keyName in this.answerOptionService.codingAnswerOptionsHash) {
+          return this.answerOptionService.codingAnswerOptionsHash[keyName];
+        }
+      }
+    } else {
+      // not on list
       return {
         system: null,
-        display: value,
-        code: value.toLowerCase().replace(/ /g, "_")
+        display: data.final_val,
+        code: null
       };
     }
-
-    const [, text1, text2] = match;
-    return {
-      system: null,
-      display: text1.trim().split(' ')[0],
-      code: text2.trim()
-    };
   }
-
 
   /**
    * Destroy autocomplete.

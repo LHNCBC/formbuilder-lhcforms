@@ -168,9 +168,12 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       await page.getByRole('button', {name: 'Run Validation'}).click();
       await expect(noErrorAlertLocator).toBeAttached();
       await expect(errorPanelLocator).not.toBeAttached();
+      await page.getByRole('tab', {name: 'R4 Version'}).click();
+      await expect(noErrorAlertLocator).not.toBeAttached();
 
       // STU3 version
       await page.getByRole('tab',{name: 'STU3 Version'}).click();
+      await expect(noErrorAlertLocator).not.toBeAttached();
 
       await inputEl.clear();
 

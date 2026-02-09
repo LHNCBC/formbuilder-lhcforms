@@ -4,6 +4,10 @@ lfb-enable-when td.invalid select {
   outline: 2px solid red;
 }
 
+.card {
+  border: none;
+}
+
 /*
   .sr-only can fail in modern browsers due to deprecated clip;
   replacing it with clip-path fixes the issue.

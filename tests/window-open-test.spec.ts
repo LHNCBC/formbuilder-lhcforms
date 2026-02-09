@@ -136,14 +136,10 @@ test.describe('Open form builder in a new window', async () => {
       await expect(saveButton).toBeVisible();
       await expect(saveButton).toBeEnabled();
 
-      // Start listening for page close first
-      const pageClosePromise = mainPO.page.waitForEvent('close');
-
-      // Trigger the click that closes the page
-      await saveButton.evaluate(button => (button as HTMLButtonElement).click());
-
-      // Wait for the page to actually close
-      await pageClosePromise;
+      await Promise.all([
+        mainPO.page.waitForEvent('close'),
+        saveButton.click()
+      ]);
 
       messageData.data = await getMessage(page, 'closed');
       expect(messageData.data.questionnaire.title).toBe('yyyy');

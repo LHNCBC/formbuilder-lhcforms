@@ -1,5 +1,5 @@
 <div [ngClass]="{'row': true, 'm-0': true}">
-  @if (!nolabel) {
+  @if (!noTableLabel) {
     <lfb-label
       [attr.for]="elementId"
       [title]="schema.title"
@@ -9,13 +9,20 @@
     ></lfb-label>
   }
 
-  <div [ngClass]="controlClasses" class="col p-0">
+  @if (noTableLabel) {
+    <div class="col-2 ps-0 pe-1"></div>
+  }
+  <div [ngClass]="controlClasses" class="col p-0 card">
+    @if (noTableLabel) {
+      <lfb-label [helpMessage]="schema.description" [title]="schema.title"
+                [labelId]="'label_'+id" [for]="id+_id"></lfb-label>
+    }
     <div class="input-group">
       @if (schema.widget.showExpression) {
         <textarea
           readonly
           aria-label="FHIRPath"
-          id="outputExpression"
+          [attr.id]="id+_id"
           [(ngModel)]="expression"
           class="flex-item textarea"
           [formControl]="control"
@@ -23,9 +30,9 @@
         ></textarea>
       }
     </div>
-    <button id="editExpression" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button" style="width:100%"
-      triggers="manual" placement="bottom top"
-      popoverClass=""
+    <button [attr.id]="'edit'+id+_id" (click)="editExpression()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
+            triggers="manual" placement="bottom top"
+            popoverClass=""
       >
       <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> Create/edit expression
     </button>

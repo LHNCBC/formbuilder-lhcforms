@@ -24,9 +24,16 @@ describe('Home page', () => {
     it('should support conditional display with answer coding source', () => {
       cy.addAnswerOptions();
       cy.contains('Add new item').scrollIntoView().click();
+
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       cy.get('[id^="enableWhen.0.question"]').type('{downarrow}{enter}');
       cy.get('[id^="enableWhen.0.operator"]').select('=');
-      cy.get('[id^="enableWhen.0.answerCoding"]').type('d1 (c1)').type('{downarrow}{enter}');
+      cy.get('[id^="enableWhen.0.answerCoding"]').type('d1 (c1 : s1)').type('{downarrow}{enter}');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item.length).equal(2);
@@ -42,6 +49,12 @@ describe('Home page', () => {
 
     it('should display error message for invalid answer in conditional display', () => {
       cy.contains('Add new item').scrollIntoView().click();
+
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
       const question1El = '[id^="enableWhen.0.question"]';
@@ -123,9 +136,48 @@ describe('Home page', () => {
         .find('small')
         .should('contain.text', ' Invalid operator \'>\' for type \'coding\' for enableWhen condition 3. ');
 
+      const answer4El = '[id^="enableWhen.3.answer"]';
       cy.get(errorIcon4El)
         .find('small')
         .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 4. ');
+
+      // Although four enableWhen conditions are displayed on the screen, three contain errors. The JSON should inlcude only the valid condition.
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[5].enableWhen.length).to.equal(1);
+        expect(qJson.item[5].enableWhen[0].question).to.equal('/itm4');
+        expect(qJson.item[5].enableWhen[0].operator).to.equal('=');
+        expect(qJson.item[5].enableWhen[0].answerInteger).to.equal(5);
+      });
+
+      // Clear the answer field to invalidate the enableWhen condition.
+      cy.get(answer1El).click().clear();
+      cy.get(errorIcon1El).should('exist');
+      cy.get(errorIcon1El)
+        .find('small')
+        .should('contain.text', ' Answer field is required when you choose an operator other than \'Not empty\' or \'Empty\' for enableWhen condition 1. ');
+
+      // As there are no valid enableWhen conditions, enableWhen is omitted from the JSON data.
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[5].enableWhen).to.be.undefined
+      });
+
+      // Fix the 1st and the 4th conditions.
+      cy.get(answer1El).click().type('5');
+      cy.get(answer4El).click().type('15');
+      cy.get(errorIcon1El).should('not.exist');
+      cy.get(errorIcon4El).should('not.exist');
+
+      // The JSON data should contains two enableWhen conditions.
+      cy.questionnaireJSON().should((qJson) => {
+        expect(qJson.item[5].enableWhen.length).to.equal(2);
+        expect(qJson.item[5].enableWhen[0].question).to.equal('/itm4');
+        expect(qJson.item[5].enableWhen[0].operator).to.equal('=');
+        expect(qJson.item[5].enableWhen[0].answerInteger).to.equal(5);
+
+        expect(qJson.item[5].enableWhen[1].question).to.equal('/itm4');
+        expect(qJson.item[5].enableWhen[1].operator).to.equal('=');
+        expect(qJson.item[5].enableWhen[1].answerInteger).to.equal(15);
+      });
     });
 
     it('should clear invalid question field on focusout for new enableWhen condition', () => {
@@ -139,6 +191,12 @@ describe('Home page', () => {
       const errorMessageEl = 'mat-sidenav-content ul > li.text-danger.list-group-item-warning';
 
       cy.clickTreeNode('Integer Type');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       // Insert a valid enableWhen condition
       // Select question '3.1 Name'
@@ -185,6 +243,12 @@ describe('Home page', () => {
 
       cy.clickTreeNode('Integer Type');
 
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       // Insert a valid enableWhen condition
       // Select question '3.1 Name'
       cy.get('[id^="enableWhen.0.question"]').type('{enter}');
@@ -221,7 +285,7 @@ describe('Home page', () => {
 
         expect(qJson.item[3].enableWhen[2].question).equal(qJson.item[4].linkId);
         expect(qJson.item[3].enableWhen[2].operator).equal('=');
-        expect(qJson.item[3].enableWhen[2].answerCoding.display).equal('Street clothes, no shoes');
+        expect(qJson.item[3].enableWhen[2].answerCoding.display).equal('Street clothes, no shoes (LA11872-1)');
       });
 
       // Change the 2nd enableWhen Question to an invalid one.
@@ -330,6 +394,12 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 2');
 
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
       cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
       cy.get('[id^="enableWhen.0.answerCoding"]').should('not.exist');
@@ -352,6 +422,12 @@ describe('Home page', () => {
     it('should show answer column if there is an answer in any row of conditional display', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 1');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const r1Question = '[id^="enableWhen.0.question"]';
       const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -397,6 +473,12 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 2');
 
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       cy.get('[id^="enableWhen.0.question"]').as('r1Question').type('{enter}');
       cy.get('[id^="enableWhen.0.operator"]').as('r1Operator').select('Not empty');
 
@@ -429,6 +511,12 @@ describe('Home page', () => {
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 1');
 
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
+
       const r1Question = '[id^="enableWhen.0.question"]';
       // First row operator='exist'
       cy.get(r1Question).type('{enter}');
@@ -441,6 +529,12 @@ describe('Home page', () => {
       cy.getTypeInitialValueValueMethodClick();
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 1');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const r1Question = '[id^="enableWhen.0.question"]';
       const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -470,6 +564,12 @@ describe('Home page', () => {
       cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
       cy.contains('Add new item').scrollIntoView().click();
       cy.getItemTextField().should('have.value', 'New item 1');
+
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const r1Question = '[id^="enableWhen.0.question"]';
       const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -503,6 +603,12 @@ describe('Home page', () => {
       cy.get('#answerValueSet_ecl').type(snomedEclText);
       cy.get('label[for^="__\\$itemControl.autocomplete"]').click();
       cy.contains('Add new item').scrollIntoView().click();
+
+      // New default for 'Conditional method' is now 'None'
+      cy.getLabelRadioInputByValue('lfb-enable-when-method', 'none').should('be.checked');
+
+      // Select the 'enableWhen condition and behavior' option
+      cy.getRadioButtonLabel('Conditional method', 'enableWhen condition and behavior').click();
 
       const r1Question = '[id^="enableWhen.0.question"]';
       const r1Operator = '[id^="enableWhen.0.operator"]';
@@ -569,7 +675,7 @@ describe('Home page', () => {
       cy.get('[id^="enableWhen.0.operator"]')
         .find('option:selected').should('have.text', '=');
       cy.get('[id^="enableWhen.0.answerCoding"]')
-        .should('have.value', 'Yes (LA33-6)');
+        .should('have.value', 'Yes (LA33-6 : http://loinc.org)');
 
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].item[0].enableWhen)

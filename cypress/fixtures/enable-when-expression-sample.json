@@ -1,0 +1,240 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "enableWhen expression",
+  "status": "draft",
+  "item": [
+    {
+      "type": "integer",
+      "linkId": "717943342309",
+      "text": "Item 0",
+      "initial": [
+        {
+          "valueInteger": 2
+        }
+      ]
+    },
+    {
+      "type": "integer",
+      "linkId": "261918238396",
+      "text": "Item 1",
+      "initial": [
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "214385052641",
+      "text": "enableWhen condition",
+      "enableWhen": [
+        {
+          "question": "717943342309",
+          "operator": ">",
+          "answerInteger": 5
+        },
+        {
+          "question": "261918238396",
+          "operator": ">",
+          "answerInteger": 5
+        }
+      ],
+      "enableBehavior": "all",
+      "disabledDisplay": "hidden"
+    },
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='717943342309').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='261918238396').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a > 5 and %b > 5"
+          }
+        }
+      ],
+      "linkId": "796941884409",
+      "text": "enableWhen expression"
+    },
+    {
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='717943342309').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='261918238396').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a < 5 and %b < 5"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a + %b"
+          }
+        }
+      ],
+      "linkId": "886229757725",
+      "text": "enableWhen and initial expressions"
+    },
+    {
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='717943342309').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='261918238396').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a < 5 and %b < 5"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a * %b"
+          }
+        }
+      ],
+      "linkId": "922837804649",
+      "text": "enableWhen and calculated expressions"
+    },
+    {
+      "type": "coding",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "1"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='717943342309').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='261918238396').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a < 5 and %b < 5"
+          }
+        }
+      ],
+      "linkId": "115458114505",
+      "text": "enableWhen and answer expressions"
+    }
+  ]
+}

@@ -200,7 +200,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   }
 
 
-
   /**
    * Set up defaults column reading 'initialSelected' flag.
    */
