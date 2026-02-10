@@ -485,7 +485,9 @@ describe('Home page', () => {
       // Autocomplete should show options.
       cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
       // Select 'Heart rate'
-      cy.get('[id^="answerOption.0.valueCoding.display"]').type('{downarrow}{downarrow}{downarrow}{enter}');
+      cy.get('[id^="answerOption.0.valueCoding.display"]')
+        .click()
+        .type('{downarrow}{downarrow}{downarrow}{enter}', { delay: 100 });
 
       // Verify that code and system are filled in.
       cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
@@ -504,7 +506,10 @@ describe('Home page', () => {
       // Autocomplete should show options.
       cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
       // Select 'katal'
-      cy.get('[id^="answerOption.1.valueCoding.display"]').type('{downarrow}{enter}');
+      //cy.get('[id^="answerOption.1.valueCoding.display"]').type('{downarrow}{enter}');
+      cy.get('[id^="answerOption.1.valueCoding.display"]')
+        .click()
+        .type('{downarrow}{enter}', { delay: 100 });
 
       // Verify that code and system are filled in.
       cy.get('[id^="answerOption.1.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
@@ -530,7 +535,7 @@ describe('Home page', () => {
 
       // Use mock data for the SNOMED ECL expression request.
       cy.intercept('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', { fixture: 'snomed-ecl-expression-mock.json' }).as('snomedReq');
-      cy.get('[id^="answerOption.3.valueCoding.display"]').click().type('Intersex');
+      cy.get('[id^="answerOption.3.valueCoding.display"]').click().type('Intersex', { delay: 100 });
       cy.wait('@snomedReq');
 
       // Autocomplete should show options.
