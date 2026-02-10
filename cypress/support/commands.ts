@@ -961,14 +961,44 @@ Cypress.Commands.add('removeAndCheckReferencedOption', (type: string, index: num
  */
 Cypress.Commands.add('checkReferencedOptionDialog', (expectedText: string, buttonName: string) => {
   cy.get('lfb-message-dlg', { timeout: 5000 }).should('exist').and('be.visible');
-  cy.get('lfb-message-dlg #msgDlgTitle').should('contain.text', 'Option referenced by other item\'s text and linkId.');  //'Option referenced by another item');
+  cy.get('lfb-message-dlg #msgDlgTitle').should('contain.text', 'Option referenced by other item\'s text and linkId.');
   cy.get('lfb-message-dlg .modal-body #msgContent')
     .invoke('text')
     .then(text => {
       expect(text.replace(/\s+/g, ' ').trim()).to.equal(expectedText);
     });
-  cy.get('lfb-message-dlg').contains(buttonName).click();
-  cy.get('lfb-message-dlg', { timeout: 10000 }).should('not.exist');
+
+  // Aggressive click: use both jQuery and native click
+  cy.get('lfb-message-dlg').within(() => {
+    cy.contains('button', buttonName)
+      .should('be.visible')
+      .should('not.be.disabled')
+      .scrollIntoView()
+      .then($btn => {
+        $btn[0].click();
+      });
+  });
+
+  // Instead of a fixed wait, check for dialog existence before polling
+  function waitForDialogToClose(retries = 20) {
+    if (retries === 0) {
+      throw new Error('Dialog did not close in time');
+    }
+    cy.get('body').then($body => {
+      const dlg = $body.find('lfb-message-dlg');
+      if (dlg.length === 0) {
+        // Dialog is already gone
+        return;
+      }
+      if (dlg.is(':visible')) {
+        cy.wait(400).then(() => waitForDialogToClose(retries - 1));
+      } else {
+        // Now assert it is removed from DOM
+        cy.get('lfb-message-dlg', { timeout: 10000 }).should('not.exist');
+      }
+    });
+  }
+  waitForDialogToClose();
 });
 
 /*
