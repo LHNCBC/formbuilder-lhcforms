@@ -7,7 +7,7 @@ import { defineConfig } from '@playwright/test';
 // require('dotenv').config();
 
 const port = process.env.npm_package_config_testPort || '9031';
-const baseURL = `http://localhost:${port}`;
+const baseURL = process.env.BASE_URL || `http://localhost:${port}`;
 /**
  * See https://playwright.dev/docs/test-configuration.
  */

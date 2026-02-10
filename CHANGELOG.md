@@ -2,9 +2,14 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.0.7] 2026-02-04
+## [11.0.8] 2026-02-10
 ### Added
 - Added answerOptions validation.
+
+## [11.0.7] 2026-02-05
+### Fixed
+- Fixed a bug in searching R5 FHIR server using item-code parameter.
+- Fixed error handling when FHIR server throws errors on search.
 
 ## [11.0.6] 2026-01-30
 ### Fixed

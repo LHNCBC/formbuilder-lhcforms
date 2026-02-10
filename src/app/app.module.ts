@@ -5,7 +5,6 @@ import { ExpressionEditorModule, ENVIRONMENT_TOKEN } from '@lhncbc/expression-ed
 import { Util } from "./lib/util";
 
 import { AppComponent } from './app.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { provideHttpClient } from '@angular/common/http';
 import { LayoutModule } from '@angular/cdk/layout';
@@ -61,7 +60,6 @@ import { EnableBehaviorComponent } from './lib/widgets/enable-behavior/enable-be
 import { MessageDlgComponent } from './lib/widgets/message-dlg/message-dlg.component';
 import { FhirServersDlgComponent } from './lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import { UserSpecifiedServerDlgComponent } from './lib/widgets/user-specified-server-dlg/user-specified-server-dlg.component';
-import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component';
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
 import { UnitsDisplayComponent } from './lib/widgets/units-display/units-display.component';
@@ -140,7 +138,6 @@ import { environment } from '../environments/environment';
     MessageDlgComponent,
     FhirServersDlgComponent,
     UserSpecifiedServerDlgComponent,
-    FhirSearchDlgComponent,
     BooleanRadioComponent,
     UnitsComponent,
     UnitsDisplayComponent,
@@ -180,7 +177,6 @@ import { environment } from '../environments/environment';
     AppJsonPipe,
     BooleanControlledComponent,
     BrowserModule,
-    BrowserAnimationsModule,
     ElementChooserComponent,
     EwValidateDirective,
     FormsModule,
