@@ -24,6 +24,7 @@ test.describe('Contained resources table in form level page', async () => {
     await dialog.waitFor({ state: 'visible', timeout: 10000 });
 
     await expect(dialog).toBeVisible();
+
     await dialog.getByLabel('Id', {exact: true}).fill('vs1');
     await dialog.getByLabel('Title', {exact: true}).fill('A title');
     const status = dialog.getByLabel('Status', {exact: true});
@@ -62,8 +63,8 @@ test.describe('Contained resources table in form level page', async () => {
       .toHaveValue(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/);
     await expect(PWUtils.getTableCell(containedTable, 1, 5).locator('input')).toHaveValue('active');
 
-    // Verify it in JSON
-    const json = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+
     expect(json.contained).toBeDefined();
     expect(json.contained.length).toBe(1);
     const vs: fhir.ValueSet = json.contained[0] as fhir.ValueSet;
@@ -159,7 +160,7 @@ test.describe(() => {
     await dialog.getByRole('button', {name: 'Discard changes'}).click();
 
     // Verify it in JSON
-    const json = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(json.contained).toStrictEqual(fileJson.contained);
   });
 

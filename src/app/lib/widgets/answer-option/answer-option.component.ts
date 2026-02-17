@@ -1,9 +1,12 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import {TreeService} from '../../../services/tree.service';
 import { Subscription } from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
+import { DialogService } from 'src/app/services/dialog.service';
+import { MessageType } from '../message-dlg/message-dlg.component';
+import { ValidationService } from 'src/app/services/validation.service';
+import { TreeNode } from '@bugsplat/angular-tree-component';
 
 @Component({
   standalone: false,
@@ -15,13 +18,27 @@ import { AnswerOptionService } from 'src/app/services/answer-option.service';
 export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
   private formService = inject(FormService);
   private answerOptionService = inject(AnswerOptionService);
-
+  dialogService = inject(DialogService);
+  validationService = inject(ValidationService);
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
   static ITEM_WEIGHT_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
 
   // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
   initializing = false;
+  isDialogOpen = false;
+  ignoreNextFocus = false;
+
+  buttons = [
+    { label: 'Continue', value: 'continue' },
+    { label: 'Cancel', value: 'cancel' }
+  ];
+
+  buttonOk = [
+    { label: 'Ok', value: 'ok' }
+  ]
+
+  hasReferenced: any;
 
   /**
    * Angular life cycle event - Initialize attributes.
@@ -69,6 +86,19 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
       // Avoid updating score extensions during initialization.
       if(!this.initializing) {
         this.updateScoreExtensions(newValue);
+
+        if (this.hasReferenced) {
+          const refs = Array.isArray(this.hasReferenced)
+            ? this.hasReferenced
+            : [this.hasReferenced];
+          const nodes = refs
+            .map(ref => ref && ref.enableWhenItemLinkId ? this.formService.getTreeNodeByLinkId(ref.enableWhenItemLinkId) : null)
+            .filter((node): node is TreeNode => !!node);
+          if (nodes.length > 0) {
+            this.validationService.validateAllItems(nodes, 0, true, '/enableWhen');
+          }
+          this.cdr.detectChanges();
+        }
       }
     });
     this.subscriptions.push(sub);
@@ -304,5 +334,95 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     this.updateWithRadioSelection();
     this.selectionCheckbox = [];
     this.updateWithCheckboxSelections();
+  }
+
+  /**
+   * Overriding parent method.
+   * Remove a given item, i.e. a row in the table.
+   *
+   * Before calling parent class api to remove the item, we need to do some housekeeping with respect to table's
+   * selection (radio/checkbox) indexes.
+   *
+   * @param index - Index of the formProperty to be removed from the array.
+   */
+  removeProperty(index: number) {
+    const actionResult = this.answerOptionService.validateAnswerOptionAction(this.formProperty, index, 'delete');
+    if (!actionResult.valid) {
+      const modalRef = this.dialogService.showDialog(MessageType.WARNING, 'Option referenced by other item\'s text and linkId.', actionResult.message, this.buttons);
+      modalRef.closed.subscribe(result => {
+        if (result === 'continue') {
+          // Optionally re-focus the select element
+          setTimeout(() => {
+            super.removeProperty(index);
+          }, 0);
+          // Collect all referenced TreeNodes and validate them in batch
+          const refs = Array.isArray(actionResult.enableWhenReference)
+            ? actionResult.enableWhenReference
+            : [actionResult.enableWhenReference];
+          const nodes = refs
+            .map(ref => ref && ref.enableWhenItemLinkId ? this.formService.getTreeNodeByLinkId(ref.enableWhenItemLinkId) : null)
+            .filter((node): node is TreeNode => !!node);
+          if (nodes.length > 0) {
+            this.validationService.validateAllItems(nodes, 0, true, '/enableWhen');
+          }
+          this.cdr.detectChanges();
+        } else {
+          setTimeout(() => {
+            this.isDialogOpen = false;
+          }, 300);
+        }
+      });
+    } else {
+      super.removeProperty(index);
+    }
+  }
+
+  /**
+   * Handles the edit action for an answer option at the specified index.
+   * Checks if the option is referenced by another item's enableWhen condition and, if so,
+   * displays a warning dialog to prevent unintended modifications. If not referenced,
+   * proceeds with the edit logic (to be implemented as needed).
+   *
+   * @param event - The DOM event triggered by the edit action.
+   * @param index - The index of the answer option to edit.
+   */
+  onEdit(event: Event, index: number) {
+    if (this.isReordering) {
+      return;
+    }
+
+    const result = this.answerOptionService.validateAnswerOptionAction(this.formProperty, index, 'modify');
+    if (!result.valid) {
+      this.hasReferenced = result.enableWhenReference;
+      if (!this.isDialogOpen) {
+        this.isDialogOpen = true;
+
+        const modalRef = this.dialogService.showDialog(MessageType.WARNING, 'Option referenced by other item\'s text and linkId.', result.message, this.buttonOk);
+        if (modalRef && modalRef.closed) {
+          modalRef.closed.subscribe(() => {
+            setTimeout(() => {
+              this.isDialogOpen = false;
+            }, 300);
+          });
+
+        } else {
+          // fallback: reset after a short timeout
+          setTimeout(() => this.isDialogOpen = false, 500);
+        }
+      }
+      return;
+    }
+  }
+
+  /**
+   * Checks if the answer option at the specified index is referenced by another item via an enableWhen condition.
+   * This is used to determine if the option is involved in conditional logic elsewhere in the form,
+   * which may restrict modification or deletion.
+   *
+   * @param index - The index of the answer option to check.
+   * @returns True if the option is referenced by another item's enableWhen; otherwise, false.
+   */
+  isReferencedByOtherItem(index: number): boolean {
+    return this.answerOptionService.isOptionReferenced(this.formProperty, index);
   }
 }

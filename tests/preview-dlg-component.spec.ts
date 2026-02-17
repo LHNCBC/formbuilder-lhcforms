@@ -143,7 +143,7 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       await expect(noErrorAlertLocator).not.toBeAttached();
 
       // R5 version
-      await page.getByRole('tab',{name: 'R5 Version'}).click();
+      await page.getByRole('tab', {name: 'R5 Version'}).click();
 
       await inputEl.fill('https://a.com/r5');
       await page.getByRole('button', {name: 'Run Validation'}).click();

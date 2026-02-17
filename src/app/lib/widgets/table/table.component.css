@@ -117,6 +117,10 @@ tr {
   color: darkorange !important;
 }
 
+.icon-link {
+  color: #4B5563;
+}
+
 /*
   The new fortawesome version increases --fa-width, causing the
   icons in the action column to spill out. Override the width.

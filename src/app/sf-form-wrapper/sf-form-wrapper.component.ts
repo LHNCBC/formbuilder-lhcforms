@@ -5,7 +5,8 @@ import {
   Component,
   EventEmitter, Input, OnChanges,
   Output, SimpleChanges,
-  ViewChild
+  ViewChild,
+  inject
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import {LinkIdCollection} from '../item/item.component';
@@ -81,11 +82,13 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   questionnaire;
   linkId;
 
-  constructor(private extensionsService: ExtensionsService,
-              private formService: FormService,
-              private validationService: ValidationService,
-              private modelService: SharedObjectService) {
-    this.mySchema = formService.getItemSchema();
+  extensionsService = inject(ExtensionsService);
+  formService = inject(FormService);
+  validationService = inject(ValidationService);
+  modelService = inject(SharedObjectService);
+
+  constructor() {
+    this.mySchema = this.formService.getItemSchema();
   }
 
   ngOnInit(): void {

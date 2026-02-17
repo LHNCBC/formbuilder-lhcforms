@@ -23,9 +23,9 @@ test.describe('form-level fields', async () => {
       .filter({has: page.getByLabel('Tags')}).getByRole('table');
     await mainPO.loadTable(tableLoc, tableData);
 
-    const q = await PWUtils.getQuestionnaireJSON(page, 'R4');
-    // Ignore the generated tag.
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
     const inputTags = q.meta.tag.filter((e, i) => i < 4);
+
     expect(inputTags).toStrictEqual([{
       display: '1a',
       code: '1b',
@@ -51,7 +51,7 @@ test.describe('form-level fields', async () => {
     const rows = await page.locator('lfb-table')
       .filter({has: page.getByLabel('Tags')}).locator( 'table > tbody > tr').all();
     expect(rows.length).toBe(3);
-    const qJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
     // Ignore the generated tag.
     const inputTags = qJson.meta.tag.filter((e, i) => i < 3);
     expect(inputTags).toStrictEqual(q.meta.tag);

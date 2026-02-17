@@ -61,10 +61,6 @@ describe('Home page', () => {
         expect(qJson.item[0].type).equal('integer');
         expect(qJson.item[0].initial[0].valueDecimal).undefined;
         expect(qJson.item[0].initial[0].valueInteger).not.undefined;
-        // TODO -
-        //  There is a bug in IntegerComponent, which moves the cursor to starting position
-        // when '.' is entered, although
-        // Refer to issue LF-2485.
         expect(qJson.item[0].initial[0].valueInteger).not.undefined;
       });
 
@@ -489,7 +485,9 @@ describe('Home page', () => {
       // Autocomplete should show options.
       cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
       // Select 'Heart rate'
-      cy.get('[id^="answerOption.0.valueCoding.display"]').type('{downarrow}{downarrow}{downarrow}{enter}');
+      cy.get('[id^="answerOption.0.valueCoding.display"]')
+        .click()
+        .type('{downarrow}{downarrow}{downarrow}{enter}', { delay: 100 });
 
       // Verify that code and system are filled in.
       cy.get('[id^="answerOption.0.valueCoding.system"]').should('have.value', 'http://loinc.org');
@@ -508,7 +506,10 @@ describe('Home page', () => {
       // Autocomplete should show options.
       cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
       // Select 'katal'
-      cy.get('[id^="answerOption.1.valueCoding.display"]').type('{downarrow}{enter}');
+      //cy.get('[id^="answerOption.1.valueCoding.display"]').type('{downarrow}{enter}');
+      cy.get('[id^="answerOption.1.valueCoding.display"]')
+        .click()
+        .type('{downarrow}{enter}', { delay: 100 });
 
       // Verify that code and system are filled in.
       cy.get('[id^="answerOption.1.valueCoding.system"]').should('have.value', 'http://unitsofmeasure.org');
@@ -534,7 +535,7 @@ describe('Home page', () => {
 
       // Use mock data for the SNOMED ECL expression request.
       cy.intercept('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', { fixture: 'snomed-ecl-expression-mock.json' }).as('snomedReq');
-      cy.get('[id^="answerOption.3.valueCoding.display"]').click().type('Intersex');
+      cy.get('[id^="answerOption.3.valueCoding.display"]').click().type('Intersex', { delay: 100 });
       cy.wait('@snomedReq');
 
       // Autocomplete should show options.
@@ -591,6 +592,219 @@ describe('Home page', () => {
       cy.questionnaireJSON().should((qJson) => {
         expect(qJson.item[0].item[0].initial[0].valueDecimal).equal(1.2);
       });
+    });
+
+    it('should show link icon, warnng on modify and delete for referenced answerOptions', () => {
+      const sampleFile = 'enable-when-answer-options-R5-sample.json';
+      const OK = "Ok";
+      const CANCEL = "Cancel";
+
+      cy.uploadFile(sampleFile, true);
+      cy.getFormTitleField().should('have.value', 'R5 enableWhen AnswerOptions optionsOnly');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('.spinner-border').should('not.exist');
+
+      // Test configuration for each answer option type
+      const answerOptionTests = [
+        {
+          nodeName: 'integer answerOptions',
+          type: 'integer',
+          valueField: 'valueInteger',
+          expectedValues: [1, 2, 3],
+          referencingItem: 'enableWhen integer on-list',
+          referencingLinkId: '600338559566',
+          modifyValue: '100{enter}'
+        },
+        {
+          nodeName: 'date answerOptions',
+          type: 'date',
+          valueField: 'valueDate',
+          expectedValues: ["2025-11-03", "2025-11-04", "2025-11-05"],
+          referencingItem: 'enableWhen date on-list',
+          referencingLinkId: '360117504487',
+          modifyValue: '2025-01-01{enter}'
+        },
+        {
+          nodeName: 'time answerOptions',
+          type: 'time',
+          valueField: 'valueTime',
+          expectedValues: ["16:00:00", "17:00:00", "18:00:00"],
+          referencingItem: 'enableWhen time on-list',
+          referencingLinkId: '877781889993',
+          modifyValue: '09:00:00{enter}'
+        },
+        {
+          nodeName: 'string answerOptions',
+          type: 'string',
+          valueField: 'valueString',
+          expectedValues: ["A", "B", "C"],
+          referencingItem: 'enableWhen string on-list',
+          referencingLinkId: '242477867005',
+          modifyValue: 'N{enter}'
+        },
+        {
+          nodeName: 'text answerOptions',
+          type: 'text',
+          valueField: 'valueString',
+          expectedValues: ["AAAAAAAA", "BBBBBBBBB", "CCCCCCCCC"],
+          referencingItem: 'enableWhen text on-list',
+          referencingLinkId: '800004427766',
+          modifyValue: 'NNNNNNN{enter}'
+        },
+        {
+          nodeName: 'coding answerOptions',
+          type: 'coding',
+          valueField: 'valueCoding',
+          expectedValues: [
+            { system: "a", display: "a1", code: "a1" },
+            { system: "b", display: "b1", code: "b1" },
+            { system: "c", display: "c1", code: "c1" }
+          ],
+          referencingItem: 'enableWhen coding on-list',
+          referencingLinkId: '171991128943',
+          modifyValue: 'HHH{enter}',
+          subFields: ['code']
+        }
+      ];
+
+      answerOptionTests.forEach((test, idx) => {
+        // Navigate to tree node
+        if (idx > 0) cy.getTreeNode(test.nodeName).click();
+
+        cy.getItemTypeField().should('contain.value', test.type);
+
+        // Verify Create answer list = Yes
+        cy.get('lfb-label')
+          .filter(`:contains("Create answer list")`)
+          .parent()
+          .find('label:contains("Yes")')
+          .prev('input[type="radio"]')
+          .should('be.checked');
+
+        // Verify JSON
+        cy.questionnaireJSON().should((q) => {
+          const itemIndex = idx * 3;
+          if (test.type === 'coding') {
+            test.expectedValues.forEach((val, i) => {
+              expect(q.item[15].answerOption[i].valueCoding.system).equal(val.system);
+              expect(q.item[15].answerOption[i].valueCoding.display).equal(val.display);
+              expect(q.item[15].answerOption[i].valueCoding.code).equal(val.code);
+            });
+          } else {
+            test.expectedValues.forEach((val, i) => {
+              expect(q.item[itemIndex].answerOption[i][test.valueField]).equal(val);
+            });
+          }
+        });
+
+        // Link icon
+        cy.checkAnswerOptionLinkIcon(
+          'lfb-answer-option table > tbody > tr',
+          [2],
+          'Option referenced by other item\'s text and linkId.'
+        );
+
+        // Warning dialog on delete
+        const deleteMsg = getReferencedOptionMsg(test.referencingItem, test.referencingLinkId, 'Deleting');
+        cy.removeAndCheckReferencedOption(test.valueField, 1, deleteMsg, CANCEL);
+
+        // Warning dialog on modify
+        if (test.type === 'coding') {
+          const modifyMsg = getReferencedOptionMsg(test.referencingItem, test.referencingLinkId, 'Modifying');
+          cy.get(`[id^="answerOption.1.${test.valueField}.system"]`).click();
+          cy.checkReferencedOptionDialog(modifyMsg, OK);
+
+          cy.get('body').click(0, 0);
+
+          cy.get(`[id^="answerOption.2.${test.valueField}.system"]`).click();
+          cy.get('lfb-message-dlg').should('not.exist');
+          modifyReferencedData(
+            test.type,
+            test.referencingItem,
+            test.nodeName,
+            `[id^="answerOption.1.${test.valueField}.system"]`,
+            modifyMsg,
+            OK,
+            test.modifyValue
+          );
+        } else {
+          cy.get(`[id^="answerOption.0.${test.valueField}"]`).click();
+          cy.get('lfb-message-dlg').should('not.exist');
+          cy.get(`[id^="answerOption.1.${test.valueField}"]`).click();
+          const modifyMsg = getReferencedOptionMsg(test.referencingItem, test.referencingLinkId, 'Modifying');
+          cy.checkReferencedOptionDialog(modifyMsg, OK);
+          cy.get(`[id^="answerOption.2.${test.valueField}"]`).click();
+          cy.get('lfb-message-dlg').should('not.exist');
+          modifyReferencedData(
+            test.type,
+            test.referencingItem,
+            test.nodeName,
+            `[id^="answerOption.1.${test.valueField}"]`,
+            modifyMsg,
+            OK,
+            test.modifyValue
+          );
+        }
+      });
+    });
+
+    it('should display a warning that includes all items referencing the selected answerOption', () => {
+      const sampleFile = 'answer-option-validation-sample.json';
+      const OK = "Ok";
+      cy.uploadFile(sampleFile, true);
+      cy.getFormTitleField().should('have.value', 'Answer options validation');
+      cy.contains('button', 'Edit questions').click();
+      cy.get('.spinner-border').should('not.exist');
+
+      // ------- string answerOptions -------
+      cy.getItemTypeField().should('contain.value', 'string');
+      cy.get('[id^="answerOption.1.valueString"]').click();
+
+      let enableWhenItems = [
+        { enableWhenItemName: 'Reference string option value b', enableWhenItemLinkId: '816000609340' },
+        { enableWhenItemName: 'Reference string option value b as well', enableWhenItemLinkId: '267515907402' },
+      ];
+
+      let msg = getReferencedOptionMsgMultiple(enableWhenItems, 'Modifying');
+      cy.checkReferencedOptionDialog(msg, OK);
+
+      // There appears to be an issue in headless mode when dialogs are supposed to appear consecutively.
+      // Adding cy.wait(1000) would solved the issue.
+      // Adding other checks to allow time for the warning dialog to work again.
+      cy.checkAnswerOptionLinkIcon(
+        'lfb-answer-option table > tbody > tr',
+        [2,3], // icon on 2nd and 3rd rows
+        'Option referenced by other item\'s text and linkId.'
+      );
+      cy.get('[id^="answerOption.2.valueString"]').should('exist').should('have.value', 'c').click();
+      msg = getReferencedOptionMsg('Reference string option value c', '516220192689', 'Modifying');
+      cy.checkReferencedOptionDialog(msg, OK);
+
+      // ------- coding answerOptions -------
+      cy.getTreeNode('coding answerOptions').click();
+      cy.getItemTypeField().should('contain.value', 'coding');
+      cy.get('[id^="answerOption.1.valueCoding.system"]').click();
+
+      enableWhenItems = [
+        { enableWhenItemName: 'Reference coding option value d2 (c2)', enableWhenItemLinkId: '321543291333' },
+        { enableWhenItemName: 'Reference coding option value d2 (c2) as well', enableWhenItemLinkId: '296534877584' },
+      ];
+      msg = getReferencedOptionMsgMultiple(enableWhenItems, 'Modifying');
+      cy.checkReferencedOptionDialog(msg, OK);
+
+      // There appears to be an issue in headless mode when dialogs are supposed to appear consecutively.
+      // Adding cy.wait(1000) would solved the issue.
+      // Adding other checks to allow time for the warning dialog to work again.
+      cy.checkAnswerOptionLinkIcon(
+        'lfb-answer-option table > tbody > tr',
+        [2,3], // icon on 2nd and 3rd rows
+        'Option referenced by other item\'s text and linkId.'
+      );
+      cy.get('body').click(0, 0);
+
+      cy.get('[id^="answerOption.2.valueCoding.system"]').should('exist').should('have.value', 's3').click();
+      msg = getReferencedOptionMsg('Reference coding option value d3 (c3)', '367425898269', 'Modifying');
+      cy.checkReferencedOptionDialog(msg, OK);
     });
 
     it('should create answerValueSet', () => {
@@ -1106,3 +1320,72 @@ describe('Home page', () => {
     });
   });
 });
+
+
+
+/**
+ * Returns a formatted warning message for answer options referenced by another item.
+ *
+ * @param item   The name or description of the referencing item.
+ * @param linkId The linkId of the referencing item.
+ * @param action The action being performed (e.g., 'Modifying', 'Deleting').
+ * @returns      The formatted warning message string.
+ */
+function getReferencedOptionMsg(item: string, linkId: string, action: string) {
+  return `This option is referenced by another item, '${item}' (linkId: ` +
+         `'${linkId}'), for conditional display. ${action} this ` +
+         `option may affect that behavior.`
+}
+
+/**
+ * Returns a formatted warning message for answer options referenced by multiple items.
+ *
+ * @param refs   Array of referencing items, each with enableWhenItemName and enableWhenItemLinkId.
+ * @param action The action being performed (e.g., 'Modifying', 'Deleting').
+ * @returns      The formatted warning message string (HTML with bullets and indentation).
+ */
+function getReferencedOptionMsgMultiple(refs: { enableWhenItemName: string, enableWhenItemLinkId: string }[], action: string) {
+  return `This option is referenced by multiple items:` +
+    refs.map(ref => ` • '${ref.enableWhenItemName}' (linkId: '${ref.enableWhenItemLinkId}')`).join('') +
+    `for conditional display. ${action} this option may affect their behavior.`;
+}
+
+
+/**
+ * Modifies an answer option that is referenced by another item and checks for error icon after modification.
+ *
+ * @param type               The data type of the answer option (e.g., 'time', 'string', etc.).
+ * @param enableWhenNodeName The name of the referencing item node (enableWhen).
+ * @param answerOptionNodeName The name of the answer option node to modify.
+ * @param answerOptionSelector The selector for the answer option input element.
+ * @param referencedMsg      The warning message to display in the dialog.
+ * @param buttonText         The text of the button to confirm the dialog.
+ * @param editValue          The value to enter into the answer option input.
+ */
+function modifyReferencedData(type: string, enableWhenNodeName: string,
+                              answerOptionNodeName: string, answerOptionSelector: string,
+                              referencedMsg: string, buttonText: string, editValue: string) {
+  cy.getTreeNode(enableWhenNodeName)
+    .find('fa-icon#error')
+    .should('not.exist');
+  // Change the option of the answerOptions
+  cy.getTreeNode(answerOptionNodeName);
+  cy.get(answerOptionSelector).click();
+  cy.checkReferencedOptionDialog(referencedMsg, buttonText);
+  if (type !== "time") {
+    cy.get(answerOptionSelector).clear().type(editValue);
+    if (type === "coding") {
+      cy.get(answerOptionSelector).blur();
+    }
+  } else {
+    //cy.get(answerOptionSelector).type(editValue);
+    cy.get(answerOptionSelector).type(editValue);
+    cy.get(answerOptionSelector).blur();
+  }
+
+  // The 'enableWhen integer on-list' should now have an error.
+  cy.getTreeNode(enableWhenNodeName)
+    .find('fa-icon#error')
+    .should('exist');
+}
+

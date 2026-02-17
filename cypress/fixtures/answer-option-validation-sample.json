@@ -1,0 +1,140 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "Answer options validation",
+  "status": "draft",
+  "item": [
+    {
+      "type": "string",
+      "linkId": "319271121932",
+      "text": "string answerOptions",
+      "answerOption": [
+        {
+          "valueString": "a"
+        },
+        {
+          "valueString": "b"
+        },
+        {
+          "valueString": "c"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "816000609340",
+      "text": "Reference string option value b",
+      "enableWhen": [
+        {
+          "question": "319271121932",
+          "operator": "=",
+          "answerString": "b"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "267515907402",
+      "text": "Reference string option value b as well",
+      "enableWhen": [
+        {
+          "question": "319271121932",
+          "operator": "=",
+          "answerString": "b"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "516220192689",
+      "text": "Reference string option value c",
+      "enableWhen": [
+        {
+          "question": "319271121932",
+          "operator": "=",
+          "answerString": "c"
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "528070971308",
+      "text": "coding answerOptions",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "s1",
+            "code": "c1",
+            "display": "d1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "s2",
+            "code": "c2",
+            "display": "d2"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "s3",
+            "code": "c3",
+            "display": "d3"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "321543291333",
+      "text": "Reference coding option value d2 (c2)",
+      "enableWhen": [
+        {
+          "question": "528070971308",
+          "operator": "=",
+          "answerCoding": {
+            "system": "s2",
+            "code": "c2",
+            "display": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "296534877584",
+      "text": "Reference coding option value d2 (c2) as well",
+      "enableWhen": [
+        {
+          "question": "528070971308",
+          "operator": "=",
+          "answerCoding": {
+            "system": "s2",
+            "code": "c2",
+            "display": "d2"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "367425898269",
+      "text": "Reference coding option value d3 (c3)",
+      "enableWhen": [
+        {
+          "question": "528070971308",
+          "operator": "=",
+          "answerCoding": {
+            "system": "s3",
+            "code": "c3",
+            "display": "d3"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -135,6 +135,7 @@ test.describe('Open form builder in a new window', async () => {
       const saveButton = mainPO.page.getByRole('button', { name: 'Save & Close' });
       await expect(saveButton).toBeVisible();
       await expect(saveButton).toBeEnabled();
+
       await Promise.all([
         mainPO.page.waitForEvent('close'),
         saveButton.click()
