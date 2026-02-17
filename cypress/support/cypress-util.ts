@@ -2,11 +2,46 @@ import {Util} from '../../src/app/lib/util';
 import {JsonPointer} from "json-ptr";
 import {format, parseISO} from 'date-fns';
 import fhir from 'fhir/r4';
+import { mockLoincLookupData, mockSnomedLookupData, mockUcumLookupData } from './mock-lookup-data';
 
 export class CypressUtil {
 
   public static HTTP_REQ_TIMEOUT = 20000;
   static lformsLibs = new Map();
+
+  /**
+   * Normalize a search term for consistent lookup matching.
+   * @param value - Raw input term.
+   * @returns Normalized term for map lookup.
+   */
+  private static _normalizeTerm(value: string): string {
+    return (value || '').toString().toLowerCase().trim();
+  }
+
+  /**
+   * Read and normalize the `terms` query parameter from a request URL.
+   * @param req - Intercepted request object.
+   * @returns Normalized `terms` value.
+   */
+  private static _getTermsParam(req): string {
+    const url = new URL(req.url);
+    return CypressUtil._normalizeTerm(url.searchParams.get('terms') || '');
+  }
+
+  /**
+   * Reply to a lookup request with optional response transformation and consistent logging.
+   * @param req - Intercepted request object.
+   * @param term - Normalized lookup term.
+   * @param data - Lookup data keyed by term.
+   * @param label - Label used for logging and tracing.
+   * @param transform - Optional transformation for the response before replying.
+   */
+  private static _replyLookup(req, term: string, data: Record<string, any>, label: string, transform?: (response: any) => any) {
+    const response = data[term];
+    const finalResponse = transform ? transform(response) : response;
+    req.reply(finalResponse ?? [0, [], null, []]);
+  }
+
   /**
    * Access base page component
    * @returns {Cypress.Chainable<Subject>}
@@ -171,6 +206,68 @@ export class CypressUtil {
       // Covers 4 urls: .../x.x.x/webcomponent/{styles.css, lhc-forms.js, assets/lib/zone.min.js,}, and .../fhir/lformsFHIRAll.min.js
       CypressUtil._handleCachedResponse(req);
     }).as('lformsLib');
+  }
+
+  /**
+   * Mock LOINC items search endpoint to avoid flaky network calls in tests that use autocompletes.
+   */
+  static mockFHIRQueryObservation() {
+    cy.intercept('GET', /loinc_items\/v3\/search.*terms=.*/, (req) => {
+      const term = CypressUtil._getTermsParam(req);
+      CypressUtil._replyLookup(req, term, mockLoincLookupData, 'loinc');
+    });
+  }
+
+  /**
+   * Mock lookups used by answerOptions autocomplete (LOINC, UCUM, SNOMED).
+   */
+  static mockAnswerOptionLookup() {
+    // LOINC item lookup (e.g., Heart rate)
+    cy.intercept('GET', /loinc_items\/v3\/search.*terms=.*/, (req) => {
+      const term = CypressUtil._getTermsParam(req);
+      CypressUtil._replyLookup(req, term, mockLoincLookupData, 'loinc');
+    }).as('loincSearch');
+
+    // UCUM ValueSet lookup (e.g., katal)
+    cy.intercept('GET', /ucum\/v3\/search\?terms=.*/, (req) => {
+      const term = CypressUtil._getTermsParam(req);
+      CypressUtil._replyLookup(req, term, mockUcumLookupData, 'ucum', (response) => {
+        if (!response) {
+          return null;
+        }
+        return [
+          response[0],
+          response[1],
+          response[2],
+          Array.isArray(response[3])
+            ? response[3].map((row) => row.slice(0, 2))
+            : []
+        ];
+      });
+    }).as('ucumSearch');
+
+    // SNOMED ValueSet lookup (match any filter)
+    const snomedExpandUrl = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand\?url=http%3A%2F%2Fsnomed\.info%2Fsct%3Ffhir_vs&filter=[^&]*&_format=application%2Fjson&count=7/;
+    cy.intercept('GET', snomedExpandUrl, (req) => {
+      const url = new URL(req.url);
+      const filter = (url.searchParams.get('filter') || '').toLowerCase();
+
+      Cypress.log({message: `LOOK HERE - ${filter}`});
+      const response = mockSnomedLookupData[filter];
+
+      Cypress.log({message: `RESPONSE HERE - ${response}`});
+      req.reply(response ?? [0, [], null, []]);
+    }).as('snomedSearch');
+  }
+
+  /**
+   * Mock Ucum items search endpoint to avoid flaky network calls in tests that use autocompletes.
+   */
+  static mockUnitsLookup() {
+    cy.intercept('GET', /ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/, (req) => {
+      const term = CypressUtil._getTermsParam(req);
+      CypressUtil._replyLookup(req, term, mockUcumLookupData, 'ucum');
+    }).as('ucumSearch');
   }
 
   /**

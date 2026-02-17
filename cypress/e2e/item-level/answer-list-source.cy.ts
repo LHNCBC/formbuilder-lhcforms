@@ -472,6 +472,8 @@ describe('Home page', () => {
     });
 
     it('should create answerOptions lookup', () => {
+      CypressUtil.mockAnswerOptionLookup();
+
       cy.selectDataType('coding');
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
 
@@ -534,9 +536,7 @@ describe('Home page', () => {
       cy.get('[id^="answerOption.3.valueCoding.system"]').should('have.value', 'http://snomed.info/sct');
 
       // Use mock data for the SNOMED ECL expression request.
-      cy.intercept('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', { fixture: 'snomed-ecl-expression-mock.json' }).as('snomedReq');
       cy.get('[id^="answerOption.3.valueCoding.display"]').click().type('Intersex', { delay: 100 });
-      cy.wait('@snomedReq');
 
       // Autocomplete should show options.
       cy.get('span#completionOptions > ul > li').should('have.length.greaterThan', 0);
