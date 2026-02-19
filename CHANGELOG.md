@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.9] 2026-02-18
+### Fixed
+- Fixed cy-run-il spec glob to run all *.cy.ts tests.
+
 ## [11.0.8] 2026-02-10
 ### Added
 - Added answerOptions validation.
