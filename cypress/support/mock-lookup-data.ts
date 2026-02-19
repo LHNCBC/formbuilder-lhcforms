@@ -81,6 +81,32 @@ export const mockSnomedLookupData = {
 };
 
 export const mockUcumLookupData: Record<string, [number, string[], null, string[][]]> = {
+  kat: [
+    3,
+    [
+      "kat",
+      "kat/kg",
+      "kat/L"
+    ],
+    null,
+    [
+      [
+        "kat",
+        "katal"
+      ],
+      [
+        "kat/kg",
+        "katal per kilogram"
+      ],
+      [
+        "kat/L",
+        "katal per liter"
+      ]
+    ]
+  ]
+};
+
+export const mockUnitLookupData: Record<string, [number, string[], null, string[][]]> = {
   a: [
     116,
     [

@@ -2,7 +2,7 @@ import {Util} from '../../src/app/lib/util';
 import {JsonPointer} from "json-ptr";
 import {format, parseISO} from 'date-fns';
 import fhir from 'fhir/r4';
-import { mockLoincLookupData, mockSnomedLookupData, mockUcumLookupData } from './mock-lookup-data';
+import { mockLoincLookupData, mockSnomedLookupData, mockUcumLookupData, mockUnitLookupData } from './mock-lookup-data';
 
 export class CypressUtil {
 
@@ -231,19 +231,7 @@ export class CypressUtil {
     // UCUM ValueSet lookup (e.g., katal)
     cy.intercept('GET', /ucum\/v3\/search\?terms=.*/, (req) => {
       const term = CypressUtil._getTermsParam(req);
-      CypressUtil._replyLookup(req, term, mockUcumLookupData, 'ucum', (response) => {
-        if (!response) {
-          return null;
-        }
-        return [
-          response[0],
-          response[1],
-          response[2],
-          Array.isArray(response[3])
-            ? response[3].map((row) => row.slice(0, 2))
-            : []
-        ];
-      });
+      CypressUtil._replyLookup(req, term, mockUcumLookupData, 'ucum');
     }).as('ucumSearch');
 
     // SNOMED ValueSet lookup (match any filter)
@@ -251,12 +239,9 @@ export class CypressUtil {
     cy.intercept('GET', snomedExpandUrl, (req) => {
       const url = new URL(req.url);
       const filter = (url.searchParams.get('filter') || '').toLowerCase();
-
-      Cypress.log({message: `LOOK HERE - ${filter}`});
       const response = mockSnomedLookupData[filter];
 
-      Cypress.log({message: `RESPONSE HERE - ${response}`});
-      req.reply(response ?? [0, [], null, []]);
+      req.reply(response);
     }).as('snomedSearch');
   }
 
@@ -264,9 +249,11 @@ export class CypressUtil {
    * Mock Ucum items search endpoint to avoid flaky network calls in tests that use autocompletes.
    */
   static mockUnitsLookup() {
+    Cypress.log({message: `MockUnitsLookup`});
+
     cy.intercept('GET', /ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/, (req) => {
       const term = CypressUtil._getTermsParam(req);
-      CypressUtil._replyLookup(req, term, mockUcumLookupData, 'ucum');
+      CypressUtil._replyLookup(req, term, mockUnitLookupData, 'ucum');
     }).as('ucumSearch');
   }
 
