@@ -787,6 +787,8 @@ describe('Home page', () => {
     });
 
     it('should create quantity type with initial quantity unit', () => {
+      CypressUtil.mockUnitsLookup();
+
       cy.selectDataType('quantity');
       cy.getTypeInitialValueValueMethodClick();
       cy.getItemTypeField().find(':selected').contains('quantity');

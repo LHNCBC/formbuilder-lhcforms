@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { CypressUtil } from "cypress/support/cypress-util";
 
 describe('Home page', () => {
 
@@ -8,6 +9,8 @@ describe('Home page', () => {
 
   describe('Item level fields', () => {
     beforeEach(() => {
+      CypressUtil.mockUnitsLookup();
+
       cy.get('input[type="radio"][value="scratch"]').click();
       cy.get('button').contains('Continue').click();
       cy.contains('button', 'Create questions').click();
@@ -371,6 +374,7 @@ describe('Home page', () => {
         expect(qJson.item[0].extension[0].valueCoding.display).equal('[Ampere/kilogram]*stere');
       });
     });
+
     it('should support lookup display string that contains spaces between words', () => {
       cy.get('[id^="units"]').should('not.exist');
       cy.selectDataType('decimal');

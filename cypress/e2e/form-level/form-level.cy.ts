@@ -646,6 +646,8 @@ describe('Home page', () => {
       });
 
       it('should create variables at the Questionnaire level', () => {
+        CypressUtil.mockFHIRQueryObservation();
+
         cy.get('button#editVariables').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');

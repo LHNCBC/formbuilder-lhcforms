@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { CypressUtil } from "cypress/support/cypress-util";
 
 describe('Home page', () => {
 
@@ -304,6 +305,8 @@ describe('Home page', () => {
       });
 
       it('should correctly display the entry format even when other extensions are present', () => {
+        CypressUtil.mockUnitsLookup();
+
         cy.get('tree-root tree-viewport tree-node-collection tree-node').first().should('be.visible');
 
         // There should only be one entryFormat extension, however, should there be more than one, the

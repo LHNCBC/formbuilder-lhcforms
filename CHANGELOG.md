@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.10] 2026-02-23
+### Changed
+- Mock data for LOINC, SNOMED, and UCUM calls in Cypress tests.
+
 ## [11.0.9] 2026-02-18
 ### Fixed
 - Fixed cy-run-il spec glob to run all *.cy.ts tests.
