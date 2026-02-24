@@ -1,0 +1,109 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "answer-expression-sample",
+  "status": "draft",
+  "item": [
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family"
+          }
+        }
+      ],
+      "linkId": "543691191987",
+      "text": "What is the patient's full name?",
+      "initial": [
+        {
+          "valueString": "Ann Anderson"
+        }
+      ]
+    },
+    {
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "today().toDate().difference(%patient.birthDate.toDate()).years()"
+          }
+        }
+      ],
+      "linkId": "193038443729",
+      "text": "What is the patient's age?",
+      "initial": [
+        {
+          "valueInteger": 20
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%patient.gender"
+          }
+        }
+      ],
+      "linkId": "798130929295",
+      "text": "What is the patient's gender?",
+      "initial": [
+        {
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/administrative-gender",
+            "code": "male",
+            "display": "Male"
+          }
+        }
+      ]
+    }
+  ]
+}

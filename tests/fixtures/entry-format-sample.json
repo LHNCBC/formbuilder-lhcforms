@@ -1,0 +1,217 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Entry format extension",
+  "status": "draft",
+  "item": [
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 15.2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 20.1
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "#,###.##"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "Enter value between 15.2 and 20.1"
+        }
+      ],
+      "linkId": "786054795312",
+      "text": "Decimal data type"
+    },
+    {
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "nnn"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "kg",
+            "display": "kilogram",
+            "system": "http://unitsofmeasure.org"
+          }
+        }
+      ],
+      "linkId": "870385275357",
+      "text": "Integer data type"
+    },
+    {
+      "type": "date",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "YY/MM/DD"
+        }
+      ],
+      "linkId": "875265684478",
+      "text": "Date data type"
+    },
+    {
+      "type": "dateTime",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "YY/MM/DD hh:mm:ss"
+        }
+      ],
+      "linkId": "784082815055",
+      "text": "Datetime data type"
+    },
+    {
+      "type": "time",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "hh:mm:ss"
+        }
+      ],
+      "linkId": "623441215345",
+      "text": "Time data type"
+    },
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "nnn-nnn-nnn"
+        }
+      ],
+      "linkId": "287846010727",
+      "text": "String data type"
+    },
+    {
+      "type": "text",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "Max 100 characters."
+        }
+      ],
+      "linkId": "412481280267",
+      "text": "Text data type"
+    },
+    {
+      "type": "url",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "https://your-site.com"
+        }
+      ],
+      "linkId": "644870509058",
+      "text": "URL data type"
+    },
+    {
+      "type": "coding",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "Select option."
+        }
+      ],
+      "linkId": "495480009200",
+      "text": "Coding data type",
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 1
+            }
+          ],
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "w",
+            "display": "walking"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/ordinalValue",
+              "valueDecimal": 2
+            }
+          ],
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "j",
+            "display": "jogging"
+          }
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "[lb_av]",
+            "display": "lbs"
+          }
+        }, {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "kg",
+            "display": "kgs"
+          }
+        }, {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
+          "valueDuration": {
+            "value": 1,
+            "unit": "year",
+            "system": "http://ucum.org",
+            "code": "a"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "Please enter weight."
+        }
+      ],
+      "linkId": "/3141-9",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "3141-9",
+          "display": "Weight Measured"
+        }
+      ],
+      "text": "Quantity data type",
+      "type": "quantity",
+      "required": false,
+      "initial": [
+        {
+          "valueQuantity": {
+            "unit": "lbs",
+            "system": "http://unitsofmeasure.org",
+            "code": "[lb_av]"
+          }
+        }
+      ]
+    }
+  ]
+}

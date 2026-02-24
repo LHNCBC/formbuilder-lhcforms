@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.7] 2026-02-24
+### Changed
+- Migrated end-to-end tests from Cypress to Playwright.
+
 ## [11.0.6] 2026-01-30
 ### Fixed
 - Fixed an issue with enableWhen answer coding when the coding was missing properties.

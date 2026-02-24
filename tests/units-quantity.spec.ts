@@ -1,5 +1,6 @@
 import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
+import { PWUtils } from "./pw-utils";
 
 test.describe('units and quantity units', async () => {
   let mainPO: MainPO;
@@ -12,7 +13,7 @@ test.describe('units and quantity units', async () => {
 
   test('should autocomplete units that start with \'/\'', async ({ page }) => {
     // Select Data type 'quantity'
-    await page.getByLabel('Data type', { exact: true }).selectOption({ label: 'quantity' });
+    await (await PWUtils.getItemTypeField(page)).selectOption('quantity');
     await page.locator('div[role="group"]')
               .getByText('Type initial value', { exact: true })
               .click();

@@ -1,9 +1,11 @@
 import {Locator, Page, expect} from "@playwright/test";
+import {mockLoincLookupData, mockUcumLookupData, mockSnomedLookupData, mockUnitLookupData} from "./mock-lookup-data";
 
 export class MainPO {
 
   readonly _page;
   static readonly windowOpenerNotice = 'Notice: This page is sending changes back to the page';
+  static lformsLibs = new Map<string, Buffer>();
   constructor(page: Page) {
     this._page = page;
   }
@@ -109,7 +111,6 @@ export class MainPO {
     });
   }
 
-
   /**
    * Mock SNOMED editions request.
    */
@@ -117,6 +118,156 @@ export class MainPO {
     await this._page.route('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (route) => {
       route.fulfill({path: 'cypress/fixtures/snomedEditions.json'});
     });
+  }
+
+  /**
+   * Cache calls to https://lhcforms-static to load LForms libraries.
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockLFormsLoader(page: Page): Promise<void> {
+    const lformsLibUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
+
+    await page.route(lformsLibUrl, async (route) => {
+      await MainPO.handleCachedResponse(route);
+    });
+
+    await page.route(
+      new RegExp(`${lformsLibUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*\/(webcomponent|fhir)\/.*\.(js|css)$`),
+      async (route) => {
+        await MainPO.handleCachedResponse(route);
+      }
+    );
+  }
+
+  /**
+   * Mock LOINC items search endpoint for FHIR Query Observation to avoid flaky
+   * network calls in tests that use autocompletes.
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockFHIRQueryObservation(page: Page): Promise<void> {
+    await page.route(/loinc_items\/v3\/search.*terms=.*/, async (route) => {
+      const url = new URL(route.request().url());
+      const term = url.searchParams.get('terms') ?? '';
+      const normalized = term.toString().toLowerCase();
+
+      const body = mockLoincLookupData[normalized] ?? [0, [], null, []];
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(body)
+      });
+    });
+  }
+
+  /**
+   * Mock lookups used by answerOptions autocomplete (LOINC, UCUM, SNOMED).
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockAnswerOptionLookup(page: Page): Promise<void> {
+    await page.route(/loinc_items\/v3\/search.*terms=.*/, async (route) => {
+      const url = new URL(route.request().url());
+      const term = url.searchParams.get('terms') ?? '';
+      const normalized = term.toString().toLowerCase();
+
+      const body = mockLoincLookupData[normalized] ?? [0, [], null, []];
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(body)
+      });
+    });
+
+    await page.route(/ucum\/v3\/search\?terms=.*/, async (route) => {
+      const url = new URL(route.request().url());
+      const term = url.searchParams.get('terms');
+
+      const body = mockUcumLookupData[term] ?? [0, [], null, []];
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(body)
+      });
+    });
+
+    const snomedExpandUrl = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand\?url=http%3A%2F%2Fsnomed\.info%2Fsct%3Ffhir_vs&filter=[^&]*&_format=application%2Fjson&count=7/;
+
+    await page.route(snomedExpandUrl, async (route) => {
+      const url = new URL(route.request().url());
+      const filter = url.searchParams.get('filter') ?? '';
+      const snomedExpandResponse = mockSnomedLookupData[filter];
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(snomedExpandResponse)
+      });
+    });
+  }
+
+  /**
+   * Mock Ucum items search endpoint to avoid flaky network calls in tests that use autocompletes.
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockUnitsLookup(page: Page): Promise<void> {
+    await page.route(/ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/, async (route) => {
+      const url = new URL(route.request().url());
+      const term = url.searchParams.get('terms') ?? '';
+      const normalized = term.toString().toLowerCase();
+
+      const body = mockUnitLookupData[normalized] ?? [0, [], null, []];
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(body)
+      });
+    });
+  }
+
+  /**
+   * Fulfill a routed request from an in-memory cache when available,
+   * otherwise fetch it once, cache the response body, and fulfill the route.
+   *
+   * @param route - Playwright route for the intercepted request.
+   */
+  private static async handleCachedResponse(route: any): Promise<void> {
+    const url = route.request().url();
+
+    if (MainPO.lformsLibs.has(url)) {
+      const cachedBody = MainPO.lformsLibs.get(url);
+      await route.fulfill({
+        status: 200,
+        body: cachedBody
+      });
+      return;
+    }
+
+    try {
+      const response = await route.fetch();
+      const body = await response.body();
+
+      if (response.status() >= 400) {
+        console.error(`${response.status()}: Error loading ${url}: ${response.statusText()}`);
+      } else {
+        MainPO.lformsLibs.set(url, body);
+      }
+
+      await route.fulfill({ response });
+    } catch (error) {
+      console.error(`Error handling request for ${url}:`, error);
+      await route.abort();
+    }
   }
 
   /**

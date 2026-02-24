@@ -1,0 +1,256 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Item control sample form",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "type": "coding",
+      "linkId": "3802912299620",
+      "text": "Answer option dropdown",
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 11
+            }
+          ],
+          "valueCoding": {
+            "system": "s13",
+            "code": "c12",
+            "display": "d11"
+          },
+          "initialSelected": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 12
+            }
+          ],
+          "valueCoding": {
+            "system": "s12",
+            "code": "c12",
+            "display": "d12"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 13
+            }
+          ],
+          "valueCoding": {
+            "system": "s13",
+            "code": "c13",
+            "display": "d13"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "1579489327138",
+      "text": "Answer option radio-button",
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 21
+            }
+          ],
+          "valueCoding": {
+            "system": "s21",
+            "code": "c21",
+            "display": "d21"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 22
+            }
+          ],
+          "valueCoding": {
+            "system": "s22",
+            "code": "c22",
+            "display": "d22"
+          },
+          "initialSelected": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 23
+            }
+          ],
+          "valueCoding": {
+            "system": "s23",
+            "code": "c23",
+            "display": "d23"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "7150512041732",
+      "text": "Answer option check-box",
+      "repeats": true,
+      "answerOption": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 31
+            }
+          ],
+          "valueCoding": {
+            "system": "s31",
+            "code": "c31",
+            "display": "d31"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 32
+            }
+          ],
+          "valueCoding": {
+            "system": "s32",
+            "code": "c32",
+            "display": "d32"
+          },
+          "initialSelected": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/itemWeight",
+              "valueDecimal": 33
+            }
+          ],
+          "valueCoding": {
+            "system": "s33",
+            "code": "c33",
+            "display": "d33"
+          },
+          "initialSelected": true
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "autocomplete",
+                "display": "Auto-complete"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "5636893491427",
+      "text": "Valueset autocomplete",
+      "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/ucum&count=4"
+    },
+    {
+      "type": "coding",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "332757666007",
+      "text": "Valueset radio-button",
+      "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/hcpcs&count=4"
+    },
+    {
+      "type": "coding",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "check-box",
+                "display": "Check-box"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "1108655660295",
+      "text": "Valueset check-box",
+      "repeats": true,
+      "answerValueSet": "https://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions&count=4"
+    }
+  ]
+}
