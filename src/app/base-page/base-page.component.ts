@@ -576,8 +576,8 @@ export class BasePageComponent implements OnInit {
   /**
    * Import FHIR server menu handler.
    */
-  importFromFHIRServer() {
-    this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
+  async importFromFHIRServer() {
+    await this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
       if(result) { // Server picked, invoke search dialog.
         this.modalService.open(FhirSearchDlgComponent, {size: 'lg', scrollable: true}).result.then((selected) => {
           if(selected !== false) { // Questionnaire picked, get the item from the server.

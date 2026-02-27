@@ -19,7 +19,7 @@ declare var LForms: any;
       </ng-container>
       <ng-template #manualEntry>
         <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control" [formControl]="control"
-          (ngModelChange)="fieldChanged($event)">
+          (ngModelChange)="fieldChanged($event)" placeholder="Type your own">
       </ng-template>
   `,
   styles: [`
@@ -84,6 +84,16 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
     super.ngAfterViewInit();
     this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
 
+    // Prevent the focusin from bubbling up
+    // Loading existing questionnaires with answerOptions missing `display`
+    // causes the input to be auto-focused. This fires a `focusin` event,
+    // which triggers validation and shows a warning dialog prematurely.
+    if (this.manualInput) {
+      this.manualInput.nativeElement.addEventListener('focusin', (e) => {
+        e.stopPropagation();
+      }, { once: true, capture: true });
+    }
+
     const sub = this.formProperty.parent.getProperty('system').valueChanges.subscribe((system) => {
       if (this.system === system) {
         return;
@@ -128,6 +138,17 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
       }
     });
     this.subscriptions.push(sub);
+
+    // Prevent the focusin from bubbling up
+    // Loading existing questionnaires with answerOptions missing `display`
+    // causes the input to be auto-focused. This fires a `focusin` event,
+    // which triggers validation and shows a warning dialog prematurely.
+    if (this.codingDisplay) {
+      this.codingDisplay.nativeElement.addEventListener('focusin', (e) => {
+        e.stopPropagation();
+      }, { once: true, capture: true });
+    }
+
   }
 
   /**
@@ -144,7 +165,7 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
       this.formProperty.parent.reset(coding, false);
       this.control.setValue(coding.display);
     } else if (manualEntry) {
-      this.formProperty.setValue(coding.display, false);
+      this.formProperty.setValue(coding.display, true);
     }
   };
 

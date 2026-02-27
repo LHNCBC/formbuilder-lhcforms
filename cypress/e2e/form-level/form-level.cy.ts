@@ -346,7 +346,7 @@ describe('Home page', () => {
         },
         {
           fixtureFile: 'initial-sample.STU3.json',
-          serverBaseUrl: 'https://hapi.fhir.org/baseDstu3',
+          serverBaseUrl: 'https://lforms-fhir.nlm.nih.gov/baseDstu3',
           version: 'STU3',
         }
       ].forEach((testConfig) => {
@@ -646,6 +646,8 @@ describe('Home page', () => {
       });
 
       it('should create variables at the Questionnaire level', () => {
+        CypressUtil.mockFHIRQueryObservation();
+
         cy.get('button#editVariables').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');

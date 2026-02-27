@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { CypressUtil } from "cypress/support/cypress-util";
 
 describe('Home page', () => {
 
@@ -35,6 +36,8 @@ describe('Home page', () => {
       });
 
       it('should create various types of variables', () => {
+        CypressUtil.mockFHIRQueryObservation();
+
         // Add a new item under the 'Race' item of data type 'display'.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();

@@ -2,9 +2,26 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.0.7] 2026-02-24
+## [11.0.11] 2026-02-24
 ### Changed
-- Migrated end-to-end tests from Cypress to Playwright.
+- Partially migrated end-to-end tests from Cypress to Playwright.
+
+## [11.0.10] 2026-02-23
+### Changed
+- Mock data for LOINC, SNOMED, and UCUM calls in Cypress tests.
+
+## [11.0.9] 2026-02-18
+### Fixed
+- Fixed cy-run-il spec glob to run all *.cy.ts tests.
+
+## [11.0.8] 2026-02-10
+### Added
+- Added answerOptions validation.
+
+## [11.0.7] 2026-02-05
+### Fixed
+- Fixed a bug in searching R5 FHIR server using item-code parameter.
+- Fixed error handling when FHIR server throws errors on search.
 
 ## [11.0.6] 2026-01-30
 ### Fixed

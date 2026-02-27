@@ -25,7 +25,7 @@ import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong, 
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
-import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import {faExclamationTriangle, faLink} from '@fortawesome/free-solid-svg-icons';
 import { TableService, TableStatus } from 'src/app/services/table.service';
 
 @Component({
@@ -48,9 +48,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   addEditAction = false;
   warningIcon = faExclamationTriangle;
+  linkIcon = faLink;
+
   includeErrorColumn = false;
   showErrorTypeList = [];
   showErrorObject;
+  includeStatusColumn = false;
 
   dataType = "string";
   includeActionColumn = false;
@@ -80,6 +83,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   tableStatus: TableStatus;
   elementRef = inject(ElementRef);
+
+  isReordering = false;
 
   constructor() {
     super();
@@ -118,6 +123,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     if(widget.booleanControlled) {
       this.booleanControlledOption = !!widget.booleanControlledOption;
     }
+
+    this.includeStatusColumn = !!widget.showLinkStatus;
+
 
     this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
 
@@ -489,6 +497,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param index - Index of the row to be moved up.
    */
   onMoveUp(index) {
+    this.isReordering = true;
     const props = this.formProperty.properties as FormProperty [];
     if(props.length > 1) {
       this.changeSelectionOnMove(index, -1);
@@ -497,6 +506,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.formProperty.updateValueAndValidity();
       setTimeout(() => {
         this.getInputElementInTable(index - 1, 0).focus();
+        this.isReordering = false;
       });
     }
   }
@@ -506,6 +516,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param index - Index of the row to be moved down.
    */
   onMoveDown(index) {
+    this.isReordering = true;
     const props = this.formProperty.properties as FormProperty [];
     if(props.length > 1) {
       this.changeSelectionOnMove(index, 1);
@@ -514,6 +525,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.formProperty.updateValueAndValidity();
       setTimeout(() => {
         this.getInputElementInTable(index + 1, 0).focus();
+        this.isReordering = false;
       });
     }
   }
@@ -645,5 +657,27 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     return false;
   }
 
-  protected readonly FormProperty = FormProperty;
+  /**
+   * Handles the edit action for a table row at the specified index.
+   * This method is intended to be overridden in derived components to implement
+   * custom edit logic for individual rows. By default, it logs the event.
+   *
+   * @param event - The DOM event triggered by the edit action.
+   * @param index - The index of the row to edit.
+   */
+  onEdit(event: Event, index: number) {
+    // Nothing by default. Override this method to implement for specific table.
+  }
+
+  /**
+   * Determines whether the row at the specified index is referenced by another item.
+   * This base implementation always returns false and is intended to be overridden
+   * in derived components where reference tracking is required (e.g., for conditional logic).
+   *
+   * @param index - The index of the row to check.
+   * @returns False by default; override in subclasses to provide actual reference logic.
+   */
+  isReferencedByOtherItem(index: number): boolean {
+    return false;
+  }
 }
