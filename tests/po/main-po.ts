@@ -1,6 +1,11 @@
 import {Locator, Page, expect} from "@playwright/test";
 import {mockLoincLookupData, mockUcumLookupData, mockSnomedLookupData, mockUnitLookupData} from "./mock-lookup-data";
 
+const LOINC_SEARCH = /loinc_items\/v3\/search.*terms=.*/;
+const ANSWER_OPTION_UCUM_SEARCH = /ucum\/v3\/search\?terms=.*/;
+const ANSWER_OPTION_SNOMED_SEARCH = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand\?url=http%3A%2F%2Fsnomed\.info%2Fsct%3Ffhir_vs&filter=[^&]*&_format=application%2Fjson&count=7/;
+const UNIT_UCUM_SEARCH = /ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/;
+
 export class MainPO {
 
   readonly _page;
@@ -142,19 +147,38 @@ export class MainPO {
   }
 
   /**
-   * Mock LOINC items search endpoint for FHIR Query Observation to avoid flaky
-   * network calls in tests that use autocompletes.
+   * Mock lookup endpoints with fixture data based on a query-string parameter.
    *
    * @param page - Playwright page used to register the route handler.
+   * @param interceptUrl - URL pattern to intercept (string or RegExp).
+   * @param searchParam - Query-string parameter used as the lookup key.
+   * @param type - Lookup dataset selector.
+   * @param options - Optional behavior flags (e.g., normalization).
    * @returns Promise that resolves when the route handler is registered.
    */
-  static async mockFHIRQueryObservation(page: Page): Promise<void> {
-    await page.route(/loinc_items\/v3\/search.*terms=.*/, async (route) => {
-      const url = new URL(route.request().url());
-      const term = url.searchParams.get('terms') ?? '';
-      const normalized = term.toString().toLowerCase();
+  static async mockData(page: Page, interceptUrl: string | RegExp, searchParam: string, type: 'loinc' | 'ucum' | 'snomed' | 'unit',
+                        options: { normalize?: boolean } = {}): Promise<void> {
+    const {normalize = true} = options;
 
-      const body = mockLoincLookupData[normalized] ?? [0, [], null, []];
+    await page.route(interceptUrl, async (route) => {
+      const url = new URL(route.request().url());
+      const term = url.searchParams.get(searchParam) ?? '';
+      const key = normalize ? term.toString().toLowerCase() : term.toString();
+
+      let body;
+      if (type === 'loinc') {
+        body = mockLoincLookupData[key];
+      } else if (type === 'ucum') {
+        body = mockUcumLookupData[key];
+      } else if (type === 'unit') {
+        body = mockUnitLookupData[key];
+      } else {
+        body = mockSnomedLookupData[key];
+      }
+
+      if (!body) {
+        body = [0, [], null, []];
+      }
 
       await route.fulfill({
         status: 200,
@@ -162,6 +186,17 @@ export class MainPO {
         body: JSON.stringify(body)
       });
     });
+  }
+
+  /**
+   * Mock LOINC items search endpoint for FHIR Query Observation to avoid flaky
+   * network calls in tests that use autocompletes.
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockFHIRQueryObservation(page: Page): Promise<void> {
+    await MainPO.mockData(page, LOINC_SEARCH, 'terms', 'loinc');
   }
 
   /**
@@ -171,46 +206,9 @@ export class MainPO {
    * @returns Promise that resolves when the route handler is registered.
    */
   static async mockAnswerOptionLookup(page: Page): Promise<void> {
-    await page.route(/loinc_items\/v3\/search.*terms=.*/, async (route) => {
-      const url = new URL(route.request().url());
-      const term = url.searchParams.get('terms') ?? '';
-      const normalized = term.toString().toLowerCase();
-
-      const body = mockLoincLookupData[normalized] ?? [0, [], null, []];
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(body)
-      });
-    });
-
-    await page.route(/ucum\/v3\/search\?terms=.*/, async (route) => {
-      const url = new URL(route.request().url());
-      const term = url.searchParams.get('terms');
-
-      const body = mockUcumLookupData[term] ?? [0, [], null, []];
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(body)
-      });
-    });
-
-    const snomedExpandUrl = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand\?url=http%3A%2F%2Fsnomed\.info%2Fsct%3Ffhir_vs&filter=[^&]*&_format=application%2Fjson&count=7/;
-
-    await page.route(snomedExpandUrl, async (route) => {
-      const url = new URL(route.request().url());
-      const filter = url.searchParams.get('filter') ?? '';
-      const snomedExpandResponse = mockSnomedLookupData[filter];
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(snomedExpandResponse)
-      });
-    });
+    await MainPO.mockData(page, LOINC_SEARCH, 'terms', 'loinc');
+    await MainPO.mockData(page, ANSWER_OPTION_UCUM_SEARCH, 'terms', 'ucum', { normalize: false });
+    await MainPO.mockData(page, ANSWER_OPTION_SNOMED_SEARCH, 'filter', 'snomed', { normalize: false });
   }
 
   /**
@@ -220,19 +218,7 @@ export class MainPO {
    * @returns Promise that resolves when the route handler is registered.
    */
   static async mockUnitsLookup(page: Page): Promise<void> {
-    await page.route(/ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/, async (route) => {
-      const url = new URL(route.request().url());
-      const term = url.searchParams.get('terms') ?? '';
-      const normalized = term.toString().toLowerCase();
-
-      const body = mockUnitLookupData[normalized] ?? [0, [], null, []];
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(body)
-      });
-    });
+    await MainPO.mockData(page, UNIT_UCUM_SEARCH, 'terms', 'unit');
   }
 
   /**
@@ -257,7 +243,7 @@ export class MainPO {
       const response = await route.fetch();
       const body = await response.body();
 
-      if (response.status() >= 400) {
+      if (response.status() >= 300) {
         console.error(`${response.status()}: Error loading ${url}: ${response.statusText()}`);
       } else {
         MainPO.lformsLibs.set(url, body);
