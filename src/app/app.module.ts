@@ -96,7 +96,7 @@ import {CodemirrorModule} from "@ctrl/ngx-codemirror";
 import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
 import { ValueMethodComponent } from './lib/widgets/value-method/value-method.component';
 import { PickAnswerComponent } from './lib/widgets/pick-answer/pick-answer.component';
-import { ExpressionEditorComponent } from './lib/widgets/expression-editor/expression-editor.component';
+import { AnswerExpressionComponent } from './lib/widgets/expression-editor/answer-expression/answer-expression.component';
 import { ExpressionEditorDlgComponent } from './lib/widgets/expression-editor-dlg/expression-editor-dlg.component';
 
 import { VariableComponent } from './lib/widgets/variable/variable.component';
@@ -106,6 +106,7 @@ import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.co
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
+import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
 
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
@@ -127,7 +128,6 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     EnableWhenSourceComponent,
     EnableOperatorComponent,
     LeftLabelFormGroupComponent,
-    LfbControlWidgetComponent,
     LfbArrayWidgetComponent,
     SideLabelCheckboxComponent,
     EnablewhenAnswerCodingComponent,
@@ -145,7 +145,6 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     UnitsDisplayComponent,
     AnswerOptionComponent,
     SfFormWrapperComponent,
-    PreviewDlgComponent,
     FhirExportDlgComponent,
     LoincNoticeComponent,
     StringWithCssComponent,
@@ -166,7 +165,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     HelpTextComponent,
     ValueMethodComponent,
     PickAnswerComponent,
-    ExpressionEditorComponent,
+    AnswerExpressionComponent,
     ExpressionEditorDlgComponent,
     VariableComponent,
     InitialNumberComponent,
@@ -206,6 +205,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     MatTooltipModule,
     NgbModule,
     ObservationExtractComponent,
+    PreviewDlgComponent,
     SchemaFormModule.forRoot(),
     TitleComponent,
     TreeModule,
@@ -218,7 +218,8 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     CdkCopyToClipboard,
     CodemirrorModule,
     ExpressionEditorModule,
-    IsDisabledPipe
+    IsDisabledPipe,
+    EnableWhenMethodComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [

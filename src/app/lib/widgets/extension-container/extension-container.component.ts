@@ -1,6 +1,6 @@
 import {
-  AfterViewInit, ChangeDetectorRef,
-  Component, inject,
+  AfterViewInit,
+  Component,
   OnInit,
   ViewChild,
 } from '@angular/core';

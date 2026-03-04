@@ -64,11 +64,14 @@ describe('Home page accept Terms of Use notices', () => {
     cy.selectDataType('coding');
     cy.getRadioButtonLabel('Create answer list', 'Yes').click();
     cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
+
     cy.get('[id^="__\\$answerOptionMethods_value-set"]')
       .should('be.visible').and('not.be.checked');
     cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]')
       .should('be.visible').and('not.be.checked');
+    // New default for 'Answer list source' is now 'None'
+    cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
   });
 
   it('should not find SNOMED CT functionality after accepting only LOINC terms of use.', () => {
@@ -85,9 +88,12 @@ describe('Home page accept Terms of Use notices', () => {
     cy.selectDataType('coding');
     cy.getRadioButtonLabel('Create answer list', 'Yes').click();
     cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
+    cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
     cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('be.visible').and('not.be.checked');
     cy.get('[id^="__\\$answerOptionMethods_snomed-value-set"]').should('not.exist');
+    // New default for 'Answer list source' is now 'None'
+    cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+
   });
 });
 

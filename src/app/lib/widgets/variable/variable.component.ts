@@ -7,7 +7,7 @@ import fhir from 'fhir/r4';
 import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {TableComponent} from '../table/table.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
-import {ISchema} from "@lhncbc/ngx-schema-form";
+import {FormProperty, ISchema} from "@lhncbc/ngx-schema-form";
 import { EXTENSION_URL_VARIABLE, EXTENSION_URL_CUSTOM_VARIABLE_TYPE } from '../../constants/constants';
 
 @Component({
@@ -45,15 +45,17 @@ export class VariableComponent extends TableComponent implements OnInit {
     this.linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     const sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
+      /*
       setTimeout(() => {
         const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
         this.formProperty.setValue(variablesExtension, false);
       });
+       */
     });
     this.subscriptions.push(sub);
 
-    const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
-    this.formProperty.setValue(variablesExtension, false);
+    // const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
+    // this.formProperty.setValue(variablesExtension, false);
   }
 
   /**
@@ -145,6 +147,7 @@ export class VariableComponent extends TableComponent implements OnInit {
       fullscreen: 'lg'
     };
 
+    /*
     if (this.linkId) {
       const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
       if (itemIndex > -1) {
@@ -153,12 +156,14 @@ export class VariableComponent extends TableComponent implements OnInit {
         }
       }
     }
+    */
     const modalRef = this.modalService.open(ExpressionEditorDlgComponent, modalConfig);
     const linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     modalRef.componentInstance.linkId = linkId;
     modalRef.componentInstance.expressionUri = this.schema.widget.expressionUri;
     modalRef.componentInstance.questionnaire = this.questionnaire;
     modalRef.componentInstance.display = this.schema.widget.displayExpressionEditorSections;
+    modalRef.componentInstance.expressionLabel = this.schema.widget.expressionLabel;
     modalRef.result.then((result) => {
       // Result returning from the Rule Editor is the whole questionnaire.
       // Rule Editor returns false in the case changes were cancelled.
@@ -190,5 +195,28 @@ export class VariableComponent extends TableComponent implements OnInit {
     const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
     this.formProperty.setValue(variablesExtension, false);
     this.cdr.markForCheck();
+  }
+
+
+  /**
+   * Generate track for @for loop.
+   * @param variableExt -
+   * @param index
+   */
+  getVariableTrackParam(variableExt: fhir.Extension, index: number ) {
+    let ret: string;
+
+    if(variableExt) {
+      if(variableExt.valueExpression) {
+        ret = variableExt.url+variableExt.valueExpression?.name+variableExt.valueExpression?.expression;
+      }
+      else if(variableExt.extension) {
+        ret = variableExt.url + this.getVariableTrackParam(variableExt.extension[0], 0);
+      }
+    }
+    else {
+      ret = index.toString();
+    }
+    return ret;
   }
 }

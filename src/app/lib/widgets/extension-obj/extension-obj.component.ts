@@ -38,7 +38,7 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
   extensionsService = inject(ExtensionsService);
   formService = inject(FormService);
   @ViewChild('sfForm', {read: FormComponent}) sfForm: FormComponent;
-  @Output() onChange = new EventEmitter<fhir.Extension>();
+  @Output() changed = new EventEmitter<fhir.Extension>();
 
   @Input() model;
   extSchema = this.formService.getExtensionSchema();
@@ -84,7 +84,7 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
    */
   handleChange(value: fhir.Extension) {
     this.extensionsService.updateExtension(value);
-    this.onChange.emit(value);
+    this.changed.emit(value);
   }
 
   ngOnDestroy() {

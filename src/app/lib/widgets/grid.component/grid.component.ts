@@ -11,7 +11,7 @@ import {Util} from '../../util';
   standalone: false,
   selector: 'lfb-grid',
   template: `
-    @for (fieldset of formProperty.schema.fieldsets; track fieldset.fields) {
+    @for (fieldset of formProperty.schema.fieldsets; track $index) {
       <div>
         @if (fieldset.title) {
           <legend>{{fieldset.title}}</legend>

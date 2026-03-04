@@ -22,8 +22,11 @@
           { "field": "__$valueMethod", "col": 12 },
           { "field": "initial", "title": "Default value", "col": 12 },
           { "field": "__$pickInitial", "col": 12 },
+          { "field": "__$initialCalculatedExpression", "col": 12 },
+          /*
           { "field": "__$initialExpression", "col": 12 },
           { "field": "__$calculatedExpression", "col": 12 },
+          */
           { "field": "__$itemControl", "col": 12 },
           { "field": "__$itemControlQuestion", "col": 12 },
           { "field": "__$itemControlGroup", "col": 12 },
@@ -52,9 +55,11 @@
       {
         "showFields": [
           { "field": "linkId", "col": 12 },
+          { "field": "__$enableWhenMethod", "col": 12 },
           { "field": "enableWhen", "col": 12 },
           { "field": "enableBehavior", "col": 12 },
           { "field": "disabledDisplay", "col": 12 },
+          { "field": "__$enableWhenExpression", "col": 12 },
           { "field": "__$terminologyServer", "col": 12 },
           { "field": "__$observationLinkPeriod", "col": 12},
           { "field": "__$observationExtract", "col": 12},

@@ -4,3 +4,6 @@ lfb-enable-when td.invalid select {
   outline: 2px solid red;
 }
 
+.card {
+  border: none;
+}

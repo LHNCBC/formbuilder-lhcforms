@@ -64,11 +64,24 @@ export class MainPO {
 
 
   /**
+   * Wait for the page to be ready and accept terms of use without navigating.
+   * Use this for window-open tests where the page is already at the correct URL.
+   */
+  async waitForAppAndAcceptTerms() {
+    await this.mockSnomedEditions();
+    await this._page.waitForLoadState('networkidle');
+    const lforms = await this._page.evaluateHandle('window.LForms');
+    expect(lforms).toBeDefined();
+    await this.acceptAllTermsOfUse();
+  }
+
+
+  /**
    * Visit home page and assert LForms, but do not deal with LOINC notice.
    */
   async goToHomePage() {
     await this.mockSnomedEditions();
-    // await this._page.goto('/');
+    await this._page.goto('/');
     const lforms = await this._page.evaluateHandle('window.LForms');
     expect(lforms).toBeDefined();
   }

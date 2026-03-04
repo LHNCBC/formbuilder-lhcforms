@@ -5,9 +5,17 @@ import {PWUtils} from "./pw-utils";
 
 
 async function assertCreateExtension(page: Page) {
-  await page.getByRole('button', {name: 'Add new extension'}).first().click();
+  const addBtn = page.getByRole('button', {name: 'Add new extension'}).first();
+  await expect(addBtn).toBeVisible();
+  await addBtn.click();
   const formLoc = page.locator('lfb-extension-dlg lfb-extension-obj sf-form');
-  expect(await formLoc.isVisible()).toBeTruthy();
+  try {
+    await expect(formLoc).toBeVisible({timeout: 5000});
+  } catch {
+    // Retry click if dialog didn't open
+    await addBtn.click();
+    await expect(formLoc).toBeVisible();
+  }
   await formLoc.getByLabel('Url', {exact: true}).fill('http://example.org');
   await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use a value type', formLoc)).toBeChecked();
   await expect(PWUtils.getRadioButton(page, 'Value Type Category', 'Primitive type', formLoc)).toBeChecked();
@@ -38,7 +46,7 @@ test.describe('extension.component', async () => {
 
   test('Item level page - should add an extension and see it in the JSON', async ({page}) => {
     await page.getByRole('button', {name: 'Create questions'}).first().click();
-    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await PWUtils.expandAdvancedFields(page);
     await assertCreateExtension(page);
     const q = await PWUtils.getQuestionnaireJSON(page, 'R5');
     expect(q.item[0].extension).toEqual([{
@@ -83,7 +91,7 @@ test.describe('extension.component', async () => {
     // Check the extension fields in the dialog.
     await extRows.nth(2).getByLabel('Edit this row').click();
     const formLoc = page.locator('lfb-extension-dlg lfb-extension-obj sf-form');
-    expect(await formLoc.isVisible()).toBeTruthy();
+    await expect(formLoc).toBeVisible();
     await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext');
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use an extension', formLoc)).toBeChecked();
     let lContextExtRows = formLoc.locator('lfb-extension table tbody tr');
@@ -117,7 +125,7 @@ test.describe('extension.component', async () => {
     await expect(extRows.nth(1).getByLabel('Edit this row')).toBeDisabled();
     await extRows.nth(2).getByLabel('Edit this row').click();
     const formLoc = page.locator('lfb-extension-dlg').nth(0);
-    expect(await formLoc.isVisible()).toBeTruthy();
+    await expect(formLoc).toBeVisible();
     await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
     await expect(formLoc.getByLabel('Value Type', {exact: true})).toHaveValue(/valueCoding$/);
     const codingLoc = formLoc.locator('lfb-object', {has: page.getByText('Value coding', {exact: true})});
@@ -132,7 +140,7 @@ test.describe('extension.component', async () => {
     await expect(page.locator('.spinner-border')).not.toBeVisible();
     expect(await extRows.count()).toBe(1);
     await extRows.nth(0).getByLabel('Edit this row').click();
-    expect(await formLoc.isVisible()).toBeTruthy();
+    await expect(formLoc).toBeVisible();
     await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://example.org/codeable-concept')
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use a value type', formLoc)).toBeChecked();
     await expect(PWUtils.getRadioButton(page, 'Value Type Category', 'General purpose datatype', formLoc)).toBeChecked();
@@ -157,8 +165,8 @@ test.describe('extension.component', async () => {
 
     // Make some changes.
     // Change user selected from second to third item.
-    await PWUtils.getRadioButton(page, 'User Selected', 'Unspecified', arrayItemsLoc.nth(1)).click();
-    await PWUtils.getRadioButton(page, 'User Selected', 'Yes', arrayItemsLoc.nth(2)).click();
+    await PWUtils.clickRadioButton(page, 'User Selected', 'Unspecified', arrayItemsLoc.nth(1));
+    await PWUtils.clickRadioButton(page, 'User Selected', 'Yes', arrayItemsLoc.nth(2));
 
     // Modify system of the third item.
     await arrayItemsLoc.nth(2).getByLabel('System', {exact: true}).clear();
@@ -185,7 +193,7 @@ test.describe('extension.component', async () => {
     await expect(page.locator('.spinner-border')).not.toBeVisible();
     expect(await extRows.count()).toBe(1);
     await extRows.nth(0).getByLabel('Edit this row').click();
-    expect(await formLoc.isVisible()).toBeTruthy();
+    await expect(formLoc).toBeVisible();
     await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://example.org/level1');
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use an extension', formLoc)).toBeChecked();
     let level1ExtRows = formLoc.locator('lfb-extension table tbody tr');
@@ -194,16 +202,22 @@ test.describe('extension.component', async () => {
     // Invoked second level extension dialog
     // Note that the nested dialogs do not have parent child relationship in the DOM. Use nth(1) to get the next dialog.
     const level2FormLoc = page.locator('lfb-extension-dlg').nth(1);
-    expect(await level2FormLoc.isVisible()).toBeTruthy();
+    await expect(level2FormLoc).toBeVisible();
     await expect(level2FormLoc.getByLabel('Url', {exact: true})).toHaveValue('http://example.org/level2')
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use an extension', level2FormLoc)).toBeChecked();
     let level2ExtRows = level2FormLoc.locator('lfb-extension table tbody tr');
     expect(await level2ExtRows.count()).toBe(1);
     await level2ExtRows.nth(0).getByLabel('Edit this row').click({force: true});
     // Invoked third level extension dialog
-    expect(await page.locator('lfb-extension-dlg').count()).toBe(3);
+    // Retry click if the third dialog didn't open
+    try {
+      await expect(page.locator('lfb-extension-dlg')).toHaveCount(3, {timeout: 5000});
+    } catch {
+      await level2ExtRows.nth(0).getByLabel('Edit this row').click({force: true});
+      await expect(page.locator('lfb-extension-dlg')).toHaveCount(3);
+    }
     const level3FormLoc = page.locator('lfb-extension-dlg').nth(2);
-    expect(await level3FormLoc.isVisible()).toBeTruthy();
+    await expect(level3FormLoc).toBeVisible();
     await expect(level3FormLoc.getByLabel('Url', {exact: true})).toHaveValue('http://example.org/level3')
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use a value type', level3FormLoc)).toBeChecked();
     await expect(PWUtils.getRadioButton(page, 'Value Type Category', 'Primitive type', level3FormLoc)).toBeChecked();

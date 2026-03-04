@@ -17,23 +17,24 @@ export class ExpressionEditorDlgComponent {
   private activeModal = inject(NgbActiveModal);
 
   linkId:string;
-  expressionUri: string;
+  expressionUri = "Output Expression";
   userExpressionChoices: string;
   questionnaire:any;
   // Display the Expression Editor sections
   display: any;
+  expressionLabel: string;
 
   /**
-   * Close the Rule Editor modal dialog.
+   * Close the Expression Editor modal dialog.
    */
-  closeRuleEditorDialog() {
+  closeExpressionEditorDialog() {
     this.activeModal.close(false);
   }
 
   /**
-   * Show a preview of the output questionnaire under the rule editor.
+   * Show a preview of the output questionnaire under the expression editor.
    */
-  onSaveRuleEditor(fhirResult): void {
+  onSaveExpressionEditor(fhirResult): void {
     const fhirPreview = JSON.stringify(fhirResult, null, 2);
 
     this.activeModal.close(fhirResult);

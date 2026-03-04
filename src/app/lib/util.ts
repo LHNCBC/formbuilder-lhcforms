@@ -412,7 +412,7 @@ export class Util {
       this.before(function () {
         if(node && Array.isArray(node)) {
           // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
-          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
+          this.update(node.filter((e)=>{return e !== null && e !== undefined && !Util.isEmpty(e);}));
         }
       });
 
@@ -898,6 +898,32 @@ export class Util {
       return !cls.startsWith(filterPrefix);
     });
     return otherClasses?.join(' ');
+  }
+
+  /**
+   * Search items by linkId and return its extensions.
+   *
+   * @param items - Items list
+   * @param linkId - Target's linkId.
+   * @return - Array of extensions.
+   */
+  static getExtensionsByLinkId(items: fhir.QuestionnaireItem[], linkId: string): fhir.Extension [] {
+    const search = (items, linkId) => {
+      let ret = {continue: true, extensions: null};
+      for(const item of items) {
+        if(item.linkId === linkId) {
+          ret.extensions = item.extension?.filter(ext => ext.url) || null;
+          ret.continue = false; // Done searching
+          break;
+        } else if(item.item) {
+          ret = search(item.item, linkId);
+          if(!ret.continue)
+            break;
+        }
+      }
+      return ret;
+    };
+    return search(items, linkId).extensions;
   }
 }
 

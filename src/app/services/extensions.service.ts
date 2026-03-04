@@ -10,11 +10,14 @@ import {
   EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
   EXTENSION_URL_INITIAL_EXPRESSION,
   EXTENSION_URL_CALCULATED_EXPRESSION,
-  EXTENSION_URL_ANSWER_EXPRESSION
+  EXTENSION_URL_ANSWER_EXPRESSION,
+  EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+  EXTENSION_URL_ITEM_CONTROL
 } from '../lib/constants/constants';
 import {TerminologyServerComponent} from "../lib/widgets/terminology-server/terminology-server.component";
 import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
 import {ObservationExtractComponent} from "../lib/widgets/observation-extract/observation-extract.component";
+import {Util} from "../lib/util";
 
 /**
  * This class is intended for components which needs to interact with extension field.
@@ -38,6 +41,8 @@ export class ExtensionsService {
     EXTENSION_URL_INITIAL_EXPRESSION,
     EXTENSION_URL_CALCULATED_EXPRESSION,
     EXTENSION_URL_ANSWER_EXPRESSION,
+    EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+    EXTENSION_URL_ITEM_CONTROL,
     TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
     ObservationLinkPeriodComponent.extUrl,
     ObservationExtractComponent.extUrl
@@ -247,7 +252,8 @@ export class ExtensionsService {
       // Find the start and end indexes of the consecutive block of variable extensions.
       let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
       if (startIndex === -1) {
-        this.extensionsProp.reset([...newExtensionsJSON, ...originalExtensions]);
+        // Not in the original list, append the new ones.
+        this.extensionsProp.reset([...originalExtensions, ...newExtensionsJSON]);
         return;
       };
 
@@ -265,7 +271,7 @@ export class ExtensionsService {
     } else {
       // newExtensionsJSON is undefined, so reset it to empty.
       // This is the case where all variables got deleted via the Expression Editor
-      this.extensionsProp.reset([]);
+      this.removeExtensionsByUrl(extUrl);
     }
   }
 
@@ -393,7 +399,10 @@ export class ExtensionsService {
 
       // If the new value is an extension, we need to set the __$isValueX and __$valueType properties
       // so that the dialog can handle it correctly.
-      const valueX = Object.keys(newValue).find(key => key.startsWith('value'));
+      Util.eliminateEmptyFields(newValue);
+      const valueX = Object.keys(newValue).find((key) => {
+        return key.startsWith('value');
+      });
       newValue['__$isValueX'] = !!valueX;
       if(newValue['__$isValueX']) {
         newValue['__$valueType'] = valueX;

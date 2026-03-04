@@ -76,7 +76,7 @@ export class NgxSchemaFormComponent implements OnChanges {
   private createNewFormWrapper() {
     this.sfFormWrapperHost.clear();
     const componentRef = this.sfFormWrapperHost.createComponent<SfFormWrapperComponent>(SfFormWrapperComponent);
-    componentRef.instance.model = this.model;
+    componentRef.setInput('model', this.model);
     componentRef.instance.valueChange.subscribe((value: any) => this.updateValue(value));
     componentRef.instance.errorsChanged.subscribe((errors: any[]) => this.onErrorsChange(errors));
     componentRef.instance.validationErrorsChanged.subscribe((errors: any[]) => this.onValidationErrorsChange(errors));

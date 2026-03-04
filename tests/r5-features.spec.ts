@@ -32,6 +32,8 @@ test.describe('r5-features.spec.ts', async () => {
 
       for(const constraintType of Object.keys(constraintLabels)) {
         await PWUtils.clickRadioButton(page, 'Answer constraint', constraintLabels[constraintType]);
+        await expect(PWUtils.getRadioButton(page, 'Answer constraint', constraintLabels[constraintType])).toBeChecked();
+        await page.waitForTimeout(100);
         let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(q.item[0].type).toBe(listType);
         expect(q.item[0].answerConstraint).toBe(constraintType);
@@ -87,6 +89,9 @@ test.describe('r5-features.spec.ts', async () => {
     const elementLocatorInTable = (parent: Locator, row: number, col: number, selector: string)=> {
       return parent.locator(`table > tbody > tr:nth-child(${row}) > td:nth-child(${col}) ${selector}`);
     }
+
+    await page.getByRole('radiogroup', {name: 'Conditional method'}).getByText('enableWhen condition and behavior').click();
+
     const parentEl = page.locator('lfb-enable-when');
     parentEl.locator('')
     await elementLocatorInTable(parentEl, 1, 1, 'input').click();
@@ -137,22 +142,22 @@ test.describe('r5-features.spec.ts', async () => {
     await PWUtils.clickTreeNode(page, 'Date type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/date/);
     await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Check-box')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Check-box')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'Time type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/time/);
     await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Radio Button')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Radio Button')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'Coding type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
     await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Drop down')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Drop down')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'String type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/string/);
     await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(page.getByRole('radiogroup', {name: 'Answer list layout'}).getByText('Radio Button')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Radio Button')).toBeChecked();
   });
 
   test('should export to R4 and STU3 versions', async ({page}) => {

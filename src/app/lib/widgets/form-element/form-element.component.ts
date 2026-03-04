@@ -1,7 +1,7 @@
 /**
  * Customize layout of form-element from ngx-schema-form
  */
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit, SimpleChanges} from '@angular/core';
 import {FormElementComponent, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { Widget } from '@lhncbc/ngx-schema-form';
 import { ElementChooserComponent } from '../element-chooser/element-chooser.component';
@@ -36,7 +36,7 @@ import {Util} from "../../util";
     `,
   styles: []
 })
-export class AppFormElementComponent extends FormElementComponent {
+export class AppFormElementComponent extends FormElementComponent implements OnInit {
   static seqNum = 0;
   // Input properties, typically read from layout schema json.
   @Input()
@@ -82,6 +82,9 @@ export class AppFormElementComponent extends FormElementComponent {
   }
   */
 
+  ngOnInit() {
+    super.ngOnInit();
+  }
   /**
    * Override to add custom properties
    *

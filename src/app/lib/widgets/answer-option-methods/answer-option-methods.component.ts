@@ -1,6 +1,4 @@
-import {AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {AnswerOptionComponent} from '../answer-option/answer-option.component';
-import {StringComponent} from '../string/string.component';
+import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
 import {LabelRadioComponent} from '../label-radio/label-radio.component';
 import {AnswerValueSetComponent} from '../answer-value-set/answer-value-set.component';
 import {FormService} from '../../../services/form.service';
@@ -18,14 +16,10 @@ import {
   selector: 'lfb-answer-option-methods',
   templateUrl: './answer-option-methods.component.html'
 })
-export class AnswerOptionMethodsComponent extends LabelRadioComponent implements OnInit, AfterViewInit, OnDestroy {
+export class AnswerOptionMethodsComponent extends LabelRadioComponent implements OnInit, AfterViewInit {
   private formService = inject(FormService);
   private liveAnnouncer = inject(LiveAnnouncer);
 
-
-  subscriptions: Subscription [] = [];
-  @ViewChild('answerOption', {static: true, read: AnswerOptionComponent}) answerOption: AnswerOptionComponent;
-  @ViewChild('answerValueSet', {static: true, read: StringComponent}) answerValueSet: StringComponent;
   isSnomedUser = false;
   answerOptionMethod = null;
   type = 'string';
@@ -55,11 +49,15 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   get filteredAnswerOptionMethods(): any[] {
     return this.schema.oneOf.filter(option => {
       if (this.isSnomedUser) {
-        return (
-          (this.schema.widget.supportedDataType[option.enum[0]][0] === 'all' ||
-          this.isTypeSupportedForKey(option.enum[0], this.type)) &&
-          this.isAnswerList
-        );
+        if (option.enum[0] === "none") {
+          return true;
+        } else {
+          return (
+            (this.schema.widget.supportedDataType[option.enum[0]][0] === 'all' ||
+            this.isTypeSupportedForKey(option.enum[0], this.type)) &&
+            this.isAnswerList
+          );
+        }
       } else {
         return option.enum[0] !== 'snomed-value-set';
       }
@@ -144,8 +142,12 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
    * in which case it will update the formProperty of __$answerOptionMethods.
    */
   updateUI() {
+    const answerOptions = this.formProperty.searchProperty('answerOption').value;
     const valueSetUrl = this.formProperty.searchProperty('answerValueSet').value;
-    if(valueSetUrl?.length > 0) {
+
+    if (Array.isArray(answerOptions) && answerOptions.length > 0) {
+      this.formProperty.setValue(ANSWER_OPTION_METHOD_ANSWER_OPTION, false);
+    } else if(valueSetUrl?.length > 0) {
       let valueSetType = ANSWER_OPTION_METHOD_VALUE_SET;
       if(this.isSnomedUser &&
         (valueSetUrl.startsWith(AnswerValueSetComponent.snomedBaseUri))) {
@@ -169,14 +171,5 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
    */
   isTypeSupportedForKey(supportedKey: string, type: string): boolean {
     return this.schema.widget.supportedDataType[supportedKey].indexOf(type) > -1;
-  }
-
-  /**
-   * Angular lifecycle hook
-   */
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((sub) => {
-      sub.unsubscribe();
-    });
   }
 }

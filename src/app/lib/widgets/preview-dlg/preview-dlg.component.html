@@ -88,8 +88,8 @@
         </div>
       </div>
     }
-    @if(showNoErrorsMsg) {
-      <ngb-alert type="info" class="mb-0" (closed)="showNoErrorsMsg = false">No errors found</ngb-alert>
+    @if(showNoErrorsMsg[fhirVersion]) {
+      <ngb-alert type="info" class="mb-0" (closed)="showNoErrorsMsg[fhirVersion] = false">No errors found</ngb-alert>
     }
   </ng-template>
 
@@ -112,7 +112,7 @@
     </div>
   </ng-template>
 
-  <ng-template #jsonQ let-fhirVersion>
+  <ng-template #jsonQ>
     <div class="overlay-container">
       <ngx-codemirror
         (codeMirrorLoaded)="codeMirrorLoaded($event)"
@@ -133,5 +133,4 @@
         [cdkCopyToClipboard]="codeMirrorModel"
         ><fa-icon size="2x" [icon]="faCopy" aria-hidden="true"></fa-icon></button>
       </div>
-      <div #jsonContent></div>
     </ng-template>

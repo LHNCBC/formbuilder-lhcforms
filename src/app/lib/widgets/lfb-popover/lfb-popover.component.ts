@@ -54,7 +54,7 @@ import {Component, ElementRef, Input, OnDestroy, ViewChild} from '@angular/core'
     }
   `]
 })
-export class LfbPopoverComponent implements OnDestroy {
+export class LfbPopoverComponent {
   static __ID = 0;
 
   id: number;
@@ -85,7 +85,5 @@ export class LfbPopoverComponent implements OnDestroy {
 
   isVisible(): boolean {
     return this.visible;
-  }
-  ngOnDestroy() {
   }
 }

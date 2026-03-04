@@ -8,7 +8,6 @@ import {
   ViewChild, OnDestroy
 } from '@angular/core';
 import {FormService} from '../services/form.service';
-import {LinkIdCollection} from '../item/item.component';
 import {
   ArrayProperty,
   FormComponent,
@@ -75,8 +74,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
   errorsChanged = new EventEmitter<any []>();
   @Output()
   validationErrorsChanged = new EventEmitter<any []>();
-  @Input()
-  linkIdCollection = new LinkIdCollection();
   loading = false;
 
   questionnaire;

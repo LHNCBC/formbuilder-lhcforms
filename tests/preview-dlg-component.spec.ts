@@ -14,7 +14,7 @@ test.describe('preview-dlg-component.spec.ts', async () => {
 
       // Set up mocks for http calls.
       // For R5 version
-      await page.route('https://a.com/r5/metadata**', async (route) => {
+      await page.route('https://a.com/r5/metadata?_*', async (route) => {
         await route.fulfill({
           json: {
             resourceType: "CapabilityStatement",
@@ -47,7 +47,7 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       });
 
       // For some reason mocking with search params is not working. Using a separate url for search params.
-      await page.route('https://aa.com/r5/metadata**', async (route) => {
+      await page.route('https://aa.com/r5/metadata?_*', async (route) => {
         await route.fulfill({
           json: {
             resourceType: "CapabilityStatement",
@@ -147,8 +147,8 @@ test.describe('preview-dlg-component.spec.ts', async () => {
 
       await inputEl.fill('https://a.com/r5');
       await page.getByRole('button', {name: 'Run Validation'}).click();
-      expect(await firstErrorLocator.innerText()).toMatch(/Fatal: Dummy fatal from r5/);
-      expect(await secondErrorLocator.innerText()).toMatch(/Error: Dummy error/);
+      await expect(firstErrorLocator).toHaveText(/Fatal: Dummy fatal from r5/);
+      await expect(secondErrorLocator).toHaveText(/Error: Dummy error/);
       await expect(noErrorAlertLocator).not.toBeAttached();
 
       await page.getByRole('button', {name: 'Copy validation errors to clipboard'}).click();
@@ -168,9 +168,12 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       await page.getByRole('button', {name: 'Run Validation'}).click();
       await expect(noErrorAlertLocator).toBeAttached();
       await expect(errorPanelLocator).not.toBeAttached();
+      await page.getByRole('tab', {name: 'R4 Version'}).click();
+      await expect(noErrorAlertLocator).not.toBeAttached();
 
       // STU3 version
       await page.getByRole('tab',{name: 'STU3 Version'}).click();
+      await expect(noErrorAlertLocator).not.toBeAttached();
 
       await inputEl.clear();
 

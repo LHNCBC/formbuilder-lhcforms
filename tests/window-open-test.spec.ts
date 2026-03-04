@@ -35,7 +35,7 @@ test.describe('Cancel event', async () => {
     const newPage = await pagePromise;
     await newPage.waitForLoadState('domcontentloaded');
     mainPO = new MainPO(newPage);
-    await mainPO.loadHomePage();
+    await mainPO.waitForAppAndAcceptTerms();
     await expect(mainPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
   });
 
@@ -104,7 +104,7 @@ test.describe('Open form builder in a new window', async () => {
       const newPage = await pagePromise;
       await newPage.waitForLoadState('domcontentloaded');
       mainPO = new MainPO(newPage);
-      await mainPO.loadHomePage();
+      await mainPO.waitForAppAndAcceptTerms();
       await expect(mainPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
 
       const initialQTitle = 'Form loaded from window-open-test.html';
@@ -137,7 +137,7 @@ test.describe('Open form builder in a new window', async () => {
       await expect(saveButton).toBeEnabled();
       await Promise.all([
         mainPO.page.waitForEvent('close'),
-        await saveButton.click()
+        saveButton.click()
       ]);
 
       messageData.data = await getMessage(page, 'closed');

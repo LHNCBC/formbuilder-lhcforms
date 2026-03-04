@@ -116,7 +116,8 @@ export class PWUtils {
    * @param nodeText - Text of the node to match.
    */
   static async clickTreeNode(page: Page, nodeText: string) {
-    await (await PWUtils.getTreeNode(page, nodeText)).click();
+    const tNode = await PWUtils.getTreeNode(page, nodeText);
+    await tNode.click();
   }
 
   /**
@@ -182,16 +183,21 @@ export class PWUtils {
    * @param locator - Optional locator to constrain the search.
    */
   static async clickRadioButton(page: Page, groupLabel: string, buttonLabel: string, locator: Locator = null) {
-    const parent = locator ? locator : page;
-    await parent.locator('lfb-label', {has: page.getByText(groupLabel)})
-      .locator('xpath=//following-sibling::div[@role="radiogroup"]').first()
-      .getByText(buttonLabel, {exact: true}).click();
+    await PWUtils.getRadioGroup(page, groupLabel, locator).getByText(buttonLabel).click();
   }
 
+  static getRadioGroup(page: Page, groupLabel: string, locator: Locator = null): Locator {
+    const parent = locator ? locator : page;
+    return parent.locator('lfb-label', {has: page.getByText(groupLabel)})
+      .locator('..').locator('div[role="radiogroup"]').first();
+  }
   /**
-   * Get the locator of radio button from the radio group.
-   * The actual input radio element is hidden, so click the label element. If
-   * the locator is provided, search within the locator, otherwise search the whole page.
+   * Get the locator of radio input element from the radio group. Note that
+   * the returned radio button is hidden and is not suitable for actions like click.
+   * This is mainly intended for assertions on the element. To click use a separate click function
+   * implemented above.
+   *
+   * If the locator is provided, search within the locator, otherwise search the whole page.
    *
    * @param page - Page object
    * @param groupLabel - Group label, matches substring
@@ -199,7 +205,36 @@ export class PWUtils {
    * @param locator - Optional locator to constrain the search.
    */
   static getRadioButton(page: Page, groupLabel: string, buttonLabel: string, locator: Locator = null): Locator {
-    const parent = locator ? locator : page;
-    return parent.getByLabel(groupLabel, {exact: false}).getByText(buttonLabel, {exact: true});
+    return PWUtils.getRadioGroup(page, groupLabel, locator).getByRole('radio', {name: buttonLabel});
+  }
+
+  /**
+   * Expands the Advanced fields panel by clicking the down-angle icon
+   * inside the "Advanced fields" button.
+   *
+   * @param page - The Playwright Page instance.
+   */
+  static async expandAdvancedFields(page: Page): Promise<void> {
+    const button = page.getByRole('button', { name: 'Advanced fields' });
+    await expect(button).toBeVisible();
+    const isExpanded = await button.getAttribute('aria-expanded');
+    if (isExpanded !== 'true') {
+      await button.click();
+    }
+  }
+
+  /**
+   * Collapses the Advanced fields panel by clicking the up-angle icon
+   * inside the "Advanced fields" button.
+   *
+   * @param page - The Playwright Page instance.
+   */
+  static async collapseAdvancedFields(page: Page): Promise<void> {
+    const button = page.getByRole('button', { name: 'Advanced fields' });
+    await expect(button).toBeVisible();
+    const isExpanded = await button.getAttribute('aria-expanded');
+    if (isExpanded === 'true') {
+      await button.click();
+    }
   }
 }

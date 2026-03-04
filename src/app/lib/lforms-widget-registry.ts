@@ -46,7 +46,7 @@ import { ValueSetResourceComponent } from './widgets/value-set-resource/value-se
 
 import { ValueMethodComponent } from './widgets/value-method/value-method.component';
 import { PickAnswerComponent } from './widgets/pick-answer/pick-answer.component';
-import { ExpressionEditorComponent } from './widgets/expression-editor/expression-editor.component';
+import { AnswerExpressionComponent } from './widgets/expression-editor/answer-expression/answer-expression.component';
 import { ExpressionEditorDlgComponent } from './widgets/expression-editor-dlg/expression-editor-dlg.component';
 import { VariableComponent } from './widgets/variable/variable.component';
 import { InitialNumberComponent } from './widgets/initial-number/initial-number.component';
@@ -60,6 +60,11 @@ import {LfbArrayComponent} from "./widgets/lfb-array/lfb-array.component";
 import {ExtensionContainerComponent} from "./widgets/extension-container/extension-container.component";
 import { CodingSystemComponent } from './widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
+import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
+import {
+  CalculatedInitialExpressionComponent
+} from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
+import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -107,7 +112,8 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register("value-set", ValueSetResourceComponent);
     this.register('value-method', ValueMethodComponent);
     this.register('pick-answer', PickAnswerComponent);
-    this.register('expression-editor', ExpressionEditorComponent);
+    this.register('initial-calculated-expression-editor', CalculatedInitialExpressionComponent);
+    this.register('expression-editor', AnswerExpressionComponent);
     this.register('expression-editor-dlg', ExpressionEditorDlgComponent);
     this.register('variable', VariableComponent);
     this.register('initial-number', InitialNumberComponent);
@@ -120,5 +126,9 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('array', LfbArrayComponent);
     this.register('coding-system', CodingSystemComponent);
     this.register('coding-display', CodingDisplayComponent);
+    this.register('enable-when-method', EnableWhenMethodComponent);
+    this.register('enable-when-expression', EnableWhenExpressionComponent);
+
+    this.setDefaultWidget(StringComponent);
   }
 }

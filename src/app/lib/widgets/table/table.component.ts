@@ -660,10 +660,14 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   filterOutClasses(formProperty: FormProperty, classPrefix: string) {
-    const classes = formProperty.schema.widget?.controlClasses;
+    const classes = formProperty?.schema.widget?.controlClasses;
     const otherClasses = classes?.split(/\s+/).filter((cls) => {
       return !cls.startsWith(classPrefix);
     });
     return otherClasses?.join(' ');
+  }
+
+  getTrackParam(formProperty: FormProperty, index: number) {
+    return formProperty?.canonicalPathNotation || index.toString();
   }
 }

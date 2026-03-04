@@ -40,7 +40,7 @@
           </tr>
         </thead>
         <tbody [ngbCollapse]="isCollapsed">
-          @for (variable of nonEmptyVariables; track variable.url; let ind = $index; let isFirst = $first; let isLast = $last) {
+          @for (variable of nonEmptyVariables; track getVariableTrackParam(variable, $index); let ind = $index; let isFirst = $first; let isLast = $last) {
             <tr
               class="d-flex lfb-table-row">
               @for (showDataField of getVariableFieldsStructure(false); track showDataField.field) {

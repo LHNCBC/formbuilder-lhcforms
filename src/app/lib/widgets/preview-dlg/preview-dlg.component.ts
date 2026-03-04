@@ -1,11 +1,20 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation, inject } from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+  inject,
+  CUSTOM_ELEMENTS_SCHEMA
+} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from '@angular/material/dialog';
 import fhir from 'fhir/r4';
 import {FHIRServer, FhirService} from '../../../services/fhir.service';
 import {FormService} from '../../../services/form.service';
 import {FHIR_VERSIONS, FHIR_VERSION_TYPE, Util} from "../../util";
 import {fhirPrimitives} from "../../../fhir";
-import {CodemirrorComponent} from "@ctrl/ngx-codemirror";
+import {CodemirrorModule, CodemirrorComponent} from "@ctrl/ngx-codemirror";
 import {
   BehaviorSubject,
   merge,
@@ -14,8 +23,16 @@ import {
   Subscription
 } from "rxjs";
 import {debounceTime, distinctUntilChanged, filter, map} from "rxjs/operators";
-import {NgbAccordionItem, NgbTypeahead} from "@ng-bootstrap/ng-bootstrap";
+import {NgbAccordionItem, NgbAccordionModule, NgbAlertModule, NgbTypeahead} from "@ng-bootstrap/ng-bootstrap";
+import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {faCopy} from '@fortawesome/free-regular-svg-icons';
+import {MatIconModule} from "@angular/material/icon";
+import {MatTabsModule} from "@angular/material/tabs";
+import {AsyncPipe, CommonModule} from "@angular/common";
+import {FormsModule} from "@angular/forms";
+import {ClipboardModule} from "@angular/cdk/clipboard";
+import {LfbSpinnerComponent} from "../lfb-spinner/lfb-spinner.component";
+import {MatButtonModule} from "@angular/material/button";
 declare var LForms: any;
 
 /**
@@ -26,10 +43,30 @@ export interface PreviewData {
   lfData?: any;
 }
 
+type NoErrorsMap = {
+  [key in FHIR_VERSION_TYPE]: boolean;
+};
+
 @Component({
-  standalone: false,
   selector: 'lfb-preview-dlg',
   templateUrl: './preview-dlg.component.html',
+  imports: [
+    CodemirrorModule,
+    CommonModule,
+    FontAwesomeModule,
+    NgbTypeahead,
+    NgbAccordionModule,
+    NgbAlertModule,
+    MatButtonModule,
+    MatDialogModule,
+    MatIconModule,
+    MatTabsModule,
+    AsyncPipe,
+    FormsModule,
+    ClipboardModule,
+    LfbSpinnerComponent
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   encapsulation: ViewEncapsulation.None,
   styleUrls: ['./preview-dlg.component.css']
 })
@@ -44,7 +81,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
   format: FHIR_VERSION_TYPE = 'R4'; // Current default for preview.
   activeTopLevelTabIndex = 0;
-  activeJsonTabIndex: 0|1|2 = FHIR_VERSIONS.R4;
+  activeJsonTabIndex: number = FHIR_VERSIONS.R4;
   lformsErrors: string;
   inputUrlErrors: string;
   validationErrors: {FHIR_VERSION_TYPE?: string[]} = {};
@@ -52,7 +89,12 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   spinner$ = new BehaviorSubject<boolean>(false);
   @ViewChild('autoCompNgb', { static: false, read: NgbTypeahead }) autoCompNgb: NgbTypeahead;
   @ViewChild('errorsItem', { static: false, read: NgbAccordionItem }) errorsItem: NgbAccordionItem;
-  showNoErrorsMsg = false;
+  showNoErrorsMsg: NoErrorsMap = {
+    R4: false,
+    R5: false,
+    STU3: false
+  };
+
   codeMirrorModel: string = '';
 
   fhirValidationMsg = "Select the 'View/Validate Questionnaire JSON' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.";
@@ -113,7 +155,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * Update format and server based on version tab selected.
    * @param ngEvent - Angular event
    */
-  onJsonVersionSelected(ngEvent: 0|1|2) {
+  onJsonVersionSelected(ngEvent: number) {
     this.format = FHIR_VERSIONS[ngEvent] as FHIR_VERSION_TYPE;
     this.vServer = this.fhirService.getLastUsedValidationServer(this.format);
     this.codeMirrorModel = JSON.stringify(this.getQuestionnaire(this.format), null, 2);
@@ -140,27 +182,28 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * @param format - R4|STU3
    * @param rawInput - Url from the input box.
    */
-  runValidations(format: string, rawInput: fhirPrimitives.url) {
+  runValidations(format: FHIR_VERSION_TYPE, rawInput: fhirPrimitives.url) {
     const url = Util.extractBaseUrl(rawInput);
     if(!url) {
       this.validationErrors[format] = [`You entered an invalid URL: ${rawInput}`];
       return;
     }
 
+    this.showNoErrorsMsg[format] = false;
     const urlObj = new URL(rawInput);
     this.spinner$.next(true);
-    this.fhirService.runValidations(this.format, urlObj, this.getQuestionnaire(format), )
+    this.fhirService.runValidations(format, urlObj, this.getQuestionnaire(format))
       .subscribe({
         next: (errorList: string[]) => {
-          this.validationErrors[this.format] = errorList;
+          this.validationErrors[format] = errorList;
         },
         error: (error) => {
-          this.validationErrors[this.format] = [error.message];
+          this.validationErrors[format] = [error.message];
         },
         complete: () => {
           this.spinner$.next(false);
           this.errorsItem?.expand();
-          this.showNoErrorsMsg = !this.validationErrors[this.format].length;
+          this.showNoErrorsMsg[format] = !this.validationErrors[format].length;
         }
       });
   }

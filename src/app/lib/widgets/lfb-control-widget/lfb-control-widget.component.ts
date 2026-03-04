@@ -1,22 +1,15 @@
 /**
  * Customize array-widget from ngx-schema-form.
  */
-import {Component, Input, OnInit} from '@angular/core';
+import {Directive, Input, OnDestroy, OnInit} from '@angular/core';
 import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {Subscription} from 'rxjs';
 
 import {Util} from '../../util';
 
-@Component({
-  standalone: false,
-  selector: 'lfb-control-widget',
-  template: `
-  `,
-  styles: [
-  ]
-})
-export class LfbControlWidgetComponent extends ControlWidget implements OnInit {
+@Directive()
+export class LfbControlWidgetComponent extends ControlWidget implements OnInit, OnDestroy {
 
   static ID = 0;
   _id = (LfbControlWidgetComponent.ID++).toString();

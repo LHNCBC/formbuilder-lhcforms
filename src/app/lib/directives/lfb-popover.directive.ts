@@ -20,8 +20,8 @@ import { LfbPopoverComponent } from '../widgets/lfb-popover/lfb-popover.componen
   exportAs: 'lfbPopover'
 })
 export class LfbPopoverDirective implements OnDestroy {
-  @Input('lfbPopoverTitle') popoverTitle = '';
-  @Input('lfbPopoverContent') popoverContent = '';
+  @Input() lfbPopoverTitle = '';
+  @Input() lfbPopoverContent = '';
   private popoverRef?: ComponentRef<LfbPopoverComponent>;
   private popperInstance?: PopperInstance;
 
@@ -37,8 +37,8 @@ export class LfbPopoverDirective implements OnDestroy {
    */
   private createPopover() {
     this.popoverRef = this.vcr.createComponent(LfbPopoverComponent);
-    this.popoverRef.instance.title = this.popoverTitle;
-    this.popoverRef.instance.content = this.popoverContent;
+    this.popoverRef.instance.title = this.lfbPopoverTitle;
+    this.popoverRef.instance.content = this.lfbPopoverContent;
 
     this.popperInstance = createPopper(
       this.hostEl.nativeElement,
