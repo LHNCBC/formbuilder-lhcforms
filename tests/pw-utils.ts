@@ -84,19 +84,14 @@ export class PWUtils {
    * @param handleDialog - Boolean to handle replace alert dialog.
    */
   static async uploadFile(page: Page, relativeFilePath: string, handleDialog = false): Promise<any> {
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Import' }).click();
+    await page.getByRole('button', { name: 'Import from file...' }).click();
+
+    // Start waiting for file chooser before clicking.
+    const fileChooser = await fileChooserPromise;
     const testFile = path.join(__dirname, relativeFilePath);
-
-    const fileInput = page.locator('input[type="file"]');
-    if (await fileInput.count()) {
-      await fileInput.setInputFiles(testFile);
-    } else {
-      const fileChooserPromise = page.waitForEvent('filechooser');
-      await page.getByRole('button', { name: 'Import' }).click();
-      await page.getByRole('button', { name: 'Import from file...' }).click();
-
-      const fileChooser = await fileChooserPromise;
-      await fileChooser.setFiles(testFile);
-    }
+    await fileChooser.setFiles(testFile);
     if(handleDialog) {
       const dialog = page.getByRole('dialog', { name: 'Replace existing form?' });
       await dialog.isVisible();
@@ -105,19 +100,6 @@ export class PWUtils {
     return JSON.parse(await fs.readFile(testFile, 'utf-8'));
   }
 
-
-  /**
-   * Starts a new item-level form from scratch by selecting the appropriate radio button,
-   * clicking through the UI, and waiting for the initial spinner to disappear.
-   *
-   * @param page - The Playwright Page instance to operate on.
-   */
-  static async openItemLevelFromScratch(page: Page) {
-    await page.locator('input[type="radio"][value="scratch"]').click();
-    await page.locator('button:has-text("Continue")').click();
-    await PWUtils.getButton(page, 'Toolbar with button groups', 'Create questions').click();
-    await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
-  }
 
   /**
    * Wait for local storage to update.
@@ -401,7 +383,7 @@ export class PWUtils {
    * @returns {Promise<Locator>} A promise that resolves to the Playwright Locator for the input element.
    */
   static async getItemTextField(page: Page): Promise<Locator> {
-    return PWUtils.getByLabel(page, 'lfb-ngx-schema-form', 'Question text');
+    return page.locator('lfb-ngx-schema-form').getByLabel('Question text', { exact: true });
   }
 
 
@@ -412,7 +394,7 @@ export class PWUtils {
    * @returns {Promise<Locator>} A promise that resolves to the Playwright Locator for the input element.
    */
   static async getItemTypeField(page: Page): Promise<Locator> {
-    return PWUtils.getByLabel(page, 'lfb-ngx-schema-form', 'Data type');
+    return page.locator('lfb-ngx-schema-form').getByLabel('Data type', { exact: true });
   }
 
   /**
@@ -432,7 +414,7 @@ export class PWUtils {
    * @returns {Promise<Locator>} A promise that resolves to the Playwright Locator for the input element.
    */
   static async getItemEntryFormatField(page: Page): Promise<Locator> {
-    return PWUtils.getByLabel(page, 'lfb-ngx-schema-form', 'Entry format');
+    return page.locator('lfb-ngx-schema-form').getByLabel('Entry format', { exact: true });
   }
 
   /**
@@ -543,44 +525,6 @@ export class PWUtils {
     }
   }
 
-  /**
-   * Get a select element using its label text.
-   * @param page - Browser page
-   * @param parentSelector - The parent selector to search within.
-   * @param label - The visible label for the select field
-   * @returns {Promise<Locator>} A promise that resolves to the Playwright Locator for the input element.
-   */
-  static async getSelectByLabel(page: Page, parentSelector: string, label: string): Promise<Locator> {
-    return PWUtils.getByLabel(page, parentSelector, label);
-  }
-
-  /**
-   * Select an option by value for a select field identified by label text.
-   * @param page - Browser page
-   * @param parentSelector - The parent selector to search within.
-   * @param label - The visible label for the select field
-   * @param value - The option value to select
-   */
-  static async selectByLabel(page: Page, parentSelector: string, label: string, value: string): Promise<void> {
-    await (await PWUtils.getSelectByLabel(page, parentSelector, label)).selectOption(value);
-  }
-
-  /**
-   * Expect a select field identified by label text to have the given value.
-   * @param page - Browser page
-   * @param parentSelector - The parent selector to search within.
-   * @param label - The visible label for the select field
-   * @param expectedValue - Expected value or regex for the select field
-   */
-  static async expectSelectValue(
-    page: Page,
-    parentSelector: string,
-    label: string,
-    expectedValue: string | RegExp
-  ): Promise<void> {
-    const selectField = await PWUtils.getSelectByLabel(page, parentSelector, label);
-    await expect(selectField).toHaveValue(expectedValue);
-  }
 
   /**
    * Add an answer option row and populate its coding fields.
@@ -594,9 +538,9 @@ export class PWUtils {
    */
   static async addAnswerOption(
     page: Page,
-    system: string,
-    display: string,
-    code: string,
+    system?: string | null,
+    display?: string | null,
+    code?: string | null,
     score?: string | null
   ): Promise<void> {
     const rows = page.locator('lfb-answer-option table > tbody > tr');
@@ -647,27 +591,8 @@ export class PWUtils {
   ) {
     for (let index = 0; index < codings.length; index++) {
       const coding = codings[index];
-      const baseSelector = `answerOption.${index}.valueCoding`;
-      if (coding.system != null) {
-        const systemInput = page.locator(`[id^="${baseSelector}.system"]`);
-        await systemInput.fill(String(coding.system));
-        await systemInput.press('Enter');
-      }
-      if (coding.display != null) {
-        const displayInput = page.locator(`[id^="${baseSelector}.display"]`);
-        await displayInput.fill(String(coding.display));
-        await displayInput.press('Enter');
-      }
-      if (coding.code != null) {
-        const codeInput = page.locator(`[id^="${baseSelector}.code"]`);
-        await codeInput.fill(String(coding.code));
-        await codeInput.press('Enter');
-      }
-      if (coding.__$score != null) {
-        const scoreInput = page.locator(`[id^="${baseSelector}.__\\$score"]`);
-        await scoreInput.fill(String(coding.__$score));
-        await scoreInput.press('Enter');
-      }
+
+      await PWUtils.addAnswerOption(page, coding.system, coding.display, coding.code, coding.score);
 
       if (addButton) {
         await addButton.click();
@@ -749,7 +674,7 @@ export class PWUtils {
 
     if (searchKeyword) {
       await input.click();
-      await input.pressSequentially(searchKeyword, {delay: 30});
+      await input.pressSequentially(searchKeyword);
     } else {
       await input.click();
     }
@@ -810,7 +735,7 @@ export class PWUtils {
 
     if (searchKeyword) {
       await input.click();
-      await input.pressSequentially(searchKeyword, {delay: 30});
+      await input.pressSequentially(searchKeyword);
     } else {
       await input.click();
     }
