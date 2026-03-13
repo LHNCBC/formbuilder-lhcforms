@@ -27,12 +27,11 @@ test.describe('enableWhen condition and behavior', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     mainPO = new MainPO(page);
-    await mainPO.loadHomePage();
   });
 
   test.describe('Item level fields: advanced', () => {
     test.beforeEach(async ({ page }) => {
-      await PWUtils.openItemLevelFromScratch(page);
+      await mainPO.loadILPage();
       await PWUtils.expandAdvancedFields(page);
       await expect(getTerminologyServerInput(page)).toBeVisible();
     });
@@ -147,7 +146,7 @@ test.describe('enableWhen condition and behavior', () => {
 
     test('should display validation error message for each of the enableWhen fields', async ({ page }) => {
       const fixtureJson = await PWUtils.uploadFile(page, './fixtures/items-validation-sample.json', true);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue(fixtureJson.title);
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
       await expect(page.locator('.spinner-border')).not.toBeVisible();
@@ -212,7 +211,7 @@ test.describe('enableWhen condition and behavior', () => {
 
     test('should clear invalid question field on focusout for new enableWhen condition', async ({ page }) => {
       await PWUtils.uploadFile(page, './fixtures/items-validation-sample.json', true);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
       await expect(page.locator('.spinner-border')).not.toBeVisible();
 
@@ -230,7 +229,7 @@ test.describe('enableWhen condition and behavior', () => {
       await page.locator('button:has-text("Add another condition")').click();
 
       const question1 = page.locator('[id^="enableWhen.1.question"]');
-      await question1.pressSequentially('invalid question', { delay: 30 });
+      await question1.pressSequentially('invalid question');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
       await question1.press('Enter');
 
@@ -270,7 +269,7 @@ test.describe('enableWhen condition and behavior', () => {
       await question2.press('Enter');
       await page.locator('[id^="enableWhen.2.operator"]').selectOption({ label: '=' });
       const answerCoding = page.locator('[id^="enableWhen.2.answerCoding"]');
-      await answerCoding.pressSequentially('Street clothes, no shoes', { delay: 30 });
+      await answerCoding.pressSequentially('Street clothes, no shoes');
       await answerCoding.press('ArrowDown');
       await answerCoding.press('Enter');
 
@@ -324,7 +323,7 @@ test.describe('enableWhen condition and behavior', () => {
 
     test('should display lforms errors in preview', async ({ page }) => {
       await PWUtils.uploadFile(page, './fixtures/questionnaire-enableWhen-missing-linkId.json', true);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('Questionnaire where enableWhen contains an invalid linkId');
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
       await expect(page.locator('.spinner-border')).not.toBeVisible();
@@ -684,7 +683,7 @@ test.describe('enableWhen condition and behavior', () => {
 
     test('should import form with conditional display field', async ({ page }) => {
       const fixtureJson = await PWUtils.uploadFile(page, './fixtures/enable-when-sample.json', true);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('US Surgeon General family health portrait');
 
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
@@ -710,11 +709,15 @@ test.describe('enableWhen condition and behavior', () => {
   });
 
   test.describe('enableWhen answer pointing to answerOptions validation', () => {
+    test.beforeEach(async ({ page }) => {
+      await mainPO.loadFLPage();
+    });
+
     test('should display a validation error if the answer does not match any of the answerOptions for R4 questionnaire', async ({ page }) => {
       test.setTimeout(60000);
 
       const fixtureJson = await PWUtils.uploadFile(page, './fixtures/enable-when-answer-options-R4-sample.json', false);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('R4 enableWhen AnswerOptions');
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
       await expect(page.locator('.spinner-border')).not.toBeVisible();
@@ -890,7 +893,7 @@ test.describe('enableWhen condition and behavior', () => {
       test.setTimeout(60000);
 
       await PWUtils.uploadFile(page, './fixtures/enable-when-answer-options-R5-sample.json', false);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('R5 enableWhen AnswerOptions optionsOnly');
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
       await expect(page.locator('.spinner-border')).not.toBeVisible();
@@ -1037,7 +1040,7 @@ test.describe('enableWhen condition and behavior', () => {
       test.setTimeout(60000);
 
       await PWUtils.uploadFile(page, './fixtures/enable-when-answer-options-R5-sample.json', false);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('R5 enableWhen AnswerOptions optionsOnly');
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
       await expect(page.locator('.spinner-border')).not.toBeVisible();

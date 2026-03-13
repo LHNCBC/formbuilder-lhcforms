@@ -218,9 +218,7 @@ test.describe('Item control', () => {
     test.beforeEach(async ({ page }) => {
       await page.goto('/');
       mainPO = new MainPO(page);
-      await mainPO.loadHomePage();
-
-      await PWUtils.openItemLevelFromScratch(page);
+      await mainPO.loadILPage();
 
       const questionTextField = await PWUtils.getItemTextField(page);
       await expect(questionTextField).toHaveValue('Item 0', { timeout: 10000 });
@@ -312,7 +310,7 @@ test.describe('Item control', () => {
       const answerMethodsValueSetRadio = '#__\\$answerOptionMethods_value-set';
 
       await PWUtils.uploadFile(page, './fixtures/item-control-sample.json', true);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('Item control sample form');
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
       await expect(page.locator('.spinner-border')).not.toBeVisible();
@@ -413,7 +411,7 @@ test.describe('Item control', () => {
       await mainPO.loadILPage();
 
       await PWUtils.uploadFile(page, './fixtures/USSG-family-portrait.json', true);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('US Surgeon General family health portrait');
 
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
@@ -537,7 +535,7 @@ test.describe('Item control', () => {
 
       await PWUtils.uploadFile(page, './fixtures/display-item-control-sample.json', true);
 
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('Display item control sample form');
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
       await expect(page.locator('.spinner-border')).not.toBeVisible();
@@ -661,7 +659,7 @@ test.describe('Item control', () => {
 
     test('should display Question item-control extension', async ({ page }) => {
       await PWUtils.uploadFile(page, './fixtures/question-item-control-sample.json', true);
-      const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
+      const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('Question item control sample form');
       await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
 

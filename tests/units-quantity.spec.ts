@@ -27,7 +27,7 @@ test.describe('units and quantity units', async () => {
     const qtyUnitInput = page.locator('input[id^="initial.0.valueQuantity.unit"]');
 
     await qtyUnitInput.click();
-    await qtyUnitInput.pressSequentially('breaths', { delay: 50 });
+    await qtyUnitInput.pressSequentially('breaths');
 
     // 2. Wait for dropdown / completion options to appear
     const qtyCompletionRow = page.locator('#completionOptions table > tbody > tr');
@@ -59,7 +59,7 @@ test.describe('units and quantity units', async () => {
 
     // 1. Type (not fill) so autocomplete logic runs
     await unitsInput.click();
-    await unitsInput.pressSequentially('breaths', { delay: 50 });
+    await unitsInput.pressSequentially('breaths');
 
     // 2. Wait for dropdown / completion options to appear
     const completionRow = page.locator('#completionOptions table > tbody > tr');

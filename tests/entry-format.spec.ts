@@ -296,7 +296,7 @@ import {PWUtils } from "./pw-utils";
       await expect(unitsField).toBeVisible();
       await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
-      await unitsField.pressSequentially('inch', { delay: 30 });
+      await unitsField.pressSequentially('inch');
 
       await unitsField.press('ArrowDown');
       await unitsField.press('Enter');
