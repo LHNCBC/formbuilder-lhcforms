@@ -187,21 +187,43 @@ import {PWUtils } from "./pw-utils";
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
 
       // Verify that entryFormat extension is removed from all items
-      for (const expected of expectedExtensions) {
-        const item = qJson.item[expected.itemIndex];
+      expect(qJson.item[0].type).toBe('decimal');
+      expect(qJson.item[0].extension[3]).toBeUndefined();
 
-        if (item.extension) {
-          // Check that NO entryFormat extension exists
-          const hasEntryFormat = item.extension.some(ext =>
-            ext.url === entryFormatUrl
-          );
-
-          expect(hasEntryFormat).toBe(false); // Should not have entryFormat extension
-        } else {
-          // This is valid - the item may have no extensions at all after removal
-          expect(item.extension).toBeUndefined();
+      // The entryFormat has been deleted; unit extension should remain.
+      expect(qJson.item[1].type).toBe('integer');
+      expect(qJson.item[1].extension[0]).toEqual({
+        url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+        valueCoding: {
+          code: "kg",
+          display: "kilogram",
+          system: "http://unitsofmeasure.org"
         }
-      }
+      });
+
+      expect(qJson.item[2].type).toBe('date');
+      expect(qJson.item[2].extension).toBeUndefined();
+
+      expect(qJson.item[3].type).toBe('dateTime');
+      expect(qJson.item[3].extension).toBeUndefined();
+
+      expect(qJson.item[4].type).toBe('time');
+      expect(qJson.item[4].extension).toBeUndefined();
+
+      expect(qJson.item[5].type).toBe('string');
+      expect(qJson.item[5].extension).toBeUndefined();
+
+      expect(qJson.item[6].type).toBe('text');
+      expect(qJson.item[6].extension).toBeUndefined();
+
+      expect(qJson.item[7].type).toBe('url');
+      expect(qJson.item[7].extension).toBeUndefined();
+
+      expect(qJson.item[8].type).toBe('coding');
+      expect(qJson.item[8].extension[1]).toBeUndefined();
+
+      expect(qJson.item[9].type).toBe('quantity');
+      expect(qJson.item[9].extension[3]).toBeUndefined();
     });
 
     test('should correctly display the entry format even when other extensions are present', async ({ page }) => {
