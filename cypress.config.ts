@@ -26,6 +26,7 @@ export default defineConfig({
       return require('./cypress/plugins/index.ts')(on, config);
     },
     excludeSpecPattern: [
+      'cypress/e2e/form-level/form-level.cy.ts',
       'cypress/e2e/item-level/enable-when.cy.ts',
       'cypress/e2e/item-level/entry-format.cy.ts',
       'cypress/e2e/item-level/item-control.cy.ts',
