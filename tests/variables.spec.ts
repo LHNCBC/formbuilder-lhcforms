@@ -76,8 +76,8 @@ test.describe('variables', async () => {
     mainPO = new MainPO(page);
     await mainPO.loadILPage();
 
-    fileJson = await PWUtils.uploadFile(page, './fixtures/value-methods-sample.json', true);
-    await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+    fileJson = await PWUtils.uploadFile(page, 'value-methods-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
     computeInitial = await PWUtils.getRadioButtonLabel(page, 'Value method', 'Compute initial value');
   });
@@ -93,7 +93,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Variables');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     // Click the 'Create/edit variables' button and add five different types of variables
     await page.locator('button#editVariables').click();
@@ -219,7 +219,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Variables');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     // Click the 'Create/edit variables' button and add three new variables
     await page.locator('button#editVariables').click();
@@ -314,7 +314,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Compute initial value expression');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     await expect(computeInitial).toBeVisible();
     await computeInitial.click();
@@ -432,7 +432,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Compute initial value expression');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     await expect(computeInitial).toBeVisible();
     await computeInitial.click();
@@ -564,7 +564,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Variable validation');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     // Click the 'Create/edit variables' button and add two new variables
     await page.locator('button#editVariables').click();
@@ -660,7 +660,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Deleting Variables');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     // Click the 'Create/edit variables' button and add two variables
     await page.locator('button#editVariables').click();

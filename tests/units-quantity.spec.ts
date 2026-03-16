@@ -13,7 +13,7 @@ test.describe('units and quantity units', async () => {
 
   test('should autocomplete units that start with \'/\'', async ({ page }) => {
     // Select Data type 'quantity'
-    await (await PWUtils.getItemTypeField(page)).selectOption('quantity');
+    await PWUtils.selectDataType(page, 'quantity');
     await page.locator('div[role="group"]')
               .getByText('Type initial value', { exact: true })
               .click();

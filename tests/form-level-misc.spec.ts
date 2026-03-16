@@ -46,8 +46,8 @@ test.describe('form-level fields', async () => {
   });
 
   test('should import questionnaire with tags', async ({page}) => {
-    const q = await PWUtils.uploadFile(page, 'fixtures/fl-tag-sample.json');
-    await mainPO.page.getByRole('button', {name: 'Advanced fields'}).click();
+    const q = await PWUtils.uploadFile(page, 'fl-tag-sample.json');
+    await mainPO.page.getByRole('button', { name: 'Advanced fields' }).click();
     const rows = await page.locator('lfb-table')
       .filter({has: page.getByLabel('Tags')}).locator( 'table > tbody > tr').all();
     expect(rows.length).toBe(3);

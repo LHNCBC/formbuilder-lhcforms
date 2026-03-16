@@ -9,8 +9,8 @@ test.describe('Date, DateTime, and Time types', async () => {
     await page.goto('/');
     mainPO = new MainPO(page);
     await mainPO.loadILPage();
-    await PWUtils.uploadFile(page, './fixtures/date-datetime-time-sample.json', true);
-    await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+    await PWUtils.uploadFile(page, 'date-datetime-time-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
   });
 
   test('Date - should import and edit', async ({page}) => {

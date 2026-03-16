@@ -65,10 +65,16 @@ export class MainPO {
    */
   async loadHomePageWithLoincOnly() {
     await this.clearSession();
+    await this._page.goto('/');
     await this.goToHomePage();
     await this.acceptLoincOnly();
   }
 
+  async resetForm() {
+    await this._page.getByLabel('Start from scratch').click();
+    await this._page.getByRole('button', {name: 'Continue'}).click();
+    await this._page.getByRole('button', {name: 'Create questions'}).first().click();
+  }
 
   /**
    * Visit home page and assert LForms, but do not deal with LOINC notice.

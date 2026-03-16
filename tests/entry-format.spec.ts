@@ -14,8 +14,8 @@ import {PWUtils } from "./pw-utils";
       mainPO = new MainPO(page);
       await mainPO.loadILPage();
 
-      fileJson = await PWUtils.uploadFile(page, './fixtures/entry-format-sample.json', true);
-      await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+      fileJson = await PWUtils.uploadFile(page, 'entry-format-sample.json', true);
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
       entryFormatField = await PWUtils.getItemEntryFormatField(page);
     });
@@ -24,56 +24,56 @@ import {PWUtils } from "./pw-utils";
       await expect(page.locator('tree-root tree-viewport tree-node-collection tree-node').first()).toBeVisible();
 
       // Decimal data type
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/decimal/);
+      await PWUtils.expectDataTypeValue(page, /decimal/);
       await expect(entryFormatField).toHaveValue(/Enter value between 15.2 and 20.1/);
 
       // Integer data type
       await PWUtils.clickTreeNode(page, 'Integer data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/integer/);
+      await PWUtils.expectDataTypeValue(page, /integer/);
       await expect(entryFormatField).toHaveValue(/nnn/);
 
       // Date data type
       await PWUtils.clickTreeNode(page, 'Date data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/date/);
+      await PWUtils.expectDataTypeValue(page, /date/);
       await expect(entryFormatField).toHaveValue(/YY\/MM\/DD/);
 
       // Decimal data type
       await PWUtils.clickTreeNode(page, 'Datetime data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/dateTime/);
+      await PWUtils.expectDataTypeValue(page, /dateTime/);
       await expect(entryFormatField).toHaveValue(/YY\/MM\/DD hh:mm:ss/);
 
       // Time data type
       await PWUtils.clickTreeNode(page, 'Time data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/time/);
+      await PWUtils.expectDataTypeValue(page, /time/);
       await expect(entryFormatField).toHaveValue(/hh:mm:ss/);
 
       // String data type
       await PWUtils.clickTreeNode(page, 'String data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/string/);
+      await PWUtils.expectDataTypeValue(page, /string/);
       await expect(entryFormatField).toHaveValue(/nnn-nnn-nnn/);
 
       // Text data type
       await PWUtils.clickTreeNode(page, 'Text data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/text/);
+      await PWUtils.expectDataTypeValue(page, /text/);
       await expect(entryFormatField).toHaveValue(/Max 100 characters./);
 
       // URL data type
       await PWUtils.clickTreeNode(page, 'URL data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/url/);
+      await PWUtils.expectDataTypeValue(page, /url/);
       await expect(entryFormatField).toHaveValue(/https:\/\/your-site.com/);
 
       // Coding data type
       await PWUtils.clickTreeNode(page, 'Coding data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/coding/);
+      await PWUtils.expectDataTypeValue(page, /coding/);
       await expect(entryFormatField).toHaveValue(/Select option./);
 
       // Quantity data type
       await PWUtils.clickTreeNode(page, 'Quantity data type');
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/quantity/);
+      await PWUtils.expectDataTypeValue(page, /quantity/);
       await expect(entryFormatField).toHaveValue(/Please enter weight./);
 
       // Invoke preview.
-      await PWUtils.getButton(page, null, 'Preview').click();
+      await PWUtils.clickMenuBarButton(page, 'Preview');
 
       // Each item should have placeholder populated
       const expectedPlaceholders = [
@@ -132,7 +132,7 @@ import {PWUtils } from "./pw-utils";
       await entryFormatField.fill('Please enter your weight.');
 
       // Invoke preview.
-      await PWUtils.getButton(page, null, 'Preview').click();
+      await PWUtils.clickMenuBarButton(page, 'Preview');
 
       const expectedPlaceholders = [
         "##.##", "n", "YYYY", "YYYY hh:mm:ss", "hh:mm", "nnn-nnn", "https://my-site.com",
@@ -235,7 +235,7 @@ import {PWUtils } from "./pw-utils";
 
       // There should only be one entry format extension, however, should there be more than one, the
       // last entry format will be used.
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/decimal/);
+      await PWUtils.expectDataTypeValue(page, /decimal/);
 
       // There are 2 entry format extensions.
       expect(qJson.item[0].type).toBe('decimal');
@@ -250,7 +250,7 @@ import {PWUtils } from "./pw-utils";
       });
 
       // Invoke preview.
-      await PWUtils.getButton(page, null, 'Preview').click();
+      await PWUtils.clickMenuBarButton(page, 'Preview');
 
       // The last entry format will be used.
       await expect(page.locator('lhc-item lhc-item-question lhc-input > input').first())
@@ -282,14 +282,14 @@ import {PWUtils } from "./pw-utils";
       });
 
       // Invoke preview.
-      await PWUtils.getButton(page, null, 'Preview').click();
+      await PWUtils.clickMenuBarButton(page, 'Preview');
 
       // The LForms preview should display the correct message.
       await expect(page.locator('lhc-item lhc-item-question lhc-input > input').first())
         .toHaveAttribute('placeholder', 'Enter value between 15.2 and 20.1');
 
       // Close the Preview dialog.
-      await PWUtils.getButton(page, 'Preview of Questionnaire close', 'Close').click();
+      await PWUtils.clickButton(page, 'Preview of Questionnaire close', 'Close');
 
       // Add a unit extension to the item.
       const unitsField = page.locator('[id^="units"]').first();

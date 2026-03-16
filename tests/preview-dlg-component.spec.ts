@@ -124,9 +124,9 @@ test.describe('preview-dlg-component.spec.ts', async () => {
       const secondErrorLocator = errorPanelLocator.locator('div.card > ul > li:nth-child(2)');
       await page.getByLabel('Start from scratch').click();
       await page.getByRole('button', {name: 'Continue'}).click();
-      const fileJson = await PWUtils.uploadFile(page, '../cypress/fixtures/contained-example.json');
-      await page.getByRole('button', {name: 'Preview'}).click();
-      await page.getByRole('tab', {name: 'View/Validate Questionnaire JSON'}).click();
+      const fileJson = await PWUtils.uploadFile(page, 'contained-example.json');
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      await page.getByRole('tab', { name: 'View/Validate Questionnaire JSON' }).click();
       await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
       const fbJson = JSON.parse(await PWUtils.getClipboardContent(page));
       expect(fbJson.contained).toEqual(fileJson.contained);

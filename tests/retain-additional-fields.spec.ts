@@ -15,7 +15,7 @@ test.describe('retain-additional-fields', async () => {
   test('should retain contained field', async ({page}) => {
     await page.getByLabel('Start from scratch').click();
     await page.getByRole('button', {name: 'Continue'}).click();
-    const fileJson = await PWUtils.uploadFile(page, '../cypress/fixtures/contained-example.json');
+    const fileJson = await PWUtils.uploadFile(page, 'contained-example.json');
     const titleInput = page.getByLabel('Title', { exact: true });
     await expect(titleInput).toHaveValue('Contained example', { timeout: 10000 });
 

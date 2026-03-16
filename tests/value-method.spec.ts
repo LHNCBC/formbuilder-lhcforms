@@ -25,8 +25,8 @@ test.describe('value method', async () => {
     mainPO = new MainPO(page);
     await mainPO.loadILPage();
 
-    fileJson = await PWUtils.uploadFile(page, './fixtures/value-methods-sample.json', true);
-    await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+    fileJson = await PWUtils.uploadFile(page, 'value-methods-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
     valueMethod = page.locator('div:has-text("Value method")').first();
     await valueMethod.waitFor({ state: 'visible', timeout: 40000 });
@@ -54,7 +54,7 @@ test.describe('value method', async () => {
     // Type Initial Value (Single)
     const typeInitialRadio = await PWUtils.getRadioButton(page, 'Value method', 'Type initial value');
 
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/integer/);
+    await PWUtils.expectDataTypeValue(page, /integer/);
 
     await expect(typeInitialRadio).toBeVisible();
     await expect(typeInitialRadio).toBeChecked();
@@ -65,7 +65,7 @@ test.describe('value method', async () => {
 
     // Type Initial Value (Multiple)
     await PWUtils.clickTreeNode(page, 'Type Initial Value (Multiple)');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/integer/);
+    await PWUtils.expectDataTypeValue(page, /integer/);
 
     await expect(typeInitialRadio).toBeVisible();
     await expect(typeInitialRadio).toBeChecked();
@@ -78,9 +78,9 @@ test.describe('value method', async () => {
     await PWUtils.clickTreeNode(page, 'Pick Initial Value (Single)');
     const pickInitialRadio = await PWUtils.getRadioButton(page, 'Value method', 'Pick initial value');
 
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/coding/);
+    await PWUtils.expectDataTypeValue(page, /coding/);
 
-    await expect(await PWUtils.getRadioButton(page, 'Answer list source', 'Answer options')).toBeChecked();
+    await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
     await expect(pickInitialRadio).toBeVisible();
     await expect(pickInitialRadio).toBeChecked();
@@ -89,7 +89,7 @@ test.describe('value method', async () => {
 
     // Pick Initial Value (Multiple)
     await PWUtils.clickTreeNode(page, 'Pick Initial Value (Multiple)');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/coding/);
+    await PWUtils.expectDataTypeValue(page, /coding/);
 
     await expect(pickInitialRadio).toBeVisible();
     await expect(pickInitialRadio).toBeChecked();
@@ -100,7 +100,7 @@ test.describe('value method', async () => {
 
     // Compute Initial Value
     await PWUtils.clickTreeNode(page, 'Compute Initial Value');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/integer/);
+    await PWUtils.expectDataTypeValue(page, /integer/);
 
     await expect(computeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
@@ -108,7 +108,7 @@ test.describe('value method', async () => {
 
     // Continuously Compute Value
     await PWUtils.clickTreeNode(page, 'Continuously Compute Value');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/integer/);
+    await PWUtils.expectDataTypeValue(page, /integer/);
 
     await expect(computeContinuouslyRadio).toBeChecked();
     await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a + %b + %c');
@@ -116,11 +116,11 @@ test.describe('value method', async () => {
 
     await PWUtils.clickTreeNode(page, 'None');
     await expect(noneRadio).toBeChecked();
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/integer/);
+    await PWUtils.expectDataTypeValue(page, /integer/);
 
     // Compute Initial Value with decimal data type
     await PWUtils.clickTreeNode(page, 'Compute Initial Value with decimal data type');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/decimal/);
+    await PWUtils.expectDataTypeValue(page, /decimal/);
 
     // Variables section
     await expect(page.locator('lfb-variable table > tbody > tr')).toHaveCount(2);
@@ -141,7 +141,7 @@ test.describe('value method', async () => {
 
     // Continuously Compute Value with decimal data type
     await PWUtils.clickTreeNode(page, 'Continuously Compute Value with decimal data type');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/decimal/);
+    await PWUtils.expectDataTypeValue(page, /decimal/);
 
     await expect(page.locator('lfb-variable table > tbody > tr')).toHaveCount(2);
     await expect(firstVariable.locator('td:nth-child(1)')).toHaveText('normal_weight');
@@ -167,8 +167,8 @@ test.describe('value method', async () => {
     await itemTextField.clear();
     await itemTextField.fill('Type initial values');
 
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Type initial value')).click();
+    await PWUtils.selectDataType(page, 'integer');
+    await PWUtils.clickRadioButton(page, 'Value method', 'Type initial value');
 
     await page.locator('[id^="initial.0.valueInteger"]').fill('3');
     await page.locator('[id^="initial.0.valueInteger"]').press('Enter');
@@ -183,7 +183,7 @@ test.describe('value method', async () => {
     await page.locator('[id^="initial.2.valueInteger"]').fill('5');
     await page.locator('[id^="initial.2.valueInteger"]').press('Enter');
 
-    const qJson = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(qJson.item[7].initial).toEqual([
       { valueInteger: 3 },
       { valueInteger: 4 },
@@ -199,17 +199,17 @@ test.describe('value method', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Pick initial values');
-    await (await PWUtils.getItemTypeField(page)).selectOption('coding');
+    await PWUtils.selectDataType(page, 'coding');
 
-    await (await PWUtils.getRadioButtonLabel(page, 'Create answer list', 'Yes')).click();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer constraint', 'Restrict to the list')).click();
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await expect(await PWUtils.getRadioButton(page, 'Answer list source', 'None')).toBeChecked();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer list source', 'Answer options')).click();
+    await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
+    await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
 
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(1);
 
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Pick initial value')).click();
+    await PWUtils.clickRadioButton(page, 'Value method', 'Pick initial value');
 
     const pickAnswer = page.locator('[id^="pick-answer_"]');
     await expect(pickAnswer).toBeVisible();
@@ -299,14 +299,15 @@ test.describe('value method', async () => {
     await addNewItemButton.click();
     await page.locator('#text').clear();
     await page.locator('#text').fill('Test state');
-    await (await PWUtils.getItemTypeField(page)).selectOption('coding');
-    await (await PWUtils.getRadioButtonLabel(page, 'Create answer list', 'Yes')).click();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer constraint', 'Restrict to the list')).click();
+    await PWUtils.selectDataType(page, 'coding');
 
-    await expect(await PWUtils.getRadioButton(page, 'Answer list source', 'None')).toBeChecked();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer list source', 'Answer options')).click();
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Pick initial value')).click();
+    await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
+    await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+
+    await PWUtils.clickRadioButton(page, 'Value method', 'Pick initial value');
 
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(1);
 
@@ -331,9 +332,8 @@ test.describe('value method', async () => {
     await pickAnswer.press('Enter');
     await expect(pickAnswer).toHaveValue('Example 2');
 
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Compute initial value')).click();
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Pick initial value')).click();
-
+    await PWUtils.clickRadioButton(page, 'Value method', 'Compute initial value');
+    await PWUtils.clickRadioButton(page, 'Value method', 'Pick initial value');
     await expect(pickAnswer).not.toHaveClass(/no_match/);
   });
 
@@ -345,16 +345,17 @@ test.describe('value method', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Test answer choice error');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
-    await (await PWUtils.getRadioButtonLabel(page, 'Create answer list', 'Yes')).click();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer constraint', 'Restrict to the list')).click();
+    await PWUtils.selectDataType(page, 'integer');
 
-    await expect(await PWUtils.getRadioButton(page, 'Answer list source', 'None')).toBeChecked();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer list source', 'Answer options')).click();
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
+
+    await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
+    await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
 
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(1);
 
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Pick initial value')).click();
+    await PWUtils.clickRadioButton(page, 'Value method', 'Pick initial value');
 
     const pickAnswer = page.locator('[id^="pick-answer_"]');
     await expect(pickAnswer).toBeVisible();
@@ -390,7 +391,7 @@ test.describe('value method', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Compute initial value expression');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     await computeInitialLabel.click();
     await expect(page.locator('[id^="__\\$initialExpression"]')).toBeEmpty();
@@ -447,7 +448,7 @@ test.describe('value method', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Continuously compute value expression');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     await computeContinuouslyLabel.click();
     await expect(page.locator('[id^="__\\$calculatedExpression"]')).toBeEmpty();
@@ -504,7 +505,7 @@ test.describe('value method', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Initial compute value');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     await computeInitialLabel.click();
     await page.locator('[id^="edit__\\$initialExpression"]').click();
@@ -525,8 +526,8 @@ test.describe('value method', async () => {
     await page.locator('#export').click();
     await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
 
-    await (await PWUtils.getRadioButtonLabel(page, 'Create answer list', 'Yes')).click();
-    await (await PWUtils.getRadioButtonLabel(page, 'Create answer list', 'No')).click();
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'No');
 
     await expect(await PWUtils.getRadioButton(page, 'Value method', 'Type initial value')).toBeVisible();
   });
@@ -539,7 +540,7 @@ test.describe('value method', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Continuously compute value');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     await computeContinuouslyLabel.click();
     await page.locator('[id^="edit__\\$calculatedExpression"]').click();
@@ -576,7 +577,7 @@ test.describe('value method', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Test switching value methods');
-    await (await PWUtils.getItemTypeField(page)).selectOption('decimal');
+    await PWUtils.selectDataType(page, 'decimal');
 
     const computeInitial = valueMethod.locator('[for^="__$valueMethod_compute-initial"]');
     await computeInitialLabel.click();
@@ -624,7 +625,7 @@ test.describe('value method', async () => {
     ]);
 
     // Switch to Type Initial
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Type initial value')).click();
+    await PWUtils.clickRadioButton(page, 'Value method', 'Type initial value');
 
     await page.locator('[id^="initial.0.valueDecimal"]').fill('33');
     await page.locator('[id^="initial.0.valueDecimal"]').press('Enter');
@@ -636,7 +637,7 @@ test.describe('value method', async () => {
     expect(typeInitialJson.item[7].extension[1].url).toBe('http://hl7.org/fhir/StructureDefinition/variable');
 
     // Switch to Continuously compute value
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Continuously compute value')).click();
+    await PWUtils.clickRadioButton(page, 'Value method', 'Continuously compute value');
 
     await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a + %b');
     const continuousJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -653,7 +654,7 @@ test.describe('value method', async () => {
     });
 
     // Switch to None
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'None')).click();
+    await PWUtils.clickRadioButton(page, 'Value method', 'None');
 
     const noneJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(noneJson.item[7].extension).toHaveLength(2);
@@ -661,13 +662,12 @@ test.describe('value method', async () => {
     expect(noneJson.item[7].extension[1].url).toBe('http://hl7.org/fhir/StructureDefinition/variable');
 
     // Switch to Pick initial value (coding)
-    await (await PWUtils.getItemTypeField(page)).selectOption('coding');
-    await (await PWUtils.getRadioButtonLabel(page, 'Create answer list', 'Yes')).click();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer constraint', 'Restrict to the list')).click();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer list layout', 'Drop down')).click();
-    await (await PWUtils.getRadioButtonLabel(page, 'Answer list source', 'Answer options')).click();
-
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Pick initial value')).click();
+    await PWUtils.selectDataType(page, 'coding');
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
+    await PWUtils.clickRadioButton(page, 'Answer list layout', 'Drop down');
+    await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+    await PWUtils.clickRadioButton(page, 'Value method', 'Pick initial value');
 
     const pickInput = page.locator('[id^="pick-answer_"]');
     await expect(pickInput).toBeVisible();
@@ -704,7 +704,7 @@ test.describe('value method', async () => {
     expect(pickJson.item[7].answerOption[1].initialSelected).toBe(true);
 
     // Switch to Continuously compute value again
-    await (await PWUtils.getRadioButtonLabel(page, 'Value method', 'Continuously compute value')).click();
+    await PWUtils.clickRadioButton(page, 'Value method', 'Continuously compute value');
 
     await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a + %b');
     const finalJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -729,8 +729,8 @@ test.describe('Value method button selection', () => {
     mainPO = new MainPO(page);
     await mainPO.loadILPage();
 
-    fileJson = await PWUtils.uploadFile(page, './fixtures/value-methods-button-selection-sample.json', true);
-    await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+    fileJson = await PWUtils.uploadFile(page, 'value-methods-button-selection-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
     valueMethod = page.locator('lfb-value-method').first();
     await valueMethod.waitFor({ state: 'visible', timeout: 40000 });
@@ -740,7 +740,7 @@ test.describe('Value method button selection', () => {
   });
 
   test('should display the appropriate value method option based on the data', async ({ page }) => {
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/boolean/);
+    await PWUtils.expectDataTypeValue(page, /boolean/);
 
     const pickInitialRadio = valueMethod.locator('[id^="__$valueMethod_pick-initial"]');
     await expect(pickInitialRadio).toBeVisible();
@@ -751,89 +751,89 @@ test.describe('Value method button selection', () => {
     await expect(initialYesInput).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'decimal_type');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/decimal/);
+    await PWUtils.expectDataTypeValue(page, /decimal/);
     const typeInitialRadio = valueMethod.locator('[id^="__$valueMethod_type-initial"]');
     await expect(typeInitialRadio).toBeVisible();
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueDecimal"]')).toHaveValue('3.2');
 
     await PWUtils.clickTreeNode(page, 'integer_type-answerlist_no');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/integer/);
+    await PWUtils.expectDataTypeValue(page, /integer/);
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueInteger"]')).toHaveValue('5');
 
     await PWUtils.clickTreeNode(page, 'integer_type-answerlist_yes');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/integer/);
+    await PWUtils.expectDataTypeValue(page, /integer/);
     await expect(pickInitialRadio).toBeChecked();
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(3);
     await expect(page.locator('[id^="pick-answer_"]')).toHaveValue('2');
 
     await PWUtils.clickTreeNode(page, 'date_type-answerlist_no');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/date/);
+    await PWUtils.expectDataTypeValue(page, /date/);
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueDate"]')).toHaveValue('2024-03-03');
 
     await PWUtils.clickTreeNode(page, 'date_type-answerlist_yes');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/date/);
+    await PWUtils.expectDataTypeValue(page, /date/);
     await expect(pickInitialRadio).toBeChecked();
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(2);
     await expect(page.locator('[id^="pick-answer_"]')).toHaveValue('2024-01-02');
 
     await PWUtils.clickTreeNode(page, 'dateTime_type');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/dateTime/);
+    await PWUtils.expectDataTypeValue(page, /dateTime/);
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueDateTime"]')).toHaveValue('2024-03-03 07:01:01 AM');
 
     await PWUtils.clickTreeNode(page, 'time_type-answerlist_no');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/time/);
+    await PWUtils.expectDataTypeValue(page, /time/);
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueTime"]')).toHaveValue('01:01:01');
 
     await PWUtils.clickTreeNode(page, 'time_type-answerlist_yes');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/time/);
+    await PWUtils.expectDataTypeValue(page, /time/);
     await expect(pickInitialRadio).toBeChecked();
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(2);
     await expect(page.locator('[id^="pick-answer_"]')).toHaveValue('02:01:01');
 
     await PWUtils.clickTreeNode(page, 'string_type-answerlist_no');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/string/);
+    await PWUtils.expectDataTypeValue(page, /string/);
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueString"]')).toHaveValue('abcd');
 
     await PWUtils.clickTreeNode(page, 'string_type-answerlist_yes');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/string/);
+    await PWUtils.expectDataTypeValue(page, /string/);
     await expect(pickInitialRadio).toBeChecked();
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(2);
     await expect(page.locator('[id^="pick-answer_"]')).toHaveValue('def');
 
     await PWUtils.clickTreeNode(page, 'text_type-answerlist_no');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/text/);
+    await PWUtils.expectDataTypeValue(page, /text/);
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueString"]')).toHaveValue('abcd');
 
     await PWUtils.clickTreeNode(page, 'text_type-answerlist_yes');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/text/);
+    await PWUtils.expectDataTypeValue(page, /text/);
     await expect(pickInitialRadio).toBeChecked();
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(2);
     await expect(page.locator('[id^="pick-answer_"]')).toHaveValue('def');
 
     await PWUtils.clickTreeNode(page, 'url_type');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/url/);
+    await PWUtils.expectDataTypeValue(page, /url/);
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueUri"]')).toHaveValue('http://www.test.org');
 
     await PWUtils.clickTreeNode(page, 'coding_type-answerlist_no');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/coding/);
+    await PWUtils.expectDataTypeValue(page, /coding/);
     await expect(noneRadio).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'coding_type-answerlist_yes');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/coding/);
+    await PWUtils.expectDataTypeValue(page, /coding/);
     await expect(pickInitialRadio).toBeChecked();
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(3);
     await expect(page.locator('[id^="pick-answer_"]')).toHaveValue('a2');
 
     await PWUtils.clickTreeNode(page, 'quantity_type');
-    await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/quantity/);
+    await PWUtils.expectDataTypeValue(page, /quantity/);
     await expect(typeInitialRadio).toBeChecked();
     await expect(page.locator('[id^="initial.0.valueQuantity.value"]')).toHaveValue('3');
   });
