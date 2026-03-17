@@ -1050,7 +1050,7 @@ export class PWUtils {
     const baseSelector = `answerOption.${index}.valueCoding`;
     if (system != null) {
       const systemInput = page.locator(`[id^="${baseSelector}.system"]`);
-      await systemInput.fill(String(system));
+      await systemInput.pressSequentially(String(system));
       await systemInput.press('Enter');
     }
 
@@ -1062,13 +1062,13 @@ export class PWUtils {
 
     if (code != null) {
       const codeInput = page.locator(`[id^="${baseSelector}.code"]`);
-      await codeInput.fill(String(code));
+      await codeInput.pressSequentially(String(code));
       await codeInput.press('Enter');
     }
 
     if (score != null) {
       const scoreInput = page.locator(`[id^="${baseSelector}.__$score"]`);
-      await scoreInput.fill(String(score));
+      await scoreInput.pressSequentially(String(score));
       await scoreInput.press('Enter');
     }
   }
@@ -1092,7 +1092,7 @@ export class PWUtils {
 
       await PWUtils.addAnswerOption(page, coding.system, coding.display, coding.code, score);
 
-      if (addButton) {
+      if (addButton && index < codings.length - 1) {
         await addButton.click();
       }
     }
