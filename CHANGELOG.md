@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.11] 2026-03-12
+### Changed
+- Fix some flaky playwright tests.
+- Add dotenv variables to control user specific settings for e2e tests.
+
 ## [11.0.10] 2026-02-23
 ### Changed
 - Mock data for LOINC, SNOMED, and UCUM calls in Cypress tests.

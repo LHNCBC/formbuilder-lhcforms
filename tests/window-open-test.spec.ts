@@ -2,6 +2,8 @@ import {test, expect, Page} from '@playwright/test';
 
 import {MainPO} from "./po/main-po";
 
+const fbSecondUrl = encodeURI(`/tests/window-open-test.html?targetUrl=${encodeURI(process.env.TEST_BASE_URL_SECOND)}`);
+
 test.describe('Window opener notice', async () => {
 
   test('should not exist if not opened by window.open() call', async ({page}) => {
@@ -29,7 +31,7 @@ test.describe('Cancel event', async () => {
       }
     });
 
-    await page.goto('/tests/window-open-test.html');
+    await page.goto(fbSecondUrl);
     const pagePromise = page.context().waitForEvent('page');
     await page.getByRole('button', {name: `Open form builder (Default)`}).click();
     const newPage = await pagePromise;
@@ -50,7 +52,7 @@ test.describe('Cancel event', async () => {
     await mainPO.page.getByRole('button', {name: 'Cancel'}).click();
     await mainPO.page.getByRole('button', {name: 'No'}).click();
     await mainPO.page.getByRole('button', {name: 'Cancel'}).click();
-    await mainPO.page.getByRole('button', {name: 'Yes'}).click();
+    await mainPO.page.getByRole('button', {name: 'Yes'}).click({force: true});
 
     messageData.data = await getMessage(page, 'canceled');
   });
@@ -76,7 +78,6 @@ async function getMessage(page: Page, type: string) {
 }
 
 test.describe('Open form builder in a new window', async () => {
-  let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
     page.on('console', msg => {
@@ -88,7 +89,7 @@ test.describe('Open form builder in a new window', async () => {
       }
     });
 
-    await page.goto('/tests/window-open-test.html');
+    await page.goto(fbSecondUrl);
   });
 
   [
@@ -103,9 +104,9 @@ test.describe('Open form builder in a new window', async () => {
       await page.getByRole('button', {name: `Open form builder (${fhirVersion})`}).click();
       const newPage = await pagePromise;
       await newPage.waitForLoadState('domcontentloaded');
-      mainPO = new MainPO(newPage);
-      await mainPO.loadHomePage();
-      await expect(mainPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
+      const formBuilderPO = new MainPO(newPage);
+      await formBuilderPO.loadHomePage();
+      await expect(formBuilderPO.page.getByText(MainPO.windowOpenerNotice)).toBeVisible();
 
       const initialQTitle = 'Form loaded from window-open-test.html';
       const messageData = {data: null};
@@ -115,30 +116,30 @@ test.describe('Open form builder in a new window', async () => {
       expect(messageData.data.type).toBe('updateQuestionnaire');
       await page.getByRole('button', {name: 'Clear messages'}).click();
       await page.getByRole('button', {name: 'Post questionnaire'}).click();
-      await expect(mainPO.titleLocator).toHaveValue(initialQTitle);
+      await expect(formBuilderPO.titleLocator).toHaveValue(initialQTitle);
       messageData.data = await getMessage(page, 'updateQuestionnaire');
       expect(messageData.data.type).toBe('updateQuestionnaire');
       expect(messageData.data.questionnaire.title).toBe(initialQTitle);
       expect(messageData.data.questionnaire.meta.profile[0]).toBe(expectedProfile);
 
       await page.getByRole('button', {name: 'Clear messages'}).click();
-      await mainPO.titleLocator.fill('');
-      await mainPO.titleLocator.fill('xxxx');
+      await formBuilderPO.titleLocator.fill('');
+      await formBuilderPO.titleLocator.fill('xxxx');
       messageData.data = await getMessage(page, 'updateQuestionnaire');
       expect(messageData.data.questionnaire.title).toBe('xxxx');
       expect(messageData.data.questionnaire.meta.profile[0]).toBe(expectedProfile);
 
       await page.getByRole('button', {name: 'Clear messages'}).click();
-      await mainPO.titleLocator.fill('');
-      await mainPO.titleLocator.fill('yyyy');
+      await formBuilderPO.titleLocator.fill('');
+      await formBuilderPO.titleLocator.fill('yyyy');
 
-      const saveButton = mainPO.page.getByRole('button', { name: 'Save & Close' });
+      const saveButton = formBuilderPO.page.getByRole('button', { name: 'Save & Close' });
       await expect(saveButton).toBeVisible();
       await expect(saveButton).toBeEnabled();
 
       await Promise.all([
-        mainPO.page.waitForEvent('close'),
-        saveButton.click()
+        formBuilderPO.page.waitForEvent('close'),
+        saveButton.click({ force: true })
       ]);
 
       messageData.data = await getMessage(page, 'closed');
