@@ -1,6 +1,7 @@
 import {test, expect, Page} from '@playwright/test';
 
 import {MainPO} from "./po/main-po";
+import {PWUtils} from "./pw-utils";
 
 const fbSecondUrl = encodeURI(`/tests/window-open-test.html?targetUrl=${encodeURI(process.env.TEST_BASE_URL_SECOND)}`);
 
@@ -52,7 +53,7 @@ test.describe('Cancel event', async () => {
     await mainPO.page.getByRole('button', {name: 'Cancel'}).click();
     await mainPO.page.getByRole('button', {name: 'No'}).click();
     await mainPO.page.getByRole('button', {name: 'Cancel'}).click();
-    await mainPO.page.getByRole('button', {name: 'Yes'}).click({force: true});
+    await mainPO.page.getByRole('button', {name: 'Yes'}).click().catch(PWUtils.ignorePageCloseError);
 
     messageData.data = await getMessage(page, 'canceled');
   });
@@ -139,7 +140,7 @@ test.describe('Open form builder in a new window', async () => {
 
       await Promise.all([
         formBuilderPO.page.waitForEvent('close'),
-        saveButton.click({ force: true })
+        saveButton.click().catch(PWUtils.ignorePageCloseError),
       ]);
 
       messageData.data = await getMessage(page, 'closed');
