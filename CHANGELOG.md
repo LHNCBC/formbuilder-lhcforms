@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.12] 2026-03-20
+### Fixed
+- Fix `npm run start-public` to use dotenv files.
+
 ## [11.0.11] 2026-03-12
 ### Changed
 - Fix some flaky playwright tests.
