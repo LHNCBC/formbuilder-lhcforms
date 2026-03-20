@@ -2,9 +2,14 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.0.11] 2026-03-18
+## [11.0.12] 2026-03-18
 ### Added
 - Added Playwright test for Expression Editor autocomplete functionality.
+
+## [11.0.11] 2026-03-12
+### Changed
+- Fix some flaky playwright tests.
+- Add dotenv variables to control user specific settings for e2e tests.
 
 ## [11.0.10] 2026-02-23
 ### Changed
