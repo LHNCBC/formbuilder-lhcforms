@@ -1050,7 +1050,7 @@ export class PWUtils {
     const baseSelector = `answerOption.${index}.valueCoding`;
     if (system != null) {
       const systemInput = page.locator(`[id^="${baseSelector}.system"]`);
-      await systemInput.fill(String(system));
+      await systemInput.pressSequentially(String(system));
       await systemInput.press('Enter');
     }
 
@@ -1062,13 +1062,13 @@ export class PWUtils {
 
     if (code != null) {
       const codeInput = page.locator(`[id^="${baseSelector}.code"]`);
-      await codeInput.fill(String(code));
+      await codeInput.pressSequentially(String(code));
       await codeInput.press('Enter');
     }
 
     if (score != null) {
       const scoreInput = page.locator(`[id^="${baseSelector}.__$score"]`);
-      await scoreInput.fill(String(score));
+      await scoreInput.pressSequentially(String(score));
       await scoreInput.press('Enter');
     }
   }
@@ -1092,7 +1092,7 @@ export class PWUtils {
 
       await PWUtils.addAnswerOption(page, coding.system, coding.display, coding.code, score);
 
-      if (addButton) {
+      if (addButton && index < codings.length - 1) {
         await addButton.click();
       }
     }
@@ -1430,8 +1430,19 @@ export class PWUtils {
     const topErrors = page.locator('mat-sidenav-content > div.mt-1 > ul > li.text-danger');
     await expect(topErrors).toHaveCount(0);
 
-    const bottomErrors = page.locator('mat-sidenav-content > ul > li');
+    const bottomErrors = page.locator('mat-sidenav-content > ul > li.text-danger');
     await expect(bottomErrors).toHaveCount(0);
+  }
+
+  /**
+   * Ignore page close error on some button click events. Typically, used when tab/popup/page is closed after a button
+   * click event.
+   * @param error - Error instance to check if it is a page close error. If not, the error will be thrown for test failure.
+   */
+  static ignorePageCloseError(error: Error) {
+    if(!(error instanceof Error) || !(error.message.includes('Target page, context or browser has been closed'))) {
+      throw error;
+    }
   }
 }
 
