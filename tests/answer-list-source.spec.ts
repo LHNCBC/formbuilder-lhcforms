@@ -260,7 +260,7 @@ test.describe('Home page', () => {
       await acInput.pressSequentially('Intersex');
 
       const options = page.locator('span#completionOptions > ul > li');
-      expect(await options.count()).toBeGreaterThan(0);
+      await expect.poll(async () => await options.count()).toBeGreaterThan(0);
       await acInput.press('ArrowDown');
       await acInput.press('Enter');
 
@@ -577,7 +577,7 @@ test.describe('Home page', () => {
 
       await page.locator('[id^="answerOption.0.valueCoding.display"]').pressSequentially('heart');
       const options = page.locator('span#completionOptions > ul > li');
-      expect(await options.count()).toBeGreaterThan(0);
+      await expect.poll(async () => await options.count()).toBeGreaterThan(0);
       const displayInput = page.locator('[id^="answerOption.0.valueCoding.display"]');
       await displayInput.press('ArrowDown');
       await displayInput.press('ArrowDown');
@@ -596,7 +596,7 @@ test.describe('Home page', () => {
       await expect(page.locator('[id^="answerOption.1.valueCoding.system"]')).toHaveValue('http://unitsofmeasure.org');
 
       await page.locator('[id^="answerOption.1.valueCoding.display"]').pressSequentially('kat');
-      expect(await options.count()).toBeGreaterThan(0);
+      await expect.poll(async () => await options.count()).toBeGreaterThan(0);
       const displayInput2 = page.locator('[id^="answerOption.1.valueCoding.display"]');
       await displayInput2.press('ArrowDown');
       await displayInput2.press('Enter');
@@ -617,7 +617,7 @@ test.describe('Home page', () => {
 
       await page.locator('[id^="answerOption.3.valueCoding.display"]').click();
       await page.locator('[id^="answerOption.3.valueCoding.display"]').pressSequentially('intersex');
-      expect(await options.count()).toBeGreaterThan(0);
+      await expect.poll(async () => await options.count()).toBeGreaterThan(0);
       await page.locator('[id^="answerOption.3.valueCoding.display"]').press('ArrowDown');
       await page.locator('[id^="answerOption.3.valueCoding.display"]').press('Enter');
 
@@ -982,6 +982,14 @@ test.describe('Home page', () => {
       let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(q.item[0].answerValueSet).toContain('fhir_vs=ecl/123%20456_extra_chars');
       expect(q.item[0].answerOption).toBeUndefined();
+      const preferredTsUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
+      const preferredTsExt = (q.item[0].extension || []).filter((ext: { url: string }) => ext.url === preferredTsUrl);
+      expect(preferredTsExt).toEqual([
+        {
+          url: preferredTsUrl,
+          valueUrl: 'https://snowstorm.ihtsdotools.org/fhir'
+        }
+      ]);
 
       await tsUrl.fill('https://clinicaltables.nlm.nih.gov/fhir/R4');
       await page.locator(eclSel).clear();
