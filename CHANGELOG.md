@@ -2,13 +2,22 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.0.12] 2026-03-16
+## [11.0.14] 2026-03-16
 ### Changed
 - Completed migration of end-to-end tests from Cypress to Playwright.
 
-## [11.0.11] 2026-02-24
+## [11.0.13] 2026-02-24
 ### Changed
 - Partially migrated end-to-end tests from Cypress to Playwright.
+
+## [11.0.12] 2026-03-20
+### Fixed
+- Fix `npm run start-public` to use dotenv files.
+
+## [11.0.11] 2026-03-12
+### Changed
+- Fix some flaky playwright tests.
+- Add dotenv variables to control user specific settings for e2e tests.
 
 ## [11.0.10] 2026-02-23
 ### Changed
