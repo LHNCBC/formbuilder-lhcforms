@@ -685,6 +685,16 @@ test.describe('Home page', () => {
       await initNumberField.blur();
       await expect(initNumberField).toHaveValue('');
 
+      await initNumberField.pressSequentially('12abc');
+      await initNumberField.press('Enter');
+      await expect(initNumberField).toHaveValue('12');
+      await initNumberField.clear();
+
+      await initNumberField.pressSequentially('3.4');
+      await initNumberField.press('Enter');
+      await expect(initNumberField).toHaveValue('3.4');
+      await initNumberField.clear();
+
       await initNumberField.pressSequentially('-5.6');
       await initNumberField.press('Enter');
       await expect(initNumberField).toHaveValue('-5.6');
@@ -702,18 +712,21 @@ test.describe('Home page', () => {
 
       await initNumberField.pressSequentially('-');
       await initNumberField.press('Enter');
+      await expect(initNumberField).toHaveValue('-');
       await expect(page.locator('lfb-initial-number input[id^="initial.0.valueDecimal"]')).toHaveClass(/invalid/);
       await expect(page.locator('span[id="initial.0.err"] > small')).toContainText('Invalid decimal value.');
       await initNumberField.clear();
 
       await initNumberField.pressSequentially('.');
       await initNumberField.press('Enter');
+      await expect(initNumberField).toHaveValue('.');
       await expect(page.locator('lfb-initial-number input[id^="initial.0.valueDecimal"]')).toHaveClass(/invalid/);
       await expect(page.locator('span[id="initial.0.err"] > small')).toContainText('Invalid decimal value.');
       await initNumberField.clear();
 
       await initNumberField.pressSequentially('e');
       await initNumberField.press('Enter');
+      await expect(initNumberField).toHaveValue('e');
       await expect(page.locator('lfb-initial-number input[id^="initial.0.valueDecimal"]')).toHaveClass(/invalid/);
       await expect(page.locator('span[id="initial.0.err"] > small')).toContainText('Invalid decimal value.');
       await initNumberField.clear();
@@ -861,7 +874,10 @@ test.describe('Home page', () => {
 
       await PWUtils.expectDataTypeValue(page, /quantity/);
 
-      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+      await expect(page.locator('[id^="units"]').first()).toBeVisible();
+      await expect(page.locator('lfb-units table tbody')).toBeVisible();
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].initial).toEqual(fixtureJson.item[0].initial);
     });
 
