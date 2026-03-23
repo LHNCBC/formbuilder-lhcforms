@@ -8,8 +8,6 @@ const unitSystem = 'http://unitsofmeasure.org';
 
 const getUnitsInput = (page: Page, index = 0): Locator => page.locator('input[id^="units"]').nth(index);
 
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
 const selectCompletionRow = async (page: Page, text: string) => {
   const row = page
     .locator('#completionOptions tr', { hasText: text });
@@ -128,8 +126,6 @@ test.describe('item-level units', async () => {
     await selectCompletionRow(page, 'Ampere');
     await expect(unitsInput).toHaveValue('Ampere');
 
-    const unitCode = page.locator('[id^="__$units.0.valueCoding.code"]');
-    const unitSystemInput = page.locator('[id^="__$units.0.valueCoding.system"]');
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, 'A', null);
 
 
@@ -231,6 +227,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].initial[0].valueQuantity.unit).toEqual('Liters per second');
 
     const addUnitButton = page.locator('lfb-units').getByRole('button', { name: 'Add another unit' });
+    const unitsInputs = page.locator('input[id^="units"]');
 
     const unit1 = getUnitsInput(page, 0);
     await expect(unit1).toBeVisible();
@@ -245,6 +242,7 @@ test.describe('item-level units', async () => {
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, 'L', null);
 
     await addUnitButton.click();
+    await expect(unitsInputs).toHaveCount(2);
 
     const unit2 = getUnitsInput(page, 1);
     await expect(unit2).toBeVisible();
@@ -257,6 +255,7 @@ test.describe('item-level units', async () => {
     await PWUtils.expectValueCoding(page, '__$units', 1, unitSystem, null, '[oz_av]', null);
 
     await addUnitButton.click();
+    await expect(unitsInputs).toHaveCount(3);
 
     const unit3 = getUnitsInput(page, 2);
     await expect(unit3).toBeVisible();
@@ -268,6 +267,7 @@ test.describe('item-level units', async () => {
     await PWUtils.expectValueCoding(page, '__$units', 2, unitSystem, null, 'm/s/J', null);
 
     await addUnitButton.click();
+    await expect(unitsInputs).toHaveCount(4);
 
     const unit4 = getUnitsInput(page, 3);
     await expect(unit4).toBeVisible();
@@ -279,6 +279,7 @@ test.describe('item-level units', async () => {
     await PWUtils.expectValueCoding(page, '__$units', 3, unitSystem, null, 'kg.m/s2', null);
 
     await addUnitButton.click();
+    await expect(unitsInputs).toHaveCount(5);
 
     const unit5 = getUnitsInput(page, 4);
     await expect(unit5).toBeVisible();
@@ -290,6 +291,7 @@ test.describe('item-level units', async () => {
     await PWUtils.expectValueCoding(page, '__$units', 4, unitSystem, null, 'kg/(m.s2)', null);
 
     await addUnitButton.click();
+    await expect(unitsInputs).toHaveCount(6);
 
     const unit6 = getUnitsInput(page, 5);
     await expect(unit6).toBeVisible();
