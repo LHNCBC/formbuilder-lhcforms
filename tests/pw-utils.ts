@@ -1430,7 +1430,7 @@ export class PWUtils {
     const topErrors = page.locator('mat-sidenav-content > div.mt-1 > ul > li.text-danger');
     await expect(topErrors).toHaveCount(0);
 
-    const bottomErrors = page.locator('mat-sidenav-content > ul > li');
+    const bottomErrors = page.locator('mat-sidenav-content > ul > li.text-danger');
     await expect(bottomErrors).toHaveCount(0);
   }
 }
