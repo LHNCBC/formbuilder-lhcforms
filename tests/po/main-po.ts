@@ -3,7 +3,7 @@ import {mockLoincLookupData, mockUcumLookupData, mockSnomedLookupData, mockUnitL
 
 const LOINC_SEARCH = /loinc_items\/v3\/search.*terms=.*/;
 const ANSWER_OPTION_UCUM_SEARCH = /ucum\/v3\/search\?terms=.*/;
-const ANSWER_OPTION_SNOMED_SEARCH = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand\?url=http%3A%2F%2Fsnomed\.info%2Fsct%3Ffhir_vs&filter=[^&]*&_format=application%2Fjson&count=7/;
+const ANSWER_OPTION_SNOMED_SEARCH = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand.*filter=/;
 const UNIT_UCUM_SEARCH = /ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/;
 
 export class MainPO {
@@ -183,7 +183,11 @@ export class MainPO {
       }
 
       if (!body) {
-        body = [0, [], null, []];
+        if (type === 'snomed') {
+          body = { resourceType: 'ValueSet', expansion: { contains: [] } };
+        } else {
+          body = [0, [], null, []];
+        }
       }
 
       await route.fulfill({
