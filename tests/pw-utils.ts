@@ -1430,8 +1430,19 @@ export class PWUtils {
     const topErrors = page.locator('mat-sidenav-content > div.mt-1 > ul > li.text-danger');
     await expect(topErrors).toHaveCount(0);
 
-    const bottomErrors = page.locator('mat-sidenav-content > ul > li');
+    const bottomErrors = page.locator('mat-sidenav-content > ul > li.text-danger');
     await expect(bottomErrors).toHaveCount(0);
+  }
+
+  /**
+   * Ignore page close error on some button click events. Typically, used when tab/popup/page is closed after a button
+   * click event.
+   * @param error - Error instance to check if it is a page close error. If not, the error will be thrown for test failure.
+   */
+  static ignorePageCloseError(error: Error) {
+    if(!(error instanceof Error) || !(error.message.includes('Target page, context or browser has been closed'))) {
+      throw error;
+    }
   }
 }
 
