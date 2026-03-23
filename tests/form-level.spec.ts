@@ -9,17 +9,7 @@ import { ExtensionDefs } from '../src/app/lib/extension-defs';
 const termsAcceptedKey = 'acceptedTermsOfUse';
 
 const getTerminologyServerInput = (page: Page) => page.locator('[id="__$terminologyServer"]');
-/*
-const mockSnomedEditions = async (page: Page) => {
-  await page.route('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      path: path.join(__dirname, 'fixtures', 'snomedEditions.json')
-    });
-  });
-};
-*/
+
 const getLocalStorageItem = async (page: Page, key: string) => {
   return page.evaluate((k) => window.localStorage.getItem(k), key);
 };
@@ -196,7 +186,6 @@ test.describe('Home page accept Terms of Use notices', () => {
     await expect(await getSessionStorageItem(page, 'acceptedLoinc')).toEqual('true');
     await expect(await getSessionStorageItem(page, 'acceptedSnomed')).toEqual('false');
 
-
     await page.locator('input[type="radio"][value="scratch"]').click();
     await page.getByRole('button', { name: 'Continue' }).click();
     await page.getByRole('button', { name: 'Create questions' }).first().click();
@@ -294,7 +283,7 @@ test.describe('Home page', () => {
 
       const [download] = await Promise.all([
         page.waitForEvent('download'),
-        await exportR4Item.click()
+        exportR4Item.click()
       ]);
 
       const downloadPath = testInfo.outputPath('Sample-STU3-form.R4.json');
@@ -332,7 +321,7 @@ test.describe('Home page', () => {
 
       const [download] = await Promise.all([
         page.waitForEvent('download'),
-        await exportSTU3Item.click()
+        exportSTU3Item.click()
       ]);
 
       const downloadPath = testInfo.outputPath('Sample-R4-form.STU3.json');
@@ -359,7 +348,7 @@ test.describe('Home page', () => {
 
       const [download] = await Promise.all([
         page.waitForEvent('download'),
-        await exportLHCFormsItem.click()
+        exportLHCFormsItem.click()
       ]);
 
       const downloadPath = testInfo.outputPath('Sample-R4-form.LHC-Forms.json');
@@ -780,61 +769,43 @@ test.describe('Home page', () => {
 
               const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
               expect(qJson[widgetId]).toBe(validDate);
-
-              //await page.waitForTimeout(4000);
             }
 
             await dateInput.clear();
             await dateInput.fill('abc');
-            await dateInput.blur(); //.press('Enter'); //.blur();
+            await dateInput.blur();
             let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
             expect(qJson[widgetId]).toBeUndefined();
 
-            //await page.waitForTimeout(4000);
-
             await dateInput.clear();
             await dateInput.fill('202');
-            await dateInput.blur(); //.press('Enter'); //.blur();
+            await dateInput.blur();
             qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
             expect(qJson[widgetId]).toBeUndefined();
-
-            //await page.waitForTimeout(4000);
           }
 
           for (const { widgetId, widgetLabel } of widgets) {
             const dateInput = await PWUtils.getByLabel(page, 'lfb-form-fields', widgetLabel);
-            //const dateError = dateInput.locator('xpath=ancestor::div[contains(@class,"row")]//small[role="alert"]');
+            const dateError = dateInput.locator('xpath=ancestor::div[contains(@class,"row")]//small[contains(@class,"text-danger")]');
             await dateInput.clear();
             await dateInput.fill('2020-01-02 10:');
-            //await dateInput.blur();
-            //await expect(dateError).toBeVisible();
-            await expect(dateInput).toHaveClass(/ng-invalid/);
-            //await expect(dateError).toBeVisible();
-            //cy.get(widgetSel).parents('.row').find('small.text-danger').should('be.visible');
-            //cy.get(widgetSel).type('{backspace}');
-            //await page.waitForTimeout(4000);
-
-            await dateInput.press('Backspace');
-            //await expect(dateError).toBeVisible();
-            //await expect(dateError).toBeVisible();
-            //await page.waitForTimeout(4000);
+            await expect(dateError).toBeVisible();
             await expect(dateInput).toHaveClass(/ng-invalid/);
 
             await dateInput.press('Backspace');
-            //await expect(dateError).toBeVisible();
-            //await expect(dateError).toBeVisible();
+            await expect(dateError).toBeVisible();
             await expect(dateInput).toHaveClass(/ng-invalid/);
 
             await dateInput.press('Backspace');
-            //await expect(dateError).toHaveCount(0);
-            //await expect(dateError).toHaveCount(0);
+            await expect(dateError).toBeVisible();
+            await expect(dateInput).toHaveClass(/ng-invalid/);
+
+            await dateInput.press('Backspace');
+            await expect(dateError).toHaveCount(0);
             await expect(dateInput).not.toHaveClass(/ng-invalid/);
 
             await dateInput.fill('ab');
-            //await dateInput.blur();
-            //await expect(dateError).toBeVisible();
-            //await dateInput.press('Enter'); //.blur();
-            //await expect(dateError).toBeVisible();
+            await expect(dateError).toBeVisible();
             await expect(dateInput).toHaveClass(/ng-invalid/);
             await dateInput.blur();
 
@@ -845,9 +816,6 @@ test.describe('Home page', () => {
               await dateInput.clear();
               await dateInput.fill(input);
               await dateInput.blur();
-              //await expect(dateError).toHaveText('Invalid date.');
-              //await dateInput.press('Enter'); //.blur();
-              //await expect(dateError).toBeVisible();
               await expect(dateInput).toHaveClass(/ng-invalid/);
 
               qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -858,20 +826,17 @@ test.describe('Home page', () => {
           const dateInput = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Revision date');
           await dateInput.clear();
           await dateInput.fill('2020-01-02 100');
-          //await expect(dateInput.locator('xpath=ancestor::div[contains(@class,"row")]//small[role="alert"]')).toBeVisible();
           await expect(dateInput).toHaveClass(/ng-invalid/);
-          await dateInput.blur(); //.press('Enter'); //.blur();
+          await dateInput.blur();
 
           let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
           expect(qJson.date).toBeUndefined();
 
           await dateInput.clear();
           await dateInput.fill('2020-01-02 100');
-          //await expect(dateInput.locator('xpath=ancestor::div[contains(@class,"row")]//small[role="alert"]')).toBeVisible();
           await expect(dateInput).toHaveClass(/ng-invalid/);
           await dateInput.press('Backspace');
           await dateInput.pressSequentially(':10:10.1 am');
-          //await expect(dateInput.locator('xpath=ancestor::div[contains(@class,"row")]//small[role="alert"]')).toHaveCount(0);
           await expect(dateInput).not.toHaveClass(/ng-invalid/);
 
           qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
