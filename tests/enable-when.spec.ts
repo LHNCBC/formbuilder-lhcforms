@@ -1,7 +1,3 @@
-//import {test, expect, Locator, Page} from '@playwright/test';
-//import { MainPO } from './po/main-po';
-//import {PWUtils} from "./pw-utils";
-
 import { test, expect, Page } from '@playwright/test';
 import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
@@ -221,14 +217,16 @@ test.describe('enableWhen condition and behavior', () => {
       await (await PWUtils.getRadioButtonLabel(page, 'Conditional method', 'enableWhen condition and behavior')).click();
 
       const question0 = page.locator('[id^="enableWhen.0.question"]');
+      await question0.click();
       await question0.press('Enter');
       await page.locator('[id^="enableWhen.0.operator"]').selectOption({ label: '=' });
-      await page.locator('[id^="enableWhen.0.answerString"]').fill('Joe');
+      await page.locator('[id^="enableWhen.0.answerString"]').pressSequentially('Joe');
       await expect(page.locator('[id^="enableWhen.0_err"]')).toHaveCount(0);
 
       await page.locator('button:has-text("Add another condition")').click();
 
       const question1 = page.locator('[id^="enableWhen.1.question"]');
+      await question1.click();
       await question1.pressSequentially('invalid question');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
       await question1.press('Enter');
@@ -253,18 +251,23 @@ test.describe('enableWhen condition and behavior', () => {
       await expect(await PWUtils.getRadioButton(page, 'Conditional method', 'None')).toBeChecked();
       await (await PWUtils.getRadioButtonLabel(page, 'Conditional method', 'enableWhen condition and behavior')).click();
 
-      await page.locator('[id^="enableWhen.0.question"]').press('Enter');
+      const question0 = page.locator('[id^="enableWhen.0.question"]');
+      await question0.click();
+      await question0.press('Enter');
       await page.locator('[id^="enableWhen.0.operator"]').selectOption({ label: '=' });
-      await page.locator('[id^="enableWhen.0.answerString"]').fill('Joe');
+      await page.locator('[id^="enableWhen.0.answerString"]').pressSequentially('Joe');
       await expect(page.locator('[id^="enableWhen.0_err"]')).toHaveCount(0);
 
       await page.locator('button:has-text("Add another condition")').click();
-      await page.locator('[id^="enableWhen.1.question"]').press('Enter');
+      let question1 = page.locator('[id^="enableWhen.1.question"]');
+      await question1.click();
+      await question1.press('Enter');
       await page.locator('[id^="enableWhen.1.operator"]').selectOption({ label: '=' });
-      await page.locator('[id^="enableWhen.1.answerString"]').fill('David');
+      await page.locator('[id^="enableWhen.1.answerString"]').pressSequentially('David');
 
       await page.locator('button:has-text("Add another condition")').click();
-      const question2 = page.locator('[id^="enableWhen.2.question"]');
+      let question2 = page.locator('[id^="enableWhen.2.question"]');
+      await question2.click();
       await question2.press('ArrowDown');
       await question2.press('Enter');
       await page.locator('[id^="enableWhen.2.operator"]').selectOption({ label: '=' });
@@ -286,16 +289,18 @@ test.describe('enableWhen condition and behavior', () => {
       expect(qJson.item[3].enableWhen[2].operator).toEqual('=');
       expect(qJson.item[3].enableWhen[2].answerCoding.display).toEqual('Street clothes, no shoes');
 
-      const question1 = page.locator('[id^="enableWhen.1.question"]');
-      await question1.fill('invalid question');
+      await question1.clear();
+      await question1.pressSequentially('invalid question');
+      await question1.press('Escape');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
       await page.locator('[id^="enableWhen.1.operator"]').focus();
       await expect(page.locator('[id^="enableWhen.1_err"]')).toBeVisible();
       await expect(page.locator('[id^="enableWhen.1_err"] small'))
         .toContainText(" Question not found for the linkId '' for enableWhen condition 2. ");
 
-      const question3 = page.locator('[id^="enableWhen.2.question"]');
-      await question3.fill('invalid question2');
+      await question2.clear();
+      await question2.pressSequentially('invalid question2');
+      await question2.press('Escape');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
       await page.locator('[id^="enableWhen.2.operator"]').focus();
       await expect(page.locator('[id^="enableWhen.2_err"]')).toBeVisible();
@@ -1184,8 +1189,8 @@ test.describe('enableWhen answerCoding', async () => {
     }
     await answerCoding.press('Enter');
 
-    // Get and verify the JSON
-    const qJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    // Get and verify the JSON (use internal getter to avoid clipboard timing issues)
+    const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
     const enableWhenJson = qJson.item[itemIndex + 1].enableWhen;
 
     expect(enableWhenJson).toBeDefined();
