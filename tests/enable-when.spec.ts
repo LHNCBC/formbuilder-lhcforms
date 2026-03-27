@@ -234,8 +234,8 @@ test.describe('enableWhen condition and behavior', () => {
       const question1 = page.locator('[id^="enableWhen.1.question"]');
       await question1.pressSequentially('invalid question');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
-      await question1.press('Enter');
-
+      await question1.press('Tab');
+      await expect(question1).toHaveValue('');
       await expect(page.locator('[id^="enableWhen.1_err"]')).toBeVisible();
 
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -673,7 +673,7 @@ test.describe('enableWhen condition and behavior', () => {
 
       await page.route('**/ValueSet/$expand**', async (route) => {
         await route.fulfill({
-          path: 'cypress/fixtures/snomed-ecl-expression-mock.json',
+          path: 'tests/fixtures/snomed-ecl-expression-mock.json',
           contentType: 'application/json'
         });
       });
