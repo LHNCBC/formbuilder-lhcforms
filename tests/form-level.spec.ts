@@ -120,7 +120,7 @@ test.describe('Home page accept Terms of Use notices', () => {
     test('should not display error after loading LForms', async ({ page }) => {
       await page.goto('/');
       const mainPO = new MainPO(page);
-      await mainPO.goToHomePage();
+      await mainPO.assertLFormsLoaded();
       await mainPO.acceptAllTermsOfUse();
       const lformsVersion = await page.evaluate(() => (window as any).LForms?.lformsVersion);
       expect(lformsVersion).toMatch(/^[0-9]+\.[0-9]+\.[0-9]+$/);
@@ -131,7 +131,7 @@ test.describe('Home page accept Terms of Use notices', () => {
   test('should make SNOMED CT available after accepting SNOMED notice', async ({ page }) => {
     await page.goto('/');
     const mainPO = new MainPO(page);
-    await mainPO.goToHomePage();
+    await mainPO.assertLFormsLoaded();
 
     const acceptBtn = page.locator('lfb-loinc-notice button', { hasText: 'Accept' });
     await expect(acceptBtn).toBeDisabled();
@@ -179,7 +179,7 @@ test.describe('Home page accept Terms of Use notices', () => {
   test('should not find SNOMED CT functionality after accepting only LOINC terms of use', async ({ page }) => {
     await page.goto('/');
     const mainPO = new MainPO(page);
-    await mainPO.goToHomePage();
+    await mainPO.assertLFormsLoaded();
 
     await mainPO.acceptLoincOnly();
 
