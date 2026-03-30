@@ -15,11 +15,11 @@ export class MainPO {
     this._page = page;
   }
   /**
-   * Load home page and wait until LForms is loaded.
+   * Clears session, then asserts LForms is loaded on the current page (no navigation).
    */
   async loadHomePage() {
     await this.clearSession();
-    await this.goToHomePage();
+    await this.assertLFormsLoaded();
     await this.acceptAllTermsOfUse();
   }
 
@@ -66,7 +66,7 @@ export class MainPO {
   async loadHomePageWithLoincOnly() {
     await this.clearSession();
     await this._page.goto('/');
-    await this.goToHomePage();
+    await this.assertLFormsLoaded();
     await this.acceptLoincOnly();
   }
 
@@ -77,9 +77,10 @@ export class MainPO {
   }
 
   /**
-   * Visit home page and assert LForms, but do not deal with LOINC notice.
+   * Assert LForms is loaded on the current page. Does not navigate;
+   * caller must navigate first.
    */
-  async goToHomePage() {
+  async assertLFormsLoaded() {
     await this.mockSnomedEditions();
     // await this._page.goto('/');
     const lforms = await this._page.evaluateHandle('window.LForms');
@@ -127,7 +128,7 @@ export class MainPO {
    */
   async mockSnomedEditions() {
     await this._page.route('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (route) => {
-      route.fulfill({path: 'cypress/fixtures/snomedEditions.json'});
+      route.fulfill({path: 'tests/fixtures/snomedEditions.json'});
     });
   }
 
