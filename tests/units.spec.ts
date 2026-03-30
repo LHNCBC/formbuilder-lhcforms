@@ -53,7 +53,7 @@ test.describe('item-level units', async () => {
       const [code, display] = results[index];
       const input = unitsInputs.nth(index);
       await input.click();
-      await input.pressSequentially('inch', { delay: 30 });
+      await PWUtils.typeSequentially(input, 'inch');
       await selectCompletionRow(page, code);
 
       await expectUnitsRowValues(page, index, display, code, unitSystem);
@@ -86,7 +86,7 @@ test.describe('item-level units', async () => {
     await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
     await unitsInput.click();
-    await unitsInput.pressSequentially('inch', { delay: 30 });
+    await PWUtils.typeSequentially(unitsInput, 'inch');
     await expect(page.locator('#lhc-tools-searchResults')).toBeVisible();
     await unitsInput.press('ArrowDown');
     await unitsInput.press('Enter');
@@ -121,7 +121,7 @@ test.describe('item-level units', async () => {
     await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
     await unitsInput.click();
-    await unitsInput.pressSequentially('A');
+    await PWUtils.typeSequentially(unitsInput, 'A');
     await expect(page.locator('#lhc-tools-searchResults')).toBeVisible();
     await selectCompletionRow(page, 'Ampere');
     await expect(unitsInput).toHaveValue('Ampere');
@@ -136,7 +136,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].extension[0].valueCoding.code).toEqual('A');
     expect(qJson.item[0].extension[0].valueCoding.display).toEqual('Ampere');
 
-    await unitsInput.pressSequentially('/kg');
+    await PWUtils.typeSequentially(unitsInput, '/kg');
     await selectCompletionRow(page, 'kilogram');
     await expect(unitsInput).toHaveValue('Ampere/kilogram');
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, 'A/kg', null);
@@ -147,7 +147,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].extension[0].valueCoding.code).toEqual('A/kg');
     expect(qJson.item[0].extension[0].valueCoding.display).toEqual('Ampere/kilogram');
 
-    await unitsInput.pressSequentially('.st');
+    await PWUtils.typeSequentially(unitsInput, '.st');
     await selectCompletionRow(page, 'stere');
     await expect(unitsInput).toHaveValue('[Ampere/kilogram]*stere');
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, 'A/kg.st', null);
@@ -159,7 +159,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].extension[0].valueCoding.display).toEqual('[Ampere/kilogram]*stere');
 
     await unitsInput.clear();
-    await unitsInput.pressSequentially('a');
+    await PWUtils.typeSequentially(unitsInput, 'a');
     await selectCompletionRow(page, 'a_g');
     await expect(unitsInput).toHaveValue('mean Gregorian year');
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, 'a_g', null);
@@ -170,7 +170,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].extension[0].valueCoding.code).toEqual('a_g');
     expect(qJson.item[0].extension[0].valueCoding.display).toEqual('mean Gregorian year');
 
-    await unitsInput.pressSequentially('/k', { delay: 30 });
+    await PWUtils.typeSequentially(unitsInput, '/k');
     await selectCompletionRow(page, 'kat/kg');
     await expect(unitsInput).toHaveValue('[mean Gregorian year]/[katal/kilogram]');
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, 'a_g/(kat/kg)', null);
@@ -181,7 +181,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].extension[0].valueCoding.code).toEqual('a_g/(kat/kg)');
     expect(qJson.item[0].extension[0].valueCoding.display).toEqual('[mean Gregorian year]/[katal/kilogram]');
 
-    await unitsInput.pressSequentially('/m', { delay: 30 });
+    await PWUtils.typeSequentially(unitsInput, '/m');
     await selectCompletionRow(page, 'meter');
     await expect(unitsInput).toHaveValue('[mean Gregorian year]/[katal/kilogram]/meter');
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, '(a_g)/(kat/kg)/m', null);
@@ -204,7 +204,7 @@ test.describe('item-level units', async () => {
 
     const quantityUnit = page.locator('input[id^="initial.0.valueQuantity.unit"]');
     await quantityUnit.click();
-    await quantityUnit.pressSequentially('l');
+    await PWUtils.typeSequentially(quantityUnit, 'l');
     await expect(page.locator('#lhc-tools-searchResults')).toBeVisible();
     await selectCompletionRow(page, 'Liters');
     await expect(quantityUnit).toHaveValue('Liters');
@@ -217,7 +217,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].initial[0].valueQuantity.code).toEqual('L');
     expect(qJson.item[0].initial[0].valueQuantity.unit).toEqual('Liters');
 
-    await quantityUnit.pressSequentially('/s');
+    await PWUtils.typeSequentially(quantityUnit, '/s');
     await selectCompletionRow(page, 'second - time');
     await expect(quantityUnit).toHaveValue('Liters per second');
 
@@ -234,7 +234,7 @@ test.describe('item-level units', async () => {
     await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
     await unit1.click();
-    await unit1.pressSequentially('l');
+    await PWUtils.typeSequentially(unit1, 'l');
     await expect(page.locator('#lhc-tools-searchResults')).toBeVisible();
     await selectCompletionRow(page, 'Liters');
     await expect(unit1).toHaveValue('Liters');
@@ -247,7 +247,7 @@ test.describe('item-level units', async () => {
     const unit2 = getUnitsInput(page, 1);
     await expect(unit2).toBeVisible();
     await unit2.click();
-    await unit2.pressSequentially('oz');
+    await PWUtils.typeSequentially(unit2, 'oz');
     await expect(page.locator('#lhc-tools-searchResults')).toBeVisible();
     await selectCompletionRow(page, 'standard unit used in the US and internationally');
     await expect(unit2).toHaveValue('ounce');
@@ -260,7 +260,7 @@ test.describe('item-level units', async () => {
     const unit3 = getUnitsInput(page, 2);
     await expect(unit3).toBeVisible();
     await unit3.click();
-    await unit3.pressSequentially('m/s/J');
+    await PWUtils.typeSequentially(unit3, 'm/s/J');
     await page.locator('[id^="__$units.2.valueCoding.code"]').click();
     await expect(unit3).toHaveValue('[meter/[second - time]]/joule');
 
@@ -272,7 +272,7 @@ test.describe('item-level units', async () => {
     const unit4 = getUnitsInput(page, 3);
     await expect(unit4).toBeVisible();
     await unit4.click();
-    await unit4.pressSequentially('kg.m/s2');
+    await PWUtils.typeSequentially(unit4, 'kg.m/s2');
     await page.locator('[id^="__$units.3.valueCoding.code"]').click();
     await expect(unit4).toHaveValue('[kilogram*meter]/[second - time2]');
 
@@ -284,7 +284,7 @@ test.describe('item-level units', async () => {
     const unit5 = getUnitsInput(page, 4);
     await expect(unit5).toBeVisible();
     await unit5.click();
-    await unit5.pressSequentially('kg/(m.s2)');
+    await PWUtils.typeSequentially(unit5, 'kg/(m.s2)');
     await page.locator('[id^="__$units.4.valueCoding.code"]').click();
     await expect(unit5).toHaveValue('kilogram/[meter*[second - time2]]');
 
@@ -296,7 +296,7 @@ test.describe('item-level units', async () => {
     const unit6 = getUnitsInput(page, 5);
     await expect(unit6).toBeVisible();
     await unit6.click();
-    await unit6.pressSequentially('kg.m2/(s3.A)');
+    await PWUtils.typeSequentially(unit6, 'kg.m2/(s3.A)');
     await page.locator('[id^="__$units.5.valueCoding.code"]').click();
     await expect(unit6).toHaveValue('[kilogram*[square meter]]/[[second - time3]*Ampere]');
 
@@ -345,8 +345,7 @@ test.describe('item-level units', async () => {
     await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
     await unitsInput.click();
-    await unitsInput.pressSequentially('a_g/kat/kg/m', { delay: 30 });
-    await unitsInput.press('Enter');
+    await PWUtils.typeAndSelect(unitsInput, 'a_g/kat/kg/m', { arrowDownCount: 0, pressEnter: true });
 
     const inputCell = unitsInput.locator('xpath=ancestor::td');
     await expect(inputCell.locator('xpath=following-sibling::td[1]//input')).toHaveValue('a_g/kat/kg/m');
@@ -359,7 +358,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].extension[0].valueCoding.display).toEqual('[[[mean Gregorian year]/katal]/kilogram]/meter');
 
     await unitsInput.clear();
-    await unitsInput.pressSequentially('m/s/J', { delay: 30 });
+    await PWUtils.typeSequentially(unitsInput, 'm/s/J');
     await expect(page.locator('#lhc-tools-searchResults')).toBeVisible();
     await selectCompletionRow(page, 'joule per liter');
     await expect(unitsInput).toHaveValue('[meter/[second - time]]/[joule/Liters]');
@@ -377,8 +376,7 @@ test.describe('item-level units', async () => {
     await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
     await unitsInput.click();
-    await unitsInput.pressSequentially('Ampere/kilogram.stere', { delay: 30 });
-    await unitsInput.press('Enter');
+    await PWUtils.typeAndSelect(unitsInput, 'Ampere/kilogram.stere', { arrowDownCount: 0, pressEnter: true });
 
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, 'A/kg.st', null);
 
@@ -400,8 +398,7 @@ test.describe('item-level units', async () => {
     await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
     await unitsInput.click();
-    await unitsInput.pressSequentially('mean Gregorian year', { delay: 30 });
-    await unitsInput.press('Enter');
+    await PWUtils.typeAndSelect(unitsInput, 'mean Gregorian year', { arrowDownCount: 0, pressEnter: true });
 
     await PWUtils.expectValueCoding(page, '__$units', 0, unitSystem, null, 'a_g', null);
 
@@ -423,8 +420,7 @@ test.describe('item-level units', async () => {
     await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
     await unitsInput.click();
-    await unitsInput.pressSequentially('mean Gregorian year/katal per kilogram', { delay: 30 });
-    await unitsInput.press('Enter');
+    await PWUtils.typeAndSelect(unitsInput, 'mean Gregorian year/katal per kilogram', { arrowDownCount: 0, pressEnter: true });
 
     const codeInput = page.locator('[id^="__$units.0.valueCoding.code"]');
     const systemInput = page.locator('[id^="__$units.0.valueCoding.system"]');
@@ -433,8 +429,7 @@ test.describe('item-level units', async () => {
     await expect(systemInput).toHaveValue(unitSystem);
 
     await unitsInput.clear();
-    await unitsInput.pressSequentially('katal per kilogram/mean Gregorian year', { delay: 30 });
-    await unitsInput.press('Enter');
+    await PWUtils.typeAndSelect(unitsInput, 'katal per kilogram/mean Gregorian year', { arrowDownCount: 0, pressEnter: true });
     await expect(codeInput).toHaveValue('');
     await expect(systemInput).toHaveValue('');
   });
@@ -450,8 +445,7 @@ test.describe('item-level units', async () => {
     await expect(page.locator('#lhc-tools-searchResults')).not.toBeVisible();
 
     await unitsInput.click();
-    await unitsInput.pressSequentially('unknown unit', { delay: 30 });
-    await unitsInput.press('Enter');
+    await PWUtils.typeAndSelect(unitsInput, 'unknown unit', { arrowDownCount: 0, pressEnter: true });
 
     const codeInput = page.locator('[id^="__$units.0.valueCoding.code"]');
     const systemInput = page.locator('[id^="__$units.0.valueCoding.system"]');
@@ -524,7 +518,7 @@ test.describe('item-level units', async () => {
     expect(qJson.item[0].extension[0]).toEqual((fixtureJson as any).item[0].extension[1]);
 
     await unitsInput.click();
-    await unitsInput.pressSequentially('m', { delay: 30 });
+    await PWUtils.typeSequentially(unitsInput, 'm');
     await selectCompletionRow(page, 'meter');
     await expect(unitsInput).toHaveValue('meter');
 
