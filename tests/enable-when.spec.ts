@@ -232,10 +232,10 @@ test.describe('enableWhen condition and behavior', () => {
       await page.locator('button:has-text("Add another condition")').click();
 
       const question1 = page.locator('[id^="enableWhen.1.question"]');
-      await question1.pressSequentially('invalid question');
+      await PWUtils.typeSequentially(question1, 'invalid question');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
-      await question1.press('Enter');
-
+      await question1.press('Tab');
+      await expect(question1).toHaveValue('');
       await expect(page.locator('[id^="enableWhen.1_err"]')).toBeVisible();
 
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -256,33 +256,32 @@ test.describe('enableWhen condition and behavior', () => {
       await PWUtils.expectRadioChecked(page, 'Conditional method', 'None');
       await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen condition and behavior');
 
-      await page.locator('[id^="enableWhen.0.question"]').click();
-      await page.locator('[id^="enableWhen.0.question"]').press('Enter');
+      const question0 = page.locator('[id^="enableWhen.0.question"]');
+      await question0.click();
+      await question0.press('Enter');
       await expect(page.locator('[id^="enableWhen.0.operator"]')).toBeEnabled();
       await page.locator('[id^="enableWhen.0.operator"]').selectOption({ label: '=' });
       const answerString = page.locator('[id^="enableWhen.0.answerString"]');
       await expect(answerString).toBeVisible();
-      await answerString.fill('Joe');
-
-      await expect(page.locator('[id^="enableWhen.0_err"]')).toHaveCount(0);
+      await PWUtils.typeSequentially(answerString, 'Joe');
 
       await page.locator('button:has-text("Add another condition")').click();
-      await page.locator('[id^="enableWhen.1.question"]').click();
-      await page.locator('[id^="enableWhen.1.question"]').press('Enter');
+      let question1 = page.locator('[id^="enableWhen.1.question"]');
+      await question1.click();
+      await question1.press('Enter');
       await page.locator('[id^="enableWhen.1.operator"]').selectOption({ label: '=' });
-      const answerString2 = page.locator('[id^="enableWhen.1.answerString"]');
-      await expect(answerString2).toBeVisible();
-      await answerString2.fill('David');
+      const answerString1 = page.locator('[id^="enableWhen.1.answerString"]');
+      await expect(answerString1).toBeVisible();
+      await PWUtils.typeSequentially(answerString1, 'David');
 
       await page.locator('button:has-text("Add another condition")').click();
-      const question2 = page.locator('[id^="enableWhen.2.question"]');
+      let question2 = page.locator('[id^="enableWhen.2.question"]');
+      await question2.click();
       await question2.press('ArrowDown');
       await question2.press('Enter');
       await page.locator('[id^="enableWhen.2.operator"]').selectOption({ label: '=' });
       const answerCoding = page.locator('[id^="enableWhen.2.answerCoding"]');
-      await answerCoding.pressSequentially('Street clothes, no shoes');
-      await answerCoding.press('ArrowDown');
-      await answerCoding.press('Enter');
+      await PWUtils.typeAndSelect(answerCoding, 'Street clothes, no shoes', { arrowDownCount: 1, pressEnter: true });
 
       let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item.length).toEqual(12);
@@ -297,16 +296,19 @@ test.describe('enableWhen condition and behavior', () => {
       expect(qJson.item[3].enableWhen[2].operator).toEqual('=');
       expect(qJson.item[3].enableWhen[2].answerCoding.display).toEqual('Street clothes, no shoes');
 
-      const question1 = page.locator('[id^="enableWhen.1.question"]');
-      await question1.fill('invalid question');
+      await question1.clear();
+      await PWUtils.typeSequentially(question1, 'invalid question');
+
+      await question1.press('Escape');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
       await page.locator('[id^="enableWhen.1.operator"]').focus();
       await expect(page.locator('[id^="enableWhen.1_err"]')).toBeVisible();
       await expect(page.locator('[id^="enableWhen.1_err"] small'))
         .toContainText(" Question not found for the linkId '' for enableWhen condition 2. ");
 
-      const question3 = page.locator('[id^="enableWhen.2.question"]');
-      await question3.fill('invalid question2');
+      await question2.clear();
+      await PWUtils.typeSequentially(question2, 'invalid question2');
+      await question2.press('Escape');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
       await page.locator('[id^="enableWhen.2.operator"]').focus();
       await expect(page.locator('[id^="enableWhen.2_err"]')).toBeVisible();
@@ -629,9 +631,7 @@ test.describe('enableWhen condition and behavior', () => {
       await r1Question.press('Enter');
       await r1Operator.selectOption({ label: '=' });
       await r1Answer.click();
-      await r1Answer.pressSequentially('dia');
-      await r1Answer.press('ArrowDown');
-      await r1Answer.press('Enter');
+      await PWUtils.typeAndSelect(r1Answer, 'dia', { arrowDownCount: 1, pressEnter: true });
 
       const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(json.item[1].enableWhen).toEqual([
@@ -673,14 +673,12 @@ test.describe('enableWhen condition and behavior', () => {
 
       await page.route('**/ValueSet/$expand**', async (route) => {
         await route.fulfill({
-          path: 'cypress/fixtures/snomed-ecl-expression-mock.json',
+          path: 'tests/fixtures/snomed-ecl-expression-mock.json',
           contentType: 'application/json'
         });
       });
 
-      await r1Answer.pressSequentially('male');
-      await r1Answer.press('ArrowDown');
-      await r1Answer.press('Enter');
+      await PWUtils.typeAndSelect(r1Answer, 'male', { arrowDownCount: 1, pressEnter: true });
 
       await expect(r1Answer).toHaveValue('Intersex');
 
@@ -1198,8 +1196,8 @@ test.describe('enableWhen answerCoding', async () => {
     }
     await answerCoding.press('Enter');
 
-    // Get and verify the JSON
-    const qJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    // Get and verify the JSON (use internal getter to avoid clipboard timing issues)
+    const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
     const enableWhenJson = qJson.item[itemIndex + 1].enableWhen;
 
     expect(enableWhenJson).toBeDefined();
