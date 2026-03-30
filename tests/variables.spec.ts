@@ -3,7 +3,7 @@ import { MainPO } from './po/main-po';
 import {PWUtils, VariableTestCase} from "./pw-utils";
 import { BasePageComponent } from 'src/app/base-page/base-page.component';
 
-test.describe('variables', async () => {
+test.describe('variables', () => {
   let mainPO: MainPO;
   let fileJson;
 

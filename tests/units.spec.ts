@@ -22,7 +22,7 @@ const expectUnitsRowValues = async (page: Page, index: number, display: string, 
   await expect(cols.nth(2)).toHaveValue(system);
 };
 
-test.describe('item-level units', async () => {
+test.describe('item-level units', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({ page }) => {

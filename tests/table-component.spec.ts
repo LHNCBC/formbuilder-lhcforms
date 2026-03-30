@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 
-test.describe('Table component', async () => {
+test.describe('Table component', () => {
 
   const removeLoc = `button[aria-label="Remove this row"]`;
   const moveUpLoc = `button[aria-label="Move this row up"]`;

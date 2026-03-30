@@ -5,7 +5,7 @@ import {PWUtils} from "./pw-utils";
 
 const fbSecondUrl = encodeURI(`/tests/window-open-test.html?targetUrl=${encodeURI(process.env.TEST_BASE_URL_SECOND)}`);
 
-test.describe('Window opener notice', async () => {
+test.describe('Window opener notice', () => {
 
   test('should not exist if not opened by window.open() call', async ({page}) => {
     await page.goto('/');
@@ -19,7 +19,7 @@ test.describe('Window opener notice', async () => {
   });
 });
 
-test.describe('Cancel event', async () => {
+test.describe('Cancel event', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
@@ -78,7 +78,7 @@ async function getMessage(page: Page, type: string) {
     return ret;
 }
 
-test.describe('Open form builder in a new window', async () => {
+test.describe('Open form builder in a new window', () => {
 
   test.beforeEach(async ({page}) => {
     page.on('console', msg => {

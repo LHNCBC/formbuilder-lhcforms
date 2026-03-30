@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils} from "./pw-utils";
 
-test.describe('answerOptions', async () => {
+test.describe('answerOptions', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({ page }) => {

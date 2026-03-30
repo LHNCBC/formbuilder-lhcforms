@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils} from "./pw-utils";
 
-test.describe('Date, DateTime, and Time types', async () => {
+test.describe('Date, DateTime, and Time types', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
