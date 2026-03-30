@@ -163,16 +163,14 @@ test.describe('variables', async () => {
     const question3 = page.locator('#question-3');
     await expect(question3).toBeVisible();
     await question3.click();
-    await question3.pressSequentially('Pick Initial Value (Single)');
 
-    await question3.press('ArrowDown');
-    await question3.press('Enter');
+    await PWUtils.typeAndSelect(question3, 'Pick Initial Value (Single)', { arrowDownCount: 1, pressEnter: true });
 
     // Add a new variable 'e_easy_path_exp'
     await page.locator('#add-variable').click();
     await page.locator('#variable-label-4').clear();
     await page.locator('#variable-label-4').click();
-    await page.locator('#variable-label-4').pressSequentially('e_easy_path_exp');
+    await PWUtils.typeSequentially(page.locator('#variable-label-4'), 'e_easy_path_exp');
 
     await page.locator('#variable-type-4').selectOption('Easy Path Expression');
     await page.locator('input#simple-expression-4').fill('1');

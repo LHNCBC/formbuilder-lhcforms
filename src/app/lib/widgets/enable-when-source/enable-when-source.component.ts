@@ -1,7 +1,7 @@
 /**
  * An input box for enableWhen's source to search eligible source items listed in the tree.
  */
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import {merge, Observable, Subject} from 'rxjs';
 import {FormService} from '../../../services/form.service';
 import {debounceTime, distinctUntilChanged, filter, map} from 'rxjs/operators';
@@ -38,6 +38,7 @@ import {Util} from '../../util';
           (click)="click$.next($any($event).target.value)"
           (change)="validateQuestion()"
           (selectItem)="onSelect($event)"
+          #sourceInput
           #instance="ngbTypeahead"
           popupClass="add-scrolling"
           >
@@ -62,6 +63,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   sources: TreeNode [];
 
   @ViewChild('instance') instance: NgbTypeahead;
+  @ViewChild('sourceInput', { static: false }) sourceInput: ElementRef<HTMLInputElement>;
 
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
@@ -87,20 +89,55 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
    * Initialize the component
    */
   ngOnInit(): void {
+    super.ngOnInit();
     this.sources = this.formService.getSourcesExcludingFocusedTree();
-    const value = this.formProperty.value; // Source is already assigned for this item.
-    if (this.sources && this.sources.length > 0 && value) {
+
+    this.syncModelFromValue(this.formProperty.value);
+
+    const value = this.formProperty.value;
+    if (value === "" && this.formProperty.parent.value?.['__$answerType']?.trim()) {
+      this.validateQuestion();
+    }
+
+    const sub = this.formProperty.valueChanges.subscribe((newValue) => {
+      this.syncModelFromValue(newValue);
+      if (!newValue) {
+        this.clearInputUi();
+      }
+    });
+    this.subscriptions.push(sub);
+  }
+
+  /**
+   * Keep local typeahead model in sync with stored linkId.
+   * @param value - Stored linkId value to sync from.
+   */
+  private syncModelFromValue(value: string): void {
+    if (!value) {
+      this.model = null;
+      this.clearInputUi();
+      return;
+    }
+
+    if (this.sources && this.sources.length > 0) {
       const source = this.sources.find((el) => el.data.linkId === value);
       if (source) {
         this.model = source;
-        this.formProperty.setValue(source.data.linkId, true);
-        // Set answer type input
         this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
       }
-    } else if (value === "" && this.formProperty.parent.value?.['__$answerType']?.trim()) {
-      this.validateQuestion();
     }
   }
+
+  /**
+   * ng-bootstrap typeahead can keep stale rendered text; clear input explicitly.
+   */
+  private clearInputUi(): void {
+    if (this.sourceInput?.nativeElement) {
+      this.sourceInput.nativeElement.value = '';
+    }
+    this.instance?.dismissPopup();
+  }
+
 
   /**
    * Handle user selection event
@@ -167,6 +204,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
       }
 
       this.formProperty.parent.setValue(enableWhenObj, false);
+      this.clearInputUi();
       this.formProperty.updateValueAndValidity();
     }
   }
