@@ -128,7 +128,7 @@ test.describe('Home page', () => {
       await expect(olpYes).toBeVisible();
       await expect(olpYes).not.toBeChecked();
 
-      (await PWUtils.getRadioButtonLabel(page, 'Add link to pre-populate FHIR Observation?', 'Yes')).click();
+      await (await PWUtils.getRadioButtonLabel(page, 'Add link to pre-populate FHIR Observation?', 'Yes')).click();
 
       const warningMsg = page.locator('lfb-observation-link-period > div > div > div > p');
       await expect(warningMsg).toContainText('Linking to FHIR Observation');
@@ -475,7 +475,7 @@ test.describe('Home page', () => {
       await familyNode.click();
 
       const addNewItemButton = PWUtils.getButton(page, 'Toolbar with item action buttons', 'Add new item');
-      addNewItemButton.click();
+      await addNewItemButton.click();
 
       const newItem1Node = await PWUtils.getTreeNode(page, 'New item 1', true);
       await newItem1Node.click();
