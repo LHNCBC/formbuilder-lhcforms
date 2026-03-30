@@ -291,6 +291,8 @@ test.describe('Home page', () => {
       const vitalsNodes = page.locator('tree-root tree-viewport tree-node-collection tree-node span')
         .filter({ hasText: /Resp rate|Heart rate/i });
 
+      // Simulate rapid clicks on both nodes, bypassing actionability checks
+      // (Playwright equivalent of Cypress force click)
       await vitalsNodes.evaluateAll((els) => {
         els.forEach((el) => {
           el.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -630,42 +632,34 @@ test.describe('Home page', () => {
       const initIntField = page.locator('[id^="initial.0.valueInteger"]');
 
       await initIntField.clear();
-      await initIntField.pressSequentially('abc');
-      await initIntField.press('Enter');
+      await PWUtils.typeAndSelect(initIntField, 'abc', { arrowDownCount: 0, pressEnter: true });
       await expect(initIntField).toHaveValue('');
 
-      await initIntField.pressSequentially('12abc');
-      await initIntField.press('Enter');
+      await PWUtils.typeAndSelect(initIntField, '12abc', { arrowDownCount: 0, pressEnter: true });
       await expect(initIntField).toHaveValue('12');
       await initIntField.clear();
 
-      await initIntField.pressSequentially('3.4');
-      await initIntField.press('Enter');
+      await PWUtils.typeAndSelect(initIntField, '3.4', { arrowDownCount: 0, pressEnter: true });
       await expect(initIntField).toHaveValue('34');
       await initIntField.clear();
 
-      await initIntField.pressSequentially('-5.6');
-      await initIntField.press('Enter');
+      await PWUtils.typeAndSelect(initIntField, '-5.6', { arrowDownCount: 0, pressEnter: true });
       await expect(initIntField).toHaveValue('-56');
       await initIntField.clear();
 
-      await initIntField.pressSequentially('-0');
-      await initIntField.press('Enter');
+      await PWUtils.typeAndSelect(initIntField, '-0', { arrowDownCount: 0, pressEnter: true });
       await expect(initIntField).toHaveValue('-0');
       await initIntField.clear();
 
-      await initIntField.pressSequentially('-2-4-');
-      await initIntField.press('Enter');
+      await PWUtils.typeAndSelect(initIntField, '-2-4-', { arrowDownCount: 0, pressEnter: true });
       await expect(initIntField).toHaveValue('-24');
       await initIntField.clear();
 
-      await initIntField.pressSequentially('24e1');
-      await initIntField.press('Enter');
+      await PWUtils.typeAndSelect(initIntField, '24e1', { arrowDownCount: 0, pressEnter: true });
       await expect(initIntField).toHaveValue('241');
       await initIntField.clear();
 
-      await initIntField.pressSequentially('-24E1');
-      await initIntField.press('Enter');
+      await PWUtils.typeAndSelect(initIntField, '-24E1', { arrowDownCount: 0, pressEnter: true });
       await expect(initIntField).toHaveValue('-241');
 
       const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
@@ -677,81 +671,70 @@ test.describe('Home page', () => {
       await getTypeInitialValueValueMethodClick(page);
       const initNumberField = page.locator('[id^="initial.0.valueDecimal"]');
 
-      await initNumberField.pressSequentially('abc');
-      await initNumberField.press('Enter');
-      await expect(initNumberField).toHaveValue('');
-      await initNumberField.pressSequentially('abc');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, 'abc', { arrowDownCount: 0, pressEnter: true });
       await initNumberField.blur();
       await expect(initNumberField).toHaveValue('');
 
-      await initNumberField.pressSequentially('12abc');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, '12abc', { arrowDownCount: 0, pressEnter: true });
       await expect(initNumberField).toHaveValue('12');
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('3.4');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, '3.4', { arrowDownCount: 0, pressEnter: true });
       await expect(initNumberField).toHaveValue('3.4');
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('-5.6');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, '-5.6', { arrowDownCount: 0, pressEnter: true });
       await expect(initNumberField).toHaveValue('-5.6');
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('-7.8ab');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, '-7.8ab', { arrowDownCount: 0, pressEnter: true });
       await expect(initNumberField).toHaveValue('-7.8');
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('-xy0.9ab');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, '-xy0.9ab', { arrowDownCount: 0, pressEnter: true });
       await expect(initNumberField).toHaveValue('-0.9');
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('-');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, '-', { arrowDownCount: 0, pressEnter: true });
       await expect(initNumberField).toHaveValue('-');
       await expect(page.locator('lfb-initial-number input[id^="initial.0.valueDecimal"]')).toHaveClass(/invalid/);
       await expect(page.locator('span[id="initial.0.err"] > small')).toContainText('Invalid decimal value.');
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('.');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, '.', { arrowDownCount: 0, pressEnter: true });
       await expect(initNumberField).toHaveValue('.');
       await expect(page.locator('lfb-initial-number input[id^="initial.0.valueDecimal"]')).toHaveClass(/invalid/);
       await expect(page.locator('span[id="initial.0.err"] > small')).toContainText('Invalid decimal value.');
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('e');
-      await initNumberField.press('Enter');
+      await PWUtils.typeAndSelect(initNumberField, 'e', { arrowDownCount: 0, pressEnter: true });
       await expect(initNumberField).toHaveValue('e');
       await expect(page.locator('lfb-initial-number input[id^="initial.0.valueDecimal"]')).toHaveClass(/invalid/);
       await expect(page.locator('span[id="initial.0.err"] > small')).toContainText('Invalid decimal value.');
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('-xy0.9ab');
+      await PWUtils.typeSequentially(initNumberField, '-xy0.9ab');
+
       let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
       expect(qJson.item[0].initial).toEqual([{ valueDecimal: -0.9 }]);
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('.9');
+      await PWUtils.typeSequentially(initNumberField, '.9');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
       expect(qJson.item[0].initial).toEqual([{ valueDecimal: 0.9 }]);
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('-.9');
+      await PWUtils.typeSequentially(initNumberField, '-.9');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
       expect(qJson.item[0].initial).toEqual([{ valueDecimal: -0.9 }]);
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('2e2');
+      await PWUtils.typeSequentially(initNumberField, '2e2');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
       expect(qJson.item[0].initial).toEqual([{ valueDecimal: 200 }]);
       await initNumberField.clear();
 
-      await initNumberField.pressSequentially('2.100');
+      await PWUtils.typeSequentially(initNumberField, '2.100');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
       expect(qJson.item[0].initial).toEqual([{ valueDecimal: 2.1 }]);
     });
@@ -890,7 +873,7 @@ test.describe('Home page', () => {
 
       await page.locator('[id^="initial.0.valueQuantity.value"]').fill('123');
       const unit0 = page.locator('[id^="initial.0.valueQuantity.unit"]');
-      await unit0.pressSequentially('f');
+      await PWUtils.typeSequentially(unit0, 'f');
 
       const suggestions = page.locator('#lhc-tools-searchResults');
       await expect(suggestions).toBeVisible();
