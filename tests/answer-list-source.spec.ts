@@ -108,7 +108,7 @@ const modifyReferencedData = async (
   if (type !== 'time') {
     await input.clear();
     if (type === 'coding') {
-      await input.pressSequentially(editValue);
+      await PWUtils.typeSequentially(input, editValue);
       await input.blur();
     } else {
       await input.fill(editValue);
@@ -161,7 +161,6 @@ test.describe('Home page', () => {
       await expect(pickAnswer).toHaveValue('d1');
 
       let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
-      qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].type).toEqual('coding');
       expect(qJson.item[0].answerConstraint).toEqual('optionsOnly');
       expect(qJson.item[0].answerOption).toEqual([
@@ -181,14 +180,14 @@ test.describe('Home page', () => {
     test('should add initial values', async ({ page }) => {
       await PWUtils.selectDataType(page, 'string');
       await getTypeInitialValueValueMethodClick(page);
-      await page.locator('[id^="initial.0.valueString"]').pressSequentially('initial string');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueString"]'), 'initial string');
       let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].type).toEqual('string');
       expect(qJson.item[0].initial[0].valueString).toEqual('initial string');
 
       await PWUtils.selectDataType(page, 'decimal');
       await getTypeInitialValueValueMethodClick(page);
-      await page.locator('[id^="initial.0.valueDecimal"]').pressSequentially('100.1');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueDecimal"]'), '100.1');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].type).toEqual('decimal');
       expect(qJson.item[0].initial[0].valueDecimal).toEqual(100.1);
@@ -196,14 +195,14 @@ test.describe('Home page', () => {
       await PWUtils.selectDataType(page, 'integer');
       await getTypeInitialValueValueMethodClick(page);
       const initialInteger = page.locator('[id^="initial.0.valueInteger"]');
-      await initialInteger.pressSequentially('100');
+      await PWUtils.typeSequentially(initialInteger, '100');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].type).toEqual('integer');
       expect(qJson.item[0].initial[0].valueDecimal).toBeUndefined();
       expect(qJson.item[0].initial[0].valueInteger).toEqual(100);
 
       await initialInteger.clear();
-      await initialInteger.pressSequentially('1.1');
+      await PWUtils.typeSequentially(initialInteger, '1.1');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].type).toEqual('integer');
       expect(qJson.item[0].initial[0].valueDecimal).toBeUndefined();
@@ -233,9 +232,9 @@ test.describe('Home page', () => {
       await expect(initialValueWarning)
         .toContainText('SNOMED ECL is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
 
-      await page.locator('[id^="initial.0.valueCoding.system"]').pressSequentially('http://example.org');
-      await page.locator('[id^="initial.0.valueCoding.display"]').pressSequentially('example');
-      await page.locator('[id^="initial.0.valueCoding.code"]').pressSequentially('123');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueCoding.system"]'), 'http://example.org');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueCoding.display"]'), 'example');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueCoding.code"]'), '123');
 
       await page.locator('#answerValueSet_ecl').fill(snomedEclText);
       await page.locator('#answerValueSet_ecl').press('Enter');
@@ -257,7 +256,7 @@ test.describe('Home page', () => {
 
       const acInput = page.locator('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input');
       await acInput.click();
-      await acInput.pressSequentially('Intersex');
+      await PWUtils.typeSequentially(acInput, 'Intersex');
 
       const options = page.locator('span#completionOptions > ul > li');
       await expect.poll(async () => await options.count()).toBeGreaterThan(0);
@@ -290,9 +289,9 @@ test.describe('Home page', () => {
       await expect(initialValueWarning)
         .toContainText('The Answer value set URL is not set. The lookup feature will not be available. Initial values can still be manually typed in.');
 
-      await page.locator('[id^="initial.0.valueCoding.system"]').pressSequentially('http://example.org');
-      await page.locator('[id^="initial.0.valueCoding.display"]').pressSequentially('example');
-      await page.locator('[id^="initial.0.valueCoding.code"]').pressSequentially('123');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueCoding.system"]'), 'http://example.org');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueCoding.display"]'), 'example');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueCoding.code"]'), '123');
 
       await page.locator('#answerValueSet_non-snomed')
         .fill('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
@@ -311,7 +310,7 @@ test.describe('Home page', () => {
       await page.getByRole('button', { name: 'Add another value' }).click();
       const acInput = page.locator('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input');
       await acInput.click();
-      await acInput.pressSequentially('pain');
+      await PWUtils.typeSequentially(acInput, 'pain');
 
       const options = page.locator('span#completionOptions > ul > li');
       await expect.poll(async () => await options.count()).toBeGreaterThan(0);
@@ -362,22 +361,20 @@ test.describe('Home page', () => {
       expect(qJson.item[0].answerOption).toEqual(fixtureJson.item[0].answerOption);
 
       await secondScore.clear();
-      await secondScore.pressSequentially('22');
-      await secondScore.press('Enter');
+      await PWUtils.typeAndSelect(secondScore, '22', { arrowDownCount: 0, pressEnter: true });
 
       await page.locator('lfb-answer-option table+button').click();
       const thirdOption = page.locator('lfb-answer-option table > tbody > tr:nth-of-type(3)');
       await expect(thirdOption).toBeVisible();
-      await thirdOption.locator('td:nth-child(1) input').pressSequentially('s');
-      await thirdOption.locator('td:nth-child(2) input').pressSequentially('d3');
-      await thirdOption.locator('td:nth-child(3) input').pressSequentially('c');
-      await thirdOption.locator('td:nth-child(4) input').pressSequentially('33');
+      await PWUtils.typeSequentially(thirdOption.locator('td:nth-child(1) input'), 's');
+      await PWUtils.typeSequentially(thirdOption.locator('td:nth-child(2) input'), 'd3');
+      await PWUtils.typeSequentially(thirdOption.locator('td:nth-child(3) input'), 'c');
+      await PWUtils.typeSequentially(thirdOption.locator('td:nth-child(4) input'), '33');
 
       await pickAnswer.click();
       await expect(page.locator('#lhc-tools-searchResults ul > li')).toHaveCount(3);
       await pickAnswer.clear();
-      await pickAnswer.pressSequentially('d3');
-      await pickAnswer.press('Enter');
+      await PWUtils.typeAndSelect(pickAnswer, 'd3', { arrowDownCount: 0, pressEnter: true });
 
       const SCORE_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -575,7 +572,7 @@ test.describe('Home page', () => {
       await page.locator('[id^="answerOption.0.valueCoding.system"]').press('Enter');
       await expect(page.locator('[id^="answerOption.0.valueCoding.system"]')).toHaveValue('http://loinc.org');
 
-      await page.locator('[id^="answerOption.0.valueCoding.display"]').pressSequentially('heart');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.0.valueCoding.display"]'), 'heart');
       const options = page.locator('span#completionOptions > ul > li');
       await expect.poll(async () => await options.count()).toBeGreaterThan(0);
       const displayInput = page.locator('[id^="answerOption.0.valueCoding.display"]');
@@ -595,7 +592,7 @@ test.describe('Home page', () => {
       await page.locator('[id^="answerOption.1.valueCoding.system"]').press('Enter');
       await expect(page.locator('[id^="answerOption.1.valueCoding.system"]')).toHaveValue('http://unitsofmeasure.org');
 
-      await page.locator('[id^="answerOption.1.valueCoding.display"]').pressSequentially('kat');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.1.valueCoding.display"]'), 'kat');
       await expect.poll(async () => await options.count()).toBeGreaterThan(0);
       const displayInput2 = page.locator('[id^="answerOption.1.valueCoding.display"]');
       await displayInput2.press('ArrowDown');
@@ -604,10 +601,11 @@ test.describe('Home page', () => {
       await PWUtils.expectValueCoding(page, 'answerOption', 1, 'http://unitsofmeasure.org', 'kat - katal', 'kat');
 
       await page.getByRole('button', { name: 'Add another answer' }).click();
-      await page.locator('[id^="answerOption.2.valueCoding.system"]').pressSequentially('http://example.org');
-      await page.locator('[id^="answerOption.2.valueCoding.system"]').press('Enter');
-      await page.locator('[id^="answerOption.2.valueCoding.display"]').pressSequentially('abcd123');
-      await page.locator('[id^="answerOption.2.valueCoding.code"]').pressSequentially('123');
+      await PWUtils.typeAndSelect(page.locator('[id^="answerOption.2.valueCoding.system"]'),
+                                  'http://example.org',
+                                  { arrowDownCount: 0, pressEnter: true });
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.2.valueCoding.display"]'), 'abcd123');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.2.valueCoding.code"]'), '123');
 
       await page.getByRole('button', { name: 'Add another answer' }).click();
       await page.locator('[id^="answerOption.3.valueCoding.system"]').click();
@@ -616,7 +614,7 @@ test.describe('Home page', () => {
       await expect(page.locator('[id^="answerOption.3.valueCoding.system"]')).toHaveValue('http://snomed.info/sct');
 
       await page.locator('[id^="answerOption.3.valueCoding.display"]').click();
-      await page.locator('[id^="answerOption.3.valueCoding.display"]').pressSequentially('intersex');
+      await PWUtils.typeSequentially(page.locator('[id^="answerOption.3.valueCoding.display"]'), 'intersex');
       await expect.poll(async () => await options.count()).toBeGreaterThan(0);
       await page.locator('[id^="answerOption.3.valueCoding.display"]').press('ArrowDown');
       await page.locator('[id^="answerOption.3.valueCoding.display"]').press('Enter');
@@ -661,7 +659,7 @@ test.describe('Home page', () => {
       await PWUtils.selectDataType(page, 'decimal');
       await getTypeInitialValueValueMethodClick(page);
       await expect(page.locator('[id^="answerOption."]')).toHaveCount(0);
-      await page.locator('[id^="initial.0.valueDecimal"]').pressSequentially('1.2');
+      await PWUtils.typeSequentially(page.locator('[id^="initial.0.valueDecimal"]'), '1.2');
 
       const updatedJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(updatedJson.item[0].item[0].initial[0].valueDecimal).toEqual(1.2);
@@ -1338,7 +1336,7 @@ test.describe('Home page', () => {
     });
   });
 
-  test.describe('Answer options display variants', async () => {
+  test.describe('Answer options display variants', () => {
     test.beforeEach(async ({ page }) => {
       mainPO = new MainPO(page);
       await mainPO.loadILPage();
