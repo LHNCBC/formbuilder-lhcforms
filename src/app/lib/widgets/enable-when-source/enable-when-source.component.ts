@@ -89,6 +89,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
    * Initialize the component
    */
   ngOnInit(): void {
+    super.ngOnInit();
     this.sources = this.formService.getSourcesExcludingFocusedTree();
 
     this.syncModelFromValue(this.formProperty.value);

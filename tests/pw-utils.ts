@@ -39,6 +39,47 @@ export class PWUtils {
     }
   }];
 
+  static readonly typingDelayMs = 20;
+
+  /**
+   * Type a string with a consistent key delay.
+   * @param locator - The input locator to type into.
+   * @param text - The text to type.
+   * @param delay - Optional per-key delay in ms (defaults to typingDelayMs).
+   */
+  static async typeSequentially(locator: Locator, text: string, delay = PWUtils.typingDelayMs): Promise<void> {
+    await locator.pressSequentially(text, { delay });
+  }
+
+  /**
+   * Type a string with a consistent key delay, then select from dropdown via ArrowDown and Enter.
+   * @param locator - The input locator to type into.
+   * @param text - The text to type.
+   * @param options - Optional selection behavior.
+   * @param options.arrowDownCount - Number of ArrowDown presses before Enter (default: 1).
+   * @param options.pressEnter - Whether to press Enter after ArrowDown (default: true).
+   * @param options.delay - Optional per-key delay in ms (defaults to typingDelayMs).
+   */
+  static async typeAndSelect(
+    locator: Locator,
+    text: string,
+    options?: { arrowDownCount?: number; pressEnter?: boolean; delay?: number }
+  ): Promise<void> {
+    const arrowDownCount = options?.arrowDownCount ?? 1;
+    const pressEnter = options?.pressEnter ?? true;
+    const delay = options?.delay ?? PWUtils.typingDelayMs;
+
+    await PWUtils.typeSequentially(locator, text, delay);
+
+    for (let i = 0; i < arrowDownCount; i++) {
+      await locator.press('ArrowDown');
+    }
+
+    if (pressEnter) {
+      await locator.press('Enter');
+    }
+  }
+
   /**
    * Capture Questionnaire JSON using internal code, by passing the UI actions.
    * Use for quick verification of JSON output to speed up the tests.
@@ -1050,7 +1091,7 @@ export class PWUtils {
     const baseSelector = `answerOption.${index}.valueCoding`;
     if (system != null) {
       const systemInput = page.locator(`[id^="${baseSelector}.system"]`);
-      await systemInput.pressSequentially(String(system));
+      await PWUtils.typeSequentially(systemInput, String(system));
       await systemInput.press('Enter');
     }
 
@@ -1062,13 +1103,13 @@ export class PWUtils {
 
     if (code != null) {
       const codeInput = page.locator(`[id^="${baseSelector}.code"]`);
-      await codeInput.pressSequentially(String(code));
+      await PWUtils.typeSequentially(codeInput, String(code));
       await codeInput.press('Enter');
     }
 
     if (score != null) {
       const scoreInput = page.locator(`[id^="${baseSelector}.__$score"]`);
-      await scoreInput.pressSequentially(String(score));
+      await PWUtils.typeSequentially(scoreInput, String(score));
       await scoreInput.press('Enter');
     }
   }
@@ -1172,7 +1213,7 @@ export class PWUtils {
 
     if (searchKeyword) {
       await input.click();
-      await input.pressSequentially(searchKeyword);
+      await PWUtils.typeSequentially(input, searchKeyword);
     } else {
       await input.click();
     }
@@ -1233,7 +1274,7 @@ export class PWUtils {
 
     if (searchKeyword) {
       await input.click();
-      await input.pressSequentially(searchKeyword);
+      await PWUtils.typeSequentially(input, searchKeyword);
     } else {
       await input.click();
     }

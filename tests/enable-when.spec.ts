@@ -232,7 +232,7 @@ test.describe('enableWhen condition and behavior', () => {
       await page.locator('button:has-text("Add another condition")').click();
 
       const question1 = page.locator('[id^="enableWhen.1.question"]');
-      await question1.pressSequentially('invalid question');
+      await PWUtils.typeSequentially(question1, 'invalid question');
       await expect(page.locator('ngb-typeahead-window')).toHaveCount(0);
       await question1.press('Tab');
       await expect(question1).toHaveValue('');
@@ -280,9 +280,7 @@ test.describe('enableWhen condition and behavior', () => {
       await question2.press('Enter');
       await page.locator('[id^="enableWhen.2.operator"]').selectOption({ label: '=' });
       const answerCoding = page.locator('[id^="enableWhen.2.answerCoding"]');
-      await answerCoding.pressSequentially('Street clothes, no shoes');
-      await answerCoding.press('ArrowDown');
-      await answerCoding.press('Enter');
+      await PWUtils.typeAndSelect(answerCoding, 'Street clothes, no shoes', { arrowDownCount: 1, pressEnter: true });
 
       let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item.length).toEqual(12);
@@ -629,9 +627,7 @@ test.describe('enableWhen condition and behavior', () => {
       await r1Question.press('Enter');
       await r1Operator.selectOption({ label: '=' });
       await r1Answer.click();
-      await r1Answer.pressSequentially('dia');
-      await r1Answer.press('ArrowDown');
-      await r1Answer.press('Enter');
+      await PWUtils.typeAndSelect(r1Answer, 'dia', { arrowDownCount: 1, pressEnter: true });
 
       const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(json.item[1].enableWhen).toEqual([
@@ -678,9 +674,7 @@ test.describe('enableWhen condition and behavior', () => {
         });
       });
 
-      await r1Answer.pressSequentially('male');
-      await r1Answer.press('ArrowDown');
-      await r1Answer.press('Enter');
+      await PWUtils.typeAndSelect(r1Answer, 'male', { arrowDownCount: 1, pressEnter: true });
 
       await expect(r1Answer).toHaveValue('Intersex');
 

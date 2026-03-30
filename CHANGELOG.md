@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.0.13] 2026-02-24
+## [11.0.13] 2026-03-30
 ### Changed
 - Migrated end-to-end tests from Cypress to Playwright.
 
