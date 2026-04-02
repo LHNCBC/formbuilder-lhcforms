@@ -482,7 +482,7 @@ test.describe('Home page', () => {
       await expect(form).toBeVisible({ timeout: 10000 });
 
       const ethnicity = page.locator('#\\/54126-8\\/54133-4\\/1\\/1');
-      await PWUtils.typeSequentially(ethnicity, 'l');
+      await ethnicity.pressSequentially('l');
       const completionOptions = page.locator('#completionOptions');
       await completionOptions.scrollIntoViewIfNeeded();
       await expect(completionOptions).toBeVisible();
@@ -836,7 +836,7 @@ test.describe('Home page', () => {
           await dateInput.fill('2020-01-02 100');
           await expect(dateInput).toHaveClass(/ng-invalid/);
           await dateInput.press('Backspace');
-          await PWUtils.typeSequentially(dateInput, ':10:10.1 am');
+          await dateInput.pressSequentially(':10:10.1 am');
           await expect(dateInput).not.toHaveClass(/ng-invalid/);
 
           qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
