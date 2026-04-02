@@ -3,7 +3,7 @@ import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 import fhir from "fhir/r4";
 
-test.describe('Contained resources table in form level page', async () => {
+test.describe('Contained resources table in form level page', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {

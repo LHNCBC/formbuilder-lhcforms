@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils} from "./pw-utils";
 
-test.describe('retain-additional-fields', async () => {
+test.describe('retain-additional-fields', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {

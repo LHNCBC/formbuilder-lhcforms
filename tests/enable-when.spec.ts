@@ -1100,7 +1100,7 @@ test.describe('enableWhen condition and behavior', () => {
   });
 });
 
-test.describe('enableWhen condition and enableWhenExpression', async () => {
+test.describe('enableWhen condition and enableWhenExpression', () => {
   let mainPO: MainPO;
   let fileJson;
 
@@ -1148,7 +1148,7 @@ test.describe('enableWhen condition and enableWhenExpression', async () => {
   });
 });
 
-test.describe('enableWhen answerCoding', async () => {
+test.describe('enableWhen answerCoding', () => {
   let mainPO: MainPO;
 
   /**

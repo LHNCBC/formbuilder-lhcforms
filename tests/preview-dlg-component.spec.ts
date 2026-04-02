@@ -2,9 +2,9 @@ import {test, expect} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 
-test.describe('preview-dlg-component.spec.ts', async () => {
+test.describe('preview-dlg-component.spec.ts', () => {
 
-  test.describe('Run validations', async() => {
+  test.describe('Run validations', () => {
     let mainPO: MainPO;
 
     test.beforeEach(async ({page}) => {

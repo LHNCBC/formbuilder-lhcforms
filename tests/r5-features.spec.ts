@@ -2,7 +2,7 @@ import {test, expect, Locator} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 
-test.describe('r5-features.spec.ts', async () => {
+test.describe('r5-features.spec.ts', () => {
   let mainPO: MainPO;
   const constraintLabels = {
     optionsOnly: 'Restrict to the list',

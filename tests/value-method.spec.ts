@@ -2,7 +2,7 @@ import { test, expect, Locator } from '@playwright/test';
 import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
 
-test.describe('value method', async () => {
+test.describe('value method', () => {
   let mainPO: MainPO;
   let fileJson: any;
 

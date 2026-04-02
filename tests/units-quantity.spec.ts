@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import { PWUtils } from "./pw-utils";
 
-test.describe('units and quantity units', async () => {
+test.describe('units and quantity units', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {

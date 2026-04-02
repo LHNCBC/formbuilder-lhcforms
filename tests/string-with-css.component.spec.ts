@@ -62,7 +62,7 @@ async function assertInputs(page, fieldLabel) {
 
 const FIELD_LABELS = ['Question text', 'Prefix', 'Help text'];
 
-test.describe('string-with-css.component.spec.ts', async () => {
+test.describe('string-with-css.component.spec.ts', () => {
   let mainPO: MainPO;
   test.beforeEach(async ({page}) => {
         await page.goto('/');
