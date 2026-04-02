@@ -1,0 +1,32 @@
+{
+  "code": "formCode0",
+  "name": "Dummy Form",
+  "items": [
+    {
+      "questionCode": "c0",
+      "dataType": "SECTION",
+      "header": true,
+      "question": "Section 0",
+      "items": [
+        {
+          "questionCode": "c00",
+          "dataType": "SECTION",
+          "header": true,
+          "question": "Section 00",
+          "items": [
+            {
+              "questionCode": "c000",
+              "dataType": "REAL",
+              "header": false,
+              "question": "Decimal question 000",
+              "linkId": "l000"
+            }
+          ],
+          "linkId": "l00",
+          "questionCodeSystem": "http://loinc.org"
+        }
+      ],
+      "linkId": "l0"
+    }
+  ]
+}

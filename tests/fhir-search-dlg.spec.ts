@@ -1,5 +1,6 @@
 import {test, expect} from '@playwright/test';
 import {MainPO} from "./po/main-po";
+import { PWUtils } from './pw-utils';
 
 test.describe("FHIR Search Dlg - Server errors", () => {
   let mainPO: MainPO;
@@ -12,11 +13,10 @@ test.describe("FHIR Search Dlg - Server errors", () => {
 
   test.describe("Server errors", () => {
     test.beforeEach(async ({page}) => {
-      await page.getByRole('button', {name: 'Import'}).click();
-      await page.getByRole('button', {name: 'Import from a FHIR server...'}).click();
-      await expect(page.getByRole('dialog', {name: 'Choose a FHIR server'})).toBeVisible();
-      await page.getByRole('button', {name: 'Continue', exact: true}).click();
-      await expect(page.getByRole('dialog', {name: 'Import a questionnaire'})).toBeVisible();
+      await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from a FHIR server...');
+      await expect(page.getByRole('dialog', { name: 'Choose a FHIR server' })).toBeVisible();
+      await PWUtils.clickDialogButton(page, { title: 'Choose a FHIR server' }, 'Continue');
+      await expect(page.getByRole('dialog', { name: 'Import a questionnaire' })).toBeVisible();
     });
 
     test('Should display 400 error.', async ({page}) => {

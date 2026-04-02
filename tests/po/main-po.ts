@@ -3,7 +3,7 @@ import {mockLoincLookupData, mockUcumLookupData, mockSnomedLookupData, mockUnitL
 
 const LOINC_SEARCH = /loinc_items\/v3\/search.*terms=.*/;
 const ANSWER_OPTION_UCUM_SEARCH = /ucum\/v3\/search\?terms=.*/;
-const ANSWER_OPTION_SNOMED_SEARCH = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand\?url=http%3A%2F%2Fsnomed\.info%2Fsct%3Ffhir_vs&filter=[^&]*&_format=application%2Fjson&count=7/;
+const ANSWER_OPTION_SNOMED_SEARCH = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand.*filter=/;
 const UNIT_UCUM_SEARCH = /ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/;
 
 export class MainPO {
@@ -15,11 +15,11 @@ export class MainPO {
     this._page = page;
   }
   /**
-   * Load home page and wait until LForms is loaded.
+   * Clears session, then asserts LForms is loaded on the current page (no navigation).
    */
   async loadHomePage() {
     await this.clearSession();
-    await this.goToHomePage();
+    await this.assertLFormsLoaded();
     await this.acceptAllTermsOfUse();
   }
 
@@ -65,15 +65,22 @@ export class MainPO {
    */
   async loadHomePageWithLoincOnly() {
     await this.clearSession();
-    await this.goToHomePage();
+    await this._page.goto('/');
+    await this.assertLFormsLoaded();
     await this.acceptLoincOnly();
   }
 
+  async resetForm() {
+    await this._page.getByLabel('Start from scratch').click();
+    await this._page.getByRole('button', {name: 'Continue'}).click();
+    await this._page.getByRole('button', {name: 'Create questions'}).first().click();
+  }
 
   /**
-   * Visit home page and assert LForms, but do not deal with LOINC notice.
+   * Assert LForms is loaded on the current page. Does not navigate;
+   * caller must navigate first.
    */
-  async goToHomePage() {
+  async assertLFormsLoaded() {
     await this.mockSnomedEditions();
     // await this._page.goto('/');
     const lforms = await this._page.evaluateHandle('window.LForms');
@@ -121,7 +128,7 @@ export class MainPO {
    */
   async mockSnomedEditions() {
     await this._page.route('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (route) => {
-      route.fulfill({path: 'cypress/fixtures/snomedEditions.json'});
+      route.fulfill({path: 'tests/fixtures/snomedEditions.json'});
     });
   }
 
@@ -177,7 +184,11 @@ export class MainPO {
       }
 
       if (!body) {
-        body = [0, [], null, []];
+        if (type === 'snomed') {
+          body = { resourceType: 'ValueSet', expansion: { contains: [] } };
+        } else {
+          body = [0, [], null, []];
+        }
       }
 
       await route.fulfill({

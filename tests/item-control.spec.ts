@@ -235,10 +235,10 @@ test.describe('Item control', () => {
       const unspecifiedRadio = '#__\\$itemControl\\.unspecified';
       const checkboxRadio = '#__\\$itemControl\\.check-box';
 
-      await (await PWUtils.getItemTypeField(page)).selectOption('coding');
+      await PWUtils.selectDataType(page, 'coding');
 
-      await (await PWUtils.getRadioButtonLabel(page, 'Create answer list', 'Yes')).click();
-      await (await PWUtils.getRadioButtonLabel(page, 'Answer constraint', 'Allow free text')).click();
+      await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+      await PWUtils.clickRadioButton(page, 'Answer constraint', 'Allow free text');
 
       const nonSnomedMethod = page.locator('[for^="__\\$answerOptionMethods_value-set"]');
       const answerOptionMethod = page.locator('[for^="__\\$answerOptionMethods_answer-option"]');
@@ -280,7 +280,7 @@ test.describe('Item control', () => {
       const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(json.item[0].extension).toEqual([itemControlExtensions['drop-down']]);
 
-      await (await PWUtils.getRadioButtonLabel(page, 'Allow repeating question?', 'Yes')).click();
+      await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
 
       await expect(page.locator(dropDownBtn)).toBeVisible();
       await expect(page.locator(dropDownRadio)).toBeChecked();
@@ -309,10 +309,11 @@ test.describe('Item control', () => {
       const answerMethodsAnswerOptionRadio = '#__\\$answerOptionMethods_answer-option';
       const answerMethodsValueSetRadio = '#__\\$answerOptionMethods_value-set';
 
-      await PWUtils.uploadFile(page, './fixtures/item-control-sample.json', true);
+      await PWUtils.uploadFile(page, 'item-control-sample.json', true);
+
       const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('Item control sample form');
-      await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
       await expect(page.locator('.spinner-border')).not.toBeVisible();
 
       await expect(page.locator(answerMethodsAnswerOptionRadio)).toBeChecked();
@@ -410,11 +411,11 @@ test.describe('Item control', () => {
       mainPO = new MainPO(page);
       await mainPO.loadILPage();
 
-      await PWUtils.uploadFile(page, './fixtures/USSG-family-portrait.json', true);
+      await PWUtils.uploadFile(page, 'USSG-family-portrait.json', true);
       const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('US Surgeon General family health portrait');
 
-      await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
       await expect(page.locator('.spinner-border')).not.toBeVisible();
     });
 
@@ -440,7 +441,7 @@ test.describe('Item control', () => {
       const pageRadio = '#__\\$itemControlGroup\\.page';
       const tabContainerRadio = '#__\\$itemControlGroup\\.tab-container';
 
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/group/);
+      await PWUtils.expectDataTypeValue(page, /group/);
       await expect(page.locator(listRadio)).not.toBeChecked();
 
       // Select 'List' Group Item Control
@@ -509,7 +510,7 @@ test.describe('Item control', () => {
       const unspecifiedBtn = '[for^="__\\$itemControlGroup\\.unspecified"]';
       const unspecifiedRadio = '#__\\$itemControlGroup\\.unspecified';
 
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/group/);
+      await PWUtils.expectDataTypeValue(page, /group/);
       await expect(page.locator(listRadio)).not.toBeChecked();
 
       // Select 'List' Group Item Control.
@@ -533,11 +534,11 @@ test.describe('Item control', () => {
       mainPO = new MainPO(page);
       await mainPO.loadILPage();
 
-      await PWUtils.uploadFile(page, './fixtures/display-item-control-sample.json', true);
+      await PWUtils.uploadFile(page, 'display-item-control-sample.json', true);
 
       const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('Display item control sample form');
-      await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
       await expect(page.locator('.spinner-border')).not.toBeVisible();
     });
 
@@ -557,8 +558,7 @@ test.describe('Item control', () => {
       const legalRadio = '#__\\$itemControlDisplay\\.legal';
       const unspecifiedRadio = '#__\\$itemControlDisplay\\.unspecified';
 
-      //await PWUtils.expectDataTypeValue(page, /display/);
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/display/);
+      await PWUtils.expectDataTypeValue(page, /display/);
       await expect(page.locator(inlineRadio)).toBeChecked();
       let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].extension).toEqual([displayItemControlExtensions.inline]);
@@ -569,8 +569,7 @@ test.describe('Item control', () => {
       expect(qJson.item[0].extension).toBeUndefined();
 
       await PWUtils.clickTreeNode(page, 'Prompt display item control - deprecated');
-      //await PWUtils.expectDataTypeValue(page, /display/);
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/display/);
+      await PWUtils.expectDataTypeValue(page, /display/);
       await expect(page.locator(promptRadio)).toHaveCount(0);
       await expect(page.locator('p[id^="deprecated_hint___\\$itemControlDisplay"]'))
         .toContainText("* 'Prompt' item control is deprecated and is not presented in this list of item controls.");
@@ -584,8 +583,7 @@ test.describe('Item control', () => {
       expect(qJson.item[1].extension).toEqual([displayItemControlExtensions.inline]);
 
       await PWUtils.clickTreeNode(page, 'Unit display item control - deprecated');
-      //await PWUtils.expectDataTypeValue(page, /display/);
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/display/);
+      await PWUtils.expectDataTypeValue(page, /display/);
       await expect(page.locator(unitRadio)).toHaveCount(0);
       await expect(page.locator('p[id^="deprecated_hint___\\$itemControlDisplay"]'))
         .toContainText("* 'Unit' item control is deprecated and is not presented in this list of item controls.");
@@ -597,8 +595,7 @@ test.describe('Item control', () => {
       expect(qJson.item[2].extension).toBeUndefined();
 
       await PWUtils.clickTreeNode(page, 'Lower-bound display item control');
-      //await PWUtils.expectDataTypeValue(page, /display/);
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/display/);
+      await PWUtils.expectDataTypeValue(page, /display/);
       await expect(page.locator(lowerRadio)).toBeChecked();
       await expect(page.locator(lowerBtn).locator('sup')).toContainText('(1)');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -610,8 +607,7 @@ test.describe('Item control', () => {
       expect(qJson.item[3].extension).toBeUndefined();
 
       await PWUtils.clickTreeNode(page, 'Upper-bound display item control');
-      //await PWUtils.expectDataTypeValue(page, /display/);
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/display/);
+      await PWUtils.expectDataTypeValue(page, /display/);
       await expect(page.locator(upperRadio)).toBeChecked();
       await expect(page.locator(upperBtn).locator('sup')).toContainText('(1)');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -623,8 +619,7 @@ test.describe('Item control', () => {
       expect(qJson.item[4].extension).toBeUndefined();
 
       await PWUtils.clickTreeNode(page, 'Fly-over display item control');
-      //await PWUtils.expectDataTypeValue(page, /display/);
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/display/);
+      await PWUtils.expectDataTypeValue(page, /display/);
       await expect(page.locator(flyoverRadio)).toBeChecked();
       await expect(page.locator(flyoverBtn).locator('sup')).toContainText('(1)');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -636,8 +631,7 @@ test.describe('Item control', () => {
       expect(qJson.item[5].extension).toBeUndefined();
 
       await PWUtils.clickTreeNode(page, 'Legal-button display item control');
-      //await PWUtils.expectDataTypeValue(page, /display/);
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/display/);
+      await PWUtils.expectDataTypeValue(page, /display/);
       await expect(page.locator(legalRadio)).toBeChecked();
       await expect(page.locator(legalBtn).locator('sup')).toContainText('(1)');
       qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
@@ -658,14 +652,14 @@ test.describe('Item control', () => {
     });
 
     test('should display Question item-control extension', async ({ page }) => {
-      await PWUtils.uploadFile(page, './fixtures/question-item-control-sample.json', true);
+      await PWUtils.uploadFile(page, 'question-item-control-sample.json', true);
       const titleField = await page.locator('lfb-form-fields').getByLabel('Title', { exact: true });
       await expect(titleField).toHaveValue('Question item control sample form');
-      await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
-      await expect(await PWUtils.getItemTypeField(page)).toHaveValue(/string/);
+      await PWUtils.expectDataTypeValue(page, /string/);
 
-      await PWUtils.getButton(page, null, 'Preview').click();
+      await PWUtils.clickMenuBarButton(page, 'Preview');
 
       const items = page.locator('lhc-item');
 

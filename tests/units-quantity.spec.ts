@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import { PWUtils } from "./pw-utils";
 
-test.describe('units and quantity units', async () => {
+test.describe('units and quantity units', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
@@ -13,7 +13,7 @@ test.describe('units and quantity units', async () => {
 
   test('should autocomplete units that start with \'/\'', async ({ page }) => {
     // Select Data type 'quantity'
-    await (await PWUtils.getItemTypeField(page)).selectOption('quantity');
+    await PWUtils.selectDataType(page, 'quantity');
     await page.locator('div[role="group"]')
               .getByText('Type initial value', { exact: true })
               .click();
@@ -27,7 +27,7 @@ test.describe('units and quantity units', async () => {
     const qtyUnitInput = page.locator('input[id^="initial.0.valueQuantity.unit"]');
 
     await qtyUnitInput.click();
-    await qtyUnitInput.pressSequentially('breaths');
+    await PWUtils.typeSequentially(qtyUnitInput, 'breaths');
 
     // 2. Wait for dropdown / completion options to appear
     const qtyCompletionRow = page.locator('#completionOptions table > tbody > tr');
@@ -59,7 +59,7 @@ test.describe('units and quantity units', async () => {
 
     // 1. Type (not fill) so autocomplete logic runs
     await unitsInput.click();
-    await unitsInput.pressSequentially('breaths');
+    await PWUtils.typeSequentially(unitsInput, 'breaths');
 
     // 2. Wait for dropdown / completion options to appear
     const completionRow = page.locator('#completionOptions table > tbody > tr');

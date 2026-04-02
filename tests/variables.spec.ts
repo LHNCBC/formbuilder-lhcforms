@@ -3,7 +3,7 @@ import { MainPO } from './po/main-po';
 import {PWUtils, VariableTestCase} from "./pw-utils";
 import { BasePageComponent } from 'src/app/base-page/base-page.component';
 
-test.describe('variables', async () => {
+test.describe('variables', () => {
   let mainPO: MainPO;
   let fileJson;
 
@@ -76,8 +76,8 @@ test.describe('variables', async () => {
     mainPO = new MainPO(page);
     await mainPO.loadILPage();
 
-    fileJson = await PWUtils.uploadFile(page, './fixtures/value-methods-sample.json', true);
-    await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
+    fileJson = await PWUtils.uploadFile(page, 'value-methods-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
     computeInitial = await PWUtils.getRadioButtonLabel(page, 'Value method', 'Compute initial value');
   });
@@ -93,7 +93,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Variables');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     // Click the 'Create/edit variables' button and add five different types of variables
     await page.locator('button#editVariables').click();
@@ -163,16 +163,14 @@ test.describe('variables', async () => {
     const question3 = page.locator('#question-3');
     await expect(question3).toBeVisible();
     await question3.click();
-    await question3.pressSequentially('Pick Initial Value (Single)');
 
-    await question3.press('ArrowDown');
-    await question3.press('Enter');
+    await PWUtils.typeAndSelect(question3, 'Pick Initial Value (Single)', { arrowDownCount: 1, pressEnter: true });
 
     // Add a new variable 'e_easy_path_exp'
     await page.locator('#add-variable').click();
     await page.locator('#variable-label-4').clear();
     await page.locator('#variable-label-4').click();
-    await page.locator('#variable-label-4').pressSequentially('e_easy_path_exp');
+    await PWUtils.typeSequentially(page.locator('#variable-label-4'), 'e_easy_path_exp');
 
     await page.locator('#variable-type-4').selectOption('Easy Path Expression');
     await page.locator('input#simple-expression-4').fill('1');
@@ -219,7 +217,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Variables');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     // Click the 'Create/edit variables' button and add three new variables
     await page.locator('button#editVariables').click();
@@ -314,7 +312,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Compute initial value expression');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     await expect(computeInitial).toBeVisible();
     await computeInitial.click();
@@ -432,7 +430,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Compute initial value expression');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     await expect(computeInitial).toBeVisible();
     await computeInitial.click();
@@ -564,7 +562,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Variable validation');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     // Click the 'Create/edit variables' button and add two new variables
     await page.locator('button#editVariables').click();
@@ -660,7 +658,7 @@ test.describe('variables', async () => {
     const itemTextField = await PWUtils.getItemTextField(page);
     await itemTextField.clear();
     await itemTextField.fill('Deleting Variables');
-    await (await PWUtils.getItemTypeField(page)).selectOption('integer');
+    await PWUtils.selectDataType(page, 'integer');
 
     // Click the 'Create/edit variables' button and add two variables
     await page.locator('button#editVariables').click();
