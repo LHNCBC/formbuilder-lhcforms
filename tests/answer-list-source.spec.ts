@@ -251,7 +251,7 @@ test.describe('Home page', () => {
       await page.getByRole('button', { name: 'Add another value' }).click();
 
       await page.route('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', async (route) => {
-        await route.fulfill({ path: 'cypress/fixtures/snomed-ecl-expression-mock.json' });
+        await route.fulfill({ path: 'tests/fixtures/snomed-ecl-expression-mock.json' });
       });
 
       const acInput = page.locator('lfb-auto-complete[id^="initial.1.valueCoding.display"] > span > input');
@@ -1068,7 +1068,7 @@ test.describe('Home page', () => {
       expect(qJson.item[2].answerValueSet).toBeUndefined();
 
       await page.route('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', async (route) => {
-        await route.fulfill({ path: 'cypress/fixtures/snomed-ecl-expression-mock.json' });
+        await route.fulfill({ path: 'tests/fixtures/snomed-ecl-expression-mock.json' });
       });
 
       await PWUtils.clickMenuBarButton(page, 'Preview');

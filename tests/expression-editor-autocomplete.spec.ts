@@ -48,7 +48,7 @@ test.describe('expression editor autocomplete expansion', () => {
     mainPO = new MainPO(page);
     await mainPO.loadILPage();
 
-    await PWUtils.uploadFile(page, './fixtures/expression-editor-autocomplete-sample.json', true);
+    await PWUtils.uploadFile(page, 'expression-editor-autocomplete-sample.json', true);
     await page.getByRole('button', { name: 'Edit questions' }).last().click();
   });
 

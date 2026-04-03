@@ -17,7 +17,7 @@
     "build-with-test-html": "npx ng build --configuration prod_with_test_html",
     "create-version-file": "echo {\\\"version\\\": \\\"${npm_package_version}\\\"} > ./src/assets/version.json",
     "build": "npm run create-version-file && npx ng build --configuration production",
-    "test": "npm run unit-test && npm run e2e:prod",
+    "test": "npm run unit-test && npm run e2e:pw-run",
     "unit-test": "npx ng test --watch=false | grep -v -E '^(chunk|spec-|Lazy chunk)'",
     "lint": "npx ng lint",
     "e2e": "npx ng e2e",
