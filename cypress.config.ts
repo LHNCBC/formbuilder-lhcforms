@@ -25,6 +25,18 @@ export default defineConfig({
       installLogsPrinter(on, options);
       return require('./cypress/plugins/index.ts')(on, config);
     },
+    excludeSpecPattern: [
+      'cypress/e2e/item-level/answer-list-source.cy.ts',
+      'cypress/e2e/form-level/form-level.cy.ts',
+      'cypress/e2e/item-level/enable-when.cy.ts',
+      'cypress/e2e/item-level/entry-format.cy.ts',
+      'cypress/e2e/item-level/item-control.cy.ts',
+      'cypress/e2e/item-level/units.cy.ts',
+      'cypress/e2e/item-level/item-level.cy.ts',
+      'cypress/e2e/item-level/item-level-advanced.cy.ts',
+      'cypress/e2e/item-level/value-method.cy.ts',
+      'cypress/e2e/item-level/variable.cy.ts'
+    ]
   },
   reporter: 'dot',
 })

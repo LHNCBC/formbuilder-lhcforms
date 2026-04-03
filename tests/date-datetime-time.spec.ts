@@ -2,15 +2,15 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils} from "./pw-utils";
 
-test.describe('Date, DateTime, and Time types', async () => {
+test.describe('Date, DateTime, and Time types', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
     await page.goto('/');
     mainPO = new MainPO(page);
     await mainPO.loadILPage();
-    await PWUtils.uploadFile(page, './fixtures/date-datetime-time-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).last().click();
+    await PWUtils.uploadFile(page, 'date-datetime-time-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
   });
 
   test('Date - should import and edit', async ({page}) => {

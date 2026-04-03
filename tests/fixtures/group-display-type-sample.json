@@ -1,0 +1,26 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "New Form",
+  "status": "draft",
+  "item": [
+    {
+      "id": 6874350514551,
+      "linkId": "6874350514551",
+      "text": "Item 0",
+      "type": "display"
+    },
+    {
+      "id": 8379009894883,
+      "linkId": "8379009894883",
+      "text": "New item 1",
+      "type": "group",
+      "item": [
+        {
+          "type": "string",
+          "text": "New item 2",
+          "linkId": "25703101577"
+        }
+      ]
+    }
+  ]
+}

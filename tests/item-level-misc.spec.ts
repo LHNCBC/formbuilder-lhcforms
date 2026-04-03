@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils} from "./pw-utils";
 
-test.describe('item-level fields', async () => {
+test.describe('item-level fields', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
@@ -19,7 +19,6 @@ test.describe('item-level fields', async () => {
     const inputEl = dlg.getByLabel('Search for a LOINC item:');
     await inputEl.fill('body weight');
     await expect(dlg.getByRole('listbox')).toBeVisible();
-    // await inputEl.fill('body weight');
     await page.keyboard.press('Enter');
     await expect(inputEl).toHaveValue('18833-4: Body weight');
     await page.getByRole('button', {name: 'Add'}).click();
@@ -35,7 +34,6 @@ test.describe('item-level fields', async () => {
     const inputEl = dlg.getByLabel('Search for a LOINC item:');
     await inputEl.fill('vital');
     await expect(dlg.getByRole('listbox')).toBeVisible();
-    // await inputEl.fill('body weight');
     await page.keyboard.press('Enter');
     await expect(inputEl).toHaveValue('34565-2: Vital signs, weight & height panel');
     await page.getByRole('button', {name: 'Add'}).click();
@@ -47,8 +45,8 @@ test.describe('item-level fields', async () => {
     const newHelpText = 'testing help text from localstorage';
     const helpTextInputEl = page.getByLabel('Help text', {exact: true});
     const helpString = /^A <b>plain<\/b> text instruction/;
-    await PWUtils.uploadFile(page, 'fixtures/help-text-sample1.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).first().click();
+    await PWUtils.uploadFile(page, 'help-text-sample1.json', true);
+    await PWUtils.getButton(page, 'Toolbar with button groups', 'Edit questions').click();
     await expect(helpTextInputEl).toHaveValue(helpString);
     const qJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
     expect(qJson.item[0].item[2].text).toMatch(helpString);

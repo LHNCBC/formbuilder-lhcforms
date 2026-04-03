@@ -1,0 +1,25 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Sidebar node highlighting form",
+  "status": "draft",
+  "item": [
+    {
+      "type": "string",
+      "linkId": "4927331560551",
+      "text": "First item"
+    },
+    {
+      "type": "integer",
+      "linkId": "2835294203190",
+      "text": "Second item",
+      "required": false,
+      "repeats": true,
+      "readOnly": true,
+      "initial": [
+        {
+          "valueInteger": 1
+        }
+      ]
+    }
+  ]
+}
