@@ -1,0 +1,97 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "expression-editor-autocomplete-sample",
+  "status": "draft",
+  "item": [
+    {
+      "type": "decimal",
+      "linkId": "/body-1",
+      "text": "Body question 1"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-2",
+      "text": "Body question 2"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-3",
+      "text": "Body question 3"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-4",
+      "text": "Body question 4"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-5",
+      "text": "Body question 5"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-6",
+      "text": "Body question 6"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-7",
+      "text": "Body question 7"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-8",
+      "text": "Body question 8"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-9",
+      "text": "Body question 9"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-10",
+      "text": "Body question 10"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-11",
+      "text": "Body question 11"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-12",
+      "text": "Body question 12"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-13",
+      "text": "Body question 13"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-14",
+      "text": "Body question 14"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/body-15",
+      "text": "Body question 15"
+    },
+    {
+      "type": "decimal",
+      "linkId": "/calc-1",
+      "text": "Continuously Compute Value",
+      "readOnly": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "1"
+          }
+        }
+      ]
+    }
+  ]
+}

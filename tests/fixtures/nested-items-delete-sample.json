@@ -1,0 +1,179 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "54127-6-x",
+  "title": "Form with nested items to test deletion order",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "l1",
+      "text": "One (group)",
+      "type": "group",
+      "required": false,
+      "item": [
+        {
+          "linkId": "l1.1",
+          "text": "One dot one",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l1.2",
+          "text": "One dot two",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l1.3",
+          "text": "One dot three",
+          "type": "date",
+          "required": false
+        },
+        {
+          "linkId": "l1.4",
+          "text": "One dot four",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l1.5",
+          "text": "One dot five",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l1.6",
+          "text": "One dot six",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l1.7",
+          "text": "One dot seven (group): last sibling",
+          "type": "group",
+          "required": false,
+          "repeats": true,
+          "item": [
+            {
+              "linkId": "l1.7.1",
+              "text": "One dot seven dot one",
+              "type": "string",
+              "required": false
+            },
+            {
+              "linkId": "l1.7.2",
+              "text": "One dot seven dot two: last sibling",
+              "type": "string",
+              "required": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "linkId": "l2",
+      "text": "Two (group): last sibling",
+      "type": "group",
+      "required": false,
+      "repeats": true,
+      "item": [
+        {
+          "linkId": "l2.1",
+          "text": "Two dot one",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l2.2",
+          "text": "Two dot two",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l2.3",
+          "text": "Two dot three",
+          "type": "choice",
+          "required": false
+        },
+        {
+          "linkId": "l2.4",
+          "text": "Two dot four (group)",
+          "type": "group",
+          "required": false,
+          "item": [
+            {
+              "linkId": "l2.4.1",
+              "text": "Two dot four dot one",
+              "type": "date",
+              "required": false
+            },
+            {
+              "linkId": "l2.4.2",
+              "text": "Two dot four dot two",
+              "type": "decimal",
+              "required": false
+            },
+            {
+              "linkId": "l2.4.3",
+              "text": "Two dot four dot three",
+              "type": "string",
+              "required": false
+            },
+            {
+              "linkId": "l2.4.4",
+              "text": "Two dot four dot four: last sibling",
+              "type": "string",
+              "required": false
+            }
+          ]
+        },
+        {
+          "linkId": "l2.5",
+          "text": "Two dot five",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l2.6",
+          "text": "Two dot six",
+          "type": "string",
+          "required": false
+        },
+        {
+          "linkId": "l2.7",
+          "text": "Two dot seven",
+          "type": "string",
+          "required": false,
+          "repeats": true
+        },
+        {
+          "linkId": "l2.8",
+          "text": "Two dot eight",
+          "type": "string",
+          "required": false,
+          "repeats": true
+        },
+        {
+          "linkId": "l2.9",
+          "text": "Two dot nine (group): last sibling",
+          "type": "group",
+          "required": false,
+          "repeats": true,
+          "item": [
+            {
+              "linkId": "l2.9.1",
+              "text": "Two dot nine dot one",
+              "type": "choice",
+              "required": false
+            },
+            {
+              "linkId": "l2.9.2",
+              "text": "Two dot nine dot two: last sibling",
+              "type": "string",
+              "required": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

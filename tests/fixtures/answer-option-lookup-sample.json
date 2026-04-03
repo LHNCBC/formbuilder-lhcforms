@@ -1,0 +1,41 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "Answer options lookup form",
+  "status": "draft",
+  "item": [
+    {
+      "type": "choice",
+      "linkId": "601799997370",
+      "text": "answer option lookup",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "248646004",
+            "display": "Heart beat"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "54111-0",
+            "display": "Newborn hearing screening panel"
+          },
+          "initialSelected": true
+        },
+        {
+          "valueCoding": {
+            "system": "http://example.com",
+            "code": "vf",
+            "display": "visceral fat"
+          }
+        }
+      ]
+    }
+  ]
+}

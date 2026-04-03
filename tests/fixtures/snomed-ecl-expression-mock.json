@@ -1,0 +1,60 @@
+{
+  "resourceType": "ValueSet",
+  "id": "8355eec6-1420-4b65-8ace-5c2762dcd0c8",
+  "url": "http://snomed.info/sct/900000000000207008?fhir_vs=ecl/< 429019009 |Finding related to biological sex|",
+  "status": "active",
+  "copyright": "This value set includes content from SNOMED CT, which is copyright © 2002+ International Health Terminology Standards Development Organisation (SNOMED International), and distributed by agreement between SNOMED International and HL7. Implementer use of SNOMED CT is not covered by this agreement.",
+  "expansion": {
+    "id": "d23ef0a0-81d6-4610-92b4-bced70e8853c",
+    "timestamp": "2024-01-03T21:26:59+00:00",
+    "total": 25,
+    "offset": 0,
+    "parameter": [
+      {
+        "name": "version",
+        "valueUri": "http://snomed.info/sct|http://snomed.info/sct/900000000000207008/version/20240101"
+      },
+      {
+        "name": "displayLanguage",
+        "valueString": "en-US,en;q=0.9"
+      }
+    ],
+    "contains": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "32570691000036108",
+        "display": "Intersex"
+      },
+      {
+        "system": "http://snomed.info/sct",
+        "code": "32570681000036106",
+        "display": "Indeterminate sex"
+      },
+      {
+        "system": "http://snomed.info/sct",
+        "code": "714189008",
+        "display": "Female to male transsexual person on hormone therapy"
+      },
+      {
+        "system": "http://snomed.info/sct",
+        "code": "714186001",
+        "display": "Male to female transsexual person on hormone therapy"
+      },
+      {
+        "system": "http://snomed.info/sct",
+        "code": "472977000",
+        "display": "Previously bisexual transsexual"
+      },
+      {
+        "system": "http://snomed.info/sct",
+        "code": "472947006",
+        "display": "Previously homosexual transsexual"
+      },
+      {
+        "system": "http://snomed.info/sct",
+        "code": "472946002",
+        "display": "Previously heterosexual transsexual"
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Answer value set form",
+  "status": "draft",
+  "item": [
+    {
+      "text": "Item with answer value set",
+      "linkId": "1",
+      "type": "choice",
+      "answerValueSet": "http://example.org"
+    }
+  ]
+}

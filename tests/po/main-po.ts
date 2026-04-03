@@ -1,18 +1,25 @@
 import {Locator, Page, expect} from "@playwright/test";
+import {mockLoincLookupData, mockUcumLookupData, mockSnomedLookupData, mockUnitLookupData} from "./mock-lookup-data";
+
+const LOINC_SEARCH = /loinc_items\/v3\/search.*terms=.*/;
+const ANSWER_OPTION_UCUM_SEARCH = /ucum\/v3\/search\?terms=.*/;
+const ANSWER_OPTION_SNOMED_SEARCH = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand.*filter=/;
+const UNIT_UCUM_SEARCH = /ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/;
 
 export class MainPO {
 
   readonly _page;
   static readonly windowOpenerNotice = 'Notice: This page is sending changes back to the page';
+  static lformsLibs = new Map<string, Buffer>();
   constructor(page: Page) {
     this._page = page;
   }
   /**
-   * Load home page and wait until LForms is loaded.
+   * Clears session, then asserts LForms is loaded on the current page (no navigation).
    */
   async loadHomePage() {
     await this.clearSession();
-    await this.goToHomePage();
+    await this.assertLFormsLoaded();
     await this.acceptAllTermsOfUse();
   }
 
@@ -58,15 +65,22 @@ export class MainPO {
    */
   async loadHomePageWithLoincOnly() {
     await this.clearSession();
-    await this.goToHomePage();
+    await this._page.goto('/');
+    await this.assertLFormsLoaded();
     await this.acceptLoincOnly();
   }
 
+  async resetForm() {
+    await this._page.getByLabel('Start from scratch').click();
+    await this._page.getByRole('button', {name: 'Continue'}).click();
+    await this._page.getByRole('button', {name: 'Create questions'}).first().click();
+  }
 
   /**
-   * Visit home page and assert LForms, but do not deal with LOINC notice.
+   * Assert LForms is loaded on the current page. Does not navigate;
+   * caller must navigate first.
    */
-  async goToHomePage() {
+  async assertLFormsLoaded() {
     await this.mockSnomedEditions();
     // await this._page.goto('/');
     const lforms = await this._page.evaluateHandle('window.LForms');
@@ -109,14 +123,148 @@ export class MainPO {
     });
   }
 
-
   /**
    * Mock SNOMED editions request.
    */
   async mockSnomedEditions() {
     await this._page.route('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (route) => {
-      route.fulfill({path: 'cypress/fixtures/snomedEditions.json'});
+      route.fulfill({path: 'tests/fixtures/snomedEditions.json'});
     });
+  }
+
+  /**
+   * Cache calls to https://lhcforms-static to load LForms libraries.
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockLFormsLoader(page: Page): Promise<void> {
+    const lformsLibUrl = 'https://lhcforms-static.nlm.nih.gov/lforms-versions/';
+
+    await page.route(lformsLibUrl, async (route) => {
+      await MainPO.handleCachedResponse(route);
+    });
+
+    await page.route(
+      new RegExp(`${lformsLibUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*\/(webcomponent|fhir)\/.*\.(js|css)$`),
+      async (route) => {
+        await MainPO.handleCachedResponse(route);
+      }
+    );
+  }
+
+  /**
+   * Mock lookup endpoints with fixture data based on a query-string parameter.
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @param interceptUrl - URL pattern to intercept (string or RegExp).
+   * @param searchParam - Query-string parameter used as the lookup key.
+   * @param type - Lookup dataset selector.
+   * @param options - Optional behavior flags (e.g., normalization).
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockData(page: Page, interceptUrl: string | RegExp, searchParam: string, type: 'loinc' | 'ucum' | 'snomed' | 'unit',
+                        options: { normalize?: boolean } = {}): Promise<void> {
+    const {normalize = true} = options;
+
+    await page.route(interceptUrl, async (route) => {
+      const url = new URL(route.request().url());
+      const term = url.searchParams.get(searchParam) ?? '';
+      const key = normalize ? term.toString().toLowerCase() : term.toString();
+
+      let body;
+      if (type === 'loinc') {
+        body = mockLoincLookupData[key];
+      } else if (type === 'ucum') {
+        body = mockUcumLookupData[key];
+      } else if (type === 'unit') {
+        body = mockUnitLookupData[key];
+      } else {
+        body = mockSnomedLookupData[key];
+      }
+
+      if (!body) {
+        if (type === 'snomed') {
+          body = { resourceType: 'ValueSet', expansion: { contains: [] } };
+        } else {
+          body = [0, [], null, []];
+        }
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(body)
+      });
+    });
+  }
+
+  /**
+   * Mock LOINC items search endpoint for FHIR Query Observation to avoid flaky
+   * network calls in tests that use autocompletes.
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockFHIRQueryObservation(page: Page): Promise<void> {
+    await MainPO.mockData(page, LOINC_SEARCH, 'terms', 'loinc');
+  }
+
+  /**
+   * Mock lookups used by answerOptions autocomplete (LOINC, UCUM, SNOMED).
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockAnswerOptionLookup(page: Page): Promise<void> {
+    await MainPO.mockData(page, LOINC_SEARCH, 'terms', 'loinc');
+    await MainPO.mockData(page, ANSWER_OPTION_UCUM_SEARCH, 'terms', 'ucum', { normalize: false });
+    await MainPO.mockData(page, ANSWER_OPTION_SNOMED_SEARCH, 'filter', 'snomed', { normalize: false });
+  }
+
+  /**
+   * Mock Ucum items search endpoint to avoid flaky network calls in tests that use autocompletes.
+   *
+   * @param page - Playwright page used to register the route handler.
+   * @returns Promise that resolves when the route handler is registered.
+   */
+  static async mockUnitsLookup(page: Page): Promise<void> {
+    await MainPO.mockData(page, UNIT_UCUM_SEARCH, 'terms', 'unit');
+  }
+
+  /**
+   * Fulfill a routed request from an in-memory cache when available,
+   * otherwise fetch it once, cache the response body, and fulfill the route.
+   *
+   * @param route - Playwright route for the intercepted request.
+   */
+  private static async handleCachedResponse(route: any): Promise<void> {
+    const url = route.request().url();
+
+    if (MainPO.lformsLibs.has(url)) {
+      const cachedBody = MainPO.lformsLibs.get(url);
+      await route.fulfill({
+        status: 200,
+        body: cachedBody
+      });
+      return;
+    }
+
+    try {
+      const response = await route.fetch();
+      const body = await response.body();
+
+      if (response.status() >= 300) {
+        console.error(`${response.status()}: Error loading ${url}: ${response.statusText()}`);
+      } else {
+        MainPO.lformsLibs.set(url, body);
+      }
+
+      await route.fulfill({ response });
+    } catch (error) {
+      console.error(`Error handling request for ${url}:`, error);
+      await route.abort();
+    }
   }
 
   /**

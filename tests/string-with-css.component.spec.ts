@@ -62,7 +62,7 @@ async function assertInputs(page, fieldLabel) {
 
 const FIELD_LABELS = ['Question text', 'Prefix', 'Help text'];
 
-test.describe('string-with-css.component.spec.ts', async () => {
+test.describe('string-with-css.component.spec.ts', () => {
   let mainPO: MainPO;
   test.beforeEach(async ({page}) => {
         await page.goto('/');
@@ -129,11 +129,10 @@ test.describe('string-with-css.component.spec.ts', async () => {
   });
 
   test('should import items with CSS styles, XHTML, and help text', async ({page}) => {
-
-    const fileJson = await PWUtils.uploadFile(page, 'fixtures/css-xhtml-sample.json', true);
+    const fileJson = await PWUtils.uploadFile(page, 'css-xhtml-sample.json', true);
     let q = await PWUtils.getQuestionnaireJSON(page, 'R5');
     expect(q).toEqual(fileJson);
-    await page.getByRole('button', {name: 'Edit questions'}).first().click();
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
     await assertInputs(page, 'Question text');
     await assertInputs(page, 'Prefix');
@@ -154,9 +153,9 @@ test.describe('string-with-css.component.spec.ts', async () => {
   });
 
   test('Bugfix: should detect help text on the second item in the tree', async ({page}) => {
-    await PWUtils.uploadFile(page, 'fixtures/help-text-sample1.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).first().click();
-    await PWUtils.clickAndToggleTreeNode(page,'Parent');
+    await PWUtils.uploadFile(page, 'help-text-sample1.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickAndToggleTreeNode(page, 'Parent');
     await PWUtils.clickTreeNode(page, 'First');
     const inputEl = page.getByLabel('Help text', {exact: true});
     await expect(inputEl).toHaveValue(/^First item help/);
