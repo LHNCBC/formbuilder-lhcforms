@@ -5,8 +5,20 @@ import { PWUtils } from './pw-utils';
 test.describe('expression editor autocomplete expansion', () => {
   let mainPO: MainPO;
 
-  async function clickVisibleSeeMore(page: Page): Promise<void> {
-    const seeMore = page.locator('#lhc-tools-moreResults [data-lhc-more-results-action="true"]').first();
+  async function clickVisibleSeeMore(page: Page, triggerInput: Locator): Promise<void> {
+    const seeMore = page.locator('#lhc-tools-moreResults').getByText(/See more items/i).first();
+
+    await triggerInput.click();
+
+    await expect.poll(async () => {
+      if (await seeMore.count() > 0 && await seeMore.isVisible()) {
+        return true;
+      }
+
+      await triggerInput.click();
+      return false;
+    }).toBeTruthy();
+
     await expect(seeMore).toBeVisible();
     await seeMore.click();
   }
@@ -115,7 +127,11 @@ test.describe('expression editor autocomplete expansion', () => {
     const queryObsCompletionRows = page.locator('#completionOptions table tbody tr');
     await expect(queryObsCompletionRows).toHaveCount(7);
 
-    await clickVisibleSeeMore(page);
+    await clickVisibleSeeMore(page, queryObsInput);
+
+    if ((await queryObsCompletionRows.count()) < 12) {
+      await queryObsInput.press('Control+Enter');
+    }
 
     await expect(queryObsCompletionRows).toHaveCount(12);
 
@@ -136,7 +152,11 @@ test.describe('expression editor autocomplete expansion', () => {
     await expect.poll(async () => questionCompletionItems.count()).toBeGreaterThan(0);
     const initialQuestionCount = await questionCompletionItems.count();
 
-    await clickVisibleSeeMore(page);
+    await clickVisibleSeeMore(page, questionInput);
+
+    if ((await questionCompletionItems.count()) <= initialQuestionCount) {
+      await questionInput.press('Control+Enter');
+    }
 
     await expect.poll(async () => questionCompletionItems.count()).toBeGreaterThan(initialQuestionCount);
     await expect(page.locator('#completionOptions > ul > li').filter({ hasText: 'Body question 15' })).toBeVisible();
