@@ -54,7 +54,7 @@
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-10 p-0",
         "selectOptionsMap": {
-          "remove": ["reference", "attachment"],
+          "remove": ["reference"],
           "validateType": true
         }
       },
