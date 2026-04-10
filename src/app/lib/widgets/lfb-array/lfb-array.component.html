@@ -14,7 +14,7 @@
   <div class="row m-0 w-100">
     @if (!isCollapsed) {
       <div class="col-sm-12 row m-0 p-0">
-        @for (property of iterableProperties(); track getTrackParam(property, $index)) {
+        @for (property of iterableProperties(); track property) {
           <div class="col-sm-2 d-flex justify-content-end pe-0 pt-1">
             <div class="px-0">
               <button type="button"

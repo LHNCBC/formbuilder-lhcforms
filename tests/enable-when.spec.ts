@@ -33,13 +33,15 @@ test.describe('enableWhen condition and enableWhenExpression', async () => {
 
     // Select the 'enableWhen condition and behavior' option.
     await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen condition and behavior');
-
+    q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(q.item[3].extension).toHaveLength(2);
+/*
     // Wait for Angular change detection to propagate.
     await expect(async () => {
       q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(q.item[3].extension).toHaveLength(2);
     }).toPass({ timeout: 10000 });
-
+*/
     expect(q.item[3].extension[0]).toEqual(fileJson.item[3].extension[0]);
     expect(q.item[3].extension[1]).toEqual(fileJson.item[3].extension[1]);
 

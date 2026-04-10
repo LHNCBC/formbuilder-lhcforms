@@ -7,10 +7,8 @@ import {
   EventEmitter,
   ChangeDetectorRef,
   inject,
-  Component
 } from '@angular/core';
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
-import { FormControl } from '@angular/forms';
 import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
 import { ExpressionEditorDlgComponent } from '../expression-editor-dlg/expression-editor-dlg.component';
 import {Subscription} from 'rxjs';
@@ -19,18 +17,14 @@ import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 import {
-  EXTENSION_URL_INITIAL_EXPRESSION,
-  EXTENSION_URL_CALCULATED_EXPRESSION,
-  EXTENSION_URL_ANSWER_EXPRESSION,
-  EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_VARIABLE,
-  VALUE_METHOD_COMPUTE_INITIAL,
-  VALUE_METHOD_COMPUTE_CONTINUOUSLY
 } from '../../constants/constants';
 import {Util} from "../../util";
+import {FormService} from "../../../services/form.service";
 
 @Directive()
 export abstract class ExpressionEditorComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
+  formService = inject(FormService);
   modalService = inject(NgbModal);
   cdr = inject(ChangeDetectorRef);
   modelService = inject(SharedObjectService);
@@ -47,6 +41,7 @@ export abstract class ExpressionEditorComponent extends LfbControlWidgetComponen
   private LANGUAGE_FHIRPATH = 'text/fhirpath';
   linkId: string;
   expression: string;
+  expressionUri: string;
   itemId: number;
   faAdd = faPlusCircle;
   noTableLabel = false;
@@ -57,17 +52,8 @@ export abstract class ExpressionEditorComponent extends LfbControlWidgetComponen
    */
   ngOnInit(): void {
     let sub: Subscription;
-    this.noTableLabel = !!this.formProperty.schema.widget.noTableLabel;
-    this.extension = this.formProperty.value?.valueExpression?.expression ? this.formProperty.value
-      : {
-        url: this.formProperty.schema.widget.expressionUri,
-        valueExpression: {
-          expression: '',
-          language: this.LANGUAGE_FHIRPATH
-        }
-      };
-    this.extensionsService.updateExtension(this.extension);
-    this.expression = this.extension.valueExpression?.expression || '';
+    this.expressionUri = this.formProperty.schema.widget.expressionUri;
+    this.init();
     sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
     });
@@ -82,6 +68,23 @@ export abstract class ExpressionEditorComponent extends LfbControlWidgetComponen
     });
     this.subscriptions.push(sub);
   };
+
+  /**
+   * Initialize
+   */
+  init() {
+    this.noTableLabel = !!this.formProperty.schema.widget.noTableLabel;
+    this.extension = this.formProperty.value?.valueExpression?.expression ? this.formProperty.value
+      : {
+        url: this.expressionUri,
+        valueExpression: {
+          expression: '',
+          language: this.LANGUAGE_FHIRPATH
+        }
+      };
+    this.extensionsService.updateExtension(this.extension);
+    this.expression = this.extension.valueExpression?.expression || '';
+  }
 
   /**
    * Open the Expression Editor widget to create/update variables and expression.
@@ -122,6 +125,8 @@ export abstract class ExpressionEditorComponent extends LfbControlWidgetComponen
 
         this.formProperty.findRoot().getProperty('__$variable').setValue(variables, false);
       }
+    }).catch((error) => {
+      console.log(error.message);
     });
   }
 }

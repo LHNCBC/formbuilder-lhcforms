@@ -833,7 +833,46 @@
     "__$enableWhenExpression": {
       "description": "An expression that evaluates to a boolean value to determine whether the item should be enabled.",
       "title": "Expression",
-      "$ref": "#/definitions/Extension",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
+      },
+      "additionalProperties": true,
       "visibleIf": {
         "__$enableWhenMethod": ["enablewhen-expression"]
       },
@@ -945,13 +984,8 @@
           "enum": ["answer-expression"],
           "title": "Answer expression"
         },
-        {
-          "type": "string",
-          "enum": ["none"],
-          "title": "None"
-        }
       ],
-      "default": "none",
+      "default": "answer-option",
       "type": "string",
       "visibleIf": {
         "__$isAnswerList": [true]
@@ -2098,7 +2132,47 @@
       "title": "Item variables",
       "type": "array",
       "items": {
-        "$ref": "#/definitions/Extension"
+        "description": "A structured set of questions intended to guide the collection of answers from end-users. Questionnaires provide detailed control over order, presentation, phraseology and grouping to allow coherent, consistent data collection.",
+        "properties": {
+          "id": {
+            "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+            "title": "Id",
+            "pattern": "^[ \\r\\n\\t\\S]+$",
+            "type": "string",
+            "widget": {"id": "hidden"}
+          },
+          "url": {
+            "description": "A location where the data can be accessed.",
+            "pattern": "^\\S*$",
+            "type": "string"
+          },
+          "extension": {
+            "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+            "items": {
+              "$ref": "#/definitions/Extension"
+            },
+            "type": "array",
+            "title": "Extension",
+            "widget": {
+              "id": "hidden"
+            }
+          },
+          "valueString": {
+            "description": "A potential answer that's allowed as the answer to this question.",
+            "pattern": "^[ \\r\\n\\t\\S]+$",
+            "type": "string",
+            "title": "Value string",
+            "visibleIf": {
+              "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+            }
+          },
+          "valueExpression": {
+            "description": "The value of the Output parameter as a basic type.",
+            "$ref": "#/definitions/Expression",
+          }
+        },
+        "additionalProperties": true,
+        "type": "object"
       },
       "widget": {
         "id": "variable",
@@ -2130,7 +2204,46 @@
     "__$initialCalculatedExpression": {
       "description": "A FHIRPath expression used to compute the initial (default) value of a questionnaire item when the form is first rendered.",
       "title": "Expression",
-      "$ref": "#/definitions/Extension",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
+      },
+      "additionalProperties": true,
       "visibleIf": {
         "__$valueMethod": ["compute-initial", "compute-continuously"]
       },
@@ -2216,7 +2329,46 @@
     "__$answerExpression": {
       "description": "An expression (FHIRPath, CQL, or FHIR query) that dynamically generates a list of allowed answers for a question item, or provides context for a group item. Users can select one or more answers from the generated list.",
       "title": "Answer expression",
-      "$ref": "#/definitions/Extension",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
+          "title": "Id",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "widget": {"id": "hidden"}
+        },
+        "url": {
+          "description": "A location where the data can be accessed.",
+          "pattern": "^\\S*$",
+          "type": "string"
+        },
+        "extension": {
+          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+          "items": {
+            "$ref": "#/definitions/Extension"
+          },
+          "type": "array",
+          "title": "Extension",
+          "widget": {
+            "id": "hidden"
+          }
+        },
+        "valueString": {
+          "description": "A potential answer that's allowed as the answer to this question.",
+          "pattern": "^[ \\r\\n\\t\\S]+$",
+          "type": "string",
+          "title": "Value string",
+          "visibleIf": {
+            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
+          }
+        },
+        "valueExpression": {
+          "description": "The value of the Output parameter as a basic type.",
+          "$ref": "#/definitions/Expression"
+        }
+      },
+      "additionalProperties": true,
       "visibleIf": {
         "__$answerOptionMethods": ["answer-expression"]
       },

@@ -183,11 +183,13 @@ describe('Home page', () => {
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
 
+        /*
         // New default for 'Answer list source' is now 'None'
         cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
 
         // Select the 'Answer Options' option
         cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
+        */
         cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
 
         cy.getPickInitialValueValueMethodClick();
@@ -271,13 +273,13 @@ describe('Home page', () => {
         cy.selectDataType('coding');
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-
+/*
         // New default for 'Answer list source' is now 'None'
         cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
 
         // Select the 'Answer Options' option
         cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
-
+*/
         cy.getPickInitialValueValueMethodClick();
         cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
 
@@ -323,13 +325,13 @@ describe('Home page', () => {
         cy.selectDataType('integer');
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-
+/*
         // New default for 'Answer list source' is now 'None'
         cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
 
         // Select the 'Answer Options' option
         cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
-
+*/
         cy.get('lfb-answer-option table > tbody > tr').should('have.length', 1);
 
         cy.getPickInitialValueValueMethodClick();
@@ -930,13 +932,13 @@ describe('Home page', () => {
 
         // Default for the 'Answer list laytout' is now 'Unspecified'.  Have to manually select 'drop-down'.
         cy.getRadioButtonLabel('Answer list layout', 'Drop down').click();
-
+/*
         // New default for 'Answer list source' is now 'None'
         cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
 
         // Select the 'Answer Options' option
         cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
-
+*/
         cy.getPickInitialValueValueMethodClick();
 
         cy.get('[id^="pick-answer_"]').as('pickAnswer');

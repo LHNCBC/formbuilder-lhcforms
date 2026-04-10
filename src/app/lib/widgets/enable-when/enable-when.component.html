@@ -51,7 +51,7 @@
             </thead>
           }
           <tbody [ngbCollapse]="isCollapsed">
-            @for (rowProperty of rowProperties; track rowProperty.canonicalPathNotation; let rowNum = $index) {
+            @for (rowProperty of rowProperties; track rowProperty; let rowNum = $index) {
               <tr class="d-flex p-0 m-0">
                 @for (showField of getFields(rowProperty); track showField.field; let colNum = $index) {
                   <td

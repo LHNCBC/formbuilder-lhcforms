@@ -30,6 +30,7 @@ import {ExtensionsService} from "../../../services/extensions.service";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
 import {FormService} from "../../../services/form.service";
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 /**
  * A component to edit FHIR extensions as a table with each row representing an extension.
@@ -56,45 +57,63 @@ import {FormService} from "../../../services/form.service";
   templateUrl: '../table/table.component.html',
   styleUrl: '../table/table.component.css',
 })
-export class ExtensionComponent extends TableEditRowInDlgComponent implements OnInit, AfterViewInit, OnChanges {
-
+export class ExtensionComponent extends TableEditRowInDlgComponent implements OnInit, AfterViewInit /*, OnChanges*/ {
+/*
   @Input()
   templateFormProperty: ArrayProperty;
+  */
   extensionsService: ExtensionsService = inject(ExtensionsService);
   formService = inject(FormService);
+  modelService = inject(SharedObjectService);
   cdr = inject(ChangeDetectorRef);
+
   extensionSchema: ISchema = {};
+
+  _value: fhir.Extension [];
 
   constructor() {
     super();
     this.dialogComponentType = ExtensionDlgComponent;
 
   }
-
+/*
   ngOnChanges(changes: SimpleChanges) {
     if(changes.templateFormProperty) {
       this.formProperty = this.templateFormProperty;
     }
     super.ngOnChanges(changes);
   }
-
+*/
   ngOnInit(): void {
     this.addDefaultItemIfEmpty = false;
     this.extensionSchema = this.formService.getExtensionSchema();
     this._adjustControlClassesForTableCellWidgets();
     super.ngOnInit();
-    const valueArray = this.valueUpdate(this.formProperty.value);
-    this.formProperty.setValue(valueArray, true);
+    // this.init();
   }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    const sub = this.formProperty.valueChanges.subscribe((valueArray: fhir.Extension []) => {
-      this.valueUpdate(valueArray);
+    /*
+    let sub = this.formProperty.valueChanges.subscribe((valueArray: fhir.Extension []) => {
+      if(this.formService.loading) {
+        return;
+      }
+
+      this.init();
+    });
+    this.subscriptions.push(sub);
+*/
+    let sub = this.modelService.modelInitialized$.subscribe(() => {
+      this.init();
     });
     this.subscriptions.push(sub);
   }
 
+  init() {
+    const valueArray = this.valueUpdate(this.formProperty.value);
+    this.formProperty.setValue(valueArray, false);
+  }
   /**
    * Update extension values of __$[x] fields in the given array.
    * @param valueArray - The array of extensions to update.

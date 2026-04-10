@@ -7,12 +7,15 @@ import {FormService} from '../../../services/form.service';
 import {debounceTime, distinctUntilChanged, filter, map} from 'rxjs/operators';
 import {TreeNode} from '@bugsplat/angular-tree-component';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
-import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
+import {NgbHighlight, NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {Util} from '../../util';
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {LabelComponent} from "../label/label.component";
+import {NgClass} from "@angular/common";
 @Component({
-  standalone: false,
   selector: 'lfb-choice',
+  imports: [FormsModule, ReactiveFormsModule, NgbTypeahead, NgbHighlight, LabelComponent, NgClass],
   template: `
     <ng-template #rt let-r="result" let-t="term">
       <ngb-highlight [result]="r.name" [term]="t"></ngb-highlight>
@@ -93,9 +96,6 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
       const source = this.sources.find((el) => el.data.linkId === value);
       if (source) {
         this.model = source;
-        this.formProperty.setValue(source.data.linkId, true);
-        // Set answer type input
-        this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
       }
     } else if (value === "" && this.formProperty.parent.value?.['__$answerType']?.trim()) {
       this.validateQuestion();
@@ -107,7 +107,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
    * @param $event - Source tree node object
    */
   onSelect($event): void {
-    this.formProperty.setValue($event.item.data.linkId, true);
+    this.formProperty.setValue($event.item.data.linkId, false);
     this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, false);
   }
 

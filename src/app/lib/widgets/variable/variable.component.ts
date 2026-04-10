@@ -1,18 +1,26 @@
-import { Component, OnInit, ElementRef, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import { FormService } from '../../../services/form.service';
-import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
+import {NgbCollapseModule, NgbModal, NgbModalOptions, NgbPopoverModule} from '@ng-bootstrap/ng-bootstrap';
 import { ExpressionEditorDlgComponent } from '../expression-editor-dlg/expression-editor-dlg.component';
 import fhir from 'fhir/r4';
 import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {TableComponent} from '../table/table.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
-import {FormProperty, ISchema} from "@lhncbc/ngx-schema-form";
+import {ISchema} from "@lhncbc/ngx-schema-form";
 import { EXTENSION_URL_VARIABLE, EXTENSION_URL_CUSTOM_VARIABLE_TYPE } from '../../constants/constants';
+import {CommonModule, NgClass} from "@angular/common";
+import {BooleanControlledComponent} from "../boolean-controlled/boolean-controlled.component";
+import {LabelComponent} from "../label/label.component";
+import {TitleComponent} from "../title/title.component";
+import {FaIconComponent, FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {MatTooltipModule} from "@angular/material/tooltip";
+import {Util} from "../../util";
 
 @Component({
-  standalone: false,
   selector: 'lfb-variable',
+  imports: [FormsModule, ReactiveFormsModule, MatTooltipModule, NgbCollapseModule, NgbPopoverModule, CommonModule, BooleanControlledComponent, LabelComponent, TitleComponent, FontAwesomeModule],
   templateUrl: './variable.component.html',
   styleUrl: './variable.component.css'
 })
@@ -23,10 +31,8 @@ export class VariableComponent extends TableComponent implements OnInit {
   private modelService = inject(SharedObjectService);
   private extensionsService = inject(ExtensionsService);
 
-  elementId: string;
   questionnaire = null;
   faAdd = faPlusCircle;
-  linkId: string;
   private variableTypeMapping = {
     "expression": "FHIRPath Expression",
     "query": "FHIR Query",
@@ -34,28 +40,16 @@ export class VariableComponent extends TableComponent implements OnInit {
     "question": "Question",
     "simple" : "Easy Path Expression"
   };
-  resultExtensions: any;
 
-  buttonName: string;
   extensionSchema: ISchema;
 
   ngOnInit(): void {
     this.extensionSchema = this.formService.getExtensionSchema();
     super.ngOnInit();
-    this.linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     const sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
-      /*
-      setTimeout(() => {
-        const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
-        this.formProperty.setValue(variablesExtension, false);
-      });
-       */
     });
     this.subscriptions.push(sub);
-
-    // const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
-    // this.formProperty.setValue(variablesExtension, false);
   }
 
   /**
@@ -141,22 +135,11 @@ export class VariableComponent extends TableComponent implements OnInit {
    * Open the Expression Editor as a modal to create or edit variables.
    */
   editVariables(): void {
-    let currentExtArray;
     const modalConfig: NgbModalOptions = {
       size: 'lg',
       fullscreen: 'lg'
     };
 
-    /*
-    if (this.linkId) {
-      const itemIndex = this.questionnaire.item.findIndex(item => item.linkId === this.linkId);
-      if (itemIndex > -1) {
-        if (this.formProperty.value) {
-          this.questionnaire.item[itemIndex].extension = this.extensionsService.extensionsProp.value;
-        }
-      }
-    }
-    */
     const modalRef = this.modalService.open(ExpressionEditorDlgComponent, modalConfig);
     const linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     modalRef.componentInstance.linkId = linkId;
@@ -168,21 +151,33 @@ export class VariableComponent extends TableComponent implements OnInit {
       // Result returning from the Rule Editor is the whole questionnaire.
       // Rule Editor returns false in the case changes were cancelled.
       if (result) {
-        if (this.linkId) {
-          this.resultExtensions = this.extractVariableExtensions(result.item, this.linkId);
+        let resultExtensions;
+        if (linkId) {
+          resultExtensions = Util.getExtensionsByLinkId(result.item, linkId);
         } else {
-          this.resultExtensions = result.extension;
+          resultExtensions = result.extension;
         }
+        let variableExts = resultExtensions.filter((ext) => {
+          if(!ext || !ext.valueExpression?.expression) {
+            return false;
+          }
+
+          const ret = ext.url === EXTENSION_URL_VARIABLE;
+          if(ret) {
+            this.extensionsService.updateExtension(ext);
+          }
+          return ret;
+        });
 
         // Result coming back from the Expression Editor may also contain launchContext.  We do want
         // to save those extensions, but want to filter out from the variables.
-        this.extensionsService.replaceExtensions(EXTENSION_URL_VARIABLE, this.resultExtensions);
+        this.extensionsService.replaceExtensions(EXTENSION_URL_VARIABLE, variableExts);
 
-        const variables = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE);
-        this.formProperty.setValue(variables, false);
+        this.formProperty.setValue(variableExts, false);
         this.cdr.detectChanges();
-        this.formProperty.findRoot().getProperty('extension').setValue(this.extensionsService.extensionsProp.value, false);
       }
+    }).catch((error) => {
+      console.log(`variable.component.ts: editVariables() modalRef.result.then().catch() ${error.message}`);
     });
   }
 

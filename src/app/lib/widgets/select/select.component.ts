@@ -1,11 +1,12 @@
 /**
  * Customized pull down box.
  */
-import {AfterViewInit, Component, inject, Input} from '@angular/core';
+import {AfterViewInit, Component, inject, Input, OnInit} from '@angular/core';
 import {faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { StringComponent } from '../string/string.component';
 import { FormService } from '../../../services/form.service';
 import {Util} from '../../util';
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 /**
  * A component for a select box with options.
@@ -25,12 +26,13 @@ import {Util} from '../../util';
     }
   `]
 })
-export class SelectComponent extends StringComponent implements AfterViewInit {
+export class SelectComponent extends StringComponent implements OnInit, AfterViewInit {
   faInfo = faInfoCircle;
   nolabel = false;
   errorIcon = faExclamationTriangle;
 
   formService = inject(FormService);
+  modelService = inject(SharedObjectService);
 
   // A mapping for options display string. Typically, the display strings are from schema definition.
   // This map helps to redefine the display string.
@@ -40,15 +42,22 @@ export class SelectComponent extends StringComponent implements AfterViewInit {
   // Options list for the pull down
   allowedOptions: Array<{value: string, label: string}>;
 
-  constructor() {
-    super();
-  }
-
   /**
    * Initialize component, mainly the options list.
    */
-  ngAfterViewInit(): void {
+  ngOnInit(): void {
+    super.ngOnInit();
+    this.init();
+  }
+
+  ngAfterViewInit() {
     super.ngAfterViewInit();
+    this.modelService?.modelInitialized$.subscribe(() => {
+      this.init();
+    });
+  }
+
+  init() {
     this.selectOptionsMap = this.schema.widget.selectOptionsMap || {};
     const allowedOptions = this.schema.enum.map((value: string) => {
       // If there is a map defined, use the map to get the display string.
@@ -81,7 +90,6 @@ export class SelectComponent extends StringComponent implements AfterViewInit {
       return this.isIncluded(e.value) && this.isTypeAllowed(e.value);
     });
   }
-
   /**
    * Map any display strings.
    * @param opt

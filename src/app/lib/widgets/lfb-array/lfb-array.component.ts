@@ -1,9 +1,9 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {LabelComponent} from "../label/label.component";
 import {NgClass, NgStyle} from "@angular/common";
 import {FaIconComponent} from "@fortawesome/angular-fontawesome";
-import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {ReactiveFormsModule} from "@angular/forms";
 import {TableComponent} from "../table/table.component";
 import {NgbPopoverModule} from "@ng-bootstrap/ng-bootstrap";
 import {FormProperty} from "@lhncbc/ngx-schema-form";
@@ -16,7 +16,6 @@ import {LfbPopoverDirective} from "../../directives/lfb-popover.directive";
     AppFormElementComponent,
     LabelComponent,
     FaIconComponent,
-    FormsModule,
     NgbPopoverModule,
     ReactiveFormsModule,
     NgClass,
@@ -26,7 +25,6 @@ import {LfbPopoverDirective} from "../../directives/lfb-popover.directive";
   templateUrl: './lfb-array.component.html'
 })
 export class LfbArrayComponent extends TableComponent implements OnInit {
-  @ViewChild('addButton', {static: false}) addButton: ElementRef;
   @ViewChild('lfbPopover', {static: false, read: LfbPopoverDirective}) lfbPopover: LfbPopoverDirective;
 
   /**

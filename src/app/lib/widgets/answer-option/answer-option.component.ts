@@ -1,9 +1,9 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {TableComponent} from '../table/table.component';
-import {TreeService} from '../../../services/tree.service';
 import { Subscription } from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 @Component({
   standalone: false,
@@ -14,23 +14,19 @@ import { AnswerOptionService } from 'src/app/services/answer-option.service';
 })
 export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
   private formService = inject(FormService);
+  private modelService = inject(SharedObjectService);
   private answerOptionService = inject(AnswerOptionService);
 
 
   static ORDINAL_URI = 'http://hl7.org/fhir/StructureDefinition/ordinalValue';
   static ITEM_WEIGHT_URI = 'http://hl7.org/fhir/StructureDefinition/itemWeight';
 
-  // Flag to indicate when to update score extensions reading changes in *.valueCoding.__$score.
-  initializing = false;
-
   /**
    * Angular life cycle event - Initialize attributes.
    */
   ngOnInit() {
     super.ngOnInit();
-    this.initializing = true;
     this.init();
-    this.initializing = false;
   }
 
   init() {
@@ -67,25 +63,23 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
     sub = this.formProperty.valueChanges.subscribe((newValue) => {
       // Avoid updating score extensions during initialization.
-      if(!this.initializing) {
+      if(!this.formService.loading) {
         this.updateScoreExtensions(newValue);
       }
     });
     this.subscriptions.push(sub);
 
-    sub = this.formService.formReset$.subscribe(() => {
-      // Flag valueChanges observer to avoid updating score extensions.
-      this.initializing = true;
-      // Updates *.valueCoding.__$score and *.initialSelected.
+    sub = this.modelService.modelInitialized$.subscribe(() => {
       this.init();
-      this.initializing = false;
      });
     this.subscriptions.push(sub);
 
     const repeatProp = this.formProperty.findRoot().getProperty('repeats');
     sub = repeatProp.valueChanges.subscribe((isRepeating) => {
+      if(this.formService.loading) {
+        return;
+      }
       this.setSelectionType(isRepeating);
-      if(!this.initializing) {
         const firstCheckbox = this.selectionCheckbox.findIndex((e) => {return e});
         // When flipping DEFAULT TYPE from radio to checkbox or vice versa, and if no selections are made on
         // the current type, assign first selection of previous type to the current type.
@@ -103,19 +97,14 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
           }
           this.updateWithRadioSelection();
         }
-      }
       this.cdr.markForCheck();
     });
     this.subscriptions.push(sub);
-
-    sub = this.formService.formChanged$.subscribe(() => {
-      // New form is to be loaded, mark initialization.
-      this.initializing = true;
-    });
-    this.subscriptions.push(sub);
-
     // Subscribe to single selection (repeats = false) by the "Pick Initial" field.
     sub = this.answerOptionService.radioSelection$.subscribe((selection) => {
+      if(this.formService.loading) {
+        return;
+      }
       this.selectionRadio = selection;
       this.updateWithRadioSelection();
     });
@@ -123,6 +112,9 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
     // Subscribe to multiple selections (repeats = true) by the "Pick Initial" field.
     sub = this.answerOptionService.checkboxSelection$.subscribe((selection) => {
+      if(this.formService.loading) {
+        return;
+      }
       this.selectionCheckbox = selection;
       this.updateWithCheckboxSelections();
     });
@@ -168,48 +160,6 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     }
     return changed;
   }
-
-
-  /**
-   * Compare two FHIR Coding objects.
-   * Matching rules:
-   *   1. When only code exists, match code
-   *   2. When only display exists, match display
-   *   2. When code and system exists, match both
-   *   3. When code and display exists, match both
-   *   4. When code, display and system exists, match all three.
-   * @param coding1 - First coding object
-   * @param coding2 - second coding object
-   */
-/*
-  isEqualCoding(coding1: fhir.Coding, coding2: fhir.Coding) {
-    if(!coding1 && !coding2) {
-      return true; // Match if both are undefined
-    }
-
-    if(!coding1 || !coding2) {
-       return false; // null vs non-null;
-    }
-
-    let ret = false;
-    if(coding1.code || coding2.code) {
-      ret = coding1.code === coding2.code;
-    }
-    else if(coding1.display || coding2.display) {
-      ret = coding1.display === coding2.display;
-    }
-
-    if(ret && (coding1.system || coding2.system)) {
-      ret = coding1.system === coding2.system; // code/display and system are match
-    }
-
-    if (ret && (coding1.display || coding2.display)) {
-      ret = coding1.display === coding2.display; // code and display are match
-    }
-
-    return ret;
-  }
-*/
 
 
   /**

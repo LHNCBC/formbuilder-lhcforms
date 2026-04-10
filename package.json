@@ -65,7 +65,7 @@
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fullcalendar/core": "^6.1.15",
     "@lhncbc/expression-editor": "~5.0.4",
-    "@lhncbc/ngx-schema-form": "file:.yalc/@lhncbc/ngx-schema-form",
+    "@lhncbc/ngx-schema-form": "2.14.1-forked1",
     "@ng-bootstrap/ng-bootstrap": "~19.0.1",
     "@types/fhir": "^0.0.36",
     "@types/json5": "^2.2.0",

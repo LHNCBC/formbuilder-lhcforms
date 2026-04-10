@@ -1,5 +1,4 @@
-import {ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output} from '@angular/core';
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {Component, inject, OnInit} from '@angular/core';
 import {
   EXTENSION_URL_CALCULATED_EXPRESSION, EXTENSION_URL_INITIAL_EXPRESSION,
   VALUE_METHOD_COMPUTE_CONTINUOUSLY,
@@ -9,9 +8,8 @@ import {CommonModule} from "@angular/common";
 import {LabelComponent} from "../../label/label.component";
 import {FormsModule} from "@angular/forms";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
-import {SharedObjectService} from "../../../../services/shared-object.service";
-import {ExtensionsService} from "../../../../services/extensions.service";
 import {ExpressionEditorComponent} from "../expression-editor.component";
+import {FormService} from "../../../../services/form.service";
 
 @Component({
   selector: 'lfb-calculated-initial-expression',
@@ -20,10 +18,17 @@ import {ExpressionEditorComponent} from "../expression-editor.component";
   styleUrl: '../answer-expression.component.css',
 })
 export class CalculatedInitialExpressionComponent extends ExpressionEditorComponent implements OnInit {
+  formService = inject(FormService);
 
   ngOnInit() {
     super.ngOnInit();
-    const sub = this.formProperty.searchProperty('__$valueMethod').valueChanges.subscribe((value) => {
+    // this.init();
+    let sub = this.formProperty.searchProperty('__$valueMethod').valueChanges.subscribe((value) => {
+      if(this.formService.loading) {
+        return;
+      }
+
+      this.expressionUri = this.getUrlByValueMethod(value);
       if(value !== VALUE_METHOD_COMPUTE_INITIAL && value !== VALUE_METHOD_COMPUTE_CONTINUOUSLY) {
         this.extensionsService.removeAllExtensions((f) => {
           return f?.value?.url === EXTENSION_URL_INITIAL_EXPRESSION || f?.value?.url === EXTENSION_URL_CALCULATED_EXPRESSION;
@@ -31,7 +36,7 @@ export class CalculatedInitialExpressionComponent extends ExpressionEditorCompon
       }
       else {
         const currentUrl = this.extension?.url;
-        this.extension.url = this.getUrlByValueMethod(value);
+        this.extension.url = this.expressionUri;
         if(this.expression) {
           this.extensionsService.replaceExtensions(currentUrl, [this.extension]);
         }
@@ -41,6 +46,11 @@ export class CalculatedInitialExpressionComponent extends ExpressionEditorCompon
           });
         }
       }
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.modelService.modelInitialized$.subscribe((model) => {
+      this.init();
     });
     this.subscriptions.push(sub);
   }

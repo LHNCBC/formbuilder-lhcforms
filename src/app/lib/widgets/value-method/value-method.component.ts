@@ -5,6 +5,7 @@ import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widge
 import { Util } from '../../util';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 import * as CONSTANTS from '../../constants/constants';
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 
 @Component({
@@ -14,6 +15,7 @@ import * as CONSTANTS from '../../constants/constants';
 })
 export class ValueMethodComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
   private formService = inject(FormService);
+  private modelService = inject(SharedObjectService);
 
   type = CONSTANTS.TYPE_STRING;
   linkId: string;
@@ -31,6 +33,10 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
    */
   ngOnInit(): void {
     super.ngOnInit();
+    this.init();
+  }
+
+  init() {
     this.currentValueMethod = this.formProperty.value;
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
   }
@@ -149,6 +155,11 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
           });
         }
       }
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.modelService.modelInitialized$.subscribe((model) => {
+      this.init();
     });
     this.subscriptions.push(sub);
   }

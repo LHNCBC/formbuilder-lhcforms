@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, Component, inject, OnDestroy, OnInit, ViewChild, ViewEncapsulation} from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import {FetchService, SNOMEDEditions} from '../../../services/fetch.service';
 import {FormService} from '../../../services/form.service';
@@ -8,6 +8,7 @@ import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
 import {Util} from '../../util';
 import { ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET } from '../../constants/constants';
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 @Component({
   standalone: false,
@@ -43,38 +44,31 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
   fetchService = inject(FetchService);
   formService = inject(FormService);
   extensionService = inject(ExtensionsService);
+  modelService = inject(SharedObjectService);
   valueSetType = 'value-set';
   tsHint = AnswerValueSetComponent.nonSnomedTSHint;
-  eclHelp = '';
 
   tooltipOpen = false;
 
   ngOnInit() {
     super.ngOnInit();
     this.snomedEditions = this.fetchService.snomedEditions;
-    const asMethod = this.formProperty.searchProperty('__$answerOptionMethods').value;
-    this.valueSetType = asMethod ? asMethod : this.valueSetType;
-    this.updateUI(this.formProperty.value);
-    const sub = this.formService.formReset$.subscribe(() => {
-      const asmValue = this.formProperty.searchProperty('__$answerOptionMethods').value;
-      this.valueSetType = asmValue ? asmValue : this.valueSetType;
-      this.updateUI(this.formProperty.value);
-    });
-    this.subscriptions.push(sub);
+    this.init();
   }
   ngAfterViewInit() {
     super.ngAfterViewInit();
     const asMethodsProp = this.formProperty.searchProperty('__$answerOptionMethods');
-    const sub = asMethodsProp.valueChanges.subscribe((newVal) => {
-      this.valueSetType = newVal;
-      switch (this.valueSetType) {
-        case ANSWER_OPTION_METHOD_SNOMED_VALUE_SET:
-          this.tsHint = AnswerValueSetComponent.snomedTSHint;
-          break;
-        case ANSWER_OPTION_METHOD_VALUE_SET:
-          this.tsHint = AnswerValueSetComponent.nonSnomedTSHint;
+    let sub = asMethodsProp.valueChanges.subscribe((newVal) => {
+      if(this.formService.loading) {
+        return;
       }
-      this.updateUI(this.formProperty.value);
+
+      this.init();
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.modelService.modelInitialized$.subscribe(() => {
+      this.init();
     });
     this.subscriptions.push(sub);
   }
@@ -83,20 +77,26 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    * Update UI elements based on initial model value. Read the value of URI to figure out which radio button to select.
    * @param answerValueSetValue - Value of answerValueSet. Checks if its snomed URI and sets appropriate radio button.
    */
-  updateUI(answerValueSetValue: string) {
-    if(this.valueSetType === ANSWER_OPTION_METHOD_SNOMED_VALUE_SET) {
-      if(answerValueSetValue) {
-        this.updateSnomedFields(answerValueSetValue);
-        this.snomedUrl = answerValueSetValue;
-      }
-      else {
-        this.snomedUrl = '';
-      }
-    }
-    else if(this.valueSetType === ANSWER_OPTION_METHOD_VALUE_SET) {
-      if(answerValueSetValue) {
-        this.nonSnomedUrl = answerValueSetValue;
-      }
+  init() {
+    const answerValueSetValue = this.formProperty.value;
+    this.valueSetType = this.formProperty.searchProperty('__$answerOptionMethods').value;
+    switch (this.valueSetType) {
+      case ANSWER_OPTION_METHOD_SNOMED_VALUE_SET:
+        this.tsHint = AnswerValueSetComponent.snomedTSHint;
+        if(answerValueSetValue) {
+          this.updateSnomedFields(answerValueSetValue);
+          this.snomedUrl = answerValueSetValue;
+        }
+        else {
+          this.snomedUrl = '';
+        }
+        break;
+      case ANSWER_OPTION_METHOD_VALUE_SET:
+        this.tsHint = AnswerValueSetComponent.nonSnomedTSHint;
+        if(answerValueSetValue) {
+          this.nonSnomedUrl = answerValueSetValue;
+        }
+        break;
     }
   }
 

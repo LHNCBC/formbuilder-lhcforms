@@ -1,4 +1,4 @@
-import {inject, Injectable } from '@angular/core';
+import {DestroyRef, inject, Injectable } from '@angular/core';
 import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {Observable, Subject, Subscription} from 'rxjs';
@@ -56,9 +56,15 @@ export class ExtensionsService {
   extensionsChange$: Subject<fhir.Extension []> = new Subject<fhir.Extension []>();
 
   schemaService = inject(SchemaService);
+  private destroyRef = inject(DestroyRef);
 
   constructor() {
     this._id = this._id + ExtensionsService.__ID++;
+    this.destroyRef.onDestroy(() => {
+      this.subscriptions.forEach((s) => {
+        s.unsubscribe();
+      });
+    });
   }
 
 
@@ -79,6 +85,22 @@ export class ExtensionsService {
       this.extensionsChange$.next(vals);
     });
     this.subscriptions.push(sub);
+  }
+
+  /**
+   * Reset form property with new extensions.
+   *
+   * @param extensions
+   */
+  resetExtensions(extensions: fhir.Extension []) {
+    this.extensionsProp.setValue(extensions, false);
+  }
+
+  /**
+   * Get current value from the extension'`s form property.
+   */
+  getExtensionsValue(): fhir.Extension [] {
+    return this.extensionsProp.value;
   }
 
 
@@ -132,7 +154,7 @@ export class ExtensionsService {
   }
 
   /**
-   * Get last extension object identified by the url.
+   * Get the last extension object identified by the url.
    * @param extUrl - Url to identify the extension.
    */
   public getLastExtensionByUrl(extUrl: fhirPrimitives.url): fhir.Extension {
@@ -206,7 +228,6 @@ export class ExtensionsService {
    * @param extUrl - The URL used to identify the extension to update or append.
    * @param newExtensionJSON - The new extension object to insert or update.
    */
-
   updateOrAppendExtensionByUrl(extUrl: fhirPrimitives.url, newExtensionJSON: fhir.Extension): void {
     let endIndex = this.extensionsProp?.value?.findLastIndex(ext => ext.url === extUrl);
 

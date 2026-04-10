@@ -1,5 +1,4 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import {Subscription} from 'rxjs';
 import {
   EXTENSION_URL_ANSWER_EXPRESSION,
   ANSWER_OPTION_METHOD_ANSWER_EXPRESSION
@@ -19,8 +18,10 @@ export class AnswerExpressionComponent extends ExpressionEditorComponent impleme
    */
   ngOnInit(): void {
     super.ngOnInit();
-    let sub: Subscription;
-    sub = this.formProperty.searchProperty('__$answerOptionMethods').valueChanges.subscribe((value) => {
+    let sub = this.formProperty.searchProperty('__$answerOptionMethods').valueChanges.subscribe((value) => {
+      if(this.formService.loading) {
+        return;
+      }
       if(value === ANSWER_OPTION_METHOD_ANSWER_EXPRESSION ) {
         this.extensionsService.updateExtension(this.extension);
       }
@@ -29,7 +30,11 @@ export class AnswerExpressionComponent extends ExpressionEditorComponent impleme
       }
     });
     this.subscriptions.push(sub);
-  };
 
+    sub = this.modelService.modelInitialized$.subscribe((model) => {
+      this.init();
+    });
+    this.subscriptions.push(sub);
+  };
 }
 

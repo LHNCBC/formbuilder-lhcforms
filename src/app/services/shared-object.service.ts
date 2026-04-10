@@ -4,6 +4,7 @@ import {map} from 'rxjs/operators';
 import {TreeNode} from '@bugsplat/angular-tree-component';
 import {AppJsonPipe} from '../lib/pipes/app-json.pipe';
 import fhir from 'fhir/r4';
+import {PropertyGroup} from "@lhncbc/ngx-schema-form";
 
 @Injectable({
   providedIn: 'root'
@@ -24,6 +25,7 @@ export class SharedObjectService {
     return new AppJsonPipe().transform(item);
     // return JSON.stringify(item, null, 2);
   }));
+  private _modelProperty$ = new BehaviorSubject<fhir.QuestionnaireItem>(null);
 
   _questionnaire: fhir.Questionnaire;
   constructor() {
@@ -81,6 +83,22 @@ export class SharedObjectService {
 
   get currentItem$(): Observable<fhir.QuestionnaireItem> {
     return this.itemSource$.asObservable();
+  }
+
+
+  /**
+   * Setter to notify initialization of the model for when switching from node to node in the sidebar tree.
+   * @param item
+   */
+  set modelInitialized(item: fhir.QuestionnaireItem) {
+    this._modelProperty$.next(item);
+  }
+
+  /**
+   * Get the observer of the model initialization.
+   */
+  get modelInitialized$(): Observable<fhir.QuestionnaireItem> {
+    return this._modelProperty$.asObservable();
   }
 
 }

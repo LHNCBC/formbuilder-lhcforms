@@ -66,6 +66,9 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
    * Ng OnInit lifecycle hook.
    */
   ngOnInit() {
+    this.addDefaultItemIfEmpty = false;
+    super.ngOnInit();
+    /*
     const rows = this.formProperty.properties.length;
     super.ngOnInit();
     if (rows === 0) {
@@ -73,6 +76,7 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
       // In this component, the rows are in the dialog, so we don't want to add a row.
       this.removeProperty(0);
     }
+    */
   }
 
   /**

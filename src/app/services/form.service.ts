@@ -6,9 +6,8 @@ import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageDlgOptions, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import jsonTraverse from 'traverse';
 import {JsonPointer} from 'json-ptr';
 import {JSONPath} from 'jsonpath-plus';
 import {getSupportedLFormsVersions, loadLForms} from 'lforms-loader';
@@ -20,7 +19,6 @@ import {ExtensionsService} from './extensions.service';
 import {SchemaService} from './schema.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {ISchema} from "@lhncbc/ngx-schema-form";
-import { EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION } from '../lib/constants/constants';
 import {ImportQuestionnaireService} from "./import.questionnaire.service";
 
 declare var LForms: any;
@@ -1206,7 +1204,7 @@ export class FormService {
    * @param questionnaire - Input questionnaire
    */
   updateFhirQuestionnaire(questionnaire: fhir.Questionnaire): fhir.Questionnaire {
-    return this.importService.updateRawQuestionnaire(questionnaire);
+    return this.importService.updateRawQuestionnaire(questionnaire, this);
   }
 
 

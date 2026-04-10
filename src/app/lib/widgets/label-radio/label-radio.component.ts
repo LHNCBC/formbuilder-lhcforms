@@ -3,10 +3,13 @@
  */
 import { Component, OnInit } from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
+import {ReactiveFormsModule} from "@angular/forms";
+import {LabelComponent} from "../label/label.component";
+import {NgClass} from "@angular/common";
 
 @Component({
-  standalone: false,
   selector: 'lfb-label-radio',
+  imports: [ReactiveFormsModule, LabelComponent, NgClass],
   templateUrl: './label-radio.component.html'
 })
 export class LabelRadioComponent extends LfbControlWidgetComponent implements OnInit {

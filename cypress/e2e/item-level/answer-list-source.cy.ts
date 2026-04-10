@@ -597,10 +597,9 @@ describe('Home page', () => {
       cy.selectDataType('coding');
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
       cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
       // New default for 'Answer list source' is now 'None'
-      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
 
       cy.get('#answerValueSet_non-snomed').should('not.exist');
 
@@ -618,7 +617,7 @@ describe('Home page', () => {
         expect(q.item[0].answerOption).to.be.undefined;
       });
 
-      cy.get('[for^="__\\$answerOptionMethods_none"]').click();
+      cy.get('[for^="__\\$answerOptionMethods_answer-option"]').click();
       cy.get('#answerValueSet_non-snomed').should('not.exist');
       //cy.get('lfb-answer-option').should('be.visible');
       const aOptions = [
@@ -767,8 +766,7 @@ describe('Home page', () => {
       cy.get('lfb-answer-option').should('not.exist');
 
       cy.clickTreeNode('Item with answer option');
-      // New default for 'Answer list source' is now 'None'
-      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
 
       // Select the 'Answer Options' option
       cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
@@ -1082,10 +1080,8 @@ describe('Home page', () => {
         cy.selectDataType('coding');
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
         cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
-        // New default for 'Answer list source' is now 'None'
-        cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
 
         // Select the 'Answer Options' option
         cy.getRadioButtonLabel('Answer list source', 'Answer options').click();

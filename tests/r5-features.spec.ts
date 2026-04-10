@@ -137,7 +137,7 @@ test.describe('r5-features.spec.ts', async () => {
     await PWUtils.clickTreeNode(page, 'Integer type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/integer/);
     await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Drop down')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Unspecified')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'Date type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/date/);
@@ -152,7 +152,7 @@ test.describe('r5-features.spec.ts', async () => {
     await PWUtils.clickTreeNode(page, 'Coding type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
     await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Drop down')).toBeChecked();
+    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Unspecified')).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'String type answer list layout');
     await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/string/);

@@ -7,10 +7,15 @@ import fhir from 'fhir/r4';
 import {Util} from '../../util';
 import {LiveAnnouncer} from "@angular/cdk/a11y";
 import { EXTENSION_URL_ITEM_CONTROL } from '../../constants/constants';
+import {SharedObjectService} from "../../../services/shared-object.service";
+import {FormsModule} from "@angular/forms";
+import {CommonModule, NgClass} from "@angular/common";
+import {MatTooltipModule} from "@angular/material/tooltip";
+import {LabelComponent} from "../label/label.component";
 
 @Component({
-  standalone: false,
   selector: 'lfb-item-control',
+  imports: [CommonModule, FormsModule, MatTooltipModule, LabelComponent],
   templateUrl: './item-control.component.html',
   styleUrls: ['./item-control.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -20,6 +25,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   private formService = inject(FormService);
   private cdr = inject(ChangeDetectorRef);
   private liveAnnouncer = inject(LiveAnnouncer);
+  private modelService = inject(SharedObjectService);
 
   static itemControlUrl = EXTENSION_URL_ITEM_CONTROL;
 
@@ -87,18 +93,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    */
   getItemControl(dataTypeChanged: boolean = false): string {
     const ext = this.getItemControlExtension();
-    const isAnswerList = this.formProperty.findRoot().getProperty('__$isAnswerList').value;
-
-    let defaultItemControl = '';
-    if (this.dataType !== 'group' && this.dataType !== 'display') {
-      const answerOptions = this.formProperty.findRoot().getProperty('answerOption').value;
-      defaultItemControl = this.hasInitialSelectedAnswerOption(answerOptions) ? 'drop-down' : '';
-    }
-
-    if (dataTypeChanged)
-      return defaultItemControl;
-
-    return ext ? ext.valueCodeableConcept?.coding[0]?.code : defaultItemControl;
+    return ext ? ext.valueCodeableConcept?.coding[0]?.code : '';
   }
 
   /**
@@ -125,6 +120,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       this.composeCodeSystemItemControlObject();
       this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
     }
+
+    this.cdr.markForCheck();
   }
 
   /**
@@ -134,6 +131,10 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     super.ngAfterViewInit();
 
     let sub = this.formProperty.searchProperty('/repeats').valueChanges.subscribe((isRepeat) => {
+      if(this.formService.loading) {
+        return;
+      }
+
       this.isRepeat = !!isRepeat;
       // If repeats is changed, change to appropriate extension.
       this.updateItemControlExt(this.option);
@@ -142,6 +143,10 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.subscriptions.push(sub);
 
     sub = this.formProperty.searchProperty('/type').valueChanges.subscribe((type) => {
+      if(this.formService.loading) {
+        return;
+      }
+
       const changed = !(this.dataType === type);
       this.dataType = type;
       // If type is not coding, cleanup the extension.
@@ -156,6 +161,10 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.subscriptions.push(sub);
 
     sub = this.formProperty.searchProperty('/__$answerOptionMethods').valueChanges.subscribe((method) => {
+      if(this.formService.loading) {
+        return;
+      }
+
       this.answerMethod = method;
       // No autocomplete for answerOption.
       this.updateItemControlExt(this.option);
@@ -164,9 +173,20 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.subscriptions.push(sub);
 
     sub = this.formProperty.searchProperty('/__$isAnswerList').valueChanges.subscribe((answerList) => {
+      if(this.formService.loading) {
+        return;
+      }
+
       this.answerList = answerList;
     })
     this.subscriptions.push(sub);
+
+    sub = this.modelService.modelInitialized$.subscribe(() => {
+      this.init();
+      this.cdr.markForCheck();
+    });
+    this.subscriptions.push(sub);
+
   }
 
   /**
