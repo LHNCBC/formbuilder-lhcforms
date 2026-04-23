@@ -341,7 +341,7 @@ describe('Home page', () => {
         },
         {
           fixtureFile: 'initial-sample.STU3.json',
-          serverBaseUrl: 'https://hapi.fhir.org/baseDstu3',
+          serverBaseUrl: 'https://lforms-fhir.nlm.nih.gov/baseDstu3',
           version: 'STU3',
         }
       ].forEach((testConfig) => {
@@ -549,7 +549,12 @@ describe('Home page', () => {
 
           cy.get('@datepicker').should('be.visible');
           cy.get('@datepicker').contains('Today').click();
-          cy.get('@approvalDtInput').should('have.prop', 'value').should('match', dateRE);
+          cy.get('@approvalDtInput')
+            .should(($input) => {
+              const value = $input.val() || $input.prop('value');
+              expect(value).to.match(/^\d{4}-\d{2}-\d{2}$/);
+            });
+
           cy.get('@approvalDtInput').clear().type('2021-01-01');
           cy.questionnaireJSON().then((previewJson) => {
             expect(previewJson.approvalDate).to.be.equal('2021-01-01');
@@ -590,15 +595,15 @@ describe('Home page', () => {
             cy.getByLabel('lfb-form-fields', widgetLabel).as('dateInput');
             const widgetSel = '@dateInput';
             cy.get(widgetSel).clear().type('2020-01-02 10:');
-            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).parents('.row').find('small.text-danger').should('be.visible');
             cy.get(widgetSel).type('{backspace}');
-            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).parents('.row').find('small.text-danger').should('be.visible');
             cy.get(widgetSel).type('{backspace}');
-            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).parents('.row').find('small.text-danger').should('be.visible');
             cy.get(widgetSel).type('{backspace}');
-            cy.get(widgetSel).parent().next('small.text-danger').should('not.exist');
+            cy.get(widgetSel).parents('.row').find('small.text-danger').should('not.exist');
             cy.get(widgetSel).type('ab');
-            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).parents('.row').find('small.text-danger').should('be.visible');
             cy.get(widgetSel).blur();
             cy.questionnaireJSON().then((q) => {
               expect(q[widgetId]).to.be.undefined;
@@ -606,7 +611,7 @@ describe('Home page', () => {
 
             ['2023-11-31', '2023-02-29', '2023-02-30', '2023-02-31'].forEach((input) => {
               cy.get(widgetSel).clear().type(input);
-              cy.get(widgetSel).parent().next('small.text-danger').should('have.text', 'Invalid date.');
+              cy.get(widgetSel).parents('.row').find('small.text-danger').should('have.text', 'Invalid date.');
               cy.get(widgetSel).blur();
               cy.questionnaireJSON().then((q) => {
                 expect(q[widgetId]).to.be.undefined;
@@ -619,15 +624,15 @@ describe('Home page', () => {
             cy.getByLabel('lfb-form-fields', widgetLabel).as('dateInput');
             const widgetSel = '@dateInput';
             cy.get(widgetSel).clear().type('2020-01-02 100');
-            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).parents('.row').find('small.text-danger').should('be.visible');
             cy.get(widgetSel).blur();
             cy.questionnaireJSON().then((q) => {
               expect(q[widgetId]).to.be.undefined;
             });
             cy.get(widgetSel).clear().type('2020-01-02 100');
-            cy.get(widgetSel).parent().next('small.text-danger').should('be.visible');
+            cy.get(widgetSel).parents('.row').find('small.text-danger').should('be.visible');
             cy.get(widgetSel).type('{backspace}:10:10.1 am');
-            cy.get(widgetSel).parent().next('small.text-danger').should('not.exist');
+            cy.get(widgetSel).parents('.row').find('small.text-danger').should('not.exist');
             cy.questionnaireJSON().then((q) => {
               expect(q[widgetId]).match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
             });
@@ -636,6 +641,8 @@ describe('Home page', () => {
       });
 
       it('should create variables at the Questionnaire level', () => {
+        CypressUtil.mockFHIRQueryObservation();
+
         cy.get('button#editVariables').click();
         cy.get('lhc-expression-editor').shadow().within(() => {
           cy.get('#expression-editor-base-dialog').should('exist');

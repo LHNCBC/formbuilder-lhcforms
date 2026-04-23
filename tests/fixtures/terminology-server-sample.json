@@ -1,0 +1,40 @@
+{
+  "resourceType": "Questionnaire",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+      "valueUrl": "https://example.org/fhir"
+    },
+    {
+      "url": "http://dummyForm1.com",
+      "valueInteger": 0
+    },
+    {
+      "url": "http://dummyForm2.com",
+      "valueDecimal": 0.1
+    }
+  ],
+  "title": "Terminology server sample form",
+  "status": "draft",
+  "item": [
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "http://example.com/r4"
+        },
+        {
+          "url": "http://dummy1.com",
+          "valueString": "dummy string"
+        },
+        {
+          "url": "http://dummy2.com",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "8148215337154",
+      "text": "Item 0"
+    }
+  ]
+}

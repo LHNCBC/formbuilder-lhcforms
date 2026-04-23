@@ -1,0 +1,42 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Form with observation link period",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
+          "valueDuration": {
+            "value": 200,
+            "unit": "days",
+            "system": "http://unitsofmeasure.org",
+            "code": "d"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 15.2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 20.1
+        }
+      ],
+      "linkId": "l1",
+      "text": "Item with observation link period",
+      "type": "decimal",
+      "required": false,
+      "code": [
+        {
+          "code": "Code1"
+        }
+      ]
+    }
+  ]
+}

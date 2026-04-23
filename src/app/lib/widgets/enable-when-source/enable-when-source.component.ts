@@ -90,6 +90,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
    * Initialize the component
    */
   ngOnInit(): void {
+    super.ngOnInit();
     this.sources = this.formService.getSourcesExcludingFocusedTree();
     const value = this.formProperty.value; // Source is already assigned for this item.
     if (this.sources && this.sources.length > 0 && value) {
@@ -99,6 +100,30 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
       }
     } else if (value === "" && this.formProperty.parent.value?.['__$answerType']?.trim()) {
       this.validateQuestion();
+    }
+    const sub = this.formProperty.valueChanges.subscribe((newValue) => {
+      this.syncModelFromValue(newValue);
+    });
+    this.subscriptions.push(sub);
+
+  }
+  /**
+   * Keep local typeahead model in sync with stored linkId.
+   * @param value - Stored linkId value to sync from.
+   */
+  private syncModelFromValue(value: string): void {
+    if (!value) {
+      this.model = null;
+      this.instance?.writeValue(this.model);
+      return;
+    }
+
+    if (this.sources && this.sources.length > 0) {
+      const source = this.sources.find((el) => el.data.linkId === value);
+      if (source) {
+        this.model = source;
+        this.formProperty.searchProperty('__$answerType').setValue(source.data.type, true);
+      }
     }
   }
 

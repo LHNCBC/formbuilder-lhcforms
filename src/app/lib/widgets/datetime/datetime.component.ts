@@ -126,7 +126,6 @@ export class DatetimeComponent extends DateComponent implements OnInit {
   private parserFormatter = inject(NgbDateParserFormatter);
   private timeAdapter = inject<NgbTimeAdapter<NgbTimeStruct>>(NgbTimeAdapter);
 
-
   dateTime: DateTime = {dateStruct: null, timeStruct: null, millis: NaN};
   includeTime = true;
 

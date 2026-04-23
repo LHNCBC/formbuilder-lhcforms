@@ -71,6 +71,22 @@ instructions are for those who are familiar with Linux systems.
     npm run test
     ```
 
+### Environment configuration
+
+This project uses `dotenv-cli` with cascading env files so each user can override ports/URLs locally without changing scripts.
+
+- Default settings live in `.env`.
+- User-specific overrides go in `.env.local` (this file is not committed).
+
+To customize your ports/URLs:
+
+```bash
+cp .env .env.local
+# Edit .env.local as needed
+```
+
+The npm scripts automatically load `.env` plus `.env.local` (when present), with `.env.local` taking precedence.
+
 ## **Contributing**
   - If you plan to contribute new functionality, it is important to coordinate with the maintainers to ensure proper integration and to avoid duplicating efforts. Reach out to the maintainers for guidance on contributing.
 
@@ -79,6 +95,3 @@ If you encounter any issues during the installation or setup process, consult th
 The form builder is an application. However, it is possible to control it via
 JavaScript from another web page. Refer to [API.md](API.md)
 for documentation.
-        
-
-        

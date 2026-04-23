@@ -12,9 +12,9 @@ import {
   EXTENSION_URL_CALCULATED_EXPRESSION,
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
-  EXTENSION_URL_ITEM_CONTROL
+  EXTENSION_URL_ITEM_CONTROL,
+  PREFERRED_TERMINOLOGY_SERVER_URI
 } from '../lib/constants/constants';
-import {TerminologyServerComponent} from "../lib/widgets/terminology-server/terminology-server.component";
 import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
 import {ObservationExtractComponent} from "../lib/widgets/observation-extract/observation-extract.component";
 import {Util} from "../lib/util";
@@ -43,7 +43,7 @@ export class ExtensionsService {
     EXTENSION_URL_ANSWER_EXPRESSION,
     EXTENSION_URL_ENABLEWHEN_EXPRESSION,
     EXTENSION_URL_ITEM_CONTROL,
-    TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
+    PREFERRED_TERMINOLOGY_SERVER_URI,
     ObservationLinkPeriodComponent.extUrl,
     ObservationExtractComponent.extUrl
   ]);

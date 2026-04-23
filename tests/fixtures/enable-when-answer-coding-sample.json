@@ -1,0 +1,370 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "enableWhen answer coding",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "type": "coding",
+      "linkId": "258551383902",
+      "text": "Item with answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "182201002",
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "81765008",
+            "display": "No pain"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383903",
+      "text": "Item with missing system answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "182201002",
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "81765008",
+            "display": "No pain"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383904",
+      "text": "Item with missing display answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "182201002"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "81765008"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383905",
+      "text": "Item with missing code answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "No pain"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383906",
+      "text": "Item with just display answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "display": "No pain"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383907",
+      "text": "Item with just code answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "47078008"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "182201002"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "81765008"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383908",
+      "text": "Item with duplicate code answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "182201002",
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://abcd.info/sct",
+            "code": "47078008",
+            "display": "No pain"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383909",
+      "text": "Item with duplicate code and missing display answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "182201002"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://abcd.info/sct",
+            "code": "47078008"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383910",
+      "text": "Item with duplicate display and missing code answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "No pain"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://abcd.info/sct",
+            "display": "No pain"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383911",
+      "text": "Item with just display and contains duplicate answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "display": "Hearing"
+          }
+        },
+        {
+          "valueCoding": {
+            "display": "Entire hip joint"
+          }
+        },
+        {
+          "valueCoding": {
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "coding",
+      "linkId": "258551383912",
+      "text": "Item with just code and contains duplicate answer options",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "47078008"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "182201002"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "47078008"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "787951768847",
+      "text": "enableWhen answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383902",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "291519646727",
+      "text": "enableWhen missing system answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383903",
+          "operator": "=",
+          "answerCoding": {
+            "code": "47078008",
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "123515567593",
+      "text": "enableWhen missing display answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383904",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "47078008"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "759834427235",
+      "text": "enableWhen missing code answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383905",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://snomed.info/sct",
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "459971556501",
+      "text": "enableWhen missing system and code answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383906",
+          "operator": "=",
+          "answerCoding": {
+            "display": "Hearing"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "642789009580",
+      "text": "enableWhen missing system and display answer coding",
+      "enableWhen": [
+        {
+          "question": "258551383907",
+          "operator": "=",
+          "answerCoding": {
+            "code": "47078008"
+          }
+        }
+      ]
+    }
+  ]
+}

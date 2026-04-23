@@ -1,0 +1,145 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Display item control sample form",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "type": "display",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "inline",
+                "display": "In-line"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "582188710916",
+      "text": "In-line display item control"
+    },
+    {
+      "type": "display",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "prompt",
+                "display": "Prompt"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "889100111672",
+      "text": "Prompt display item control - deprecated"
+    },
+    {
+      "type": "display",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "unit",
+                "display": "Unit"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "517631145424",
+      "text": "Unit display item control - deprecated"
+    },
+    {
+      "type": "display",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "lower",
+                "display": "Lower-bound"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "852434440353",
+      "text": "Lower-bound display item control"
+    },
+    {
+      "type": "display",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "upper",
+                "display": "Upper-bound"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "843320291806",
+      "text": "Upper-bound display item control"
+    },
+    {
+      "type": "display",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "flyover",
+                "display": "Fly-over"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "768336910856",
+      "text": "Fly-over display item control"
+    },
+    {
+      "type": "display",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "legal",
+                "display": "Legal-Button"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "136712495284",
+      "text": "Legal-button display item control"
+    }
+  ]
+}

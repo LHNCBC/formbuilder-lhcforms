@@ -1,0 +1,332 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "R4 enableWhen AnswerOptions",
+  "status": "draft",
+  "item": [
+    {
+      "type": "integer",
+      "linkId": "779085650305",
+      "text": "integer answerOptions",
+      "answerOption": [
+        {
+          "valueInteger": 1
+        },
+        {
+          "valueInteger": 2
+        },
+        {
+          "valueInteger": 3
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "600338559566",
+      "text": "enableWhen integer on-list",
+      "enableWhen": [
+        {
+          "question": "779085650305",
+          "operator": "=",
+          "answerInteger": 2
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "322648218329",
+      "text": "enableWhen integer off-list",
+      "enableWhen": [
+        {
+          "question": "779085650305",
+          "operator": "=",
+          "answerInteger": 4
+        }
+      ]
+    },
+    {
+      "type": "date",
+      "linkId": "759608001746",
+      "text": "date answerOptions",
+      "answerOption": [
+        {
+          "valueDate": "2025-11-03"
+        },
+        {
+          "valueDate": "2025-11-04"
+        },
+        {
+          "valueDate": "2025-11-05"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "360117504487",
+      "text": "enableWhen date on-list",
+      "enableWhen": [
+        {
+          "question": "759608001746",
+          "operator": "=",
+          "answerDate": "2025-11-04"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "428543721385",
+      "text": "enableWhen date off-list",
+      "enableWhen": [
+        {
+          "question": "759608001746",
+          "operator": "=",
+          "answerDate": "2025-11-20"
+        }
+      ]
+    },
+    {
+      "type": "time",
+      "linkId": "657367236699",
+      "text": "time answerOptions",
+      "answerOption": [
+        {
+          "valueTime": "16:00:00"
+        },
+        {
+          "valueTime": "17:00:00"
+        },
+        {
+          "valueTime": "18:00:00"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "877781889993",
+      "text": "enableWhen time on-list",
+      "enableWhen": [
+        {
+          "question": "657367236699",
+          "operator": "=",
+          "answerTime": "17:00:00"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "779589205797",
+      "text": "enableWhen time off-list",
+      "enableWhen": [
+        {
+          "question": "657367236699",
+          "operator": "=",
+          "answerTime": "08:00:00"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "820906264719",
+      "text": "string answerOptions",
+      "answerOption": [
+        {
+          "valueString": "A"
+        },
+        {
+          "valueString": "B"
+        },
+        {
+          "valueString": "C"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "242477867005",
+      "text": "enableWhen string on-list",
+      "enableWhen": [
+        {
+          "question": "820906264719",
+          "operator": "=",
+          "answerString": "B"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "641775415338",
+      "text": "enableWhen string off-list",
+      "enableWhen": [
+        {
+          "question": "820906264719",
+          "operator": "=",
+          "answerString": "Z"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "linkId": "174788656639",
+      "text": "text answerOptions",
+      "answerOption": [
+        {
+          "valueString": "AAAAAAAA"
+        },
+        {
+          "valueString": "BBBBBBBBB"
+        },
+        {
+          "valueString": "CCCCCCCCC"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "800004427766",
+      "text": "enableWhen text on-list",
+      "enableWhen": [
+        {
+          "question": "174788656639",
+          "operator": "=",
+          "answerString": "BBBBBBBBB"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "293832739922",
+      "text": "enableWhen text off-list",
+      "enableWhen": [
+        {
+          "question": "174788656639",
+          "operator": "=",
+          "answerString": "ZZZZZZZZZ"
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "linkId": "264603036166",
+      "text": "coding answerOptions restricted",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "a",
+            "code": "a1",
+            "display": "a1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "b",
+            "code": "b1",
+            "display": "b1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "c",
+            "code": "c1",
+            "display": "c1"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "171991128943",
+      "text": "enableWhen coding on-list",
+      "enableWhen": [
+        {
+          "question": "264603036166",
+          "operator": "=",
+          "answerCoding": {
+            "system": "b",
+            "code": "b1",
+            "display": "b1"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "553668572628",
+      "text": "enableWhen coding off-list",
+      "enableWhen": [
+        {
+          "question": "264603036166",
+          "operator": "=",
+          "answerCoding": {
+            "system": "d",
+            "code": "d1",
+            "display": "d1"
+          }
+        }
+      ]
+    },
+    {
+      "type": "open-choice",
+      "linkId": "675837383058",
+      "text": "coding answerOptions optionsOrString",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "a",
+            "code": "a1",
+            "display": "a1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "b",
+            "code": "b1",
+            "display": "b1"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "c",
+            "code": "c1",
+            "display": "c1"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "560923672103",
+      "text": "enableWhen coding optionsOrString on-list",
+      "enableWhen": [
+        {
+          "question": "675837383058",
+          "operator": "=",
+          "answerCoding": {
+            "system": "b",
+            "code": "b1",
+            "display": "b1"
+          }
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "linkId": "901357674386",
+      "text": "enableWhen coding optionsOrString off-list",
+      "enableWhen": [
+        {
+          "question": "675837383058",
+          "operator": "=",
+          "answerCoding": {
+            "system": "d",
+            "code": "d1",
+            "display": "d1"
+          }
+        }
+      ]
+    }
+  ]
+}

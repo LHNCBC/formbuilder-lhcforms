@@ -21,7 +21,7 @@ describe('FhirSearchDlgComponent', () => {
     TestBed.resetTestingModule();
   });
 
-  CommonTestingModule.setUpTestBedConfig({declarations: [FhirSearchDlgComponent]});
+  CommonTestingModule.setUpTestBedConfig({imports: [FhirSearchDlgComponent]});
 
   beforeEach(() => {
     fixture = TestBed.createComponent(FhirSearchDlgComponent);
@@ -30,7 +30,7 @@ describe('FhirSearchDlgComponent', () => {
     fixture.detectChanges();
 
     searchButton = fixture.debugElement.nativeElement.querySelector('#button-addon2');
-    inputEl = fixture.debugElement.nativeElement.querySelector('.input-group input.form-control[type="text"]');
+    inputEl = fixture.debugElement.nativeElement.querySelector('.input-group input.form-control[type="search"]');
   });
 
   it('should create', () => {
@@ -38,19 +38,30 @@ describe('FhirSearchDlgComponent', () => {
   });
 
   [
-    {index: 0, field: '_content', term: 'weight', total: 64},
-    {index: 1, field: 'code', term: '11111-1', total: 1},
-    {index: 2, field: 'title:contains', term: 'vital', total: 24},
-    {index: 3, field: 'name:contains', term: 'test', total: 9}
+    {index: 0, field: '_content', term: 'weight', total: 64, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},
+    {index: 1, field: 'questionnaire-code', term: '11111-1', total: 1, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},
+    {index: 2, field: 'item-code', term: '22222-2', total: 1, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},
+    {index: 3, field: 'title:contains', term: 'vital', total: 24, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},
+    {index: 4, field: 'name:contains', term: 'test', total: 9, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR5'},
+    {index: 0, field: '_content', term: 'weight', total: 64, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4'},
+    {index: 1, field: 'code', term: '33333-3', total: 1, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4'},
+    {index: 2, field: 'title:contains', term: 'vital', total: 24, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4'},
+    {index: 3, field: 'name:contains', term: 'test', total: 9, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseR4'},
+    {index: 0, field: '_content', term: 'weight', total: 64, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseDstu3'},
+    {index: 1, field: 'code', term: '44444-4', total: 1, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseDstu3'},
+    {index: 2, field: 'title:contains', term: 'vital', total: 24, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseDstu3'},
+    {index: 3, field: 'name:contains', term: 'test', total: 9, baseUrl: 'https://lforms-fhir.nlm.nih.gov/baseDstu3'},
     ]
     .forEach((strategy) => {
-    it('should search with '+strategy.field+' option', fakeAsync(() => {
-      const dummyBundle = TestUtil.createDummySearchBundle({total: strategy.total});
+    it(`should search with ${strategy.field} option (${strategy.baseUrl.replace(/https?:\/\/.+\/baseD?/, '')})`, fakeAsync(() => {
+      const dummyBundle = TestUtil.createDummySearchBundle({total: strategy.total, baseUrl: strategy.baseUrl});
       const searchSpy = spyOn(component.fhirService, 'search').withArgs(strategy.term, strategy.field, {_count: 20})
         .and.returnValue(of(dummyBundle));
       const searchFieldEl = fixture.debugElement.nativeElement.querySelector('#searchField1');
-      TestUtil.setValue(inputEl, strategy.term);
+      TestUtil.selectText(fixture.debugElement.nativeElement.querySelector('#SelectFHIRServer1'), strategy.baseUrl);
+      fixture.detectChanges();
       TestUtil.select(searchFieldEl, strategy.index);
+      TestUtil.setValue(inputEl, strategy.term);
       TestUtil.click(searchButton);
       flush();
       fixture.detectChanges();

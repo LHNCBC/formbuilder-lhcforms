@@ -210,6 +210,11 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
       const match = q._canonicalPath.match(/enableWhen\/(.*?)\/question/);
       condKey = match ? match[1] : '';
     }
+
+    if (condKey === '*') {
+      return null;
+    }
+
     const op = formProperty.getProperty('operator');
     const aField = Util.getAnswerFieldName(aType || 'string');
     let answerType = '';
@@ -225,6 +230,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
       'linkId': linkIdProperty.value,
       'conditionKey': condKey,
       'q': q,
+      'qItem': this.validationService.populateQuestionItem(questionItem),
       'aType': aType,
       'invalid': invalid,
       'answerTypeProperty': answerType,
@@ -251,7 +257,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
   validateType(value, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
-    if (!this.model) {
+    if (!this.model || this.formService.loading) {
       return null;
     }
     const nodeId = this.model?.[FormService.TREE_NODE_ID];
@@ -283,7 +289,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
    *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
    *                                             options.
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
-   *                                            and not equal to 'exists', and the answer is empty.
+   *                                             and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenAll(value: any, arrayProperty: ArrayProperty, rootProperty: PropertyGroup): any[] | null {
     let errors = null;
@@ -310,12 +316,12 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
    *          2. (ENABLEWHEN_INVALID_OPERATOR) - The selected operator value does not match the available operator
    *                                             options.
    *          3. (ENABLEWHEN_ANSWER_REQUIRED)  - The question is provided and valid, the operator is provided and not
-   *                                            and not equal to 'exists', and the answer is empty.
+   *                                             and not equal to 'exists', and the answer is empty.
    */
   validateEnableWhenSingle(value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
-    if (!this.model) {
+    if (!this.model || this.formService.loading) {
       return null;
     }
 
@@ -325,8 +331,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
 
     errors = this.validationService.validateEnableWhenSingle(enableWhenObj);
 
-
-    if(errors && errors.length) {
+    if (errors && errors.length) {
       formProperty.extendErrors(errors);
     }
     return errors;
@@ -348,7 +353,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
   validateLinkId (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
-    if (!this.model) {
+    if (!this.model || this.formService.loading) {
       return null;
     }
 
@@ -402,7 +407,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
   validatePickInitial (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
-    if (!this.model) {
+    if (!this.model || this.formService.loading) {
       return null;
     }
     const nodeId = this.model?.[FormService.TREE_NODE_ID];
@@ -427,7 +432,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
 
     // For the boolean data type, 'pick-initial' was being assigned even though an answer option is not required.
     // Added the data type check to exclude boolean types from triggering the 'ANSWER_OPTION_REQUIRED' error.
-    if (asMethod === "answer-option" && valueMethod === "pick-initial" && Util.isEmptyAnswerOptionForType(ansOpts, type) && type !== "boolean") {
+    if (asMethod === "answer-option" && valueMethod === "pick-initial" &&  Util.isEmptyAnswerOptionForType(ansOpts, type) && type !== "boolean") {
       const errorCode = 'ANSWER_OPTION_REQUIRED';
       const err: any = {};
       err.code = errorCode;

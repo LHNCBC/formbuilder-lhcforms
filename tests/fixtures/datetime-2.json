@@ -1,0 +1,20 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "title": "Date field sample - 2",
+  "status": "draft",
+  "date": "2000",
+  "approvalDate": "2023",
+  "lastReviewDate": "2020-02",
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Item 0",
+      "type": "string"
+    }
+  ]
+}

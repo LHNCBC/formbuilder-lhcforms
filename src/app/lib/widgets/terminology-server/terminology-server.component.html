@@ -15,7 +15,7 @@
         type="url"
         (focus)="announceHint()"
         #urlInput
-        [attr.id]="id" [ngModel]="tsExtension.valueUrl" (ngModelChange)="urlChanged($event)" [attr.placeholder]="schema.widget?.placeholder"
+        [attr.id]="id" [(ngModel)]="valueUrl" (ngModelChange)="urlChanged()" [attr.placeholder]="schema.widget?.placeholder"
         >
       @if (!urlValid) {
         <small  class="ps-0 text-danger form-text" role="alert">Please enter a valid URL.</small>

@@ -17,7 +17,7 @@ export interface FHIRServer {
   displayName?: string;
   endpoint: fhirPrimitives.url;
   desc?: string;
-  version?: string;
+  version?: FHIR_VERSION_TYPE;
 }
 
 /**
@@ -72,9 +72,9 @@ export class FhirService {
     },
     {
       id: 2,
-      displayName: 'UHN HAPI Server - STU3',
-      endpoint: 'https://hapi.fhir.org/baseDstu3',
-      desc: 'UHN Test Server (STU3 Resources)',
+      displayName: 'NLM HAPI FHIR Server - STU3',
+      endpoint: 'https://lforms-fhir.nlm.nih.gov/baseDstu3',
+      desc: 'NLM Test Server (STU3 Resources)',
       version: 'STU3'
     }
   ];

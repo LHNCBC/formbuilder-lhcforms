@@ -1,0 +1,40 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Questionnaire where enableWhen contains an invalid linkId",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "linkId": "q1",
+      "text": "enableWhen source item",
+      "type": "integer"
+    },
+    {
+      "linkId": "q2",
+      "text": "enableWhen item with a valid linkId",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "q1",
+          "operator": "=",
+          "answerInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "q3",
+      "text": "enableWhen item with an invalid linkId",
+      "type": "string",
+      "enableWhen": [
+        {
+          "question": "q11",
+          "operator": "=",
+          "answerInteger": 5
+        }
+      ]
+    }
+  ]
+}

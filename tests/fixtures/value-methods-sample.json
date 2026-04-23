@@ -1,0 +1,402 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "value-methods-sample",
+  "status": "draft",
+  "item": [
+    {
+      "id": 2610581014153,
+      "type": "integer",
+      "linkId": "/itm1",
+      "text": "Type Initial Value (Single)",
+      "repeats": false,
+      "initial": [
+        {
+          "valueInteger": 6
+        }
+      ]
+    },
+    {
+      "id": 2610581014163,
+      "type": "integer",
+      "linkId": "/itm2",
+      "text": "Type Initial Value (Multiple)",
+      "repeats": true,
+      "initial": [
+        {
+          "valueInteger": 2
+        },
+        {
+          "valueInteger": 6
+        }
+      ]
+    },
+    {
+      "id": 4951063278839,
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "/itm3",
+      "text": "Pick Initial Value (Single)",
+      "repeats": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11871-3",
+            "display": "Underwear or less"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11872-1",
+            "display": "Street clothes, no shoes"
+          },
+          "initialSelected": true
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11873-9",
+            "display": "Street clothes & shoes"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4951063278829,
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        }
+      ],
+      "linkId": "/itm4",
+      "text": "Pick Initial Value (Multiple)",
+      "repeats": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11871-3",
+            "display": "Underwear or less"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11872-1",
+            "display": "Street clothes, no shoes"
+          },
+          "initialSelected": true
+        },
+        {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA11873-9",
+            "display": "Street clothes & shoes"
+          },
+          "initialSelected": true
+        }
+      ]
+    },
+    {
+      "id": 4951063278829,
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "1",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "1"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "2",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "2"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a + %b"
+          }
+        }
+      ],
+      "linkId": "/itm5",
+      "text": "Compute Initial Value"
+    },
+    {
+      "id": 4951063278829,
+      "type": "integer",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "23",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "23"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "23",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "23"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "c",
+            "language": "text/fhirpath",
+            "expression": "24",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "simple"
+              },
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "24"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a + %b + %c"
+          }
+        }
+      ],
+      "linkId": "/itm6",
+      "text": "Continuously Compute Value"
+    },
+    {
+      "id": 2610581014154,
+      "type": "integer",
+      "linkId": "/itm7",
+      "text": "None"
+    },
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "normal_weight",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='normal_weight').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "measured_weight",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='measured_weight').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "kg",
+            "display": "kilogram"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%measured_weight-%normal_weight"
+          }
+        }
+      ],
+      "linkId": "weight_change",
+      "code": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "816160009",
+          "display": "Weight loss"
+        }
+      ],
+      "text": "Compute Initial Value with decimal data type",
+      "readOnly": true
+    },
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "normal_weight",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='normal_weight').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "weight_change",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='weight_change').answer.value",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+                "valueString": "question"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "((%weight_change / %normal_weight).round(2))*100"
+          }
+        }
+      ],
+      "linkId": "6",
+      "code": [
+        {
+          "system": "http://snomed.info/sct",
+          "code": "248346009",
+          "display": "weight change"
+        }
+      ],
+      "text": "Continuously Compute Value with decimal data type",
+      "readOnly": true
+    },
+    {
+      "id": 4951063279999,
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "1",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "1"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "2",
+            "extension": [
+              {
+                "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+                "valueString": "2"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%a + %b"
+          }
+        }
+      ],
+      "linkId": "/itm10",
+      "text": "Compute Initial Value with variables without custom expression-editor-variable-type"
+    }
+  ]
+}

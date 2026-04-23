@@ -29,7 +29,8 @@
 
   let fbWindow = null;
   // Open the form builder window running on separate origin
-  let fbUrl = 'http://localhost:9032';
+  // Read the URL from the http params.
+  let fbUrl = new URLSearchParams(window.location.search).get('targetUrl');
 
   let initHeader = document.getElementById('initH');
   let updateHeader = document.getElementById('updateH');

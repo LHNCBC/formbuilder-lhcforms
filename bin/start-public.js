@@ -5,10 +5,10 @@
  */
 const hostName = require('os').hostname();
 const { spawn } = require('child_process');
-const packageJson = require('../package.json');
+const packageJson = require('dotenv').config({path: ['.env.local', '.env']});
 
 // Port 9030 for form builder.
-const ngArgs = ['serve', '--port', packageJson.config.devPort, '--host', hostName];
+const ngArgs = ['serve', '--port', process.env.BASE_PORT, '--host', hostName];
 // Use production configuration for dist folder which contains production artifacts.
 if (process.argv[2] && process.argv[2] === '--dist') {
   ngArgs.push('--configuration');

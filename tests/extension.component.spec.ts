@@ -56,7 +56,7 @@ test.describe('extension.component', async () => {
   });
 
   test('Should import a questionnaire with form level extensions, display and see it in the JSON', async ({page}) => {
-    const fileJson = await PWUtils.uploadFile(page, 'fixtures/extensions-sample.json');
+    const fileJson = await PWUtils.uploadFile(page, 'extensions-sample.json');
 
     // Verify that the source form is intact
     let q = await PWUtils.getQuestionnaireJSON(page, 'R4');
@@ -115,7 +115,7 @@ test.describe('extension.component', async () => {
   });
 
   test('Should import a questionnaire with item level extensions, display and see it in the JSON', async ({page}) => {
-    const fileJson = await PWUtils.uploadFile(page, 'fixtures/extensions-sample.json');
+    const fileJson = await PWUtils.uploadFile(page, 'extensions-sample.json');
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
     await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();

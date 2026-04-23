@@ -1,0 +1,350 @@
+{
+  "id": "55418-8-x",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2021-02-16T09:15:00.000-05:00",
+    "profile": [
+      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire|2.7"
+    ],
+    "tag": [
+      {
+        "code": "lformsVersion: 28.1.1"
+      }
+    ]
+  },
+  "date": "2018-09-12T18:03:40-04:00",
+  "identifier": [
+    {
+      "system": "http://loinc.org",
+      "value": "55418-8"
+    }
+  ],
+  "code": [
+    {
+      "system": "http://loinc.org",
+      "code": "55418-8",
+      "display": "Weight and Height tracking panel"
+    }
+  ],
+  "subjectType": [
+    "Patient"
+  ],
+  "status": "draft",
+  "url": "https://lforms-smart-fhir.nlm.nih.gov/v/r4/fhir/Questionnaire/55418-8-x",
+  "name": "weight_height_tracking_panel",
+  "title": "Weight & Height tracking panel",
+  "resourceType": "Questionnaire",
+  "item": [
+    {
+      "type": "decimal",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "29463-7",
+          "display": "Weight"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
+          "valueDuration": {
+            "value": 1,
+            "unit": "year",
+            "system": "http://unitsofmeasure.org",
+            "code": "a"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "kg",
+            "system": "http://unitsofmeasure.org"
+          }
+        }
+      ],
+      "required": false,
+      "linkId": "/29463-7",
+      "text": "Weight"
+    },
+    {
+      "type": "choice",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8352-7",
+          "display": "Clothing worn during measure"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ],
+            "text": "Drop down"
+          }
+        }
+      ],
+      "required": false,
+      "linkId": "/8352-7",
+      "text": "Clothing worn during measure",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "LA11871-3",
+            "display": "Underwear or less",
+            "system": "http://loinc.org"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "LA11872-1",
+            "display": "Street clothes, no shoes",
+            "system": "http://loinc.org"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "LA11873-9",
+            "display": "Street clothes & shoes",
+            "system": "http://loinc.org"
+          }
+        }
+      ]
+    },
+    {
+      "type": "decimal",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8302-2",
+          "display": "Body height"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
+          "valueDuration": {
+            "value": 1,
+            "unit": "year",
+            "system": "http://unitsofmeasure.org",
+            "code": "a"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "[in_i]",
+            "system": "http://unitsofmeasure.org"
+          }
+        }
+      ],
+      "required": false,
+      "linkId": "/8302-2",
+      "text": "Body height"
+    },
+    {
+      "type": "decimal",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "39156-5",
+          "display": "BMI"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "a",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='/29463-7').answer.value"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "b",
+            "language": "text/fhirpath",
+            "expression": "%resource.item.where(linkId='/8302-2').answer.value*0.0254"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "description": "BMI calculation",
+            "language": "text/fhirpath",
+            "expression": "(%a/(%b.power(2))).round(1)"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "kg/m2",
+            "system": "http://unitsofmeasure.org"
+          }
+        }
+      ],
+      "required": false,
+      "linkId": "/39156-5",
+      "text": "BMI"
+    },
+    {
+      "type": "choice",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8361-8",
+          "display": "Bdy position with respect to gravity"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ],
+            "text": "Drop down"
+          }
+        }
+      ],
+      "required": false,
+      "linkId": "/8361-8",
+      "text": "Bdy position with respect to gravity",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "LA11868-9",
+            "display": "Sitting",
+            "system": "http://loinc.org"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "LA11869-7",
+            "display": "Lying",
+            "system": "http://loinc.org"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "LA11870-5",
+            "display": "Standing",
+            "system": "http://loinc.org"
+          }
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "a_fhirpath_exp",
+        "language": "text/fhirpath",
+        "expression": "%resource.item.where(linkId='/8302-2').answer.value",
+        "extension": [
+          {
+            "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+            "valueString": "expression"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "b_fhir_query",
+        "language": "application/x-fhir-query",
+        "expression": "%resource.item.where(linkId='/8352-7').answer.value",
+        "extension": [
+          {
+            "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+            "valueString": "query"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "c_fhir_obs",
+        "language": "application/x-fhir-query",
+        "expression": "Observation?code=http%3A%2F%2Floinc.org%7C29463-7&date=gt{{today()-1 months}}&patient={{%patient.id}}&_sort=-date&_count=1",
+        "extension": [
+          {
+            "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+            "valueString": "queryObservation"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "d_question",
+        "language": "text/fhirpath",
+        "expression": "%resource.item.where(linkId='/29463-7').answer.value",
+        "extension": [
+          {
+            "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+            "valueString": "question"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "e_simple",
+        "language": "text/fhirpath",
+        "expression": "1 + 1",
+        "extension": [
+          {
+            "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+            "valueString": "simple"
+          },
+          {
+            "url": "http://lhcforms.nlm.nih.gov/fhirExt/simple-syntax",
+            "valueString": "1 + 1"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext",
+      "extension": [
+        {
+          "url": "name",
+          "valueId": "patient"
+        },
+        {
+          "url": "type",
+          "valueCode": "Patient"
+        },
+        {
+          "url": "description",
+          "valueString": "For filling in patient information as the subject for the form"
+        }
+      ]
+    }
+  ]
+}

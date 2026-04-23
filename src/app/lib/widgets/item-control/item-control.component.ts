@@ -24,7 +24,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   private extensionsService = inject(ExtensionsService);
   private formService = inject(FormService);
   private cdr = inject(ChangeDetectorRef);
-  private liveAnnouncer = inject(LiveAnnouncer);
+  // TODO - Removed from master? private liveAnnouncer = inject(LiveAnnouncer);
   private modelService = inject(SharedObjectService);
 
   static itemControlUrl = EXTENSION_URL_ITEM_CONTROL;

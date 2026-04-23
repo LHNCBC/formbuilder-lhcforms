@@ -2,6 +2,56 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.13] 2026-03-30
+### Changed
+- Migrated end-to-end tests from Cypress to Playwright.
+### Added
+- Added Playwright test for Expression Editor autocomplete functionality.
+
+## [11.0.12] 2026-03-20
+### Fixed
+- Fix `npm run start-public` to use dotenv files.
+
+## [11.0.11] 2026-03-12
+### Changed
+- Fix some flaky playwright tests.
+- Add dotenv variables to control user specific settings for e2e tests.
+
+## [11.0.10] 2026-02-23
+### Changed
+- Mock data for LOINC, SNOMED, and UCUM calls in Cypress tests.
+
+## [11.0.9] 2026-02-18
+### Fixed
+- Fixed cy-run-il spec glob to run all *.cy.ts tests.
+
+## [11.0.8] 2026-02-10
+### Added
+- Added answerOptions validation.
+
+## [11.0.7] 2026-02-05
+### Fixed
+- Fixed a bug in searching R5 FHIR server using item-code parameter.
+- Fixed error handling when FHIR server throws errors on search.
+
+## [11.0.6] 2026-01-30
+### Fixed
+- Fixed an issue with enableWhen answer coding when the coding was missing properties.
+### Changed
+- Updated the Expression Item Variables section to be collapsed by default.
+
+## [11.0.5] 2026-01-25
+### Added
+- Added enableWhen answer validation to check values against answerOptions.
+
+## [11.0.4] 2026-01-16
+### Fixed
+- Fixed an issue causing the display field to not appear when the system field is blank for answer options.
+- Fixed an issue where the Angular 20 upgrade caused viewChecked$ to fail, resulting in the enableWhen
+  error message appearing next to the icon.
+- Fixed the enableWhen error icon appearing in the action column.
+- Fixed action column icon overflow caused by increased width in the FortAwesome library upgrade.
+
 ## [11.0.3] 2026-01-13
 ### Added
 - Implemented enableWhenExpression.

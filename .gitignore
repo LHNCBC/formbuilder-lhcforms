@@ -12,7 +12,7 @@
 
 # angular cache
 .angular
-
+.env.local
 # dependencies
 /node_modules
 

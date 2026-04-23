@@ -1,10 +1,11 @@
 /**
  * Customize array-widget from ngx-schema-form.
  */
-import {Directive, Input, OnDestroy, OnInit} from '@angular/core';
+import {Directive, inject, Input, OnDestroy, OnInit} from '@angular/core';
 import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {Subscription} from 'rxjs';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 
 import {Util} from '../../util';
 
@@ -39,6 +40,38 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
   subscriptions: Subscription[] = [];
   widgetInfo: {[key: string]: any};
   isRequired = false;
+
+  liveAnnouncer: LiveAnnouncer = inject(LiveAnnouncer);
+  errors: { code: string, originalMessage: string, modifiedMessage: string }[] = null;
+
+  // Replace standard error messages from schema validator with customized messages.
+  // Keys are error codes from the validator.
+  modifiedMessages = {
+    PATTERN: [
+      {
+        pattern: "^[A-Za-z0-9\\-\\.]{1,64}$",
+        message: 'Only alphanumeric, hyphen and period characters are allowed in this field. Make sure any white space characters are not used.'
+      }, // id
+      {
+        pattern: '^\\S*$',
+        message: 'Spaces and other whitespace characters are not allowed in this field.'
+      }, // uri
+      {
+        pattern: '^[^\\s]+(\\s[^\\s]+)*$',
+        message: 'Spaces are not allowed at the beginning or end.'
+      },       // code
+      {
+        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$',
+        message: 'Valid format is yyyy-MM-dd.'
+      }, // Date
+      {
+        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$',
+        message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM).'
+      } // Datetime
+    ],
+    MIN_LENGTH: null,
+    MAX_LENGTH: null
+  }
 
   ngOnInit() {
     // Determine if this field is required.
@@ -93,5 +126,26 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
    */
   ngOnDestroy() {
     this.unsubscribe();
+  }
+
+  /**
+   * Replace the standard schema validator error message with the customized message.
+   * @param pattern - Pattern as specified in the schema to identify the replacement message.
+   */
+  getModifiedErrorForPatternMismatch(pattern: string): string {
+    const messageObj = this.modifiedMessages.PATTERN.find((el) => {
+      return el.pattern === pattern;
+    });
+    return messageObj ? messageObj.message : null;
+  }
+
+  /**
+   * Check for errors when the field is focused and announce any existing errors.
+   */
+  announceErrors(): void {
+    if(this.errors) {
+      const combinedErrorMessage = this.errors.reduce((acc, error) => acc + error.originalMessage, '');
+      this.liveAnnouncer.announce(combinedErrorMessage);
+    }
   }
 }

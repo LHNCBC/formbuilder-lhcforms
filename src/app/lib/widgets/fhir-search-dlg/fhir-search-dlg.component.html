@@ -1,14 +1,16 @@
-<div class="modal-header bg-primary" role="dialog">
-  <h4 class="modal-title text-white">Import a questionnaire</h4>
-  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close(false)">
-  </button>
+<div role="dialog" aria-modal="true" aria-labelledby="searchDlgHeader">
+  <div class="modal-header bg-primary">
+    <h4 class="modal-title text-white" id="searchDlgHeader">Import a questionnaire</h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="close(false)">
+    </button>
+  </div>
+  <!--
+  Put search in modal header and results in modal body.
+  It helps to keep the search box visible while results are scrolling
+  -->
+  <div class="modal-header"><ng-container *ngTemplateOutlet="searchTmpl"></ng-container></div>
+  <ng-container *ngTemplateOutlet="results"></ng-container>
 </div>
-<!--
-Put search in modal header and results in modal body.
-It helps to keep the search visible while results are scrolling
--->
-<div class="modal-header"><ng-container *ngTemplateOutlet="searchTmpl"></ng-container></div>
-<ng-container *ngTemplateOutlet="results"></ng-container>
 
 <!-- Search template -->
 <ng-template #searchTmpl>
@@ -17,15 +19,15 @@ It helps to keep the search visible while results are scrolling
       <div class="col">
         <div class="align-items-center d-inline-flex">
           <div class="input-group input-group-sm">
-            <input type="text" class="form-control"
+            <input type="search" class="form-control"
               [(ngModel)]="inputTerm"
               [ngModelOptions]="{standalone: true}"
               [placeholder]="searchField.searchFieldPlaceholder"
               aria-label="Search term"
               aria-describedby="filterHelp">
             <button
-              class="align-self-baseline btn btn-sm btn-primary input-group-append"
-              type="button"
+              class="align-self-baseline btn btn-sm btn-primary"
+              type="submit"
               id="button-addon2"
               (click)="searchInput()"
               [disabled]="loading$ | async">
@@ -40,7 +42,10 @@ It helps to keep the search visible while results are scrolling
               }
             </button>
           </div>
-          <div class="ms-1" ngbTooltip="Choose a search field and enter the search term. Choosing 'Any text field' implies searching '_content'. Please refer to FHIR REST API for details.">
+          <div class="ms-1"
+               ngbTooltip="Choose a search field and enter the search term. Choosing 'Any text field' implies searching '_content'. Please refer to FHIR REST API for details."
+               tooltipClass="lfb-custom-tooltip"
+          >
             <fa-icon [icon]="infoIcon"></fa-icon>
           </div>
         </div>
@@ -65,6 +70,26 @@ It helps to keep the search visible while results are scrolling
         }
       </select>
     </div>
+    @if(searchError) {
+      <div class="card bg-danger-subtle">
+        <div class="card-header" role="alert">
+          <span>{{searchError.message}}</span>
+          <button href="#" class="btn btn-sm" (click)="errorDetailsShow = !errorDetailsShow"
+                  ngbTooltip="Toggle error details"
+                  tooltipClass="lfb-custom-tooltip"
+                  aria-label="Toggle error details">
+            <fa-icon [icon]="faExclamationTriangle" class="m-0 ms-1 text-danger" aria-hidden="true"></fa-icon>
+          </button>
+        </div>
+        @if (errorDetailsShow) {
+          <ul class="card-body">
+            @for(msg of searchError.details; track msg; ) {
+              <li>{{msg}}</li>
+            }
+          </ul>
+        }
+      </div>
+    }
     @if (bundle$ | async) {
       <div class="row">
         <div class="col">

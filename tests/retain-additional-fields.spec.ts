@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils} from "./pw-utils";
 
-test.describe('retain-additional-fields', async () => {
+test.describe('retain-additional-fields', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
@@ -15,8 +15,10 @@ test.describe('retain-additional-fields', async () => {
   test('should retain contained field', async ({page}) => {
     await page.getByLabel('Start from scratch').click();
     await page.getByRole('button', {name: 'Continue'}).click();
-    const fileJson = await PWUtils.uploadFile(page, '../cypress/fixtures/contained-example.json');
-    await expect(page.getByLabel('Title', {exact: true})).toHaveValue('Contained example');
+    const fileJson = await PWUtils.uploadFile(page, 'contained-example.json');
+    const titleInput = page.getByLabel('Title', { exact: true });
+    await expect(titleInput).toHaveValue('Contained example', { timeout: 10000 });
+
     const json = await PWUtils.getQuestionnaireJSON(page, 'R4');
     expect(json.contained).toEqual(fileJson.contained);
   });

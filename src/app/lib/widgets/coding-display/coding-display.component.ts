@@ -16,7 +16,8 @@ declare var LForms: any;
       </div>
     }
     @else {
-      <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control form-control-sm" [formControl]="control"/>
+      <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control form-control-sm" [formControl]="control"
+        placeholder="Type your own">
     }
   `,
   styles: [`
@@ -62,10 +63,26 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
     super();
   }
 
+  ngOnInit() {
+    super.ngOnInit();
+    this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
+  }
+
   ngAfterViewInit() {
     super.ngAfterViewInit();
     this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
-
+/*
+ // TODO - Review later.
+    // Prevent the focusin from bubbling up
+    // Loading existing questionnaires with answerOptions missing `display`
+    // causes the input to be auto-focused. This fires a `focusin` event,
+    // which triggers validation and shows a warning dialog prematurely.
+    if (this.manualInput) {
+      this.manualInput.nativeElement.addEventListener('focusin', (e) => {
+        e.stopPropagation();
+      }, { once: true, capture: true });
+    }
+*/
     let sub = this.formProperty.valueChanges.subscribe((value: any) => {
       if(this.autoComplete) {
         this.autoComp.setFieldVal(value);
@@ -73,12 +90,20 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
     });
     this.subscriptions.push(sub);
 
-    sub = this.formProperty.parent.getProperty('system').valueChanges.subscribe((system) => {
-      if(this.formService.loading) {
-        return;
-      }
+    // Initialize system from the current property value BEFORE subscribing,
+    // so the BehaviorSubject's initial emission is recognized as "no change".
+    this.system = this.formProperty.parent.getProperty('system').value;
+    this.selectedSystem = this.systemLookups.find((obj: any) => obj.systemUrl === this.system);
+    if (this.selectedSystem) {
+      this.autoComplete = true;
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        this.resetAutocomplete(false);
+      }, 0);
+    }
 
-      if (this.system === system) {
+    sub = this.formProperty.parent.getProperty('system').valueChanges.subscribe((system) => {
+      if(this.formService.loading || this.system === system) {
         return;
       }
 
@@ -113,6 +138,18 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
       }
     });
     this.subscriptions.push(sub);
+/*
+// TODO -- Changes from master. Review later
+    // Prevent the focusin from bubbling up
+    // Loading existing questionnaires with answerOptions missing `display`
+    // causes the input to be auto-focused. This fires a `focusin` event,
+    // which triggers validation and shows a warning dialog prematurely.
+    if (this.codingDisplay) {
+      this.codingDisplay.nativeElement.addEventListener('focusin', (e) => {
+        e.stopPropagation();
+      }, { once: true, capture: true });
+    }
+*/
   }
 
   /**
@@ -150,7 +187,7 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
   /**
    * Destroy and recreate autocomplete.
    */
-  resetAutocomplete() {
+  resetAutocomplete(shouldFocus = true) {
     this.destroyAutocomplete();
     if (!this.selectedSystem) {
       return;
@@ -166,7 +203,7 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
 
     if (this.formProperty.value) {
       this.autoComp.setFieldVal(this.formProperty.value, false);
-    } else if (this.codingDisplay && this.codingDisplay.nativeElement && !this.codingDisplay.nativeElement.value) {
+    } else if (shouldFocus && this.codingDisplay && this.codingDisplay.nativeElement && !this.codingDisplay.nativeElement.value) {
       this.codingDisplay.nativeElement.focus();
     }
 

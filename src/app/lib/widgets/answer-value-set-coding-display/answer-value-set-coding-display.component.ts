@@ -209,7 +209,7 @@ export class AnswerValueSetCodingDisplayComponent extends LfbControlWidgetCompon
    * @param event - The focusout event containing the current input element.
    */
   onFocusOut(event: any) {
-    if (event.target.value && event.target.value !== this.model) {
+    if (event.target.value && event.target.value !== this.model?.display) {
       const coding = this.formProperty.parent.value;
       coding['display'] = event.target.value;
       this.model = coding;

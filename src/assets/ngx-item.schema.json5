@@ -886,6 +886,7 @@
           titleSection: true,
           uneditableVariablesSection: true,
           itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -1287,7 +1288,8 @@
           {"field": "valueCoding.code", "title": "Code", "col": 2, "nolabel": true},
           {"field": "valueCoding.__$score", "title": "Score", "col": 2, "nolabel": true},
           {"field": "valueReference", "col": 9, "nolabel": true}
-        ]
+        ],
+        "showLinkStatus": true
       }
     },
     "__$itemControl": {
@@ -2181,7 +2183,7 @@
         "expressionLabel": "",
         "displayExpressionEditorSections": {
           titleSection: true,
-          uneditableVariablesSection: false,
+          uneditableVariablesSection: true,
           itemVariablesSection: true,
           outputExpressionSection: false
         },
@@ -2260,7 +2262,9 @@
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: true,
+          uneditableVariablesSectionExpanded: false,
           itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -2268,64 +2272,6 @@
         "controlClasses": "col"
       }
     },
-    /*
-    "__$initialExpression": {
-      "description": "A FHIRPath expression used to compute the initial (default) value of a questionnaire item when the form is first rendered.",
-      "title": "Expression",
-      "$ref": "#/definitions/Extension",
-      "visibleIf": {
-        "__$valueMethod": ["compute-initial"]
-      },
-      "widget": {
-        "id": "expression-editor",
-        "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-        "userExpressionChoices": [
-          { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
-          { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
-        ],
-        "noTableLabel": true,
-        "showExpression": true,
-        "expressionLabel": "Output Expression",
-        "displayExpressionEditorSections": {
-          titleSection: true,
-          uneditableVariablesSection: true,
-          itemVariablesSection: true,
-          outputExpressionSection: true
-        },
-        "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col"
-      }
-    },
-    "__$calculatedExpression": {
-      "description": "A FHIRPath expression that determines the current value of a Questionnaire item based on other answers or context.",
-      "title": "Expression",
-      "$ref": "#/definitions/Extension",
-      "visibleIf": {
-        "__$valueMethod": ["compute-continuously"]
-      },
-      "widget": {
-        "id": "expression-editor",
-        "expressionUri": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-        "userExpressionChoices": [
-          { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
-          { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
-        ],
-        "noTableLabel": true,
-        "showExpression": true,
-        "expressionLabel": "Output Expression",
-        "displayExpressionEditorSections": {
-          titleSection: true,
-          uneditableVariablesSection: true,
-          itemVariablesSection: true,
-          outputExpressionSection: true
-        },
-        "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col"
-      }
-    },
-    */
     "__$answerExpression": {
       "description": "An expression (FHIRPath, CQL, or FHIR query) that dynamically generates a list of allowed answers for a question item, or provides context for a group item. Users can select one or more answers from the generated list.",
       "title": "Answer expression",
@@ -2381,7 +2327,9 @@
         "displayExpressionEditorSections": {
           titleSection: true,
           uneditableVariablesSection: false,
-          itemVariablesSection: false,
+          uneditableVariablesSectionExpanded: false,
+          itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -2943,30 +2891,6 @@
         }
       ]
     },
-    /*
-    {
-      "fields": [
-        "__$initialExpression"
-      ],
-      "showFields": [
-        {
-          "field": "__$initialExpression",
-          "col": 12
-        }
-      ]
-    },
-    {
-      "fields": [
-        "__$calculatedExpression"
-      ],
-      "showFields": [
-        {
-          "field": "__$calculatedExpression",
-          "col": 12
-        }
-      ]
-    },
-    */
     {
       "fields": [
         "__$answerExpression"

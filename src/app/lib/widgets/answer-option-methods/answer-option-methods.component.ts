@@ -24,7 +24,7 @@ export class AnswerOptionMethodsComponent extends LabelRadioComponent implements
   tableService = inject(TableService);
   modelService = inject(SharedObjectService);
   private formService = inject(FormService);
-  private liveAnnouncer = inject(LiveAnnouncer);
+  // private liveAnnouncer = inject(LiveAnnouncer);
 
   isSnomedUser = false;
   answerOptionMethod = null;

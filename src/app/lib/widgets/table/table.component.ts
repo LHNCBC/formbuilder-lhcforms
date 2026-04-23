@@ -25,7 +25,7 @@ import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong, 
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
-import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
+import {faExclamationTriangle, faLink} from '@fortawesome/free-solid-svg-icons';
 import { TableService, TableStatus } from 'src/app/services/table.service';
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
 
@@ -49,9 +49,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   addEditAction = false;
   warningIcon = faExclamationTriangle;
+  linkIcon = faLink;
+
   includeErrorColumn = false;
   showErrorTypeList = [];
   showErrorObject;
+  includeStatusColumn = false;
 
   dataType = "string";
   includeActionColumn = false;
@@ -85,6 +88,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   // Used to store the indexes of rows to be hidden.
   // Hiding is only for display purpose. The rows are still present in the form property.
   _hideRows: Set<number> = new Set<number>();
+
+  isReordering = false;
 
   constructor() {
     super();
@@ -124,6 +129,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.booleanControlledOption = !!widget.booleanControlledOption;
     }
 
+    this.includeStatusColumn = !!widget.showLinkStatus;
+
+
     this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
 
     if(widget.rowSelection) {
@@ -137,7 +145,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   /**
-   * Manages the visibility of the error column based on the schema.widget configuration for
+   * Manages the visibility of the error column based on the `schema.widget` configuration for
    * the given property.
    * @param widget - The widget configuration for the property.
    */
@@ -350,7 +358,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   addItemWithAlert(popoverRef) {
     this.isCollapsed = false;
     const items = this.formProperty.properties as [];
-    const lastItem = items.length ? items[items.length - 1] : null;
+    const lastItem: FormProperty = items.length ? items[items.length - 1] : null;
     if(!lastItem || !Util.isEmpty(lastItem.value)) { // If no lastItem or be not empty.
       this.addItem();
       setTimeout(() => {
@@ -495,6 +503,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param index - Index of the row to be moved up.
    */
   onMoveUp(index) {
+    this.isReordering = true;
     const props = this.formProperty.properties as FormProperty [];
     if(props.length > 1) {
       this.changeSelectionOnMove(index, -1);
@@ -503,6 +512,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.formProperty.updateValueAndValidity();
       setTimeout(() => {
         this.getInputElementInTable(index - 1, 0).focus();
+        this.isReordering = false;
       });
     }
   }
@@ -512,6 +522,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param index - Index of the row to be moved down.
    */
   onMoveDown(index) {
+    this.isReordering = true;
     const props = this.formProperty.properties as FormProperty [];
     if(props.length > 1) {
       this.changeSelectionOnMove(index, 1);
@@ -520,6 +531,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.formProperty.updateValueAndValidity();
       setTimeout(() => {
         this.getInputElementInTable(index + 1, 0).focus();
+        this.isReordering = false;
       });
     }
   }
@@ -550,8 +562,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param index - Index of the row.
    */
   isEmpty(index: number) {
-    const ret = Util.isEmpty(this.formProperty.properties[index].value);
-    return ret;
+    return Util.isEmpty(this.formProperty.properties[index].value);
   }
 
   /**
@@ -644,8 +655,13 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   /**
    * Check if the edit button should be disabled for a given row.
+   *
+   * Default implementation returns false. The subclasses can override this method
+   * to determine whether the edit button should be disabled for a given row.
+   *
    * Returns false by default, but can be overridden in derived classes.
    * @param index - Index of the row in the table.
+   * @param arrayProperty - ArrayProperty representing the table data.
    */
   isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     return false;
@@ -667,7 +683,28 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     return otherClasses?.join(' ');
   }
 
-  getTrackParam(formProperty: FormProperty, index: number) {
-    return formProperty?.canonicalPathNotation || index.toString();
+
+  /**
+   * Handles the edit action for a table row at the specified index.
+   * This method is intended to be overridden in derived components to implement
+   * custom edit logic for individual rows. By default, it logs the event.
+   *
+   * @param event - The DOM event triggered by the edit action.
+   * @param index - The index of the row to edit.
+   */
+  onEdit(event: Event, index: number) {
+    // Nothing by default. Override this method to implement for specific table.
+  }
+
+  /**
+   * Determines whether the row at the specified index is referenced by another item.
+   * This base implementation always returns false and is intended to be overridden
+   * in derived components where reference tracking is required (e.g., for conditional logic).
+   *
+   * @param index - The index of the row to check.
+   * @returns False by default; override in subclasses to provide actual reference logic.
+   */
+  isReferencedByOtherItem(index: number): boolean {
+    return false;
   }
 }

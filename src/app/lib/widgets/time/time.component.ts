@@ -4,6 +4,7 @@ import {LabelComponent} from "../label/label.component";
 import { NgClass } from "@angular/common";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
+import { AsyncPipe } from '@angular/common';
 
 /**
  * TimeComponent is a component for handling time input in the format HH:MM:SS.mmm.
@@ -17,8 +18,9 @@ import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.d
     NgClass,
     LfbDisableControlDirective,
     FormsModule,
-    ReactiveFormsModule
-],
+    ReactiveFormsModule,
+    AsyncPipe
+  ],
   templateUrl: './time.component.html',
   styles: [`
     .form-control-like {

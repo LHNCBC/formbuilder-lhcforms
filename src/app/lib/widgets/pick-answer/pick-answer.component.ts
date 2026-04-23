@@ -17,7 +17,13 @@ import {LabelComponent} from "../label/label.component";
 @Component({
   selector: 'lfb-pick-answer',
   imports: [CommonModule, SchemaFormModule, FontAwesomeModule, LabelComponent],
-  templateUrl: './pick-answer.component.html'
+  templateUrl: './pick-answer.component.html',
+  // Add this to reduce the thickness of the red highlight when there is an error.
+  styles: [`
+    .ansList.invalid {
+      border: none;
+    }
+  `]
 })
 
 export class PickAnswerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy{

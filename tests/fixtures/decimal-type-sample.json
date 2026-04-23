@@ -1,0 +1,56 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Decimal type form",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "text": "Item with decimal data type",
+      "linkId": "1",
+      "type": "decimal",
+      "initial": [{
+        "valueDecimal": 1.1
+      }],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "[in_i]",
+            "display": "inch",
+            "system": "http://unitsofmeasure.org"
+          }
+        },
+        {
+          "url": "http://dummy.org",
+          "valueInteger": 1
+        }
+      ]
+    },
+    {
+      "text": "Item with non-ucum units",
+      "linkId": "2",
+      "type": "decimal",
+      "initial": [{
+        "valueDecimal": 2.2
+      }],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "XY",
+            "display": "X Y",
+            "system": "http://x.y"
+          }
+        },
+        {
+          "url": "http://dummy.org",
+          "valueInteger": 2
+        }
+      ]
+    }
+  ]
+}

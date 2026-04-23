@@ -7,7 +7,11 @@ import {TerminologyServerComponent} from '../terminology-server/terminology-serv
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import {NgbTooltip} from '@ng-bootstrap/ng-bootstrap';
 import {Util} from '../../util';
-import { ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET } from '../../constants/constants';
+import {
+  ANSWER_OPTION_METHOD_SNOMED_VALUE_SET,
+  ANSWER_OPTION_METHOD_VALUE_SET,
+  PREFERRED_TERMINOLOGY_SERVER_URI
+} from '../../constants/constants';
 import {SharedObjectService} from "../../../services/shared-object.service";
 
 @Component({
@@ -134,15 +138,15 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    */
   setSNOMEDTerminologyServer(isAdd: boolean) {
     if(isAdd) {
-      if(!this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI)) {
+      if(!this.extensionService.getFirstExtensionByUrl(PREFERRED_TERMINOLOGY_SERVER_URI)) {
         this.extensionService.addExtension({
-          url: TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
+          url: PREFERRED_TERMINOLOGY_SERVER_URI,
           valueUrl: AnswerValueSetComponent.snomedTerminologyServer
         }, 'valueUrl')
       }
     } else {
       this.extensionService.removeExtension((ext) => {
-        return ext.value.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
+        return ext.value.url === PREFERRED_TERMINOLOGY_SERVER_URI
                   && ext.value.valueUrl === AnswerValueSetComponent.snomedTerminologyServer;
       });
     }

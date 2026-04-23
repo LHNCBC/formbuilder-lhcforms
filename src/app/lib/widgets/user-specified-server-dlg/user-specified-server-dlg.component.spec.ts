@@ -12,7 +12,7 @@ describe('UserSpecifiedServerDlgComponent', () => {
     TestBed.resetTestingModule();
   });
 
-  CommonTestingModule.setUpTestBedConfig({declarations: [FhirSearchDlgComponent, UserSpecifiedServerDlgComponent]});
+  CommonTestingModule.setUpTestBedConfig({imports: [FhirSearchDlgComponent], declarations: [UserSpecifiedServerDlgComponent]});
 
   beforeEach(() => {
     fixture = TestBed.createComponent(UserSpecifiedServerDlgComponent);

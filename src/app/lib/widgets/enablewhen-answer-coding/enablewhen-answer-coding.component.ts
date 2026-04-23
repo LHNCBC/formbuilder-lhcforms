@@ -10,7 +10,13 @@ import {Subscription} from 'rxjs';
 import {AutoCompleteComponent, AutoCompleteOptions} from '../auto-complete/auto-complete.component';
 import {FormsModule} from "@angular/forms";
 import {SharedObjectService} from "../../../services/shared-object.service";
+import { LiveAnnouncer } from '@angular/cdk/a11y';
+import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lfb-option-control-widget.component';
+import { Util } from '../../util';
+import { TYPE_CODING } from '../../constants/constants';
 declare var LForms: any;
+
+// TODO: THE HTML NEEDS TO CHANGE>>>>> // This comment is from master. -Ajay
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
@@ -20,29 +26,27 @@ declare var LForms: any;
       @if (autoComplete) {
         <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
       } @else {
-        <select [ngModel]="model" [compareWith]="compareFn" (ngModelChange)="modelChanged($event)"
-          name="{{name}}" [attr.id]="id"
-          class="form-control"
-          >
-          <ng-container>
-            <!-- Create some unique track argument -->
-            @for (option of answerOptions; track (option.valueCoding.display + ' ' + option.valueCoding.code)) {
-              <option [ngValue]="option.valueCoding"
-              >{{option.valueCoding.display}} ({{option.valueCoding.code}})</option>
-            }
-          </ng-container>
-        </select>
+        <div class="p-0">
+          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control form-control-sm" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
+        </div>
       }
     </div>
 
-    `,
+    @if (errors?.length && !isFormPropertyEmpty()) {
+      @for (error of errors; track error.code) {
+        <small class="text-danger form-text" role="alert"
+        >{{error.modifiedMessage || error.originalMessage}}</small>
+      }
+    }
+
+  `,
   styles: [
   ]
 })
-export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
+
+export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   private formService = inject(FormService);
   private modelService = inject(SharedObjectService);
-
 
   subscriptions: Subscription [] = [];
   answerOptions: fhir.QuestionnaireItemAnswerOption [] = [];
@@ -66,6 +70,7 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
   model: fhir.Coding;
 
   ngOnInit() {
+    super.ngOnInit();
     this.init();
   }
 
@@ -97,6 +102,40 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
       this.init();
     });
     this.subscriptions.push(sub);
+
+    sub = this.formProperty.errorsChanges.subscribe((errors) => {
+      this.errors = null;
+      if (errors?.length) {
+        const errorsObj = {};
+        errors.reduce((acc, error) => {
+          if (error.code.startsWith('ENABLEWHEN_') && !acc[error.code]) {
+            acc[error.code] = error;
+          }
+
+          return acc;
+        }, errorsObj);
+
+        this.errors = Object.values(errorsObj)
+          .map((e: any) => {
+          let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
+          if(!e.params[1]?.trim() && this.schema.widget.showEmptyError) {
+            // If the error is caused by an empty value, use a generic message.
+            ret.code = 'EMPTY_ERROR';
+            ret.modifiedMessage = 'This field is required.';
+          } else {
+            const modifiedMessage = e.code === 'PATTERN'
+              ? this.getModifiedErrorForPatternMismatch(e.params[0])
+              : this.modifiedMessages[e.code];
+            ret.code = e.code;
+            ret.originalMessage = e.message;
+            ret.modifiedMessage = modifiedMessage;
+          }
+          return ret;
+        });
+      }
+    });
+    this.subscriptions.push(sub);
+
   }
 
 
@@ -141,6 +180,44 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     return ret;
   }
 
+  /**
+   * Handles the input event for the enableWhen date input field.
+   * Updates the formProperty value to match the UI input, triggering standard validation.
+   * Also triggers custom enableWhen validation after the value is set.
+   *
+   * @param event - The input event from the date input element.
+   */
+  onInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    setTimeout(() => {
+      // Set the formProperty value to match the UI input.
+      // This will trigger the standard validation.
+      if (this.formProperty) {
+        const newCoding = this.parseCoding(input.value);
+
+        this.formProperty.setValue(newCoding, true);
+        // Trigger the custom enableWhen validation
+        this.formProperty.updateValueAndValidity(false, true);
+      }
+    }, 0);
+  }
+
+  /**
+   * Reset formProperty if input box has invalid date format.
+   * Intended to be invoked on blur event of an input box.
+   * @param event - DOM event
+   */
+  suppressInvalidValue(event: Event) {
+    const inputEl = event.target as HTMLInputElement;
+
+    if(inputEl.classList.contains('ng-invalid')) {
+      this.formProperty.setValue(null, false);
+    } else if (this.findParentTdWithInvalid(inputEl)) {
+      inputEl.value = '';
+      this.formProperty.setValue(null, false);
+    }
+  }
 
   /**
    * Handle model change event in <select> tag.
@@ -171,5 +248,19 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     this.subscriptions.forEach((sub) => {
       sub?.unsubscribe();
     })
+  }
+
+  /**
+   * Determines whether the form property value for a coding type is empty.
+   *
+   * Wraps the current form property value in a valueCoding structure and
+   * delegates the emptiness check to the shared utility method based on
+   * the CODING type.
+   *
+   * @returns true if the coding value is considered empty; otherwise false.
+   */
+  isFormPropertyEmpty():boolean {
+    const valueCoding = { 'valueCoding': this.formProperty.value };
+    return Util.isEmptyAnswerOptionForType([valueCoding], TYPE_CODING);
   }
 }

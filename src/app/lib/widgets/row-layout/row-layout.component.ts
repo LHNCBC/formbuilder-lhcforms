@@ -6,6 +6,7 @@ import {Component, inject, OnInit} from '@angular/core';
 import {GridComponent} from '../grid.component/grid.component';
 import {faAngleDown, faAngleUp} from '@fortawesome/free-solid-svg-icons';
 import {FormService} from '../../../services/form.service';
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 @Component({
   standalone: false,
@@ -62,7 +63,7 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
   faUp = faAngleUp;
   faDown = faAngleDown;
   formService = inject(FormService);
-
+  modelService = inject(SharedObjectService);
 
   /**
    * Initialize
@@ -73,15 +74,27 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
     this.basicRows = this.formProperty.schema.formLayout.basic || [];
     this.advancedRows = this.formProperty.schema.formLayout.advanced || [];
     this.collapseAdvanced = (this.formService.isFocusNodeHasError()) ? false : !!this.formService[this.widgetId];
+    let sub = this.formProperty.valueChanges.subscribe((val) => {
+      if(this.formService.loading) {
+        return;
+      }
+      this.init();
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.modelService.modelInitialized$.subscribe((model) => {
+      this.init();
+    });
+    this.subscriptions.push(sub);
+  }
+
+
+  /**
+   * Initialize visible fields
+   */
+  init() {
     this.basicVisibleFields = this.getVisibleFields(this.basicRows);
     this.advancedVisibleFields = this.getVisibleFields(this.advancedRows);
-    this.formProperty.valueChanges.subscribe((val) => {
-      // Remove the items in the array, but keep the same array reference.
-      this.basicVisibleFields.splice(0);
-      this.basicVisibleFields.push(...this.getVisibleFields(this.basicRows));
-      this.advancedVisibleFields.splice(0);
-      this.advancedVisibleFields.push(...this.getVisibleFields(this.advancedRows));
-    });
   }
 
   /**

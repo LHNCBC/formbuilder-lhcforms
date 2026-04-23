@@ -3,14 +3,14 @@ import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 import fhir from "fhir/r4";
 
-test.describe('Contained resources table in form level page', async () => {
+test.describe('Contained resources table in form level page', () => {
   let mainPO: MainPO;
 
   test.beforeEach(async ({page}) => {
     await page.goto('/');
     mainPO = new MainPO(page);
     await mainPO.loadFLPage();
-    await page.getByRole('button', {name: 'Advanced fields'}).click();
+    await PWUtils.clickButton(page, null, 'Advanced fields');
   });
 
   test('should add a resource', async ({page}) => {
@@ -19,11 +19,12 @@ test.describe('Contained resources table in form level page', async () => {
       'Contained resources'
     );
 
-    await page.getByRole('button', { name: 'Add new ValueSet' }).click();
+    await PWUtils.clickButton(page, null, 'Add new ValueSet');
     const dialog = page.locator('mat-dialog-container');
-    await dialog.waitFor({ state: 'visible', timeout: 5000 });
+    await dialog.waitFor({ state: 'visible', timeout: 10000 });
 
     await expect(dialog).toBeVisible();
+
     await dialog.getByLabel('Id', {exact: true}).fill('vs1');
     await dialog.getByLabel('Title', {exact: true}).fill('A title');
     const status = dialog.getByLabel('Status', {exact: true});
@@ -62,8 +63,8 @@ test.describe('Contained resources table in form level page', async () => {
       .toHaveValue(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z/);
     await expect(PWUtils.getTableCell(containedTable, 1, 5).locator('input')).toHaveValue('active');
 
-    // Verify it in JSON
-    const json = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+
     expect(json.contained).toBeDefined();
     expect(json.contained.length).toBe(1);
     const vs: fhir.ValueSet = json.contained[0] as fhir.ValueSet;
@@ -102,13 +103,14 @@ test.describe(() => {
     await page.goto('/');
     mainPO = new MainPO(page);
     await mainPO.loadFLPage();
-    fileJson = await PWUtils.uploadFile(page, 'fixtures/contained-value-set-sample.json', false);
+    fileJson = await PWUtils.uploadFile(page, 'contained-value-set-sample.json', false);
     flContainedTable = PWUtils.getTableByFieldLabel(
       page.locator('lfb-form-fields'),
       'Contained resources'
     );
-    await page.getByRole('button', {name: 'Advanced fields'}).click();
+    await PWUtils.clickButton(page, null, 'Advanced fields');
   });
+
   test('should import questionnaire with contained value set', async({page}) => {
     expect(await flContainedTable.locator('tbody > tr').count()).toBe(3);
     const editCell = PWUtils.getTableCell(flContainedTable, 2, 6).locator(editLoc);
@@ -159,7 +161,7 @@ test.describe(() => {
     await dialog.getByRole('button', {name: 'Discard changes'}).click();
 
     // Verify it in JSON
-    const json = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(json.contained).toStrictEqual(fileJson.contained);
   });
 

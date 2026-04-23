@@ -14,12 +14,12 @@ import {getSupportedLFormsVersions, loadLForms} from 'lforms-loader';
 
 import {FHIR_VERSION_TYPE, FHIR_VERSIONS, GuidingStep, Util} from '../lib/util';
 import {FetchService} from './fetch.service';
-import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
 import {SchemaService} from './schema.service';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {ISchema} from "@lhncbc/ngx-schema-form";
 import {ImportQuestionnaireService} from "./import.questionnaire.service";
+import {PREFERRED_TERMINOLOGY_SERVER_URI} from "../lib/constants/constants";
 
 declare var LForms: any;
 
@@ -1082,13 +1082,13 @@ export class FormService {
     let ret = null;
     Util.traverseAncestors(sourceNode, (node) => {
       const found = node.data.extension?.find((ext: fhir.Extension) => {
-        return ext.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
+        return ext.url === PREFERRED_TERMINOLOGY_SERVER_URI
       });
       ret = found ? found.valueUrl : null;
       return !ret; // Continue traverse if url is not found.
     });
     if(!ret) {
-      const ext = this.formLevelExtensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI)
+      const ext = this.formLevelExtensionService.getFirstExtensionByUrl(PREFERRED_TERMINOLOGY_SERVER_URI)
       ret = ext ? ext.valueUrl : null;
     }
     return ret;

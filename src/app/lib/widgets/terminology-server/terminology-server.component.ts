@@ -1,10 +1,21 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject,
+  ChangeDetectorRef
+} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {ExtensionsService} from '../../../services/extensions.service';
-import {LiveAnnouncer} from '@angular/cdk/a11y';
 import {LabelComponent} from '../label/label.component';
 import {FormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
+import {PREFERRED_TERMINOLOGY_SERVER_URI} from "../../constants/constants";
+import {FormService} from "../../../services/form.service";
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 @Component({
   standalone: true,
@@ -14,15 +25,12 @@ import {CommonModule} from '@angular/common';
   styleUrls: ['./terminology-server.component.css']
 })
 export class TerminologyServerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+  private modelService = inject(SharedObjectService);
+  private formService = inject(FormService);
   private extensionService = inject(ExtensionsService);
-  private liveAnnouncer = inject(LiveAnnouncer);
+  private cdr = inject(ChangeDetectorRef);
 
-
-  static PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
-  tsExtension: fhir4.Extension = {
-    url: TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI,
-    valueUrl: ''
-  }
+  valueUrl = '';
 
   @ViewChild('hint', {read: ElementRef}) hintEl: ElementRef;
   @ViewChild('urlInput', {read: ElementRef}) urlInput: ElementRef;
@@ -36,39 +44,39 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
   }
 
   ngOnInit() {
-    this.tsExtension = this.extensionService.updateExtension(this.tsExtension);
     super.ngOnInit();
-    const ext = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
-    if(ext?.valueUrl) {
-      this.tsExtension.valueUrl = ext.valueUrl;
-    }
+    this.init();
   }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    const subscription = this.extensionService.extensionsObservable.subscribe((extensions) => {
-      const tsExt = this.extensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI);
-      if(tsExt?.valueUrl) {
-        this.tsExtension.valueUrl = tsExt.valueUrl;
-        this.tsExtension = this.extensionService.updateExtension(this.tsExtension);
+    let sub = this.extensionService.extensionsObservable.subscribe((extensions) => {
+      if(this.formService.loading) {
+        return;
       }
-      else {
-        this.tsExtension.valueUrl = '';
-      }
+      this.init();
+      this.cdr.detectChanges();
     });
+    this.subscriptions.push(sub);
+    sub = this.modelService.modelInitialized$.subscribe(model => {
+      this.init();
+    });
+    this.subscriptions.push(sub);
+
     setTimeout(() => {
       this.urlValid = this.urlInput.nativeElement.checkValidity();
     }, 0);
-    this.subscriptions.push(subscription);
   }
 
+  init() {
+    const tsExt = this.extensionService.getFirstExtensionByUrl(PREFERRED_TERMINOLOGY_SERVER_URI);
+    this.valueUrl = tsExt?.valueUrl || '';
+  }
   /**
    * Angular event handler for the url input.
-   * @param url - The value emitted.
    */
-  urlChanged(url) {
+  urlChanged() {
     this.urlValid = this.urlInput.nativeElement.checkValidity();
-    this.tsExtension.valueUrl = url.trim();
     this.updateExtension();
   }
 
@@ -76,18 +84,17 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
    * Update the extension with changes in the url value.
    */
   updateExtension() {
-    const url = this.tsExtension.valueUrl.trim();
-    if(url) {
-      this.tsExtension.valueUrl = url;
+    const valueUrl = this.valueUrl.trim();
+    if(valueUrl) {
+      const tsExt = this.extensionService.updateExtension({url: PREFERRED_TERMINOLOGY_SERVER_URI, valueUrl});
       this.extensionService.resetExtension(
-        this.tsExtension.url,
-        this.tsExtension,
+        tsExt.url,
+        tsExt,
         'valueUrl',
         false);
     }
     else {
-      this.extensionService.removeExtensionsByUrl(this.tsExtension.url);
+      this.extensionService.removeExtensionsByUrl(PREFERRED_TERMINOLOGY_SERVER_URI);
     }
   }
-
 }

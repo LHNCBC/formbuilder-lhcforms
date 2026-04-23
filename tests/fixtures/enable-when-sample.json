@@ -1,0 +1,209 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "54127-6-x",
+  "extension": [ {
+    "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-launchContext",
+    "extension": [ {
+      "url": "name",
+      "valueId": "patient"
+    }, {
+      "url": "type",
+      "valueCode": "Patient"
+    }, {
+      "url": "descripton",
+      "valueString": "For filling in patient information as the subject for the form"
+    } ]
+  } ],
+  "name": "US Surgeon General family health portrait",
+  "title": "US Surgeon General family health portrait",
+  "status": "draft",
+  "subjectType": [ "Patient", "Person" ],
+  "code": [ {
+    "system": "http://loinc.org",
+    "code": "54127-6",
+    "display": "US Surgeon General family health portrait"
+  } ],
+  "item": [ {
+    "linkId": "/54114-4",
+    "code": [ {
+      "system": "http://loinc.org",
+      "code": "54114-4",
+      "display": "Family member health history"
+    } ],
+    "text": "Family member health history",
+    "type": "group",
+    "required": false,
+    "repeats": true,
+    "item": [ {
+      "extension": [ {
+        "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+        "valueCodeableConcept": {
+          "coding": [ {
+            "system": "http://hl7.org/fhir/questionnaire-item-control",
+            "code": "drop-down",
+            "display": "Drop down"
+          } ],
+          "text": "Drop down"
+        }
+      } ],
+      "linkId": "/54114-4/54139-1",
+      "code": [ {
+        "system": "http://loinc.org",
+        "code": "54139-1",
+        "display": "Living?"
+      } ],
+      "text": "Living?",
+      "type": "choice",
+      "required": false,
+      "answerOption": [ {
+        "valueCoding": {
+          "system": "http://loinc.org",
+          "code": "LA33-6",
+          "display": "Yes"
+        }
+      }, {
+        "valueCoding": {
+          "system": "http://loinc.org",
+          "code": "LA32-8",
+          "display": "No"
+        }
+      }, {
+        "valueCoding": {
+          "system": "http://loinc.org",
+          "code": "LA4489-6",
+          "display": "Unknown"
+        }
+      } ],
+      "item": [ {
+        "linkId": "/54114-4/54139-1/54124-3",
+        "code": [ {
+          "system": "http://loinc.org",
+          "code": "54124-3",
+          "display": "Date of Birth"
+        } ],
+        "text": "Date of Birth",
+        "type": "date",
+        "enableWhen": [ {
+          "question": "/54114-4/54139-1",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://loinc.org",
+            "code": "LA33-6"
+          }
+        } ],
+        "required": false
+      }, {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "a",
+            "display": "year"
+          }
+        } ],
+        "linkId": "/54114-4/54139-1/54141-7",
+        "code": [ {
+          "system": "http://loinc.org",
+          "code": "54141-7",
+          "display": "Current Age"
+        } ],
+        "text": "Current Age",
+        "type": "decimal",
+        "enableWhen": [ {
+          "question": "/54114-4/54139-1",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://loinc.org",
+            "code": "LA33-6"
+          }
+        } ],
+        "required": false
+      }, {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [ {
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "drop-down",
+              "display": "Drop down"
+            } ],
+            "text": "Drop down"
+          }
+        } ],
+        "linkId": "/54114-4/54139-1/54112-8",
+        "code": [ {
+          "system": "http://loinc.org",
+          "code": "54112-8",
+          "display": "Cause of Death"
+        } ],
+        "text": "Cause of Death",
+        "type": "choice",
+        "enableWhen": [ {
+          "question": "/54114-4/54139-1",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://loinc.org",
+            "code": "LA32-8"
+          }
+        } ],
+        "required": false,
+        "answerOption": [ {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA10533-0",
+            "display": "Blood Clots"
+          }
+        }, {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA10572-8",
+            "display": "-- Blood Clot in Leg"
+          }
+        } ]
+      }, {
+        "extension": [ {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [ {
+              "system": "http://hl7.org/fhir/questionnaire-item-control",
+              "code": "drop-down",
+              "display": "Drop down"
+            } ],
+            "text": "Drop down"
+          }
+        } ],
+        "linkId": "/54114-4/54139-1/54113-6",
+        "code": [ {
+          "system": "http://loinc.org",
+          "code": "54113-6",
+          "display": "Age at Death"
+        } ],
+        "text": "Age at Death",
+        "type": "choice",
+        "enableWhen": [ {
+          "question": "/54114-4/54139-1",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://loinc.org",
+            "code": "LA32-8"
+          }
+        } ],
+        "required": false,
+        "answerOption": [ {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA10400-2",
+            "display": "OVER 60"
+          }
+        }, {
+          "valueCoding": {
+            "system": "http://loinc.org",
+            "code": "LA4489-6",
+            "display": "Unknown"
+          }
+        } ]
+      } ]
+    }
+    ]
+  } ]
+}

@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { CypressUtil } from "cypress/support/cypress-util";
 
 describe('Home page', () => {
 
@@ -35,6 +36,8 @@ describe('Home page', () => {
       });
 
       it('should create various types of variables', () => {
+        CypressUtil.mockFHIRQueryObservation();
+
         // Add a new item under the 'Race' item of data type 'display'.
         cy.clickTreeNode('None');
         cy.contains('Add new item').scrollIntoView().click();
@@ -233,6 +236,8 @@ describe('Home page', () => {
 
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#variables-section .variable-row').should('have.length', 0);
 
           // Add a new variable 'a'
@@ -304,6 +309,8 @@ describe('Home page', () => {
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#variables-section .variable-row').should('have.length', 3);
 
           cy.get('#variable-label-0').should('have.value', 'a');
@@ -388,6 +395,8 @@ describe('Home page', () => {
         cy.get('lhc-expression-editor').shadow().within(() => {
           // Variables section should show variable 'a' that was created prior.
           cy.get('lhc-variables > h2').should('contain', 'Item Variables');
+          cy.expandExpressionItemVariablesSection();
+
           cy.get('#variables-section .variable-row').should('have.length', 1);
 
           cy.get('#variable-label-0').should('have.value', 'a');

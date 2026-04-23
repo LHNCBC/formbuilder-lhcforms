@@ -6,8 +6,8 @@ import { defineConfig } from '@playwright/test';
  */
 // require('dotenv').config();
 
-const port = process.env.npm_package_config_testPort || '9031';
-const baseURL = `http://localhost:${port}`;
+const baseURL = process.env.TEST_BASE_URL;
+const slowMo = parseInt(process.env.SLOMO) || 50;
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -35,6 +35,10 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    launchOptions: {
+      slowMo: slowMo
+    }
   },
 
   /* Configure projects for major browsers */

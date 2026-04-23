@@ -2,7 +2,7 @@ import {test, expect, Locator} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 
-test.describe('r5-features.spec.ts', async () => {
+test.describe('r5-features.spec.ts', () => {
   let mainPO: MainPO;
   const constraintLabels = {
     optionsOnly: 'Restrict to the list',
@@ -42,8 +42,8 @@ test.describe('r5-features.spec.ts', async () => {
   });
 
   test('should import form with answer constraints', async ({page}) => {
-    const fileJson = await PWUtils.uploadFile(page, 'fixtures/answer-constraint-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).first().click();
+    const fileJson = await PWUtils.uploadFile(page, 'answer-constraint-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
     await PWUtils.clickTreeNode(page, 'Integer type, optionsOrType');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Integer type, optionsOrType');
@@ -114,7 +114,7 @@ test.describe('r5-features.spec.ts', async () => {
   });
 
   test('should import a form with disabledDisplay', async ({page}) => {
-    await PWUtils.uploadFile(page, 'fixtures/disabled-display-sample.json', true);
+    await PWUtils.uploadFile(page, 'disabled-display-sample.json', true);
     await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await page.getByRole('button', {name: 'Advanced fields'}).click();
 
@@ -131,7 +131,7 @@ test.describe('r5-features.spec.ts', async () => {
   });
 
   test('should import items with answer list layout', async ({page}) => {
-    await PWUtils.uploadFile(page, 'fixtures/answer-list-layout-sample.json', true);
+    await PWUtils.uploadFile(page, 'answer-list-layout-sample.json', true);
     await page.getByRole('button', {name: 'Edit questions'}).first().click();
 
     await PWUtils.clickTreeNode(page, 'Integer type answer list layout');
@@ -161,8 +161,8 @@ test.describe('r5-features.spec.ts', async () => {
   });
 
   test('should export to R4 and STU3 versions', async ({page}) => {
-    const fileJson = await PWUtils.uploadFile(page, 'fixtures/answer-constraint-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).first().click();
+    const fileJson = await PWUtils.uploadFile(page, 'answer-constraint-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
     // R4
     const q4 = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');

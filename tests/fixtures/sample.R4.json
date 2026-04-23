@@ -1,0 +1,75 @@
+{
+  "item": [
+    {
+      "type": "choice",
+      "code": [
+        {
+          "code": "8358-4",
+          "display": "BP device Cuff size",
+          "system": "http://loinc.org"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ],
+            "text": "Drop down"
+          }
+        }
+      ],
+      "required": false,
+      "linkId": "/34566-0/35094-2/8358-4",
+      "text": "BP device Cuff size",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "LA11162-7",
+            "display": "Adult standard",
+            "system": "http://loinc.org"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "LA11163-5",
+            "display": "Adult large",
+            "system": "http://loinc.org"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "LA11164-3",
+            "display": "Thigh extra large",
+            "system": "http://loinc.org"
+          }
+        }
+      ]
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire|2.7"
+    ],
+    "tag": [
+      {
+        "code": "lformsVersion: 33.3.2"
+      }
+    ]
+  },
+  "title": "Sample R4 form",
+  "status": "draft",
+  "code": [
+    {
+      "system": "http://loinc.org",
+      "code": "34565-2",
+      "display": "Vital signs, weight and height panel"
+    }
+  ]
+}

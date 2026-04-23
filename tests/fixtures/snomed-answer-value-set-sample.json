@@ -1,0 +1,122 @@
+{
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://snowstorm.ihtsdotools.org/fhir"
+        }
+      ],
+      "type": "choice",
+      "linkId": "1",
+      "text": "Item with SNOMED answer value set",
+      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20221231?fhir_vs=ecl/%3C%20429019009%20%7CFinding%20related%20to%20biological%20sex%7C"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://clinicaltables.nlm.nih.gov/fhir/R4"
+        }
+      ],
+      "type": "choice",
+      "linkId": "2",
+      "text": "Item with non-snomed answer value set",
+      "answerValueSet": "http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions"
+    },
+    {
+      "type": "choice",
+      "linkId": "3",
+      "text": "Item with answer option (default)",
+      "enableWhen": [
+        {
+          "question": "1",
+          "operator": "=",
+          "answerCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "32570691000036108",
+            "display": "Intersex"
+          }
+        }
+      ]
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://snowstorm.ihtsdotools.org/fhir"
+        }
+      ],
+      "initial" : [
+        {
+          "valueCoding": {
+               "code": "987840791000119102",
+               "display": "Adenosine deaminase 2 deficiency",
+               "system": "http://snomed.info/sct"
+          }
+        }
+      ],
+      "linkId": "/itm1",
+      "text": "Item with a single SNOMED answerValuetSet initial selection",
+      "repeats": false,
+      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl/%3C+64572001+%7CDisease+%28disorder%29%7C"
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": "https://snowstorm.ihtsdotools.org/fhir"
+        }
+      ],
+      "initial" : [
+        {
+          "valueCoding": {
+            "code": "987840791000119102",
+            "display": "Adenosine deaminase 2 deficiency",
+            "system": "http://snomed.info/sct"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "956321981000119108",
+            "display": "Chronic gastric erosion"
+          }
+        }
+      ],
+      "linkId": "/itm2",
+      "text": "Item with multiple SNOMED answerValueSet initial selections",
+      "repeats": true,
+      "answerValueSet": "http://snomed.info/sct/900000000000207008/version/20231001?fhir_vs=ecl/%3C+64572001+%7CDisease+%28disorder%29%7C"
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "title": "SNOMED answer value set form",
+  "status": "draft"
+}

@@ -1,0 +1,75 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Quantity Sample",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "item": [
+    {
+      "text": "Item 0",
+      "type": "quantity",
+      "linkId": "4979054840554",
+      "repeats": true,
+      "initial": [
+        {
+          "valueQuantity": {
+            "value": 1,
+            "comparator": "<",
+            "unit": "u1",
+            "system": "http://unitsofmeasure.org",
+            "code": "c1"
+          }
+        },
+        {
+          "valueQuantity": {
+            "value": 2,
+            "unit": "u2",
+            "system": "http://example.org",
+            "code": "c2"
+          }
+        },
+        {
+          "valueQuantity": {
+            "value": 3,
+            "unit": "u3",
+            "code": "c3"
+          }
+        },
+        {
+          "valueQuantity": {
+            "value": 4,
+            "unit": "u4"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "[ft_i]",
+            "display": "foot"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "m",
+            "display": "meter"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
+          "valueCoding": {
+            "code": "xx",
+            "display": "xx"
+          }
+        }
+      ]
+    }
+  ]
+}
