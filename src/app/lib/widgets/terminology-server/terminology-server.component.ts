@@ -28,8 +28,6 @@ export class TerminologyServerComponent extends LfbControlWidgetComponent implem
   private extensionService = inject(ExtensionsService);
   private cdr = inject(ChangeDetectorRef);
 
-  // valueUrl = '';
-
   @ViewChild('hint', {read: ElementRef}) hintEl: ElementRef;
   urlValid = true;
 

@@ -14,12 +14,9 @@ export class IsDisabledPipe implements PipeTransform {
             index: number,
             isDisabledCallback: (a: ArrayProperty, i: number) => boolean): Observable<boolean> {
     return new Observable(subscriber => {
-      const timeId = setTimeout(() => {
-        const isDisabled = isDisabledCallback(arrayProperty, index);
-        subscriber.next(isDisabled);
-        subscriber.complete();
-        clearTimeout(timeId);
-      })
+      const isDisabled = isDisabledCallback(arrayProperty, index);
+      subscriber.next(isDisabled);
+      subscriber.complete();
     });
   }
 }

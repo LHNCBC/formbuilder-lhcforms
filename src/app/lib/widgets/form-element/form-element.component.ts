@@ -5,7 +5,6 @@ import {Component, Input, OnInit, SimpleChanges} from '@angular/core';
 import {FormElementComponent, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { Widget } from '@lhncbc/ngx-schema-form';
 import { ElementChooserComponent } from '../element-chooser/element-chooser.component';
-import {Util} from "../../util";
 
 
 
@@ -108,16 +107,6 @@ export class AppFormElementComponent extends FormElementComponent implements OnI
 
     // @ts-ignore
     this.widget.controlClasses = this.controlClasses;
-    /*
-    if(this.nolabel && this.labelPosition !== 'left') {
-      // @ts-ignore
-      this.widget.controlClasses = Util.removeClasses(this.controlClasses, 'col-');
-    }
-    else {
-      // @ts-ignore
-      this.widget.controlClasses = this.controlClasses;
-    }
-    */
   }
 
 
