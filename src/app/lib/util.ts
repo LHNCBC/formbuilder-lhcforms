@@ -925,7 +925,7 @@ export class Util {
   /**
    * Check to see if this is a required field as per schema.
    * @param formProperty - Form Property of the field to check.
-   * @return - true if required.
+   * @return - true if required, false otherwise.
    */
   static getIsRequired(formProperty: FormProperty): boolean {
     return !!formProperty?.parent?.schema?.required?.some((requiredField) => {

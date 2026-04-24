@@ -35,6 +35,7 @@ import {Subscription} from "rxjs";
 export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
 
   subscriptions: Subscription [] = [];
+  cdr = inject(ChangeDetectorRef);
   extensionsService = inject(ExtensionsService);
   formService = inject(FormService);
   @ViewChild('sfForm', {read: FormComponent}) sfForm: FormComponent;
@@ -43,9 +44,6 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
   @Input() model;
   extSchema = this.formService.getExtensionSchema();
   sfFormRootProperty: PropertyGroup;
-
-  constructor(private cdr: ChangeDetectorRef) {
-  }
 
   ngAfterViewInit() {
     this.sfFormRootProperty = this.sfForm.rootProperty as PropertyGroup;

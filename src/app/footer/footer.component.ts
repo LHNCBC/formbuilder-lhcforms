@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
 import {DomSanitizer} from '@angular/platform-browser';
 
@@ -68,9 +68,10 @@ import {DomSanitizer} from '@angular/platform-browser';
   `]
 })
 export class FooterComponent {
+  iconRegistry = inject(MatIconRegistry);
+  sanitizer = inject(DomSanitizer);
 
-  constructor(private iconRegistry: MatIconRegistry,
-              private sanitizer: DomSanitizer) {
+  constructor() {
     // Initialize icon registry
     this.iconRegistry.addSvgIcon('USAgov',
       this.sanitizer.bypassSecurityTrustResourceUrl('../../assets/images/USAgov.svg'));
