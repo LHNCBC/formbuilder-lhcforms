@@ -11,8 +11,6 @@
           {"field": "__$valueGeneralPurposeDatatype", "col": 12},
           {"field": "__$valueMetadataType", "col": 12},
           {"field": "__$valueSpecialPurposeDatatype", "col": 12},
-          {"field": "__$valueType", "col": 12 },
-          {"field": "__$stringify", "col": 12 },
           {"field": "extension", "col": 12 },
         ]
       }
@@ -283,7 +281,6 @@
       '$.properties.valueDecimal',
     ],
     integer: [
-      '$.properties.valueDecimal',
       '$.properties.valueInteger',
       '$.properties.valuePositiveInt',
       '$.properties.valueUnsignedInt',

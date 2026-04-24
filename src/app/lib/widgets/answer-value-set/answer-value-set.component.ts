@@ -137,6 +137,7 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
    * @param isAdd - True is add, false is remove
    */
   setSNOMEDTerminologyServer(isAdd: boolean) {
+    const tsProp = this.formProperty.searchProperty('/__$terminologyServer');
     if(isAdd) {
       if(!this.extensionService.getFirstExtensionByUrl(PREFERRED_TERMINOLOGY_SERVER_URI)) {
         this.extensionService.addExtension({
@@ -144,11 +145,16 @@ export class AnswerValueSetComponent extends StringComponent implements OnInit, 
           valueUrl: AnswerValueSetComponent.snomedTerminologyServer
         }, 'valueUrl')
       }
+      tsProp?.setValue(AnswerValueSetComponent.snomedTerminologyServer, false);
     } else {
       this.extensionService.removeExtension((ext) => {
         return ext.value.url === PREFERRED_TERMINOLOGY_SERVER_URI
                   && ext.value.valueUrl === AnswerValueSetComponent.snomedTerminologyServer;
       });
+      // Only clear the form property if it still has the SNOMED server URL
+      if (tsProp?.value === AnswerValueSetComponent.snomedTerminologyServer) {
+        tsProp.setValue('', false);
+      }
     }
   }
 

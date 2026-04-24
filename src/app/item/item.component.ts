@@ -906,15 +906,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   /**
-   * TODO - not sure if we need this yet.
-   * @param linkId - Link id
-   */
-  /*
-  registerLinkId(linkId) {
-    this.linkIdCollection.addLinkId(linkId, this.focusNode.path.join('/'));
-  }
-*/
-  /**
    * Fetch loinc item by id
    * loincNum - Loinc number of the item.
    *

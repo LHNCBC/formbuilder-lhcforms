@@ -3,10 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   inject,
-  Input,
-  OnChanges,
   OnInit,
-  SimpleChanges
 } from '@angular/core';
 import {ExtensionDlgComponent} from "../extension-dlg/extension-dlg.component";
 import {TableEditRowInDlgComponent} from "../table-edit-row-in-dlg/table-edit-row-in-dlg.component";
@@ -58,10 +55,6 @@ import {SharedObjectService} from "../../../services/shared-object.service";
   styleUrl: '../table/table.component.css',
 })
 export class ExtensionComponent extends TableEditRowInDlgComponent implements OnInit, AfterViewInit /*, OnChanges*/ {
-/*
-  @Input()
-  templateFormProperty: ArrayProperty;
-  */
   extensionsService: ExtensionsService = inject(ExtensionsService);
   formService = inject(FormService);
   modelService = inject(SharedObjectService);
@@ -69,41 +62,21 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
 
   extensionSchema: ISchema = {};
 
-  _value: fhir.Extension [];
-
   constructor() {
     super();
     this.dialogComponentType = ExtensionDlgComponent;
 
   }
-/*
-  ngOnChanges(changes: SimpleChanges) {
-    if(changes.templateFormProperty) {
-      this.formProperty = this.templateFormProperty;
-    }
-    super.ngOnChanges(changes);
-  }
-*/
+
   ngOnInit(): void {
     this.addDefaultItemIfEmpty = false;
     this.extensionSchema = this.formService.getExtensionSchema();
     this._adjustControlClassesForTableCellWidgets();
     super.ngOnInit();
-    // this.init();
   }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    /*
-    let sub = this.formProperty.valueChanges.subscribe((valueArray: fhir.Extension []) => {
-      if(this.formService.loading) {
-        return;
-      }
-
-      this.init();
-    });
-    this.subscriptions.push(sub);
-*/
     let sub = this.modelService.modelInitialized$.subscribe(() => {
       this.init();
     });

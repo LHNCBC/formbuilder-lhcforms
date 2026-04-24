@@ -173,13 +173,6 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
 
 
   /**
-   * TODO
-   */
-  allFields() {
-  }
-
-
-  /**
    * Button handler for edit questions
    */
   goToItemEditor(): void {

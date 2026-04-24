@@ -27,7 +27,6 @@ import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.comp
 import {Observable, of, Subscription} from 'rxjs';
 import {faExclamationTriangle, faLink} from '@fortawesome/free-solid-svg-icons';
 import { TableService, TableStatus } from 'src/app/services/table.service';
-import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   standalone: false,

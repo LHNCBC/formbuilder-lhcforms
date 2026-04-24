@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.1.0] 2026-04-23
+### Added
+- Added support to create general FHIR extensions including nested extensions.
+
 ## [11.0.13] 2026-03-30
 ### Changed
 - Migrated end-to-end tests from Cypress to Playwright.

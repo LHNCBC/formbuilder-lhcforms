@@ -16,7 +16,6 @@ import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
 declare var LForms: any;
 
-// TODO: THE HTML NEEDS TO CHANGE>>>>> // This comment is from master. -Ajay
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',

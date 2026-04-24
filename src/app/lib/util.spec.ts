@@ -106,7 +106,6 @@ describe('Util', () => {
     });
   });
 
-  // TODO - Uncomment after conversion is fixed.
   it('should convert R5 features to R4', () => {
     const testCases: any [] = [
       {

@@ -6,7 +6,8 @@ import {
   OnInit,
   signal,
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef
+  ChangeDetectionStrategy, ChangeDetectorRef,
+  OnDestroy
 } from '@angular/core';
 import {
   MatDialogRef,
@@ -26,7 +27,6 @@ import {FormProperty} from '@lhncbc/ngx-schema-form';
 import { FormService } from 'src/app/services/form.service';
 import {MessageDlgComponent} from "../message-dlg/message-dlg.component";
 import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
-import {Util} from "../../util";
 import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 
 /**
@@ -43,7 +43,7 @@ import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExtensionDlgComponent implements OnInit, AfterViewInit {
+export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   inputModel: fhir.Extension;
   changedValue: fhir.Extension;
   path: string = '';
@@ -108,7 +108,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit {
     this.dirtyObserver = new MutationObserver((mutationsList, observer) => {
       for(const mutation of mutationsList) {
         if (mutation.type === 'attributes' && (mutation.target as HTMLElement).classList?.contains('ng-dirty')) {
-          this.disableSave.set(false);
+          this.updateDisableSave();
           this.cdr.markForCheck();
           return;
         }
@@ -149,9 +149,25 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit {
    */
   onChange(event: any) {
     this.changedValue = event;
-    this.disableSave.set(false);
+    this.updateDisableSave();
     this.cdr.detectChanges();
 
+  }
+
+  /**
+   * Check if the URL field has a valid URI (non-empty).
+   */
+  private isUrlValid(): boolean {
+    const url = (this.changedValue?.url || '').trim();
+    return url.length > 0;
+  }
+
+  /**
+   * Update the disableSave signal based on dirty state and URL validity.
+   */
+  private updateDisableSave() {
+    const isDirty = !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
+    this.disableSave.set(!isDirty || !this.isUrlValid());
   }
 
   /**
@@ -186,12 +202,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit {
     }
   }
 
-  _disableSave() {
-    let ret = !this.dlgContent?.nativeElement.querySelector('.ng-dirty');
-    if (!ret) {
-      // Check if the form is empty
-      ret = Util.isEmpty(this.changedValue);
-    }
-    return ret;
+  ngOnDestroy() {
+    this.dirtyObserver?.disconnect();
   }
 }

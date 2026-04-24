@@ -71,18 +71,6 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
   ngAfterViewInit() {
     super.ngAfterViewInit();
     this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
-/*
- // TODO - Review later.
-    // Prevent the focusin from bubbling up
-    // Loading existing questionnaires with answerOptions missing `display`
-    // causes the input to be auto-focused. This fires a `focusin` event,
-    // which triggers validation and shows a warning dialog prematurely.
-    if (this.manualInput) {
-      this.manualInput.nativeElement.addEventListener('focusin', (e) => {
-        e.stopPropagation();
-      }, { once: true, capture: true });
-    }
-*/
     let sub = this.formProperty.valueChanges.subscribe((value: any) => {
       if(this.autoComplete) {
         this.autoComp.setFieldVal(value);
@@ -138,18 +126,6 @@ export class CodingDisplayComponent extends LfbControlWidgetComponent implements
       }
     });
     this.subscriptions.push(sub);
-/*
-// TODO -- Changes from master. Review later
-    // Prevent the focusin from bubbling up
-    // Loading existing questionnaires with answerOptions missing `display`
-    // causes the input to be auto-focused. This fires a `focusin` event,
-    // which triggers validation and shows a warning dialog prematurely.
-    if (this.codingDisplay) {
-      this.codingDisplay.nativeElement.addEventListener('focusin', (e) => {
-        e.stopPropagation();
-      }, { once: true, capture: true });
-    }
-*/
   }
 
   /**

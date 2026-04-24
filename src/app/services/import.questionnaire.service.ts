@@ -101,14 +101,10 @@ export class ImportQuestionnaireService {
 
       const extension = JSON.parse(JSON.stringify(extParent.extension[i]));
       switch (extension.url) {
-        // TODO -
-        // Terminology server should follow the same logic, but for now
-        // leaving it as is until the changes are sorted out.
-        /*
         case PREFERRED_TERMINOLOGY_SERVER_URI:
           extParent.__$terminologyServer = extension.valueUrl || '';
           break;
-        */
+
         case EXTENSION_URL_VARIABLE:
           if(!extParent.__$variable) {
             extParent.__$variable = [];

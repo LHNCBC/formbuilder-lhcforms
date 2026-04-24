@@ -30,7 +30,6 @@ import {Util} from "../lib/util";
   // Provide a service in the root, which is accessed by form-level fields. The item level fields have their instance of this service.
   providedIn: 'root'
 })
-// @ts-ignore
 export class ExtensionsService {
   static __ID = 0;
 
@@ -120,18 +119,21 @@ export class ExtensionsService {
     this._propertyMap.clear();
     this._propertyMap = (this.extensionsProp.properties as FormProperty [])
       .reduce((acc: Map<fhirPrimitives.url, FormProperty[]>, property: FormProperty, index: number) => {
-      let properties: FormProperty [] = acc.get(property.value.url);
-      let values = this._extMap.get(property.value.url);
-      if(!properties) {
-        properties = [];
-        values = [];
-        acc.set(property.value.url, properties);
-        this._extMap.set(property.value.url, values);
-      }
-      properties.push(property);
-      values.push(property.value);
-      return acc;
-    }, this._propertyMap);
+        const url = property.value.url;
+        if(url) {
+          let properties: FormProperty [] = acc.get(url);
+          let values = this._extMap.get(url);
+          if(!properties) {
+            properties = [];
+            values = [];
+            acc.set(url, properties);
+            this._extMap.set(url, values);
+          }
+          properties.push(property);
+          values.push(property.value);
+        }
+        return acc;
+      }, this._propertyMap);
   }
 
 

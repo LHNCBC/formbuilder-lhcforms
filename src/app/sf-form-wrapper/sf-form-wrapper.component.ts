@@ -91,10 +91,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
   private modelService = inject(SharedObjectService);
   private cdr = inject(ChangeDetectorRef);
 
-  constructor() {
-    console.log(`SfFormWrapperComponent constructor`);
-  }
-
   ngOnInit(): void {
     this.mySchema = this.formService.getItemSchema();
     // Subscribe to changes to the questionnaire and obtain a set of
@@ -103,7 +99,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
       this.questionnaire = questionnaire;
     });
     this.subscriptions.push(sub);
-    console.log(`SfFormWrapperComponent ngOnInit(): model = ${JSON.stringify(this.model?.extension, null, 2)}`);
   };
 
   ngOnChanges(changes: SimpleChanges) {
@@ -473,7 +468,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub?.unsubscribe());
-    console.log(`SfFormWrapperComponent ngOnDestroy`);
   }
 
 }

@@ -9,13 +9,7 @@ async function assertCreateExtension(page: Page) {
   await expect(addBtn).toBeVisible();
   await addBtn.click();
   const formLoc = page.locator('lfb-extension-dlg lfb-extension-obj sf-form');
-  try {
-    await expect(formLoc).toBeVisible({timeout: 5000});
-  } catch {
-    // Retry click if dialog didn't open
-    await addBtn.click();
-    await expect(formLoc).toBeVisible();
-  }
+  await expect(formLoc).toBeVisible();
   await formLoc.getByLabel('Url', {exact: true}).fill('http://example.org');
   await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use a value type', formLoc)).toBeChecked();
   await expect(PWUtils.getRadioButton(page, 'Value Type Category', 'Primitive type', formLoc)).toBeChecked();
@@ -207,13 +201,15 @@ test.describe('extension.component', async () => {
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use an extension', level2FormLoc)).toBeChecked();
     let level2ExtRows = level2FormLoc.locator('lfb-extension table tbody tr');
     expect(await level2ExtRows.count()).toBe(1);
-    await level2ExtRows.nth(0).getByLabel('Edit this row').click({force: true});
-    // Invoked third level extension dialog
-    // Retry click if the third dialog didn't open
+    // The force click on deeply nested dialogs can intermittently fail to open the next dialog.
+    // Retry the click if the 3rd dialog doesn't appear.
+    const editLevel3Btn = level2ExtRows.nth(0).getByLabel('Edit this row');
+    await editLevel3Btn.click({force: true});
     try {
       await expect(page.locator('lfb-extension-dlg')).toHaveCount(3, {timeout: 5000});
     } catch {
-      await level2ExtRows.nth(0).getByLabel('Edit this row').click({force: true});
+      // Retry the click if the dialog didn't open
+      await editLevel3Btn.click({force: true});
       await expect(page.locator('lfb-extension-dlg')).toHaveCount(3);
     }
     const level3FormLoc = page.locator('lfb-extension-dlg').nth(2);
@@ -230,5 +226,92 @@ test.describe('extension.component', async () => {
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(1);
     await formLoc.getByRole('button', {name: 'Discard changes'}).click();
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+  });
+
+  test('Should not save an extension without making changes', async ({page}) => {
+    // Import a form with extensions
+    await PWUtils.uploadFile(page, 'extensions-sample.json');
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await page.getByRole('button', {name: 'Edit questions'}).first().click();
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+
+    const extRows = page.locator('lfb-extension table tbody tr');
+    await extRows.nth(2).getByLabel('Edit this row').click();
+    const formLoc = page.locator('lfb-extension-dlg').nth(0);
+    await expect(formLoc).toBeVisible();
+
+    // Save button should be disabled when dialog first opens (no changes made)
+    await expect(formLoc.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+
+    // Close without changes — should not prompt for confirmation
+    await formLoc.getByRole('button', {name: 'Discard changes'}).click();
+    // No confirmation dialog should appear; dialog should close immediately
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+  });
+
+  test('Should prompt for confirmation when discarding changes in a dirty form', async ({page}) => {
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    const addBtn = page.getByRole('button', {name: 'Add new extension'}).first();
+    await addBtn.click();
+    const formLoc = page.locator('lfb-extension-dlg lfb-extension-obj sf-form');
+    await expect(formLoc).toBeVisible();
+
+    // Make a change to dirty the form
+    await formLoc.getByLabel('Url', {exact: true}).fill('http://example.org/dirty');
+
+    // Try to discard — should show confirmation
+    await page.locator('lfb-extension-dlg').getByRole('button', {name: 'Discard changes'}).first().click();
+    // Confirmation dialog should appear
+    const confirmDlg = page.locator('ngb-modal-window');
+    await expect(confirmDlg).toBeVisible();
+    await expect(confirmDlg).toContainText('Are you sure you want to discard');
+
+    // Click "Do not discard changes" — dialog should stay open
+    await confirmDlg.getByRole('button', {name: 'Do not discard changes'}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(1);
+
+    // Try discard again, this time confirm
+    await page.locator('lfb-extension-dlg').getByRole('button', {name: 'Discard changes'}).first().click();
+    await expect(confirmDlg).toBeVisible();
+    await confirmDlg.getByRole('button', {name: 'Discard changes', exact: true}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+
+    // Verify the extension was NOT added to the JSON
+    const q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(q.extension).toBeUndefined();
+  });
+
+  test('Should not accept empty URL extension', async ({page}) => {
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    const addBtn = page.getByRole('button', {name: 'Add new extension'}).first();
+    await addBtn.click();
+    const formLoc = page.locator('lfb-extension-dlg lfb-extension-obj sf-form');
+    await expect(formLoc).toBeVisible();
+
+    // Leave URL empty, fill only the value
+    await formLoc.getByText('Value string').fill('Value without URL');
+
+    // Save button should be disabled because URL is empty
+    const saveBtn = page.locator('lfb-extension-dlg').getByRole('button', {name: 'Save and close'}).first();
+    await expect(saveBtn).toBeDisabled();
+
+    // Now fill in a valid URL — save should become enabled
+    await formLoc.getByLabel('Url', {exact: true}).fill('http://example.org/valid');
+    await expect(saveBtn).toBeEnabled();
+
+    // Clear the URL again — save should be disabled
+    await formLoc.getByLabel('Url', {exact: true}).clear();
+    await expect(saveBtn).toBeDisabled();
+
+    // Discard the changes
+    await page.locator('lfb-extension-dlg').getByRole('button', {name: 'Discard changes'}).first().click();
+    const confirmDlg = page.locator('ngb-modal-window');
+    await expect(confirmDlg).toBeVisible();
+    await confirmDlg.getByRole('button', {name: 'Discard changes', exact: true}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+
+    // The exported JSON should not have any extension
+    const q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(q.extension).toBeUndefined();
   });
 });

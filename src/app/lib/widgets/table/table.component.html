@@ -126,7 +126,7 @@
   }
 
   <ng-template #actionColumn let-index="index" let-first="first" let-last="last">
-    <td class="action-column col-sm-half center border-1" [ngClass]="{'edit-row': addEditAction}"> <!-- TODO conflict resolution: test this change. -->
+    <td class="action-column col-sm-half center border-1" [ngClass]="{'edit-row': addEditAction}">
       <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
         @if (!(schema.hasOwnProperty('minItems') &&
           schema.hasOwnProperty('maxItems') &&
