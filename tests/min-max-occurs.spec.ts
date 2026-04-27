@@ -139,6 +139,26 @@ test.describe('Min/Max Occurs', () => {
         []
       );
     });
+
+    test('should remove min/max extensions when repeats is changed to No', async ({ page }) => {
+      const minInput = getMinInput(page);
+      const maxInput = getMaxInput(page);
+
+      await minInput.fill('1');
+      await minInput.dispatchEvent('change');
+      await maxInput.fill('4');
+      await maxInput.dispatchEvent('change');
+
+      await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'No');
+      await expect(getMinInput(page)).toHaveCount(0);
+      await expect(getMaxInput(page)).toHaveCount(0);
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[0].extension || [];
+
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
+    });
   });
 
   test.describe('Validation', () => {
@@ -165,7 +185,30 @@ test.describe('Min/Max Occurs', () => {
       await minInput.dispatchEvent('change');
 
       await expect(getValidationAlert(page)).toBeVisible();
-      await expect(getValidationAlert(page)).toContainText('Min occurs must be ≤ Max occurs');
+      await expect(getValidationAlert(page)).toContainText('Min occurs must be less than or equal to Max occurs');
+    });
+
+    test('should keep invalid UI values visible but remove min/max extensions from JSON', async ({ page }) => {
+      const minInput = getMinInput(page);
+      const maxInput = getMaxInput(page);
+
+      await minInput.fill('1');
+      await minInput.dispatchEvent('change');
+      await maxInput.fill('4');
+      await maxInput.dispatchEvent('change');
+
+      await minInput.fill('5');
+      await minInput.dispatchEvent('change');
+
+      await expect(minInput).toHaveValue('5');
+      await expect(maxInput).toHaveValue('4');
+      await expect(getValidationAlert(page)).toContainText('Min occurs must be less than or equal to Max occurs');
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[0].extension || [];
+
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
     });
 
     test('should clear warning when min <= max', async ({ page }) => {
@@ -192,7 +235,7 @@ test.describe('Min/Max Occurs', () => {
       await minInput.dispatchEvent('change');
 
       await expect(getValidationAlert(page)).toBeVisible();
-      await expect(getValidationAlert(page)).toContainText('Min occurs must be ≥ 0');
+      await expect(getValidationAlert(page)).toContainText('Min occurs must be greater than or equal to 0');
     });
 
     test('should show warning when max is less than 1', async ({ page }) => {
@@ -201,7 +244,7 @@ test.describe('Min/Max Occurs', () => {
       await maxInput.dispatchEvent('change');
 
       await expect(getValidationAlert(page)).toBeVisible();
-      await expect(getValidationAlert(page)).toContainText('Max occurs must be ≥ 1');
+      await expect(getValidationAlert(page)).toContainText('Max occurs must be greater than or equal to 1');
     });
   });
 
@@ -269,6 +312,33 @@ test.describe('Min/Max Occurs', () => {
       await expect(getMinInput(page)).toBeVisible();
       await expect(getMinInput(page)).toHaveValue('');
       await expect(getMaxInput(page)).toHaveValue('');
+    });
+
+    test('should preserve imported invalid min/max extensions until the user edits them', async ({ page }) => {
+      await PWUtils.clickTreeNode(page, 'Repeating invalid occurs');
+      await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
+
+      const minInput = getMinInput(page);
+      const maxInput = getMaxInput(page);
+
+      await expect(minInput).toHaveValue('6');
+      await expect(maxInput).toHaveValue('3');
+      await expect(getValidationAlert(page)).toContainText('Min occurs must be less than or equal to Max occurs');
+
+      let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      let extensions = qJson.item[5].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({ url: MIN_OCCURS_EXT_URL, valueInteger: 6 });
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({ url: MAX_OCCURS_EXT_URL, valueInteger: 3 });
+
+      await minInput.fill('7');
+      await minInput.dispatchEvent('change');
+
+      await expect(minInput).toHaveValue('7');
+      await expect(maxInput).toHaveValue('3');
+      qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      extensions = qJson.item[5].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
     });
   });
 

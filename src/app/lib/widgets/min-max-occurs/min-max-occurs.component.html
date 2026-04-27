@@ -16,6 +16,7 @@
               [attr.id]="'minOccursLabel_'+elementId">Min</span>
         <input type="number" class="form-control"
           autocomplete="off"
+          lfbInteger
           [ngModel]="minOccurs"
           (change)="onMinChange($any($event.target).value)"
           [attr.aria-labelledby]="'minOccursLabel_'+elementId"
@@ -29,6 +30,7 @@
               [attr.id]="'maxOccursLabel_'+elementId">Max</span>
         <input type="number" class="form-control"
           autocomplete="off"
+          lfbInteger
           [ngModel]="maxOccurs"
           (change)="onMaxChange($any($event.target).value)"
           [attr.aria-labelledby]="'maxOccursLabel_'+elementId"

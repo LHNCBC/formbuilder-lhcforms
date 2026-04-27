@@ -12,10 +12,11 @@ import {fhirPrimitives} from '../../../fhir';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {LabelComponent} from '../label/label.component';
+import {IntegerDirective} from '../../directives/integer.directive';
 
 @Component({
   selector: 'lfb-min-max-occurs',
-  imports: [LabelComponent, FormsModule, CommonModule],
+  imports: [LabelComponent, IntegerDirective, FormsModule, CommonModule],
   templateUrl: './min-max-occurs.component.html'
 })
 export class MinMaxOccursComponent extends StringComponent implements OnInit, AfterViewInit {
@@ -26,6 +27,7 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
   minOccurs: number | null = null;
   maxOccurs: number | null = null;
   validationError: string | null = null;
+  private syncingExtensions = false;
 
   constructor() {
     super();
@@ -43,9 +45,22 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.extensionsService.extensionsObservable.subscribe(() => {
-      this.initFromExtensions();
+    let sub = this.extensionsService.extensionsObservable.subscribe(() => {
+      if (!this.syncingExtensions) {
+        this.initFromExtensions();
+      }
     });
+    this.subscriptions.push(sub);
+
+    sub = this.formProperty.findRoot().getProperty('repeats').valueChanges.subscribe((repeats) => {
+      if (repeats !== true) {
+        this.minOccurs = null;
+        this.maxOccurs = null;
+        this.validationError = null;
+        this.removeOccursExtensions();
+      }
+    });
+    this.subscriptions.push(sub);
   }
 
   /**
@@ -63,34 +78,78 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
    * Handle min occurs input change.
    */
   onMinChange(value: string) {
-    const parsed = value === '' || value == null ? null : parseInt(value, 10);
-    this.minOccurs = (parsed != null && !isNaN(parsed)) ? parsed : null;
+    this.minOccurs = this.parseInteger(value);
     this.validate();
-    this.updateExtension(EXTENSION_URL_MIN_OCCURS, this.minOccurs);
+    this.syncExtensions();
   }
 
   /**
    * Handle max occurs input change.
    */
   onMaxChange(value: string) {
-    const parsed = value === '' || value == null ? null : parseInt(value, 10);
-    this.maxOccurs = (parsed != null && !isNaN(parsed)) ? parsed : null;
+    this.maxOccurs = this.parseInteger(value);
     this.validate();
-    this.updateExtension(EXTENSION_URL_MAX_OCCURS, this.maxOccurs);
+    this.syncExtensions();
+  }
+
+  /**
+   * Parse integer input. Empty or non-integer values are treated as no extension value.
+   */
+  parseInteger(value: string): number | null {
+    if (value === '' || value == null) {
+      return null;
+    }
+
+    const parsed = Number(value);
+    return Number.isInteger(parsed) ? parsed : null;
   }
 
   /**
    * Validate min <= max constraint.
    */
-  validate() {
+  validate(): boolean {
     if (this.minOccurs != null && this.maxOccurs != null && this.minOccurs > this.maxOccurs) {
-      this.validationError = 'Min occurs must be ≤ Max occurs.';
+      this.validationError = 'Min occurs must be less than or equal to Max occurs.';
     } else if (this.minOccurs != null && this.minOccurs < 0) {
-      this.validationError = 'Min occurs must be ≥ 0.';
+      this.validationError = 'Min occurs must be greater than or equal to 0.';
     } else if (this.maxOccurs != null && this.maxOccurs < 1) {
-      this.validationError = 'Max occurs must be ≥ 1.';
+      this.validationError = 'Max occurs must be greater than or equal to 1.';
     } else {
       this.validationError = null;
+    }
+
+    return this.validationError === null;
+  }
+
+  /**
+   * Persist min/max extensions only when the current UI values are valid.
+   * Invalid edited values remain visible in the UI but remove both extensions from output.
+   */
+  syncExtensions() {
+    if (!this.validate()) {
+      this.removeOccursExtensions();
+      return;
+    }
+
+    this.syncingExtensions = true;
+    try {
+      this.updateExtension(EXTENSION_URL_MIN_OCCURS, this.minOccurs);
+      this.updateExtension(EXTENSION_URL_MAX_OCCURS, this.maxOccurs);
+    } finally {
+      this.syncingExtensions = false;
+    }
+  }
+
+  /**
+   * Remove both occurrence extensions.
+   */
+  removeOccursExtensions() {
+    this.syncingExtensions = true;
+    try {
+      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_MIN_OCCURS);
+      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_MAX_OCCURS);
+    } finally {
+      this.syncingExtensions = false;
     }
   }
 
