@@ -2352,6 +2352,20 @@
         "type": ["$EXP$ target.value != 'display'"]
       }
     },
+    "__$minMaxOccurs": {
+      "description": "Defines the minimum and maximum number of times a repeating item may appear. Applies only when the item allows repeats.",
+      "title": "Repeat count range",
+      "type": "string",
+      "widget": {
+        "id": "min-max-occurs",
+        "labelPosition": "left",
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col p-0 m-auto ms-0"
+      },
+      "visibleIf": {
+        "repeats": [true]
+      }
+    },
     "__$observationExtract": {
       "description": "If true, indicates that the observation-based approach should be used to extract the particular item.",
       "title": "Use FHIR Observation extraction?",
@@ -2674,6 +2688,17 @@
         {
           "field": "required",
           "col": 4
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$minMaxOccurs"
+      ],
+      "showFields": [
+        {
+          "field": "__$minMaxOccurs",
+          "col": 10
         }
       ]
     },

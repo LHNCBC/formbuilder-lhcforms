@@ -1,0 +1,60 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Min Max Occurs Test",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "q1",
+      "text": "Repeating with both",
+      "type": "string",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 2
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 5
+        }
+      ]
+    },
+    {
+      "linkId": "q2",
+      "text": "Non-repeating question",
+      "type": "string"
+    },
+    {
+      "linkId": "q3",
+      "text": "Repeating min only",
+      "type": "integer",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+          "valueInteger": 1
+        }
+      ]
+    },
+    {
+      "linkId": "q4",
+      "text": "Repeating max only",
+      "type": "decimal",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+          "valueInteger": 10
+        }
+      ]
+    },
+    {
+      "linkId": "q5",
+      "text": "Repeating no occurs",
+      "type": "string",
+      "repeats": true
+    }
+  ]
+}
+
+

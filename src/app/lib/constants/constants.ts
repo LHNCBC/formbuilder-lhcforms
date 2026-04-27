@@ -63,6 +63,10 @@ export const EXTENSION_URL_RENDERING_STYLE = 'http://hl7.org/fhir/StructureDefin
 // formerly RENDERING_XHTML_EXT_URL
 export const EXTENSION_URL_RENDERING_XHTML = 'http://hl7.org/fhir/StructureDefinition/rendering-xhtml';
 
+// Min/Max Occurs
+export const EXTENSION_URL_MIN_OCCURS = 'http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs';
+export const EXTENSION_URL_MAX_OCCURS = 'http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs';
+
 // answerConstraint
 export const ANSWER_CONSTRAINT_OPTIONS_ONLY = "optionsOnly";
 export const ANSWER_CONSTRAINT_OPTIONS_OR_TYPE = "optionsOrType";
