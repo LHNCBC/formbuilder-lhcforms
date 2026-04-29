@@ -24,7 +24,7 @@ import appVersion from '../../assets/version.json';
                        href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a>
           | <a href="https://github.com/lhncbc/formbuilder-lhcforms"
                target="_blank" rel="noopener noreferrer"
-               title="View source on GitHub"><fa-icon [icon]="faGithub" [fixedWidth]="true"></fa-icon></a>
+               title="View source on GitHub"><fa-icon [icon]="faGithub"></fa-icon></a>
         </div>
       }
       @if (isFirebaseEnabled) {
