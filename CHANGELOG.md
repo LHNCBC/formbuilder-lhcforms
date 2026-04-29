@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.1.1] 2026-04-29
+### Added
+- Added a link to GitHub repo.
+
 ## [11.1.0] 2026-04-23
 ### Added
 - Added support to create general FHIR extensions including nested extensions.
