@@ -47,20 +47,22 @@ test.describe('r5-features.spec.ts', () => {
 
     await PWUtils.clickTreeNode(page, 'Integer type, optionsOrType');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Integer type, optionsOrType');
-    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer constraint', 'Allow off list')).toBeChecked();
+
+    await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
+    await PWUtils.expectRadioChecked(page, 'Answer constraint', 'Allow off list');
+
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('1');
 
     await PWUtils.clickTreeNode(page, 'String type, optionsOrString');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('String type, optionsOrString');
-    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer constraint', 'Allow free text')).toBeChecked();
+    await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
+    await PWUtils.expectRadioChecked(page, 'Answer constraint', 'Allow free text');
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('first');
 
     await PWUtils.clickTreeNode(page, 'Coding type, optionsOnly');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Coding type, optionsOnly');
-    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer constraint', 'Restrict to the list')).toBeChecked();
+    await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
+    await PWUtils.expectRadioChecked(page, 'Answer constraint', 'Restrict to the list');
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(1) input')).toHaveValue('s1');
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(2) input')).toHaveValue('First coding');
     await expect(page.locator('lfb-answer-option table tbody tr:nth-child(1) td:nth-child(3) input')).toHaveValue('c1');
@@ -84,8 +86,9 @@ test.describe('r5-features.spec.ts', () => {
   });
 
   test('should test disabledDisplay', async ({page}) => {
-    await page.getByRole('button', {name: 'Add new item', exact: true}).click();
-    await page.getByRole('button', {name: 'Advanced fields'}).click();
+    await PWUtils.clickButton(page, 'Toolbar with item action buttons', 'Add new item');
+    await PWUtils.clickButton(page, null, 'Advanced fields');
+
     const elementLocatorInTable = (parent: Locator, row: number, col: number, selector: string)=> {
       return parent.locator(`table > tbody > tr:nth-child(${row}) > td:nth-child(${col}) ${selector}`);
     }
@@ -115,16 +118,17 @@ test.describe('r5-features.spec.ts', () => {
 
   test('should import a form with disabledDisplay', async ({page}) => {
     await PWUtils.uploadFile(page, 'disabled-display-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).first().click();
-    await page.getByRole('button', {name: 'Advanced fields'}).click();
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickButton(page, null, 'Advanced fields');
 
     await PWUtils.clickTreeNode(page, 'Target 1');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 1');
-    await expect(PWUtils.getRadioButton(page, 'Hide or show this item when', 'Hide')).toBeChecked();
+    await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Hide');
 
     await PWUtils.clickTreeNode(page, 'Target 2');
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Target 2');
-    await expect(PWUtils.getRadioButton(page, 'Hide or show this item when', 'Show as protected')).toBeChecked();
+    await PWUtils.expectRadioChecked(page, 'Hide or show this item when', 'Show as protected');
+
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.item[1].disabledDisplay).toBe('hidden');
     expect(q.item[2].disabledDisplay).toBe('protected');
@@ -132,32 +136,32 @@ test.describe('r5-features.spec.ts', () => {
 
   test('should import items with answer list layout', async ({page}) => {
     await PWUtils.uploadFile(page, 'answer-list-layout-sample.json', true);
-    await page.getByRole('button', {name: 'Edit questions'}).first().click();
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
     await PWUtils.clickTreeNode(page, 'Integer type answer list layout');
-    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/integer/);
-    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Unspecified')).toBeChecked();
+    await PWUtils.expectDataTypeValue(page, /integer/);
+    await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
+    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Unspecified');
 
     await PWUtils.clickTreeNode(page, 'Date type answer list layout');
-    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/date/);
-    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Check-box')).toBeChecked();
+    await PWUtils.expectDataTypeValue(page, /date/);
+    await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
+    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Check-box');
 
     await PWUtils.clickTreeNode(page, 'Time type answer list layout');
-    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/time/);
-    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Radio Button')).toBeChecked();
+    await PWUtils.expectDataTypeValue(page, /time/);
+    await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
+    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Radio Button');
 
     await PWUtils.clickTreeNode(page, 'Coding type answer list layout');
-    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/coding/);
-    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Unspecified')).toBeChecked();
+    await PWUtils.expectDataTypeValue(page, /coding/);
+    await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
+    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Unspecified');
 
     await PWUtils.clickTreeNode(page, 'String type answer list layout');
-    await expect(page.getByLabel('Data type', {exact: true})).toHaveValue(/string/);
-    await expect(PWUtils.getRadioButton(page, 'Create answer list', 'Yes')).toBeChecked();
-    await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Radio Button')).toBeChecked();
+    await PWUtils.expectDataTypeValue(page, /string/);
+    await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
+    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Radio Button');
   });
 
   test('should export to R4 and STU3 versions', async ({page}) => {

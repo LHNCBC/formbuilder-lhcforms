@@ -77,10 +77,6 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Changed
 - Updated angular framework to version 20.x.x
 
-## [10.4.0] 2025-11-25
-### Added
-- Added support for adding general extensions.
-
 ## [10.3.13] 2025-12-17
 ### Added
 - Added autocomplete lookup functionality to the answerOptions.

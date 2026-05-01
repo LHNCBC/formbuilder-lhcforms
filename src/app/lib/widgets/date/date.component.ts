@@ -50,7 +50,7 @@ export class DateComponent extends StringComponent implements AfterViewInit {
   static id = 0;
   dateIcon = faCalendar;
   @ViewChild('d') datepicker: NgbDatepicker;
-  @ViewChild('d', {read: ElementRef}) inputEl: ElementRef;
+  @ViewChild('d', {read: ElementRef, static: false}) inputEl: ElementRef;
 
   calendar = inject(NgbCalendar);
   constructor() {

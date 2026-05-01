@@ -619,11 +619,42 @@ export class PWUtils {
     await PWUtils.getRadioGroup(page, groupLabel, locator).getByText(buttonLabel).click();
   }
 
+  /**
+   * Get the radio group identified by the group label.
+   *
+   * @param page - Page
+   * @param groupLabel - Field name of the radio group
+   * @param locator - Optional locator, if provided it will look for the group within locator scope, otherwise uses page
+   *   scope.
+   * @return - Locator of the radio group.
+   */
   static getRadioGroup(page: Page, groupLabel: string, locator: Locator = null): Locator {
     const parent = locator ? locator : page;
     return parent.locator('lfb-label', {has: page.getByText(groupLabel)})
       .locator('..').locator('div[role="radiogroup"]').first();
   }
+
+  /**
+   * Get the label of radio input identified by the label of the field and the label of the radio button.
+   * @param page - Browser page
+   * @param fieldLabel - The visible label identifying the radio group
+   * @param radioLabel - The visible label of the desired radio button
+   * @returns A Playwright Locator for the matching radio button label
+   */
+  static async getRadioButtonLabel(page: Page, fieldLabel: string, radioLabel: string): Promise<Locator> {
+    const fieldLabelEl = page.locator('lfb-label label').filter({ hasText: fieldLabel });
+
+    await expect(fieldLabelEl).toBeVisible();
+
+    const radioGroup = fieldLabelEl.locator('..').locator('xpath=following-sibling::*[1]');
+
+    const radioLabelEl = radioGroup.locator('label').filter({ hasText: radioLabel });
+
+    await expect(radioLabelEl).toBeVisible();
+
+    return radioLabelEl;
+  }
+
   /**
    * Get the locator of radio input element from the radio group. Note that
    * the returned radio button is hidden and is not suitable for actions like click.
