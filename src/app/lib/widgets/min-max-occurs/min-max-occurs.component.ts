@@ -76,6 +76,7 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
 
   /**
    * Handle min occurs input change.
+   * @param value - Value from the control.
    */
   onMinChange(value: string) {
     this.minOccurs = this.parseInteger(value);
@@ -85,6 +86,7 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
 
   /**
    * Handle max occurs input change.
+   * @param value - Value from the control.
    */
   onMaxChange(value: string) {
     this.maxOccurs = this.parseInteger(value);
@@ -94,6 +96,9 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
 
   /**
    * Parse integer input. Empty or non-integer values are treated as no extension value.
+   *
+   * @param value - Value to parse for integer.
+   * @return - A valid integer or null if the value is empty, non-integer, or null/undefined.
    */
   parseInteger(value: string): number | null {
     if (value === '' || value == null) {
@@ -106,6 +111,8 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
 
   /**
    * Validate min <= max constraint.
+   *
+   * @return - Return true if valid, false if invalid. Sets validationError message if invalid.
    */
   validate(): boolean {
     if (this.minOccurs != null && this.maxOccurs != null && this.minOccurs > this.maxOccurs) {
@@ -155,6 +162,9 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
 
   /**
    * Update or remove a single extension by URL.
+   *
+   * @param extUrl - URI of the extension to update, either min occurs or max occurs.
+   * @param value - Integer value to set for the extension. If null, the extension will be removed.
    */
   updateExtension(extUrl: fhirPrimitives.url, value: number | null) {
     if (value != null) {
