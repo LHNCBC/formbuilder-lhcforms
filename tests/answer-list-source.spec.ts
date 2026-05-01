@@ -302,7 +302,7 @@ test.describe('Home page', () => {
       const tsUrl = getTerminologyServerInput(page);
       await tsUrl.scrollIntoViewIfNeeded();
       await expect(tsUrl).toHaveValue('');
-      await tsUrl.pressSequentially('https://clinicaltables.nlm.nih.gov/fhir/R4');
+      await tsUrl.fill('https://clinicaltables.nlm.nih.gov/fhir/R4');
 
       await expect(initialValueWarning).toHaveCount(0);
 

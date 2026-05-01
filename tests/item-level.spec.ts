@@ -82,6 +82,9 @@ const assertCodeField = async (page: Page, jsonPointerToCodeField: string) => {
 const includeExcludeCodeField = async (page: Page, codeOption: Locator, formOrItem: 'form' | 'item') => {
   const formTesting = formOrItem === 'form';
 
+  const codeYes = await PWUtils.getRadioButtonLabel(page, 'Question code', 'Include code');
+  const codeNo = await PWUtils.getRadioButtonLabel(page, 'Question code', 'No code');
+
   const codeNoRadio = await PWUtils.getRadioButton(page, 'Question code', 'No code');
   await expect(codeNoRadio).toBeChecked();
   const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
@@ -89,7 +92,7 @@ const includeExcludeCodeField = async (page: Page, codeOption: Locator, formOrIt
   expect(jsonCode).toBeUndefined();
 
   const coding = { code: 'c1', system: 's1', display: 'd1' };
-  await PWUtils.clickRadioButton(page, 'Question code', 'Include code');
+  await codeYes.click();
 
   const codeInput = page.locator('[id^="code.0.code_"]');
   await codeInput.fill('ab ');
@@ -107,12 +110,12 @@ const includeExcludeCodeField = async (page: Page, codeOption: Locator, formOrIt
   const codeAfterYes = formTesting ? qJsonAfterYes.code : qJsonAfterYes.item?.[0]?.code;
   expect(codeAfterYes).toEqual([coding]);
 
-  await PWUtils.clickRadioButton(page, 'Question code', 'No code');
+  await codeNo.click();
   const qJsonAfterNo = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
   const codeAfterNo = formTesting ? qJsonAfterNo.code : qJsonAfterNo.item?.[0]?.code;
   expect(codeAfterNo).toBeUndefined();
 
-  await PWUtils.clickRadioButton(page, 'Question code', 'Include code');
+  await codeYes.click();
   const qJsonAfterYesAgain = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
   const codeAfterYesAgain = formTesting ? qJsonAfterYesAgain.code : qJsonAfterYesAgain.item?.[0]?.code;
   expect(codeAfterYesAgain).toEqual([coding]);
@@ -140,8 +143,8 @@ test.describe('Home page', () => {
 
   test.describe('Item level fields', () => {
     let codeOption: Locator;
-    // let codeYes: Locator;
-    // let codeNo: Locator;
+    let codeYes: Locator;
+    let codeNo: Locator;
     let codeYesRadio: Locator;
     let codeNoRadio: Locator;
     let addNewItemButton: Locator;
@@ -159,7 +162,9 @@ test.describe('Home page', () => {
       codeOption = page.locator('div').filter({ hasText: 'Question code' }).first();
       await expect(codeOption).toBeVisible();
 
+      codeYes = await PWUtils.getRadioButtonLabel(page, 'Question code', 'Include code');
       codeYesRadio = await PWUtils.getRadioButton(page, 'Question code', 'Include code');
+      codeNo = await PWUtils.getRadioButtonLabel(page, 'Question code', 'No code');
       codeNoRadio = await PWUtils.getRadioButton(page, 'Question code', 'No code');
 
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
@@ -168,11 +173,11 @@ test.describe('Home page', () => {
     test('should display item editor page', async ({ page }) => {
       await expect(page.locator('tree-root tree-viewport tree-node-collection tree-node').first()).toBeVisible();
 
-      await PWUtils.clickRadioButton(page, 'Question code', 'Include code');
+      await codeYes.click();
       const codeInput = page.locator('[id^="code.0.code"]');
       await expect(codeInput).toBeVisible();
 
-      await PWUtils.clickRadioButton(page, 'Question code', 'No code');
+      await codeNo.click();
       await expect(page.locator('[id^="code.0.code"]')).toHaveCount(0);
 
       await addNewItemButton.click();

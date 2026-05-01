@@ -20,6 +20,7 @@ test.describe('Home page', () => {
   });
 
   test.describe('Item level fields: advanced', () => {
+    let codeYesLabel: Locator;
     let codeYesRadio: Locator;
 
     test.beforeEach(async ({ page }) => {
@@ -33,6 +34,7 @@ test.describe('Home page', () => {
       const codeOption = page.locator('div').filter({ hasText: 'Question code' }).first();
       await expect(codeOption).toBeVisible();
 
+      codeYesLabel = await PWUtils.getRadioButtonLabel(page, 'Question code', 'Include code');
       codeYesRadio = await PWUtils.getRadioButton(page, 'Question code', 'Include code');
 
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
@@ -126,13 +128,13 @@ test.describe('Home page', () => {
       await expect(olpYes).toBeVisible();
       await expect(olpYes).not.toBeChecked();
 
-      await PWUtils.clickRadioButton(page, 'Add link to pre-populate FHIR Observation?', 'Yes');
+      await (await PWUtils.getRadioButtonLabel(page, 'Add link to pre-populate FHIR Observation?', 'Yes')).click();
 
       const warningMsg = page.locator('lfb-observation-link-period > div > div > div > p');
       await expect(warningMsg).toContainText('Linking to FHIR Observation');
       await expect(page.locator('[id^="observationLinkPeriod"]')).toHaveCount(0);
 
-      await PWUtils.clickRadioButton(page, 'Question code', 'Include code');
+      await codeYesLabel.click();
       await page.locator('[id^="code.0.code"]').fill('C1');
       await expect(warningMsg).toHaveCount(0);
 
@@ -203,7 +205,7 @@ test.describe('Home page', () => {
         await oeYesLabel.click();
         await expect(warningMsg).toBeVisible();
 
-        await PWUtils.clickRadioButton(page, 'Question code', 'Include code');
+        await codeYesLabel.click();
         await page.locator('[id^="code.0.code"]').fill('C1');
         await expect(warningMsg).toHaveCount(0);
 
@@ -418,7 +420,6 @@ test.describe('Home page', () => {
     });
 
     test('should check siblings for error before clearing out errors from ancestor', async ({ page }) => {
-
       await PWUtils.clickAndToggleTreeNode(page, 'Family member health history');
       await PWUtils.clickAndToggleTreeNode(page, 'Living?');
 

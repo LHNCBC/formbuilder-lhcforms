@@ -431,12 +431,14 @@ test.describe('Home page', () => {
     });
 
     test('should hide/display code field', async ({ page }) => {
+      const codeYes = await PWUtils.getRadioButtonLabel(page, 'Code', 'Include code');
+      const codeNo = await PWUtils.getRadioButtonLabel(page, 'Code', 'No code');
 
-      await PWUtils.clickRadioButton(page, 'Code', 'Include code');
+      await codeYes.click();
       const codeInput = page.locator('[id^="code.0.code"]');
       await expect(codeInput).toBeVisible();
 
-      await PWUtils.clickRadioButton(page, 'Code', 'No code');
+      await codeNo.click();
       await expect(codeInput).toBeHidden();
     });
 

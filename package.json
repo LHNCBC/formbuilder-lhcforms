@@ -20,7 +20,7 @@
     "test": "npm run unit-test && npm run e2e:pw-run",
     "unit-test": "npx ng test --watch=false | grep -v -E '^(chunk|spec-|Lazy chunk)'",
     "lint": "npx ng lint",
-    "e2e": "npm run e2e:pw-run",
+    "e2e": "npx ng e2e",
     "e2e:serve": "dotenv -c -- sh -c 'angular-http-server --silent --path ./dist/formbuilder-lhcforms -p \"$TEST_PORT\"'",
     "e2e:serve-second": "dotenv -c -- sh -c 'npx angular-http-server --silent --path ./dist/formbuilder-lhcforms -p \"$TEST_PORT_SECOND\"'",
     "e2e:serve-both": "dotenv -c -- sh -c 'npx angular-http-server --silent --path ./dist/formbuilder-lhcforms -p $TEST_PORT & npx angular-http-server --silent --path ./dist/formbuilder-lhcforms -p $TEST_PORT_SECOND & wait'",

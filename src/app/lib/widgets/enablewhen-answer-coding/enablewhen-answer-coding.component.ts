@@ -16,7 +16,6 @@ import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
 declare var LForms: any;
 
-
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
   imports: [AutoCompleteComponent, FormsModule],
@@ -134,7 +133,6 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
       }
     });
     this.subscriptions.push(sub);
-
   }
 
 

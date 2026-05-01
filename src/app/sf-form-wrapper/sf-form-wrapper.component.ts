@@ -211,12 +211,23 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit,
     }
 
     const op = formProperty.getProperty('operator');
-    const aField = Util.getAnswerFieldName(aType || 'string');
-    let answerType = '';
-    let answerX = null;
-    if (aField !== undefined) {
-      answerType = formProperty.getProperty('__$answerType').value;
-      answerX = formProperty.getProperty(aField);
+    let aField = Util.getAnswerFieldName(aType || 'string');
+
+    const answerType = formProperty.getProperty('__$answerType').value;
+    let answerX = formProperty.getProperty(aField);
+
+    if (Util.isEmpty(answerX.value) && questionItem && 'answerConstraint' in questionItem.data &&
+      questionItem.data.answerConstraint === "optionsOrString")
+    {
+      const altKey = Util.getAnswerFieldName('string');
+      answerX = formProperty.getProperty(altKey);
+
+      if (!Util.isEmpty(answerX.value)) {
+        aField = altKey;
+      } else {
+        // revert back to the original type
+        answerX = formProperty.getProperty(aField);
+      }
     }
     const linkIdProperty = formProperty.findRoot().getProperty('linkId');
 
