@@ -13,7 +13,7 @@ const slowMo = parseInt(process.env.SLOMO) || 50;
  */
 export default defineConfig({
   expect: {
-    timeout: 30000, // Default timeout for expect() assertions
+    timeout: 10000, // Default timeout for expect() assertions
   },
   testDir: './tests',
   /* Run tests in files in parallel */
