@@ -272,4 +272,266 @@ describe('Util', () => {
     expect(itemSchema.properties.linkId.type).toBe('string');
     expect(flSchema.properties.resourceType.enum).toEqual(['Questionnaire']);
   });
+
+  describe('FHIR Field Ordering', () => {
+    it('should order root Questionnaire fields according to FHIR canonical order', () => {
+      const unorderedQ = {
+        item: [],
+        title: 'Test Form',
+        id: 'test-123',
+        resourceType: 'Questionnaire',
+        status: 'draft',
+        version: '1.0.0',
+        url: 'http://example.com/questionnaire',
+        name: 'TestQuestionnaire',
+        description: 'A test questionnaire'
+      };
+
+      const ordered = Util.orderQuestionnaireFields(unorderedQ);
+
+      const keys = Object.keys(ordered);
+      const expectedOrder = ['resourceType', 'id', 'url', 'version', 'name', 'title', 'status', 'description', 'item'];
+
+      expectedOrder.forEach((key, index) => {
+        expect(keys[index]).toBe(key);
+      });
+    });
+
+    it('should order nested QuestionnaireItem fields according to canonical order', () => {
+      const item = {
+        item: [],
+        initial: [],
+        text: 'Question 1',
+        linkId: 'q1',
+        type: 'string',
+        id: 'item-1',
+        required: false,
+        readOnly: false
+      };
+
+      const ordered = Util.orderQuestionnaireFields(item, 'QuestionnaireItem');
+
+      const keys = Object.keys(ordered);
+      const expectedOrder = ['id', 'linkId', 'text', 'type', 'required', 'readOnly', 'initial', 'item'];
+      expectedOrder.forEach((key, index) => {
+        expect(keys[index]).toBe(key);
+      });
+    });
+
+    it('should order EnableWhen fields according to canonical order', () => {
+      const enableWhen = {
+        question: 'q1',
+        operator: '=',
+        answerString: 'yes',
+        id: 'ew-1',
+        extension: []
+      };
+
+      const ordered = Util.orderQuestionnaireFields(enableWhen, 'EnableWhen');
+
+      const keys = Object.keys(ordered);
+      const expectedOrder = ['id', 'extension', 'question', 'operator', 'answerString'];
+      expectedOrder.forEach((key, index) => {
+        expect(keys[index]).toBe(key);
+      });
+    });
+
+    it('should order AnswerOption fields according to canonical order', () => {
+      const answerOption = {
+        valueCoding: { code: 'A', system: 'http://example.com', display: 'Option A' },
+        initialSelected: true,
+        id: 'ao-1',
+        extension: []
+      };
+
+      const ordered = Util.orderQuestionnaireFields(answerOption, 'AnswerOption');
+
+      const keys = Object.keys(ordered);
+      const expectedOrder = ['id', 'extension', 'valueCoding', 'initialSelected'];
+      expectedOrder.forEach((key, index) => {
+        expect(keys[index]).toBe(key);
+      });
+    });
+
+    it('should order Initial fields according to canonical order', () => {
+      const initial = {
+        valueString: 'default value',
+        id: 'init-1',
+        extension: []
+      };
+
+      const ordered = Util.orderQuestionnaireFields(initial, 'Initial');
+
+      const keys = Object.keys(ordered);
+      const expectedOrder = ['id', 'extension', 'valueString'];
+      expectedOrder.forEach((key, index) => {
+        expect(keys[index]).toBe(key);
+      });
+    });
+
+    it('should append unknown fields at the end after known fields in alphabetical order', () => {
+      const item = {
+        'customExtension': { url: 'http://custom.com', valueString: 'custom' },
+        'linkId': 'q1',
+        'unknownField': 'unknown',
+        'type': 'string',
+        'text': 'Question 1'
+      };
+
+      const ordered = Util.orderQuestionnaireFields(item, 'QuestionnaireItem');
+
+      const keys = Object.keys(ordered);
+      const expectedOrder = ['linkId', 'text', 'type', 'customExtension', 'unknownField'];
+      expectedOrder.forEach((key, index) => {
+        expect(keys[index]).toBe(key);
+      });
+    });
+
+    it('should recursively order nested items in a Questionnaire', () => {
+      const q = {
+        resourceType: 'Questionnaire',
+        title: 'Test',
+        status: 'draft',
+        item: [
+          {
+            type: 'group',
+            text: 'Group 1',
+            linkId: 'g1',
+            item: [
+              {
+                type: 'string',
+                text: 'Item 1.1',
+                linkId: 'i1.1'
+              }
+            ]
+          }
+        ]
+      };
+
+      const ordered = Util.orderQuestionnaireFields(q);
+
+      // Check root level ordering
+      const rootKeys = Object.keys(ordered);
+      ['resourceType', 'title', 'status', 'item'].forEach((key, index) => {
+        expect(rootKeys[index]).toBe(key);
+      });
+
+      // Check nested item ordering
+      const nestedKeys = Object.keys(ordered.item[0]);
+      ['linkId', 'text', 'type', 'item'].forEach((key, index) => {
+        expect(nestedKeys[index]).toBe(key);
+      });
+
+      // Check deeply nested item
+      const deepKeys = Object.keys(ordered.item[0].item[0]);
+      ['linkId', 'text', 'type'].forEach((key, index) => {
+        expect(deepKeys[index]).toBe(key);
+      });
+    });
+
+    it('should recursively order enableWhen in nested items', () => {
+      const q = {
+        resourceType: 'Questionnaire',
+        title: 'Test',
+        status: 'draft',
+        item: [
+          {
+            linkId: 'q1',
+            type: 'choice',
+            text: 'Question 1',
+            enableWhen: [
+              {
+                operator: '=',
+                question: 'q0',
+                answerString: 'yes',
+                id: 'ew-1'
+              }
+            ]
+          }
+        ]
+      };
+
+      const ordered = Util.orderQuestionnaireFields(q);
+      const ewKeys = Object.keys(ordered.item[0].enableWhen[0]);
+      ['id', 'question', 'operator', 'answerString'].forEach((key, index) => {
+        expect(ewKeys[index]).toBe(key);
+      });
+    });
+
+    it('should recursively order answerOption in items', () => {
+      const q = {
+        resourceType: 'Questionnaire',
+        title: 'Test',
+        status: 'draft',
+        item: [
+          {
+            linkId: 'q1',
+            type: 'choice',
+            text: 'Question 1',
+            answerOption: [
+              {
+                initialSelected: true,
+                valueCoding: { code: 'A', system: 'http://example.com' },
+                id: 'ao-1'
+              }
+            ]
+          }
+        ]
+      };
+
+      const ordered = Util.orderQuestionnaireFields(q);
+      const aoKeys = Object.keys(ordered.item[0].answerOption[0]);
+      ['id', 'valueCoding', 'initialSelected'].forEach((key, index) => {
+        expect(aoKeys[index]).toBe(key);
+      });
+    });
+
+    it('should recursively order initial in items', () => {
+      const q = {
+        resourceType: 'Questionnaire',
+        title: 'Test',
+        status: 'draft',
+        item: [
+          {
+            linkId: 'q1',
+            type: 'string',
+            text: 'Question 1',
+            initial: [
+              {
+                valueString: 'default',
+                id: 'init-1'
+              }
+            ]
+          }
+        ]
+      };
+
+      const ordered = Util.orderQuestionnaireFields(q);
+      const initKeys = Object.keys(ordered.item[0].initial[0]);
+      ['id', 'valueString'].forEach((key, index) => {
+        expect(initKeys[index]).toBe(key);
+      });
+    });
+
+    it('should handle empty objects gracefully', () => {
+      const empty = {};
+      const ordered = Util.orderQuestionnaireFields(empty);
+      expect(ordered).toEqual({});
+    });
+
+    it('should handle null and non-object inputs gracefully', () => {
+      expect(Util.orderQuestionnaireFields(null)).toBeNull();
+      expect(Util.orderQuestionnaireFields(undefined)).toBeUndefined();
+      expect(Util.orderQuestionnaireFields('string')).toBe('string');
+      expect(Util.orderQuestionnaireFields(123)).toBe(123);
+    });
+
+    it('should handle unknown element types gracefully', () => {
+      const obj = { field1: 'value1', field2: 'value2' };
+      const ordered = Util.orderQuestionnaireFields(obj, 'UnknownType');
+      expect(ordered).toEqual(obj);
+    });
+  });
 });
+
+
