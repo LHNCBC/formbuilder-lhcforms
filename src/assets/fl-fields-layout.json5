@@ -26,6 +26,7 @@
           { field:  "copyright", col:  12},
           { field:  "approvalDate", col:  12},
           { field:  "lastReviewDate", col:  12},
+          { field:  "effectivePeriod", col:  12},
           { field:  "contained", "col": 12},
           { field:  "__$variable", col: 12},
           { field:  "__$extensionContainer", col: 12}
@@ -72,6 +73,16 @@
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
+    dateRange: {
+      id: "date-range",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-6",
+      showFields: [
+        {"field": "start", "col": 6},
+        {"field": "end", "col": 6}
+      ]
     },
     __$terminologyServer: {
       "id": "terminology-server",
@@ -207,6 +218,9 @@
     ],
     inputDateTime: [
       '$.properties.date'
+    ],
+    dateRange: [
+      '$.properties.effectivePeriod'
     ],
     __$terminologyServer: [
       '$.properties.__$terminologyServer'

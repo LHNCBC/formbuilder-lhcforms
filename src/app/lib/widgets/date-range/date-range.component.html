@@ -1,0 +1,66 @@
+<div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+  <lfb-label
+    [title]="schema.title"
+    [helpMessage]="schema.description"
+    [ngClass]="labelClasses"
+    class="form-label"
+  ></lfb-label>
+  <div [ngClass]="controlClasses" class="px-0">
+    <div class="row m-0">
+      <div class="col-6 ps-0 pe-0">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text">Start</span>
+          <input
+            class="form-control"
+            id="date-range-start-{{id}}"
+            [formControl]="startControl"
+            placeholder="yyyy-MM-dd"
+            ngbDatepicker
+            container="body"
+            #dStart="ngbDatepicker"
+            (blur)="onStartBlur()"
+            (dateSelect)="onStartDateSelect()"
+          >
+          <button class="btn btn-outline-secondary" aria-label="Start date picker"
+                  (click)="dStart.toggle()">
+            <fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon>
+          </button>
+        </div>
+      </div>
+      <div class="col-6 pe-0">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text">End</span>
+          <input
+            class="form-control"
+            id="date-range-end-{{id}}"
+            [formControl]="endControl"
+            placeholder="yyyy-MM-dd"
+            ngbDatepicker
+            container="body"
+            #dEnd="ngbDatepicker"
+            (blur)="onEndBlur()"
+            (dateSelect)="onEndDateSelect()"
+          >
+          <button class="btn btn-outline-secondary" aria-label="End date picker"
+                  (click)="dEnd.toggle()">
+            <fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon>
+          </button>
+        </div>
+      </div>
+      @if (rangeError) {
+        <small class="text-danger form-text col-12 px-0" role="alert">{{ rangeError }}</small>
+      }
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
