@@ -1,36 +1,29 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import { ObjectWidget, FormProperty } from '@lhncbc/ngx-schema-form';
-import { NgbDatepickerModule, NgbDateAdapter, NgbDateParserFormatter } from '@ng-bootstrap/ng-bootstrap';
-import { LfbDateAdapter, LfbDateParserFormatter } from '../date/date.component';
 import { LabelComponent } from "../label/label.component";
-import {faCalendar} from '@fortawesome/free-solid-svg-icons';
 import { Subscription } from 'rxjs';
 import {CommonModule} from "@angular/common";
-import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {AppFormElementComponent} from "../form-element/form-element.component";
+import {DateUtil} from "../../date-util";
 
 @Component({
   selector: 'lfb-date-range',
-  imports: [LabelComponent, CommonModule, ReactiveFormsModule, FontAwesomeModule, NgbDatepickerModule],
+  imports: [LabelComponent, CommonModule, AppFormElementComponent],
   templateUrl: './date-range.component.html',
-  styleUrls: ['./date-range.component.css'],
-  providers: [
-    { provide: NgbDateAdapter, useClass: LfbDateAdapter },
-    { provide: NgbDateParserFormatter, useClass: LfbDateParserFormatter }
-  ]
+  styleUrls: ['./date-range.component.css']
 })
 export class DateRangeComponent extends ObjectWidget implements OnInit, OnDestroy {
-  dateIcon = faCalendar;
-  private startProp: FormProperty;
-  private endProp: FormProperty;
-  startControl = new FormControl();
-  endControl = new FormControl();
+  startProp: FormProperty;
+  endProp: FormProperty;
   rangeError: string | null = null;
   labelPosition: string;
   labelClasses: string;
   controlClasses: string;
   private subscriptions: Subscription[] = [];
 
+  /**
+   * Initializes widget layout options, child date properties, and reactive validation subscriptions.
+   */
   ngOnInit() {
     const widget = this.formProperty.schema.widget || {};
     this.labelPosition = widget.labelPosition || 'top';
@@ -39,40 +32,42 @@ export class DateRangeComponent extends ObjectWidget implements OnInit, OnDestro
 
     this.startProp = this.formProperty.getProperty('start');
     this.endProp = this.formProperty.getProperty('end');
-
-    // Sync form controls with schema-form properties
-    this.startControl.setValue(this.startProp.value, { emitEvent: false });
-    this.endControl.setValue(this.endProp.value, { emitEvent: false });
+    this.configureDateTimeProperty(this.startProp, 'Start');
+    this.configureDateTimeProperty(this.endProp, 'End');
 
     this.subscriptions.push(
-      this.startControl.valueChanges.subscribe(val => {
-        this.startProp.setValue(val, false);
-        this.validateRange();
-      }),
-      this.endControl.valueChanges.subscribe(val => {
-        this.endProp.setValue(val, false);
-        this.validateRange();
-      }),
-      this.startProp.valueChanges.subscribe(val => {
-        if (this.startControl.value !== val) {
-          this.startControl.setValue(val, { emitEvent: false });
-        }
-      }),
-      this.endProp.valueChanges.subscribe(val => {
-        if (this.endControl.value !== val) {
-          this.endControl.setValue(val, { emitEvent: false });
-        }
-      })
+      this.startProp.valueChanges.subscribe(() => this.validateRange()),
+      this.endProp.valueChanges.subscribe(() => this.validateRange())
     );
+    this.validateRange();
   }
 
   /**
-   * Show error if range is invalid, clear it if valid.
+   * Normalizes a child Period boundary field to use the datetime widget configuration.
+   *
+   * @param prop - Child form property (`start` or `end`) to configure.
+   * @param title - Display label for the child field.
+   */
+  private configureDateTimeProperty(prop: FormProperty, title: string) {
+    const widget = prop.schema.widget || {};
+    prop.schema.title = title;
+    prop.schema.widget = {
+      ...widget,
+      id: 'datetime',
+      labelPosition: 'top',
+      labelClasses: '',
+      controlClasses: 'col-12',
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    };
+  }
+
+  /**
+   * Updates the range-level error message based on the current start/end values.
    */
   validateRange() {
-    const start = this.startControl.value;
-    const end = this.endControl.value;
-    if (start && end && start > end) {
+    const start = this.startProp?.value;
+    const end = this.endProp?.value;
+    if (this.isInvalidRange(start, end)) {
       this.rangeError = 'End date must be on or after start date.';
     } else {
       this.rangeError = null;
@@ -80,45 +75,55 @@ export class DateRangeComponent extends ObjectWidget implements OnInit, OnDestro
   }
 
   /**
-   * On blur, clear the invalid value for start date.
+   * Clears start when the range is invalid after focus leaves the start field.
    */
   onStartBlur() {
-    const start = this.startControl.value;
-    const end = this.endControl.value;
-    if (start && end && start > end) {
-      this.startControl.setValue(null, { emitEvent: false });
+    if (this.isInvalidRange(this.startProp.value, this.endProp.value)) {
       this.startProp.setValue(null, false);
       this.rangeError = 'Start date was cleared because it was after end date.';
     }
   }
 
   /**
-   * On blur, clear the invalid value for end date.
+   * Clears end when the range is invalid after focus leaves the end field.
    */
   onEndBlur() {
-    const start = this.startControl.value;
-    const end = this.endControl.value;
-    if (start && end && start > end) {
-      this.endControl.setValue(null, { emitEvent: false });
+    if (this.isInvalidRange(this.startProp.value, this.endProp.value)) {
       this.endProp.setValue(null, false);
       this.rangeError = 'End date was cleared because it was before start date.';
     }
   }
 
   /**
-   * Called when start date is picked from calendar (dateSelect event).
+   * Compares parsed start/end values and returns true when start is later than end.
+   *
+   * @param start - FHIR date or dateTime string from the start field.
+   * @param end - FHIR date or dateTime string from the end field.
+   * @returns True if both parse and start is after end.
    */
-  onStartDateSelect() {
-    setTimeout(() => this.onStartBlur());
+  private isInvalidRange(start: string | null, end: string | null): boolean {
+    const startDate = this.parseFHIRDateTime(start);
+    const endDate = this.parseFHIRDateTime(end);
+    return !!(startDate && endDate && startDate.getTime() > endDate.getTime());
   }
 
   /**
-   * Called when end date is picked from calendar (dateSelect event).
+   * Parses a FHIR date/dateTime string into a Date only when validation succeeds.
+   *
+   * @param value - FHIR date/dateTime string to parse.
+   * @returns Parsed Date, or null when missing/invalid.
    */
-  onEndDateSelect() {
-    setTimeout(() => this.onEndBlur());
+  private parseFHIRDateTime(value: string | null): Date | null {
+    if (!value) {
+      return null;
+    }
+    const dateValidation = DateUtil.validateDate(value);
+    return dateValidation.validDate ? dateValidation.date : null;
   }
 
+  /**
+   * Releases value-change subscriptions created during initialization.
+   */
   ngOnDestroy() {
     this.subscriptions.forEach(s => s.unsubscribe());
   }

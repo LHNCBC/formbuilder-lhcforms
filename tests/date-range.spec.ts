@@ -1,6 +1,14 @@
-import {test, expect} from '@playwright/test';
+import {test, expect, Page} from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils} from "./pw-utils";
+
+const getDateRangeInputs = (page: Page) => {
+  const widget = page.locator('lfb-date-range');
+  return {
+    startInput: widget.getByRole('textbox', {name: /^Start/}),
+    endInput: widget.getByRole('textbox', {name: /^End/})
+  };
+};
 
 test.describe('date-range (effectivePeriod) widget', () => {
   let mainPO: MainPO;
@@ -13,8 +21,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
   });
 
   test('should enter start and end dates and output effectivePeriod', async ({page}) => {
-    const startInput = page.locator('[id^="date-range-start-"]');
-    const endInput = page.locator('[id^="date-range-end-"]');
+    const {startInput, endInput} = getDateRangeInputs(page);
 
     await startInput.click();
     await startInput.fill('2024-03-01');
@@ -32,8 +39,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
     await PWUtils.uploadFile(page, 'effective-period-sample.json');
     await page.getByRole('button', {name: 'Advanced fields'}).click();
 
-    const startInput = page.locator('[id^="date-range-start-"]');
-    const endInput = page.locator('[id^="date-range-end-"]');
+    const {startInput, endInput} = getDateRangeInputs(page);
 
     await expect(startInput).toHaveValue('2024-01-15');
     await expect(endInput).toHaveValue('2024-12-31');
@@ -42,9 +48,33 @@ test.describe('date-range (effectivePeriod) widget', () => {
     expect(qJson.effectivePeriod).toEqual({start: '2024-01-15', end: '2024-12-31'});
   });
 
+  test('should import dateTime effectivePeriod values from file', async ({page}) => {
+    await PWUtils.uploadFile(page, 'effective-period-datetime-sample.json');
+    await page.getByRole('button', {name: 'Advanced fields'}).click();
+
+    const {startInput, endInput} = getDateRangeInputs(page);
+
+    await expect(startInput).toHaveValue(/2024-01-15/);
+    await expect(endInput).toHaveValue(/2024-12-31/);
+
+    const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(qJson.effectivePeriod).toEqual({
+      start: '2024-01-15T12:30:00Z',
+      end: '2024-12-31T18:45:00Z'
+    });
+  });
+
+  test('should show range error for imported invalid effectivePeriod', async ({page}) => {
+    await PWUtils.uploadFile(page, 'effective-period-invalid-sample.json');
+    await page.getByRole('button', {name: 'Advanced fields'}).click();
+
+    const errorMsg = page.locator('lfb-date-range small.text-danger[role="alert"]');
+    await expect(errorMsg).toBeVisible();
+    await expect(errorMsg).toContainText('End date must be on or after start date.');
+  });
+
   test('should show error and clear invalid start date on blur', async ({page}) => {
-    const startInput = page.locator('[id^="date-range-start-"]');
-    const endInput = page.locator('[id^="date-range-end-"]');
+    const {startInput, endInput} = getDateRangeInputs(page);
 
     // Set end date first
     await endInput.click();
@@ -65,8 +95,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
   });
 
   test('should show error and clear invalid end date on blur', async ({page}) => {
-    const startInput = page.locator('[id^="date-range-start-"]');
-    const endInput = page.locator('[id^="date-range-end-"]');
+    const {startInput, endInput} = getDateRangeInputs(page);
 
     // Set start date first
     await startInput.click();
@@ -87,8 +116,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
   });
 
   test('should allow any date if the other date is empty', async ({page}) => {
-    const startInput = page.locator('[id^="date-range-start-"]');
-    const endInput = page.locator('[id^="date-range-end-"]');
+    const {startInput, endInput} = getDateRangeInputs(page);
 
     // Set only start date - should be fine
     await startInput.click();
@@ -106,7 +134,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
   });
 
   test('should pick date from calendar popup', async ({page}) => {
-    const startCalBtn = page.getByRole('button', {name: 'Start date picker'});
+    const startCalBtn = page.getByRole('button', {name: 'Date time picker for Start'});
     await startCalBtn.click();
 
     // The calendar popup should be visible
@@ -116,11 +144,11 @@ test.describe('date-range (effectivePeriod) widget', () => {
     // Click a day
     await datepicker.locator('.ngb-dp-day').filter({hasText: /^15$/}).first().click();
 
-    const startInput = page.locator('[id^="date-range-start-"]');
+    const {startInput} = getDateRangeInputs(page);
     await expect(startInput).not.toHaveValue('');
 
     // Pick end date from calendar popup
-    const endCalBtn = page.getByRole('button', {name: 'End date picker'});
+    const endCalBtn = page.getByRole('button', {name: 'Date time picker for End'});
     await endCalBtn.click();
 
     const endDatepicker = page.locator('ngb-datepicker');
@@ -129,12 +157,7 @@ test.describe('date-range (effectivePeriod) widget', () => {
     // Click a day
     await endDatepicker.locator('.ngb-dp-day').filter({hasText: /^20$/}).first().click();
 
-    const endInput = page.locator('[id^="date-range-end-"]');
+    const {endInput} = getDateRangeInputs(page);
     await expect(endInput).not.toHaveValue('');
   });
 });
-
-
-
-
-
