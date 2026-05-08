@@ -19,7 +19,7 @@ test.describe('item-level fields', () => {
     const inputEl = dlg.getByLabel('Search for a LOINC item:');
     await inputEl.fill('body weight');
     await expect(dlg.getByRole('listbox')).toBeVisible();
-    await page.keyboard.press('Enter');
+    await dlg.getByRole('option', {name: /18833-4/}).click();
     await expect(inputEl).toHaveValue('18833-4: Body weight');
     await page.getByRole('button', {name: 'Add'}).click();
 
@@ -34,6 +34,7 @@ test.describe('item-level fields', () => {
     const inputEl = dlg.getByLabel('Search for a LOINC item:');
     await inputEl.fill('vital');
     await expect(dlg.getByRole('listbox')).toBeVisible();
+    await dlg.getByRole('option', {name: /34565-2/}).click();
     await page.keyboard.press('Enter');
     await expect(inputEl).toHaveValue('34565-2: Vital signs, weight & height panel');
     await page.getByRole('button', {name: 'Add'}).click();

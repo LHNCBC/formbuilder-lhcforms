@@ -21,6 +21,7 @@
           { field:  "version", col:  12},
           { field:  "name", col:  12},
           { field:  "meta/tag", col:  12},
+          { field:  "subjectType", "col": 12},
           { field:  "date", col:  12},
           { field:  "publisher", col:  12},
           { field:  "copyright", col:  12},

@@ -8,7 +8,7 @@
         [ngClass]="labelClasses"
       ></lfb-label>
     }
-    <div [ngClass]="controlClasses">
+    <div [ngClass]="controlClasses || 'col p-0 position-relative'">
       @if (schema.type !== 'array') {
         <select
           [formControl]="control"
@@ -34,20 +34,65 @@
       }
 
       @if (schema.type==='array') {
-        <select multiple
-          [formControl]="control"
-          name="{{name}}"
-          [attr.id]="id+_id"
-          [ngClass]="{invalid: errors}"
-          [attr.aria-invalid]="errors"
-          (focus)="announceErrors()"
-          [attr.disabled]="schema.readOnly ? '' : null">
-          @for (option of schema.items.oneOf; track option.enum[0]) {
-            <option
-              [ngValue]="option.enum[0]"
-            [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
+        @if (schema.widget?.autocomplete) {
+          <div class="array-autocomplete-row">
+            <input
+              type="text"
+              class="form-control form-control-sm"
+              [attr.id]="id+_id+'_ac'"
+              [attr.aria-invalid]="errors"
+              [attr.disabled]="schema.readOnly ? '' : null"
+              [attr.placeholder]="schema.widget.autocompletePlaceholder || 'Search and select options'"
+              (focus)="announceErrors()"
+              #arrayAutocomplete
+            >
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm array-reset-btn"
+              [attr.aria-label]="'Reset selected ' + (schema.title || 'items')"
+              [disabled]="schema.readOnly || !selectedArrayValues.length"
+              (click)="clearAllSelectedValues($event)">
+              Reset
+            </button>
+          </div>
+        } @else {
+          @if (schema.widget?.showChips && selectedArrayValues.length) {
+            <div class="d-flex flex-wrap gap-1 mb-1">
+              @for (selectedValue of selectedArrayValues; track selectedValue) {
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm selected-chip"
+                  [attr.aria-label]="'Remove ' + getArrayOptionLabel(selectedValue)"
+                  (click)="removeSelectedValue(selectedValue, $event)">
+                  {{getArrayOptionLabel(selectedValue)}} x
+                </button>
+              }
+            </div>
           }
-        </select>
+          @if (schema.widget?.searchable) {
+            <input
+              type="text"
+              class="form-control form-control-sm mb-1"
+              [value]="arraySearchTerm"
+              [placeholder]="schema.widget.searchPlaceholder || 'Search options'"
+              (input)="arraySearchTerm = $any($event.target).value"
+            >
+          }
+          <select multiple
+            [formControl]="control"
+            name="{{name}}"
+            [attr.id]="id+_id"
+            [ngClass]="{invalid: errors}"
+            [attr.aria-invalid]="errors"
+            (focus)="announceErrors()"
+            [attr.disabled]="schema.readOnly ? '' : null">
+            @for (option of filteredArrayOptions; track option.enum[0]) {
+              <option
+                [ngValue]="option.enum[0]"
+              [attr.disabled]="option.readOnly ? '' : null">{{option.description}}</option>
+            }
+          </select>
+        }
       }
 
       @for (error of errors; track error.code) {

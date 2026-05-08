@@ -1298,7 +1298,7 @@ export class PWUtils {
     }
 
     if (Array.isArray(expectedResults)) {
-      const selectedList = page.locator('span.autocomp_selected');
+      const selectedList = input.locator('xpath=ancestor::span[contains(@class,"autocomp_selected")][1]');
       const selectedItems = selectedList.locator('ul > li');
 
       await expect(selectedList).toBeVisible();
