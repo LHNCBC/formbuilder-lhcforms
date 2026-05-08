@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.1.0] 2026-05-08
+### Added
+- Added form-level support for Questionnaire subjectType.
+
 ## [11.0.13] 2026-03-30
 ### Changed
 - Migrated end-to-end tests from Cypress to Playwright.
