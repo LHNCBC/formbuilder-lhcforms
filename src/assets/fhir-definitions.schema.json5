@@ -4479,18 +4479,24 @@
         },
         "versionId": {
           "description": "The version specific identifier, as it appears in the version portion of the URL. This value changes when the resource is created, updated, or deleted.",
-          "$ref": "#/definitions/id"
+          "$ref": "#/definitions/id",
+          "readOnly": true,
+          "disabled": true
         },
         "lastUpdated": {
           "description": "When the resource last changed - e.g. when the version changed.",
-          "$ref": "#/definitions/instant"
+          "$ref": "#/definitions/instant",
+          "readOnly": true,
+          "disabled": true
         },
         "source": {
           "description": "A uri that identifies the source system of the resource. This provides a minimal amount of [[[Provenance]]] information that can be used to track or differentiate the source of information in the resource. The source may identify another FHIR server, document, message, database, etc.",
-          "$ref": "#/definitions/uri"
+          "$ref": "#/definitions/uri",
+          "readOnly": true,
+          "disabled": true
         },
         "profile": {
-          "description": "A list of profiles (references to [[[StructureDefinition]]] resources) that this resource claims to conform to. The URL is a reference to [[[StructureDefinition.url]]].",
+          "description": "A list of profiles (references to StructureDefinition resources) that this resource claims to conform to. The URL is a reference to StructureDefinition.url.",
           "items": {
             "$ref": "#/definitions/canonical"
           },

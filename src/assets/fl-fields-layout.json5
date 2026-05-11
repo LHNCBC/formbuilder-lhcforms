@@ -20,7 +20,7 @@
           { field:  "implicitRules", col:  12},
           { field:  "version", col:  12},
           { field:  "name", col:  12},
-          { field:  "meta/tag", col:  12},
+          { field:  "meta", col:  12},
           { field:  "date", col:  12},
           { field:  "publisher", col:  12},
           { field:  "copyright", col:  12},
@@ -38,7 +38,13 @@
     '$.properties.contained': 'Contained resources',
     '$.properties.name': 'Questionnaire name',
     '$.properties.date': 'Revision date',
-    '$.properties.meta.properties.tag': 'Tags',
+    '$.properties.meta': 'Meta',
+    '$.definitions.Meta.properties.versionId': 'Version ID',
+    '$.definitions.Meta.properties.lastUpdated': 'Last updated',
+    '$.definitions.Meta.properties.source': 'Source',
+    '$.definitions.Meta.properties.profile': 'Profiles',
+    '$.definitions.Meta.properties.security': 'Security labels',
+    '$.definitions.Meta.properties.tag': 'Tags',
     '$.definitions.ValueSet.properties.resourceType': 'Type',
   },
   // Specify widget layout.
@@ -81,14 +87,52 @@
     },
     coding: {
       "id": "table",
-      "labelPosition": "left",
-      "labelClasses": "col-sm-2 ps-0 pe-1",
-      "controlClasses": "col-sm-10",
+      "labelPosition": "top",
+      "labelClasses": "col-12 ps-0 pe-0",
+      "controlClasses": "col-12 ps-0 pe-0",
+      "noTableLabel": false,
+      "noCollapseButton": true,
       "addButtonLabel": "Add new tag",
       "showFields": [
         {"field": "display", "col": 4, "nolabel": true},
         {"field": "code", "col": 3, "nolabel": true},
         {"field": "system", "col": 4, "nolabel": true}
+      ]
+    },
+    metaSecurity: {
+      "id": "table",
+      "labelPosition": "top",
+      "labelClasses": "col-12 ps-0 pe-0",
+      "controlClasses": "col-12 ps-0 pe-0",
+      "noTableLabel": false,
+      "noCollapseButton": true,
+      "addButtonLabel": "Add new security",
+      "showFields": [
+        {"field": "display", "col": 4, "nolabel": true},
+        {"field": "code", "col": 3, "nolabel": true},
+        {"field": "system", "col": 4, "nolabel": true}
+      ]
+    },
+    metaProfile: {
+      "id": "meta-profile",
+      "labelPosition": "top",
+      "labelClasses": "col-12 ps-0 pe-0",
+      "controlClasses": "col-12 ps-0 pe-0",
+      "noCollapseButton": true,
+      "addButtonLabel": "Add profile"
+    },
+    metaGroup: {
+      "id": "left-label-form-group",
+      "label": false,
+      "labelWidth": 2,
+      "controlWidth": 10,
+      "showFields": [
+        {"field": "versionId", "col": 12},
+        {"field": "lastUpdated", "col": 12},
+        {"field": "source", "col": 12},
+        {"field": "profile", "col": 12},
+        {"field": "security", "col": 12},
+        {"field": "tag", "col": 12}
       ]
     },
     contained: {
@@ -174,6 +218,9 @@
       '$.properties.publisher',
       '$.properties.description',
       '$.properties.purpose',
+      '$.definitions.Meta.properties.versionId',
+      '$.definitions.Meta.properties.lastUpdated',
+      '$.definitions.Meta.properties.source',
     ],
     textArea: [
       '$.properties.copyright',
@@ -183,13 +230,22 @@
       '$.properties.lastReviewDate'
     ],
     inputDateTime: [
-      '$.properties.date'
+      '$.properties.date',
     ],
     __$terminologyServer: [
       '$.properties.__$terminologyServer'
     ],
     coding: [
-      '$.properties.meta.properties.tag',
+      '$.definitions.Meta.properties.tag',
+    ],
+    metaSecurity: [
+      '$.definitions.Meta.properties.security',
+    ],
+    metaProfile: [
+      '$.definitions.Meta.properties.profile',
+    ],
+    metaGroup: [
+      '$.properties.meta',
     ],
     contained: [
       '$.properties.contained'

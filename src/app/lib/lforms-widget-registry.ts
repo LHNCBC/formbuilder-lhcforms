@@ -56,6 +56,7 @@ import { TimeComponent } from "./widgets/time/time.component";
 import { CodingSystemComponent } from './widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
+import { MetaProfileComponent } from './widgets/meta-profile/meta-profile.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -112,5 +113,6 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('coding-system', CodingSystemComponent);
     this.register('coding-display', CodingDisplayComponent);
     this.register('enable-when-method', EnableWhenMethodComponent);
+    this.register('meta-profile', MetaProfileComponent);
   }
 }

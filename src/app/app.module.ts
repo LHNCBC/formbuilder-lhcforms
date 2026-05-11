@@ -106,6 +106,7 @@ import { LfbOptionControlWidgetComponent } from './lib/widgets/lfb-option-contro
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
+import { MetaProfileComponent } from './lib/widgets/meta-profile/meta-profile.component';
 
 import { environment } from '../environments/environment';
 
@@ -170,7 +171,8 @@ import { environment } from '../environments/environment';
     EntryFormatComponent,
     AnswerValueSetCodingDisplayComponent,
     LfbOptionControlWidgetComponent,
-    CodingDisplayComponent
+    CodingDisplayComponent,
+    MetaProfileComponent
   ],
   imports: [
     AppFormElementComponent,
