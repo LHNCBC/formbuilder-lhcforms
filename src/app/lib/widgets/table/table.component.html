@@ -14,10 +14,10 @@
   <div class="widget form-group m-0"
     [ngClass]="{'row': labelPosition === 'left'}">
     <div [ngClass]="labelClasses">
-      @if (!noCollapseButton) {
+      @if (!noCollapseButton && rowProperties.length > 0) {
         <button href="#" type="button"
           [ngClass]="{'float-sm-end': labelPosition === 'left'}"
-          class="btn btn-sm m-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+          class="btn btn-sm m-0 px-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
           [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
           <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
         </button>
@@ -27,7 +27,6 @@
       }
     </div>
     <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId" [attr.aria-labelledby]="tableId+'_tableLabel'">
-      @if (+rowProperties.length > 0) {
         <table class="table table-borderless table-sm lfb-table">
           @if (!noHeader) {
             <thead class="table-active">
@@ -36,7 +35,7 @@
                   <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
                     <lfb-title
                       [title]="showField.title || getTitle(rowProperties[0], showField.field)"
-                      [helpMessage]="getProperty(rowProperties[0], showField.field).schema.description"
+                      [helpMessage]="getFieldDescription(showField.field)"
                     ></lfb-title>
                   </th>
                 }
@@ -101,7 +100,6 @@
               }
             </tbody>
           </table>
-        }
         @if (!singleItem &&
           (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))) {
           <button (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"

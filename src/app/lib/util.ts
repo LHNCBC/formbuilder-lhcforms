@@ -6,7 +6,7 @@ import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
 import {TreeNode} from '@bugsplat/angular-tree-component';
 import copy from 'fast-copy';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, ISchema} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
 import {v4 as uuidv4} from 'uuid';
 import {fhirPrimitives} from "../fhir";
@@ -1281,6 +1281,25 @@ export class Util {
       return ret;
     };
     return search(items, linkId).extensions;
+  }
+
+  static getSchemaFromArrayProperty(arrayProperty: ArrayProperty, propertyId: string): ISchema {
+    let ret: ISchema = null;
+    if(arrayProperty.schema.items.$ref) {
+      const ref = arrayProperty.schema.items.$ref;
+      const defPrefix = '#/definitions/';
+      if(ref.startsWith(defPrefix)) {
+        const defName = ref.substring(defPrefix.length);
+        ret = arrayProperty.root.schema.definitions?.[defName]?.properties?.[propertyId];
+      }
+      else {
+        ret = arrayProperty.schema.items.properties?.[ref]?.properties[propertyId];
+      }
+    }
+    else {
+      ret = arrayProperty.schema.items.properties[propertyId];
+    }
+    return ret;
   }
 }
 
