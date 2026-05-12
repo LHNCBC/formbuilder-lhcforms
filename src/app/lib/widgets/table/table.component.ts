@@ -345,10 +345,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param propertyId -
    */
   getTitle(parentProperty, propertyId): string {
-    const p = this.getProperty(parentProperty, propertyId);
-    return p.schema && p.schema.title ? p.schema.title : Util.capitalize(propertyId);
+    return Util.getSchemaFromArrayProperty(this.formProperty, propertyId)?.title || Util.capitalize(propertyId);
   }
 
+  getFieldDescription(propertyId: string) {
+    return Util.getSchemaFromArrayProperty(this.formProperty, propertyId)?.description;
+  }
 
   /**
    * When clicking add button, prevent adding multiple empty rows. Alert the user with a popover message.

@@ -25,7 +25,7 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import fhir from 'fhir/r4';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import { FormService } from 'src/app/services/form.service';
-import {MessageDlgComponent} from "../message-dlg/message-dlg.component";
+import {MessageDlgComponent, MessageType} from "../message-dlg/message-dlg.component";
 import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 
@@ -185,7 +185,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
       modalRef.componentInstance.options = {
         title: 'Confirm',
         message: 'Are you sure you want to discard the changes you made?',
-        type: 'warning',
+        type: MessageType.INFO,
         buttons: [{
           label: 'Discard changes',
           value: 'yes'

@@ -1,5 +1,5 @@
 <div [ngClass]="labelClasses">
-  @if (!noCollapseButton) {
+  @if (!noCollapseButton && rowProperties.length > 0) {
     <button href="#" type="button"
             [ngClass]="{'float-sm-end': labelPosition === 'left'}"
             class="btn btn-sm m-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
