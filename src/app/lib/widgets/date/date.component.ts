@@ -12,8 +12,6 @@ import {faCalendar} from '@fortawesome/free-solid-svg-icons';
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {AsyncPipe, NgClass} from "@angular/common";
 import {LabelComponent} from "../label/label.component";
-import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
-import {DisableControlDirective} from "@lhncbc/ngx-schema-form";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
@@ -34,7 +32,7 @@ export class LfbDateAdapter extends NgbDateAdapter<string> {
 }
 
 /**
- * This Service handles how the date is rendered and parsed from keyboard i.e. in the bound input field.
+ * This Service handles how the date is rendered and parsed from keyboard i.e., in the bound input field.
  */
 @Injectable()
 export class LfbDateParserFormatter extends NgbDateParserFormatter {
@@ -82,8 +80,8 @@ export class DateComponent extends StringComponent implements OnInit, AfterViewI
   }
 
   /**
-   * Navigates the datepicker to today's date and updates the model value to today.
-   * If the datepicker is available, it calls its navigateTo method, then sets the form property to today.
+   * Navigates the datepicker to today's date and updates the model value today.
+   * If the datepicker is available, it calls its navigateTo method, then sets the form property today.
    */
   navigateToToday() {
     if (this.datepicker) {
@@ -98,7 +96,7 @@ export class DateComponent extends StringComponent implements OnInit, AfterViewI
 
       const inputEl = this.inputEl.nativeElement as HTMLInputElement;
       this.formProperty.valueChanges.subscribe((val) => {
-        // If the value is invalid, NgbDatepicker does not update input element's value.
+        // If the value is invalid, the NgbDatepicker does not update the input element's value.
         // yyyy, and yyyy-MM are valid in FHIR but not in ngbDatepicker.
         // Manually update the input's value.
         if(inputEl.value !== val && /^([0-9]{4}(-[0-9]{2})?)?$/.test(val?.trim())) {
@@ -134,7 +132,7 @@ export class DateComponent extends StringComponent implements OnInit, AfterViewI
    * It sets the minimum date to 120 years before the selected year and the maximum date to 120 years after the selected
    * year.
    *
-   * @param selected - Type is a union of NgbDatepickerNavigateEvent.next | NgbDateStruct. Selected date from the
+   * @param selected - Type is a union of `NgbDatepickerNavigateEvent.next` | NgbDateStruct. Selected date from the
    * datepicker navigation event or the currently selected date. If not provided, it defaults to today's date.
    */
   updateMinMaxDate(selected?: {year: number, month: number, day?: number}) {
