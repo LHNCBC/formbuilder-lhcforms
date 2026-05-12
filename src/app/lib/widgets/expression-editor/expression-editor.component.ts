@@ -101,8 +101,8 @@ export abstract class ExpressionEditorComponent extends LfbControlWidgetComponen
     modalRef.componentInstance.display = this.schema.widget.displayExpressionEditorSections;
     modalRef.componentInstance.expressionLabel = this.schema.widget.expressionLabel;
     modalRef.result.then((result) => {
-      // Result returning from the Rule Editor is the whole questionnaire.
-      // Rule Editor returns false in the case changes were cancelled.
+      // Result returning from the Expression Editor is the whole questionnaire.
+      // Expression Editor returns false in the case changes were cancelled.
       if (result) {
         let resultExtensions = Util.getExtensionsByLinkId(result.item, this.linkId);
         resultExtensions = (resultExtensions || []).filter((ext) => {
