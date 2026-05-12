@@ -3,14 +3,19 @@ import {
   NgbCalendar,
   NgbDate,
   NgbDateAdapter,
-  NgbDateParserFormatter,
+  NgbDateParserFormatter, NgbDatepickerModule,
   NgbDateStruct,
   NgbInputDatepicker,
-  NgbTimeAdapter,
+  NgbTimeAdapter, NgbTimepickerModule,
   NgbTimeStruct
 } from '@ng-bootstrap/ng-bootstrap';
 import {DateComponent} from '../date/date.component';
 import {DateUtil, DateTime} from '../../date-util';
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {AsyncPipe, NgClass} from "@angular/common";
+import {LabelComponent} from "../label/label.component";
+import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
 interface ConfigureDateTime {
   setDateTime(dateTime: DateTime);
@@ -111,8 +116,11 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
 }
 
 @Component({
-  standalone: false,
   selector: 'lfb-datetime',
+  imports: [
+    NgbDatepickerModule, NgbTimepickerModule, FormsModule, ReactiveFormsModule, NgClass, LabelComponent, AsyncPipe,
+    LfbDisableControlDirective, FontAwesomeModule
+  ],
   templateUrl: './datetime.component.html',
   styleUrls: ['./datetime.component.css'],
   providers: [

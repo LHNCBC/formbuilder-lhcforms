@@ -1,8 +1,21 @@
-import {AfterViewInit, Component, ElementRef, inject, Injectable, ViewChild} from '@angular/core';
-import {NgbCalendar, NgbDateAdapter, NgbDateParserFormatter, NgbDatepicker, NgbDateStruct} from '@ng-bootstrap/ng-bootstrap';
+import {AfterViewInit, Component, ElementRef, inject, Injectable, OnInit, ViewChild} from '@angular/core';
+import {
+  NgbCalendar,
+  NgbDateAdapter,
+  NgbDateParserFormatter,
+  NgbDatepicker, NgbDatepickerModule, NgbDatepickerNavigateEvent,
+  NgbDateStruct
+} from '@ng-bootstrap/ng-bootstrap';
 import {StringComponent} from '../string/string.component';
 import {DateUtil} from '../../date-util';
 import {faCalendar} from '@fortawesome/free-solid-svg-icons';
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {AsyncPipe, NgClass} from "@angular/common";
+import {LabelComponent} from "../label/label.component";
+import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
+import {DisableControlDirective} from "@lhncbc/ngx-schema-form";
+import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
 @Injectable()
 export class LfbDateAdapter extends NgbDateAdapter<string> {
@@ -37,8 +50,11 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter {
 
 
 @Component({
-  standalone: false,
   selector: 'lfb-date',
+  imports: [
+    NgbDatepickerModule, FormsModule, ReactiveFormsModule, NgClass, LabelComponent, AsyncPipe,
+    LfbDisableControlDirective, FontAwesomeModule
+  ],
   templateUrl: './date.component.html',
   styleUrls: ['./date.component.css'],
   providers: [
@@ -46,16 +62,23 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter {
     {provide: NgbDateParserFormatter, useClass: LfbDateParserFormatter}
   ]
 })
-export class DateComponent extends StringComponent implements AfterViewInit {
+export class DateComponent extends StringComponent implements OnInit, AfterViewInit {
   static id = 0;
   dateIcon = faCalendar;
   @ViewChild('d') datepicker: NgbDatepicker;
   @ViewChild('d', {read: ElementRef, static: false}) inputEl: ElementRef;
+  minDate: NgbDateStruct;
+  maxDate: NgbDateStruct;
 
   calendar = inject(NgbCalendar);
   constructor() {
     super();
     DateComponent.id++;
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
+    this.updateMinMaxDate();
   }
 
   /**
@@ -95,6 +118,33 @@ export class DateComponent extends StringComponent implements AfterViewInit {
     let val: string = DateUtil.formatToISO({dateStruct, timeStruct: null, millis: NaN});
     val = val.length > 0 ? val : null;
     this.formProperty.setValue(val, false);
+  }
+
+  /**
+   * Adjust next min/max years based on the selected year.
+   *
+   * @param event NgbDatepickerNavigateEvent - Datepicker navigation event
+   */
+  onNavigate(event: NgbDatepickerNavigateEvent) {
+    this.updateMinMaxDate(event.next);
+  }
+
+  /**
+   * This method calculates the minimum and maximum dates for the datepicker based on the selected year.
+   * It sets the minimum date to 120 years before the selected year and the maximum date to 120 years after the selected
+   * year.
+   *
+   * @param selected - Type is a union of NgbDatepickerNavigateEvent.next | NgbDateStruct. Selected date from the
+   * datepicker navigation event or the currently selected date. If not provided, it defaults to today's date.
+   */
+  updateMinMaxDate(selected?: {year: number, month: number, day?: number}) {
+    let d = this.calendar.getToday();
+    selected = selected || d;
+    d.year = selected.year - 120;
+    this.minDate = d;
+    d = this.calendar.getToday();
+    d.year = selected.year + 120;
+    this.maxDate = d;
   }
 
 }

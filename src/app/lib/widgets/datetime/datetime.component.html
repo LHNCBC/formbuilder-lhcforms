@@ -18,6 +18,8 @@
                [lfbDisableControl]="schema.disabled"
                [footerTemplate]="timeTemplate"
                [startDate]="this.dateTime.dateStruct"
+               [minDate]="minDate"
+               [maxDate]="maxDate"
                ngbDatepicker
                autoClose="false"
                #d="ngbDatepicker"
@@ -26,6 +28,7 @@
                (dateSelect)="onDateSelected($event)"
                (keyup)="handleInput()"
                (blur)="suppressInvalidValue($event)"
+               (navigate)="onNavigate($event)"
         >
         <button class="btn btn-outline-secondary py-0" [attr.aria-label]="'Date time picker for '+schema.title"
                 (click)="d.toggle()"><fa-icon [icon]="dateIcon" aria-hidden="true"></fa-icon></button>
