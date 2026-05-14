@@ -1,13 +1,14 @@
 @if(!widgetInfo.nolabel) {
-  <lfb-label
-             [title]="schema.title"
-             [helpMessage]="schema.description"
-             [ngClass]="widgetInfo.labelClasses"
-  ></lfb-label>
+  <div [ngClass]="objectLabelClasses">
+    <lfb-label
+               [title]="schema.title"
+               [helpMessage]="schema.description"
+    ></lfb-label>
+  </div>
 }
-<div class="ms-4 shadow-sm rounded">
+<div class="lfb-hover-scope" [ngClass]="objectBodyClasses">
   @for (sf of showFields; track sf.field) {
-    <div class="my-1">
+    <div>
       <lfb-form-element [formProperty]="formProperty.getProperty(sf.field)"></lfb-form-element>
     </div>
   }

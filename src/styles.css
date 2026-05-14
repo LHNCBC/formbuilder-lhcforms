@@ -159,3 +159,19 @@ div.has-error > ul:empty {
   max-width: 70vw;
   text-align: left !important;
 }
+
+/*
+ * In the extension dialog, highlight only the nearest local scope under the
+ * pointer so child and sibling fields do not get highlighted together.
+ */
+lfb-extension-dlg .dlg-content .lfb-row:hover {
+  background-color: transparent;
+}
+
+lfb-extension-dlg .dlg-content .lfb-hover-scope:hover {
+  background-color: lightgoldenrodyellow;
+}
+
+lfb-extension-dlg .dlg-content .lfb-hover-scope:has(.lfb-hover-scope:hover) {
+  background-color: transparent;
+}

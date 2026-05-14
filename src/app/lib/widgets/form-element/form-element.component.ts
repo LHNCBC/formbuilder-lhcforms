@@ -15,6 +15,7 @@ import { ElementChooserComponent } from '../element-chooser/element-chooser.comp
   template: `
     @if (formProperty.visible) {
       <div
+        class="lfb-hover-scope"
         [class.has-error]="!formProperty.valid"
         [class.has-success]="formProperty.valid">
         <lfb-element-chooser
