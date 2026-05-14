@@ -139,8 +139,7 @@ test.describe('extension.component', async () => {
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use a value type', formLoc)).toBeChecked();
     await expect(PWUtils.getRadioButton(page, 'Value Type Category', 'General purpose datatype', formLoc)).toBeChecked();
     expect(await formLoc.getByLabel('Value Type', {exact: true}).inputValue()).toMatch(/valueCodeableConcept$/);
-    const ccCodingLoc = formLoc.locator('lfb-array div[id^="valueCodeableConcept"]');
-    await expect(ccCodingLoc).toContainClass('ps-4');
+    const ccCodingLoc = formLoc.locator('lfb-array div[id^="valueCodeableConcept\.coding"]');
     const arrayItemsLoc = ccCodingLoc.locator('lfb-object');
     expect(await arrayItemsLoc.count()).toBe(3);
     await expect(arrayItemsLoc.nth(0).getByLabel('System', {exact: true})).toHaveValue('s1');

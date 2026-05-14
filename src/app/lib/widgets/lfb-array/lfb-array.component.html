@@ -1,39 +1,43 @@
 <div [ngClass]="labelClasses">
+  <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="id" [labelId]="id+'_lfbArrayLabel'"></lfb-label>
   @if (!noCollapseButton && rowProperties.length > 0) {
     <button href="#" type="button"
-            [ngClass]="{'float-sm-end': labelPosition === 'left'}"
+            [ngClass]="collapseButtonClasses"
             class="btn btn-sm m-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
             [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
       <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
     </button>
   }
-  <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="id" [labelId]="id+'_lfbArrayLabel'"></lfb-label>
 </div>
 
-<div class="ps-4 col-sm-12" [attr.id]="id" role="group" [attr.aria-labelledby]="id+'_lfbArrayLabel'">
+<div class="lfb-hover-scope" [ngClass]="arrayBodyClasses" [attr.id]="id" role="group" [attr.aria-labelledby]="id+'_lfbArrayLabel'">
   <div class="row m-0 w-100">
     @if (!isCollapsed) {
       <div class="col-sm-12 row m-0 p-0">
         @for (property of iterableProperties(); track property) {
-          <div class="col-sm-2 d-flex justify-content-end pe-0 pt-1">
-            <div class="px-0">
-              <button type="button"
-                      class="btn btn-sm m-0 btn-link remove-button py-0"
-                      (click)="removeProperty($index)"
-              >
-                <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon>
-              </button>
+          <div [ngClass]="arrayItemRowClasses">
+            <div [ngClass]="arrayItemLabelClasses">
+              <lfb-label [title]="($index + 1).toString()"></lfb-label>
+              @if (!deleteButtonAfterControl) {
+                <div class="px-0 ms-auto">
+                  <ng-container *ngTemplateOutlet="deleteButton; context: {index: $index}"></ng-container>
+                </div>
+              }
             </div>
-            <lfb-label [title]="($index + 1).toString()"></lfb-label>
-          </div>
-          <div class="col-sm-10 p-0">
-            <lfb-form-element [formProperty]="property"></lfb-form-element>
+            <div [ngClass]="arrayItemControlClasses">
+              <lfb-form-element [formProperty]="property"></lfb-form-element>
+            </div>
+            @if (deleteButtonAfterControl) {
+              <div [ngClass]="arrayItemDeleteClasses">
+                <ng-container *ngTemplateOutlet="deleteButton; context: {index: $index}"></ng-container>
+              </div>
+            }
           </div>
         }
       </div>
     }
-    <div class="col-sm-2"></div>
-    <div class="col-sm-10 p-0 my-1">
+    <div [ngClass]="arrayItemLabelSpacerClasses"></div>
+    <div [ngClass]="arrayAddButtonClasses">
       @if (!singleItem &&
             (
               !(schema.hasOwnProperty('minItems') &&
@@ -43,18 +47,21 @@
             )
         )
       {
-        <button
-          lfbPopover
-          #lfbPopover="lfbPopover"
-          [lfbPopoverContent]="'Please fill in the above fields before adding a new item.'"
-          (click)="addItemWithAlert1(lfbPopover, $event)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button w-100"
-          [attr.disabled]="isAddButtonDisabled() ? '' : null"
-          [attr.title]="schema.widget?.addButtonTitle"
-        >
-          <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
-        </button>
+        @if (arrayAddButtonControlOffsetClasses || arrayAddButtonControlClasses) {
+          <div class="row m-0">
+            <div [ngClass]="arrayAddButtonControlOffsetClasses"></div>
+            <div [ngClass]="arrayAddButtonControlClasses">
+              <ng-container *ngTemplateOutlet="addButton"></ng-container>
+            </div>
+          </div>
+        } @else {
+          <ng-container *ngTemplateOutlet="addButton"></ng-container>
+        }
       }
     </div>
+    @if (deleteButtonAfterControl) {
+      <div [ngClass]="arrayAddButtonActionSpacerClasses"></div>
+    }
   </div>
 
   @if (tableStatus) {
@@ -64,3 +71,25 @@
     </div>
   }
 </div>
+
+<ng-template #addButton>
+  <button
+    lfbPopover
+    #lfbPopover="lfbPopover"
+    [lfbPopoverContent]="'Please fill in the above fields before adding a new item.'"
+    (click)="addItemWithAlert1(lfbPopover, $event)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button w-100"
+    [attr.disabled]="isAddButtonDisabled() ? '' : null"
+    [attr.title]="schema.widget?.addButtonTitle"
+  >
+    <fa-icon [icon]="faAdd" aria-hidden="true"></fa-icon> {{addButtonLabel}}
+  </button>
+</ng-template>
+
+<ng-template #deleteButton let-index="index">
+  <button type="button"
+          class="btn btn-link remove-button p-0 lh-1 align-bottom"
+          (click)="removeProperty(index)"
+  >
+    <fa-icon [icon]="faRemove" class="fa-xs" aria-hidden="true"></fa-icon>
+  </button>
+</ng-template>
