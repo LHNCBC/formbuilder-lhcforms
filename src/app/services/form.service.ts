@@ -159,7 +159,8 @@ export class FormService {
         '../../assets/ngx-fl.schema.json5',
         '../../assets/ngx-item.schema.json5',
         '../../assets/ngx-vs.schema.json5',
-        '../../assets/value-set-fields-layout.json5'
+        '../../assets/value-set-fields-layout.json5',
+        '../../assets/extension-fields-layout.json5'
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
       fhirSchemaDefinitions = results[assetPaths[0]];

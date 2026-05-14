@@ -4479,21 +4479,19 @@
         },
         "versionId": {
           "description": "The version specific identifier, as it appears in the version portion of the URL. This value changes when the resource is created, updated, or deleted.",
-          "$ref": "#/definitions/id",
-          "readOnly": true,
-          "disabled": true
+          "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
+          "type": "string",
+          "readOnly": true
         },
         "lastUpdated": {
           "description": "When the resource last changed - e.g. when the version changed.",
-          "$ref": "#/definitions/instant",
-          "readOnly": true,
-          "disabled": true
+          "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))$",
+          "type": "string",
+          "readOnly": true
         },
         "source": {
           "description": "A uri that identifies the source system of the resource. This provides a minimal amount of [[[Provenance]]] information that can be used to track or differentiate the source of information in the resource. The source may identify another FHIR server, document, message, database, etc.",
-          "$ref": "#/definitions/uri",
-          "readOnly": true,
-          "disabled": true
+          "$ref": "#/definitions/uri"
         },
         "profile": {
           "description": "A list of profiles (references to StructureDefinition resources) that this resource claims to conform to. The URL is a reference to StructureDefinition.url.",

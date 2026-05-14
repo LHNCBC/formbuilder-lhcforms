@@ -24,14 +24,23 @@
           }
         }
       } @else {
-          <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
+          
+          <input #inputEl
+                 [name]="name" 
+                 [readonly]="(schema.widget.id!=='color') && (schema.readOnly || schema.widget?.readOnly)"
+                 
                  [ngClass]="controlClasses"
-                 [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
-                 [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+                 [attr.type]="schema.widget?.id === 'url' ? 'url' : (!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id)"
+                 [attr.id]="id+_id"  
+                 [formControl]="control" 
+                 [attr.placeholder]="schema.placeholder"
                  [attr.maxLength]="schema.maxLength || null"
                  [attr.minLength]="schema.minLength || null"
-                 [required]="schema.isRequired"
-                 [lfbDisableControl]="schema.disabled">
+                 [required]="schema.isRequired">
+
+          @if (isUrlType && !urlValid && formProperty.value) {
+            <small class="ps-0 text-danger form-text" role="alert">Please enter a valid URL.</small>
+          }
           @if (errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
             <ul class="mb-0 ps-4">
               @for (error of errors; track error.code) {

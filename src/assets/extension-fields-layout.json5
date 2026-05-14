@@ -1,0 +1,325 @@
+{
+  "formLayout": {
+    "targetPage": "extensionResource",
+    "basic": [
+      {
+        "showFields": [
+          {"field": "url", "col": 12},
+          {"field": "__$isValueX", "col": 12},
+          {"field": "__$valueTypeCategory", "col": 12},
+          {"field": "__$valueTypePrimitive", "col": 12},
+          {"field": "__$valueGeneralPurposeDatatype", "col": 12},
+          {"field": "__$valueMetadataType", "col": 12},
+          {"field": "__$valueSpecialPurposeDatatype", "col": 12},
+          {"field": "extension", "col": 12 },
+        ]
+      }
+    ],
+  },
+  // The keys are jsonpath expressions.
+  overridePropertyLabels: {
+    '$.properties.__$valueTypeCategory': 'Value Type Category',
+    '$.properties.__$valueTypePrimitive': 'Primitive Type',
+    '$.properties.__$valueGeneralPurposeDatatype': 'Value Type',
+    '$.properties.__$valueMetadataType': 'Value Type',
+    '$.properties.__$valueSpecialPurposeDatatype': 'Value Type',
+    '$.properties.__$isValueX': 'Value or extension?',
+    '$.properties.extension': 'Extensions',
+    '$.properties.valueExpression': 'Value expression',
+    '$.properties.valueExpression.properties.name': 'Name',
+    '$.properties.valueExpression.properties.description': 'Description',
+    '$.properties.valueExpression.properties.language': 'Language',
+    '$.properties.valueExpression.properties.expression': 'Expression',
+    '$.properties.valueCoding': 'Value coding',
+    '$.properties.valueCoding.properties.code': 'Code',
+    '$.properties.valueCoding.properties.display': 'Display',
+    '$.properties.valueCoding.properties.system': 'System'
+  },
+  // Specify widget layout.
+  // id is widget schema registry defined in lforms-widget-registry.ts
+  // Label classes and control classes are used in the widget templates to fine tune widget layout positions
+  widgets: {
+    string: {
+      id: "string",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    textarea: {
+      id: "textarea",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0",
+      rows: 3
+    },
+    jsonStringify: {
+      id: "string",
+      controlClasses: "col-sm-10 m-0 p-0",
+      tooltipClass: "custom-tooltip-class",
+      readonly: true
+    },
+    urlMandatory: {
+      id: "url",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0",
+      showEmptyError: true,
+      "note": "*  This field is mandatory."
+    },
+    url: {
+      id: "url",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10  m-0 p-0",
+    },
+    primitiveSelect: {
+      id: "select",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 p-0",
+      selectOptionsMap: {
+        // Transform value to display string.
+        // Applies the methods in sequential order feeding the result in each step
+        // into the next method.
+        transform: [
+          {
+            "method": "regexReplace",
+            "expression": "^value([A-Z].*)$",
+            "flags": "g",
+            "substitution": "$1",
+          },
+          {
+            "method": "lowerCaseFirstChar"
+          }
+        ],
+      }
+    },
+    complexSelect: {
+      id: "select",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 p-0",
+      selectOptionsMap: {
+        // Transform value to display string.
+        // Applies the methods in sequential order feeding the result in each step
+        // into the next method.
+        transform: [
+          {
+            "method": "regexReplace",
+            "expression": "^value([A-Z].*)$",
+            "flags": "g",
+            "substitution": "$1",
+          },
+          {
+            "method": "camelToTitleCase"
+          }
+        ],
+      }
+    },
+    select: {
+      id: "select",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 p-0",
+      addEmptyOption: true,
+    },
+    boolean: {
+      "id": "boolean-radio",
+      "layout": "row",
+      "labelPosition": "left",
+      "labelClasses": "col-2 px-1",
+      "controlClasses": "col-auto ps-0 btn-group btn-group-sm",
+    },
+    date: {
+      id: "date",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd'
+    },
+    dateTime: {
+      id: "datetime",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
+    time: {
+      id: "time",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'hh:mm:ss'
+    },
+    integer: {
+      id: "integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    number: {
+      id: "number",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    expression: {
+      "id": "lfb-object",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 px-1",
+      "controlClasses": "col-sm-10",
+      "showFields": [
+        {"field": "name"},
+        {"field": "description"},
+        {"field": "language"},
+        {"field": "expression"},
+      ]
+    },
+    coding: {
+      "id": "lfb-object",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 px-1",
+      "controlClasses": "col-sm-10",
+      "showFields": [
+        {"field": "display"},
+        {"field": "code"},
+        {"field": "system"}
+      ]
+    },
+    extension: {
+      "id": "extension",
+      "noTableLabel": true,
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 px-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new extension",
+      "addButtonTitle": "Note that the extensions added by other UI elements will be disabled for editing here.",
+      "showFields": [
+        // The fields here are canonical paths of FormProperty.
+        {"field": "url", "col": 4, "nolabel": true},
+        {"field": "__$valueType", "col": 2, "nolabel": true},
+        {"field": "__$stringify", "col": 5, "nolabel": true}
+      ]
+    },
+    valueTypeCategory: {
+      id: "lb-radio",
+      "labels": {
+        "__$valueTypePrimitive": "Primitive type",
+        "__$valueGeneralPurposeDatatype": "General purpose datatype",
+        "__$valueMetadataType": "Metadata type",
+        "__$valueSpecialPurposeDatatype": "Special purpose datatype"
+      },
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "btn-group btn-group-sm ps-0 col-sm-auto"
+    },
+    object: {
+      "id": "lfb-object",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 px-1",
+      "controlClasses": "col-sm-10",
+    },
+    array: {
+      "id": "array",
+      "noTableLabel": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 px-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new item",
+    },
+    hidden:  {
+      id: "hidden"
+    },
+  },
+
+  schemaTypeWidgetMap: {
+    'boolean': 'boolean',
+    'string': 'string',
+    'integer': 'integer',
+    'number': 'number',
+    'object': 'object',
+    'array': 'array',
+  },
+  // Map property: Each widget type is mapped to fields with jsonpath of its schema.
+  widgetsMap: {
+    // List of fields implementing this widget.
+    hidden: [
+      '$..properties.id'
+    ],
+    string: [
+      '$.properties.valueCode',
+      '$.properties.valueDecimal',
+      '$.properties.valueId',
+      '$.properties.valueOid',
+      '$.properties.valueString',
+      '$.properties.valueTime',
+      '$.properties.valueUuid',
+      '$.properties.valueCoding.properties.display',
+      '$.properties.valueCoding.properties.code',
+      '$.properties.valueCoding.properties.system',
+      '$.properties.valueExpression.properties.name',
+    ],
+    textarea: [
+      '$.properties.valueMarkdown',
+      '$.properties.valueBase64Binary',
+      '$.properties.valueExpression.properties.description',
+      '$.properties.valueExpression.properties.expression'
+    ],
+    urlMandatory: [
+      '$.properties.url',
+    ],
+    url: [
+      '$.properties.valueCanonical',
+      '$.properties.valueUrl',
+      '$.properties.valueUri'
+    ],
+    boolean: [
+      '$.properties.valueBoolean',
+    ],
+    number: [
+      '$.properties.valueDecimal',
+    ],
+    integer: [
+      '$.properties.valueInteger',
+      '$.properties.valuePositiveInt',
+      '$.properties.valueUnsignedInt',
+    ],
+    time: [
+      '$.properties.valueTime',
+      '$.properties.valueInstant'
+    ],
+    date: [
+      '$.properties.valueDate',
+    ],
+    dateTime: [
+      '$.properties.valueDateTime',
+    ],
+    expression: [
+      '$.properties.valueExpression',
+    ],
+    coding: [
+      '$.properties.valueCoding',
+    ],
+    select: [
+      '$.properties.valueExpression.properties.language',
+    ],
+    primitiveSelect: [
+      '$.properties.__$valueTypePrimitive',
+    ],
+    complexSelect: [
+      '$.properties.__$valueGeneralPurposeDatatype',
+      '$.properties.__$valueMetadataType',
+      '$.properties.__$valueSpecialPurposeDatatype'
+    ],
+    extension: [
+      '$.properties.extension',
+    ],
+    valueTypeCategory: [
+      '$.properties.__$valueTypeCategory',
+    ],
+    jsonStringify: [
+      '$.properties.__$stringify',
+    ]
+  }
+}

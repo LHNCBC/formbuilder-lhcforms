@@ -39,8 +39,8 @@
     '$.properties.name': 'Questionnaire name',
     '$.properties.date': 'Revision date',
     '$.properties.meta': 'Meta',
-    '$.definitions.Meta.properties.versionId': 'Version ID',
-    '$.definitions.Meta.properties.lastUpdated': 'Last updated',
+    '$.definitions.Meta.properties.versionId': 'Version ID (Read-only)',
+    '$.definitions.Meta.properties.lastUpdated': 'Last updated (Read-only)',
     '$.definitions.Meta.properties.source': 'Source',
     '$.definitions.Meta.properties.profile': 'Profiles',
     '$.definitions.Meta.properties.security': 'Security labels',
@@ -77,6 +77,12 @@
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
+    url: {
+      id: "url",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 form-control"
+    },
     __$terminologyServer: {
       "id": "terminology-server",
       "placeholder": "Enter url for preferred terminology server",
@@ -87,9 +93,9 @@
     },
     coding: {
       "id": "table",
-      "labelPosition": "top",
-      "labelClasses": "col-12 ps-0 pe-0",
-      "controlClasses": "col-12 ps-0 pe-0",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+      "controlClasses": "col-sm-10 ps-0 pe-0",
       "noTableLabel": false,
       "noCollapseButton": true,
       "addButtonLabel": "Add new tag",
@@ -101,9 +107,9 @@
     },
     metaSecurity: {
       "id": "table",
-      "labelPosition": "top",
-      "labelClasses": "col-12 ps-0 pe-0",
-      "controlClasses": "col-12 ps-0 pe-0",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+      "controlClasses": "col-sm-10 ps-0 pe-0",
       "noTableLabel": false,
       "noCollapseButton": true,
       "addButtonLabel": "Add new security",
@@ -115,17 +121,16 @@
     },
     metaProfile: {
       "id": "meta-profile",
-      "labelPosition": "top",
-      "labelClasses": "col-12 ps-0 pe-0",
-      "controlClasses": "col-12 ps-0 pe-0",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+      "controlClasses": "col-sm-10 ps-0 pe-0",
       "noCollapseButton": true,
+      "noTableLabel": false,
       "addButtonLabel": "Add profile"
     },
     metaGroup: {
-      "id": "left-label-form-group",
-      "label": false,
-      "labelWidth": 2,
-      "controlWidth": 10,
+      "id": "lfb-object",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
       "showFields": [
         {"field": "versionId", "col": 12},
         {"field": "lastUpdated", "col": 12},
@@ -220,6 +225,8 @@
       '$.properties.purpose',
       '$.definitions.Meta.properties.versionId',
       '$.definitions.Meta.properties.lastUpdated',
+    ],
+    url: [
       '$.definitions.Meta.properties.source',
     ],
     textArea: [

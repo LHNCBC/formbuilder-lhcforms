@@ -12,7 +12,7 @@ import {FormService} from '../../../services/form.service';
   selector: 'lfb-row-layout',
   template: `
     @for (field of basicVisibleFields; track field.field) {
-      <div [class]="gridClass(field)" class="lfb-row">
+      <div [class]="gridClass(field)" class="lfb-row" [class.lfb-row-object]="getWidgetId(field.field) === 'lfb-object'">
         <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
       </div>
     }
@@ -26,7 +26,7 @@ import {FormService} from '../../../services/form.service';
     <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced" (ngbCollapseChange)="handleAdvPanelCollapse($event)" id="advancedFields">
       <hr>
         @for (field of advancedVisibleFields; track field.field) {
-          <div [class]="gridClass(field)" class="lfb-row">
+          <div [class]="gridClass(field)" class="lfb-row" [class.lfb-row-object]="getWidgetId(field.field) === 'lfb-object'">
             <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
           </div>
         }
@@ -36,10 +36,15 @@ import {FormService} from '../../../services/form.service';
     .lfb-row {
       border-bottom: lightgrey solid 1px;
       padding: 2px 0 2px 0;
-    }
+    }      
     .lfb-row:hover {
       background-color: lightgoldenrodyellow;
     }
+    .lfb-row.lfb-row-object:hover {
+      background-color: transparent;
+    }
+
+
 
     .hideRow {
       border: none !important;

@@ -1,0 +1,45 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Meta Field Test Sample",
+  "status": "draft",
+  "meta": {
+    "versionId": "v1.0.0",
+    "lastUpdated": "2024-01-15T10:30:00.000Z",
+    "source": "https://example.org/fhir/questionnaire/source",
+    "profile": [
+      "http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire",
+      "http://example.org/fhir/StructureDefinition/MyCustomProfile"
+    ],
+    "security": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+        "code": "HTEST",
+        "display": "test health data"
+      },
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-Confidentiality",
+        "code": "R",
+        "display": "restricted"
+      }
+    ],
+    "tag": [
+      {
+        "system": "http://example.org/tags",
+        "code": "survey",
+        "display": "Patient Survey"
+      },
+      {
+        "system": "http://example.org/tags",
+        "code": "v2",
+        "display": "Version 2"
+      }
+    ]
+  },
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Sample question",
+      "type": "string"
+    }
+  ]
+}

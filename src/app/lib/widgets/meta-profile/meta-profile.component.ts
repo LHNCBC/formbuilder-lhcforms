@@ -19,7 +19,9 @@ import { LfbArrayWidgetComponent } from '../lfb-array-widget/lfb-array-widget.co
             <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
           </button>
         }
-        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="tableId"></lfb-label>
+        @if (!noTableLabel) {
+          <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="tableId"></lfb-label>
+        }
       </div>
 
       <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
@@ -61,6 +63,7 @@ export class MetaProfileComponent extends LfbArrayWidgetComponent implements OnI
 
   isCollapsed = false;
   noCollapseButton = false;
+  noTableLabel = false;
   addButtonLabel = 'Add';
   tableId = 'metaProfileComponent' + MetaProfileComponent.seqNum++;
 
@@ -72,6 +75,7 @@ export class MetaProfileComponent extends LfbArrayWidgetComponent implements OnI
     this.controlClasses = this.controlClasses || widget.controlClasses || '';
     this.addButtonLabel = widget && widget.addButtonLabel ? widget.addButtonLabel : 'Add';
     this.noCollapseButton = !!(widget && widget.noCollapseButton);
+    this.noTableLabel = !!(widget && widget.noTableLabel);
   }
 
   removeProperty(index: number) {
