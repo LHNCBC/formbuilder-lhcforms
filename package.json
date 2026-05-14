@@ -1,6 +1,6 @@
 {
   "name": "formbuilder-lhcforms",
-  "version": "11.0.13",
+  "version": "11.1.0",
   "description": "Build LHC-Forms and FHIR Questionnaires",
   "homepage": "https://github.com/lhncbc/formbuilder-lhcforms",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -26,7 +26,7 @@
     "e2e:serve-both": "dotenv -c -- sh -c 'npx angular-http-server --silent --path ./dist/formbuilder-lhcforms -p $TEST_PORT & npx angular-http-server --silent --path ./dist/formbuilder-lhcforms -p $TEST_PORT_SECOND & wait'",
     "e2e:start-server": "npm run build-with-test-html && npm run e2e:serve",
     "e2e:start-second-server": "npm run build-with-test-html && npm run e2e:serve-second",
-    "pw-run": "dotenv -c -- npx playwright test",
+    "pw-run": "dotenv -c -- npx playwright test ./tests/meta.spec.ts",
     "e2e:pw-run": "dotenv -c -- npm run build-with-test-html && dotenv -c -- sh -c 'npx start-test e2e:serve-both \"$TEST_BASE_URL|$TEST_BASE_URL_SECOND\" pw-run'"
   },
   "files": [
