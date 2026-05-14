@@ -166,7 +166,8 @@
     expression: {
       "id": "lfb-object",
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 px-1",
+      "labelClasses": "px-1",
+      "childOffsetClass": "ps-4",
       "controlClasses": "col-sm-10",
       "showFields": [
         {"field": "name"},
@@ -178,7 +179,8 @@
     coding: {
       "id": "lfb-object",
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 px-1",
+      "labelClasses": "px-1",
+      "childOffsetClass": "ps-4",
       "controlClasses": "col-sm-10",
       "showFields": [
         {"field": "display"},
@@ -217,15 +219,27 @@
     object: {
       "id": "lfb-object",
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 px-1",
+      "labelClasses": "px-1",
+      "childOffsetClass": "ps-4",
       "controlClasses": "col-sm-10",
     },
     array: {
       "id": "array",
       "noTableLabel": true,
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 px-1",
+      "labelClasses": "px-1",
+      "childOffsetClass": "ps-0",
+      "arrayBodyClasses": "col-sm-12 shadow rounded p-1 mb-1",
       "controlClasses": "col-sm-10",
+      "arrayItemRowClasses": "col-sm-12 row m-0 p-1 lfb-hover-scope",
+      "arrayItemLabelClasses": "lfb-array-item-gutter-narrow d-flex align-items-start p-1",
+      "arrayItemControlClasses": "col p-0 lfb-array-item-control",
+      "arrayItemLabelSpacerClasses": "lfb-array-item-gutter-narrow",
+      "arrayAddButtonClasses": "col p-0 my-1",
+      "arrayItemDeleteClasses": "lfb-array-item-delete d-flex justify-content-center align-items-start p-1",
+      "arrayAddButtonActionSpacerClasses": "lfb-array-item-delete",
+      "deleteButtonAfterControl": true,
+      "collapseButtonNextToLabel": true,
       "addButtonLabel": "Add new item",
     },
     hidden:  {

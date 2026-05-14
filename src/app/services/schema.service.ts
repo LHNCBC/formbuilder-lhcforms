@@ -46,7 +46,7 @@ export class SchemaService {
     dateTime: 'dateTime',
     decimal: 'number',
     id: 'string',
-    instant: 'time',
+    instant: 'dateTime',
     integer: 'integer',
     oid: 'string',
     markdown: 'textarea',

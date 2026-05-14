@@ -33,7 +33,9 @@
                  [footerTemplate]="footerTemplate"
                  ngbDatepicker
                  #d="ngbDatepicker"
-                 #dateInput
+                 [minDate]="minDate"
+                 [maxDate]="maxDate"
+                 (navigate)="onNavigate($event)"
                  (blur)="suppressInvalidValue($event)"
           >
           <button class="btn btn-outline-secondary py-0" [attr.aria-label]="'Date picker for '+schema.title"
