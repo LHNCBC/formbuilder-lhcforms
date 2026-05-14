@@ -66,20 +66,26 @@ test.describe('Meta field tests', () => {
       .first();
     await mainPO.loadTable(tagTable, tagTableData);
     
-    // Verify the data in the questionnaire JSON
-    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
-    
+    // Verify the data in Preview > View/Validate Questionnaire JSON
+    const q = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(q.meta).toBeDefined();
+    const meta = q.meta!;
+
+    // Check read-only fields are not included when empty
+    expect(meta).not.toHaveProperty('versionId');
+    expect(meta).not.toHaveProperty('lastUpdated');
+
     // Check source
-    expect(q.meta.source).toBe('https://example.org/fhir/source');
+    expect(meta.source).toBe('https://example.org/fhir/source');
     
     // Check profiles
-    expect(q.meta.profile).toEqual([
+    expect(meta.profile).toEqual([
       'http://hl7.org/fhir/5.0/StructureDefinition/Questionnaire',
       'http://example.org/fhir/StructureDefinition/CustomProfile'
     ]);
     
     // Check security labels
-    const inputSecurity = q.meta.security.slice(0, 2);
+    const inputSecurity = (meta.security || []).slice(0, 2);
     expect(inputSecurity).toEqual([
       {
         display: 'test health data',
@@ -94,7 +100,7 @@ test.describe('Meta field tests', () => {
     ]);
     
     // Check tags
-    const inputTags = q.meta.tag.slice(0, 2);
+    const inputTags = (meta.tag || []).slice(0, 2);
     expect(inputTags).toEqual([
       {
         display: 'Patient Survey',
