@@ -73,6 +73,6 @@ export class FooterComponent {
               private sanitizer: DomSanitizer) {
     // Initialize icon registry
     this.iconRegistry.addSvgIcon('USAgov',
-      this.sanitizer.bypassSecurityTrustResourceUrl('../../assets/images/USAgov.svg'));
+      this.sanitizer.bypassSecurityTrustResourceUrl('assets/images/USAgov.svg'));
   }
 }
