@@ -180,7 +180,7 @@
       ],
       "showDataFields": [
         {"field": "valueExpression.name", "nolabel": true, "col": 2, "title": "Name"},
-        {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
+        {"field": "valueExpression.extension", "nolabel": true, "col": 3, "title": "Type"},
         {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
       ]
     }
