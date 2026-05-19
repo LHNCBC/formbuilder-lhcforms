@@ -153,14 +153,13 @@ export class FormService {
         vsLayout: Layout;
 
       const assetPaths = [
-        '../../assets/fhir-definitions.schema.json5',
-        '../../assets/fl-fields-layout.json5',
-        '../../assets/items-layout.json5',
-        '../../assets/ngx-fl.schema.json5',
-        '../../assets/ngx-item.schema.json5',
-        '../../assets/ngx-vs.schema.json5',
-        '../../assets/value-set-fields-layout.json5',
-        '../../assets/extension-fields-layout.json5'
+        'assets/fhir-definitions.schema.json5',
+        'assets/fl-fields-layout.json5',
+        'assets/items-layout.json5',
+        'assets/ngx-fl.schema.json5',
+        'assets/ngx-item.schema.json5',
+        'assets/ngx-vs.schema.json5',
+        'assets/value-set-fields-layout.json5'
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
       fhirSchemaDefinitions = results[assetPaths[0]];

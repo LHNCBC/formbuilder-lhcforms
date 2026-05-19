@@ -150,14 +150,12 @@ test.describe('Meta field tests', () => {
     const securityRows = page.locator('lfb-table tbody > tr')
       .filter({ has: page.locator('input[id^="meta.security."]') });
     const securityCount = await securityRows.count();
-    console.log('Security rows count:', securityCount);
     expect(securityCount).toBe(2);
 
     // Verify tags has exactly 2 rows for meta.tag
     const tagRows = page.locator('lfb-table tbody > tr')
       .filter({ has: page.locator('input[id^="meta.tag."]') });
     const tagCount = await tagRows.count();
-    console.log('Tag rows count:', tagCount);
     expect(tagCount).toBe(2);
     
     // Verify the JSON output matches the fixture
