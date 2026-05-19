@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.0.14] 2026-05-19
+### Fixed
+- Fix broken e2e tests.
+
 ## [11.0.13] 2026-03-30
 ### Changed
 - Migrated end-to-end tests from Cypress to Playwright.
