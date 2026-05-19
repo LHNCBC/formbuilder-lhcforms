@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.0.14] 2026-05-17
+## [11.0.15] 2026-05-17
 ### Changed
 - Change the path of assets to use a relative path.
+
+## [11.0.14] 2026-05-19
+### Fixed
+- Fix broken e2e tests.
 
 ## [11.0.13] 2026-03-30
 ### Changed
