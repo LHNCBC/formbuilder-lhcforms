@@ -129,7 +129,7 @@
         @if (!(schema.hasOwnProperty('minItems') &&
           schema.hasOwnProperty('maxItems') &&
           schema.minItems === schema.maxItems)) {
-          <button (click)="removeProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
+          <button (click)="confirmRemoveProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
             [attr.disabled]="isRemoveButtonDisabled() || isDisabled(formProperty, index) ? '' : null"
             matTooltip="Remove this row" aria-label="Remove this row"
             ><fa-icon [icon]="faRemove" class="fa-sm" aria-hidden="true"></fa-icon></button>

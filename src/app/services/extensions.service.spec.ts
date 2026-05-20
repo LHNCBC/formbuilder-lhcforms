@@ -61,7 +61,7 @@ describe('ExtensionsService', () => {
       expect(result['__$valueType']).toBe('valueCoding');
       expect(result['__$valueTypeCategory']).toBe('__$generalPurposeDatatype');
       expect(result['__$generalPurposeDatatype']).toBe('valueCoding');
-      expect(result['__$stringify']).toBe(JSON.stringify(ext.valueCoding, null, 2));
+      expect(result['__$stringify']).toBe(JSON.stringify(ext.valueCoding));
     });
 
     it('should set __$isValueX=false and __$valueType=extension for nested extensions', () => {
@@ -81,6 +81,7 @@ describe('ExtensionsService', () => {
       const parsed = JSON.parse(result['__$stringify']);
       expect(parsed.length).toBe(2);
       expect(parsed[0].url).toBe('name');
+      expect(result['__$stringify']).not.toContain('\n');
     });
 
     it('should eliminate empty fields from the extension', () => {

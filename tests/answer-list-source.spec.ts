@@ -31,20 +31,21 @@ const toggleTreeNodeExpansion = async (page: Page, nodeText: string) => {
 const getTerminologyServerInput = (page: Page) => page.locator('[id="__$terminologyServer"]');
 
 const checkReferencedOptionDialog = async (page: Page, expectedText: string, buttonName: string) => {
-  const dlg = page.locator('lfb-message-dlg');
+  const dlg = page.locator('lfb-message-dlg').filter({ hasText: "Option referenced by other item's text and linkId." });
   await expect(dlg).toBeVisible();
   await expect(dlg.locator('#msgDlgTitle')).toContainText("Option referenced by other item's text and linkId.");
   const msgContent = dlg.locator('.modal-body #msgContent');
   const msgText = (await msgContent.textContent()) || '';
   expect(msgText.replace(/\s+/g, ' ').trim()).toEqual(expectedText);
 
-  await PWUtils.clickDialogButton(page, { selector: 'lfb-message-dlg' }, buttonName);
+  await PWUtils.clickDialogButton(page, { title: "Option referenced by other item's text and linkId." }, buttonName);
 };
 
 const removeAndCheckReferencedOption = async (page: Page, type: string, index: number, msg: string, buttonLabel: string) => {
   const selector = `[id^="answerOption.${index}.${type}"]`;
   const row = page.locator(selector).locator('xpath=ancestor::tr[1]');
   await row.locator('td.action-column button[aria-label="Remove this row"]').click();
+  await PWUtils.clickDialogButton(page, { title: 'Confirm deletion' }, 'Delete');
   await checkReferencedOptionDialog(page, msg, buttonLabel);
 };
 

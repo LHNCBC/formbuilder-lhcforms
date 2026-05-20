@@ -19,6 +19,15 @@
   background-color: inherit !important;
 }
 
+.collapse-button {
+  width: 13.69px;
+  min-width: 13.69px;
+}
+
+.collapse-button fa-icon {
+  --fa-width: 0.8em !important;
+}
+
 td {
   border: 1px solid var(--bs-border-color);
   border-radius: var(--bs-border-radius-sm);

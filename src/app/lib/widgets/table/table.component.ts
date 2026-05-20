@@ -27,6 +27,8 @@ import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.comp
 import {Observable, of, Subscription} from 'rxjs';
 import {faExclamationTriangle, faLink} from '@fortawesome/free-solid-svg-icons';
 import { TableService, TableStatus } from 'src/app/services/table.service';
+import { DialogService } from 'src/app/services/dialog.service';
+import { MessageType } from '../message-dlg/message-dlg.component';
 
 @Component({
   standalone: false,
@@ -80,9 +82,14 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   renderer = inject(Renderer2);
   cdr = inject(ChangeDetectorRef);
   tableService = inject(TableService);
+  dialogService = inject(DialogService);
 
   tableStatus: TableStatus;
   elementRef = inject(ElementRef);
+  deleteConfirmButtons = [
+    {label: 'Cancel', value: 'cancel'},
+    {label: 'Delete', value: 'delete'}
+  ];
 
   // Used to store the indexes of rows to be hidden.
   // Hiding is only for display purpose. The rows are still present in the form property.
@@ -448,6 +455,29 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     }
     super.removeItem(props[index]);
     this.cdr.markForCheck();
+  }
+
+  /**
+   * Ask the user to confirm before removing a row from the table action column.
+   * @param index - Index of the formProperty to be removed from the array.
+   */
+  confirmRemoveProperty(index: number, message = 'Are you sure you want to delete this row?') {
+    const props = this.formProperty.properties as FormProperty [];
+    if(index < 0 || index >= props.length) {
+      return;
+    }
+
+    const modalRef = this.dialogService.showDialog(
+      MessageType.INFO,
+      'Confirm deletion',
+      message,
+      this.deleteConfirmButtons
+    );
+    modalRef.closed.subscribe((result) => {
+      if(result === 'delete') {
+        this.removeProperty(index);
+      }
+    });
   }
 
   /**

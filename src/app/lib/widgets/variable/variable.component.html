@@ -12,10 +12,10 @@
 @if (!booleanControlled || booleanControlledOption) {
   <div class="widget form-group m-0 row">
     <div [ngClass]="labelClasses">
-      @if (!noCollapseButton && rowProperties.length > 0) {
+      @if (!noCollapseButton && nonEmptyVariables.length > 0) {
         <button href="#" type="button"
-          [ngClass]="{'float-sm-end': true}"
-          class="btn btn-sm m-0 px-0 border-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+          [ngClass]="{'float-sm-end': labelPosition === 'left'}"
+          class="btn btn-sm m-0 px-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
           [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
           <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
         </button>
@@ -69,7 +69,7 @@
 <ng-template #actionColumn let-index="index" let-first="first" let-last="last">
   <td class="justify-content-sm-start col-sm-1 center border-1">
     <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
-      <button (click)="deleteVariable(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
+      <button (click)="confirmDeleteVariable(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
               matTooltip="Delete this variable" aria-label="Delete this variable"
       ><fa-icon [icon]="faRemove" class="fa-sm" aria-hidden="true"></fa-icon></button>
     </div>

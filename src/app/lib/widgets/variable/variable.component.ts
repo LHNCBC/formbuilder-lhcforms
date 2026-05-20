@@ -17,6 +17,7 @@ import {FaIconComponent, FontAwesomeModule} from "@fortawesome/angular-fontaweso
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {Util} from "../../util";
+import {MessageType} from "../message-dlg/message-dlg.component";
 
 @Component({
   selector: 'lfb-variable',
@@ -190,6 +191,28 @@ export class VariableComponent extends TableComponent implements OnInit {
     const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
     this.formProperty.setValue(variablesExtension, false);
     this.cdr.markForCheck();
+  }
+
+  /**
+   * Confirm variable deletion before removing it.
+   * @param index - Index of the variable to be removed from the array.
+   */
+  confirmDeleteVariable(index: number) {
+    if(index < 0 || index >= this.nonEmptyVariables.length) {
+      return;
+    }
+
+    const modalRef = this.dialogService.showDialog(
+      MessageType.INFO,
+      'Confirm deletion',
+      'Are you sure you want to delete this variable?',
+      this.deleteConfirmButtons
+    );
+    modalRef.closed.subscribe((result) => {
+      if(result === 'delete') {
+        this.deleteVariable(index);
+      }
+    });
   }
 
 

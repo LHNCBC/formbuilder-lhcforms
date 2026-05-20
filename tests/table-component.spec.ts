@@ -92,6 +92,7 @@ test.describe('Table component', () => {
     await expect(PWUtils.getTableCell(table, 2, 4).locator('input')).toHaveValue('3');
 
     await PWUtils.getTableCell(table, 2, 5).locator(removeLoc).click();
+    await PWUtils.clickDialogButton(page, { title: 'Confirm deletion' }, 'Delete');
 
     await expect(PWUtils.getTableCell(table, 2, 1).locator('input')).toHaveValue('1c');
     await expect(PWUtils.getTableCell(table, 2, 2).locator('input')).toHaveValue('1a');
