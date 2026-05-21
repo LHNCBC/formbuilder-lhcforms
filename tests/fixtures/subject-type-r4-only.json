@@ -1,0 +1,15 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "status": "draft",
+  "title": "Subject type compatibility sample",
+  "subjectType": [
+    "Patient",
+    "CatalogEntry"
+  ],
+  "item": []
+}

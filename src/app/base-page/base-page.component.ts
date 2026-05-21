@@ -12,7 +12,7 @@ import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
 import {from, Observable, of, Subject} from 'rxjs';
 import {catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil} from 'rxjs/operators';
-import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
+import {MessageDlgComponent, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {NgbActiveModal, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
 import {FetchService} from '../services/fetch.service';
@@ -26,8 +26,11 @@ import {MatDialog} from '@angular/material/dialog';
 import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export-dlg.component';
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
 import {SharedObjectService} from '../services/shared-object.service';
+import {SUBJECT_TYPE_COMPATIBILITY_DIALOG, SubjectTypeService} from '../services/subject-type.service';
 
 type ExportType = 'CREATE' | 'UPDATE';
+type SubjectTypeExportChoice = 'cancel' | 'export' | 'drop';
+type SubjectTypeImportChoice = 'cancel' | 'keep' | 'drop';
 
 @Component({
   standalone: false,
@@ -70,7 +73,8 @@ export class BasePageComponent implements OnInit {
               private dataSrv: FetchService,
               public fhirService: FhirService,
               private appJsonPipe: AppJsonPipe,
-              private matDlg: MatDialog
+              private matDlg: MatDialog,
+              private subjectTypeService: SubjectTypeService
               ) {
     this.acResult = null;
     const isAutoSaved = this.formService.isAutoSaved();
@@ -215,8 +219,11 @@ export class BasePageComponent implements OnInit {
           case 'initialQuestionnaire':
             try {
               console.log(`Received questionnaire from ${parentUrl}`);
-              this.setQuestionnaire(JSON.parse(JSON.stringify(message.questionnaire)));
-              this.setStep('fl-editor');
+              this.setQuestionnaire(JSON.parse(JSON.stringify(message.questionnaire)), true).then((loaded) => {
+                if(loaded) {
+                  this.setStep('fl-editor');
+                }
+              });
             }
             catch(err) {
               console.error(`Failed to parse questionnaire received from ${parentUrl}: ${err}`);
@@ -283,15 +290,24 @@ export class BasePageComponent implements OnInit {
    * Set questionnaire.
    * Make
    * @param questionnaire - Input FHIR questionnaire
+   * @param confirmSubjectTypeImport - Whether to ask how to handle imported subjectType values invalid in internal R5.
+   * @return True when the questionnaire was loaded; false when the import was canceled.
    */
-  setQuestionnaire(questionnaire: fhir.Questionnaire) {
-    const q = this.formService.convertToR5(questionnaire);
+  async setQuestionnaire(questionnaire: fhir.Questionnaire, confirmSubjectTypeImport = false): Promise<boolean> {
+    let q = this.formService.convertToR5(questionnaire);
+    if(confirmSubjectTypeImport) {
+      q = await this.resolveSubjectTypeImportQuestionnaire(q, 'R5');
+      if(!q) {
+        return false;
+      }
+    }
     this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
     this.formFields = Object.assign({}, this.questionnaire);
     delete this.formFields.item;
     this.notifyChange(this.formValue);
+    return true;
   }
 
   /**
@@ -345,10 +361,12 @@ export class BasePageComponent implements OnInit {
       this.fileInputEl.nativeElement.click();
     }
     else if (this.importOption === 'fhirServer') {
-      this.fetchFormFromFHIRServer$().subscribe((form) => {
+      this.fetchFormFromFHIRServer$().subscribe(async (form) => {
         if(form) {
-          this.setQuestionnaire(form);
-          this.setStep('fl-editor');
+          const loaded = await this.setQuestionnaire(form, true);
+          if(loaded) {
+            this.setStep('fl-editor');
+          }
         }
       });
     }
@@ -398,10 +416,12 @@ export class BasePageComponent implements OnInit {
       event.target.value = null; //
       const fileReader = new FileReader();
       fileReader.onload = () => {
-        setTimeout(() => {
-          this.setStep('fl-editor');
+        setTimeout(async () => {
           try {
-            this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string));
+            const loaded = await this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string), true);
+            if(loaded) {
+              this.setStep('fl-editor');
+            }
           }
           catch (e) {
             this.showError(`${e.message}: ${selectedFile.name}`);
@@ -461,8 +481,13 @@ export class BasePageComponent implements OnInit {
    * @exportVersion - One of the defined version types: 'STU3' || 'R4' || 'R5'
    * 'R4' is assumed if not specified.
    */
-  saveToFile(exportVersion = 'R5') {
-    const questionnaire = this.formService.convertFromR5(Util.convertToQuestionnaireJSON(this.formValue), exportVersion);
+  async saveToFile(exportVersion = 'R5') {
+    const currentQuestionnaire = Util.convertToQuestionnaireJSON(this.formValue);
+    const exportQuestionnaire = await this.resolveSubjectTypeExportQuestionnaire(currentQuestionnaire, exportVersion);
+    if(!exportQuestionnaire) {
+      return;
+    }
+    const questionnaire = this.formService.convertFromR5(exportQuestionnaire, exportVersion);
     const content = this.toString(questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
     const formName = questionnaire.title;
@@ -620,15 +645,22 @@ export class BasePageComponent implements OnInit {
 
 
   /**
-   * Create/Update questionnaire on the FHIR server.
-   * @param type - 'CREATE' | 'UPDATE'
+   * Create or update a Questionnaire on the selected FHIR server after resolving subjectType compatibility.
+   * @param type - Export operation type ('CREATE' | 'UPDATE')
    */
   exportToServer(type: ExportType) {
     let observer: Observable<any>;
     if(type === 'CREATE') {
-      this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then((result) => {
+      this.modalService.open(FhirServersDlgComponent, {size: 'lg'}).result.then(async (result) => {
         if (result) { // Server picked, invoke search dialog.
-          observer = this.fhirService.create(Util.convertToQuestionnaireJSON(this.formValue), null);
+          const exportQuestionnaire = await this.resolveSubjectTypeExportQuestionnaire(
+            Util.convertToQuestionnaireJSON(this.formValue),
+            this.fhirService.getFhirServer().version
+          );
+          if(!exportQuestionnaire) {
+            return;
+          }
+          observer = this.fhirService.create(exportQuestionnaire, null);
           this.handleServerResponse(observer);
         }
       }, (reason) => {
@@ -636,11 +668,94 @@ export class BasePageComponent implements OnInit {
       });
     }
     else if(type === 'UPDATE') {
-      observer = this.fhirService.update(Util.convertToQuestionnaireJSON(this.formValue), null);
-      this.handleServerResponse(observer);
+      this.resolveSubjectTypeExportQuestionnaire(
+        Util.convertToQuestionnaireJSON(this.formValue),
+        this.fhirService.getFhirServer().version
+      ).then((exportQuestionnaire) => {
+        if(!exportQuestionnaire) {
+          return;
+        }
+        observer = this.fhirService.update(exportQuestionnaire, null);
+        this.handleServerResponse(observer);
+      });
     }
   }
 
+  /**
+   * Resolve imported subjectType values that are incompatible with the target FHIR version.
+   * @param questionnaire - Imported questionnaire converted to internal R5.
+   * @param version - Target FHIR version to validate subjectType values against.
+   * @returns Questionnaire to load, or null when the user cancels the import.
+   */
+  async resolveSubjectTypeImportQuestionnaire(questionnaire: fhir.Questionnaire, version: string): Promise<fhir.Questionnaire | null> {
+    return this.subjectTypeService.resolveSubjectTypeQuestionnaire(
+      questionnaire,
+      version,
+      (invalidTypes) => this.confirmSubjectTypeImport(version, invalidTypes)
+    );
+  }
+
+  /**
+   * Ask how to handle imported subjectType values that are invalid for the target FHIR version.
+   * @param version - Target FHIR version.
+   * @param invalidTypes - subjectType values invalid for the target version.
+   * @returns User's import choice.
+   */
+  async confirmSubjectTypeImport(version: string, invalidTypes: string[]): Promise<SubjectTypeImportChoice> {
+    const modalRef = this.modalService.open(MessageDlgComponent, {scrollable: true, size: 'lg'});
+    modalRef.componentInstance.options = {
+      title: SUBJECT_TYPE_COMPATIBILITY_DIALOG.title,
+      type: MessageType.WARNING,
+      message: SUBJECT_TYPE_COMPATIBILITY_DIALOG.importMessage(
+        version,
+        this.subjectTypeService.formatSubjectTypeList(invalidTypes)
+      ),
+      buttons: [
+        {label: 'Cancel', value: 'cancel'},
+        {label: 'Keep and continue', value: 'keep'},
+        {label: 'Remove incompatible types', value: 'drop'}
+      ]
+    };
+    return modalRef.result.catch(() => 'cancel');
+  }
+
+  /**
+   * Resolve export subjectType values that are incompatible with the target FHIR version.
+   * @param questionnaire - Questionnaire being exported.
+   * @param version - Target FHIR version to validate subjectType values against.
+   * @returns Questionnaire to export, or null when the user cancels the export.
+   */
+  async resolveSubjectTypeExportQuestionnaire(questionnaire: fhir.Questionnaire, version: string): Promise<fhir.Questionnaire | null> {
+    return this.subjectTypeService.resolveSubjectTypeQuestionnaire(
+      questionnaire,
+      version,
+      (invalidTypes) => this.confirmSubjectTypeExport(version, invalidTypes)
+    );
+  }
+
+  /**
+   * Ask how to handle subjectType values that are invalid for the export FHIR version.
+   * @param version - Target export FHIR version.
+   * @param invalidTypes - subjectType values invalid for the target version.
+   * @returns User's export choice.
+   */
+  async confirmSubjectTypeExport(version: string, invalidTypes: string[]): Promise<SubjectTypeExportChoice> {
+    const modalRef = this.modalService.open(MessageDlgComponent, {scrollable: true, size: 'lg'});
+    modalRef.componentInstance.options = {
+      title: SUBJECT_TYPE_COMPATIBILITY_DIALOG.title,
+      type: MessageType.WARNING,
+      message: SUBJECT_TYPE_COMPATIBILITY_DIALOG.exportMessage(
+        version,
+        this.subjectTypeService.formatSubjectTypeList(invalidTypes)
+      ),
+      buttons: [
+        {label: 'Cancel', value: 'cancel'},
+        {label: 'Export anyway', value: 'export'},
+        {label: 'Remove incompatible types and export', value: 'drop'}
+      ]
+    };
+    return modalRef.result.catch(() => 'cancel');
+  }
 
   /**
    * Handle FHIR server response after create/update.

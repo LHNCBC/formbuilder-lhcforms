@@ -39,6 +39,11 @@
               <ng-template matTabLabel>{{ fmt }} Version</ng-template>
               <ng-template matTabContent>
                 <ng-container *ngTemplateOutlet="jsonMenu; context: {$implicit: fmt}"></ng-container>
+                @if(compatibilityWarnings[fmt]) {
+                  <ngb-alert type="warning" class="mb-0" [dismissible]="false">
+                    <span [innerHTML]="compatibilityWarnings[fmt]"></span>
+                  </ngb-alert>
+                }
                 <ng-container *ngTemplateOutlet="validations; context: {$implicit: fmt}"></ng-container>
                 <ng-container *ngTemplateOutlet="jsonQ; context: {$implicit: fmt}"></ng-container>
               </ng-template>
