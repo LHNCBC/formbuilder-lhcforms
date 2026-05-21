@@ -107,7 +107,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
-    this.includeActionColumn = (this.formProperty.properties as FormProperty[]).length > 1;
+    this.includeActionColumn = this.shouldIncludeActionColumn();
+    this.includeStatusColumn = this.shouldIncludeStatusColumn();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -135,7 +136,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.booleanControlledOption = !!widget.booleanControlledOption;
     }
 
-    this.includeStatusColumn = !!widget.showLinkStatus;
+    this.includeStatusColumn = this.shouldIncludeStatusColumn();
 
 
     this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
@@ -167,6 +168,32 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
         this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
       }
     }
+  }
+
+  /**
+   * Indicates whether the table should reserve an action column.
+   */
+  shouldIncludeActionColumn(): boolean {
+    return (this.formProperty.properties as FormProperty[]).length > 0;
+  }
+
+  /**
+   * Indicates whether the table should reserve a status column.
+   */
+  shouldIncludeStatusColumn(): boolean {
+    return !!this.formProperty.schema.widget?.showLinkStatus;
+  }
+
+  /**
+   * Indicates whether fixed-width columns follow the configured data fields.
+   */
+  hasTrailingColumns(): boolean {
+    const hasSelectionColumn =
+      (this.rowSelectionType === 'radio' || this.rowSelectionType === 'checkbox') &&
+      this.id !== 'answerOption';
+
+    return hasSelectionColumn || this.includeActionColumn ||
+      this.includeStatusColumn || this.includeErrorColumn;
   }
 
   /**
@@ -458,12 +485,41 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   /**
+   * Indicates whether the remove action should be disabled for the row.
+   * Keeps the final empty row in place so the table continues to show an editable row.
+   *
+   * @param index - Index of the formProperty to be removed from the array.
+   */
+  isRemoveActionDisabled(index: number): boolean {
+    return this.isRemoveButtonDisabled() || this.isOnlyEmptyRow(index);
+  }
+
+  /**
+   * Indicates whether the row is the table's only row and contains no data.
+   *
+   * @param index - Index of the formProperty to inspect.
+   */
+  isOnlyEmptyRow(index: number): boolean {
+    const props = this.formProperty.properties as FormProperty [];
+    return props.length === 1 && index === 0 && Util.isEmpty(props[index]?.value);
+  }
+
+  /**
    * Ask the user to confirm before removing a row from the table action column.
    * @param index - Index of the formProperty to be removed from the array.
    */
   confirmRemoveProperty(index: number, message = 'Are you sure you want to delete this row?') {
     const props = this.formProperty.properties as FormProperty [];
     if(index < 0 || index >= props.length) {
+      return;
+    }
+
+    if(this.isOnlyEmptyRow(index)) {
+      return;
+    }
+
+    if(this.isEmpty(index)) {
+      this.removeProperty(index);
       return;
     }
 

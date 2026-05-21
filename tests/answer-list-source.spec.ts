@@ -143,6 +143,11 @@ test.describe('Home page', () => {
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
       await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
+      const firstAnswerRow = page.locator('lfb-answer-option table > tbody > tr').first();
+      await expect(firstAnswerRow.locator('td.action-column')).toHaveCount(1);
+      await expect(firstAnswerRow.locator('td').last()).toHaveClass(/action-column/);
+      await expect(firstAnswerRow.getByLabel('Remove this row')).toBeDisabled();
+
       const aOptions = [
         { system: 's1', display: 'd1', code: 'c1', score: '2.1' },
         { system: 's2', display: 'd2', code: 'c2', score: '3' }

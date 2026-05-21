@@ -51,4 +51,40 @@ describe('FormService', () => {
     ]);
   });
 
+  it('should handle deleting an enableWhen row when the node has no errors', () => {
+    service.treeNodeStatusMap = {
+      node1: {
+        treeNodeId: 'node1',
+        linkId: 'q1'
+      }
+    };
+
+    expect(() => service.deleteErrorAndAdjustEnableWhenIndexes('node1', 0)).not.toThrow();
+    expect(service.treeNodeStatusMap.node1.hasError).toBeFalse();
+    expect(service.treeNodeStatusMap.node1.errors).toEqual({});
+  });
+
+  it('should remove deleted enableWhen errors and shift later enableWhen error indexes', () => {
+    service.treeNodeStatusMap = {
+      node1: {
+        treeNodeId: 'node1',
+        linkId: 'q1',
+        hasError: true,
+        errors: {
+          enableWhen_0: [{message: 'first'}],
+          enableWhen_2: [{message: 'third'}],
+          linkId: [{message: 'duplicate'}]
+        }
+      }
+    };
+
+    service.deleteErrorAndAdjustEnableWhenIndexes('node1', 1);
+
+    expect(service.treeNodeStatusMap.node1.errors.enableWhen_0).toEqual([{message: 'first'}]);
+    expect(service.treeNodeStatusMap.node1.errors.enableWhen_1).toEqual([{message: 'third'}]);
+    expect(service.treeNodeStatusMap.node1.errors.enableWhen_2).toBeUndefined();
+    expect(service.treeNodeStatusMap.node1.errors.linkId).toEqual([{message: 'duplicate'}]);
+    expect(service.treeNodeStatusMap.node1.hasError).toBeTrue();
+  });
+
 });

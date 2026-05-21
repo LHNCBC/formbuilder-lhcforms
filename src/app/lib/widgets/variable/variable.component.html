@@ -28,24 +28,29 @@
       <table class="table table-borderless table-sm lfb-table">
         <thead class="table-active">
           <tr class="d-flex">
-            @for (showHeaderField of getVariableFieldsStructure(true); track showHeaderField.field) {
-              <th class="col-sm{{showHeaderField.col ? ('-'+showHeaderField.col) : ''}}" scope="col">
+            @for (showHeaderField of getVariableFieldsStructure(true); track showHeaderField.field; let isLastShowField = $last) {
+              <th
+                class="col-sm{{showHeaderField.col ? ('-'+showHeaderField.col) : ''}}"
+                [ngClass]="{'fill-column': isLastShowField && includeActionColumn}"
+                scope="col"
+              >
                 <lfb-title
                   [title]="showHeaderField.title"
                   [helpMessage]="getVariableProperty(extensionSchema.properties, showHeaderField.field, true)"
                 ></lfb-title>
               </th>
             }
-            <th class="col-sm-1" ></th>
+            <th class="col-sm-1 action-column" ></th>
           </tr>
         </thead>
         <tbody [ngbCollapse]="isCollapsed">
           @for (variable of nonEmptyVariables; track getVariableTrackParam(variable, $index); let ind = $index; let isFirst = $first; let isLast = $last) {
             <tr
               class="d-flex lfb-table-row">
-              @for (showDataField of getVariableFieldsStructure(false); track showDataField.field) {
+              @for (showDataField of getVariableFieldsStructure(false); track showDataField.field; let isLastShowField = $last) {
                 <td
                   class="col-sm{{showDataField.col ? ('-'+showDataField.col) : ''}}"
+                  [ngClass]="{'fill-column': isLastShowField && includeActionColumn}"
                 >{{getVariableProperty(variable, showDataField.field, false)}}</td>
               }
               @if(includeActionColumn) {
@@ -67,7 +72,7 @@
 }
 
 <ng-template #actionColumn let-index="index" let-first="first" let-last="last">
-  <td class="justify-content-sm-start col-sm-1 center border-1">
+  <td class="justify-content-sm-end col-sm-1 action-column center border-1">
     <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
       <button (click)="confirmDeleteVariable(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
               matTooltip="Delete this variable" aria-label="Delete this variable"

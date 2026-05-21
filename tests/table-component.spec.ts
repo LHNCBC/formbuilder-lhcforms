@@ -117,6 +117,11 @@ test.describe('Table component', () => {
     await expect(PWUtils.getTableCell(table, 4, 5).locator(moveDownLoc)).not.toBeVisible();
     await expect(PWUtils.getTableCell(table, 4, 5).locator(moveUpLoc)).toBeDisabled();
 
+    await PWUtils.getTableCell(table, 4, 5).locator(removeLoc).click();
+    await expect(page.locator('lfb-message-dlg').filter({hasText: 'Confirm deletion'})).toHaveCount(0);
+    await expect(table.locator('tbody tr')).toHaveCount(3);
+
+    await table.locator('..').getByRole(`button`, {name: 'Add'}).click();
     await PWUtils.getTableCell(table, 4, 2).locator('input').fill('xx');
     await expect(PWUtils.getTableCell(table, 3, 5).locator(moveDownLoc)).toBeEnabled();
     await expect(PWUtils.getTableCell(table, 4, 5).locator(moveUpLoc)).toBeEnabled();
