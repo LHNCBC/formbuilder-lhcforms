@@ -246,7 +246,7 @@ describe('Util', () => {
   it('should load JSON5 files', async () => {
     TestBed.configureTestingModule({providers: [provideHttpClient()]});
     const httpClient = TestBed.inject(HttpClient);
-    const json5Files = ['/assets/ngx-item.schema.json5', '/assets/ngx-fl.schema.json5'];
+    const json5Files = ['assets/ngx-item.schema.json5', 'assets/ngx-fl.schema.json5'];
 
     const results = await Util.loadJson5Assets(httpClient, json5Files);
     const itemSchema = results[json5Files[0]];
