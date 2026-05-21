@@ -88,6 +88,7 @@ import { ItemControlComponent } from './lib/widgets/item-control/item-control.co
 import { DateComponent } from './lib/widgets/date/date.component';
 import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
+import {InstantComponent} from './lib/widgets/instant/instant.component';
 import {LabelComponent} from './lib/widgets/label/label.component';
 import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable-link-id.component';
 import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
@@ -163,6 +164,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     BrowserModule,
     DateComponent,
     DatetimeComponent,
+    InstantComponent,
     ElementChooserComponent,
     EnableWhenComponent,
     EwValidateDirective,

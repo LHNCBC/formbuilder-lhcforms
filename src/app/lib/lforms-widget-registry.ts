@@ -39,6 +39,7 @@ import {ItemControlComponent} from './widgets/item-control/item-control.componen
 import {DateComponent} from './widgets/date/date.component';
 import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
+import {InstantComponent} from './widgets/instant/instant.component';
 import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
 import {HelpTextComponent} from "./widgets/help-text/help-text.component";
 import { ContainedComponent } from './widgets/contained/contained.component';
@@ -78,6 +79,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('textarea', TextAreaComponent);
     this.register('date', DateComponent);
     this.register('datetime', DatetimeComponent);
+    this.register('instant', InstantComponent);
     this.register('time', TimeComponent);
     this.register('url', StringComponent);
     this.register('select', SelectComponent);

@@ -28,6 +28,8 @@ describe('SchemaService', () => {
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueDecimal.pattern]).toBe('decimal');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueId.pattern]).toBe('id');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueInstant.pattern]).toBe('instant');
+    expect(schemaService.primitiveFHIRTypeToWidgetMap['instant']).toBe('instant');
+    expect(extSchema.properties.valueInstant.widget.id).toBe('instant');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueInteger.pattern]).toBe('integer');
     // Markdown and string are identical.
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueMarkdown.pattern]).toBe('string');

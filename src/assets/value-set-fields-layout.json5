@@ -55,6 +55,13 @@
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
       controlClasses: "col-sm-10 m-0 p-0"
     },
+    instant: {
+      id: "instant",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
     "lb-radio": {
       "id": "lb-radio",
       "layout": "row",

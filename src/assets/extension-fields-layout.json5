@@ -145,6 +145,13 @@
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
+    instant: {
+      id: "instant",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
     time: {
       id: "time",
       labelPosition: "left",
@@ -302,13 +309,15 @@
     ],
     time: [
       '$.properties.valueTime',
-      '$.properties.valueInstant'
     ],
     date: [
       '$.properties.valueDate',
     ],
     dateTime: [
       '$.properties.valueDateTime',
+    ],
+    instant: [
+      '$.properties.valueInstant',
     ],
     expression: [
       '$.properties.valueExpression',
