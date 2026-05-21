@@ -357,7 +357,8 @@ describe('Home page', () => {
             id: '1111',
             meta: {
               versionId: "1",
-              lastUpdated: "2020-02-22T22:22:22.222-00:00"
+              lastUpdated: "2020-02-22T22:22:22.222-00:00",
+              source: "#3JO34SP5oR7bcwTb"
             }
           }).then((resp) => {
             responseStub = resp.responseStub;
@@ -365,6 +366,18 @@ describe('Home page', () => {
         });
 
         it('should create/update questionnaire on the fhir server - ' + testConfig.version, () => {
+          const createdMeta = {
+            versionId: '1',
+            lastUpdated: '2020-02-22T22:22:22.222-00:00',
+            source: '#3JO34SP5oR7bcwTb'
+          };
+          const updatedTitle = 'Modified title';
+          const updatedMeta = {
+            versionId: '2',
+            lastUpdated: '2020-02-23T22:22:22.222-00:00',
+            source: '#updatedSource'
+          };
+
           cy.uploadFile(testConfig.fixtureFile);
           cy.contains('button.dropdown-toggle.btn', 'Export').as('exportMenu');
           cy.get('@exportMenu').click(); // Open menu
@@ -379,10 +392,21 @@ describe('Home page', () => {
             expect(json).to.deep.equal(responseStub);
           });
           cy.wait('@create');
+          CypressUtil.getQuestionnaireJSON(testConfig.version).should((json) => {
+            expect(json.id).to.equal(responseStub.id);
+            expect(json.meta.versionId).to.equal(createdMeta.versionId);
+            expect(json.meta.lastUpdated).to.equal(createdMeta.lastUpdated);
+            if(testConfig.version !== 'STU3') {
+              expect(json.meta.source).to.equal(createdMeta.source);
+            }
+          });
 
           // Update
-          responseStub.title = 'Modified title';
-          cy.getByLabel('lfb-form-fields', 'Title').clear().type(responseStub.title);
+          cy.then(() => {
+            responseStub.title = updatedTitle;
+            responseStub.meta = updatedMeta;
+          });
+          cy.getByLabel('lfb-form-fields', 'Title').clear().type(updatedTitle);
           cy.get('@exportMenu').click();
           cy.get('@updateMenuItem').should('be.visible');
           cy.get('@updateMenuItem').should('not.have.class', 'disabled');
@@ -395,6 +419,13 @@ describe('Home page', () => {
             expect(json).to.deep.equal(responseStub);
           });
           cy.wait('@update');
+          CypressUtil.getQuestionnaireJSON(testConfig.version).should((json) => {
+            expect(json.meta.versionId).to.equal(responseStub.meta.versionId);
+            expect(json.meta.lastUpdated).to.equal(responseStub.meta.lastUpdated);
+            if(testConfig.version !== 'STU3') {
+              expect(json.meta.source).to.equal(responseStub.meta.source);
+            }
+          });
         });
       });
     });
