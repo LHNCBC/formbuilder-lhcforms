@@ -33,7 +33,9 @@
     '$.properties.valueCoding': 'Value coding',
     '$.properties.valueCoding.properties.code': 'Code',
     '$.properties.valueCoding.properties.display': 'Display',
-    '$.properties.valueCoding.properties.system': 'System'
+    '$.properties.valueCoding.properties.system': 'System',
+    '$.properties.valuePositiveInt': 'Value Positive Integer',
+    '$.properties.valueUnsignedInt': 'Value Unsigned Integer'
   },
   // Specify widget layout.
   // id is widget schema registry defined in lforms-widget-registry.ts
@@ -161,6 +163,18 @@
     },
     integer: {
       id: "integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    "positive-integer": {
+      id: "positive-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    "unsigned-integer": {
+      id: "unsigned-integer",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 px-1",
       controlClasses: "col-sm-10 m-0 p-0"
@@ -304,7 +318,11 @@
     ],
     integer: [
       '$.properties.valueInteger',
+    ],
+    "positive-integer": [
       '$.properties.valuePositiveInt',
+    ],
+    "unsigned-integer": [
       '$.properties.valueUnsignedInt',
     ],
     time: [

@@ -81,6 +81,7 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
+import { PositiveIntegerComponent } from './lib/widgets/positive-integer/positive-integer.component';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
@@ -108,6 +109,7 @@ import { LfbOptionControlWidgetComponent } from './lib/widgets/lfb-option-contro
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
+import { UnsignedIntegerComponent } from './lib/widgets/unsigned-integer/unsigned-integer.component';
 
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
@@ -122,7 +124,6 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     TableComponent,
     SelectComponent,
     CheckboxComponent,
-    IntegerComponent,
     HeaderComponent,
     FooterComponent,
     LeftLabelFormGroupComponent,
@@ -171,6 +172,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     FormsModule,
     FontAwesomeModule,
     InitialNumberDirective,
+    IntegerComponent,
     IntegerDirective,
     LayoutModule,
     CodingSystemComponent,
@@ -192,6 +194,8 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     MatTooltipModule,
     NgbModule,
     ObservationExtractComponent,
+    PositiveIntegerComponent,
+    UnsignedIntegerComponent,
     PreviewDlgComponent,
     SchemaFormModule.forRoot(),
     StringComponent,

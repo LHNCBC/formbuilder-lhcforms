@@ -47,6 +47,7 @@ import { ValueSetResourceComponent } from './widgets/value-set-resource/value-se
 
 import { ValueMethodComponent } from './widgets/value-method/value-method.component';
 import { PickAnswerComponent } from './widgets/pick-answer/pick-answer.component';
+import {PositiveIntegerComponent} from './widgets/positive-integer/positive-integer.component';
 import { AnswerExpressionComponent } from './widgets/expression-editor/answer-expression/answer-expression.component';
 import { ExpressionEditorDlgComponent } from './widgets/expression-editor-dlg/expression-editor-dlg.component';
 import { VariableComponent } from './widgets/variable/variable.component';
@@ -62,6 +63,7 @@ import {ExtensionContainerComponent} from "./widgets/extension-container/extensi
 import { CodingSystemComponent } from './widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
+import {UnsignedIntegerComponent} from './widgets/unsigned-integer/unsigned-integer.component';
 import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
@@ -86,6 +88,8 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('checkbox', CheckboxComponent);
     this.register('boolean', CheckboxComponent);
     this.register('integer', IntegerComponent);
+    this.register('positive-integer', PositiveIntegerComponent);
+    this.register('unsigned-integer', UnsignedIntegerComponent);
     this.register('number', NumberComponent);
     this.register('lb-radio', LabelRadioComponent);
     this.register('enable-when', EnableWhenComponent);

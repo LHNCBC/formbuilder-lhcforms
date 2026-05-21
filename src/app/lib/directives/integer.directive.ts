@@ -14,7 +14,47 @@ export class IntegerDirective {
   liveAnnouncer = inject(LiveAnnouncer);
   private renderer = inject(Renderer2);
 
+  /**
+   * Read the input's min attribute as a number when it is set.
+   * @param el - Integer input element.
+   * @returns The configured minimum value, or null when no minimum is set.
+   */
+  private getMinValue(el: HTMLInputElement): number | null {
+    return el.min === '' ? null : Number(el.min);
+  }
 
+  /**
+   * Read the input's max attribute as a number when it is set.
+   * @param el - Integer input element.
+   * @returns The configured maximum value, or null when no maximum is set.
+   */
+  private getMaxValue(el: HTMLInputElement): number | null {
+    return el.max === '' ? null : Number(el.max);
+  }
+
+  /**
+   * Check whether text represents an integer allowed by the configured range.
+   * @param value - Clipboard or input text to validate.
+   * @param minValue - Minimum allowed value, or null when unbounded.
+   * @param maxValue - Maximum allowed value, or null when unbounded.
+   * @returns True when the value is an integer within range.
+   */
+  private isIntegerInRange(value: string, minValue: number | null, maxValue: number | null): boolean {
+    if(!value.match(/^[-+]?\d+$/)) {
+      return false;
+    }
+
+    const numericValue = Number(value);
+    const aboveMin = minValue === null || numericValue >= minValue;
+    const belowMax = maxValue === null || numericValue <= maxValue;
+
+    return aboveMin && belowMax;
+  }
+
+  /**
+   * Keep the host element value synchronized after the browser validates number input.
+   * @param event - Focus event object.
+   */
   @HostListener('focusout', ['$event'])
   onFocusOut(event: FocusEvent): void {
     const el = (event.target as HTMLInputElement);
@@ -42,6 +82,7 @@ export class IntegerDirective {
   onKeydown(event: KeyboardEvent) {
     let announce = false;
     const el = (event.target as HTMLInputElement);
+    const minValue = this.getMinValue(el);
     // Handle numbers that has leading 0.
     // For example: 00000, 000123
     if (el.value.startsWith('0') && el.value.length >= 1 && event.key !== 'Delete' && event.key !== 'Backspace') {
@@ -51,7 +92,7 @@ export class IntegerDirective {
     if (
       event.key === '.' ||
       event.key.toLowerCase() === 'e' ||
-      (event.key === '-' && (event.target as HTMLInputElement).value.startsWith('-'))) {
+      (event.key === '-' && ((minValue !== null && minValue >= 0) || el.value.startsWith('-')))) {
       announce = true;
       // Key is valid input for number type, but not for integer
       event.preventDefault();
@@ -67,21 +108,28 @@ export class IntegerDirective {
     }
   }
 
+  /**
+   * Block pasted content unless it forms an integer within the input's range.
+   * @param event - Clipboard event object.
+   */
   @HostListener('paste', ['$event'])
   onPaste(event: ClipboardEvent) {
+    const el = event.target as HTMLInputElement;
     const val = event.clipboardData.getData('text/plain');
+    const minValue = this.getMinValue(el);
+    const maxValue = this.getMaxValue(el);
     let ignorePaste = true; // Ignore paste when current input state is invalid.
-    if ((event.target as HTMLInputElement).validity.valid) {
-      const currentValue = (event.target as HTMLInputElement).value;
+    if (el.validity.valid) {
+      const currentValue = el.value;
       if(currentValue.length > 0) {
-        // Current value is valid. Accept only positive integer from clipboard.
-        if(val.match(/^\d+$/)) {
+        // Current value is valid. Accept only digits from clipboard.
+        if(val.match(/^\d+$/) && this.isIntegerInRange(currentValue + val, minValue, maxValue)) {
           ignorePaste = false;
         }
       }
       else if (currentValue === '') {
-        // Current value is empty. Accept positive or negative integer from clipboard.
-        if (val.match(/^[-+]?\d+$/)) {
+        // Current value is empty. Accept any integer allowed by the input's range.
+        if (this.isIntegerInRange(val, minValue, maxValue)) {
           ignorePaste = false;
         }
       }

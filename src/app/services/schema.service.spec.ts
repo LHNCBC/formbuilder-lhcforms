@@ -35,9 +35,13 @@ describe('SchemaService', () => {
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueMarkdown.pattern]).toBe('string');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueOid.pattern]).toBe('oid');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valuePositiveInt.pattern]).toBe('positiveInt');
+    expect(schemaService.primitiveFHIRTypeToWidgetMap['positiveInt']).toBe('positive-integer');
+    expect(extSchema.properties.valuePositiveInt.widget.id).toBe('positive-integer');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueString.pattern]).toBe('string');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueTime.pattern]).toBe('time');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUnsignedInt.pattern]).toBe('unsignedInt');
+    expect(schemaService.primitiveFHIRTypeToWidgetMap['unsignedInt']).toBe('unsigned-integer');
+    expect(extSchema.properties.valueUnsignedInt.widget.id).toBe('unsigned-integer');
     // Canonical, uri, and url are identical
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUri.pattern]).toBe('url');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUrl.pattern]).toBe('url');

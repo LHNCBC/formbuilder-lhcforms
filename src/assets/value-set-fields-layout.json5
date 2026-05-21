@@ -62,6 +62,18 @@
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
+    "positive-integer": {
+      id: "positive-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    "unsigned-integer": {
+      id: "unsigned-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
     "lb-radio": {
       "id": "lb-radio",
       "layout": "row",
