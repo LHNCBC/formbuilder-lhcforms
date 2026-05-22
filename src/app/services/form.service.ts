@@ -83,6 +83,7 @@ export class FormService {
   valueSetSchema: any = {properties: {}};
   extensionSchema: any = {properties: {}};
   binarySchema: any = {properties: {}};
+  identifierSchema: any = {properties: {}};
 
   snomedUser = false;
   _lformsVersion = '';
@@ -149,7 +150,8 @@ export class FormService {
         ngxItemSchema: ISchema,
         ngxVSSchema: ISchema,
         vsLayout: Layout,
-        extLayout: Layout;
+        extLayout: Layout,
+        identifierLayout: Layout;
 
       const assetPaths = [
         'assets/fhir-definitions.schema.json5',
@@ -160,6 +162,7 @@ export class FormService {
         'assets/ngx-vs.schema.json5',
         'assets/value-set-fields-layout.json5',
         'assets/extension-fields-layout.json5',
+        'assets/identifier-fields-layout.json5',
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
       fhirSchemaDefinitions = results[assetPaths[0]];
@@ -170,6 +173,7 @@ export class FormService {
       ngxVSSchema = results[assetPaths[5]];
       vsLayout = results[assetPaths[6]];
       extLayout = results[assetPaths[7]];
+      identifierLayout = results[assetPaths[8]];
       const extSchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Extension));
       const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
 
@@ -196,6 +200,13 @@ export class FormService {
 
       this.itemSchema = ngxItemSchema;
       this.flSchema = ngxFlSchema;
+
+      this.identifierSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.identifier?.items || {type: 'object', properties: {}}));
+      this.identifierSchema.widget = {id: 'row-layout'};
+      this.identifierSchema.formLayout = identifierLayout?.formLayout;
+      this.overrideSchemaWidgetFromLayout(this.identifierSchema, identifierLayout);
+      this.overrideFieldLabelsFromLayout(this.identifierSchema, identifierLayout);
+      
       this.valueSetSchema = ngxVSSchema;
       delete this.valueSetSchema.definitions.ValueSet;
       delete this.valueSetSchema.definitions.ResourceList;
@@ -368,6 +379,13 @@ export class FormService {
    */
   getFormLevelSchema() {
     return this.flSchema;
+  }
+
+  /**
+   * Get identifier dialog schema.
+   */
+  getIdentifierSchema() {
+    return JSON.parse(JSON.stringify(this.identifierSchema));
   }
 
   get windowOpenerUrl(): string {
