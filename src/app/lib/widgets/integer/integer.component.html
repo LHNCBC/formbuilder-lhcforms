@@ -1,0 +1,45 @@
+@if (schema.widget.id ==='hidden') {
+  <input
+    name="{{name}}" type="hidden" [formControl]="control">
+} @else {
+  <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+    @if (!nolabel) {
+      <lfb-label
+        [for]="id"
+        [title]="schema.title"
+        [helpMessage]="schema.description"
+        [ngClass]="labelClasses"
+      ></lfb-label>
+    }
+
+    @if (hasAnswerOptions$ | async) {
+      <div class="{{controlWidthClass}} p-0">
+        <input lfbInteger autocomplete="off" #enableWhenAnswerOptions type="number" [attr.id]="id" class="form-control"
+               [min]="inputMin" [max]="inputMax"
+               (input)="onInput($event)" (blur)="suppressInvalidValue($event)" [value]="control?.value ?? ''"/>
+        @if (errors?.length && hasErrorDisplayValue) {
+          @for (error of errors; track error.code) {
+            <small class="text-danger form-text" role="alert"
+            >{{error.modifiedMessage || error.originalMessage}}</small>
+          }
+        }
+      </div>
+    } @else {
+      <div class="{{controlClasses}}">
+        <input lfbInteger [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
+             [attr.id]="id"
+             class="form-control form-control-sm" [formControl]="control"
+             type="number" [min]="inputMin" [max]="inputMax"
+             [attr.placeholder]="inputPlaceholder"
+             [attr.maxLength]="schema.maxLength || null"
+             [attr.minLength]="schema.minLength || null">
+        @if (errors?.length && hasErrorDisplayValue) {
+          @for (error of errors; track error.code) {
+            <small class="text-danger form-text" role="alert"
+            >{{error.modifiedMessage || error.originalMessage}}</small>
+          }
+        }
+      </div>
+    }
+  </div>
+}

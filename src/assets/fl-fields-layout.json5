@@ -84,6 +84,25 @@
         {"field": "end", "col": 6}
       ]
     },
+    instant: {
+      id: "instant",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
+    "positive-integer": {
+      id: "positive-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    "unsigned-integer": {
+      id: "unsigned-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
     __$terminologyServer: {
       "id": "terminology-server",
       "placeholder": "Enter url for preferred terminology server",
@@ -191,7 +210,7 @@
       ],
       "showDataFields": [
         {"field": "valueExpression.name", "nolabel": true, "col": 2, "title": "Name"},
-        {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
+        {"field": "valueExpression.extension", "nolabel": true, "col": 3, "title": "Type"},
         {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
       ]
     }

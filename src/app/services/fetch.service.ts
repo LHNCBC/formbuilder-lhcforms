@@ -46,7 +46,7 @@ export class FetchService {
   static snomedCodeSystemsUrl = 'https://snowstorm.ihtsdotools.org/fhir/CodeSystem';
   _snomedEditions: SNOMEDEditions = null;
 
-  assetsUrl = '/assets';
+  assetsUrl = 'assets';
 
   constructor() { }
 

@@ -31,8 +31,12 @@
           @if (!noHeader) {
             <thead class="table-active">
               <tr class="d-flex">
-                @for (showField of getShowTableFields(); track showField.field) {
-                  <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
+                @for (showField of getShowTableFields(); track showField.field; let isLastShowField = $last) {
+                  <th
+                    class="col-sm{{showField.col ? ('-'+showField.col) : ''}}"
+                    [ngClass]="{'fill-column': isLastShowField && hasTrailingColumns()}"
+                    scope="col"
+                  >
                     <lfb-title
                       [title]="showField.title || getTitle(rowProperties[0], showField.field)"
                       [helpMessage]="getFieldDescription(showField.field)"
@@ -58,7 +62,7 @@
                     <th class="col-sm-half action-column" [ngClass]="{'edit-row': addEditAction}"></th>
                   }
                   @if (includeStatusColumn) {
-                    <th class="col-sm-quarter" ></th>
+                    <th class="col-sm-half" ></th>
                   }
                   @if (includeErrorColumn) {
                     <th class="col-sm-quarter error-column" ></th>
@@ -70,8 +74,11 @@
               @for (itemProperty of rowProperties; track itemProperty; let ind = $index; let isFirst = $first; let isLast = $last) {
                 <tr
                   class="d-flex lfb-table-row" [ngClass]="{'d-none': _hideRows.has(ind)}" (focusin)="highlight($event)" (focusout)="unHighlight($event)">
-                  @for (showField of getShowTableFields(); track showField.field) {
-                    <td class="col-sm{{showField.col ? ('-'+showField.col) : ''}}">
+                  @for (showField of getShowTableFields(); track showField.field; let isLastShowField = $last) {
+                    <td
+                      class="col-sm{{showField.col ? ('-'+showField.col) : ''}}"
+                      [ngClass]="{'fill-column': isLastShowField && hasTrailingColumns()}"
+                    >
                       <lfb-form-element [nolabel]="true" [controlClasses]="filterOutClasses(getProperty(itemProperty, showField.field), 'col-')" [labelPosition]="'none'" [formProperty]="getProperty(itemProperty, showField.field)" (focusin)="onEdit($event, ind)"></lfb-form-element>
                     </td>
                   }
@@ -102,7 +109,7 @@
           </table>
         @if (!singleItem &&
           (!(schema.hasOwnProperty('minItems') && schema.hasOwnProperty('maxItems') && schema.minItems === schema.maxItems))) {
-          <button (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
+          <button type="button" (click)="addItemWithAlert(alertPopover)" class="btn btn-sm btn-light text-primary shadow-sm array-add-button"
             [attr.disabled]="isAddButtonDisabled() ? '' : null"
             [ngbPopover]="'Please fill in the above fields before adding a new item'"
             #alertPopover="ngbPopover" triggers="manual" placement="bottom top"
@@ -129,8 +136,8 @@
         @if (!(schema.hasOwnProperty('minItems') &&
           schema.hasOwnProperty('maxItems') &&
           schema.minItems === schema.maxItems)) {
-          <button (click)="removeProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
-            [attr.disabled]="isRemoveButtonDisabled() || isDisabled(formProperty, index) ? '' : null"
+          <button type="button" (click)="confirmRemoveProperty(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
+            [attr.disabled]="isRemoveActionDisabled(index) || isDisabled(formProperty, index) ? '' : null"
             matTooltip="Remove this row" aria-label="Remove this row"
             ><fa-icon [icon]="faRemove" class="fa-sm" aria-hidden="true"></fa-icon></button>
           }
