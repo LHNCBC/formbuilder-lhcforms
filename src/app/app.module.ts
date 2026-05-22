@@ -81,6 +81,7 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
+import { PositiveIntegerComponent } from './lib/widgets/positive-integer/positive-integer.component';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
@@ -88,6 +89,7 @@ import { ItemControlComponent } from './lib/widgets/item-control/item-control.co
 import { DateComponent } from './lib/widgets/date/date.component';
 import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
+import {InstantComponent} from './lib/widgets/instant/instant.component';
 import {LabelComponent} from './lib/widgets/label/label.component';
 import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable-link-id.component';
 import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
@@ -107,6 +109,7 @@ import { LfbOptionControlWidgetComponent } from './lib/widgets/lfb-option-contro
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
+import { UnsignedIntegerComponent } from './lib/widgets/unsigned-integer/unsigned-integer.component';
 
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
@@ -119,10 +122,8 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     ConfirmDlgComponent,
     GridComponent,
     TableComponent,
-    StringComponent,
     SelectComponent,
     CheckboxComponent,
-    IntegerComponent,
     HeaderComponent,
     FooterComponent,
     LeftLabelFormGroupComponent,
@@ -145,7 +146,6 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     RestrictionsComponent,
     RestrictionsOperatorComponent,
     ObservationLinkPeriodComponent,
-    EnableWhenComponent,
     QuantityUnitComponent,
     NodeDialogComponent,
     NumberComponent,
@@ -165,11 +165,14 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     BrowserModule,
     DateComponent,
     DatetimeComponent,
+    InstantComponent,
     ElementChooserComponent,
+    EnableWhenComponent,
     EwValidateDirective,
     FormsModule,
     FontAwesomeModule,
     InitialNumberDirective,
+    IntegerComponent,
     IntegerDirective,
     LayoutModule,
     CodingSystemComponent,
@@ -191,8 +194,11 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     MatTooltipModule,
     NgbModule,
     ObservationExtractComponent,
+    PositiveIntegerComponent,
+    UnsignedIntegerComponent,
     PreviewDlgComponent,
     SchemaFormModule.forRoot(),
+    StringComponent,
     TitleComponent,
     TreeModule,
     ReactiveFormsModule,

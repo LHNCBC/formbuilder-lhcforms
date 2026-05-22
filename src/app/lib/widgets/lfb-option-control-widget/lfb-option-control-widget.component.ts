@@ -78,7 +78,8 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
           .map((e: any) => {
           let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
 
-            if(!e.params[1]?.trim() && this.schema.widget.showEmptyError) {
+            const errorValue = e.params?.[1];
+            if(typeof errorValue === 'string' && !errorValue.trim() && this.schema.widget.showEmptyError) {
               // If the error is caused by an empty value, use a generic message.
               ret.code = 'EMPTY_ERROR';
               ret.modifiedMessage = 'This field is required.';

@@ -15,8 +15,37 @@
   background-color: inherit;
 }
 
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-column {
+  min-width: 40px;
+  text-align: end;
+}
+
+.fill-column {
+  flex-grow: 1;
+  max-width: none;
+}
+
+.action-column.center {
+  justify-content: flex-end;
+}
+
 :host ::ng-deep input {
   background-color: inherit !important;
+}
+
+.collapse-button {
+  width: 13.69px;
+  min-width: 13.69px;
+}
+
+.collapse-button fa-icon {
+  --fa-width: 0.8em !important;
 }
 
 td {

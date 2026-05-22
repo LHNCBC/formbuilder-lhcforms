@@ -2,14 +2,19 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.2.0] 2026-05-04
+## [11.1.0] 2026-05-22
 ### Added
+- Added support to create general FHIR extensions, including nested extensions.
 - Exported Questionnaire JSON now follows FHIR canonical field order for all
   backbone elements (Questionnaire, Item, EnableWhen, AnswerOption, Initial).
 
-## [11.1.0] 2026-04-23
-### Added
-- Added support to create general FHIR extensions including nested extensions.
+## [11.0.15] 2026-05-17
+### Changed
+- Change the path of assets to use a relative path.
+
+## [11.0.14] 2026-05-19
+### Fixed
+- Fix broken e2e tests.
 
 ## [11.0.13] 2026-03-30
 ### Changed

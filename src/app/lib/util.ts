@@ -1283,23 +1283,45 @@ export class Util {
     return search(items, linkId).extensions;
   }
 
-  static getSchemaFromArrayProperty(arrayProperty: ArrayProperty, propertyId: string): ISchema {
-    let ret: ISchema = null;
-    if(arrayProperty.schema.items.$ref) {
-      const ref = arrayProperty.schema.items.$ref;
-      const defPrefix = '#/definitions/';
-      if(ref.startsWith(defPrefix)) {
-        const defName = ref.substring(defPrefix.length);
-        ret = arrayProperty.root.schema.definitions?.[defName]?.properties?.[propertyId];
+  private static resolveSchemaRef(schema: ISchema, rootSchema: ISchema): ISchema {
+    let ret = schema;
+    const visited = new Set<string>();
+    while(ret?.$ref && rootSchema && !visited.has(ret.$ref)) {
+      visited.add(ret.$ref);
+      if(ret.$ref.startsWith('#/')) {
+        ret = ret.$ref.substring(2).split('/').reduce((acc, pathPart) => {
+          return acc?.[pathPart.replace(/~1/g, '/').replace(/~0/g, '~')];
+        }, rootSchema);
       }
       else {
-        ret = arrayProperty.schema.items.properties?.[ref]?.properties[propertyId];
+        break;
       }
-    }
-    else {
-      ret = arrayProperty.schema.items.properties[propertyId];
     }
     return ret;
   }
-}
 
+  static getSchemaFromArrayProperty(arrayProperty: ArrayProperty, propertyId: string): ISchema {
+    const rootSchema = arrayProperty.root?.schema || arrayProperty.schema;
+    let ret = Util.resolveSchemaRef(arrayProperty.schema.items, rootSchema);
+    for(const pathPart of propertyId.split('.')) {
+      ret = Util.resolveSchemaRef(ret, rootSchema);
+      if(!ret) {
+        break;
+      }
+      if(ret.properties?.[pathPart]) {
+        ret = ret.properties[pathPart];
+      }
+      else if(pathPart === 'properties' && ret.properties) {
+        continue;
+      }
+      else if(ret.items) {
+        const itemSchema = Util.resolveSchemaRef(ret.items, rootSchema);
+        ret = itemSchema?.properties?.[pathPart];
+      }
+      else {
+        ret = null;
+      }
+    }
+    return Util.resolveSchemaRef(ret, rootSchema);
+  }
+}

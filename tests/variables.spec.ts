@@ -294,8 +294,10 @@ test.describe('variables', () => {
 
     // Delete second and third variables
     await secondVariable.locator('td:nth-child(4) button').click();
+    await PWUtils.clickDialogButton(page, { title: 'Confirm deletion' }, 'Delete');
     // Third variable became second
     await secondVariable.locator('td:nth-child(4) button').click();
+    await PWUtils.clickDialogButton(page, { title: 'Confirm deletion' }, 'Delete');
 
     await expect(page.locator('lfb-variable table > tbody > tr')).toHaveCount(1);
   });
