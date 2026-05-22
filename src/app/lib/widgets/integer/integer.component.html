@@ -15,26 +15,31 @@
     @if (hasAnswerOptions$ | async) {
       <div class="{{controlWidthClass}} p-0">
         <input lfbInteger autocomplete="off" #enableWhenAnswerOptions type="number" [attr.id]="id" class="form-control"
-               [attr.min]="inputMin" [attr.max]="schema.maximum"
+               [min]="inputMin" [max]="inputMax"
                (input)="onInput($event)" (blur)="suppressInvalidValue($event)" [value]="control?.value ?? ''"/>
+        @if (errors?.length && hasErrorDisplayValue) {
+          @for (error of errors; track error.code) {
+            <small class="text-danger form-text" role="alert"
+            >{{error.modifiedMessage || error.originalMessage}}</small>
+          }
+        }
       </div>
     } @else {
       <div class="{{controlClasses}}">
         <input lfbInteger [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
              [attr.id]="id"
              class="form-control form-control-sm" [formControl]="control"
-             type="number" [attr.min]="inputMin" [attr.max]="schema.maximum"
+             type="number" [min]="inputMin" [max]="inputMax"
              [attr.placeholder]="inputPlaceholder"
              [attr.maxLength]="schema.maxLength || null"
              [attr.minLength]="schema.minLength || null">
+        @if (errors?.length && hasErrorDisplayValue) {
+          @for (error of errors; track error.code) {
+            <small class="text-danger form-text" role="alert"
+            >{{error.modifiedMessage || error.originalMessage}}</small>
+          }
+        }
       </div>
-    }
-
-    @if (errors?.length && hasErrorDisplayValue) {
-      @for (error of errors; track error.code) {
-        <small class="text-danger form-text" role="alert"
-        >{{error.modifiedMessage || error.originalMessage}}</small>
-      }
     }
   </div>
 }

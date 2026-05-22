@@ -25,9 +25,18 @@ describe('IntegerDirective', () => {
     fixture.detectChanges();
   });
 
-  function keydown(inputId: string, key: string): KeyboardEvent {
+  function keydown(inputId: string, key: string, currentValue = ''): KeyboardEvent {
     const input = fixture.nativeElement.querySelector(`#${inputId}`) as HTMLInputElement;
+    input.value = currentValue;
     const event = new KeyboardEvent('keydown', {key, cancelable: true});
+    input.dispatchEvent(event);
+    return event;
+  }
+
+  function keyup(inputId: string, key: string, currentValue = ''): KeyboardEvent {
+    const input = fixture.nativeElement.querySelector(`#${inputId}`) as HTMLInputElement;
+    input.value = currentValue;
+    const event = new KeyboardEvent('keyup', {key, cancelable: true});
     input.dispatchEvent(event);
     return event;
   }
@@ -54,6 +63,24 @@ describe('IntegerDirective', () => {
     expect(keydown('positive', '-').defaultPrevented).toBeTrue();
   });
 
+  it('should block plus sign for integer fields', () => {
+    expect(keydown('integer', '+').defaultPrevented).toBeTrue();
+  });
+
+  it('should not block tab keyup for invalid values', () => {
+    expect(keyup('positive', 'Tab', '0').defaultPrevented).toBeFalse();
+  });
+
+  it('should not block tab keydown for integer values', () => {
+    expect(keydown('positive', 'Tab').defaultPrevented).toBeFalse();
+    expect(keydown('positive', 'Tab', '5').defaultPrevented).toBeFalse();
+    expect(keydown('positive', 'Tab', '0').defaultPrevented).toBeFalse();
+  });
+
+  it('should block appending digits to values with leading zero', () => {
+    expect(keydown('integer', '1', '0').defaultPrevented).toBeTrue();
+  });
+
   it('should allow pasted integers within the configured range', () => {
     expect(paste('bounded', '10').defaultPrevented).toBeFalse();
   });
@@ -64,6 +91,10 @@ describe('IntegerDirective', () => {
 
   it('should block pasted integers above max', () => {
     expect(paste('bounded', '11').defaultPrevented).toBeTrue();
+  });
+
+  it('should block pasted integers with plus sign', () => {
+    expect(paste('positive', '+1').defaultPrevented).toBeTrue();
   });
 
   it('should block appended pasted integers above max', () => {

@@ -14,6 +14,6 @@ import {IntegerDirective} from "../../directives/integer.directive";
 })
 export class PositiveIntegerComponent extends IntegerComponent {
   protected override defaultMinimum = 1;
+  protected override minimumFloor = 1;
   protected override defaultPlaceholder = 'Enter an integer greater than 0';
 }
-

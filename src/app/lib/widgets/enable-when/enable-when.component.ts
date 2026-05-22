@@ -317,7 +317,8 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   }
 
   /**
-   * Confirm deletion only for rows without validation errors.
+   * Confirm deletion only for rows without validation errors. If there are validation errors, delete the row without
+   * confirmation.
    * @param index - The row represented by its form property.
    * @param rowProperty - Object property representing an enableWhen condition.
    */

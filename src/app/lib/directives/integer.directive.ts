@@ -40,7 +40,7 @@ export class IntegerDirective {
    * @returns True when the value is an integer within range.
    */
   private isIntegerInRange(value: string, minValue: number | null, maxValue: number | null): boolean {
-    if(!value.match(/^[-+]?\d+$/)) {
+    if(!value.match(/^-?\d+$/)) {
       return false;
     }
 
@@ -49,6 +49,20 @@ export class IntegerDirective {
     const belowMax = maxValue === null || numericValue <= maxValue;
 
     return aboveMin && belowMax;
+  }
+
+  /**
+   * Check whether a key represents a digit that would add text to the input.
+   * @param event - Keyboard event object.
+   * @returns True when the key should be handled as digit entry.
+   */
+  private isDigitInputKey(event: KeyboardEvent): boolean {
+    return event.key.length === 1 &&
+      !event.ctrlKey &&
+      !event.metaKey &&
+      !event.altKey &&
+      event.key >= '0' &&
+      event.key <= '9';
   }
 
   /**
@@ -70,7 +84,6 @@ export class IntegerDirective {
     const el = (event.target as HTMLInputElement);
     if (! el.validity?.valid) {
       this.liveAnnouncer.announce('The value is invalid');
-      event.preventDefault();
     }
   }
 
@@ -85,12 +98,13 @@ export class IntegerDirective {
     const minValue = this.getMinValue(el);
     // Handle numbers that has leading 0.
     // For example: 00000, 000123
-    if (el.value.startsWith('0') && el.value.length >= 1 && event.key !== 'Delete' && event.key !== 'Backspace') {
+    if (el.value.startsWith('0') && el.value.length >= 1 && this.isDigitInputKey(event)) {
       event.preventDefault();
     }
 
     if (
       event.key === '.' ||
+      event.key === '+' ||
       event.key.toLowerCase() === 'e' ||
       (event.key === '-' && ((minValue !== null && minValue >= 0) || el.value.startsWith('-')))) {
       announce = true;

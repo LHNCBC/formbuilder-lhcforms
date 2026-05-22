@@ -18,7 +18,7 @@ import {
   LfbDateParserFormatter,
   LfbTimeAdapter
 } from '../datetime/datetime.component';
-import {DateUtil} from '../../date-util';
+import {DateTime, DateUtil} from '../../date-util';
 import {LabelComponent} from '../label/label.component';
 import {LfbDisableControlDirective} from '../../directives/lfb-disable-control.directive';
 import {ensureInstantPrecision} from './instant-util';
@@ -76,14 +76,36 @@ export class InstantComponent extends DatetimeComponent implements OnInit {
     this.updateValue(this.dateTime.timeStruct);
   }
 
+  /**
+   * On blur, let the base class clear the form property if the input is invalid,
+   * then promote a date-only value to a full instant by defaulting the time to
+   * 00:00:00. A value already at second precision is left untouched so we don't
+   * overwrite what the form/adapter pipeline produced.
+   *
+   * @param event - DOM blur event from the datetime input.
+   */
   override suppressInvalidValue(event: Event) {
     super.suppressInvalidValue(event);
-    if(this.formProperty.value) {
-      const dateTime = DateUtil.parseISOToDateTime(this.formProperty.value);
-      if(ensureInstantPrecision(dateTime)) {
-        Object.assign(this.dateTime, dateTime);
+    if(!this.formProperty.value) {
+      return; // Base class invalidated/cleared the value; nothing to normalize.
+    }
+
+    // `this.dateTime` is the shared object mutated by the date/time adapters.
+    // If the user typed only a date (no time), `timeStruct` will be null here.
+    if(this.isDateOnly(this.dateTime)) {
+      if(ensureInstantPrecision(this.dateTime)) {
         this.updateValue(this.dateTime.timeStruct);
       }
     }
+  }
+
+  /**
+   * Indicates whether the supplied structure carries a complete date but no time.
+   *
+   * @param dateTime - Structure used by the datetime adapters.
+   */
+  private isDateOnly(dateTime: DateTime): boolean {
+    const ds = dateTime?.dateStruct;
+    return !!(ds?.year && ds.month && ds.day) && !dateTime?.timeStruct;
   }
 }
