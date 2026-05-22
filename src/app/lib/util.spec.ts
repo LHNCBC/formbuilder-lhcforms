@@ -371,9 +371,10 @@ describe('Util', () => {
 
     it('should append unknown fields at the end after known fields in alphabetical order', () => {
       const item = {
+        'unknownField2': 'unknown',
         'customExtension': { url: 'http://custom.com', valueString: 'custom' },
         'linkId': 'q1',
-        'unknownField': 'unknown',
+        'unknownField1': 'unknown',
         'type': 'string',
         'text': 'Question 1'
       };
@@ -381,7 +382,7 @@ describe('Util', () => {
       const ordered = Util.orderQuestionnaireFields(item, 'QuestionnaireItem');
 
       const keys = Object.keys(ordered);
-      const expectedOrder = ['linkId', 'text', 'type', 'customExtension', 'unknownField'];
+      const expectedOrder = ['linkId', 'text', 'type', 'customExtension', 'unknownField1', 'unknownField2'];
       expectedOrder.forEach((key, index) => {
         expect(keys[index]).toBe(key);
       });

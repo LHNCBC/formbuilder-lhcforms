@@ -21,7 +21,7 @@ test.describe('FHIR Field Ordering', () => {
   });
 
   /**
-   * Helper function to verify key order matches expected order.
+   * Helper function to verify a key order matches the expected order.
    * Asserts that each expected key appears at the corresponding index in actualKeys.
    */
   function verifyKeyOrder(actualKeys: string[], expectedOrder: string[]): void {

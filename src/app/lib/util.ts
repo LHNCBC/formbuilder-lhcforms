@@ -278,7 +278,7 @@ export class Util {
   ];
 
   /**
-   * Map of element type to its canonical field order.
+   * Map of an element type to its canonical field order.
    * Used to determine which order map applies to a given object.
    */
   private static readonly FIELD_ORDER_MAP = new Map<string, readonly string[]>([
@@ -288,6 +288,33 @@ export class Util {
     ['AnswerOption', Util.ANSWER_OPTION_FIELD_ORDER],
     ['Initial', Util.INITIAL_FIELD_ORDER]
   ]);
+
+  /**
+   * A mapping of field names to their nested relationships.
+   * This map defines the structure for nested fields within a specified entity.
+   * Each key is the name of an entity, and the associated value is an array
+   * of tuples that describe the nested fields for that entity.
+   *
+   * Each tuple contains:
+   * - The name of a field within the entity.
+   * - The type of the related nested entity.
+   *
+   * Example mapping relationships:
+   * - `Questionnaire` includes a nested field `item` of the type `QuestionnaireItem`.
+   * - `QuestionnaireItem` includes nested fields such as `item`, `enableWhen`,
+   *   `answerOption`, and `initial` with their respective types.
+   */
+  private static readonly NESTED_FIELD_MAP: Record<string, Array<[string, string]>> = {
+    Questionnaire: [
+      ['item', 'QuestionnaireItem']
+    ],
+    QuestionnaireItem: [
+      ['item', 'QuestionnaireItem'],
+      ['enableWhen', 'EnableWhen'],
+      ['answerOption', 'AnswerOption'],
+      ['initial', 'Initial']
+    ]
+  };
 
   /**
    * Recursively order fields in a Questionnaire object and nested elements
@@ -328,39 +355,13 @@ export class Util {
     }
 
     // 3. Recursively order nested elements
-    if (Array.isArray(ordered.item) && elementType === 'Questionnaire') {
-      // Root Questionnaire.item contains QuestionnaireItem objects
-      ordered.item = ordered.item.map((item: any) =>
-        Util.orderQuestionnaireFields(item, 'QuestionnaireItem')
-      );
-    }
-
-    if (Array.isArray(ordered.item) && elementType === 'QuestionnaireItem') {
-      // QuestionnaireItem.item contains nested QuestionnaireItem objects
-      ordered.item = ordered.item.map((item: any) =>
-        Util.orderQuestionnaireFields(item, 'QuestionnaireItem')
-      );
-    }
-
-    if (Array.isArray(ordered.enableWhen) && elementType === 'QuestionnaireItem') {
-      // enableWhen array contains EnableWhen objects
-      ordered.enableWhen = ordered.enableWhen.map((ew: any) =>
-        Util.orderQuestionnaireFields(ew, 'EnableWhen')
-      );
-    }
-
-    if (Array.isArray(ordered.answerOption) && elementType === 'QuestionnaireItem') {
-      // answerOption array contains AnswerOption objects
-      ordered.answerOption = ordered.answerOption.map((ao: any) =>
-        Util.orderQuestionnaireFields(ao, 'AnswerOption')
-      );
-    }
-
-    if (Array.isArray(ordered.initial) && elementType === 'QuestionnaireItem') {
-      // initial array contains Initial objects
-      ordered.initial = ordered.initial.map((init: any) =>
-        Util.orderQuestionnaireFields(init, 'Initial')
-      );
+    const nestedFields = this.NESTED_FIELD_MAP[elementType] || [];
+    for (const [fieldName, fieldType] of nestedFields) {
+      if (Array.isArray(ordered[fieldName])) {
+        ordered[fieldName] = ordered[fieldName].map((entry: any) =>
+          Util.orderQuestionnaireFields(entry, fieldType)
+        );
+      }
     }
 
     return ordered;
