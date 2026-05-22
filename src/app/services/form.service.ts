@@ -152,14 +152,14 @@ export class FormService {
         extLayout: Layout;
 
       const assetPaths = [
-        '../../assets/fhir-definitions.schema.json5',
-        '../../assets/fl-fields-layout.json5',
-        '../../assets/items-layout.json5',
-        '../../assets/ngx-fl.schema.json5',
-        '../../assets/ngx-item.schema.json5',
-        '../../assets/ngx-vs.schema.json5',
-        '../../assets/value-set-fields-layout.json5',
-        '../../assets/extension-fields-layout.json5',
+        'assets/fhir-definitions.schema.json5',
+        'assets/fl-fields-layout.json5',
+        'assets/items-layout.json5',
+        'assets/ngx-fl.schema.json5',
+        'assets/ngx-item.schema.json5',
+        'assets/ngx-vs.schema.json5',
+        'assets/value-set-fields-layout.json5',
+        'assets/extension-fields-layout.json5',
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
       fhirSchemaDefinitions = results[assetPaths[0]];
@@ -863,25 +863,30 @@ export class FormService {
     if (!this.treeNodeStatusMap || !this.treeNodeStatusMap[treeNodeId])
       return;
 
+    const status = this.treeNodeStatusMap[treeNodeId];
+    const errors = status.errors ?? {};
     const fieldName = `enableWhen_${rowIndex}`;
-    if (this.treeNodeStatusMap[treeNodeId]['errors'] && fieldName in this.treeNodeStatusMap[treeNodeId]['errors']) {
-      delete this.treeNodeStatusMap[treeNodeId]['errors'][fieldName];
+    if (fieldName in errors) {
+      delete errors[fieldName];
     }
 
-    const enableWhenKeys = Object.keys(this.treeNodeStatusMap[treeNodeId]['errors']);
-
-    enableWhenKeys.forEach(ewKey => {
-      const match = ewKey.match(/enableWhen_(\d+)/);
+    const enableWhenKeys: Array<{ewKey: string, keyIndex: number}> = [];
+    Object.keys(errors).forEach(ewKey => {
+      const match = ewKey.match(/^enableWhen_(\d+)$/);
       const keyIndex = match ? Number(match[1]) : -1;
 
       if (!isNaN(keyIndex) && keyIndex > rowIndex) {
-        this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex - 1}`] =
-          this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex}`];
-        delete this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex}`];
+        enableWhenKeys.push({ewKey, keyIndex});
       }
     });
 
-    this.treeNodeStatusMap[treeNodeId]['hasError'] = (Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length > 0);
+    enableWhenKeys.sort((a, b) => a.keyIndex - b.keyIndex).forEach(({ewKey, keyIndex}) => {
+      errors[`enableWhen_${keyIndex - 1}`] = errors[ewKey];
+      delete errors[ewKey];
+    });
+
+    status.errors = errors;
+    status.hasError = (Object.keys(errors).length > 0);
     this._validationStatusChanged$.next(null);
   }
 

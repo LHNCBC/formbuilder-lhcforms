@@ -432,14 +432,14 @@ export class ExtensionsService {
         const categoryMap = this.schemaService.valueXCategoryMap;
         newValue[categoryMap[valueX]] = valueX;
         newValue['__$valueTypeCategory'] = categoryMap[valueX];
-        newValue['__$stringify'] = JSON.stringify(newValue[valueX], null, 2);
+        newValue['__$stringify'] = JSON.stringify(newValue[valueX]);
       }
       else {
         delete newValue[newValue['__$valueTypeCategory']];
         delete newValue['__$valueTypeCategory'];
         newValue['__$valueType'] = 'extension';
         newValue['__$stringify'] = JSON.stringify(newValue.extension,
-          (k, v) => k.startsWith('__$') ? undefined : v, 2);
+          (k, v) => k.startsWith('__$') ? undefined : v);
       }
 
     }

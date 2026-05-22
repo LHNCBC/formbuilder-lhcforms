@@ -74,6 +74,6 @@ export class FooterComponent {
   constructor() {
     // Initialize icon registry
     this.iconRegistry.addSvgIcon('USAgov',
-      this.sanitizer.bypassSecurityTrustResourceUrl('../../assets/images/USAgov.svg'));
+      this.sanitizer.bypassSecurityTrustResourceUrl('assets/images/USAgov.svg'));
   }
 }
