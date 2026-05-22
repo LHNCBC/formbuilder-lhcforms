@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.2.0] 2026-05-22
+### Added
+- Added form-level support for Questionnaire identifier.
+
 ## [11.1.0] 2026-05-22
 ### Added
 - Added support to create general FHIR extensions, including nested extensions.
