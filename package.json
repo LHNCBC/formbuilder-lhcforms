@@ -47,6 +47,7 @@
     "@ctrl/ngx-codemirror": "7.0.0",
     "@fortawesome/angular-fontawesome": "^3.0.0",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
+    "@fortawesome/free-brands-svg-icons": "^7.2.0",
     "@fortawesome/free-regular-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fullcalendar/core": "^6.1.15",
