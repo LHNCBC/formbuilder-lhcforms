@@ -37,6 +37,7 @@ import {TerminologyServerComponent} from './widgets/terminology-server/terminolo
 import {AnswerValueSetComponent} from './widgets/answer-value-set/answer-value-set.component';
 import {ItemControlComponent} from './widgets/item-control/item-control.component';
 import {DateComponent} from './widgets/date/date.component';
+import {DateRangeComponent} from './widgets/date-range/date-range.component';
 import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
 import {InstantComponent} from './widgets/instant/instant.component';
@@ -80,6 +81,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('string', StringComponent);
     this.register('textarea', TextAreaComponent);
     this.register('date', DateComponent);
+    this.register('date-range', DateRangeComponent);
     this.register('datetime', DatetimeComponent);
     this.register('instant', InstantComponent);
     this.register('time', TimeComponent);

@@ -1,0 +1,16 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Effective Period DateTime Test",
+  "status": "draft",
+  "effectivePeriod": {
+    "start": "2024-01-15T12:30:00Z",
+    "end": "2024-12-31T18:45:00Z"
+  },
+  "item": [
+    {
+      "linkId": "q1",
+      "text": "Question 1",
+      "type": "string"
+    }
+  ]
+}

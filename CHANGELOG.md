@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.2.0] 2026-05-22
+### Added
+- Added `effectivePeriod` to form level fields in the advanced section.
+
 ## [11.1.0] 2026-05-22
 ### Added
 - Added support to create general FHIR extensions, including nested extensions.
@@ -972,4 +976,3 @@ ranked higher during the auto-completion.
 - Fixed displaying other in answer list item.
 ### Changed
 - Changed Text and Code fields to be required.
-
