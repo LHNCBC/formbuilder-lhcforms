@@ -110,7 +110,7 @@ export class PWUtils {
    */
   static async getQuestionnaireJSON (page: Page, version = 'R4'): Promise<fhir.Questionnaire> {
     await page.getByRole('button', {name: 'Preview'}).click();
-    await page.getByText('View/Validate Questionnaire JSON').click();
+    await page.getByText('View/Validate Questionnaire JSON', {exact: true}).first().click();
     await page.getByText(version + ' Version').click();
     await page.getByRole('button', {name: 'Copy questionnaire to clipboard'}).click();
     const ret = JSON.parse(await PWUtils.getClipboardContent(page)) as fhir.Questionnaire;
@@ -186,7 +186,8 @@ export class PWUtils {
     const tTip = page.locator('div[role="tooltip"]').filter({
       hasText: exactMatch ? new RegExp(`^${nodeText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) : nodeText
     });
-    return page.locator(`div[aria-describedby="${await tTip.getAttribute('id')}"]`);
+    const id = await tTip.getAttribute('id');
+    return page.locator(`div[aria-describedby="${id}"]`);
   }
 
   /**
@@ -196,7 +197,8 @@ export class PWUtils {
    * @param exactMatch - If true, performs exact text match; otherwise partial match (default: true)
    */
   static async clickTreeNode(page: Page, nodeText: string, exactMatch: boolean = true) {
-    await (await PWUtils.getTreeNode(page, nodeText, exactMatch)).click();
+    const tNode = await PWUtils.getTreeNode(page, nodeText, exactMatch);
+    await tNode.click();
   }
 
   /**
@@ -604,27 +606,32 @@ export class PWUtils {
   // ---------------------------------- Radio Button ----------------------------------
 
   /**
-   * Get a radio button identified by the label of the group and the label of the radio button.
+   * Find the radio button from the radio group and click it.
+   * The actual input radio element is hidden, so click its label element. If
+   * the locator is provided, search within the locator, otherwise search the whole page.
    *
-   * Use a radio input element to make assertions on input status, such as selected or not. It is not
-   * suitable for mouse actions as it is hidden from a mouse-pointer, instead use its label to perform
-   * mouse actions.
-   * @param page - Browser page
-   * @param groupLabel - The visible label identifying the radio group
-   * @param radioLabel - The visible label of the desired radio button
-   * @returns A Playwright Locator for the matching radio button label
+   * @param page - Page object
+   * @param groupLabel - Group label, matches substring
+   * @param buttonLabel - Button label, matches exact text
+   * @param locator - Optional locator to constrain the search.
    */
-  static async getRadioButton(page: Page, groupLabel: string, radioLabel: string): Promise<Locator> {
-    // assumes you already have a helper that finds the label
-    const label = await PWUtils.getRadioButtonLabel(page, groupLabel, radioLabel);
+  static async clickRadioButton(page: Page, groupLabel: string, buttonLabel: string, locator: Locator = null) {
+    await PWUtils.getRadioGroup(page, groupLabel, locator).getByText(buttonLabel).click();
+  }
 
-    const id = await label.getAttribute('for');
-    expect(id).not.toBeNull();
-
-    const radio = page.locator(PWUtils.escapeIdForPlaywright(id));
-    await expect(radio).toHaveAttribute('type', 'radio');
-
-    return radio;
+  /**
+   * Get the radio group identified by the group label.
+   *
+   * @param page - Page
+   * @param groupLabel - Field name of the radio group
+   * @param locator - Optional locator, if provided it will look for the group within locator scope, otherwise uses page
+   *   scope.
+   * @return - Locator of the radio group.
+   */
+  static getRadioGroup(page: Page, groupLabel: string, locator: Locator = null): Locator {
+    const parent = locator ? locator : page;
+    return parent.locator('lfb-label', {has: page.getByText(groupLabel)})
+      .locator('..').locator('div[role="radiogroup"]').first();
   }
 
   /**
@@ -649,15 +656,20 @@ export class PWUtils {
   }
 
   /**
-   * Click a radio button by its group label and option label.
+   * Get the locator of radio input element from the radio group. Note that
+   * the returned radio button is hidden and is not suitable for actions like click.
+   * This is mainly intended for assertions on the element. To click use a separate click function
+   * implemented above.
    *
-   * @param page - The Playwright Page instance.
-   * @param groupLabel - The visible label identifying the radio group.
-   * @param radioLabel - The visible label of the radio option to click.
-   * @returns Promise that resolves after the click completes.
+   * If the locator is provided, search within the locator, otherwise search the whole page.
+   *
+   * @param page - Page object
+   * @param groupLabel - Group label, matches substring
+   * @param buttonLabel - Button label, matches exact text
+   * @param locator - Optional locator to constrain the search.
    */
-  static async clickRadioButton(page: Page, groupLabel: string, radioLabel: string): Promise<void> {
-    await (await PWUtils.getRadioButtonLabel(page, groupLabel, radioLabel)).click();
+  static getRadioButton(page: Page, groupLabel: string, buttonLabel: string, locator: Locator = null): Locator {
+    return PWUtils.getRadioGroup(page, groupLabel, locator).getByRole('radio', {name: buttonLabel});
   }
 
   /**
@@ -750,10 +762,11 @@ export class PWUtils {
    */
   static async expandAdvancedFields(page: Page): Promise<void> {
     const button = page.getByRole('button', { name: 'Advanced fields' });
-    const expandIcon = button.locator('svg.fa-angle-down');
-
-    await expect(expandIcon).toBeVisible();
-    await expandIcon.click();
+    await expect(button).toBeVisible();
+    const isExpanded = await button.getAttribute('aria-expanded');
+    if (isExpanded !== 'true') {
+      await button.click();
+    }
   }
 
   /**
@@ -764,23 +777,11 @@ export class PWUtils {
    */
   static async collapseAdvancedFields(page: Page): Promise<void> {
     const button = page.getByRole('button', { name: 'Advanced fields' });
-    const collapseIcon = button.locator('svg.fa-angle-up');
-
-    // Be resilient to UI variants: icon may be missing or swapped in different layouts.
-    if (await collapseIcon.count()) {
-      await expect(collapseIcon).toBeVisible();
-      await collapseIcon.click();
-      return;
-    }
-
-    const expandIcon = button.locator('svg.fa-angle-down');
-    if (await expandIcon.count()) {
-      return;
-    }
-
     await expect(button).toBeVisible();
-    await button.click();
-
+    const isExpanded = await button.getAttribute('aria-expanded');
+    if (isExpanded === 'true') {
+      await button.click();
+    }
   }
 
   /**
@@ -951,7 +952,7 @@ export class PWUtils {
    * @param page - The Playwright Page instance to operate on.
    * @returns {Promise<Locator>} A promise that resolves to the Playwright Locator for the input element.
    */
-  static async getItemEntryFormatField(page: Page): Promise<Locator> {
+  static getItemEntryFormatField(page: Page): Locator {
     return page.locator('lfb-ngx-schema-form').getByLabel('Entry format', { exact: true });
   }
 
@@ -1031,9 +1032,7 @@ export class PWUtils {
       await expect(answerListLayoutLabelEl).toBeVisible();
 
       if (type === 'coding') {
-        const noneMethod = page.locator('[id^="__\\$answerOptionMethods_none"]');
-        await expect(noneMethod).toBeChecked();
-        await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+        await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
       }
 
       const itemControlInputs = page.locator('div#__\\$itemControl > div > input');

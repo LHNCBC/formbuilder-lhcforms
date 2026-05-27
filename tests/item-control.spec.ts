@@ -302,6 +302,7 @@ test.describe('Item control', () => {
       const acBtn = '[for^="__\\$itemControl\\.autocomplete"]';
 
       const dropDownRadio = '#__\\$itemControl\\.drop-down';
+      const unspecifiedRadio = '#__\\$itemControl\\.unspecified';
       const checkRadio = '#__\\$itemControl\\.check-box';
       const radioRadio = '#__\\$itemControl\\.radio-button';
       const acRadio = '#__\\$itemControl\\.autocomplete';
@@ -318,7 +319,9 @@ test.describe('Item control', () => {
 
       await expect(page.locator(answerMethodsAnswerOptionRadio)).toBeChecked();
       await expect(page.locator(dropDownRadio)).toBeVisible();
-      await expect(page.locator(dropDownRadio)).toBeChecked();
+      // Intentional change. In the absence of item-control extension, the UI should default to `Unspecified`
+      // instead of `Drop-down`. -AKK
+      await expect(page.locator(unspecifiedRadio)).toBeChecked();
       await expect(page.locator(radioBtn)).toBeVisible();
       await expect(page.locator(acBtn)).toHaveCount(0);
       await expect(page.locator(checkboxBtn)).toHaveCount(0);
@@ -326,7 +329,10 @@ test.describe('Item control', () => {
       let qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(qJson.item[0].type).toBe('coding');
       expect(qJson.item[0].text).toBe('Answer option dropdown');
-      expect(qJson.item[0].extension).toEqual([itemControlExtensions['drop-down']]);
+      // Intentional change. It should not add any item-control extension
+      // if the extension is missing in the source JSON.
+      // It should only rely on the UI selection for item control extension. -AKK
+      expect(qJson.item[0].extension).toBeUndefined();
 
       await PWUtils.clickTreeNode(page, 'Answer option radio-button');
       await expect(page.locator(answerMethodsAnswerOptionRadio)).toBeChecked();

@@ -127,11 +127,13 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
       if(!initializing) {
         // formProperty => __$restricions. Read all user actions, but not initialization.
         this.updateSelectedOptions(restrictionsArray); // Reset cache.
-        const extensionProperty = this.formProperty.root.getProperty('extension');
-        this.updateRelevantExtensions(extensionProperty.value, restrictionsArray);
-        updating = true;
-        extensionProperty.setValue(extensionProperty.value, true);
-        updating = false;
+        const extensions = this.extensionsService.getExtensionsValue();
+        const changed = this.updateRelevantExtensions(extensions, restrictionsArray);
+        if(changed) {
+          updating = true;
+          this.extensionsService.resetExtensions(extensions);
+          updating = false;
+        }
       }
     });
     this.subscriptions.push(sub);
@@ -180,7 +182,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
       ret.push({operator: 'maxLength', value: `${maxLength}`});
       this.selectedOptions.add('maxLength');
     }
-    const extensions = rootProperty.getProperty('extension').value;
+    const extensions = this.extensionsService.getExtensionsValue();
     const extensionsFound = extensions?.filter((el) => {
       return  !!appliedOptions?.find((opt) => {
         return opt.extUrl === el.url;
@@ -231,6 +233,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    * @param restrictions - Arary of internally defined restriction objects.
    */
   updateRelevantExtensions(extensions: fhir.Extension [], restrictions: any []) {
+    let ret = false; // Return true if extensions are changed.
     const indices = this.getRelevantExtensionIndices(extensions);
     Object.keys(RestrictionsComponent.optionsDef).forEach((opt) => {
       let ext: fhir.Extension;
@@ -254,12 +257,15 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
         }
         const fieldInfo = this.getValueFieldName(opt, this.dataType);
         ext[fieldInfo.fieldName] = this.getValue(restriction.value, fieldInfo.fieldType);
+        ret = true;
       }
       else if(indices && indices[extUrl] !== undefined && indices[extUrl] !== null) {
         // delete
         extensions.splice(indices[extUrl], 1);
+        ret = true;
       }
     });
+    return ret;
   }
 
   /**

@@ -3,16 +3,19 @@ import { StringComponent } from '../string/string.component';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { ExtensionsService } from '../../../services/extensions.service';
 import { EXTENSION_URL_ENTRY_FORMAT } from '../../constants/constants';
+import {LabelComponent} from "../label/label.component";
+import {NgClass} from "@angular/common";
+import {ReactiveFormsModule} from "@angular/forms";
+import {FormService} from "../../../services/form.service";
 
 @Component({
-  standalone: false,
   selector: 'lfb-entry-format',
+  imports: [ReactiveFormsModule, NgClass, LabelComponent],
   templateUrl: './entry-format.component.html'
 })
 export class EntryFormatComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
   private extensionsService = inject(ExtensionsService);
-
-  entryFormat;
+  private formService = inject(FormService);
 
   /**
    * Setup required observers
@@ -20,24 +23,26 @@ export class EntryFormatComponent extends StringComponent implements OnInit, Aft
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
-    this.entryFormat = this.extensionsService.getLastExtensionByUrl(EXTENSION_URL_ENTRY_FORMAT);
-
-    if (this.entryFormat && this.entryFormat?.valueString) {
-      this.formProperty.setValue(this.entryFormat?.valueString, false);
-    }
-
     let sub = this.formProperty.valueChanges.subscribe((entryFormValue: string) => {
+      if (this.formService.loading) {
+        return;
+      }
+
       if (entryFormValue) {
-        if (!this.entryFormat) {
-          this.entryFormat = {
-            url: EXTENSION_URL_ENTRY_FORMAT
-          };
+        const ext = {
+          url: EXTENSION_URL_ENTRY_FORMAT,
+          valueString: entryFormValue
         }
-        this.entryFormat.valueString = entryFormValue;
-        this.extensionsService.updateOrAppendExtensionByUrl(EXTENSION_URL_ENTRY_FORMAT, this.entryFormat);
+        // Get the last entryFormat form property (if duplicates exist)
+        const props = this.extensionsService.getExtensionFormPropertiesByUrl(EXTENSION_URL_ENTRY_FORMAT);
+        if (props && props.length > 0) {
+          // Update the last entryFormat extension in-place
+          props[props.length - 1].reset(ext, false);
+        } else {
+          this.extensionsService.addExtension(ext, 'valueString');
+        }
 
       } else {
-        this.entryFormat = null;
         this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_ENTRY_FORMAT);
       }
     });

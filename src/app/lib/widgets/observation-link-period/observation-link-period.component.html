@@ -1,7 +1,6 @@
 <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
   @if (!nolabel) {
     <lfb-label
-      [for]="'rg_'+elementId"
       [title]="schema.title"
       [helpMessage]="schema.description"
       [ngClass]="labelClasses"

@@ -6,6 +6,7 @@ import {Component, inject, OnInit} from '@angular/core';
 import {GridComponent} from '../grid.component/grid.component';
 import {faAngleDown, faAngleUp} from '@fortawesome/free-solid-svg-icons';
 import {FormService} from '../../../services/form.service';
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 @Component({
   standalone: false,
@@ -16,22 +17,24 @@ import {FormService} from '../../../services/form.service';
         <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
       </div>
     }
-    <div class="d-flex pt-3">
-      <button type="button" class="btn btn-link text-decoration-none ps-0 fw-bold" (click)="collapse.toggle()"
-        [attr.aria-expanded]="!collapseAdvanced"
-        aria-controls="advancedFields"
-        >Advanced fields <fa-icon [icon]="collapseAdvanced ? faDown : faUp" aria-hidden="true"></fa-icon>
-      </button>
-    </div>
-    <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced" (ngbCollapseChange)="handleAdvPanelCollapse($event)" id="advancedFields">
-      <hr>
+    @if(advancedVisibleFields?.length) {
+      <div class="d-flex pt-3">
+        <button type="button" class="btn btn-link text-decoration-none ps-0 fw-bold" (click)="collapse.toggle()"
+              [attr.aria-expanded]="!collapseAdvanced"
+              aria-controls="advancedFields"
+          >Advanced fields <fa-icon [icon]="collapseAdvanced ? faDown : faUp" aria-hidden="true"></fa-icon>
+        </button>
+      </div>
+      <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced" (ngbCollapseChange)="handleAdvPanelCollapse($event)" id="advancedFields">
+        <hr>
         @for (field of advancedVisibleFields; track field.field) {
           <div [class]="gridClass(field)" class="lfb-row">
             <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
           </div>
         }
       </div>
-    `,
+    }
+  `,
   styles: [`
     .lfb-row {
       border-bottom: lightgrey solid 1px;
@@ -60,7 +63,7 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
   faUp = faAngleUp;
   faDown = faAngleDown;
   formService = inject(FormService);
-
+  modelService = inject(SharedObjectService);
 
   /**
    * Initialize
@@ -68,18 +71,30 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
   ngOnInit() {
     this.widgetId = this.formProperty.schema.formLayout.targetPage;
     // Read rows from schema layout
-    this.basicRows = this.formProperty.schema.formLayout.basic;
-    this.advancedRows = this.formProperty.schema.formLayout.advanced;
+    this.basicRows = this.formProperty.schema.formLayout.basic || [];
+    this.advancedRows = this.formProperty.schema.formLayout.advanced || [];
     this.collapseAdvanced = (this.formService.isFocusNodeHasError()) ? false : !!this.formService[this.widgetId];
+    let sub = this.formProperty.valueChanges.subscribe((val) => {
+      if(this.formService.loading) {
+        return;
+      }
+      this.init();
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.modelService.modelInitialized$.subscribe((model) => {
+      this.init();
+    });
+    this.subscriptions.push(sub);
+  }
+
+
+  /**
+   * Initialize visible fields
+   */
+  init() {
     this.basicVisibleFields = this.getVisibleFields(this.basicRows);
     this.advancedVisibleFields = this.getVisibleFields(this.advancedRows);
-    this.formProperty.valueChanges.subscribe((val) => {
-      // Remove the items in the array, but keep the same array reference.
-      this.basicVisibleFields.splice(0);
-      this.basicVisibleFields.push(...this.getVisibleFields(this.basicRows));
-      this.advancedVisibleFields.splice(0);
-      this.advancedVisibleFields.push(...this.getVisibleFields(this.advancedRows));
-    });
   }
 
   /**

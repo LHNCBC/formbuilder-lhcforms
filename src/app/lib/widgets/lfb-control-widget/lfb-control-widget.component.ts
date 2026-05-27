@@ -1,20 +1,15 @@
 /**
  * Customize array-widget from ngx-schema-form.
  */
-import {Component, inject, Input, OnDestroy, OnInit} from '@angular/core';
+import {Directive, inject, Input, OnDestroy, OnInit} from '@angular/core';
 import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {Subscription} from 'rxjs';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 
-@Component({
-  standalone: false,
-  selector: 'lfb-control-widget',
-  template: `
-  `,
-  styles: [
-  ]
-})
+import {Util} from '../../util';
+
+@Directive()
 export class LfbControlWidgetComponent extends ControlWidget implements OnInit, OnDestroy {
 
   static ID = 0;
@@ -43,6 +38,8 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
   booleanControlledInitial = true;
 
   subscriptions: Subscription[] = [];
+  widgetInfo: {[key: string]: any};
+  isRequired = false;
 
   liveAnnouncer: LiveAnnouncer = inject(LiveAnnouncer);
   errors: { code: string, originalMessage: string, modifiedMessage: string }[] = null;
@@ -70,14 +67,29 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
       {
         pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$',
         message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM).'
-      } // Datetime
+      }, // Datetime
+      {
+        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))$',
+        message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM).'
+      }, // Instant
+      {
+        pattern: '^[1-9][0-9]*$',
+        message: 'Enter an integer greater than 0.'
+      }, // positiveInt
+      {
+        pattern: '^[0]|([1-9][0-9]*)$',
+        message: 'Enter an integer greater than or equal to 0.'
+      } // unsignedInt
     ],
     MIN_LENGTH: null,
     MAX_LENGTH: null
   }
 
   ngOnInit() {
+    // Determine if this field is required.
+    this.isRequired = Util.getIsRequired(this.formProperty);
     const widget = this.formProperty.schema.widget;
+    this.widgetInfo = widget || {};
     // Input is priority followed by widget definition and default
     this.labelPosition =
       this.labelPosition

@@ -1,27 +1,50 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {FormProperty} from "@lhncbc/ngx-schema-form";
+import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
-import {Util} from "../../util";
-import fhir from "fhir/r4";
 import { EXTENSION_URL_ITEM_CONTROL } from '../../constants/constants';
-
-type InputType = 'plain' | 'xhtml';
+import {FormService} from "../../../services/form.service";
+import {AppFormElementComponent} from "../form-element/form-element.component";
 
 @Component({
-  standalone: false,
   selector: 'lfb-help-text',
+  imports: [AppFormElementComponent],
   template: `<lfb-form-element [formProperty]="formProperty.searchProperty('/__$helpText/text')"></lfb-form-element>`
 })
 export class HelpTextComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
-  textProp: FormProperty;
-  _textProp: FormProperty;
-  helpTextItem: fhir.QuestionnaireItem;
+  formService = inject(FormService);
+  initializing: boolean = false;
+
+  /**
+   * Init life cycle hook.
+   */
   ngOnInit() {
     super.ngOnInit();
+    this.init();
+  }
+
+  /**
+   * Initialize
+   */
+  init() {
+    // Prevent circular update of the self.
+    if(this.initializing) {
+      return;
+    }
+
+    this.initializing = true;
+    let changed = false;
     const value = this.formProperty.value;
-    value.linkId = value.linkId?.trim() || this.formProperty.parent?.value.linkId + '_helpText';
-    value.type = 'display'
-    value.extension = value.extension || [];
+    if(!value.linkId  && this.formProperty.parent.value?.linkId) {
+      value.linkId = this.formProperty.parent.value.linkId.trim() + '_helpText';
+      changed = true;
+    }
+    if(!value.type) {
+      value.type = 'display';
+      changed = true;
+    }
+    if(!value.extension) {
+      value.extension = [];
+      changed = true;
+    }
     const ind = value.extension.findIndex((ext) => {
       return ext.url === EXTENSION_URL_ITEM_CONTROL && ext.valueCodeableConcept.coding.some((coding) => coding.code === 'help');
     });
@@ -38,14 +61,27 @@ export class HelpTextComponent extends LfbControlWidgetComponent implements OnIn
             }
           ]
         }
-      })
+      });
+      changed = true;
     }
-    this.formProperty.setValue(value, false);
-    // this.textProp = (this.formProperty as PropertyGroup).getProperty('text');
-    // this._textProp = (this.formProperty as PropertyGroup).getProperty('_text');
+    if(changed) {
+      this.formProperty.setValue(value, false);
+    }
+    this.initializing = false;
   }
 
+  /**
+   * After view life cycle hook.
+   */
   ngAfterViewInit() {
     super.ngAfterViewInit();
+    const sub = this.formProperty.valueChanges.subscribe(() => {
+      if(this.formService.loading) {
+        return;
+      }
+
+      this.init();
+    });
+    this.subscriptions.push(sub);
   }
 }

@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subscription } from 'rxjs';
-import { LfbArrayWidgetComponent } from '../lfb-array-widget/lfb-array-widget.component';
+import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
 
 declare var LForms: any;
 @Component({
@@ -10,7 +9,10 @@ declare var LForms: any;
   imports: [MatTooltipModule],
   template: `
       <div class="{{controlWidthClass}} p-0">
-        <input autocomplete="off" #codingSystem type="text" [attr.id]="id" [matTooltip]="'Search by system or type your own.'" placeholder="Search by system or type your own." class="form-control"  />
+        <input autocomplete="off" #codingSystem type="text" [attr.id]="id"
+               [matTooltip]="'Search by system or type your own.'"
+               placeholder="Search by system or type your own."
+               class="form-control form-control-sm"  />
       </div>
   `,
   styles: [`
@@ -25,12 +27,10 @@ declare var LForms: any;
   `]
 })
 
-export class CodingSystemComponent extends LfbArrayWidgetComponent implements AfterViewInit, OnDestroy {
+export class CodingSystemComponent extends LfbControlWidgetComponent implements AfterViewInit, OnDestroy {
   @ViewChild('codingSystem') codingSystem: ElementRef;
 
   autoComp: any;
-  subscriptions: Subscription[] = [];
-  autoComplete = true;
   systemUrls: string[] = [];
 
   options: any = {
@@ -62,17 +62,19 @@ export class CodingSystemComponent extends LfbArrayWidgetComponent implements Af
       this.options
     );
 
-    if (this.formProperty.value) {
-      this.autoComp.setFieldVal(this.formProperty.value, false);
-    }
+
+    const sub = this.formProperty.valueChanges.subscribe((value) => {
+      if(inputEl.value !== value) {
+        this.autoComp.setFieldVal(this.formProperty.value, false);
+      }
+    });
+    this.subscriptions.push(sub);
 
     // Listen for autocomplete selection and update answerOption.valueCoding.system
     LForms.Def.Autocompleter.Event.observeListSelections(inputId, (data) => {
       if (data && typeof data.final_val === 'string') {
         if (this.formProperty) {
-          const current = this.formProperty.value || {};
           this.formProperty.setValue(data.final_val, false);
-          this.autoComp.setFieldVal(data.final_val, false);
         }
       }
     });
@@ -96,11 +98,7 @@ export class CodingSystemComponent extends LfbArrayWidgetComponent implements Af
    */
   ngOnDestroy() {
     this.destroyAutocomplete();
-    this.subscriptions.forEach((s) => {
-      if(s) {
-        s.unsubscribe();
-      }
-    });
+    super.ngOnDestroy();
   }
 }
 

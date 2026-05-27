@@ -40,9 +40,13 @@ mat-tab-group.preview-json-tabs, mat-tab-group.preview-json-tabs mat-tab-header 
   display:none !important;
 }
 
-.form-control {
-  height: calc(1.0em + .75rem + 2px);
-  padding: 0 3px 0 3px;
+/*
+When form control is focussed, the focus ring could be offset by nearby
+form control. Change the z-index temporarily while it is on focus.
+*/
+.form-control:focus {
+  position: relative;
+  z-index: 100;
 }
 
 .add-scrolling {
@@ -108,8 +112,8 @@ input.invalid {
 
 div.has-error > ul {
   list-style-type: none;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
 }
 
 div.has-error > ul:empty {
@@ -145,3 +149,33 @@ div.has-error > ul:empty {
   filter: drop-shadow(0 -1px 0 black);
 }
 
+
+.lfb-tooltip-pre-wrap {
+  white-space: pre-wrap;
+  text-align: left !important;
+}
+
+.lfb-tooltip-pre-wrap .mdc-tooltip__surface {
+  max-width: 70vw;
+  text-align: left !important;
+}
+
+/*
+ * In the extension dialog, highlight only the nearest local scope under the
+ * pointer so child and sibling fields do not get highlighted together.
+ */
+lfb-extension-dlg .dlg-content .lfb-row:hover {
+  background-color: transparent;
+}
+
+lfb-extension-dlg .dlg-content .lfb-hover-scope:hover {
+  background-color: lightgoldenrodyellow;
+}
+
+lfb-extension-dlg .dlg-content .lfb-hover-scope:has(.lfb-hover-scope:hover) {
+  background-color: transparent;
+}
+
+.mat-mdc-dialog-surface:has(> lfb-extension-dlg) {
+  height: 100%;
+}

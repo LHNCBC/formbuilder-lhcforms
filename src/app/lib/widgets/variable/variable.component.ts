@@ -1,17 +1,27 @@
-import { Component, OnInit, ElementRef, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import {faPlusCircle} from '@fortawesome/free-solid-svg-icons';
 import { FormService } from '../../../services/form.service';
-import { NgbModal, NgbModalOptions } from '@ng-bootstrap/ng-bootstrap';
+import {NgbCollapseModule, NgbModal, NgbModalOptions, NgbPopoverModule} from '@ng-bootstrap/ng-bootstrap';
 import { ExpressionEditorDlgComponent } from '../expression-editor-dlg/expression-editor-dlg.component';
 import fhir from 'fhir/r4';
 import { SharedObjectService } from 'src/app/services/shared-object.service';
 import {TableComponent} from '../table/table.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
+import {ISchema} from "@lhncbc/ngx-schema-form";
 import { EXTENSION_URL_VARIABLE, EXTENSION_URL_CUSTOM_VARIABLE_TYPE } from '../../constants/constants';
+import {CommonModule, NgClass} from "@angular/common";
+import {BooleanControlledComponent} from "../boolean-controlled/boolean-controlled.component";
+import {LabelComponent} from "../label/label.component";
+import {TitleComponent} from "../title/title.component";
+import {FaIconComponent, FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {MatTooltipModule} from "@angular/material/tooltip";
+import {Util} from "../../util";
+import {MessageType} from "../message-dlg/message-dlg.component";
 
 @Component({
-  standalone: false,
   selector: 'lfb-variable',
+  imports: [FormsModule, ReactiveFormsModule, MatTooltipModule, NgbCollapseModule, NgbPopoverModule, CommonModule, BooleanControlledComponent, LabelComponent, TitleComponent, FontAwesomeModule],
   templateUrl: './variable.component.html',
   styleUrl: './variable.component.css'
 })
@@ -22,10 +32,8 @@ export class VariableComponent extends TableComponent implements OnInit {
   private modelService = inject(SharedObjectService);
   private extensionsService = inject(ExtensionsService);
 
-  elementId: string;
   questionnaire = null;
   faAdd = faPlusCircle;
-  linkId: string;
   private variableTypeMapping = {
     "expression": "FHIRPath Expression",
     "query": "FHIR Query",
@@ -33,20 +41,16 @@ export class VariableComponent extends TableComponent implements OnInit {
     "question": "Question",
     "simple" : "Easy Path Expression"
   };
-  resultExtensions: any;
 
-  buttonName: string;
+  extensionSchema: ISchema;
 
   ngOnInit(): void {
+    this.extensionSchema = this.formService.getExtensionSchema();
     super.ngOnInit();
-    this.linkId = this.formProperty.findRoot().getProperty('linkId')?.value ?? '';
     const sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
     });
     this.subscriptions.push(sub);
-
-    const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
-    this.formProperty.setValue(variablesExtension, false);
   }
 
   /**
@@ -132,7 +136,6 @@ export class VariableComponent extends TableComponent implements OnInit {
    * Open the Expression Editor as a modal to create or edit variables.
    */
   editVariables(): void {
-    let currentExtArray;
     const modalConfig: NgbModalOptions = {
       size: 'lg',
       fullscreen: 'lg'
@@ -149,21 +152,33 @@ export class VariableComponent extends TableComponent implements OnInit {
       // Result returning from the Expression Editor is the whole questionnaire.
       // Expression Editor returns false in the case changes were cancelled.
       if (result) {
-        if (this.linkId) {
-          this.resultExtensions = this.extractVariableExtensions(result.item, this.linkId);
+        let resultExtensions;
+        if (linkId) {
+          resultExtensions = Util.getExtensionsByLinkId(result.item, linkId);
         } else {
-          this.resultExtensions = result.extension;
+          resultExtensions = result.extension;
         }
+        let variableExts = resultExtensions.filter((ext) => {
+          if(!ext || !ext.valueExpression?.expression) {
+            return false;
+          }
+
+          const ret = ext.url === EXTENSION_URL_VARIABLE;
+          if(ret) {
+            this.extensionsService.updateExtension(ext);
+          }
+          return ret;
+        });
 
         // Result coming back from the Expression Editor may also contain launchContext.  We do want
         // to save those extensions, but want to filter out from the variables.
-        this.extensionsService.replaceExtensions(EXTENSION_URL_VARIABLE, this.resultExtensions);
+        this.extensionsService.replaceExtensions(EXTENSION_URL_VARIABLE, variableExts);
 
-        const variables = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE);
-        this.formProperty.setValue(variables, false);
+        this.formProperty.setValue(variableExts, false);
         this.cdr.detectChanges();
-        this.formProperty.findRoot().getProperty('extension').setValue(this.extensionsService.extensionsProp.value, false);
       }
+    }).catch((error) => {
+      console.log(`variable.component.ts: editVariables() modalRef.result.then().catch() ${error.message}`);
     });
   }
 
@@ -172,10 +187,54 @@ export class VariableComponent extends TableComponent implements OnInit {
    * @param index - Index of the variable to be removed from the array.
    */
   deleteVariable(index: number) {
-    let currentExtArray;
-    const tmpt = this.extensionsService.removeExtensionByUrlAtIndex(EXTENSION_URL_VARIABLE, index);
+    this.extensionsService.removeExtensionByUrlAtIndex(EXTENSION_URL_VARIABLE, index);
     const variablesExtension = this.extensionsService.getExtensionsByUrl(EXTENSION_URL_VARIABLE) ?? [];
     this.formProperty.setValue(variablesExtension, false);
     this.cdr.markForCheck();
+  }
+
+  /**
+   * Confirm variable deletion before removing it.
+   * @param index - Index of the variable to be removed from the array.
+   */
+  confirmDeleteVariable(index: number) {
+    if(index < 0 || index >= this.nonEmptyVariables.length) {
+      return;
+    }
+
+    const modalRef = this.dialogService.showDialog(
+      MessageType.INFO,
+      'Confirm deletion',
+      'Are you sure you want to delete this variable?',
+      this.deleteConfirmButtons
+    );
+    modalRef.closed.subscribe((result) => {
+      if(result === 'delete') {
+        this.deleteVariable(index);
+      }
+    });
+  }
+
+
+  /**
+   * Generate track for @for loop.
+   * @param variableExt -
+   * @param index
+   */
+  getVariableTrackParam(variableExt: fhir.Extension, index: number ) {
+    let ret: string;
+
+    if(variableExt) {
+      if(variableExt.valueExpression) {
+        ret = variableExt.url+variableExt.valueExpression?.name+variableExt.valueExpression?.expression;
+      }
+      else if(variableExt.extension) {
+        ret = variableExt.url + this.getVariableTrackParam(variableExt.extension[0], 0);
+      }
+    }
+    else {
+      ret = index.toString();
+    }
+    return ret;
   }
 }

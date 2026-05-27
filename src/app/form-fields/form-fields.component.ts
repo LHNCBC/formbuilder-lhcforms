@@ -10,6 +10,7 @@ import {
 import {HttpClient} from '@angular/common/http';
 import {FetchService} from '../services/fetch.service';
 import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.component';
+import {LfbSpinnerComponent} from "../lib/widgets/lfb-spinner/lfb-spinner.component";
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
@@ -17,6 +18,7 @@ import {GuidingStep, Util} from '../lib/util';
 import {PropertyGroup, ArrayProperty, FormComponent} from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 import { TableService } from '../services/table.service';
+import {BehaviorSubject} from "rxjs";
 
 /**
  * Use provider factory to inject extensions service for form level fields. There is one extensionsService provided in root of the
@@ -52,6 +54,7 @@ function configExtensionsServiceFactory(formService: FormService): ExtensionsSer
         </div>
       </div>
     </div>
+    <lfb-spinner [show]="spinner$ | async"></lfb-spinner>
   `,
   providers: [
     {
@@ -77,7 +80,7 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   qlSchema: any = {properties: {}}; // Combines questionnaire schema with layout schema.
   notHidden = true;
   acResult: AutoCompleteResult = null;
-
+  spinner$ = new BehaviorSubject<boolean>(false);
   objectUrl: any;
 
   /**
@@ -117,6 +120,7 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   ngOnChanges(changes: SimpleChanges) {
     if(changes.questionnaire) {
       this.loading = true;
+      this.spinner$.next(true);
     }
   }
 
@@ -139,6 +143,7 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
     if(!this.adjustRootFormProperty()) {
       this.questionnaireChange.emit(Util.convertToQuestionnaireJSON(event.value));
     }
+    this.spinner$.next(false);
   }
   /**
    * Send message to base page to switch the view.
@@ -164,13 +169,6 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
    */
   stringify(json): string {
     return JSON.stringify(json, null, 2);
-  }
-
-
-  /**
-   * TODO
-   */
-  allFields() {
   }
 
 

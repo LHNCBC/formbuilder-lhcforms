@@ -20,13 +20,15 @@ import {
   OnInit, Renderer2,
   SimpleChanges
 } from '@angular/core';
-import {FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, ObjectProperty, PropertyGroup} from '@lhncbc/ngx-schema-form';
 import {faPlusCircle, faTrash, faAngleDown, faAngleRight, faUpLong, faDownLong, faEdit} from '@fortawesome/free-solid-svg-icons';
 import {Util} from '../../util';
 import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
 import {Observable, of, Subscription} from 'rxjs';
 import {faExclamationTriangle, faLink} from '@fortawesome/free-solid-svg-icons';
 import { TableService, TableStatus } from 'src/app/services/table.service';
+import { DialogService } from 'src/app/services/dialog.service';
+import { MessageType } from '../message-dlg/message-dlg.component';
 
 @Component({
   standalone: false,
@@ -80,9 +82,18 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   renderer = inject(Renderer2);
   cdr = inject(ChangeDetectorRef);
   tableService = inject(TableService);
+  dialogService = inject(DialogService);
 
   tableStatus: TableStatus;
   elementRef = inject(ElementRef);
+  deleteConfirmButtons = [
+    {label: 'Cancel', value: 'cancel'},
+    {label: 'Delete', value: 'delete'}
+  ];
+
+  // Used to store the indexes of rows to be hidden.
+  // Hiding is only for display purpose. The rows are still present in the form property.
+  _hideRows: Set<number> = new Set<number>();
 
   isReordering = false;
 
@@ -96,7 +107,8 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
     if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
-    this.includeActionColumn = (this.formProperty.properties as FormProperty[]).length > 1;
+    this.includeActionColumn = this.shouldIncludeActionColumn();
+    this.includeStatusColumn = this.shouldIncludeStatusColumn();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -124,7 +136,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       this.booleanControlledOption = !!widget.booleanControlledOption;
     }
 
-    this.includeStatusColumn = !!widget.showLinkStatus;
+    this.includeStatusColumn = this.shouldIncludeStatusColumn();
 
 
     this.booleanControlledOption = this.booleanControlledOption || !Util.isEmpty(this.formProperty.value);
@@ -140,7 +152,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   }
 
   /**
-   * Manages the visibility of the error column based on the schema.widget configuration for
+   * Manages the visibility of the error column based on the `schema.widget` configuration for
    * the given property.
    * @param widget - The widget configuration for the property.
    */
@@ -156,6 +168,32 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
         this.showErrorObject = this.showErrorTypeList.find(errorType => errorType.type === this.dataType);
       }
     }
+  }
+
+  /**
+   * Indicates whether the table should reserve an action column.
+   */
+  shouldIncludeActionColumn(): boolean {
+    return (this.formProperty.properties as FormProperty[]).length > 0;
+  }
+
+  /**
+   * Indicates whether the table should reserve a status column.
+   */
+  shouldIncludeStatusColumn(): boolean {
+    return !!this.formProperty.schema.widget?.showLinkStatus;
+  }
+
+  /**
+   * Indicates whether fixed-width columns follow the configured data fields.
+   */
+  hasTrailingColumns(): boolean {
+    const hasSelectionColumn =
+      (this.rowSelectionType === 'radio' || this.rowSelectionType === 'checkbox') &&
+      this.id !== 'answerOption';
+
+    return hasSelectionColumn || this.includeActionColumn ||
+      this.includeStatusColumn || this.includeErrorColumn;
   }
 
   /**
@@ -341,10 +379,12 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param propertyId -
    */
   getTitle(parentProperty, propertyId): string {
-    const p = this.getProperty(parentProperty, propertyId);
-    return p.schema && p.schema.title ? p.schema.title : Util.capitalize(propertyId);
+    return Util.getSchemaFromArrayProperty(this.formProperty, propertyId)?.title || Util.capitalize(propertyId);
   }
 
+  getFieldDescription(propertyId: string) {
+    return Util.getSchemaFromArrayProperty(this.formProperty, propertyId)?.description;
+  }
 
   /**
    * When clicking add button, prevent adding multiple empty rows. Alert the user with a popover message.
@@ -353,7 +393,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   addItemWithAlert(popoverRef) {
     this.isCollapsed = false;
     const items = this.formProperty.properties as [];
-    const lastItem = items.length ? items[items.length - 1] : null;
+    const lastItem: FormProperty = items.length ? items[items.length - 1] : null;
     if(!lastItem || !Util.isEmpty(lastItem.value)) { // If no lastItem or be not empty.
       this.addItem();
       setTimeout(() => {
@@ -441,6 +481,59 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       }
     }
     super.removeItem(props[index]);
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Indicates whether the remove action should be disabled for the row.
+   * Keeps the final empty row in place so the table continues to show an editable row.
+   *
+   * @param index - Index of the formProperty to be removed from the array.
+   */
+  isRemoveActionDisabled(index: number): boolean {
+    return this.isRemoveButtonDisabled() || this.isOnlyEmptyRow(index);
+  }
+
+  /**
+   * Indicates whether the row is the table's only row and contains no data.
+   *
+   * @param index - Index of the formProperty to inspect.
+   */
+  isOnlyEmptyRow(index: number): boolean {
+    const props = this.formProperty.properties as FormProperty [];
+    return props.length === 1 && index === 0 && Util.isEmpty(props[index]?.value);
+  }
+
+  /**
+   * Ask the user to confirm before removing a row from the table action column.
+   * @param index - Index of the formProperty to be removed from the array.
+   */
+  confirmRemoveProperty(index: number, message = 'Are you sure you want to delete this row?') {
+    const props = this.formProperty.properties as FormProperty [];
+    if(index < 0 || index >= props.length) {
+      return;
+    }
+
+    if(this.isOnlyEmptyRow(index)) {
+      return;
+    }
+
+    if(this.isEmpty(index)) {
+      this.removeProperty(index);
+      return;
+    }
+
+    const modalRef = this.dialogService.showDialog(
+      MessageType.INFO,
+      'Confirm deletion',
+      message,
+      this.deleteConfirmButtons
+    );
+    modalRef.closed.subscribe((result) => {
+      if(result === 'delete') {
+        this.removeProperty(index);
+      }
+    });
   }
 
   /**
@@ -556,8 +649,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * @param index - Index of the row.
    */
   isEmpty(index: number) {
-    const ret = Util.isEmpty(this.formProperty.properties[index].value);
-    return ret;
+    return Util.isEmpty(this.formProperty.properties[index].value);
   }
 
   /**
@@ -650,12 +742,34 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   /**
    * Check if the edit button should be disabled for a given row.
+   *
+   * Default implementation returns false. The subclasses can override this method
+   * to determine whether the edit button should be disabled for a given row.
+   *
    * Returns false by default, but can be overridden in derived classes.
    * @param index - Index of the row in the table.
+   * @param arrayProperty - ArrayProperty representing the table data.
    */
-  isDisabled(index: number): boolean {
+  isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     return false;
   }
+
+  /**
+   * Get the map of hidden rows.
+   *
+   */
+  get hideRows(): Set<number> {
+    return this._hideRows;
+  }
+
+  filterOutClasses(formProperty: FormProperty, classPrefix: string) {
+    const classes = formProperty?.schema.widget?.controlClasses;
+    const otherClasses = classes?.split(/\s+/).filter((cls) => {
+      return !cls.startsWith(classPrefix);
+    });
+    return otherClasses?.join(' ');
+  }
+
 
   /**
    * Handles the edit action for a table row at the specified index.

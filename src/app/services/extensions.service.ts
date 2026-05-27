@@ -1,9 +1,23 @@
-import { Injectable } from '@angular/core';
+import {DestroyRef, inject, Injectable } from '@angular/core';
 import {ArrayProperty, FormProperty} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
 import {Observable, Subject, Subscription} from 'rxjs';
 import {fhirPrimitives} from '../fhir';
-import { EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION, EXTENSION_URL_ANSWER_EXPRESSION } from '../lib/constants/constants';
+import {SchemaService} from "./schema.service";
+import {
+  EXTENSION_URL_ENTRY_FORMAT,
+  EXTENSION_URL_VARIABLE,
+  EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
+  EXTENSION_URL_INITIAL_EXPRESSION,
+  EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_ANSWER_EXPRESSION,
+  EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+  EXTENSION_URL_ITEM_CONTROL,
+  PREFERRED_TERMINOLOGY_SERVER_URI
+} from '../lib/constants/constants';
+import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
+import {ObservationExtractComponent} from "../lib/widgets/observation-extract/observation-extract.component";
+import {Util} from "../lib/util";
 
 /**
  * This class is intended for components which needs to interact with extension field.
@@ -16,9 +30,22 @@ import { EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION, 
   // Provide a service in the root, which is accessed by form-level fields. The item level fields have their instance of this service.
   providedIn: 'root'
 })
-// @ts-ignore
 export class ExtensionsService {
   static __ID = 0;
+
+  extensionsEditedInWidgets: Set<string> = new Set([
+    EXTENSION_URL_ENTRY_FORMAT,
+    EXTENSION_URL_VARIABLE,
+    EXTENSION_URL_CUSTOM_VARIABLE_TYPE,
+    EXTENSION_URL_INITIAL_EXPRESSION,
+    EXTENSION_URL_CALCULATED_EXPRESSION,
+    EXTENSION_URL_ANSWER_EXPRESSION,
+    EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+    EXTENSION_URL_ITEM_CONTROL,
+    PREFERRED_TERMINOLOGY_SERVER_URI,
+    ObservationLinkPeriodComponent.extUrl,
+    ObservationExtractComponent.extUrl
+  ]);
 
   _id = 'extensionServiceInstance_';
   extensionsProp: ArrayProperty;
@@ -27,8 +54,16 @@ export class ExtensionsService {
   subscriptions: Subscription [] = [];
   extensionsChange$: Subject<fhir.Extension []> = new Subject<fhir.Extension []>();
 
+  schemaService = inject(SchemaService);
+  private destroyRef = inject(DestroyRef);
+
   constructor() {
     this._id = this._id + ExtensionsService.__ID++;
+    this.destroyRef.onDestroy(() => {
+      this.subscriptions.forEach((s) => {
+        s.unsubscribe();
+      });
+    });
   }
 
 
@@ -51,6 +86,22 @@ export class ExtensionsService {
     this.subscriptions.push(sub);
   }
 
+  /**
+   * Reset form property with new extensions.
+   *
+   * @param extensions
+   */
+  resetExtensions(extensions: fhir.Extension []) {
+    this.extensionsProp.setValue(extensions, false);
+  }
+
+  /**
+   * Get current value from the extension'`s form property.
+   */
+  getExtensionsValue(): fhir.Extension [] {
+    return this.extensionsProp.value;
+  }
+
 
   /**
    * Access observable to subscribe for notifications on changes.
@@ -68,18 +119,21 @@ export class ExtensionsService {
     this._propertyMap.clear();
     this._propertyMap = (this.extensionsProp.properties as FormProperty [])
       .reduce((acc: Map<fhirPrimitives.url, FormProperty[]>, property: FormProperty, index: number) => {
-      let properties: FormProperty [] = acc.get(property.value.url);
-      let values = this._extMap.get(property.value.url);
-      if(!properties) {
-        properties = [];
-        values = [];
-        acc.set(property.value.url, properties);
-        this._extMap.set(property.value.url, values);
-      }
-      properties.push(property);
-      values.push(property.value);
-      return acc;
-    }, this._propertyMap);
+        const url = property.value.url;
+        if(url) {
+          let properties: FormProperty [] = acc.get(url);
+          let values = this._extMap.get(url);
+          if(!properties) {
+            properties = [];
+            values = [];
+            acc.set(url, properties);
+            this._extMap.set(url, values);
+          }
+          properties.push(property);
+          values.push(property.value);
+        }
+        return acc;
+      }, this._propertyMap);
   }
 
 
@@ -102,7 +156,7 @@ export class ExtensionsService {
   }
 
   /**
-   * Get last extension object identified by the url.
+   * Get the last extension object identified by the url.
    * @param extUrl - Url to identify the extension.
    */
   public getLastExtensionByUrl(extUrl: fhirPrimitives.url): fhir.Extension {
@@ -221,7 +275,8 @@ export class ExtensionsService {
       // Find the start and end indexes of the consecutive block of variable extensions.
       let startIndex = originalExtensions.findIndex((ext) => ext.url === extUrl);
       if (startIndex === -1) {
-        this.extensionsProp.reset([...newExtensionsJSON, ...originalExtensions]);
+        // Not in the original list, append the new ones.
+        this.extensionsProp.reset([...originalExtensions, ...newExtensionsJSON]);
         return;
       };
 
@@ -239,7 +294,7 @@ export class ExtensionsService {
     } else {
       // newExtensionsJSON is undefined, so reset it to empty.
       // This is the case where all variables got deleted via the Expression Editor
-      this.extensionsProp.reset([]);
+      this.removeExtensionsByUrl(extUrl);
     }
   }
 
@@ -307,6 +362,7 @@ export class ExtensionsService {
    *
    */
   addExtension(ext: fhir.Extension, valueType: string): FormProperty {
+    this.updateExtension(ext);
     const extProp = this.extensionsProp.addItem(ext);
     if(valueType) {
       this.pruneUnusedValues(extProp, valueType);
@@ -351,5 +407,42 @@ export class ExtensionsService {
     else {
       this.addExtension(value, valueType);
     }
+  }
+
+  /**
+   * Check if the extension is editable in the extension dialog.
+   * @returns - True if the extension is not editable in dialog.
+   */
+  isNotEditableInDlg(url: fhirPrimitives.url): boolean {
+    return this.extensionsEditedInWidgets.has(url);
+  }
+
+  updateExtension(newValue: fhir.Extension) {
+    if(newValue) {
+
+      // If the new value is an extension, we need to set the __$isValueX and __$valueType properties
+      // so that the dialog can handle it correctly.
+      Util.eliminateEmptyFields(newValue);
+      const valueX = Object.keys(newValue).find((key) => {
+        return key.startsWith('value');
+      });
+      newValue['__$isValueX'] = !!valueX;
+      if(newValue['__$isValueX']) {
+        newValue['__$valueType'] = valueX;
+        const categoryMap = this.schemaService.valueXCategoryMap;
+        newValue[categoryMap[valueX]] = valueX;
+        newValue['__$valueTypeCategory'] = categoryMap[valueX];
+        newValue['__$stringify'] = JSON.stringify(newValue[valueX]);
+      }
+      else {
+        delete newValue[newValue['__$valueTypeCategory']];
+        delete newValue['__$valueTypeCategory'];
+        newValue['__$valueType'] = 'extension';
+        newValue['__$stringify'] = JSON.stringify(newValue.extension,
+          (k, v) => k.startsWith('__$') ? undefined : v);
+      }
+
+    }
+    return newValue;
   }
 }

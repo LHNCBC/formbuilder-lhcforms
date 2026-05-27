@@ -1,5 +1,5 @@
 <ng-template #controller>
-  <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0' : true}">
+  <div class="widget" [ngClass]="{'row': labelPosition === 'left' && !nolabel, 'm-0' : true}">
     @if (!nolabel) {
       <lfb-label [title]="schema.title" [helpMessage]="schema.description" [ngClass]="labelClasses" [labelId]="'label'+_id"></lfb-label>
     }

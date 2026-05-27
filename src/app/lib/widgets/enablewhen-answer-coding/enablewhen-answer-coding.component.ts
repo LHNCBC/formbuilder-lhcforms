@@ -7,25 +7,25 @@ import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
 import {Subscription} from 'rxjs';
-import { AutoCompleteOptions } from '../auto-complete/auto-complete.component';
+import {AutoCompleteComponent, AutoCompleteOptions} from '../auto-complete/auto-complete.component';
+import {FormsModule} from "@angular/forms";
+import {SharedObjectService} from "../../../services/shared-object.service";
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lfb-option-control-widget.component';
 import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
 declare var LForms: any;
 
-// TODO: THE HTML NEEDS TO CHANGE>>>>>
-
 @Component({
-  standalone: false,
   selector: 'lfb-enablewhen-answer-coding',
+  imports: [AutoCompleteComponent, FormsModule],
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
       @if (autoComplete) {
         <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
       } @else {
         <div class="p-0">
-          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
+          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control form-control-sm" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
         </div>
       }
     </div>
@@ -44,9 +44,10 @@ declare var LForms: any;
 
 export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   private formService = inject(FormService);
+  private modelService = inject(SharedObjectService);
 
   subscriptions: Subscription [] = [];
-  answerOptions: any[] = [];
+  answerOptions: fhir.QuestionnaireItemAnswerOption [] = [];
   autoComplete = false;
   acOptions: AutoCompleteOptions = {
     acOptions: {
@@ -68,12 +69,7 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
 
   ngOnInit() {
     super.ngOnInit();
-
-    const initValue = this.formProperty.value;
-    if(initValue) {
-      this.model = initValue;
-    }
-    this.init(this.formProperty.searchProperty('question').value);
+    this.init();
   }
 
 
@@ -84,13 +80,24 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
     super.ngAfterViewInit();
 
     let sub = this.formProperty.valueChanges.subscribe((newValue) => {
-      this.model = newValue;
+      if(this.formService.loading) {
+        return;
+      }
+      this.init();
     });
     this.subscriptions.push(sub);
 
     // Listen to question value changes.
     sub = this.formProperty.searchProperty('question').valueChanges.subscribe((source) => {
-      this.init(source);
+      if(this.formService.loading) {
+        return;
+      }
+      this.init();
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.modelService.modelInitialized$.subscribe(() => {
+      this.init();
     });
     this.subscriptions.push(sub);
 
@@ -126,23 +133,17 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
       }
     });
     this.subscriptions.push(sub);
-
   }
 
 
   /**
    * Initialize the auto-complete widget
-   * @param sourceLinkId - Link id of the enableWhen source.
    */
-  init(sourceLinkId: string) {
+  init() {
+    const sourceLinkId = this.formProperty.searchProperty('question').value;
+    this.model = this.formProperty.value;
     this.answerOptions = [];
     this.autoComplete = false;
-    if (!sourceLinkId) {
-      // reset the model and value if the linkId is not available
-      this.model = {};
-      this.formProperty.reset(this.model, false);
-      return;
-    }
     const answerType = this.formProperty.searchProperty('__$answerType').value;
 
     if (answerType === 'coding') {
@@ -164,8 +165,8 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
    * Pick valid answers from the answerOption array.
    * @param sourceItem - Source item
    */
-  processSourceAnswers(sourceItem: fhir.QuestionnaireItem): any [] {
-    let ret = [];
+  processSourceAnswers(sourceItem: fhir.QuestionnaireItem): fhir.QuestionnaireItemAnswerOption [] {
+    let ret: fhir.QuestionnaireItemAnswerOption [] = [];
     if(sourceItem?.answerOption?.length) {
       ret = (sourceItem?.answerOption)
         ? sourceItem.answerOption : [];

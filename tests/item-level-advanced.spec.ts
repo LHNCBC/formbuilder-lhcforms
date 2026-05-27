@@ -585,7 +585,7 @@ test.describe('Home page', () => {
 
       const computeInitial = valueMethod.locator('[id^="__$valueMethod_compute-initial"]');
       await expect(computeInitial).toBeChecked();
-      await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
+      await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
 
       await expect(await PWUtils.getRadioButton(page, 'Conditional method', 'enableWhen expression')).toBeChecked();
 
@@ -601,7 +601,7 @@ test.describe('Home page', () => {
 
       const computeContinuously = valueMethod.locator('[id^="__$valueMethod_compute-continuously"]');
       await expect(computeContinuously).toBeChecked();
-      await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a * %b');
+      await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a * %b');
 
       await expect(await PWUtils.getRadioButton(page, 'Conditional method', 'enableWhen expression')).toBeChecked();
 

@@ -8,8 +8,6 @@ import {
 import {TableComponent} from '../table/table.component';
 import { Subscription } from 'rxjs';
 import { ExtensionsService } from 'src/app/services/extensions.service';
-import { ArrayProperty } from '@lhncbc/ngx-schema-form';
-import { UnitService } from 'src/app/services/unit.service';
 import {
   EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
   TYPE_DECIMAL, TYPE_INTEGER, TYPE_QUANTITY
@@ -41,9 +39,6 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
   }
 
   extensionsService = inject(ExtensionsService);
-  unitService = inject(UnitService);
-
-  initializing = false;
 
   constructor() {
     super();
@@ -54,25 +49,7 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
    */
   ngOnInit() {
     super.ngOnInit();
-    // Handle data if loaded from a file
     this.dataType = this.formProperty.findRoot().getProperty('type').value;
-    // if unit extensions are available, then load them into form property
-    const unitExts = this.extensionsService.getExtensionsByUrl(UnitsComponent.unitsExtUrl[this.dataType]);
-    if (unitExts && unitExts.length > 0) {
-      const units: ArrayProperty = this.formProperty as ArrayProperty;
-      // clear units
-      units.setValue([], false);
-      // Loop through each extension and populate the unit.
-      unitExts.forEach((unit) => {
-        units.addItem(unit);
-      });
-      if (unitExts.length > 1) {
-        this.includeActionColumn = true;
-      }
-
-      // this.cdr.detectChanges();
-    }
-
   }
 
   /**
@@ -86,7 +63,7 @@ export class UnitsComponent extends TableComponent implements AfterViewInit, OnI
     sub = this.formProperty.searchProperty("type")?.valueChanges.subscribe((changedValue) => {
       const isCurrentValueCodingType = this.valueCodingDataType.includes(this.dataType);
       const isNewValueCodingType = this.valueCodingDataType.includes(changedValue);
-      this.singleItem = (changedValue === TYPE_QUANTITY) ? false : true;
+      this.singleItem = (changedValue !== TYPE_QUANTITY);
 
       if (isCurrentValueCodingType && isNewValueCodingType && this.dataType !== changedValue) {
         this.formProperty.setValue([this.newUnit], false);

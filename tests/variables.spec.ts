@@ -69,7 +69,6 @@ test.describe('variables', () => {
       expectedValue: '1'
     }
   ];
-  let computeInitial: Locator;
 
   test.beforeEach(async ({page}) => {
     await page.goto('/');
@@ -78,8 +77,6 @@ test.describe('variables', () => {
 
     fileJson = await PWUtils.uploadFile(page, 'value-methods-sample.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
-
-    computeInitial = await PWUtils.getRadioButtonLabel(page, 'Value method', 'Compute initial value');
   });
 
   test('should create various types of variables', async ({ page }) => {
@@ -297,8 +294,10 @@ test.describe('variables', () => {
 
     // Delete second and third variables
     await secondVariable.locator('td:nth-child(4) button').click();
+    await PWUtils.clickDialogButton(page, { title: 'Confirm deletion' }, 'Delete');
     // Third variable became second
     await secondVariable.locator('td:nth-child(4) button').click();
+    await PWUtils.clickDialogButton(page, { title: 'Confirm deletion' }, 'Delete');
 
     await expect(page.locator('lfb-variable table > tbody > tr')).toHaveCount(1);
   });
@@ -314,10 +313,9 @@ test.describe('variables', () => {
     await itemTextField.fill('Compute initial value expression');
     await PWUtils.selectDataType(page, 'integer');
 
-    await expect(computeInitial).toBeVisible();
-    await computeInitial.click();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toBeEmpty();
-    await page.locator('[id^="edit__\\$initialExpression"]').click();
+    await PWUtils.clickRadioButton(page, 'Value method', 'Compute initial value');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toBeEmpty();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
 
     await expect(page.locator('#expression-editor-base-dialog')).toBeAttached();
 
@@ -357,7 +355,7 @@ test.describe('variables', () => {
     // Save
     await page.locator('#export').click();
 
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
 
     // Item Variables section should now show 2 variables
     await expect(page.locator('lfb-variable table > tbody > tr')).toHaveCount(2);
@@ -401,7 +399,7 @@ test.describe('variables', () => {
     await expect(thirdVariable.locator('td:nth-child(3)')).toHaveText('3');
 
     // Go back to the Expression Editor to check that the settings are still correct
-    await page.locator('[id^="edit__\\$initialExpression"]').click();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
 
     // Variables section
     await expect(page.locator('lhc-variables > h2')).toContainText('Item Variables');
@@ -432,10 +430,10 @@ test.describe('variables', () => {
     await itemTextField.fill('Compute initial value expression');
     await PWUtils.selectDataType(page, 'integer');
 
-    await expect(computeInitial).toBeVisible();
-    await computeInitial.click();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toBeEmpty();
-    await page.locator('[id^="edit__\\$initialExpression"]').click();
+    await PWUtils.clickRadioButton(page, 'Value method', 'Compute initial value');
+
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toBeEmpty();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
 
     await expect(page.locator('#expression-editor-base-dialog')).toBeAttached();
 
@@ -450,7 +448,7 @@ test.describe('variables', () => {
     // Save
     await page.locator('#export').click();
 
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('1 + 2');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('1 + 2');
 
     const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
 
@@ -491,7 +489,7 @@ test.describe('variables', () => {
     await expect(firstVariable.locator('td:nth-child(3)')).toHaveText('30');
 
     // Click the 'Create/edit expression' again
-    await page.locator('[id^="edit__\\$initialExpression"]').click();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
 
     // Variables section should show variable 'a' that was created prior
     await expect(page.locator('lhc-variables > h2')).toContainText('Item Variables');
@@ -510,7 +508,7 @@ test.describe('variables', () => {
     // Save
     await page.locator('#export').click();
 
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('1 + 2 + %a');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('1 + 2 + %a');
 
     //const qJson2 = await utils.questionnaireJSON();
     const qJson2 = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');

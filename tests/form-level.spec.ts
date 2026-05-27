@@ -168,12 +168,11 @@ test.describe('Home page accept Terms of Use notices', () => {
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
     await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await expect(page.locator('[id^="__\\$answerOptionMethods_answer-option"]')).not.toBeChecked();
+    await expect(page.locator('[id^="__\\$answerOptionMethods_answer-option"]')).toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).toBeVisible();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).not.toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).toBeVisible();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).not.toBeChecked();
-    await expect(page.locator('[id^="__\\$answerOptionMethods_none"]')).toBeChecked();
   });
 
   test('should not find SNOMED CT functionality after accepting only LOINC terms of use', async ({ page }) => {
@@ -195,11 +194,10 @@ test.describe('Home page accept Terms of Use notices', () => {
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
     await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await expect(page.locator('[id^="__\\$answerOptionMethods_answer-option"]')).not.toBeChecked();
+    await expect(page.locator('[id^="__\\$answerOptionMethods_answer-option"]')).toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).toBeVisible();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).not.toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).toHaveCount(0);
-    await expect(page.locator('[id^="__\\$answerOptionMethods_none"]')).toBeChecked();
   });
 });
 

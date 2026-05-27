@@ -12,6 +12,7 @@ export const TYPE_CODING = "coding";
 export const TYPE_QUANTITY = "quantity";
 export const TYPE_GROUP = "group";
 export const TYPE_DISPLAY = "display";
+export const LANGUAGE_FHIRPATH = 'text/fhirpath';
 
 // Answer Option Method
 export const ANSWER_OPTION_METHOD_ANSWER_OPTION = "answer-option";
@@ -54,7 +55,7 @@ export const EXTENSION_URL_QUESTIONNAIRE_UNIT = 'http://hl7.org/fhir/StructureDe
 export const EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION = 'http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption';
 // formerly ucumSystemUrl
 export const EXTENSION_URL_UCUM_SYSTEM = 'http://unitsofmeasure.org'
-
+export const PREFERRED_TERMINOLOGY_SERVER_URI = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
 // formerly ITEM_CONTROL_EXT_URL
 export const EXTENSION_URL_ITEM_CONTROL = 'http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl';
 // formerly RENDERING_STYLE_EXT_URL

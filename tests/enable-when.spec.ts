@@ -40,8 +40,7 @@ test.describe('enableWhen condition and behavior', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-      await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
       const addAnswerButton = page.locator('button:has-text("Add another answer")');
 
@@ -139,6 +138,7 @@ test.describe('enableWhen condition and behavior', () => {
       await expect(page.locator(errorMessageEl)).toHaveCount(2);
 
       await page.locator('[id^="enableWhen.1_remove"]').click();
+      await expect(page.locator('lfb-message-dlg').filter({ hasText: 'Confirm deletion' })).toHaveCount(0);
       await expect(page.locator(errorMessageEl)).toHaveCount(0);
     });
 
@@ -371,8 +371,7 @@ test.describe('enableWhen condition and behavior', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-      await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
       let addAnswerButton = page.locator('button:has-text("Add another answer")');
 
@@ -391,8 +390,7 @@ test.describe('enableWhen condition and behavior', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-      await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
       addAnswerButton = page.locator('button:has-text("Add another answer")');
 
@@ -486,8 +484,7 @@ test.describe('enableWhen condition and behavior', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-      await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
       let addAnswerButton = page.locator('button:has-text("Add another answer")');
 
@@ -508,8 +505,7 @@ test.describe('enableWhen condition and behavior', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-      await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
       addAnswerButton = page.locator('button:has-text("Add another answer")');
 
@@ -608,7 +604,7 @@ test.describe('enableWhen condition and behavior', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
       await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer value set URI');
 
       await page.locator('#answerValueSet_non-snomed').fill('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
@@ -651,7 +647,7 @@ test.describe('enableWhen condition and behavior', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
       await PWUtils.clickRadioButton(page, 'Answer list source', 'SNOMED answer value set');
 
       await page.locator('#answerValueSet_ecl').fill(snomedEclText);
@@ -1114,12 +1110,13 @@ test.describe('enableWhen condition and enableWhenExpression', () => {
 
   test('should show/hide enableWhenExpression extension when switching between conditional method options', async ({ page }) => {
     await PWUtils.clickTreeNode(page, 'enableWhen expression');
+    await expect(page.locator('.spinner-border')).not.toBeVisible();
 
     // Expand the Advanced fields section.
     await PWUtils.expandAdvancedFields(page);
 
     // Validate that the enableWhen expression radio button is checked.
-    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen expression');
+    await expect(PWUtils.getRadioButton(page, 'Conditional method', 'enableWhen expression')).toBeChecked();
 
     // Check the enableWhenExpression extension.
     const input = page.locator('textarea[id^="__$enableWhenExpression"]');

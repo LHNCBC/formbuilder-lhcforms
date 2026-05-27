@@ -704,7 +704,7 @@ describe('Home page', () => {
       cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
       cy.get('@valueMethod').find('[id^="__$valueMethod_compute-initial"]').as('computeInitialRadio');
       cy.get('@computeInitialRadio').should('be.visible').and('be.checked');
-      cy.get('[id^="__\\$initialExpression"]').should('have.value', "%a + %b");
+      cy.get('[id^="__\\$initialCalculatedExpression"]').should('have.value', "%a + %b");
 
       cy.getLabelRadioInputByValue('lfb-enable-when-method', 'enablewhen-expression').should('be.checked');
       cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a < 5 and %b < 5');
@@ -717,7 +717,7 @@ describe('Home page', () => {
       cy.contains('div', 'Value method').as('valueMethod').should('be.visible');
       cy.get('@valueMethod').find('[id^="__$valueMethod_compute-continuously"]').as('computeContinuously');
       cy.get('@computeContinuously').should('be.visible').and('be.checked');
-      cy.get('[id^="__\\$calculatedExpression"]').should('have.value', "%a * %b");
+      cy.get('[id^="__\\$initialCalculatedExpression"]').should('have.value', "%a * %b");
 
       cy.getLabelRadioInputByValue('lfb-enable-when-method', 'enablewhen-expression').should('be.checked');
       cy.get('[id^="__\\$enableWhenExpression"]').should('exist').should('have.value', '%a < 5 and %b < 5');
