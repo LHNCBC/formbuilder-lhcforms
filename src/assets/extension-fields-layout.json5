@@ -147,6 +147,16 @@
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
+    dateRange: {
+      id: "date-range",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-6",
+      showFields: [
+        {"field": "start", "col": 6},
+        {"field": "end", "col": 6}
+      ]
+    },
     instant: {
       id: "instant",
       labelPosition: "left",
@@ -333,6 +343,15 @@
     ],
     dateTime: [
       '$.properties.valueDateTime',
+    ],
+    dateRange: [
+      '$.properties.valuePeriod',
+      '$.properties.valueAddress.properties.period',
+      '$.properties.valueContactPoint.properties.period',
+      '$.properties.valueHumanName.properties.period',
+      '$.properties.valueIdentifier.properties.period',
+      '$.properties.valueContactDetail.properties.telecom.items.properties.period',
+      '$.properties.valueContributor.properties.contact.items.properties.telecom.items.properties.period',
     ],
     instant: [
       '$.properties.valueInstant',

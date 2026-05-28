@@ -1175,9 +1175,6 @@
     "effectivePeriod": {
       "description": "The period during which the questionnaire content was or is planned to be in active use.",
       "title": "Effective period",
-      "widget": {
-        "id": "date-range"
-      },
       "properties": {
         "id": {
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
