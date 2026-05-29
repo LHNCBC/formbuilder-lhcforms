@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.3.0] 2026-05-29
+### Changed
+- Refactored option widget inheritance with enableWhen answer option service.
+
 ## [11.2.0] 2026-05-22
 ### Added
 - Added `effectivePeriod` to form level fields in the advanced section.
