@@ -15,12 +15,13 @@
     <div class="{{controlClasses}}">
       @if (hasAnswerOptions$ | async) {
         <div class="{{controlWidthClass}} p-0">
-          <input autocomplete="off" #enableWhenAnswerOptions type="text"
-                 [formControl]="control"
+          <input #enableWhenAnswerOptions
+                 autocomplete="off"
+                 type="text"
                  [attr.id]="id"
                  class="form-control form-control-sm"
-                 (input)="onInput($event)"
-                 (blur)="suppressInvalidValue($event)" />
+                 (input)="onEnableWhenAnswerOptionsInput($event)"
+                 (blur)="suppressEnableWhenAnswerOptionsInvalidValue($event)" />
         </div>
         @if (errors?.length && formProperty.value) {
           @for (error of errors; track error.code) {

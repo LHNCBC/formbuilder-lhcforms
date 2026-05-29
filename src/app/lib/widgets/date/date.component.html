@@ -17,11 +17,13 @@
 
       @if (hasAnswerOptions$ | async) {
         <div class="{{controlWidthClass}} p-0">
-          <input autocomplete="off" #enableWhenAnswerOptions type="text"
-                 [formControl]="control"
-                 [attr.id]="id" class="form-control"
-                 (input)="onInput($event)"
-                 (blur)="suppressInvalidValue($event)" />
+          <input #enableWhenAnswerOptions
+                 autocomplete="off"
+                 type="text"
+                 [attr.id]="id"
+                 class="form-control"
+                 (input)="onEnableWhenAnswerOptionsInput($event)"
+                 (blur)="suppressEnableWhenAnswerOptionsInvalidValue($event)" />
         </div>
       } @else {
         <div class="input-group input-group-sm">

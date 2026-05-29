@@ -2,30 +2,38 @@
  * Component for general input box
  */
 import {
+  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   ElementRef,
   inject,
+  OnDestroy,
   OnInit,
   ViewChild
 } from '@angular/core';
-import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lfb-option-control-widget.component';
+import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
 import {ReactiveFormsModule} from "@angular/forms";
 import {AsyncPipe, NgClass} from "@angular/common";
 import {LabelComponent} from "../label/label.component";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
+import { Observable, of } from 'rxjs';
+import { AnswerOptionService } from '../../../services/answer-option.service';
+import { EnableWhenAnswerOptionsService } from '../enable-when-answer-options.service';
 
 @Component({
   selector: 'lfb-string',
   imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent],
   templateUrl: './string.component.html'
 })
-export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit {
+export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewChecked, OnDestroy {
+  @ViewChild('enableWhenAnswerOptions', { static: false, read: ElementRef }) enableWhenAnswerOptions: ElementRef;
 
   @ViewChild('inputEl') inputElRef: ElementRef;
   showTooltip = true;
-  // liveAnnouncer = inject(LiveAnnouncer);
+  answerOptionService = inject(AnswerOptionService);
+  enableWhenAnswerOptionsService = new EnableWhenAnswerOptionsService(this.answerOptionService);
+  hasAnswerOptions$: Observable<boolean> = of(false);
 
   Array = Array; // To use in templates.
 
@@ -34,15 +42,26 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
     super();
   }
 
+  /**
+   * Initializes the string widget and any enableWhen answer-option behavior.
+   *
+   */
   ngOnInit() {
     super.ngOnInit();
+    this.subscribeToErrors();
+    this.initEnableWhenAnswerOptions();
     this.controlClasses = this.controlClasses || '';
   }
 
-  ngAfterViewChecked() {
-    if(this.inputElRef?.nativeElement.clientWidth) {
-      this.showTooltip = this.inputElRef.nativeElement.scrollWidth > this.inputElRef.nativeElement.clientWidth;
-      this.cdr.detectChanges();
+  /**
+   * Initializes answer-option autocomplete support when this string field is an enableWhen answer field.
+   *
+   */
+  initEnableWhenAnswerOptions(): void {
+    const canonicalPath = (this.formProperty as any).__canonicalPathNotation || '';
+    if (canonicalPath.match(/^enableWhen\.(\d+)\.answer(\w+).*$/)) {
+      this.enableWhenAnswerOptionsService.init(this.formProperty, this.control);
+      this.hasAnswerOptions$ = this.enableWhenAnswerOptionsService.hasAnswerOptions$;
     }
   }
 
@@ -86,4 +105,71 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
     }
   }
 
+  /**
+   * Gives the answer-options service a chance to attach autocomplete and updates tooltip overflow state.
+   *
+   */
+  ngAfterViewChecked(): void {
+    if(this.inputElRef?.nativeElement.clientWidth) {
+      this.showTooltip = this.inputElRef.nativeElement.scrollWidth > this.inputElRef.nativeElement.clientWidth;
+      this.cdr.detectChanges();
+    }
+    this.enableWhenAnswerOptionsService.initAutocomplete(this.enableWhenAnswerOptions, this.id);
+  }
+
+  /**
+   * Handles typing in an enableWhen answer-options input.
+   *
+   * @param event - Input event from the answer field.
+   */
+  onEnableWhenAnswerOptionsInput(event: Event): void {
+    this.enableWhenAnswerOptionsService.onInput(event);
+  }
+
+  /**
+   * Clears invalid enableWhen answer-option values after the input loses focus.
+   *
+   * @param event - Blur event from the answer field.
+   */
+  suppressEnableWhenAnswerOptionsInvalidValue(event: Event): void {
+    this.enableWhenAnswerOptionsService.suppressInvalidValue(event);
+  }
+
+  /**
+   * Clears invalid date/time-like values from string-derived widgets.
+   *
+   * @param event - Blur event from the input element.
+   */
+  suppressInvalidValue(event: Event): void {
+    const inputEl = event.target as HTMLInputElement;
+    if (inputEl.classList.contains('ng-invalid')) {
+      this.formProperty.setValue(null, false);
+    } else if (this.findParentTdWithInvalid(inputEl)) {
+      inputEl.value = '';
+      this.formProperty.setValue('', false);
+    }
+  }
+
+  /**
+   * Cleans up the answer-options autocomplete service and base widget resources.
+   *
+   */
+  ngOnDestroy() {
+    this.enableWhenAnswerOptionsService.destroy();
+    super.ngOnDestroy();
+  }
+
+  /**
+   * Checks whether an input is inside a table cell marked invalid.
+   *
+   * @param inputEl - Input element where the blur event originated.
+   * @returns True if the nearest parent table cell has the invalid marker class.
+   */
+  findParentTdWithInvalid(inputEl: HTMLElement): boolean {
+    let el: HTMLElement | null = inputEl;
+    while (el && el.tagName !== 'TD') {
+      el = el.parentElement;
+    }
+    return !!el && el.classList.contains('invalid');
+  }
 }

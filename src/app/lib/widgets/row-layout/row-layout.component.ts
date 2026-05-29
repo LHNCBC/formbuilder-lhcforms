@@ -13,7 +13,7 @@ import {SharedObjectService} from "../../../services/shared-object.service";
   selector: 'lfb-row-layout',
   template: `
     @for (field of basicVisibleFields; track field.field) {
-      <div [class]="gridClass(field)" class="lfb-row">
+      <div [ngClass]="gridClass(field)" class="lfb-row">
         <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
       </div>
     }
@@ -28,7 +28,7 @@ import {SharedObjectService} from "../../../services/shared-object.service";
       <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced" (ngbCollapseChange)="handleAdvPanelCollapse($event)" id="advancedFields">
         <hr>
         @for (field of advancedVisibleFields; track field.field) {
-          <div [class]="gridClass(field)" class="lfb-row">
+          <div [ngClass]="gridClass(field)" class="lfb-row">
             <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
           </div>
         }
@@ -58,6 +58,7 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
   advancedRows: any = [];
   basicVisibleFields: any [] = [];
   advancedVisibleFields: any [] = [];
+  private visibleFieldsRefreshQueued = false;
 
   collapseAdvanced = true;
   faUp = faAngleUp;
@@ -74,27 +75,45 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
     this.basicRows = this.formProperty.schema.formLayout.basic || [];
     this.advancedRows = this.formProperty.schema.formLayout.advanced || [];
     this.collapseAdvanced = (this.formService.isFocusNodeHasError()) ? false : !!this.formService[this.widgetId];
+    this.refreshVisibleFields();
     let sub = this.formProperty.valueChanges.subscribe((val) => {
       if(this.formService.loading) {
         return;
       }
-      this.init();
+      this.queueVisibleFieldsRefresh();
     });
     this.subscriptions.push(sub);
 
     sub = this.modelService.modelInitialized$.subscribe((model) => {
-      this.init();
+      this.queueVisibleFieldsRefresh();
     });
     this.subscriptions.push(sub);
   }
 
+  /**
+   * Queues visible field recalculation outside the current change-detection pass.
+   */
+  private queueVisibleFieldsRefresh(): void {
+    if (this.visibleFieldsRefreshQueued) {
+      return;
+    }
+
+    this.visibleFieldsRefreshQueued = true;
+    queueMicrotask(() => {
+      this.visibleFieldsRefreshQueued = false;
+      this.refreshVisibleFields();
+    });
+  }
 
   /**
-   * Initialize visible fields
+   * Refreshes the visible fields while preserving array references used by the template.
    */
-  init() {
-    this.basicVisibleFields = this.getVisibleFields(this.basicRows);
-    this.advancedVisibleFields = this.getVisibleFields(this.advancedRows);
+  private refreshVisibleFields(): void {
+    // Remove the items in the array, but keep the same array reference.
+    this.basicVisibleFields.splice(0);
+    this.basicVisibleFields.push(...this.getVisibleFields(this.basicRows));
+    this.advancedVisibleFields.splice(0);
+    this.advancedVisibleFields.push(...this.getVisibleFields(this.advancedRows));
   }
 
   /**

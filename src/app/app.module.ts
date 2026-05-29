@@ -106,7 +106,6 @@ import { InitialNumberDirective } from './lib/directives/initial-number.directiv
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
-import { LfbOptionControlWidgetComponent } from './lib/widgets/lfb-option-control-widget/lfb-option-control-widget.component';
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
@@ -157,7 +156,9 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     AnswerExpressionComponent,
     ExpressionEditorDlgComponent,
     InitialNumberComponent,
-    LfbOptionControlWidgetComponent,
+    EntryFormatComponent,
+    AnswerValueSetCodingDisplayComponent,
+    CodingDisplayComponent
   ],
   imports: [
     AppFormElementComponent,

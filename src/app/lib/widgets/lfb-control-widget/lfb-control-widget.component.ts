@@ -122,6 +122,41 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
       widget.booleanControlledInitial : this.booleanControlledInitial; // If not defined, show the control.
   }
 
+  protected subscribeToErrors() {
+    const sub = this.formProperty.errorsChanges.subscribe((errors) => {
+      this.errors = null;
+      if(errors?.length) {
+        const errorsObj = {};
+        errors.reduce((acc, error) => {
+          if(!acc[error.code]) {
+            acc[error.code] = error;
+          }
+
+          return acc;
+        }, errorsObj);
+
+        this.errors = Object.values(errorsObj)
+          .map((e: any) => {
+            let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
+
+            if(e.params?.[1] !== undefined && !e.params[1]?.trim() && this.schema.widget.showEmptyError) {
+              ret.code = 'EMPTY_ERROR';
+              ret.modifiedMessage = 'This field is required.';
+            } else {
+              const modifiedMessage = e.code === 'PATTERN'
+                ? this.getModifiedErrorForPatternMismatch(e.params[0])
+                : this.modifiedMessages[e.code];
+              ret.code = e.code;
+              ret.originalMessage = e.message;
+              ret.modifiedMessage = modifiedMessage;
+            }
+            return ret;
+          });
+      }
+    });
+    this.subscriptions.push(sub);
+  }
+
 
   /**
    * Clear all subscriptions.
