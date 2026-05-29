@@ -139,7 +139,8 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
           .map((e: any) => {
             let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
 
-            if(e.params?.[1] !== undefined && !e.params[1]?.trim() && this.schema.widget.showEmptyError) {
+            const errorValue = e.params?.[1];
+            if(typeof errorValue === 'string' && !errorValue.trim() && this.schema.widget.showEmptyError) {
               ret.code = 'EMPTY_ERROR';
               ret.modifiedMessage = 'This field is required.';
             } else {

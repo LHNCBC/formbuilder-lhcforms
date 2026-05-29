@@ -13,7 +13,7 @@ import {SharedObjectService} from "../../../services/shared-object.service";
 import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
 import { AnswerOptionService } from '../../../services/answer-option.service';
-import { EnableWhenAnswerOptionsService } from '../enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 declare var LForms: any;
 
 @Component({
@@ -154,7 +154,8 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
         this.errors = Object.values(errorsObj)
           .map((e: any) => {
           let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
-          if(e.params?.[1] !== undefined && !e.params[1]?.trim() && this.schema.widget.showEmptyError) {
+          const errorValue = e.params?.[1];
+          if(typeof errorValue === 'string' && !errorValue.trim() && this.schema.widget.showEmptyError) {
             // If the error is caused by an empty value, use a generic message.
             ret.code = 'EMPTY_ERROR';
             ret.modifiedMessage = 'This field is required.';

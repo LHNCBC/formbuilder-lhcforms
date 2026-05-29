@@ -58,7 +58,6 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
   advancedRows: any = [];
   basicVisibleFields: any [] = [];
   advancedVisibleFields: any [] = [];
-  private visibleFieldsRefreshQueued = false;
 
   collapseAdvanced = true;
   faUp = faAngleUp;
@@ -75,45 +74,26 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
     this.basicRows = this.formProperty.schema.formLayout.basic || [];
     this.advancedRows = this.formProperty.schema.formLayout.advanced || [];
     this.collapseAdvanced = (this.formService.isFocusNodeHasError()) ? false : !!this.formService[this.widgetId];
-    this.refreshVisibleFields();
     let sub = this.formProperty.valueChanges.subscribe((val) => {
       if(this.formService.loading) {
         return;
       }
-      this.queueVisibleFieldsRefresh();
+      this.init();
     });
     this.subscriptions.push(sub);
 
     sub = this.modelService.modelInitialized$.subscribe((model) => {
-      this.queueVisibleFieldsRefresh();
+      this.init();
     });
     this.subscriptions.push(sub);
   }
 
   /**
-   * Queues visible field recalculation outside the current change-detection pass.
+   * Initialize visible fields
    */
-  private queueVisibleFieldsRefresh(): void {
-    if (this.visibleFieldsRefreshQueued) {
-      return;
-    }
-
-    this.visibleFieldsRefreshQueued = true;
-    queueMicrotask(() => {
-      this.visibleFieldsRefreshQueued = false;
-      this.refreshVisibleFields();
-    });
-  }
-
-  /**
-   * Refreshes the visible fields while preserving array references used by the template.
-   */
-  private refreshVisibleFields(): void {
-    // Remove the items in the array, but keep the same array reference.
-    this.basicVisibleFields.splice(0);
-    this.basicVisibleFields.push(...this.getVisibleFields(this.basicRows));
-    this.advancedVisibleFields.splice(0);
-    this.advancedVisibleFields.push(...this.getVisibleFields(this.advancedRows));
+  init() {
+    this.basicVisibleFields = this.getVisibleFields(this.basicRows);
+    this.advancedVisibleFields = this.getVisibleFields(this.advancedRows);
   }
 
   /**

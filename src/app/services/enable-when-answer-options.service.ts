@@ -1,7 +1,7 @@
 import { ElementRef, Injectable } from '@angular/core';
 import { Observable, of, Subscription } from 'rxjs';
 import { FormProperty } from '@lhncbc/ngx-schema-form';
-import { AnswerOptionService, EnableWhenAnswerOptionsState } from '../../services/answer-option.service';
+import { AnswerOptionService, EnableWhenAnswerOptionsState } from './answer-option.service';
 
 declare var LForms: any;
 

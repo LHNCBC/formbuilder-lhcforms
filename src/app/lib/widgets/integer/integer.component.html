@@ -14,7 +14,7 @@
 
     @if (hasAnswerOptions$ | async) {
       <div class="{{controlWidthClass}} p-0">
-        <input lfbInteger autocomplete="off" #enableWhenAnswerOptions type="number" [attr.id]="id" class="form-control"
+        <input lfbInteger autocomplete="off" #enableWhenAnswerOptions type="number" [attr.id]="id" class="form-control form-control-sm"
                [min]="inputMin" [max]="inputMax"
                (input)="onEnableWhenAnswerOptionsInput($event)"
                (blur)="suppressEnableWhenAnswerOptionsInvalidValue($event)" [value]="control?.value ?? ''"/>

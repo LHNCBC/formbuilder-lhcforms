@@ -10,7 +10,7 @@ import {IntegerDirective} from "../../directives/integer.directive";
 import { Observable, of } from 'rxjs';
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
 import { AnswerOptionService } from '../../../services/answer-option.service';
-import { EnableWhenAnswerOptionsService } from '../enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 
 
 @Component({

@@ -19,7 +19,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 import { Observable, of } from 'rxjs';
 import { AnswerOptionService } from '../../../services/answer-option.service';
-import { EnableWhenAnswerOptionsService } from '../enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 
 @Component({
   selector: 'lfb-string',

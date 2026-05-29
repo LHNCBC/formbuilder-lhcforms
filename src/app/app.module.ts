@@ -155,10 +155,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     ValueMethodComponent,
     AnswerExpressionComponent,
     ExpressionEditorDlgComponent,
-    InitialNumberComponent,
-    EntryFormatComponent,
-    AnswerValueSetCodingDisplayComponent,
-    CodingDisplayComponent
+    InitialNumberComponent
   ],
   imports: [
     AppFormElementComponent,
