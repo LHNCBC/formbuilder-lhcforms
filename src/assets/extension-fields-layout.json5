@@ -34,6 +34,13 @@
     '$.properties.valueCoding.properties.code': 'Code',
     '$.properties.valueCoding.properties.display': 'Display',
     '$.properties.valueCoding.properties.system': 'System',
+    '$.properties.valuePeriod': 'Value period',
+    '$.properties.valueAddress.properties.period': 'Period',
+    '$.properties.valueContactPoint.properties.period': 'Period',
+    '$.properties.valueHumanName.properties.period': 'Period',
+    '$.properties.valueIdentifier.properties.period': 'Period',
+    '$.properties.valueContactDetail.properties.telecom.items.properties.period': 'Period',
+    '$.properties.valueContributor.properties.contact.items.properties.telecom.items.properties.period': 'Period',
     '$.properties.valuePositiveInt': 'Value Positive Integer',
     '$.properties.valueUnsignedInt': 'Value Unsigned Integer'
   },

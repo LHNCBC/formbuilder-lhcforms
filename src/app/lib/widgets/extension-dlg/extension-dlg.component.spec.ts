@@ -60,6 +60,12 @@ describe('ExtensionDlgComponent', () => {
     return dateRange.querySelectorAll('input.form-control');
   }
 
+  function getDateRangeLabelTexts(dateRange: HTMLElement): string[] {
+    return Array.from(dateRange.querySelectorAll('lfb-label label'))
+      .map((label) => label.textContent?.replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+  }
+
   it('should create', async () => {
     expect(component).toBeTruthy();
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
@@ -86,6 +92,7 @@ describe('ExtensionDlgComponent', () => {
     expect(inputs.length).toBe(2);
     expect(inputs[0].value).toBe('2024-01-15');
     expect(inputs[1].value).toBe('2024-12-31');
+    expect(getDateRangeLabelTexts(dateRange)).toEqual(['Value period', 'Start', 'End']);
   });
 
   it('should render date range widget when value type is changed to Period', async () => {
@@ -133,6 +140,7 @@ describe('ExtensionDlgComponent', () => {
     expect(inputs.length).toBe(2);
     expect(inputs[0].value).toBe('2024-02-01');
     expect(inputs[1].value).toBe('2024-03-31');
+    expect(getDateRangeLabelTexts(dateRange)).toEqual(['Period', 'Start', 'End']);
   });
 
   it('should render date range widget for deeply nested Period descendants of value datatypes', async () => {
@@ -167,5 +175,6 @@ describe('ExtensionDlgComponent', () => {
     expect(inputs.length).toBe(2);
     expect(inputs[0].value).toBe('2024-04-01');
     expect(inputs[1].value).toBe('2024-05-31');
+    expect(getDateRangeLabelTexts(dateRange)).toEqual(['Period', 'Start', 'End']);
   });
 });
