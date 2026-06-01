@@ -87,6 +87,7 @@ import { ObservationExtractComponent } from './lib/widgets/observation-extract/o
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
 import { ItemControlComponent } from './lib/widgets/item-control/item-control.component';
 import { DateComponent } from './lib/widgets/date/date.component';
+import { DateRangeComponent } from './lib/widgets/date-range/date-range.component';
 import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
 import {InstantComponent} from './lib/widgets/instant/instant.component';
@@ -165,6 +166,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     BrowserModule,
     DateComponent,
     DatetimeComponent,
+    DateRangeComponent,
     InstantComponent,
     ElementChooserComponent,
     EnableWhenComponent,
