@@ -10,6 +10,7 @@ This project follows [Semantic Versioning](http://semver.org/).
 ## [11.2.0] 2026-05-22
 ### Added
 - Added `effectivePeriod` to form level fields in the advanced section.
+- Used the date range component for all `Period` schemas.
 
 ## [11.1.0] 2026-05-22
 ### Added

@@ -2678,6 +2678,9 @@
     },
     "Period": {
       "description": "A time period defined by a start and end date and optionally time.",
+      "widget": {
+        "id": "date-range"
+      },
       "properties": {
         "id": {
           "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
