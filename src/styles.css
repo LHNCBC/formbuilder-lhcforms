@@ -175,3 +175,7 @@ lfb-extension-dlg .dlg-content .lfb-hover-scope:hover {
 lfb-extension-dlg .dlg-content .lfb-hover-scope:has(.lfb-hover-scope:hover) {
   background-color: transparent;
 }
+
+.mat-mdc-dialog-surface:has(> lfb-extension-dlg) {
+  height: 100%;
+}

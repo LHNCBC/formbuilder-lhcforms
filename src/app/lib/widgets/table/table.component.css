@@ -48,8 +48,17 @@ td.default-column {
 }
 
 .action-column {
-  text-align: end;
   min-width: 40px;
+  text-align: end;
+}
+
+.fill-column {
+  flex-grow: 1;
+  max-width: none;
+}
+
+.action-column.center {
+  justify-content: flex-end;
 }
 
 .row-highlight {
@@ -64,7 +73,6 @@ td.default-column {
 
 /* Hide borders for the action column */
 td.action-column {
-  margin-left: 4px;
   border-left: 0;
   border-bottom: 0;
 }
@@ -105,6 +113,10 @@ td.error-column {
 /* Move the add button down 2px */
 .array-add-button {
   margin-top: 2px;
+}
+
+.lfb-table + .array-add-button {
+  width: 100%;
 }
 
 /* override the default bootstrap color that is too light */

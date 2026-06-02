@@ -217,10 +217,16 @@ test.describe('Home page', () => {
   });
 
   test('should display version info', async ({ page }) => {
-    const versionLink = page.locator('.version-info a');
+    const links = page.locator('.version-info a');
+    const versionLink = links.first();
+    const githubLink = links.nth(1);
     await expect(versionLink).toHaveAttribute('href',
       'https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md');
     await expect(versionLink).toContainText(/^[0-9]+\.[0-9]+\.[0-9]+$/);
+    await expect(githubLink).toHaveAttribute('href',
+      'https://github.com/lhncbc/formbuilder-lhcforms');
+    await expect(githubLink).toHaveAttribute('title',
+      'View source on GitHub');
   });
 
   test.describe('Home page import options', () => {

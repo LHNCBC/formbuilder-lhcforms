@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {inject, Injectable} from '@angular/core';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { MessageDlgComponent, MessageType } from '../lib/widgets/message-dlg/message-dlg.component';
 
@@ -6,7 +6,7 @@ import { MessageDlgComponent, MessageType } from '../lib/widgets/message-dlg/mes
   providedIn: 'root'
 })
 export class DialogService {
-  constructor(private modalService: NgbModal) {}
+  private modalService = inject(NgbModal);
 
   /**
    * Shows a dialog of the specified type (error, warning, info).

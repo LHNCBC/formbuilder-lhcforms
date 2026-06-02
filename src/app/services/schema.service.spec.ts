@@ -28,14 +28,23 @@ describe('SchemaService', () => {
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueDecimal.pattern]).toBe('decimal');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueId.pattern]).toBe('id');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueInstant.pattern]).toBe('instant');
+    expect(schemaService.primitiveFHIRTypeToWidgetMap['instant']).toBe('instant');
+    expect(extSchema.properties.valueInstant.widget.id).toBe('instant');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueInteger.pattern]).toBe('integer');
     // Markdown and string are identical.
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueMarkdown.pattern]).toBe('string');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueOid.pattern]).toBe('oid');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valuePositiveInt.pattern]).toBe('positiveInt');
+    expect(schemaService.primitiveFHIRTypeToWidgetMap['positiveInt']).toBe('positive-integer');
+    expect(extSchema.properties.valuePositiveInt.widget.id).toBe('positive-integer');
+    expect(extSchema.properties.valuePositiveInt.minimum).toBe(1);
+    expect(extSchema.definitions.positiveInt.minimum).toBe(1);
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueString.pattern]).toBe('string');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueTime.pattern]).toBe('time');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUnsignedInt.pattern]).toBe('unsignedInt');
+    expect(schemaService.primitiveFHIRTypeToWidgetMap['unsignedInt']).toBe('unsigned-integer');
+    expect(extSchema.properties.valueUnsignedInt.widget.id).toBe('unsigned-integer');
+    expect(extSchema.properties.valueUnsignedInt.minimum).toBe(0);
     // Canonical, uri, and url are identical
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUri.pattern]).toBe('url');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUrl.pattern]).toBe('url');

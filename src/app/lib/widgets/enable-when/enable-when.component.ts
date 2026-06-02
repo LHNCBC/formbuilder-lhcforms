@@ -6,6 +6,15 @@ import {faExclamationTriangle} from '@fortawesome/free-solid-svg-icons';
 import {BehaviorSubject, Observable, of, Subject} from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 import { debounceTime, map, take } from 'rxjs/operators';
+import {BooleanControlledComponent} from "../boolean-controlled/boolean-controlled.component";
+import {AsyncPipe, NgClass} from "@angular/common";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {LabelComponent} from "../label/label.component";
+import {TitleComponent} from "../title/title.component";
+import {NgbCollapseModule, NgbPopoverModule} from "@ng-bootstrap/ng-bootstrap";
+import {MatTooltipModule} from "@angular/material/tooltip";
+import {AppFormElementComponent} from "../form-element/form-element.component";
+import {EwValidateDirective} from "../../directives/ew-validate.directive";
 
 type ErrorItem = {
   code: string;
@@ -18,8 +27,20 @@ type EwErrors = {
 };
 
 @Component({
-  standalone: false,
   selector: 'lfb-enable-when',
+  imports: [
+    AsyncPipe,
+    BooleanControlledComponent,
+    FontAwesomeModule,
+    AppFormElementComponent,
+    LabelComponent,
+    EwValidateDirective,
+    MatTooltipModule,
+    NgClass,
+    NgbCollapseModule,
+    NgbPopoverModule,
+    TitleComponent,
+  ],
   templateUrl: './enable-when.component.html',
   styleUrls: ['../table/table.component.css', './enable-when.component.css'],
   encapsulation: ViewEncapsulation.None
@@ -207,6 +228,16 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
   }
 
   /**
+   * Check whether a row has any enableWhen validation errors.
+   * @param rowProperty - Object property representing an enableWhen condition.
+   */
+  hasRowError(rowProperty: ObjectProperty): boolean {
+    return this.getFields(rowProperty).some((field) => {
+      return !!this.getFieldErrors(rowProperty.getProperty(field.field))?.length;
+    });
+  }
+
+  /**
    * Get fields to show.
    */
   getFields(rowFormProperty: ObjectProperty): any[] {
@@ -254,7 +285,7 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
    */
   setErrorState(isError: boolean, rowIndex: number, colIndex: number) {
     const cell = this.elementRef.nativeElement.querySelector(`tbody tr:nth-child(${rowIndex+1}) td:nth-child(${colIndex+1})`);
-    const el = cell.querySelector('input,textarea,select');
+    const el = cell?.querySelector('input,textarea,select');
     if(el) {
       const errEl = cell.nextElementSibling.querySelector('button.answerXErrors');
       if(isError) {
@@ -283,6 +314,21 @@ export class EnableWhenComponent extends TableComponent implements OnInit, DoChe
     super.removeProperty(index);
     const treeNodeId = this.formProperty.searchProperty(FormService.TREE_NODE_ID).value;
     this.formService.deleteErrorAndAdjustEnableWhenIndexes(treeNodeId, index);
+  }
+
+  /**
+   * Confirm deletion only for rows without validation errors. If there are validation errors, delete the row without
+   * confirmation.
+   * @param index - The row represented by its form property.
+   * @param rowProperty - Object property representing an enableWhen condition.
+   */
+  confirmRemovePropertyIfNoError(index: number, rowProperty: ObjectProperty) {
+    if(this.hasRowError(rowProperty)) {
+      this.removeProperty(index);
+    }
+    else {
+      this.confirmRemoveProperty(index);
+    }
   }
 
   /**

@@ -136,6 +136,7 @@ export class DatetimeComponent extends DateComponent implements OnInit {
 
   dateTime: DateTime = {dateStruct: null, timeStruct: null, millis: NaN};
   includeTime = true;
+  canToggleTime = true;
 
   model: string;
   @ViewChild('inputBox', {read: ElementRef}) inputRef: ElementRef;

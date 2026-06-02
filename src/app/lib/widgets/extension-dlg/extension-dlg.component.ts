@@ -37,6 +37,26 @@ import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
   imports: [ExtensionObjComponent, MatDialogTitle, MatDialogContent, MatIconButton, MatDialogActions, MatIconModule, MatTabsModule, MatTooltip ],
   templateUrl: './extension-dlg.component.html',
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .extension-dlg-container {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .dlg-content {
+      flex: 1 1 auto;
+      max-height: none;
+      min-height: 0;
+    }
+
     .close-button {
       float: right;
     }

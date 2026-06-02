@@ -42,6 +42,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "./",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -91,6 +92,7 @@
               "buildOptimizer": false
             },
             "prod_with_test_html": {
+              "baseHref": "./",
               "assets": [
                 "src/favicon.ico",
                 "src/assets",

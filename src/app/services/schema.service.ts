@@ -37,6 +37,11 @@ export const patternToFHIRPrimitiveType = {
 })
 export class SchemaService {
   _valueXCategoryMap: {};
+  private primitiveFHIRTypeConstraints = {
+    positiveInt: {minimum: 1},
+    unsignedInt: {minimum: 0}
+  };
+
   primitiveFHIRTypeToWidgetMap = {
     base64Binary: 'textarea',
     boolean: 'boolean',
@@ -46,13 +51,13 @@ export class SchemaService {
     dateTime: 'dateTime',
     decimal: 'number',
     id: 'string',
-    instant: 'dateTime',
+    instant: 'instant',
     integer: 'integer',
     oid: 'string',
     markdown: 'textarea',
-    positiveInt: 'integer',
+    positiveInt: 'positive-integer',
     string: 'string',
-    unsignedInt: 'integer',
+    unsignedInt: 'unsigned-integer',
     time: 'time',
     uri: 'url',
     url: 'url',
@@ -74,6 +79,29 @@ export class SchemaService {
 
   get valueXCategoryMap(): {} {
     return this._valueXCategoryMap;
+  }
+
+  /**
+   * Apply numeric constraints implied by FHIR primitive types.
+   * @param node - Schema node to update.
+   * @param fhirType - FHIR primitive type inferred from the schema pattern.
+   */
+  private applyFHIRPrimitiveTypeConstraints(node: ISchema, fhirType: string): void {
+    const constraints = this.primitiveFHIRTypeConstraints[fhirType];
+    if(!constraints) {
+      return;
+    }
+
+    Object.entries(constraints).forEach(([key, value]) => {
+      if(key === 'minimum' && typeof value === 'number' && typeof node[key] === 'number') {
+        node[key] = Math.max(node[key], value);
+        return;
+      }
+
+      if(node[key] === undefined || node[key] === null) {
+        node[key] = value;
+      }
+    });
   }
 
   /**
@@ -120,13 +148,16 @@ export class SchemaService {
         node.type = type;
       }
       this.post(function () {
+        const fhirType = node?.pattern ? patternToFHIRPrimitiveType[node.pattern] : null;
+        if(fhirType) {
+          thisService.applyFHIRPrimitiveTypeConstraints(node, fhirType);
+        }
         // Constraint to schema nodes that are children of root, properties or items.
         if(node && !node.widget && node.type && (this.parent === undefined || this.parent.key === 'properties' || this.key === 'items')) {
           // If there is no widget defined, add the default widget based on the schema type.
           let widgetType = layout.schemaTypeWidgetMap[node.type];
           // If the node has a pattern that matches a FHIR primitive type, use that widget instead.
-          if(node.type === 'string' && node.pattern) {
-            const fhirType = patternToFHIRPrimitiveType[node.pattern];
+          if((node.type === 'string' || node.type === 'number') && fhirType) {
             if(fhirType) {
               widgetType = thisService.primitiveFHIRTypeToWidgetMap[fhirType] || widgetType;
             }

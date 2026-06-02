@@ -2,14 +2,27 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.2.0] 2026-04-27
+## [11.2.0] 2026-05-22
 ### Added
 - Added support for `questionnaire-minOccurs` and `questionnaire-maxOccurs` extensions
   via a combined Min/Max Occurs widget that is shown when an item allows repeats.
 
 ## [11.1.0] 2026-04-23
 ### Added
-- Added support to create general FHIR extensions including nested extensions.
+- Added `effectivePeriod` to form level fields in the advanced section.
+
+## [11.1.0] 2026-05-22
+### Added
+- Added support to create general FHIR extensions, including nested extensions.
+- Added a link to GitHub repo.
+
+## [11.0.15] 2026-05-17
+### Changed
+- Change the path of assets to use a relative path.
+
+## [11.0.14] 2026-05-19
+### Fixed
+- Fix broken e2e tests.
 
 ## [11.0.13] 2026-03-30
 ### Changed
@@ -968,4 +981,3 @@ ranked higher during the auto-completion.
 - Fixed displaying other in answer list item.
 ### Changed
 - Changed Text and Code fields to be required.
-

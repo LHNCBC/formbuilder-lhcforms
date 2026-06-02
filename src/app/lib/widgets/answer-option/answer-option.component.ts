@@ -421,4 +421,12 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
   isReferencedByOtherItem(index: number): boolean {
     return this.answerOptionService.isOptionReferenced(this.formProperty, index);
   }
+
+  /**
+   * Only reserve the status column when at least one answer option is referenced.
+   */
+  override shouldIncludeStatusColumn(): boolean {
+    return !!this.formProperty.schema.widget?.showLinkStatus &&
+      this.rowProperties.some((_rowProperty, index) => this.isReferencedByOtherItem(index));
+  }
 }

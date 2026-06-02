@@ -819,7 +819,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     } else {
       modalRef.componentInstance.title = 'Confirm deletion';
       modalRef.componentInstance.message = 'Are you sure you want to delete this item?';
-      modalRef.componentInstance.type = MessageType.WARNING;
+      modalRef.componentInstance.type = MessageType.INFO;
     }
     return modalRef.result.then(() => {
       this.deleteFocusedItem();

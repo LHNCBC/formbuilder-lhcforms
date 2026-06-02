@@ -37,7 +37,7 @@
                  [attr.minLength]="schema.minLength || null"
                  [attr.pattern]="schema.pattern || null"
                  [required]="isRequired"
-                 [matTooltip]="showTooltip ? formProperty.value : null"
+                 [matTooltip]="getTooltipValue()"
                  matTooltipClass="lfb-tooltip-pre-wrap"
                  [lfbDisableControl]="schema.disabled">
           @if (control.dirty && errors?.length && (formProperty.value || schema.widget.showEmptyError)) {

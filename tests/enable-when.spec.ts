@@ -138,6 +138,7 @@ test.describe('enableWhen condition and behavior', () => {
       await expect(page.locator(errorMessageEl)).toHaveCount(2);
 
       await page.locator('[id^="enableWhen.1_remove"]').click();
+      await expect(page.locator('lfb-message-dlg').filter({ hasText: 'Confirm deletion' })).toHaveCount(0);
       await expect(page.locator(errorMessageEl)).toHaveCount(0);
     });
 
