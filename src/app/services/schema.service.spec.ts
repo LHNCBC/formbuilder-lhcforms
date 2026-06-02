@@ -6,7 +6,7 @@ import {ISchema} from "@lhncbc/ngx-schema-form";
 import {provideHttpClient} from "@angular/common/http";
 
 describe('SchemaService', () => {
-  let schemaService: SchemaService, formService: FormService, extSchema: ISchema;
+  let schemaService: SchemaService, formService: FormService, extSchema: ISchema, flSchema: ISchema;
 
   beforeEach(async () => {
     TestBed.configureTestingModule({providers: [provideHttpClient()]});
@@ -14,6 +14,7 @@ describe('SchemaService', () => {
     formService = TestBed.inject(FormService);
     await formService.initialize();
     extSchema = formService.getExtensionSchema();
+    flSchema = formService.getFormLevelSchema();
   });
 
   it('should be created', () => {
@@ -49,5 +50,21 @@ describe('SchemaService', () => {
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUri.pattern]).toBe('url');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUrl.pattern]).toBe('url');
     expect(patternToFHIRPrimitiveType[extSchema.properties.valueUuid.pattern]).toBe('uuid');
+  });
+
+  it('should use date range widget for extension valuePeriod', () => {
+    expect(extSchema.properties.valuePeriod.widget.id).toBe('date-range');
+    expect(extSchema.properties.valuePeriod.properties.start.widget.id).toBe('datetime');
+    expect(extSchema.properties.valuePeriod.properties.end.widget.id).toBe('datetime');
+  });
+
+  it('should use date range widget for shared Period definitions', () => {
+    expect(extSchema.definitions.Period.widget.id).toBe('date-range');
+    expect(extSchema.definitions.Identifier.properties.period.$ref).toBe('#/definitions/Period');
+  });
+
+  it('should use date range widget for form level effectivePeriod from layout', () => {
+    expect(flSchema.properties.effectivePeriod.widget.id).toBe('date-range');
+    expect(flSchema.definitions.Period.widget.id).toBe('date-range');
   });
 });

@@ -2,14 +2,15 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.2.0] 2026-05-22
+## [11.3.0] 2026-06-02
 ### Added
 - Added support for `questionnaire-minOccurs` and `questionnaire-maxOccurs` extensions
   via a combined Min/Max Occurs widget that is shown when an item allows repeats.
 
-## [11.1.0] 2026-04-23
+## [11.2.0] 2026-05-22
 ### Added
 - Added `effectivePeriod` to form level fields in the advanced section.
+- Used the date range component for all `Period` schemas.
 
 ## [11.1.0] 2026-05-22
 ### Added
