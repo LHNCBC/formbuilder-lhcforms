@@ -27,8 +27,10 @@
           { field:  "copyright", col:  12},
           { field:  "approvalDate", col:  12},
           { field:  "lastReviewDate", col:  12},
+          { field:  "effectivePeriod", col:  12},
           { field:  "contained", "col": 12},
-          { field:  "__$variable", col: 12}
+          { field:  "__$variable", col: 12},
+          { field:  "__$extensionContainer", col: 12}
         ]
       }
     ],
@@ -36,6 +38,7 @@
   },
   // Please note that the jsonpath expression paths in the keys
   overridePropertyLabels: {
+    '$.properties.extension': 'Extensions',
     '$.properties.contained': 'Contained resources',
     '$.properties.name': 'Questionnaire name',
     '$.properties.date': 'Revision date',
@@ -50,13 +53,13 @@
       id: "string",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 form-control"
+      controlClasses: "col-sm-10 m-0 p-0"
     },
     textArea: {
       id: "textarea",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 form-control"
+      controlClasses: "col-sm-10 m-0 p-0"
     },
     inputDate: {
       id: "date",
@@ -72,13 +75,42 @@
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
+    dateRange: {
+      id: "date-range",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-6",
+      showFields: [
+        {"field": "start", "col": 6},
+        {"field": "end", "col": 6}
+      ]
+    },
+    instant: {
+      id: "instant",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
+    "positive-integer": {
+      id: "positive-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    "unsigned-integer": {
+      id: "unsigned-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
     __$terminologyServer: {
       "id": "terminology-server",
       "placeholder": "Enter url for preferred terminology server",
       "note": "You may wish to set this if you want to provide an answer value set for any item in this questionnaire.",
       "labelPosition": "left",
-      "labelWidthClass": "col-sm-2",
-      "controlWidthClass": "col-sm-10"
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10 m-0 p-0"
     },
     coding: {
       "id": "table",
@@ -107,6 +139,27 @@
         {"field": "title", "col": 4, "nolabel": true},
         {"field": "date", "col": 2, "nolabel": true},
         {"field": "status", "col": 1, "nolabel": true}
+      ]
+    },
+    "__$extensionContainer": {
+      "id": "extension-container",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+    },
+    extension: {
+      "id": "extension",
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new extension",
+      "addButtonTitle": "Note that the extensions added by other UI elements will be disabled for editing here.",
+      "showFields": [
+        // The fields here are canonical paths of FormProperty.
+        {"field": "url", "col": 4, "nolabel": true},
+        {"field": "__$valueType", "col": 2, "nolabel": true},
+        {"field": "__$stringify", "col": 5, "nolabel": true},
       ]
     },
     valueSet: {
@@ -158,7 +211,7 @@
       ],
       "showDataFields": [
         {"field": "valueExpression.name", "nolabel": true, "col": 2, "title": "Name"},
-        {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
+        {"field": "valueExpression.extension", "nolabel": true, "col": 3, "title": "Type"},
         {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
       ]
     }
@@ -186,11 +239,17 @@
     inputDateTime: [
       '$.properties.date'
     ],
+    dateRange: [
+      '$.properties.effectivePeriod'
+    ],
     __$terminologyServer: [
       '$.properties.__$terminologyServer'
     ],
     coding: [
       '$.properties.meta.properties.tag',
+    ],
+    extension: [
+      '$.properties.extension'
     ],
     contained: [
       '$.properties.contained'
@@ -200,6 +259,9 @@
     ],
     __$variable: [
       '$.properties.__$variable'
+    ],
+    __$extensionContainer: [
+      '$.properties.__$extensionContainer'
     ]
   }
 }

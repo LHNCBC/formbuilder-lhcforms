@@ -168,12 +168,11 @@ test.describe('Home page accept Terms of Use notices', () => {
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
     await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await expect(page.locator('[id^="__\\$answerOptionMethods_answer-option"]')).not.toBeChecked();
+    await expect(page.locator('[id^="__\\$answerOptionMethods_answer-option"]')).toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).toBeVisible();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).not.toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).toBeVisible();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).not.toBeChecked();
-    await expect(page.locator('[id^="__\\$answerOptionMethods_none"]')).toBeChecked();
   });
 
   test('should not find SNOMED CT functionality after accepting only LOINC terms of use', async ({ page }) => {
@@ -195,11 +194,10 @@ test.describe('Home page accept Terms of Use notices', () => {
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
     await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await expect(page.locator('[id^="__\\$answerOptionMethods_answer-option"]')).not.toBeChecked();
+    await expect(page.locator('[id^="__\\$answerOptionMethods_answer-option"]')).toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).toBeVisible();
     await expect(page.locator('[id^="__\\$answerOptionMethods_value-set"]')).not.toBeChecked();
     await expect(page.locator('[id^="__\\$answerOptionMethods_snomed-value-set"]')).toHaveCount(0);
-    await expect(page.locator('[id^="__\\$answerOptionMethods_none"]')).toBeChecked();
   });
 });
 
@@ -219,10 +217,16 @@ test.describe('Home page', () => {
   });
 
   test('should display version info', async ({ page }) => {
-    const versionLink = page.locator('.version-info a');
+    const links = page.locator('.version-info a');
+    const versionLink = links.first();
+    const githubLink = links.nth(1);
     await expect(versionLink).toHaveAttribute('href',
       'https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md');
     await expect(versionLink).toContainText(/^[0-9]+\.[0-9]+\.[0-9]+$/);
+    await expect(githubLink).toHaveAttribute('href',
+      'https://github.com/lhncbc/formbuilder-lhcforms');
+    await expect(githubLink).toHaveAttribute('title',
+      'View source on GitHub');
   });
 
   test.describe('Home page import options', () => {

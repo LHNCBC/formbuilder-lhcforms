@@ -16,19 +16,21 @@ import { InitialNumberDirective } from '../../directives/initial-number.directiv
             [for]="id"
             [title]="schema.title"
             [helpMessage]="schema.description"
-            [ngClass]="labelWidthClass + ' ps-0 pe-1'"
+            [ngClass]="labelClasses + ' ps-0 pe-1'"
           ></lfb-label>
         }
-        <input lfbInitialNumber [propType]="propType" [formProperty]="formProperty"
-          [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
-          [attr.id]="id"
-          class="form-control {{controlWidthClass}}" [formControl]="control"
-          type="text"
-          [attr.placeholder]="schema.placeholder"
-          [ngClass]="{invalid: errors}"
-          [attr.aria-invalid]="errors">
+        <div class="{{controlClasses}}">
+          <input lfbInitialNumber [propType]="propType" [formProperty]="formProperty"
+                 [attr.readonly]="schema.readOnly?true:null" name="{{name}}"
+                 [attr.id]="id"
+                 class="form-control form-control-sm" [formControl]="control"
+                 type="text"
+                 [attr.placeholder]="schema.placeholder"
+                 [ngClass]="{invalid: errors}"
+                 [attr.aria-invalid]="errors">
+        </div>
       </div>
-      `
+  `
 })
 
 export class InitialNumberComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -73,7 +75,7 @@ export class InitialNumberComponent extends LfbControlWidgetComponent implements
 
         if (Object.values(errorsObj).length > 0) {
           this.errors = Object.values(errorsObj).map((e: any) => {
-            const modifiedMessage = null;  
+            const modifiedMessage = null;
             return {code: e.code, originalMessage: e.message, modifiedMessage, path: e.path};
           });
 

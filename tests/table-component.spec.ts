@@ -24,8 +24,8 @@ test.describe('Table component', () => {
     const mainPO = new MainPO(page);
 
     await page.getByLabel('Data type', {exact: true}).selectOption({label: 'coding'});
-    await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
-    await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText('Restrict to the list').click();
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
     await page.getByRole('radiogroup', {name: 'Answer list source'}).getByText('Answer options').click();
 
@@ -92,6 +92,7 @@ test.describe('Table component', () => {
     await expect(PWUtils.getTableCell(table, 2, 4).locator('input')).toHaveValue('3');
 
     await PWUtils.getTableCell(table, 2, 5).locator(removeLoc).click();
+    await PWUtils.clickDialogButton(page, { title: 'Confirm deletion' }, 'Delete');
 
     await expect(PWUtils.getTableCell(table, 2, 1).locator('input')).toHaveValue('1c');
     await expect(PWUtils.getTableCell(table, 2, 2).locator('input')).toHaveValue('1a');
@@ -116,6 +117,11 @@ test.describe('Table component', () => {
     await expect(PWUtils.getTableCell(table, 4, 5).locator(moveDownLoc)).not.toBeVisible();
     await expect(PWUtils.getTableCell(table, 4, 5).locator(moveUpLoc)).toBeDisabled();
 
+    await PWUtils.getTableCell(table, 4, 5).locator(removeLoc).click();
+    await expect(page.locator('lfb-message-dlg').filter({hasText: 'Confirm deletion'})).toHaveCount(0);
+    await expect(table.locator('tbody tr')).toHaveCount(3);
+
+    await table.locator('..').getByRole(`button`, {name: 'Add'}).click();
     await PWUtils.getTableCell(table, 4, 2).locator('input').fill('xx');
     await expect(PWUtils.getTableCell(table, 3, 5).locator(moveDownLoc)).toBeEnabled();
     await expect(PWUtils.getTableCell(table, 4, 5).locator(moveUpLoc)).toBeEnabled();
@@ -164,13 +170,10 @@ test.describe('Table component', () => {
 
     const table = page.locator('lfb-answer-option table');
     await page.getByLabel('Data type', {exact: true}).selectOption({label: 'coding'});
-    await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click();
-    await page.getByRole('radiogroup', { name: 'Answer constraint' }).getByText('Restrict to the list').click();
-
-    await page.getByRole('radiogroup', { name: 'Answer list source' }).getByText('Answer options').click();
-
-    // await page.getByLabel('Allow repeating question?').getByText('Yes').click();
-    await page.getByRole('radiogroup', {name: 'Allow repeating question?'}).getByText('Yes').click();
+    await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
+    await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
 
     // Click on the Value Method - Pick Initial option
     await page.locator('[for*="valueMethod_pick-initial"]').click();

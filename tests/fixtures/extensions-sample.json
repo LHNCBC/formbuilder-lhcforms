@@ -1,0 +1,140 @@
+{
+  "status": "draft",
+  "title": "Extensions sample form",
+  "resourceType": "Questionnaire",
+  "item": [
+    {
+      "type": "decimal",
+      "code": [
+        {
+          "system": "s-1",
+          "code": "c-1",
+          "display": "d-1"
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod",
+          "valueDuration": {
+            "value": 1,
+            "unit": "year",
+            "system": "http://unitsofmeasure.org",
+            "code": "a"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "code": "kg",
+            "system": "http://unitsofmeasure.org"
+          }
+        }
+      ],
+      "linkId": "1",
+      "text": "Mixed with uneditable extensions"
+    },
+    {
+      "type": "string",
+      "extension": [
+        {
+          "url": "http://example.org/codeable-concept",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "s1",
+                "code": "c1",
+                "display": "d1"
+              },
+              {
+                "system": "s2",
+                "code": "c2",
+                "display": "d2",
+                "userSelected": true
+              },
+              {
+                "system": "s3",
+                "code": "c3",
+                "display": "d3"
+              }
+            ],
+            "text": "Codeable concept text"
+          }
+        }
+      ],
+      "linkId": "2",
+      "text": "Extension with array value type"
+    },
+    {
+      "type": "decimal",
+      "extension": [
+        {
+          "url": "http://example.org/level1",
+          "extension": [
+            {
+              "url": "http://example.org/level2",
+              "extension": [
+                {
+                  "url": "http://example.org/level3",
+                  "valueString": "Level 3 value"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "linkId": "3",
+      "text": "Nested extensions"
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "a_fhirpath_exp",
+        "language": "text/fhirpath",
+        "expression": "%resource.item.where(linkId='/8302-2').answer.value",
+        "extension": [
+          {
+            "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+            "valueString": "expression"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "b_fhir_query",
+        "language": "application/x-fhir-query",
+        "expression": "%resource.item.where(linkId='/8352-7').answer.value",
+        "extension": [
+          {
+            "url": "http://lhcforms.nlm.nih.gov/fhirExt/expression-editor-variable-type",
+            "valueString": "query"
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext",
+      "extension": [
+        {
+          "url": "name",
+          "valueId": "patient"
+        },
+        {
+          "url": "type",
+          "valueCode": "Patient"
+        },
+        {
+          "url": "description",
+          "valueString": "For filling in patient information as the subject for the form"
+        }
+      ]
+    }
+  ]
+}

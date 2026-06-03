@@ -1,0 +1,27 @@
+<div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+  <lfb-label
+    [title]="schema.title"
+    [helpMessage]="schema.description"
+    [ngClass]="labelClasses"
+    class="form-label"
+  ></lfb-label>
+  <div [ngClass]="controlClasses" class="px-0">
+    <div class="row g-2 m-0">
+      <div class="col-6 ps-0 pe-0" (focusout)="onStartBlur()">
+        @if (startProp) {
+          <lfb-form-element [formProperty]="startProp"></lfb-form-element>
+        }
+      </div>
+      <div class="col-6 pe-0">
+        <div (focusout)="onEndBlur()">
+          @if (endProp) {
+            <lfb-form-element [formProperty]="endProp"></lfb-form-element>
+          }
+        </div>
+      </div>
+      @if (rangeError) {
+        <small class="text-danger form-text col-12 px-0" role="alert">{{ rangeError }}</small>
+      }
+    </div>
+  </div>
+</div>

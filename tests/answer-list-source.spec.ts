@@ -31,20 +31,21 @@ const toggleTreeNodeExpansion = async (page: Page, nodeText: string) => {
 const getTerminologyServerInput = (page: Page) => page.locator('[id="__$terminologyServer"]');
 
 const checkReferencedOptionDialog = async (page: Page, expectedText: string, buttonName: string) => {
-  const dlg = page.locator('lfb-message-dlg');
+  const dlg = page.locator('lfb-message-dlg').filter({ hasText: "Option referenced by other item's text and linkId." });
   await expect(dlg).toBeVisible();
   await expect(dlg.locator('#msgDlgTitle')).toContainText("Option referenced by other item's text and linkId.");
   const msgContent = dlg.locator('.modal-body #msgContent');
   const msgText = (await msgContent.textContent()) || '';
   expect(msgText.replace(/\s+/g, ' ').trim()).toEqual(expectedText);
 
-  await PWUtils.clickDialogButton(page, { selector: 'lfb-message-dlg' }, buttonName);
+  await PWUtils.clickDialogButton(page, { title: "Option referenced by other item's text and linkId." }, buttonName);
 };
 
 const removeAndCheckReferencedOption = async (page: Page, type: string, index: number, msg: string, buttonLabel: string) => {
   const selector = `[id^="answerOption.${index}.${type}"]`;
   const row = page.locator(selector).locator('xpath=ancestor::tr[1]');
   await row.locator('td.action-column button[aria-label="Remove this row"]').click();
+  await PWUtils.clickDialogButton(page, { title: 'Confirm deletion' }, 'Delete');
   await checkReferencedOptionDialog(page, msg, buttonLabel);
 };
 
@@ -140,8 +141,12 @@ test.describe('Home page', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-      await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
+
+      const firstAnswerRow = page.locator('lfb-answer-option table > tbody > tr').first();
+      await expect(firstAnswerRow.locator('td.action-column')).toHaveCount(1);
+      await expect(firstAnswerRow.locator('td').last()).toHaveClass(/action-column/);
+      await expect(firstAnswerRow.getByLabel('Remove this row')).toBeDisabled();
 
       const aOptions = [
         { system: 's1', display: 'd1', code: 'c1', score: '2.1' },
@@ -872,9 +877,8 @@ test.describe('Home page', () => {
       await PWUtils.selectDataType(page, 'coding');
       await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
       await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-      await PWUtils.expectRadioNotChecked(page, 'Answer list source', 'Answer options');
+      await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
       await PWUtils.expectRadioNotChecked(page, 'Answer list source', 'Answer value set URI');
-      await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
 
       await expect(page.locator('#answerValueSet_non-snomed')).toHaveCount(0);
 
@@ -890,11 +894,10 @@ test.describe('Home page', () => {
       expect(q.item[0].answerValueSet).toEqual('http://example.org');
       expect(q.item[0].answerOption).toBeUndefined();
 
-      await PWUtils.clickRadioButton(page, 'Answer list source', 'None');
-      await expect(page.locator('#answerValueSet_non-snomed')).toHaveCount(0);
-
       // Switch back to 'Answer options'
       await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+      await expect(page.locator('#answerValueSet_non-snomed')).toHaveCount(0);
+
       const aOptions = [
         { system: 's1', display: 'display 1', code: 'c1' },
         { system: 's2', display: 'display 2', code: 'c2' }
@@ -1044,8 +1047,6 @@ test.describe('Home page', () => {
       await expect(page.locator('lfb-answer-option')).toHaveCount(0);
 
       await PWUtils.clickTreeNode(page, 'Item with answer option', false);
-      await expect(page.locator('[id^="__\\$answerOptionMethods_none"]')).toBeChecked();
-      await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
       await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
       await expect(page.locator('lfb-answer-option')).toBeVisible();
       await expect(page.locator('#answerValueSet_non-snomed')).toHaveCount(0);
@@ -1163,7 +1164,7 @@ test.describe('Home page', () => {
         await expect(page.locator('[id^="__\\$answerExpression"]'))
           .toHaveValue("%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family");
 
-        await expect(valueMethod.locator('[id^="__\\$valueMethod_"]')).toHaveCount(4);
+        await expect(valueMethod.getByRole('radiogroup').locator('[id^="__\\$valueMethod_"]')).toHaveCount(4);
         const typeInitialRadio = valueMethod.locator('[id^="__\\$valueMethod_type-initial"]');
         await expect(typeInitialRadio).toBeChecked();
         await expect(page.locator('[id^="initial.0.valueString"]')).toHaveValue('Ann Anderson');
@@ -1295,7 +1296,7 @@ test.describe('Home page', () => {
         await PWUtils.clickDialogButton(page, { selector: 'lfb-preview-dlg' }, 'Close');
 
         await getComputeInitialValueValueMethodClick(page);
-        await expect(page.locator('[id^="__\\$initialExpression"]')).toBeEmpty();
+        await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toBeEmpty();
       });
     });
 
@@ -1316,9 +1317,8 @@ test.describe('Home page', () => {
         await PWUtils.selectDataType(page, 'coding');
         await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
         await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
-        await PWUtils.expectRadioNotChecked(page, 'Answer list source', 'Answer options');
+        await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
         await PWUtils.expectRadioNotChecked(page, 'Answer list source', 'Answer value set URI');
-        await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
 
         await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
 

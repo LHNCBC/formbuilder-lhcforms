@@ -1,7 +1,8 @@
-import { Component, OnInit, Input } from '@angular/core';
+import {Component, OnInit, Input, inject} from '@angular/core';
 import { LoginService, UserProfile } from '../services/login.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import appVersion from '../../assets/version.json';
 
 
@@ -14,12 +15,17 @@ import appVersion from '../../assets/version.json';
       <div id="siteNameBox" class="d-flex flex-column align-self-baseline ps-2">
         <div class="fs-4"><a class="btn btn-link p-0" id="siteName" href="./">NLM Form Builder</a></div>
         <div class="fs-6">A tool for building HL7<sup>®</sup> FHIR<sup>®</sup> Questionnaires</div>
-    
+
       </div>
       @if (appVersion) {
         <div class="float-lg-right version-info align-self-end fw-bold pb-1"
           >Version: <a target="_blank" rel="noopener noreferrer"
-        href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
+                       title="View change log"
+                       href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a>
+          | <a href="https://github.com/lhncbc/formbuilder-lhcforms"
+               target="_blank" rel="noopener noreferrer"
+               title="View source on GitHub"><fa-icon [icon]="faGithub"></fa-icon></a>
+        </div>
       }
       @if (isFirebaseEnabled) {
         <div class="float-lg-right">
@@ -47,6 +53,9 @@ import appVersion from '../../assets/version.json';
     </nav>
     `,
   styles: [`
+    fa-icon {
+      vertical-align: -0.125em;
+    }
     #header {
       /* margin-bottom: 20px; */
       position: relative;
@@ -121,9 +130,13 @@ export class HeaderComponent implements OnInit {
   isFirebaseEnabled = false;
   loginError: any = null;
   appVersion: string;
-  constructor(private loginService: LoginService,
-              private iconRegistry: MatIconRegistry,
-              private sanitizer: DomSanitizer) {
+  faGithub = faGithub;
+
+  loginService = inject(LoginService);
+  iconRegistry = inject(MatIconRegistry);
+  sanitizer = inject(DomSanitizer);
+
+  constructor() {
     // Register our icon(s)
     this.iconRegistry.addSvgIcon('home',
       this.sanitizer.bypassSecurityTrustResourceUrl('assets/images/projectLogo.svg'));

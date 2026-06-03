@@ -1,18 +1,21 @@
 /**
  * An input box for enableWhen's source to search eligible source items listed in the tree.
  */
-import { Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import {merge, Observable, Subject} from 'rxjs';
 import {FormService} from '../../../services/form.service';
 import {debounceTime, distinctUntilChanged, filter, map} from 'rxjs/operators';
 import {TreeNode} from '@bugsplat/angular-tree-component';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
-import {NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
+import {NgbHighlight, NgbTypeahead} from '@ng-bootstrap/ng-bootstrap';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import {Util} from '../../util';
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {LabelComponent} from "../label/label.component";
+import {NgClass} from "@angular/common";
 @Component({
-  standalone: false,
   selector: 'lfb-choice',
+  imports: [FormsModule, ReactiveFormsModule, NgbTypeahead, NgbHighlight, LabelComponent, NgClass],
   template: `
     <ng-template #rt let-r="result" let-t="term">
       <ngb-highlight [result]="r.name" [term]="t"></ngb-highlight>
@@ -33,12 +36,11 @@ import {Util} from '../../util';
           [editable]="false"
           [inputFormatter]="inputFormatter"
           [resultFormatter]="resultListItemFormatter"
-          class="form-control"
+          class="form-control form-control-sm"
           (focus)="focus$.next($any($event).target.value)"
           (click)="click$.next($any($event).target.value)"
           (change)="validateQuestion()"
           (selectItem)="onSelect($event)"
-          #sourceInput
           #instance="ngbTypeahead"
           popupClass="add-scrolling"
           >
@@ -63,7 +65,6 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   sources: TreeNode [];
 
   @ViewChild('instance') instance: NgbTypeahead;
-  @ViewChild('sourceInput', { static: false }) sourceInput: ElementRef<HTMLInputElement>;
 
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
@@ -91,23 +92,21 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   ngOnInit(): void {
     super.ngOnInit();
     this.sources = this.formService.getSourcesExcludingFocusedTree();
-
-    this.syncModelFromValue(this.formProperty.value);
-
-    const value = this.formProperty.value;
-    if (value === "" && this.formProperty.parent.value?.['__$answerType']?.trim()) {
+    const value = this.formProperty.value; // Source is already assigned for this item.
+    if (this.sources && this.sources.length > 0 && value) {
+      const source = this.sources.find((el) => el.data.linkId === value);
+      if (source) {
+        this.model = source;
+      }
+    } else if (value === "" && this.formProperty.parent.value?.['__$answerType']?.trim()) {
       this.validateQuestion();
     }
-
     const sub = this.formProperty.valueChanges.subscribe((newValue) => {
       this.syncModelFromValue(newValue);
-      if (!newValue) {
-        this.clearInputUi();
-      }
     });
     this.subscriptions.push(sub);
-  }
 
+  }
   /**
    * Keep local typeahead model in sync with stored linkId.
    * @param value - Stored linkId value to sync from.
@@ -115,7 +114,7 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   private syncModelFromValue(value: string): void {
     if (!value) {
       this.model = null;
-      this.clearInputUi();
+      this.instance?.writeValue(this.model);
       return;
     }
 
@@ -129,22 +128,11 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
   }
 
   /**
-   * ng-bootstrap typeahead can keep stale rendered text; clear input explicitly.
-   */
-  private clearInputUi(): void {
-    if (this.sourceInput?.nativeElement) {
-      this.sourceInput.nativeElement.value = '';
-    }
-    this.instance?.dismissPopup();
-  }
-
-
-  /**
    * Handle user selection event
    * @param $event - Source tree node object
    */
   onSelect($event): void {
-    this.formProperty.setValue($event.item.data.linkId, true);
+    this.formProperty.setValue($event.item.data.linkId, false);
     this.formProperty.searchProperty('__$answerType').setValue($event.item.data.type, false);
   }
 
@@ -204,7 +192,6 @@ export class EnableWhenSourceComponent extends LfbControlWidgetComponent impleme
       }
 
       this.formProperty.parent.setValue(enableWhenObj, false);
-      this.clearInputUi();
       this.formProperty.updateValueAndValidity();
     }
   }

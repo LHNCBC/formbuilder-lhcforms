@@ -1,9 +1,10 @@
-import {Component, OnInit, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {StringComponent} from '../string/string.component';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../../../fhir';
 import {Util} from '../../util';
 import { EXTENSION_URL_RENDERING_STYLE, EXTENSION_URL_RENDERING_XHTML } from '../../constants/constants';
+import {After} from "node:v8";
 
 @Component({
   standalone: false,
@@ -11,7 +12,7 @@ import { EXTENSION_URL_RENDERING_STYLE, EXTENSION_URL_RENDERING_XHTML } from '..
   encapsulation: ViewEncapsulation.None,
   templateUrl: './string-with-css.component.html'
 })
-export class StringWithCssComponent extends StringComponent implements OnInit {
+export class StringWithCssComponent extends StringComponent implements OnInit, AfterViewInit {
 
   Util = Util;
   extValObj = {};
@@ -44,12 +45,24 @@ export class StringWithCssComponent extends StringComponent implements OnInit {
   }
 
 
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    this.formProperty.parent.getProperty(this.elName).valueChanges.subscribe((val) => {
+      val?.extension.forEach((ext) => {
+        this.extChanged(ext.valueString, ext.url);
+      });
+    });
+  }
   /**
    * Handle change of css/xhtml extension value input
    * @param extValue - new extension value
    * @param extUrl - Util.RENDERING_STYLE_EXT_URL || Util.RENDERING_XHTML_EXT_URL
    */
   extChanged(extValue: string, extUrl: fhirPrimitives.url) {
+    if(this.extValObj[extUrl] === extValue.trim()) {
+      return;
+    }
+
     const ind = Util.findExtensionIndexByUrl(this.elementTypeField.extension, extUrl);
     let ext: fhir.Extension;
     this.extValObj[extUrl] = extValue.trim();

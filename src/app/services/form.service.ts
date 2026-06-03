@@ -6,25 +6,20 @@ import {TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
 import fhir from 'fhir/r4';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {MessageDlgComponent, MessageDlgOptions, MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import jsonTraverse from 'traverse';
 import {JsonPointer} from 'json-ptr';
 import {JSONPath} from 'jsonpath-plus';
 import {getSupportedLFormsVersions, loadLForms} from 'lforms-loader';
 
-
 import {FHIR_VERSION_TYPE, FHIR_VERSIONS, GuidingStep, Util} from '../lib/util';
 import {FetchService} from './fetch.service';
-import {TerminologyServerComponent} from '../lib/widgets/terminology-server/terminology-server.component';
 import {ExtensionsService} from './extensions.service';
-import {LiveAnnouncer} from '@angular/cdk/a11y';
-import {
-  EXTENSION_URL_CALCULATED_EXPRESSION,
-  EXTENSION_URL_INITIAL_EXPRESSION,
-} from '../lib/constants/constants';
+import {SchemaService} from './schema.service';
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {ISchema} from "@lhncbc/ngx-schema-form";
-
+import {ImportQuestionnaireService} from "./import.questionnaire.service";
+import {PREFERRED_TERMINOLOGY_SERVER_URI} from "../lib/constants/constants";
 
 declare var LForms: any;
 
@@ -64,6 +59,7 @@ export class FormService {
   private modalService = inject(NgbModal);
   private http = inject(HttpClient);
   private liveAnnouncer = inject(LiveAnnouncer);
+  private schemaService = inject(SchemaService);
 
   static _lformsLoaded$ = new Subject<string>();
   static readonly TREE_NODE_ID = "__$treeNodeId";
@@ -85,6 +81,7 @@ export class FormService {
   itemSchema: any = {properties: {}};
   flSchema: any = {properties: {}};
   valueSetSchema: any = {properties: {}};
+  extensionSchema: any = {properties: {}};
   binarySchema: any = {properties: {}};
 
   snomedUser = false;
@@ -137,6 +134,7 @@ export class FormService {
     attachment: this.operatorOptions2,
     reference: this.operatorOptions2
   };
+  private importService = inject(ImportQuestionnaireService);
 
   constructor() {
   }
@@ -150,7 +148,8 @@ export class FormService {
         ngxFlSchema: ISchema,
         ngxItemSchema: ISchema,
         ngxVSSchema: ISchema,
-        vsLayout: Layout;
+        vsLayout: Layout,
+        extLayout: Layout;
 
       const assetPaths = [
         'assets/fhir-definitions.schema.json5',
@@ -159,7 +158,8 @@ export class FormService {
         'assets/ngx-fl.schema.json5',
         'assets/ngx-item.schema.json5',
         'assets/ngx-vs.schema.json5',
-        'assets/value-set-fields-layout.json5'
+        'assets/value-set-fields-layout.json5',
+        'assets/extension-fields-layout.json5',
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
       fhirSchemaDefinitions = results[assetPaths[0]];
@@ -169,12 +169,15 @@ export class FormService {
       ngxItemSchema = results[assetPaths[4]];
       ngxVSSchema = results[assetPaths[5]];
       vsLayout = results[assetPaths[6]];
+      extLayout = results[assetPaths[7]];
+      const extSchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Extension));
       const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
 
       [
         {schema: ngxItemSchema as any, layout: itemLayout},
         {schema: ngxFlSchema as any, layout: flLayout},
         {schema: ngxVSSchema as any, layout: vsLayout},
+        {schema: extSchema as any, layout: extLayout},
         {schema: binarySchema as any, layout: {} as Layout} // TODO - Place holder for Binary layout
       ].forEach((obj) => {
         if(!obj.schema.definitions) {
@@ -185,12 +188,19 @@ export class FormService {
         this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
         this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
       });
+      extSchema.widget = {id: 'row-layout', keyField: '/__$valueType'};
+      this.schemaService.addDefaultWidgets(extSchema, extLayout);
+      this.addValueXFieldsToExtensionLayout(extSchema);
+      this.addVisibleIfToExtensionSchema(extSchema);
+      this.schemaService.setValueXCategoryMap(extSchema);
+
       this.itemSchema = ngxItemSchema;
       this.flSchema = ngxFlSchema;
       this.valueSetSchema = ngxVSSchema;
       delete this.valueSetSchema.definitions.ValueSet;
       delete this.valueSetSchema.definitions.ResourceList;
       delete this.valueSetSchema.properties.contained;
+      this.extensionSchema = extSchema;
       this.binarySchema = binarySchema;
       delete this.binarySchema.definitions.Binary;
       // Load lforms.
@@ -230,6 +240,68 @@ export class FormService {
     return ret;
   }
 
+  /**
+   * Add visibleIf condition to each value[x] in extension schema.
+   * This is used to show/hide the value[x] fields based on the valueType field.
+   * @param schema - Extension schema object.
+   */
+  addVisibleIfToExtensionSchema(schema: ISchema) {
+    if(!schema) {
+      return;
+    }
+    // Add visibleIf to the extension schema.
+    for(const key in schema.properties) {
+      if(key.startsWith('value')) {
+        schema.properties[key].visibleIf = {
+          "allOf": [
+            {
+              "__$valueType": [key],
+            },
+            {
+              "__$isValueX": [true],
+            },
+          ]
+        };
+      }
+    }
+    schema.properties.__$valueType.visibleIf = {
+      "__$isValueX": [true]
+    }
+    schema.properties.extension.visibleIf = {
+      "__$isValueX": [false]
+    }
+  }
+
+  addValueXFieldsToExtensionLayout(schema: ISchema) {
+    if(!schema) {
+      return;
+    }
+
+    schema.formLayout = schema.formLayout || {};
+    schema.formLayout.basic = schema.formLayout.basic || [];
+
+    const showFieldsObj = schema.formLayout.basic.find((el) => {
+      return !!el.showFields;
+    });
+    showFieldsObj.showFields  = showFieldsObj.showFields || [];
+
+
+    // Add value[x] fields to the extension layout.
+    const valueXFields = Object.keys(schema.properties)
+      .filter((key) => key.startsWith('value'))
+      .map((valueX) => {
+        return {field: valueX, col: 12};
+      });
+    showFieldsObj.showFields.push(...valueXFields);
+  }
+
+  /**
+   * Load LForms library.
+   * @returns Promise resolving to the loaded version of LForms.
+   */
+  getExtensionSchema() {
+    return this.extensionSchema;
+  }
   /**
    * Override schema.widget with widget definitions from layout.
    * @param schema - Schema object typically from *-schema.json file.
@@ -791,25 +863,30 @@ export class FormService {
     if (!this.treeNodeStatusMap || !this.treeNodeStatusMap[treeNodeId])
       return;
 
+    const status = this.treeNodeStatusMap[treeNodeId];
+    const errors = status.errors ?? {};
     const fieldName = `enableWhen_${rowIndex}`;
-    if (this.treeNodeStatusMap[treeNodeId]['errors'] && fieldName in this.treeNodeStatusMap[treeNodeId]['errors']) {
-      delete this.treeNodeStatusMap[treeNodeId]['errors'][fieldName];
+    if (fieldName in errors) {
+      delete errors[fieldName];
     }
 
-    const enableWhenKeys = Object.keys(this.treeNodeStatusMap[treeNodeId]['errors']);
-
-    enableWhenKeys.forEach(ewKey => {
-      const match = ewKey.match(/enableWhen_(\d+)/);
+    const enableWhenKeys: Array<{ewKey: string, keyIndex: number}> = [];
+    Object.keys(errors).forEach(ewKey => {
+      const match = ewKey.match(/^enableWhen_(\d+)$/);
       const keyIndex = match ? Number(match[1]) : -1;
 
       if (!isNaN(keyIndex) && keyIndex > rowIndex) {
-        this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex - 1}`] =
-          this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex}`];
-        delete this.treeNodeStatusMap[treeNodeId]['errors'][`enableWhen_${keyIndex}`];
+        enableWhenKeys.push({ewKey, keyIndex});
       }
     });
 
-    this.treeNodeStatusMap[treeNodeId]['hasError'] = (Object.keys(this.treeNodeStatusMap[treeNodeId]?.errors ?? {}).length > 0);
+    enableWhenKeys.sort((a, b) => a.keyIndex - b.keyIndex).forEach(({ewKey, keyIndex}) => {
+      errors[`enableWhen_${keyIndex - 1}`] = errors[ewKey];
+      delete errors[ewKey];
+    });
+
+    status.errors = errors;
+    status.hasError = (Object.keys(errors).length > 0);
     this._validationStatusChanged$.next(null);
   }
 
@@ -820,16 +897,6 @@ export class FormService {
   clearAutoSavedTreeNodeStatusMap() {
     localStorage.removeItem('treeMap');
     this.treeNodeStatusMap = {};
-  }
-
-
-  /**
-   * Loop through the array of extensions and filters out extensions that is an Initial Expression, or Calculated Expression.
-   * @param extensions - array of extensions
-   * @returns - returns the array of extensions excluding the extensions of type Initial Expression or Calculated Expression.
-   */
-  removeExpressionsExtensions(extensions: fhir.Extension[]): any {
-    return extensions.filter(ext => (ext.url !== EXTENSION_URL_INITIAL_EXPRESSION && ext.url !== EXTENSION_URL_CALCULATED_EXPRESSION));
   }
 
 
@@ -1020,13 +1087,13 @@ export class FormService {
     let ret = null;
     Util.traverseAncestors(sourceNode, (node) => {
       const found = node.data.extension?.find((ext: fhir.Extension) => {
-        return ext.url === TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI
+        return ext.url === PREFERRED_TERMINOLOGY_SERVER_URI
       });
       ret = found ? found.valueUrl : null;
       return !ret; // Continue traverse if url is not found.
     });
     if(!ret) {
-      const ext = this.formLevelExtensionService.getFirstExtensionByUrl(TerminologyServerComponent.PREFERRED_TERMINOLOGY_SERVER_URI)
+      const ext = this.formLevelExtensionService.getFirstExtensionByUrl(PREFERRED_TERMINOLOGY_SERVER_URI)
       ret = ext ? ext.valueUrl : null;
     }
     return ret;
@@ -1142,36 +1209,7 @@ export class FormService {
    * @param questionnaire - Input questionnaire
    */
   updateFhirQuestionnaire(questionnaire: fhir.Questionnaire): fhir.Questionnaire {
-
-    // Remove any meta.tag.code generated by LForms.
-    if(questionnaire.meta?.tag) {
-      questionnaire.meta.tag = questionnaire.meta.tag.filter((tag) => {
-        return ! /^\s*(lformsVersion\s*:)|(lhc-qnvconv-)/i.test(tag.code);
-      });
-      if(questionnaire.meta.tag.length === 0) {
-        delete questionnaire.meta.tag;
-      }
-    }
-    jsonTraverse(questionnaire).forEach(function(x) {
-        if (x?.item) {
-          // Convert any help text items to __$helpText.
-          let htIndex = Util.findItemIndexWithHelpText(x.item);
-
-          if(htIndex >= 0) {
-            const helpText = x.item[htIndex];
-            jsonTraverse(x).set(['__$helpText'], helpText);
-            x.item.splice(htIndex, 1);
-            if(x.item.length === 0) {
-              delete x.item;
-            }
-          }
-        }
-        if(x?.answerOption || x?.type === 'coding' || x?.answerValueSet || x?.answerConstraint) {
-          x.__$isAnswerList = true;
-        }
-    });
-
-    return questionnaire;
+    return this.importService.updateRawQuestionnaire(questionnaire, this);
   }
 
 

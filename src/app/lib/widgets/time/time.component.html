@@ -15,7 +15,12 @@
     <div class="col p-0 position-relative">
       @if (hasAnswerOptions$ | async) {
         <div class="{{controlWidthClass}} p-0">
-          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
+          <input autocomplete="off" #enableWhenAnswerOptions type="text"
+                 [formControl]="control"
+                 [attr.id]="id"
+                 class="form-control"
+                 (input)="onInput($event)"
+                 (blur)="suppressInvalidValue($event)" />
         </div>
       } @else {
         <div class="input-group input-group-sm">
@@ -24,7 +29,7 @@
                  type="time"
                  step="1"
                  [attr.id]="id"  [formControl]="control"
-                 [required]="schema.isRequired"
+                 [required]="isRequired"
                  [lfbDisableControl]="schema.disabled"
           >
           <button class="btn btn-sm btn-outline-primary"

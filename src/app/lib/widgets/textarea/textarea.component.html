@@ -12,14 +12,15 @@
         class="form-label"
       ></lfb-label>
     }
-    <div class="col p-0 position-relative">
+    <div class="{{controlClasses}}">
       <textarea [name]="name" [readonly]="schema.readOnly"
-        [ngClass]="controlClasses"
-        [attr.type]="schema.widget.id"
-        [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
-        [attr.maxLength]="schema.maxLength || null"
-        [attr.minLength]="schema.minLength || null"
-        [required]="schema.isRequired" [lfbDisableControl]="schema.disabled"
+             class="form-control form-control-sm"
+             [attr.type]="schema.widget.id"
+             [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
+             [attr.maxLength]="schema.maxLength || null"
+             [attr.minLength]="schema.minLength || null"
+             [attr.rows]="widgetInfo.rows || 2"
+             [required]="isRequired" [lfbDisableControl]="schema.disabled"
       ></textarea>
       @for (error of errors; track error.code) {
         @if (formProperty.value && error) {

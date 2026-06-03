@@ -12,27 +12,31 @@
 @if (!booleanControlled || booleanControlledOption) {
   <div class="widget form-group m-0 row">
     <div [ngClass]="labelClasses">
-      @if (!noCollapseButton) {
+      @if (!noCollapseButton && nonEmptyVariables.length > 0) {
         <button href="#" type="button"
-          [ngClass]="{'float-sm-end': true}"
-          class="btn btn-sm m-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
+          [ngClass]="{'float-sm-end': labelPosition === 'left'}"
+          class="btn btn-sm m-0 px-0 btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
           [attr.aria-expanded]="!isCollapsed" [attr.aria-controls]="tableId">
           <fa-icon [icon]="isCollapsed ? faRight : faDown" aria-hidden="true"></fa-icon>
         </button>
       }
       @if (!noTableLabel) {
-        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
+        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [labelId]="tableId+'_variablesLabel'"></lfb-label>
       }
     </div>
-    <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId">
+    <div class="p-0 card bg-transparent border-0 m-auto {{controlClasses}}" [attr.id]="tableId" [attr.aria-labelledby]="tableId+'_variablesLabel'">
       <table class="table table-borderless table-sm lfb-table">
         <thead class="table-active">
           <tr class="d-flex">
-            @for (showHeaderField of getVariableFieldsStructure(true); track showHeaderField.field) {
-              <th class="col-sm{{showHeaderField.col ? ('-'+showHeaderField.col) : ''}}" scope="col">
+            @for (showHeaderField of getVariableFieldsStructure(true); track showHeaderField.field; let isLastShowField = $last) {
+              <th
+                class="col-sm{{showHeaderField.col ? ('-'+showHeaderField.col) : ''}}"
+                [ngClass]="{'fill-column': isLastShowField && includeActionColumn}"
+                scope="col"
+              >
                 <lfb-title
                   [title]="showHeaderField.title"
-                  [helpMessage]="getVariableProperty(formProperty.schema.items.properties, showHeaderField.field, true)"
+                  [helpMessage]="getVariableProperty(extensionSchema.properties, showHeaderField.field, true)"
                 ></lfb-title>
               </th>
             }
@@ -40,12 +44,13 @@
           </tr>
         </thead>
         <tbody [ngbCollapse]="isCollapsed">
-          @for (variable of nonEmptyVariables; track variable.url; let ind = $index; let isFirst = $first; let isLast = $last) {
+          @for (variable of nonEmptyVariables; track getVariableTrackParam(variable, $index); let ind = $index; let isFirst = $first; let isLast = $last) {
             <tr
               class="d-flex lfb-table-row">
-              @for (showDataField of getVariableFieldsStructure(false); track showDataField.field) {
+              @for (showDataField of getVariableFieldsStructure(false); track showDataField.field; let isLastShowField = $last) {
                 <td
                   class="col-sm{{showDataField.col ? ('-'+showDataField.col) : ''}}"
+                  [ngClass]="{'fill-column': isLastShowField && includeActionColumn}"
                 >{{getVariableProperty(variable, showDataField.field, false)}}</td>
               }
               @if(includeActionColumn) {
@@ -56,6 +61,7 @@
         </tbody>
       </table>
       <button id="editVariables" (click)="editVariables()" class="btn btn-sm btn-light text-primary shadow-sm array-add-button" style="width:100%"
+              [ngbPopover]=""
         triggers="manual" placement="bottom top"
         popoverClass=""
         >
@@ -66,11 +72,11 @@
 }
 
 <ng-template #actionColumn let-index="index" let-first="first" let-last="last">
-  <td class="action-column col-sm-1">
+  <td class="justify-content-sm-end col-sm-1 action-column center border-1">
     <div class="btn-group btn-group-sm p-0 pt-1 pe-1">
-      <button (click)="deleteVariable(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
-        matTooltip="Delete this variable" aria-label="Delete this variable"
-        ><fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon></button>
-      </div>
-    </td>
-  </ng-template>
+      <button (click)="confirmDeleteVariable(index)" class="btn btn-link btn-sm array-remove-button p-0 rounded-0"
+              matTooltip="Delete this variable" aria-label="Delete this variable"
+      ><fa-icon [icon]="faRemove" class="fa-sm" aria-hidden="true"></fa-icon></button>
+    </div>
+  </td>
+</ng-template>

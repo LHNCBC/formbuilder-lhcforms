@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
 import { LabelRadioComponent } from '../label-radio/label-radio.component';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { LabelComponent } from '../label/label.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ExtensionsService } from 'src/app/services/extensions.service';
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 @Component({
   selector: 'lfb-enable-when-method',
@@ -24,12 +25,13 @@ import { ExtensionsService } from 'src/app/services/extensions.service';
     }
   `]
 })
-export class EnableWhenMethodComponent extends LabelRadioComponent implements OnInit, AfterViewInit, OnDestroy {
-  subscriptions: Subscription [] = [];
+export class EnableWhenMethodComponent extends LabelRadioComponent implements OnInit, AfterViewInit {
 
   liveAnnouncer = inject(LiveAnnouncer);
   extensionsService = inject(ExtensionsService);
-  currentEnableWhenMethod;
+  modelService = inject(SharedObjectService);
+  currentEnableWhenMethod: string;
+  updating = false;
 
 
   /**
@@ -45,12 +47,18 @@ export class EnableWhenMethodComponent extends LabelRadioComponent implements On
 
     let sub: Subscription;
 
+    // New Questionnaire item is assigned. Reset the component fields and let the formProperty changes be handled in its valueChanges() subscription.
+    sub = this.modelService.modelInitialized$.subscribe(() => {
+      this.currentEnableWhenMethod = null;
+      this.updateUI();
+    });
+    this.subscriptions.push(sub);
+
     sub = this.formProperty.valueChanges.subscribe((val) => {
       const changed = val !== this.currentEnableWhenMethod;
 
       if (changed) {
         this.currentEnableWhenMethod = val;
-        this.formProperty.setValue(val, false);
 
         if (this.currentEnableWhenMethod === CONDITIONAL_METHOD_ENABLEWHEN) {
           this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_ENABLEWHEN_EXPRESSION);
@@ -69,6 +77,10 @@ export class EnableWhenMethodComponent extends LabelRadioComponent implements On
   }
 
   updateUI() {
+    if(this.updating) {
+      return;
+    }
+    this.updating = true;
     const enableWhen = this.formProperty.searchProperty('enableWhen').value;
     const enableWhenExp = this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_ENABLEWHEN_EXPRESSION);
     if (Array.isArray(enableWhen) && enableWhen.length > 0) {
@@ -77,15 +89,9 @@ export class EnableWhenMethodComponent extends LabelRadioComponent implements On
     } else if (enableWhenExp) {
       this.formProperty.setValue(CONDITIONAL_METHOD_ENABLEWHEN_EXPRESSION, false);
     }
-  }
-
-
-  /**
-   * Angular lifecycle hook
-   */
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((sub) => {
-      sub.unsubscribe();
-    });
+    else {
+      this.formProperty.setValue(CONDITIONAL_METHOD_NONE, false);
+    }
+    this.updating = false;
   }
 }

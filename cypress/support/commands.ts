@@ -194,8 +194,7 @@ Cypress.Commands.add('enterAnswerOptions', (codings) => {
   cy.getRadioButtonLabel('Create answer list', 'Yes').click();
   cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
 
-  // New default for 'Answer list source' is now 'None'
-  cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+  cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
 
   // Select the 'Answer Options' option
   cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
@@ -219,8 +218,7 @@ Cypress.Commands.add('addAnswerOptions', () => {
   cy.getRadioButtonLabel('Create answer list', 'Yes').click();
   cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
 
-  // New default for 'Answer list source' is now 'None'
-  cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+  cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
 
   // Select the 'Answer Options' option
   cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
@@ -868,8 +866,7 @@ Cypress.Commands.add('checkQuestionItemControlUI',
     cy.get('lfb-label label').contains(answerListLayoutLabel).should('exist');
 
     if (type === "coding") {
-      // New default for 'Answer list source' is now 'None'
-      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
       // Select the 'Answer Options' option
       cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
     }

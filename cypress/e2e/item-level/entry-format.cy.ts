@@ -170,7 +170,7 @@ describe('Home page', () => {
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
-          expect(qJson.item[0].extension[3]).to.deep.equal({
+          expect(qJson.item[0].extension[2]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
             "valueString": "Enter value between 15.2 and 20.1"
           });
@@ -266,7 +266,7 @@ describe('Home page', () => {
 
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('decimal');
-          expect(qJson.item[0].extension[3]).undefined;
+          expect(qJson.item[0].extension[2]).undefined;
 
           // the entryFormat has been deleted.
           expect(qJson.item[1].extension[0]).to.deep.equal({
@@ -320,10 +320,6 @@ describe('Home page', () => {
           expect(qJson.item[0].type).equal('decimal');
           expect(qJson.item[0].extension[2]).to.deep.equal({
             "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-            "valueString": "#,###.##"
-          });
-          expect(qJson.item[0].extension[3]).to.deep.equal({
-            "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
             "valueString": "Enter value between 15.2 and 20.1"
           });
         });
@@ -348,7 +344,6 @@ describe('Home page', () => {
         // popping up with the '#,###.##'.
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].extension[2]).undefined;
-          expect(qJson.item[0].extension[3]).undefined;
         });
 
         // Re-enter the entry format.

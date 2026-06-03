@@ -8,19 +8,20 @@
  * It is updated programmatically in the class.
  */
 
-import { Component, OnInit, inject } from '@angular/core';
+import {Component, inject, AfterViewInit} from '@angular/core';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 import { FormService } from 'src/app/services/form.service';
+import {FormsModule} from "@angular/forms";
 
 @Component({
-  standalone: false,
   selector: 'lfb-enable-operator',
+  imports: [FormsModule],
   template: `
     <select #mySelect
       [(ngModel)]="myModel"
       (ngModelChange)="onModelChange($event)"
       name="{{name}}" [attr.id]="id"
-      [disabled]="schema.readOnly" class="form-control">
+      [disabled]="schema.readOnly" class="form-control form-control-sm">
       <ng-container>
         @for (opt of selectOptionList; track opt.option) {
           <option [ngValue]="opt.option" >{{opt.label}}</option>
@@ -31,7 +32,7 @@ import { FormService } from 'src/app/services/form.service';
   styles: [
   ]
 })
-export class EnableOperatorComponent extends LfbControlWidgetComponent implements OnInit {
+export class EnableOperatorComponent extends LfbControlWidgetComponent implements AfterViewInit {
   private formService = inject(FormService);
 
 
@@ -42,11 +43,11 @@ export class EnableOperatorComponent extends LfbControlWidgetComponent implement
   /**
    * Initialize
    */
-  ngOnInit(): void {
-    // this.formProperty represents operator from schema.
-    const answerBool = this.formProperty.searchProperty('answerBoolean');
-
+  ngAfterViewInit(): void {
+    super.ngAfterViewInit();
     this.formProperty.valueChanges.subscribe((val) => {
+      // this.formProperty represents operator from schema.
+      const answerBool = this.formProperty.searchProperty('answerBoolean');
       if (val === 'exists' && answerBool.value === false) {
         this.myModel = 'notexists';
       } else {

@@ -1,26 +1,24 @@
-import {AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, ViewChild, ElementRef, OnInit} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, inject, OnDestroy, ViewChild, ElementRef} from '@angular/core';
 import fhir from 'fhir/r4';
-import { Subscription } from 'rxjs';
-import {LfbArrayWidgetComponent} from '../lfb-array-widget/lfb-array-widget.component';
-import { withComponentInputBinding } from '@angular/router';
-import { ExtensionsService } from 'src/app/services/extensions.service';
-import { AnswerOptionComponent } from '../answer-option/answer-option.component';
+import {ReactiveFormsModule} from "@angular/forms";
+import {FormService} from "../../../services/form.service";
+import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
 
 declare var LForms: any;
 
 @Component({
-  standalone: false,
   selector: 'lfb-coding-display',
+  imports: [ReactiveFormsModule],
   template: `
-      <ng-container *ngIf="autoComplete; else manualEntry">
-        <div class="{{controlWidthClass}} p-0">
-          <input autocomplete="off" #codingDisplay type="text" [attr.id]="id" placeholder="Search or type your own" class="form-control"/>
-        </div>
-      </ng-container>
-      <ng-template #manualEntry>
-        <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control" [formControl]="control"
-          (ngModelChange)="fieldChanged($event)" placeholder="Type your own">
-      </ng-template>
+    @if(autoComplete) {
+      <div class="{{controlWidthClass}} p-0">
+        <input autocomplete="off" #codingDisplay type="text" [attr.id]="id" placeholder="Search or type your own" class="form-control form-control-sm"/>
+      </div>
+    }
+    @else {
+      <input #manualInput [name]="name" [attr.id]="id" type="text" class="form-control form-control-sm" [formControl]="control"
+        placeholder="Type your own">
+    }
   `,
   styles: [`
     :host ::ng-deep .autocomp_selected {
@@ -34,13 +32,14 @@ declare var LForms: any;
   `]
 })
 
-export class CodingDisplayComponent extends LfbArrayWidgetComponent implements AfterViewInit, OnDestroy {
+export class CodingDisplayComponent extends LfbControlWidgetComponent implements AfterViewInit, OnDestroy {
   @ViewChild('codingDisplay', { static: false }) codingDisplay!: ElementRef;
   @ViewChild('manualInput', { static: false }) manualInput!: ElementRef;
 
   private systemLookups: any[] = [];
   static seqNum = 0;
   cdr = inject(ChangeDetectorRef);
+  formService = inject(FormService);
 
   options: any = {
     matchListValue: false,
@@ -56,63 +55,56 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
   }
 
   autoComp: any;
-  subscriptions: Subscription[] = [];
   autoComplete = false;
   selectedSystem;
   system;
-  initializing = true;
 
   constructor() {
     super();
   }
 
-  /**
-   * Converts systemLookups array to a hash map: { systemUrl: lookupUrl }
-   */
-  getSystemLookupHash(systemLookups: any): { [key: string]: string } {
-    const lookups = systemLookups || [];
-    const hash: { [key: string]: string } = {};
-    for (const obj of lookups) {
-      if (typeof obj.systemUrl === 'string' && typeof obj.lookupUrl === 'string') {
-        hash[obj.systemUrl] = obj.lookupUrl;
-      }
-    }
-    return hash;
+  ngOnInit() {
+    super.ngOnInit();
+    this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
   }
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
     this.systemLookups = this.formProperty.parent.getProperty('system').schema.widget.systemLookups;
+    let sub = this.formProperty.valueChanges.subscribe((value: any) => {
+      if(this.autoComplete) {
+        this.autoComp.setFieldVal(value);
+      }
+    });
+    this.subscriptions.push(sub);
 
-    // Prevent the focusin from bubbling up
-    // Loading existing questionnaires with answerOptions missing `display`
-    // causes the input to be auto-focused. This fires a `focusin` event,
-    // which triggers validation and shows a warning dialog prematurely.
-    if (this.manualInput) {
-      this.manualInput.nativeElement.addEventListener('focusin', (e) => {
-        e.stopPropagation();
-      }, { once: true, capture: true });
+    // Initialize system from the current property value BEFORE subscribing,
+    // so the BehaviorSubject's initial emission is recognized as "no change".
+    this.system = this.formProperty.parent.getProperty('system').value;
+    this.selectedSystem = this.systemLookups.find((obj: any) => obj.systemUrl === this.system);
+    if (this.selectedSystem) {
+      this.autoComplete = true;
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        this.resetAutocomplete(false);
+      }, 0);
     }
 
-    const sub = this.formProperty.parent.getProperty('system').valueChanges.subscribe((system) => {
-      if (this.system === system) {
+    sub = this.formProperty.parent.getProperty('system').valueChanges.subscribe((system) => {
+      if(this.formService.loading || this.system === system) {
         return;
       }
-      if (this.system) {
-        this.initializing = false;
-      }
+
       this.system = system;
 
       this.selectedSystem = this.systemLookups.find((obj: any) => obj.systemUrl === system);
       if (this.selectedSystem) {
 
-        if (!this.initializing) {
           const currentCodingObject = this.formProperty.parent.value;
           currentCodingObject.system = this.system;
           currentCodingObject.display = '';
           currentCodingObject.code = '';
           this.formProperty.parent.reset(currentCodingObject, false);
-        }
 
         this.autoComplete = true;
         this.cdr.detectChanges();
@@ -126,11 +118,7 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
 
         this.destroyAutocomplete();
 
-        if ((!this.control.value && this.formProperty.value) ||
-            (this.control.value && !this.formProperty.value)) {
-          this.control.setValue(this.formProperty.value);
-          this.cdr.markForCheck();
-        } else if (!this.formProperty.value) {
+        if (!this.formProperty.value) {
           if (this.manualInput && this.manualInput.nativeElement) {
             this.manualInput.nativeElement.focus();
           }
@@ -138,17 +126,6 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
       }
     });
     this.subscriptions.push(sub);
-
-    // Prevent the focusin from bubbling up
-    // Loading existing questionnaires with answerOptions missing `display`
-    // causes the input to be auto-focused. This fires a `focusin` event,
-    // which triggers validation and shows a warning dialog prematurely.
-    if (this.codingDisplay) {
-      this.codingDisplay.nativeElement.addEventListener('focusin', (e) => {
-        e.stopPropagation();
-      }, { once: true, capture: true });
-    }
-
   }
 
   /**
@@ -163,22 +140,12 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
   updateValueCoding(coding: fhir.Coding, manualEntry: boolean) {
     if (!manualEntry && this.formProperty.value !== coding.display) {
       this.formProperty.parent.reset(coding, false);
-      this.control.setValue(coding.display);
+      // this.control.setValue(coding.display);
     } else if (manualEntry) {
       this.formProperty.setValue(coding.display, true);
     }
   };
 
-  /**
-   * Handle field change event in <input> tag.
-   * @param coding - Option value
-   */
-  fieldChanged(display: string) {
-    const coding = this.formProperty.parent.value;
-    coding['display'] = display;
-
-    this.updateValueCoding(coding, true);
-  }
 
   /**
    * Destroy autocomplete.
@@ -196,7 +163,7 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
   /**
    * Destroy and recreate autocomplete.
    */
-  resetAutocomplete() {
+  resetAutocomplete(shouldFocus = true) {
     this.destroyAutocomplete();
     if (!this.selectedSystem) {
       return;
@@ -212,7 +179,7 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
 
     if (this.formProperty.value) {
       this.autoComp.setFieldVal(this.formProperty.value, false);
-    } else if (this.codingDisplay && this.codingDisplay.nativeElement && !this.codingDisplay.nativeElement.value) {
+    } else if (shouldFocus && this.codingDisplay && this.codingDisplay.nativeElement && !this.codingDisplay.nativeElement.value) {
       this.codingDisplay.nativeElement.focus();
     }
 
@@ -222,11 +189,11 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
         code = data.item_code;
       }
 
-      this.updateValueCoding({
-        code: code,
-        system: this.formProperty.parent.value.system,
-        display: data.final_val
-      } as fhir.Coding, false);
+      const coding = this.formProperty.parent.value;
+      coding.code = code;
+      coding.display = data.final_val;
+
+      this.updateValueCoding(coding, false);
     });
   }
 
@@ -236,10 +203,6 @@ export class CodingDisplayComponent extends LfbArrayWidgetComponent implements A
    */
   ngOnDestroy() {
     this.destroyAutocomplete();
-    this.subscriptions.forEach((s) => {
-      if(s) {
-        s.unsubscribe();
-      }
-    });
+    super.ngOnDestroy();
   }
 }

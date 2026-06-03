@@ -4,21 +4,23 @@
 import {
   ChangeDetectorRef,
   Component,
-  EventEmitter,
+  EventEmitter, inject,
   Input, OnChanges,
   Output,
-  SimpleChanges,
+  SimpleChanges, ViewChild, ViewContainerRef,
 } from '@angular/core';
 import {SharedObjectService} from '../services/shared-object.service';
+import {SfFormWrapperComponent} from "../sf-form-wrapper/sf-form-wrapper.component";
 
 @Component({
   standalone: false,
   selector: 'lfb-ngx-schema-form',
   template: `
     <div class="container">
-      @if (instantiate) {
-        <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)" (validationErrorsChanged)="onValidationErrorsChange($event)"></lfb-sf-form-wrapper>
-      }
+      <!--
+      <ng-container #sfFormWrapperHost></ng-container>
+      -->
+      <lfb-sf-form-wrapper [model]="model" (valueChange)="updateValue($event)" (errorsChanged)="onErrorsChange($event)" (validationErrorsChanged)="onValidationErrorsChange($event)"></lfb-sf-form-wrapper>
     </div>
     `,
   styles: [`
@@ -36,7 +38,7 @@ import {SharedObjectService} from '../services/shared-object.service';
 
   `]
 })
-export class NgxSchemaFormComponent implements OnChanges {
+export class NgxSchemaFormComponent/* implements OnChanges */ {
 
   static ID = 0;
   _id = ++NgxSchemaFormComponent.ID;
@@ -54,17 +56,31 @@ export class NgxSchemaFormComponent implements OnChanges {
   @Output()
   validationErrorsChanged = new EventEmitter<any[]>();
 
-  constructor(private modelService: SharedObjectService, private cdr: ChangeDetectorRef) {
+  // @ViewChild('sfFormWrapperHost', {read: ViewContainerRef}) sfFormWrapperHost: ViewContainerRef;
+
+  private modelService = inject(SharedObjectService);
+  private cdr = inject(ChangeDetectorRef);
+  constructor() {
   }
 
+  /*
   ngOnChanges(changes: SimpleChanges) {
     // Destroy the current component and recreate new one.
-    this.instantiate = false;
-    this.cdr.detectChanges();
-    this.instantiate = true;
-    this.cdr.detectChanges();
+    if(changes.model.firstChange && !changes.model.currentValue) {
+      return;
+    }
+    this.createNewFormWrapper();
   }
 
+  private createNewFormWrapper() {
+    this.sfFormWrapperHost.clear();
+    const componentRef = this.sfFormWrapperHost.createComponent<SfFormWrapperComponent>(SfFormWrapperComponent);
+    componentRef.setInput('model', this.model);
+    componentRef.instance.valueChange.subscribe((value: any) => this.updateValue(value));
+    componentRef.instance.errorsChanged.subscribe((errors: any[]) => this.onErrorsChange(errors));
+    componentRef.instance.validationErrorsChanged.subscribe((errors: any[]) => this.onValidationErrorsChange(errors));
+  }
+  */
   /**
    * The model is changed, emit the event.
    * @param value - Event value.

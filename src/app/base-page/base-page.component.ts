@@ -6,7 +6,9 @@ import {
   OnInit,
   Output,
   TemplateRef,
-  ViewChild
+  ViewChild,
+  inject,
+  OnDestroy
 } from '@angular/core';
 import {FormService} from '../services/form.service';
 import fhir from 'fhir/r4';
@@ -39,7 +41,7 @@ type SubjectTypeImportChoice = 'cancel' | 'keep' | 'drop';
   styleUrls: ['./base-page.component.css'],
   providers: [NgbActiveModal]
 })
-export class BasePageComponent implements OnInit {
+export class BasePageComponent implements OnInit, OnDestroy {
 
   private unsubscribe = new Subject<void>();
   @Input()
@@ -67,15 +69,16 @@ export class BasePageComponent implements OnInit {
   titleAriaLabel: string;
   editMenuTargetStep = 'item-editor';
 
-  constructor(private formService: FormService,
-              private modelService: SharedObjectService,
-              private modalService: NgbModal,
-              private dataSrv: FetchService,
-              public fhirService: FhirService,
-              private appJsonPipe: AppJsonPipe,
-              private matDlg: MatDialog,
-              private subjectTypeService: SubjectTypeService
-              ) {
+  private formService = inject(FormService);
+  private modelService = inject(SharedObjectService);
+  private modalService = inject(NgbModal);
+  private dataSrv = inject(FetchService);
+  public fhirService = inject(FhirService);
+  private appJsonPipe = inject(AppJsonPipe);
+  private matDlg = inject(MatDialog);
+  private subjectTypeService = inject(SubjectTypeService);
+
+  constructor() {
     this.acResult = null;
     const isAutoSaved = this.formService.isAutoSaved();
     if(isAutoSaved && !this.isDefaultForm()) {
@@ -108,7 +111,7 @@ export class BasePageComponent implements OnInit {
       console.log('Saved');
     });
 
-    formService.guidingStep$.subscribe((step: GuidingStep) => {
+    this.formService.guidingStep$.subscribe((step: GuidingStep) => {
       this.guidingStep = step;
     });
 
@@ -116,7 +119,7 @@ export class BasePageComponent implements OnInit {
       next: (lformsVersion) => {
         if(this.openerUrl) {
           // Send the message to window opener after the LForms is loaded.
-          formService.notifyWindowOpener({type: 'initialized'});
+          this.formService.notifyWindowOpener({type: 'initialized'});
         }
       },
       error: (error) => {

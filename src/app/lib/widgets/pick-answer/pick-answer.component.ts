@@ -8,10 +8,15 @@ import { HttpParams } from "@angular/common/http";
 import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
 import { TYPE_CODING, ANSWER_OPTION_METHOD_ANSWER_OPTION } from '../../constants/constants';
+import {SharedObjectService} from "../../../services/shared-object.service";
+import {CommonModule} from "@angular/common";
+import {SchemaFormModule} from "@lhncbc/ngx-schema-form";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import {LabelComponent} from "../label/label.component";
 
 @Component({
-  standalone: false,
   selector: 'lfb-pick-answer',
+  imports: [CommonModule, SchemaFormModule, FontAwesomeModule, LabelComponent],
   templateUrl: './pick-answer.component.html',
   // Add this to reduce the thickness of the red highlight when there is an error.
   styles: [`
@@ -24,6 +29,7 @@ import { TYPE_CODING, ANSWER_OPTION_METHOD_ANSWER_OPTION } from '../../constants
 export class PickAnswerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy{
   private cdr = inject(ChangeDetectorRef);
   private formService = inject(FormService);
+  private modelService = inject(SharedObjectService);
   private answerOptionService = inject(AnswerOptionService);
 
   @ViewChild('autoComplete') autoCompleteElement;
@@ -43,8 +49,6 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
     maxSelect: 1
   }
   ansOptMethod;
-
-  subscriptions: Subscription[] = [];
 
   itemId: number;
   linkId: string;
@@ -76,15 +80,15 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
    */
   ngOnInit(): void {
     super.ngOnInit();
+    this.init();
+  }
 
+  /**
+   * Initialize component.
+   */
+  init() {
     this.itemId = this.formProperty.findRoot().getProperty('id').value;
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
-
-    const initialObj = {
-      "repeats": this.isRepeating,
-      "selectedAnswers": []
-    };
-    this.formProperty.setValue(initialObj, false);
   }
 
   /**
@@ -93,6 +97,12 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
    */
   ngAfterViewInit(): void {
     let sub: Subscription;
+
+    sub = this.modelService.modelInitialized$.subscribe(() => {
+      this.init();
+    });
+
+    this.subscriptions.push(sub);
 
     sub = this.formProperty.findRoot().getProperty('type').valueChanges.subscribe((type) => {
       this.type = type;
@@ -389,10 +399,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
    */
   ngOnDestroy(): void {
     this.destroyAutocomplete();
-
-    this.subscriptions.forEach((sub) => {
-      sub.unsubscribe();
-    });
+    super.ngOnDestroy();
   }
 }
 

@@ -162,9 +162,6 @@
       },
       "widget": {
         "id": "hidden",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2",
-        "controlWidthClass": "col-sm-1"
       }
     },
     "extension": {
@@ -173,9 +170,21 @@
         "$ref": "#/definitions/Extension"
       },
       "type": "array",
-      "title": "Extension",
+      "title": "Extensions",
       "widget": {
-        "id": "hidden"
+        "id": "extension",
+        "addEditAction": true,
+        "labelPosition": "left",
+        "labelClasses": "col-sm-2 ps-0 pe-1",
+        "controlClasses": "col-sm-10",
+        "addButtonLabel": "Add new extension",
+        "addButtonTitle": "Note that the extensions added by other UI elements will be disabled for editing here.",
+        "showFields": [
+          // The fields here are canonical paths of FormProperty.
+          {"field": "url", "col": 4, "nolabel": true},
+          {"field": "__$valueType", "col": 2, "nolabel": true},
+          {"field": "__$stringify", "col": 4, "nolabel": true},
+        ]
       }
     },
     "modifierExtension": {
@@ -863,11 +872,12 @@
           "$ref": "#/definitions/Expression"
         }
       },
+      "additionalProperties": true,
       "visibleIf": {
         "__$enableWhenMethod": ["enablewhen-expression"]
       },
       "widget": {
-        "id": "expression-editor",
+        "id": "enable-when-expression",
         "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
         "expressionLabel": "enableWhen Expression",
         "noTableLabel": true,
@@ -876,6 +886,7 @@
           titleSection: true,
           uneditableVariablesSection: true,
           itemVariablesSection: true,
+          itemVariablesSectionExpanded: false,
           outputExpressionSection: true
         },
         "labelPosition": "left",
@@ -974,13 +985,8 @@
           "enum": ["answer-expression"],
           "title": "Answer expression"
         },
-        {
-          "type": "string",
-          "enum": ["none"],
-          "title": "None"
-        }
       ],
-      "default": "none",
+      "default": "answer-option",
       "type": "string",
       "visibleIf": {
         "__$isAnswerList": [true]
@@ -1045,7 +1051,7 @@
         "id": "answer-value-set",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col form-control form-control-sm"
+        "controlClasses": "col m-0 p-0"
       }
     },
     "answerOption": {
@@ -1544,8 +1550,8 @@
         "placeholder": "Enter url for preferred terminology server",
         "note": "You may wish to set this if you are providing an answer value set for either this item or its children.",
         "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col p-0"
+        "labelClasses": "col-sm-2 ps-0 pe-1",
+        "controlClasses": "col-sm-10 m-0 p-0"
       }
     },
     "__$valueMethod": {
@@ -2163,58 +2169,11 @@
             }
           },
           "valueExpression": {
-            "description": "Value of extension - must be one of a constrained set of the data types (see [Extensibility](extensibility.html) for a list).",
-            "properties": {
-              "id": {
-                "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "description": {
-                "description": "A brief, natural language description of the condition that effectively communicates the intended semantics.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "name": {
-                "description": "A short name assigned to the expression to allow for multiple reuse of the expression in the context where it is defined.",
-                "pattern": "^[A-Za-z0-9\\-\\.]{1,64}$",
-                "type": "string"
-              },
-              "language": {
-                "description": "The media type of the language for the expression.",
-                "enum": [
-                  "text/cql",
-                  "text/fhirpath",
-                  "application/x-fhir-query"
-                ],
-                "type": "string"
-              },
-              "expression": {
-                "description": "An expression in the specified language that returns a value.",
-                "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
-              },
-              "reference": {
-                "description": "A URI that defines where the expression is found.",
-                "pattern": "^\\S*$",
-                "type": "string"
-              },
-              "extension": {
-                "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
-                "items": {
-                  "$ref": "#/definitions/Extension"
-                },
-                "type": "array",
-                "widget": {
-                  "id": "hidden"
-                }
-              }
-            },
-            "additionalProperties": false,
-            "type": "object"
+            "description": "The value of the Output parameter as a basic type.",
+            "$ref": "#/definitions/Expression",
           }
         },
-        "additionalProperties": false,
+        "additionalProperties": true,
         "type": "object"
       },
       "widget": {
@@ -2239,12 +2198,12 @@
         ],
         "showDataFields": [
           {"field": "valueExpression.name", "nolabel": true, "col": 2, "title": "Name"},
-          {"field": "valueExpression.extension", "nolabel": true, "col": 3, "tile": "Type"},
+          {"field": "valueExpression.extension", "nolabel": true, "col": 3, "title": "Type"},
           {"field": "valueExpression.expression", "nolabel": true, "col": 6, "title": "Question/FHIRPath Expression/FHIR Query"}
         ]
       }
     },
-    "__$initialExpression": {
+    "__$initialCalculatedExpression": {
       "description": "A FHIRPath expression used to compute the initial (default) value of a questionnaire item when the form is first rendered.",
       "title": "Expression",
       "type": "object",
@@ -2286,11 +2245,12 @@
           "$ref": "#/definitions/Expression"
         }
       },
+      "additionalProperties": true,
       "visibleIf": {
-        "__$valueMethod": ["compute-initial"]
+        "__$valueMethod": ["compute-initial", "compute-continuously"]
       },
       "widget": {
-        "id": "expression-editor",
+        "id": "initial-calculated-expression-editor",
         "expressionUri":  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
         "userExpressionChoices": [
           { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
@@ -2309,75 +2269,7 @@
         },
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col form-control form-control-sm"
-      }
-    },
-    "__$calculatedExpression": {
-      "description": "A FHIRPath expression that determines the current value of a Questionnaire item based on other answers or context.",
-      "title": "Expression",
-      "type": "object",
-      "properties": {
-        "id": {
-          "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
-          "title": "Id",
-          "pattern": "^[ \\r\\n\\t\\S]+$",
-          "type": "string",
-          "widget": {"id": "hidden"}
-        },
-        "url": {
-          "description": "A location where the data can be accessed.",
-          "pattern": "^\\S*$",
-          "type": "string"
-        },
-        "extension": {
-          "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
-          "items": {
-            "$ref": "#/definitions/Extension"
-          },
-          "type": "array",
-          "title": "Extension",
-          "widget": {
-            "id": "hidden"
-          }
-        },
-        "valueString": {
-          "description": "A potential answer that's allowed as the answer to this question.",
-          "pattern": "^[ \\r\\n\\t\\S]+$",
-          "type": "string",
-          "title": "Value string",
-          "visibleIf": {
-            "/type": ["$EXP$ target.value == 'string' || target.value == 'text'"]
-          }
-        },
-        "valueExpression": {
-          "description": "The value of the Output parameter as a basic type.",
-          "$ref": "#/definitions/Expression"
-        }
-      },
-      "visibleIf": {
-        "__$valueMethod": ["compute-continuously"]
-      },
-      "widget": {
-        "id": "expression-editor",
-        "expressionUri": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-        "userExpressionChoices": [
-          { name: 'Computed continuously', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression' },
-          { name: 'Only computed when the form loads', uri: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression' }
-        ],
-        "noTableLabel": true,
-        "showExpression": true,
-        "expressionLabel": "Output Expression",
-        "displayExpressionEditorSections": {
-          titleSection: true,
-          uneditableVariablesSection: true,
-          uneditableVariablesSectionExpanded: false,
-          itemVariablesSection: true,
-          itemVariablesSectionExpanded: false,
-          outputExpressionSection: true
-        },
-        "labelPosition": "left",
-        "labelClasses": "col-2 ps-0 pe-1",
-        "controlClasses": "col form-control form-control-sm"
+        "controlClasses": "col"
       }
     },
     "__$answerExpression": {
@@ -2422,6 +2314,7 @@
           "$ref": "#/definitions/Expression"
         }
       },
+      "additionalProperties": true,
       "visibleIf": {
         "__$answerOptionMethods": ["answer-expression"]
       },
@@ -2472,6 +2365,14 @@
       },
       "visibleIf": {
         "type": ["$EXP$ target.value != 'display'"]
+      }
+    },
+    "__$extensionContainer": {
+      "description": "May be used to represent additional information that is not part of the basic definition of the resource. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
+      "title": "General Extensions",
+      "type": "string",
+      "widget": {
+        "id": "extension-container",
       }
     },
     "__$units": {
@@ -2588,22 +2489,6 @@
         ]
       }
     },
-/*
-    "__$units": {
-      "description": "The units for answers. They are applicable for integer, decimal, and quantity types.",
-      "title": "Units",
-      "pattern": "^[ \\r\\n\\t\\S]+$",
-      "type": "string",
-      "widget": {
-        "id": "units",
-        "labelPosition": "left",
-        "labelWidthClass": "col-sm-2 pe-1",
-        "controlWidthClass": "col-sm-10"
-      },
-      "visibleIf": {
-        "type": ["$EXP$ target.value == 'integer' || target.value == 'decimal' || target.value == 'quantity'"]
-      }
-    }, */
     /** Proxy for help text. Help text is represented by a child item.
      In form builder, to avoid child item to represent like a child question, the help text child item
       is converted to a proxy field __$helpText. Its _ element is this:
@@ -2997,22 +2882,11 @@
     },
     {
       "fields": [
-        "__$initialExpression"
+        "__$initialCalculatedExpression"
       ],
       "showFields": [
         {
-          "field": "__$initialExpression",
-          "col": 12
-        }
-      ]
-    },
-    {
-      "fields": [
-        "__$calculatedExpression"
-      ],
-      "showFields": [
-        {
-          "field": "__$calculatedExpression",
+          "field": "__$initialCalculatedExpression",
           "col": 12
         }
       ]
@@ -3117,7 +2991,7 @@
       ]
     },
     {
-      "fields": ["id", "__$treeNodeId", "extension", "modifierExtension", "definition"]
+      "fields": ["id", "__$treeNodeId", "__$extensionContainer", "extension", "modifierExtension", "definition"]
     }
   ],
   "steps": [

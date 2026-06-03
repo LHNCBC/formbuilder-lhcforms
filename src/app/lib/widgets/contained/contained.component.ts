@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { TableComponent } from '../table/table.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { SchemaFormModule} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { AppFormElementComponent } from '../form-element/form-element.component';
 import { LabelComponent } from '../label/label.component';
 import { TitleComponent } from '../title/title.component';
@@ -12,6 +12,7 @@ import { BooleanControlledComponent } from '../boolean-controlled/boolean-contro
 import { ResourceDlgComponent, ResourceData } from '../resource-dlg/resource-dlg.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import {MatTooltip} from "@angular/material/tooltip";
+import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 
 
 @Component({
@@ -28,7 +29,8 @@ import {MatTooltip} from "@angular/material/tooltip";
     FontAwesomeModule,
     NgbModule,
     MatDialogModule,
-    MatTooltip
+    MatTooltip,
+    IsDisabledPipe
   ],
   templateUrl: '../table/table.component.html',
   styleUrl: '../table/table.component.css',
@@ -48,13 +50,9 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
    * Ng OnInit lifecycle hook.
    */
   ngOnInit() {
+    this.addDefaultItemIfEmpty = false; // Avoid adding default row.
     const rows = this.formProperty.properties.length;
     super.ngOnInit();
-    if (rows === 0) {
-      // Table component adds a row by default for the user to enter first row.
-      // In this component, the rows are in the dialog, so we don't want to add a row.
-      this.removeProperty(0);
-    }
   }
 
   /**
@@ -121,11 +119,13 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
 
   /**
    * Check if the edit button should be disabled for a given row.
+   * @param arrayProperty - The ArrayProperty containing the rows.
    * @param index - Row index in the table.
    */
-  isDisabled(index: number): boolean {
-    const formProperty = this.formProperty.properties[index];
-    return !!(formProperty?.getProperty('resourceType').value !== 'ValueSet');
+  _isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
+    const formProperty = arrayProperty?.properties[index];
+    return (formProperty?.getProperty('resourceType').value !== 'ValueSet');
   }
 
+  override isDisabled = this._isDisabled.bind(this);
 }
