@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.2.1] 2026-05-22
+### Added
+- Exported Questionnaire JSON now follows FHIR canonical field order for all
+  backbone elements (Questionnaire, Item, EnableWhen, AnswerOption, Initial).
+
 ## [11.2.0] 2026-05-22
 ### Added
 - Added `effectivePeriod` to form level fields in the advanced section.
@@ -977,3 +982,4 @@ ranked higher during the auto-completion.
 - Fixed displaying other in answer list item.
 ### Changed
 - Changed Text and Code fields to be required.
+
