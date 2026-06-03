@@ -2,6 +2,7 @@ import {Component, OnInit, Input, inject} from '@angular/core';
 import { LoginService, UserProfile } from '../services/login.service';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import {faGithub} from '@fortawesome/free-brands-svg-icons';
 import appVersion from '../../assets/version.json';
 
 
@@ -19,7 +20,12 @@ import appVersion from '../../assets/version.json';
       @if (appVersion) {
         <div class="float-lg-right version-info align-self-end fw-bold pb-1"
           >Version: <a target="_blank" rel="noopener noreferrer"
-        href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a></div>
+                       title="View change log"
+                       href="https://github.com/lhncbc/formbuilder-lhcforms/blob/master/CHANGELOG.md">{{appVersion}}</a>
+          | <a href="https://github.com/lhncbc/formbuilder-lhcforms"
+               target="_blank" rel="noopener noreferrer"
+               title="View source on GitHub"><fa-icon [icon]="faGithub"></fa-icon></a>
+        </div>
       }
       @if (isFirebaseEnabled) {
         <div class="float-lg-right">
@@ -47,6 +53,9 @@ import appVersion from '../../assets/version.json';
     </nav>
     `,
   styles: [`
+    fa-icon {
+      vertical-align: -0.125em;
+    }
     #header {
       /* margin-bottom: 20px; */
       position: relative;
@@ -121,6 +130,7 @@ export class HeaderComponent implements OnInit {
   isFirebaseEnabled = false;
   loginError: any = null;
   appVersion: string;
+  faGithub = faGithub;
 
   loginService = inject(LoginService);
   iconRegistry = inject(MatIconRegistry);
