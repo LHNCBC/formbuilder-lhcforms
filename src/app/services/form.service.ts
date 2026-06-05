@@ -1199,6 +1199,8 @@ export class FormService {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
     } else if (version !== 'R5') {
       ret = Util.convertQuestionnaire(fhirQ, version);
+      // Apply FHIR canonical field ordering after version conversion
+      ret = Util.orderQuestionnaireFields(ret);
     }
     return ret;
   }
