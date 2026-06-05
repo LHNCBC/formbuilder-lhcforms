@@ -3,6 +3,7 @@ import {TableComponent} from '../table/table.component';
 import { Subscription } from 'rxjs';
 import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
+import {SharedObjectService} from "../../../services/shared-object.service";
 import { DialogService } from 'src/app/services/dialog.service';
 import { MessageType } from '../message-dlg/message-dlg.component';
 import { ValidationService } from 'src/app/services/validation.service';
@@ -17,6 +18,7 @@ import { TreeNode } from '@bugsplat/angular-tree-component';
 })
 export class AnswerOptionComponent extends TableComponent implements AfterViewInit, OnInit, OnDestroy {
   private formService = inject(FormService);
+  private modelService = inject(SharedObjectService);
   private answerOptionService = inject(AnswerOptionService);
   dialogService = inject(DialogService);
   validationService = inject(ValidationService);
@@ -45,9 +47,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   ngOnInit() {
     super.ngOnInit();
-    this.initializing = true;
     this.init();
-    this.initializing = false;
   }
 
   init() {
@@ -84,7 +84,7 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
     sub = this.formProperty.valueChanges.subscribe((newValue) => {
       // Avoid updating score extensions during initialization.
-      if(!this.initializing) {
+      if(!this.formService.loading) {
         this.updateScoreExtensions(newValue);
 
         if (this.hasReferenced) {
@@ -103,19 +103,17 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
     });
     this.subscriptions.push(sub);
 
-    sub = this.formService.formReset$.subscribe(() => {
-      // Flag valueChanges observer to avoid updating score extensions.
-      this.initializing = true;
-      // Updates *.valueCoding.__$score and *.initialSelected.
+    sub = this.modelService.modelInitialized$.subscribe(() => {
       this.init();
-      this.initializing = false;
      });
     this.subscriptions.push(sub);
 
     const repeatProp = this.formProperty.findRoot().getProperty('repeats');
     sub = repeatProp.valueChanges.subscribe((isRepeating) => {
+      if(this.formService.loading) {
+        return;
+      }
       this.setSelectionType(isRepeating);
-      if(!this.initializing) {
         const firstCheckbox = this.selectionCheckbox.findIndex((e) => {return e});
         // When flipping DEFAULT TYPE from radio to checkbox or vice versa, and if no selections are made on
         // the current type, assign first selection of previous type to the current type.
@@ -133,19 +131,14 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
           }
           this.updateWithRadioSelection();
         }
-      }
       this.cdr.markForCheck();
     });
     this.subscriptions.push(sub);
-
-    sub = this.formService.formChanged$.subscribe(() => {
-      // New form is to be loaded, mark initialization.
-      this.initializing = true;
-    });
-    this.subscriptions.push(sub);
-
     // Subscribe to single selection (repeats = false) by the "Pick Initial" field.
     sub = this.answerOptionService.radioSelection$.subscribe((selection) => {
+      if(this.formService.loading) {
+        return;
+      }
       this.selectionRadio = selection;
       this.updateWithRadioSelection();
     });
@@ -153,6 +146,9 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
 
     // Subscribe to multiple selections (repeats = true) by the "Pick Initial" field.
     sub = this.answerOptionService.checkboxSelection$.subscribe((selection) => {
+      if(this.formService.loading) {
+        return;
+      }
       this.selectionCheckbox = selection;
       this.updateWithCheckboxSelections();
     });
@@ -424,5 +420,13 @@ export class AnswerOptionComponent extends TableComponent implements AfterViewIn
    */
   isReferencedByOtherItem(index: number): boolean {
     return this.answerOptionService.isOptionReferenced(this.formProperty, index);
+  }
+
+  /**
+   * Only reserve the status column when at least one answer option is referenced.
+   */
+  override shouldIncludeStatusColumn(): boolean {
+    return !!this.formProperty.schema.widget?.showLinkStatus &&
+      this.rowProperties.some((_rowProperty, index) => this.isReferencedByOtherItem(index));
   }
 }

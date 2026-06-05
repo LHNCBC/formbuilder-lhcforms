@@ -65,7 +65,8 @@ async function getMessage(page: Page, type: string) {
     const eventElementMap = {
       initialized: '#initW',
       updateQuestionnaire: '#updateQ',
-      closed: '#closedQ'
+      closed: '#closedQ',
+      canceled: '#canceledQ'
     };
 
     const loc = eventElementMap[type];

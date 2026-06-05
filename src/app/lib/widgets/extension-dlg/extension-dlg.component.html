@@ -1,0 +1,23 @@
+<div #dlgContainer class="extension-dlg-container">
+<h2 mat-dialog-title class="bg-primary text-white pe-2 pb-3">Extension
+  <button mat-icon-button class="close-button mt-2" (click)="cancel()">
+    <mat-icon class="close-icon" matTooltip="Discard changes">close</mat-icon>
+  </button>
+</h2>
+<mat-dialog-content #dlgContent class="dlg-content">
+  <h2 class="m-3 mb-1">Edit extension fields</h2>
+  <div class="m-3 mt-1">{{path}}</div>
+  <hr/>
+  <div class="container">
+    <lfb-extension-obj
+                       [model]="inputModel"
+                       (changed)="onChange($event)"
+    ></lfb-extension-obj>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions class="border-top pe-3 pt-3" align="end">
+  <button class="btn btn-primary" (click)="cancel()">Discard changes</button>
+  <button class="btn btn-primary ms-2" [disabled]="disableSave()" (click)="save()">Save and close</button>
+</mat-dialog-actions>
+</div>
+

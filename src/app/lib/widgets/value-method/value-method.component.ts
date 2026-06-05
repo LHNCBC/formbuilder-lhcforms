@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject } from '@angular/core';
 import {FormService} from '../../../services/form.service';
 import { Subscription } from 'rxjs';
 import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
 import { Util } from '../../util';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 import * as CONSTANTS from '../../constants/constants';
+import {SharedObjectService} from "../../../services/shared-object.service";
 
 
 @Component({
@@ -12,13 +13,12 @@ import * as CONSTANTS from '../../constants/constants';
   selector: 'lfb-value-method',
   templateUrl: './value-method.component.html'
 })
-export class ValueMethodComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ValueMethodComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit {
   private formService = inject(FormService);
+  private modelService = inject(SharedObjectService);
 
   type = CONSTANTS.TYPE_STRING;
   linkId: string;
-  answerOptions;
-  subscriptions: Subscription[] = [];
   isAnswerList = false;
   displayTypeInitial = true;
   displayPickInitial = true;
@@ -33,6 +33,10 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
    */
   ngOnInit(): void {
     super.ngOnInit();
+    this.init();
+  }
+
+  init() {
     this.currentValueMethod = this.formProperty.value;
     this.linkId = this.formProperty.findRoot().getProperty('linkId').value;
   }
@@ -102,11 +106,6 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
 
     sub = this.formProperty.searchProperty('/__$isAnswerList').valueChanges.subscribe((isAnswerList) => {
       this.isAnswerList = isAnswerList;
-
-      if (this.type === CONSTANTS.TYPE_STRING) {
-        this.type = this.formProperty.findRoot().getProperty('type').value;
-      }
-
       this.updateValueMethodOptions(this.type, this.answerOptionMethod, isAnswerList);
     });
     this.subscriptions.push(sub);
@@ -136,9 +135,6 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
 
       if (changed) {
         this.currentValueMethod = val;
-        this.formProperty.setValue(val, false);
-
-        const exts = this.formProperty.findRoot().getProperty('extension').value;
 
         if ((val === CONSTANTS.VALUE_METHOD_COMPUTE_INITIAL || val === CONSTANTS.VALUE_METHOD_COMPUTE_CONTINUOUSLY) && this.formService.isFocusNodeHasError()) {
           // Check to see if this item has an error. This is the case where users is switching between
@@ -154,25 +150,18 @@ export class ValueMethodComponent extends LfbControlWidgetComponent implements O
         // remove any lingering answer expression-related extensions from the root 'extension' property
         // to ensure the form state is consistent and does not retain
         if ((val !== CONSTANTS.VALUE_METHOD_COMPUTE_INITIAL && val !== CONSTANTS.VALUE_METHOD_COMPUTE_CONTINUOUSLY) && this.answerOptionMethod !== CONSTANTS.ANSWER_OPTION_METHOD_ANSWER_EXPRESSION) {
-          const updatedExts = this.formService.removeExpressionsExtensions(exts);
-          if (updatedExts.length !== exts.length) {
-            this.formProperty.findRoot().getProperty('extension').setValue(updatedExts, false);
-          }
+          this.extensionsService.removeAllExtensions((extProp) => {
+            return (extProp.value?.url === CONSTANTS.EXTENSION_URL_CALCULATED_EXPRESSION || extProp.value?.url === CONSTANTS.EXTENSION_URL_INITIAL_EXPRESSION);
+          });
         }
       }
     });
-  }
+    this.subscriptions.push(sub);
 
-
-  /**
-   * Clean up before destroy.
-   * Unsubscribe all subscriptions.
-   */
-  ngOnDestroy() {
-    this.subscriptions.forEach((s) => {
-      if(s) {
-        s.unsubscribe();
-      }
+    sub = this.modelService.modelInitialized$.subscribe((model) => {
+      this.init();
     });
+    this.subscriptions.push(sub);
   }
+
 }

@@ -37,8 +37,10 @@ import {TerminologyServerComponent} from './widgets/terminology-server/terminolo
 import {AnswerValueSetComponent} from './widgets/answer-value-set/answer-value-set.component';
 import {ItemControlComponent} from './widgets/item-control/item-control.component';
 import {DateComponent} from './widgets/date/date.component';
+import {DateRangeComponent} from './widgets/date-range/date-range.component';
 import {TextAreaComponent} from './widgets/textarea/textarea.component';
 import {DatetimeComponent} from './widgets/datetime/datetime.component';
+import {InstantComponent} from './widgets/instant/instant.component';
 import {EditableLinkIdComponent} from './widgets/editable-link-id/editable-link-id.component';
 import {HelpTextComponent} from "./widgets/help-text/help-text.component";
 import { ContainedComponent } from './widgets/contained/contained.component';
@@ -46,18 +48,28 @@ import { ValueSetResourceComponent } from './widgets/value-set-resource/value-se
 
 import { ValueMethodComponent } from './widgets/value-method/value-method.component';
 import { PickAnswerComponent } from './widgets/pick-answer/pick-answer.component';
-import { ExpressionEditorComponent } from './widgets/expression-editor/expression-editor.component';
+import {PositiveIntegerComponent} from './widgets/positive-integer/positive-integer.component';
+import { AnswerExpressionComponent } from './widgets/expression-editor/answer-expression/answer-expression.component';
 import { ExpressionEditorDlgComponent } from './widgets/expression-editor-dlg/expression-editor-dlg.component';
 import { VariableComponent } from './widgets/variable/variable.component';
 import { InitialNumberComponent } from './widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
-import { TimeComponent } from "./widgets/time/time.component";
+import {TimeComponent} from "./widgets/time/time.component";
+import {ExtensionComponent} from "./widgets/extension/extension.component";
+import {TableEditRowInDlgComponent} from "./widgets/table-edit-row-in-dlg/table-edit-row-in-dlg.component";
 import {LfbObjectComponent} from "./widgets/lfb-object/lfb-object.component";
+import {LfbArrayComponent} from "./widgets/lfb-array/lfb-array.component";
+import {ExtensionContainerComponent} from "./widgets/extension-container/extension-container.component";
 import { CodingSystemComponent } from './widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
+import {UnsignedIntegerComponent} from './widgets/unsigned-integer/unsigned-integer.component';
 import { MetaProfileComponent } from './widgets/meta-profile/meta-profile.component';
+import {
+  CalculatedInitialExpressionComponent
+} from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
+import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -70,13 +82,17 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('string', StringComponent);
     this.register('textarea', TextAreaComponent);
     this.register('date', DateComponent);
+    this.register('date-range', DateRangeComponent);
     this.register('datetime', DatetimeComponent);
+    this.register('instant', InstantComponent);
     this.register('time', TimeComponent);
     this.register('url', StringComponent);
     this.register('select', SelectComponent);
     this.register('checkbox', CheckboxComponent);
     this.register('boolean', CheckboxComponent);
     this.register('integer', IntegerComponent);
+    this.register('positive-integer', PositiveIntegerComponent);
+    this.register('unsigned-integer', UnsignedIntegerComponent);
     this.register('number', NumberComponent);
     this.register('lb-radio', LabelRadioComponent);
     this.register('enable-when', EnableWhenComponent);
@@ -105,16 +121,23 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register("value-set", ValueSetResourceComponent);
     this.register('value-method', ValueMethodComponent);
     this.register('pick-answer', PickAnswerComponent);
-    this.register('expression-editor', ExpressionEditorComponent);
+    this.register('initial-calculated-expression-editor', CalculatedInitialExpressionComponent);
+    this.register('expression-editor', AnswerExpressionComponent);
     this.register('expression-editor-dlg', ExpressionEditorDlgComponent);
     this.register('variable', VariableComponent);
     this.register('initial-number', InitialNumberComponent);
     this.register('entry-format', EntryFormatComponent);
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
+    this.register('extension', ExtensionComponent);
+    this.register('extension-container', ExtensionContainerComponent);
+    this.register('table-edit-row-in-dlg', TableEditRowInDlgComponent);
     this.register('lfb-object', LfbObjectComponent);
+    this.register('array', LfbArrayComponent);
     this.register('coding-system', CodingSystemComponent);
     this.register('coding-display', CodingDisplayComponent);
     this.register('enable-when-method', EnableWhenMethodComponent);
+    this.register('enable-when-expression', EnableWhenExpressionComponent);
     this.register('meta-profile', MetaProfileComponent);
+    this.setDefaultWidget(StringComponent);
   }
 }

@@ -1,6 +1,7 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {Util} from '../../util';
+import {Subscription} from "rxjs";
 
 
 /**
@@ -11,7 +12,7 @@ import {Util} from '../../util';
   standalone: false,
   selector: 'lfb-grid',
   template: `
-    @for (fieldset of formProperty.schema.fieldsets; track fieldset.fields) {
+    @for (fieldset of formProperty.schema.fieldsets; track $index) {
       <div>
         @if (fieldset.title) {
           <legend>{{fieldset.title}}</legend>
@@ -38,8 +39,9 @@ import {Util} from '../../util';
     }
   `]
 })
-export class GridComponent extends ObjectWidget {
+export class GridComponent extends ObjectWidget implements OnDestroy {
 
+  subscriptions: Subscription[] = [];
   /**
    * Get formProperty (refer to ngx-schema-form) of a showField (refer to assets/*layout.json).
    *
@@ -97,5 +99,12 @@ export class GridComponent extends ObjectWidget {
       ret = p.schema.widget.id;
     }
     return ret;
+  }
+
+  /**
+   * Unsubscribe all subscriptions when destroy the component to avoid memory leak.
+   */
+  ngOnDestroy() {
+    this.subscriptions.forEach(s => s?.unsubscribe());
   }
 }

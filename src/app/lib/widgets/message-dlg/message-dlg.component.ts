@@ -59,13 +59,12 @@ export class MessageDlgComponent implements OnInit {
   buttons = [{label: 'Close', value: 'close'}];
 
   ngOnInit() {
-    this.title = this.title || this.options?.title;
-    this.message = this.message || this.options?.message;
-    this.type = this.type || this.options?.type;
+    this.title = this.title ?? this.options?.title;
+    this.message = this.message ?? this.options?.message;
+    this.type = this.type ?? this.options?.type;
     if(this.options?.buttons?.length) {
       this.buttons = this.options?.buttons;
     }
   }
 }
-
 

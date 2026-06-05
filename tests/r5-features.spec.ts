@@ -23,15 +23,17 @@ test.describe('r5-features.spec.ts', () => {
     // Unsupported type
     for (const listType of ['boolean', 'decimal', 'dateTime', 'url', 'quantity', 'group', 'display']) {
       await page.getByLabel('Data type', {exact: true}).selectOption({label: listType});
-      await expect(page.getByRole('radiogroup', {name: 'Create answer list'})).not.toBeVisible();
+      await expect(page.locator('lfb-label label').getByText('Create answer list')).not.toBeVisible();
     }
     // Supported type
     for (const listType of ['integer', 'date', 'time', 'string', 'text', 'coding']) {
       await page.getByLabel('Data type', {exact: true}).selectOption({label: listType});
-      await page.getByRole('radiogroup', {name: 'Create answer list'}).getByText('Yes').click()
+      await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
 
       for(const constraintType of Object.keys(constraintLabels)) {
-        await page.getByRole('radiogroup', {name: 'Answer constraint'}).getByText(constraintLabels[constraintType]).click();
+        await PWUtils.clickRadioButton(page, 'Answer constraint', constraintLabels[constraintType]);
+        await expect(PWUtils.getRadioButton(page, 'Answer constraint', constraintLabels[constraintType])).toBeChecked();
+        await page.waitForTimeout(100);
         let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(q.item[0].type).toBe(listType);
         expect(q.item[0].answerConstraint).toBe(constraintType);
@@ -108,7 +110,7 @@ test.describe('r5-features.spec.ts', () => {
     await elementLocatorInTable(parentEl, 2, 3, 'input').fill('b');
 
     for(const opt of Object.keys(disabledDisplayLabels)) {
-      await page.getByRole('radiogroup', {name: 'Hide or show this item when'}).getByText(disabledDisplayLabels[opt]).click();
+      await PWUtils.clickRadioButton(page, 'Hide or show this item when', disabledDisplayLabels[opt]);
       const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(q.item[1].disabledDisplay).toBe(opt);
     }
@@ -139,7 +141,7 @@ test.describe('r5-features.spec.ts', () => {
     await PWUtils.clickTreeNode(page, 'Integer type answer list layout');
     await PWUtils.expectDataTypeValue(page, /integer/);
     await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
-    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Drop down');
+    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Unspecified');
 
     await PWUtils.clickTreeNode(page, 'Date type answer list layout');
     await PWUtils.expectDataTypeValue(page, /date/);
@@ -154,7 +156,7 @@ test.describe('r5-features.spec.ts', () => {
     await PWUtils.clickTreeNode(page, 'Coding type answer list layout');
     await PWUtils.expectDataTypeValue(page, /coding/);
     await PWUtils.expectRadioChecked(page, 'Create answer list', 'Yes');
-    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Drop down');
+    await PWUtils.expectRadioChecked(page, 'Answer list layout', 'Unspecified');
 
     await PWUtils.clickTreeNode(page, 'String type answer list layout');
     await PWUtils.expectDataTypeValue(page, /string/);
@@ -191,20 +193,6 @@ test.describe('r5-features.spec.ts', () => {
     expect(q3.item[2].answerConstraint).toBeUndefined();
     expect(q3.item[2].type).toEqual('choice');
     expect(q3.item[2].option).toEqual(fileJson.item[2].answerOption);
-  });
-
-});
-
-test.describe('R4 to R5', () => {
-  test.beforeEach(async ({page}) => {
-    await page.goto('/');
-    let mainPO = new MainPO(page);
-    await mainPO.acceptAllTermsOfUse();
-    const json = await PWUtils.readJSONFile('local-storage-mock.R4.json');
-    await page.evaluate((mockQ) => {
-      window.localStorage.removeItem('state');
-      window.localStorage.setItem('fhirQuestionnaire', JSON.stringify(mockQ));
-    }, json);
   });
 
 });

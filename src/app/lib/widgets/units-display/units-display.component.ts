@@ -26,7 +26,7 @@ interface UnitExtension {
   selector: 'lfb-units-display',
   template: `
       <div class="{{controlWidthClass}} p-0">
-        <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control" (input)="onInput($event)"  />
+        <input autocomplete="off" type="text" [attr.id]="elementId" placeholder="Search for UCUM units or type your own" class="form-control form-control-sm" (input)="onInput($event)"  />
       </div>
   `,
   styles: [`

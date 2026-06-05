@@ -811,10 +811,9 @@ describe('Home page', () => {
       cy.selectDataType('coding');
       cy.getRadioButtonLabel('Create answer list', 'Yes').click();
       cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
       cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
       // New default for 'Answer list source' is now 'None'
-      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
 
       cy.get('#answerValueSet_non-snomed').should('not.exist');
 
@@ -832,7 +831,7 @@ describe('Home page', () => {
         expect(q.item[0].answerOption).to.be.undefined;
       });
 
-      cy.get('[for^="__\\$answerOptionMethods_none"]').click();
+      cy.get('[for^="__\\$answerOptionMethods_answer-option"]').click();
       cy.get('#answerValueSet_non-snomed').should('not.exist');
       //cy.get('lfb-answer-option').should('be.visible');
       const aOptions = [
@@ -981,8 +980,7 @@ describe('Home page', () => {
       cy.get('lfb-answer-option').should('not.exist');
 
       cy.clickTreeNode('Item with answer option');
-      // New default for 'Answer list source' is now 'None'
-      cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+      cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
 
       // Select the 'Answer Options' option
       cy.getRadioButtonLabel('Answer list source', 'Answer options').click();
@@ -1114,8 +1112,7 @@ describe('Home page', () => {
         cy.getRadioButton('Create answer list', 'Yes').should('be.checked');
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
         cy.get('[id^="__\\$answerExpression"]').should('have.value', "%patient.name.where(use = 'official').given.join(' ') + ' ' + %patient.name.where(use = 'official').family");
-
-        cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
+        cy.get('@valueMethod').find('input[id^="__$valueMethod_"]').should('have.length', 4);
         cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
         cy.get('[id^="initial.0.valueString"]').should('have.value', 'Ann Anderson');
@@ -1126,10 +1123,10 @@ describe('Home page', () => {
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
         cy.get('[id^="__\\$answerExpression"]').should('have.value', "today().toDate().difference(%patient.birthDate.toDate()).years()");
 
-        cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
-        cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+        cy.get('@valueMethod').find('input[id^="__$valueMethod_"]').should('have.length', 4);
+        cy.get('@valueMethod').find('input[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
-        cy.get('[id^="initial.0.valueInteger"]').should('have.value', '20');
+        cy.get('input[id^="initial.0.valueInteger"]').should('have.value', '20');
 
         cy.clickTreeNode("What is the patient's gender?");
         cy.get('@type').contains('coding');
@@ -1137,12 +1134,12 @@ describe('Home page', () => {
         cy.get('[id^="__\\$answerOptionMethods_answer-expression"]').should('be.checked');
         cy.get('[id^="__\\$answerExpression"]').should('have.value', "%patient.gender");
 
-        cy.get('@valueMethod').find('[id^="__$valueMethod_"]').should('have.length', 4);
-        cy.get('@valueMethod').find('[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
+        cy.get('@valueMethod').find('input[id^="__$valueMethod_"]').should('have.length', 4);
+        cy.get('@valueMethod').find('input[id^="__$valueMethod_type-initial"]').as('typeInitialRadio');
         cy.get('@typeInitialRadio').should('be.visible').and('be.checked');
-        cy.get('[id^="initial.0.valueCoding.display"]').should('have.value', 'Male');
-        cy.get('[id^="initial.0.valueCoding.code"]').should('have.value', 'male');
-        cy.get('[id^="initial.0.valueCoding.system"]').should('have.value', 'http://hl7.org/fhir/administrative-gender');
+        cy.get('input[id^="initial.0.valueCoding.display"]').should('have.value', 'Male');
+        cy.get('input[id^="initial.0.valueCoding.code"]').should('have.value', 'male');
+        cy.get('input[id^="initial.0.valueCoding.system"]').should('have.value', 'http://hl7.org/fhir/administrative-gender');
       });
 
       it('should create and update Answer expression', () => {
@@ -1281,7 +1278,7 @@ describe('Home page', () => {
         cy.getComputeInitialValueValueMethodClick();
         // The expression for the Compute Initial Value should be blank. It should not
         // display the Answer expression.
-        cy.get('[id^="__\\$initialExpression"]').should('be.empty');
+        cy.get('[id^="__\\$initialCalculatedExpression"]').should('be.empty');
       });
     });
 
@@ -1297,10 +1294,8 @@ describe('Home page', () => {
         cy.selectDataType('coding');
         cy.getRadioButtonLabel('Create answer list', 'Yes').click();
         cy.getRadioButtonLabel('Answer constraint', 'Restrict to the list').click();
-        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('not.be.checked');
         cy.get('[id^="__\\$answerOptionMethods_value-set"]').should('not.be.checked');
-        // New default for 'Answer list source' is now 'None'
-        cy.get('[id^="__\\$answerOptionMethods_none"]').should('be.checked');
+        cy.get('[id^="__\\$answerOptionMethods_answer-option"]').should('be.checked');
 
         // Select the 'Answer Options' option
         cy.getRadioButtonLabel('Answer list source', 'Answer options').click();

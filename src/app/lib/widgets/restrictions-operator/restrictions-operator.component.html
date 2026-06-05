@@ -2,7 +2,7 @@
   [ngModel]="model"
   (ngModelChange)="modelChanged($event, alertSelected)"
   name="{{name}}" [attr.id]="id"
-  [disabled]="schema.readOnly" class="form-control"
+  [disabled]="schema.readOnly" class="form-control form-control-sm"
   [ngbPopover]="'That restriction is already selected.'"
   #alertSelected="ngbPopover" triggers="manual" placement="bottom top"
   >

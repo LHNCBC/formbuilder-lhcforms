@@ -60,6 +60,7 @@ import { EnableBehaviorComponent } from './lib/widgets/enable-behavior/enable-be
 import { MessageDlgComponent } from './lib/widgets/message-dlg/message-dlg.component';
 import { FhirServersDlgComponent } from './lib/widgets/fhir-servers-dlg/fhir-servers-dlg.component';
 import { UserSpecifiedServerDlgComponent } from './lib/widgets/user-specified-server-dlg/user-specified-server-dlg.component';
+import { FhirSearchDlgComponent } from './lib/widgets/fhir-search-dlg/fhir-search-dlg.component'
 import { BooleanRadioComponent } from './lib/widgets/boolean-radio/boolean-radio.component';
 import { UnitsComponent } from './lib/widgets/units/units.component';
 import { UnitsDisplayComponent } from './lib/widgets/units-display/units-display.component';
@@ -80,13 +81,16 @@ import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
+import { PositiveIntegerComponent } from './lib/widgets/positive-integer/positive-integer.component';
 import { AnswerOptionMethodsComponent } from './lib/widgets/answer-option-methods/answer-option-methods.component';
 import { ObservationExtractComponent } from './lib/widgets/observation-extract/observation-extract.component';
 import { AnswerValueSetComponent } from './lib/widgets/answer-value-set/answer-value-set.component';
 import { ItemControlComponent } from './lib/widgets/item-control/item-control.component';
 import { DateComponent } from './lib/widgets/date/date.component';
+import { DateRangeComponent } from './lib/widgets/date-range/date-range.component';
 import { TextAreaComponent } from './lib/widgets/textarea/textarea.component';
 import {DatetimeComponent} from './lib/widgets/datetime/datetime.component';
+import {InstantComponent} from './lib/widgets/instant/instant.component';
 import {LabelComponent} from './lib/widgets/label/label.component';
 import { EditableLinkIdComponent } from './lib/widgets/editable-link-id/editable-link-id.component';
 import {CdkCopyToClipboard} from "@angular/cdk/clipboard";
@@ -94,7 +98,7 @@ import {CodemirrorModule} from "@ctrl/ngx-codemirror";
 import {HelpTextComponent} from "./lib/widgets/help-text/help-text.component";
 import { ValueMethodComponent } from './lib/widgets/value-method/value-method.component';
 import { PickAnswerComponent } from './lib/widgets/pick-answer/pick-answer.component';
-import { ExpressionEditorComponent } from './lib/widgets/expression-editor/expression-editor.component';
+import { AnswerExpressionComponent } from './lib/widgets/expression-editor/answer-expression/answer-expression.component';
 import { ExpressionEditorDlgComponent } from './lib/widgets/expression-editor-dlg/expression-editor-dlg.component';
 
 import { VariableComponent } from './lib/widgets/variable/variable.component';
@@ -107,8 +111,10 @@ import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
 import { MetaProfileComponent } from './lib/widgets/meta-profile/meta-profile.component';
+import { UnsignedIntegerComponent } from './lib/widgets/unsigned-integer/unsigned-integer.component';
 
 import { environment } from '../environments/environment';
+import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
 
 @NgModule({
   declarations: [
@@ -118,22 +124,15 @@ import { environment } from '../environments/environment';
     ConfirmDlgComponent,
     GridComponent,
     TableComponent,
-    StringComponent,
     SelectComponent,
     CheckboxComponent,
-    IntegerComponent,
     HeaderComponent,
     FooterComponent,
-    EnableWhenSourceComponent,
-    EnableOperatorComponent,
     LeftLabelFormGroupComponent,
-    LfbControlWidgetComponent,
     LfbArrayWidgetComponent,
     SideLabelCheckboxComponent,
-    EnablewhenAnswerCodingComponent,
     BasePageComponent,
     FormFieldsComponent,
-    LabelRadioComponent,
     RowLayoutComponent,
     EnableBehaviorComponent,
     MessageDlgComponent,
@@ -143,35 +142,23 @@ import { environment } from '../environments/environment';
     UnitsComponent,
     UnitsDisplayComponent,
     AnswerOptionComponent,
-    SfFormWrapperComponent,
     FhirExportDlgComponent,
     LoincNoticeComponent,
     StringWithCssComponent,
     RestrictionsComponent,
     RestrictionsOperatorComponent,
     ObservationLinkPeriodComponent,
-    EnableWhenComponent,
     QuantityUnitComponent,
     NodeDialogComponent,
     NumberComponent,
-    AnswerOptionMethodsComponent,
     AnswerValueSetComponent,
-    ItemControlComponent,
-    DateComponent,
     TextAreaComponent,
-    DatetimeComponent,
     EditableLinkIdComponent,
-    HelpTextComponent,
     ValueMethodComponent,
-    PickAnswerComponent,
-    ExpressionEditorComponent,
+    AnswerExpressionComponent,
     ExpressionEditorDlgComponent,
-    VariableComponent,
     InitialNumberComponent,
-    EntryFormatComponent,
-    AnswerValueSetCodingDisplayComponent,
     LfbOptionControlWidgetComponent,
-    CodingDisplayComponent,
     MetaProfileComponent
   ],
   imports: [
@@ -179,11 +166,17 @@ import { environment } from '../environments/environment';
     AppJsonPipe,
     BooleanControlledComponent,
     BrowserModule,
+    DateComponent,
+    DatetimeComponent,
+    DateRangeComponent,
+    InstantComponent,
     ElementChooserComponent,
+    EnableWhenComponent,
     EwValidateDirective,
     FormsModule,
     FontAwesomeModule,
     InitialNumberDirective,
+    IntegerComponent,
     IntegerDirective,
     LayoutModule,
     CodingSystemComponent,
@@ -205,8 +198,11 @@ import { environment } from '../environments/environment';
     MatTooltipModule,
     NgbModule,
     ObservationExtractComponent,
+    PositiveIntegerComponent,
+    UnsignedIntegerComponent,
     PreviewDlgComponent,
     SchemaFormModule.forRoot(),
+    StringComponent,
     TitleComponent,
     TreeModule,
     ReactiveFormsModule,
@@ -218,7 +214,21 @@ import { environment } from '../environments/environment';
     CdkCopyToClipboard,
     CodemirrorModule,
     ExpressionEditorModule,
-    EnableWhenMethodComponent
+    IsDisabledPipe,
+    EnableWhenMethodComponent,
+    AnswerOptionMethodsComponent,
+    AnswerValueSetCodingDisplayComponent,
+    CodingDisplayComponent,
+    EnableOperatorComponent,
+    EnablewhenAnswerCodingComponent,
+    EnableWhenSourceComponent,
+    EntryFormatComponent,
+    HelpTextComponent,
+    ItemControlComponent,
+    LabelRadioComponent,
+    PickAnswerComponent,
+    SfFormWrapperComponent,
+    VariableComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [

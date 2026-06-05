@@ -1,14 +1,25 @@
 /**
  * Component for general input box
  */
-import {Component, inject, OnInit, ChangeDetectorRef} from '@angular/core';
-import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
+import {
+  AfterViewChecked,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  inject,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lfb-option-control-widget.component';
+import {ReactiveFormsModule} from "@angular/forms";
+import {AsyncPipe, NgClass} from "@angular/common";
+import {LabelComponent} from "../label/label.component";
+import {MatTooltipModule} from "@angular/material/tooltip";
+import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 
 @Component({
-  standalone: false,
   selector: 'lfb-string',
+  imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent],
   templateUrl: './string.component.html',
   styles: [`
     input:disabled {
@@ -20,38 +31,68 @@ import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lf
     }
   `]
 })
-export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit {
+export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewChecked {
 
-  liveAnnouncer = inject(LiveAnnouncer);
-  cdr = inject(ChangeDetectorRef);
+  @ViewChild('inputEl') inputElRef: ElementRef;
+  showTooltip = true;
 
   Array = Array; // To use in templates.
-  urlValid = true;
 
+  cdr = inject(ChangeDetectorRef);
   constructor() {
     super();
   }
 
   ngOnInit() {
     super.ngOnInit();
-    this.controlClasses = this.controlClasses || 'form-control form-control-sm';
-    
-    // Disable the control if schema specifies it
-    if (this.schema.widget?.disabled || this.schema.disabled) {
-      setTimeout(() => {
-        this.control?.disable();
-      });
-    }
-    
-    // Initialize URL validation state
-    if (this.schema.widget?.id === 'url' && this.formProperty.value) {
-      setTimeout(() => {
-        this.urlValid = true; // Start optimistic, will validate on first interaction
-      });
+    this.controlClasses = this.controlClasses || '';
+  }
+
+  ngAfterViewChecked() {
+    if(this.inputElRef?.nativeElement.clientWidth) {
+      this.showTooltip = this.inputElRef.nativeElement.scrollWidth > this.inputElRef.nativeElement.clientWidth;
+      this.cdr.detectChanges();
     }
   }
 
-  get isUrlType(): boolean {
-    return this.schema.widget?.id === 'url';
+  /**
+   * Get the value shown in the tooltip, formatting JSON fields when requested.
+   */
+  getTooltipValue(): string | null {
+    if(!this.showTooltip) {
+      return null;
+    }
+    const value = this.formProperty.value;
+    if(this.shouldFormatTooltipAsJson()) {
+      return this.formatJsonTooltip(value);
+    }
+    return value == null ? null : String(value);
   }
+
+  /**
+   * Check whether the current string field should show formatted JSON in its tooltip.
+   */
+  private shouldFormatTooltipAsJson(): boolean {
+    return this.widgetInfo?.tooltipFormat === 'json' ||
+      this.schema.widget?.tooltipFormat === 'json' ||
+      this.formProperty.path?.endsWith('/__$stringify') ||
+      this.formProperty.canonicalPathNotation?.endsWith('.__$stringify') ||
+      this.id?.includes('__$stringify');
+  }
+
+  /**
+   * Pretty-print a JSON string for tooltip display, falling back to the original value.
+   */
+  private formatJsonTooltip(value: unknown): string | null {
+    if(typeof value !== 'string') {
+      return value == null ? null : String(value);
+    }
+    try {
+      return JSON.stringify(JSON.parse(value), null, 2);
+    }
+    catch {
+      return value;
+    }
+  }
+
 }

@@ -103,7 +103,7 @@ test.describe('value method', () => {
     await PWUtils.expectDataTypeValue(page, /integer/);
 
     await expect(computeInitialRadio).toBeChecked();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
     await expect(repeatUnspecifiedRadio).toBeChecked();
 
     // Continuously Compute Value
@@ -111,7 +111,7 @@ test.describe('value method', () => {
     await PWUtils.expectDataTypeValue(page, /integer/);
 
     await expect(computeContinuouslyRadio).toBeChecked();
-    await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a + %b + %c');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b + %c');
     await expect(repeatUnspecifiedRadio).toBeChecked();
 
     await PWUtils.clickTreeNode(page, 'None');
@@ -136,7 +136,7 @@ test.describe('value method', () => {
     await expect(secondVariable.locator('td:nth-child(3)')).toHaveText("%resource.item.where(linkId='measured_weight').answer.value");
 
     await expect(computeInitialRadio).toBeChecked();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%measured_weight-%normal_weight');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%measured_weight-%normal_weight');
     await expect(repeatUnspecifiedRadio).toBeChecked();
 
     // Continuously Compute Value with decimal data type
@@ -153,7 +153,7 @@ test.describe('value method', () => {
     await expect(secondVariable.locator('td:nth-child(3)')).toHaveText("%resource.item.where(linkId='weight_change').answer.value");
 
     await expect(computeContinuouslyRadio).toBeChecked();
-    await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('((%weight_change / %normal_weight).round(2))*100');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('((%weight_change / %normal_weight).round(2))*100');
     await expect(repeatUnspecifiedRadio).toBeChecked();
   });
 
@@ -204,8 +204,7 @@ test.describe('value method', () => {
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
     await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-    await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+    await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(1);
 
@@ -304,8 +303,7 @@ test.describe('value method', () => {
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
     await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-    await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+    await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
     await PWUtils.clickRadioButton(page, 'Value method', 'Pick initial value');
 
@@ -350,8 +348,7 @@ test.describe('value method', () => {
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
     await PWUtils.clickRadioButton(page, 'Answer constraint', 'Restrict to the list');
 
-    await PWUtils.expectRadioChecked(page, 'Answer list source', 'None');
-    await PWUtils.clickRadioButton(page, 'Answer list source', 'Answer options');
+    await PWUtils.expectRadioChecked(page, 'Answer list source', 'Answer options');
 
     await expect(page.locator('lfb-answer-option table > tbody > tr')).toHaveCount(1);
 
@@ -394,8 +391,8 @@ test.describe('value method', () => {
     await PWUtils.selectDataType(page, 'integer');
 
     await computeInitialLabel.click();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toBeEmpty();
-    await page.locator('[id^="edit__\\$initialExpression"]').click();
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toBeEmpty();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
     await PWUtils.expandExpressionItemVariablesSection(page);
     const dialog = page.locator('#expression-editor-base-dialog');
     const addVariableBtn = dialog.locator('#add-variable');
@@ -417,7 +414,7 @@ test.describe('value method', () => {
 
     await page.locator('textarea#final-expression').fill('%a + %b');
     await page.locator('#export').click();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
 
     const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(qJson.item[7].extension).toEqual([
@@ -429,7 +426,7 @@ test.describe('value method', () => {
       }
     ]);
 
-    await page.locator('[id^="edit__\\$initialExpression"]').click();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
     await PWUtils.expandExpressionItemVariablesSection(page);
     await expect(page.locator('#variables-section .variable-row')).toHaveCount(2);
     await expect(page.locator('#variable-label-0')).toHaveValue('a');
@@ -451,8 +448,8 @@ test.describe('value method', () => {
     await PWUtils.selectDataType(page, 'integer');
 
     await computeContinuouslyLabel.click();
-    await expect(page.locator('[id^="__\\$calculatedExpression"]')).toBeEmpty();
-    await page.locator('[id^="edit__\\$calculatedExpression"]').click();
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toBeEmpty();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
     await PWUtils.expandExpressionItemVariablesSection(page);
     const dialog = page.locator('#expression-editor-base-dialog');
     const addVariableBtn = dialog.locator('#add-variable');
@@ -474,7 +471,7 @@ test.describe('value method', () => {
 
     await page.locator('textarea#final-expression').fill('%a + %b');
     await page.locator('#export').click();
-    await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
 
     const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(qJson.item[7].extension).toEqual([
@@ -486,7 +483,7 @@ test.describe('value method', () => {
       }
     ]);
 
-    await page.locator('[id^="edit__\\$calculatedExpression"]').click();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
     await PWUtils.expandExpressionItemVariablesSection(page);
     await expect(page.locator('#variables-section .variable-row')).toHaveCount(2);
     await expect(page.locator('#variable-label-0')).toHaveValue('a');
@@ -508,7 +505,7 @@ test.describe('value method', () => {
     await PWUtils.selectDataType(page, 'integer');
 
     await computeInitialLabel.click();
-    await page.locator('[id^="edit__\\$initialExpression"]').click();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
     await PWUtils.expandExpressionItemVariablesSection(page);
     const dialog = page.locator('#expression-editor-base-dialog');
     const addVariableBtn = dialog.locator('#add-variable');
@@ -524,7 +521,7 @@ test.describe('value method', () => {
     await page.locator('input#simple-expression-1').fill('2');
     await page.locator('textarea#final-expression').fill('%a + %b');
     await page.locator('#export').click();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
 
     await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
     await PWUtils.clickRadioButton(page, 'Create answer list', 'No');
@@ -543,7 +540,7 @@ test.describe('value method', () => {
     await PWUtils.selectDataType(page, 'integer');
 
     await computeContinuouslyLabel.click();
-    await page.locator('[id^="edit__\\$calculatedExpression"]').click();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
     await PWUtils.expandExpressionItemVariablesSection(page);
     const dialog = page.locator('#expression-editor-base-dialog');
     const addVariableBtn = dialog.locator('#add-variable');
@@ -559,7 +556,7 @@ test.describe('value method', () => {
     await page.locator('input#simple-expression-1').fill('2');
     await page.locator('textarea#final-expression').fill('%a + %b');
     await page.locator('#export').click();
-    await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
 
     await PWUtils.clickTreeNode(page, 'None');
     await computeContinuouslyLabel.scrollIntoViewIfNeeded();
@@ -581,7 +578,7 @@ test.describe('value method', () => {
 
     const computeInitial = valueMethod.locator('[for^="__$valueMethod_compute-initial"]');
     await computeInitialLabel.click();
-    await page.locator('[id^="edit__\\$initialExpression"]').click();
+    await page.locator('[id^="edit__\\$initialCalculatedExpression"]').click();
     await PWUtils.expandExpressionItemVariablesSection(page);
     const dialog = page.locator('#expression-editor-base-dialog');
     const addVariableBtn = dialog.locator('#add-variable');
@@ -609,7 +606,7 @@ test.describe('value method', () => {
       await expect(previewLines.nth(i)).not.toHaveText('Not valid');
     }
     await page.locator('#export').click();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
 
     const initialJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(initialJson.item[7].extension).toMatchObject([
@@ -639,14 +636,14 @@ test.describe('value method', () => {
     // Switch to Continuously compute value
     await PWUtils.clickRadioButton(page, 'Value method', 'Continuously compute value');
 
-    await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
     const continuousJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(continuousJson.item[7].initial).toBeUndefined();
     expect(continuousJson.item[7].extension.find((e: any) => e.url.includes('calculatedExpression'))?.valueExpression.expression).toBe('%a + %b');
 
     // Switch back to Compute initial
     await computeInitial.click();
-    await expect(page.locator('[id^="__\\$initialExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
     const computeInitialJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(computeInitialJson.item[7].extension[2]).toMatchObject({
       url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression',
@@ -706,7 +703,7 @@ test.describe('value method', () => {
     // Switch to Continuously compute value again
     await PWUtils.clickRadioButton(page, 'Value method', 'Continuously compute value');
 
-    await expect(page.locator('[id^="__\\$calculatedExpression"]')).toHaveValue('%a + %b');
+    await expect(page.locator('[id^="__\\$initialCalculatedExpression"]')).toHaveValue('%a + %b');
     const finalJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     const calcExt = finalJson.item[7].extension.find((e: any) => e.url.endsWith('calculatedExpression'));
     expect(calcExt?.valueExpression?.expression).toBe('%a + %b');
@@ -746,7 +743,9 @@ test.describe('Value method button selection', () => {
     await expect(pickInitialRadio).toBeVisible();
     await expect(pickInitialRadio).toBeChecked();
 
-    const initialYesInput = page.locator('lfb-table').first().locator('input[id^="booleanRadio_true"]');
+    const initialValueSection = page.locator('lfb-table').filter({ hasText: 'Initial value' }).first();
+    const initialYesInput = initialValueSection.locator('[id^="booleanRadio_true"]');
+    await initialYesInput.scrollIntoViewIfNeeded();
     await expect(initialYesInput).toBeVisible();
     await expect(initialYesInput).toBeChecked();
 

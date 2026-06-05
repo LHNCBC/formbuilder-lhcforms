@@ -1,11 +1,17 @@
 /**
  * Customized pull down box.
  */
-import {AfterViewInit, Component, inject, Input} from '@angular/core';
+import {AfterViewInit, Component, inject, Input, OnInit} from '@angular/core';
 import {faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import { StringComponent } from '../string/string.component';
 import { FormService } from '../../../services/form.service';
-import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
+import {Util} from '../../util';
+import {SharedObjectService} from "../../../services/shared-object.service";
+
+/**
+ * A component for a select box with options.
+ * It extends the StringComponent to inherit common string handling functionality.
+ */
 
 @Component({
   standalone: false,
@@ -20,12 +26,13 @@ import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widge
     }
   `]
 })
-export class SelectComponent extends StringComponent implements AfterViewInit {
+export class SelectComponent extends StringComponent implements OnInit, AfterViewInit {
   faInfo = faInfoCircle;
   nolabel = false;
   errorIcon = faExclamationTriangle;
 
   formService = inject(FormService);
+  modelService = inject(SharedObjectService);
 
   // A mapping for options display string. Typically, the display strings are from schema definition.
   // This map helps to redefine the display string.
@@ -35,27 +42,54 @@ export class SelectComponent extends StringComponent implements AfterViewInit {
   // Options list for the pull down
   allowedOptions: Array<{value: string, label: string}>;
 
-  constructor() {
-    super();
-  }
-
   /**
    * Initialize component, mainly the options list.
    */
-  ngAfterViewInit(): void {
+  ngOnInit(): void {
+    super.ngOnInit();
+    this.init();
+  }
+
+  ngAfterViewInit() {
     super.ngAfterViewInit();
+    this.modelService?.modelInitialized$.subscribe(() => {
+      this.init();
+    });
+  }
+
+  init() {
     this.selectOptionsMap = this.schema.widget.selectOptionsMap || {};
-    const allowedOptions = this.schema.enum.map((e) => {
-      return this.mapOption(e);
+    const allowedOptions = this.schema.enum.map((value: string) => {
+      // If there is a map defined, use the map to get the display string.
+      if(this.selectOptionsMap?.map && this.selectOptionsMap.map[value]) {
+        return this.mapOption(value);
+      }
+      // If null or empty string, use 'None' as the display string.
+      let label = value === null || value === '' ? 'none' : value;
+      // Do transformations.
+      this.selectOptionsMap?.transform?.forEach((t) => {
+        switch (t.method) {
+          case 'regexReplace': {
+            const regex = new RegExp(t.expression, t.flags || '');
+            label = label.replace(regex, t.substitution);
+            break;
+          }
+          case 'camelToTitleCase': {
+            label = Util.titleFromCamelCase(label);
+            break;
+          }
+          case 'lowerCaseFirstChar': {
+            label = Util.lowerFirstChar(label);
+            break;
+          }
+        }
+      });
+      return {value, label};
     });
     this.allowedOptions = allowedOptions.filter((e) => {
       return this.isIncluded(e.value) && this.isTypeAllowed(e.value);
     });
-    if(this.schema.widget.addEmptyOption) {
-      this.allowedOptions.unshift({value: null, label: 'None'});
-    }
   }
-
   /**
    * Map any display strings.
    * @param opt

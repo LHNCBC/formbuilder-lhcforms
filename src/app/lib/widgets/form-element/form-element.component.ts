@@ -1,7 +1,7 @@
 /**
  * Customize layout of form-element from ngx-schema-form
  */
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit, SimpleChanges} from '@angular/core';
 import {FormElementComponent, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { Widget } from '@lhncbc/ngx-schema-form';
 import { ElementChooserComponent } from '../element-chooser/element-chooser.component';
@@ -15,6 +15,7 @@ import { ElementChooserComponent } from '../element-chooser/element-chooser.comp
   template: `
     @if (formProperty.visible) {
       <div
+        class="lfb-hover-scope"
         [class.has-error]="!formProperty.valid"
         [class.has-success]="formProperty.valid">
         <lfb-element-chooser
@@ -35,7 +36,7 @@ import { ElementChooserComponent } from '../element-chooser/element-chooser.comp
     `,
   styles: []
 })
-export class AppFormElementComponent extends FormElementComponent {
+export class AppFormElementComponent extends FormElementComponent implements OnInit {
   static seqNum = 0;
   // Input properties, typically read from layout schema json.
   @Input()
@@ -44,6 +45,12 @@ export class AppFormElementComponent extends FormElementComponent {
   layout: string;
   @Input()
   labelWidthClass: string;
+  @Input()
+  labelPosition: string;
+  @Input()
+  labelClasses: string;
+  @Input()
+  controlClasses: string;
   @Input()
   controlWidthClass: string;
   @Input()
@@ -75,6 +82,9 @@ export class AppFormElementComponent extends FormElementComponent {
   }
   */
 
+  ngOnInit() {
+    super.ngOnInit();
+  }
   /**
    * Override to add custom properties
    *
@@ -88,9 +98,16 @@ export class AppFormElementComponent extends FormElementComponent {
     // @ts-ignore
     this.widget.layout = this.layout;
     // @ts-ignore
+    this.widget.labelPosition = this.labelPosition;
+    // @ts-ignore
+    this.widget.labelClasses = this.labelClasses;
+    // @ts-ignore
     this.widget.labelWidthClass = this.labelWidthClass;
     // @ts-ignore
     this.widget.controlWidthClass = this.controlWidthClass;
+
+    // @ts-ignore
+    this.widget.controlClasses = this.controlClasses;
   }
 
 

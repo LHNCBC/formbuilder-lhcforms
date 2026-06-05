@@ -1,8 +1,6 @@
 @if (booleanControlled) {
   <lfb-boolean-controlled
     [(bool)]="booleanControlledOption"
-    [controlWidthClass]="controlWidthClass"
-    [labelWidthClass]="labelWidthClass"
     [label]="booleanLabel"
     [labelPosition]="labelPosition"
     [helpMessage]="schema.description"
@@ -13,7 +11,7 @@
   <div class="widget form-group m-0"
        [ngClass]="{'row': labelPosition === 'left'}">
     <div [ngClass]="labelWidthClass + ' ps-0 pe-1'">
-      @if (!noCollapseButton) {
+      @if (!noCollapseButton && rowProperties.length > 0) {
         <button href="#" type="button"
                 [ngClass]="{'float-sm-right': labelPosition === 'left'}"
                 class="btn btn-default collapse-button" (click)="isCollapsed = !isCollapsed"
@@ -22,11 +20,11 @@
         </button>
       }
       @if (!noTableLabel) {
-        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [for]="id"></lfb-label>
+        <lfb-label [title]="schema.title" [helpMessage]="schema.description" [labelId]="tableId+'_enableWhenLabel'"></lfb-label>
       }
     </div>
 
-    <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId">
+    <div class="p-0 card {{controlWidthClass}}" [attr.id]="tableId" [attr.aria-labelledby]="tableId+'_enableWhenLabel'">
       @if (noTableLabel) {
         <lfb-label [helpMessage]="schema.description" [title]="schema.title"
                    [labelId]="'label_'+id" [for]="id"></lfb-label>
@@ -35,9 +33,13 @@
         <table class="table table-borderless table-sm lfb-table">
           @if (!noHeader) {
             <thead class="table-active">
-              <tr>
-                @for (showField of showHeaderFields; track showField.field) {
-                  <th class="col-sm{{showField.col ? ('-'+showField.col) : ''}}" scope="col">
+              <tr class="d-flex">
+                @for (showField of showHeaderFields; track showField.field; let isLastShowField = $last) {
+                  <th
+                    class="col-sm{{showField.col ? ('-'+showField.col) : ''}}"
+                    [ngClass]="{'fill-column': isLastShowField && !singleItem}"
+                    scope="col"
+                  >
                     <lfb-title
                       [title]="showField.title"
                       [helpMessage]="getProperty(formProperty.properties[0], 'answerString').schema.description"
@@ -45,18 +47,18 @@
                   </th>
                 }
                 @if (!singleItem) {
-                  <th class="col-sm-1"></th>
+                  <th class="col-sm-1 action-column"></th>
                 }
               </tr>
             </thead>
           }
 
           <tbody [ngbCollapse]="isCollapsed">
-            @for (rowProperty of rowProperties; track rowProperty.canonicalPathNotation; let rowNum = $index) {
-              <tr class="p-0 m-0">
-                @for (showField of getFields(rowProperty); track showField.field; let colNum = $index) {
+            @for (rowProperty of rowProperties; track rowProperty; let rowNum = $index) {
+              <tr class="d-flex p-0 m-0">
+                @for (showField of getFields(rowProperty); track showField.field; let colNum = $index; let isLastShowField = $last) {
                   <td class="col-sm{{showField.col ? ('-'+showField.col) : ''}} p-0 pb-1 pe-1 m-0 align-self-center"
-                      [ngClass]="{invalid: !isValid(rowProperty, showField.field)}"
+                      [ngClass]="{'fill-column': isLastShowField && !singleItem, invalid: !isValid(rowProperty, showField.field)}"
                       lfbEWValidate [formProperty]="getProperty(rowProperty, showField.field)"
                       (isError)="onError(rowNum, colNum, getProperty(rowProperty, showField.field))"
                     >
@@ -67,12 +69,12 @@
                     }
                   </td>
                 }
-                <td class="col-sm-1 align-inherit p-0 m-0 align-self-center">
-                  <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="removeProperty(rowNum)" class="btn btn-default btn-link btn-sm array-remove-button"
-                          [attr.disabled]="isRemoveButtonDisabled() ? '' : null"
-                          matTooltip="Remove" aria-label="Remove"
-                  >
-                    <fa-icon [icon]="faRemove" aria-hidden="true"></fa-icon>
+                <td class="col-sm-1 action-column align-inherit p-0 m-0 align-self-center">
+                  <button [attr.id]="rowProperty.canonicalPathNotation+'_remove'"  (click)="confirmRemovePropertyIfNoError(rowNum, rowProperty)" class="btn btn-default btn-link btn-sm array-remove-button"
+                    [attr.disabled]="isRemoveActionDisabled(rowNum) ? '' : null"
+                    matTooltip="Remove" aria-label="Remove"
+                    >
+                    <fa-icon [icon]="faRemove" class="fa-sm" aria-hidden="true"></fa-icon>
                   </button>
                   @if (getEnableWhenFieldErrors(rowNum, rowProperty, getFields(rowProperty)) | async; as rowErrorMessage) {
                     <div tabindex="0" [attr.id]="rowProperty.canonicalPathNotation+'_err'"

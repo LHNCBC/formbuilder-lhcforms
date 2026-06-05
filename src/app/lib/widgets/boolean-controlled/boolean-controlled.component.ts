@@ -13,12 +13,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     <ng-template #controller>
       <div class="widget" [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
         <lfb-label [title]="label"
-          [for]="'booleanControlled_'+_id"
           [helpMessage]="helpMessage"
           [ngClass]="labelClasses"
           [labelId]="'label_booleanControlled_'+_id"
         ></lfb-label>
-    
+
         <div [ngClass]="controlClasses" role="radiogroup"
           [attr.aria-labelledby]="'label_booleanControlled_'+_id" [attr.id]="'booleanControlled_'+_id">
           @for (option of ['No', 'Yes']; track option) {
@@ -36,7 +35,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
         </div>
       </div>
     </ng-template>
-    
+
     <ng-container *ngTemplateOutlet="controller"></ng-container>
     `
 })

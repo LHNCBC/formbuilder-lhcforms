@@ -140,6 +140,7 @@ describe('Home page', () => {
         const checkRadio = '#__\\$itemControl\\.check-box';
         const radioRadio = '#__\\$itemControl\\.radio-button';
         const acRadio = '#__\\$itemControl\\.autocomplete';
+        const unspecifiedRadio = '#__\\$itemControl\\.unspecified';
 
         const answerMethodsAnswerOptionBtn = '[for^="__\\$answerOptionMethods_answer-option"]';
         const answerMethodsValueSetBtn = '[for^="__\\$answerOptionMethods_value-set"]';
@@ -153,7 +154,8 @@ describe('Home page', () => {
         cy.get('.spinner-border').should('not.exist');
 
         cy.get(answerMethodsAnswerOptionRadio).should('be.checked');
-        cy.get(dropDownRadio).should('be.visible').and('be.checked');
+        // Since 'itemControl' extension is not specified, the 'Answer list layout' should be unspecified.
+        cy.get(unspecifiedRadio).should('be.visible').and('be.checked');
         cy.get(radioBtn).should('be.visible');
         cy.get(acBtn).should('not.exist');
         cy.get(checkboxBtn).should('not.exist');
@@ -161,7 +163,7 @@ describe('Home page', () => {
         cy.questionnaireJSON().should((qJson) => {
           expect(qJson.item[0].type).equal('coding');
           expect(qJson.item[0].text).equal('Answer option dropdown');
-          expect(qJson.item[0].extension).to.deep.equal([itemControlExtensions['drop-down']]);
+          expect(qJson.item[0]).to.not.have.property;
         });
 
         cy.clickTreeNode('Answer option radio-button');

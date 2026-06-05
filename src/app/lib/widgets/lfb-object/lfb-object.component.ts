@@ -30,13 +30,22 @@ import {Util} from "../../util";
 export class LfbObjectComponent extends ObjectLayoutWidget implements OnInit {
 
   widgetInfo: any = {};
+  objectLabelClasses = '';
+  objectBodyClasses = 'ms-4 shadow rounded p-1 mb-1';
   showFields: {field: string, col: number}[] = [];
   formProperties: {[key: string]: FormProperty} = {};
+  isRequired = false;
 
 
   ngOnInit() {
+    this.isRequired = Util.getIsRequired(this.formProperty);
     const schema = this.formProperty.schema;
-    this.widgetInfo = schema.widget;
+    this.widgetInfo = schema.widget || {};
+    this.objectLabelClasses = this.widgetInfo.objectLabelClasses || this.widgetInfo.labelClasses || '';
+    this.objectBodyClasses = [
+      this.widgetInfo.childOffsetClass || 'ms-4',
+      this.widgetInfo.objectBodyClasses || 'shadow rounded p-1 mb-1'
+    ].filter((className) => !!className).join(' ');
     const propertyIds = Object.keys(schema.properties || {});
     // If no showFields are defined, show all properties
     if (!this.widgetInfo.showFields) {

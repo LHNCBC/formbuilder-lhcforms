@@ -53,7 +53,7 @@ export interface AutoCompleteResult {
   standalone: true,
   selector: 'lfb-auto-complete',
   template: `
-    <input #ac [attr.id]="elId" type="text" autocomplete="off" class="form-control">
+    <input #ac [attr.id]="elId" type="text" autocomplete="off" class="form-control form-control-sm"/>
   `
 })
 export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestroy {
@@ -107,7 +107,6 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
     }
 
     this.autoCompleteEventsUnsubscribe = LForms.Def.Autocompleter.Event.observeListSelections(this.el.id, (data) => {
-      let coding = null;
       if(data.removed) {
         this.removed.emit(this.autoComp.getItemData(data.final_val));
       }
@@ -115,14 +114,14 @@ export class AutoCompleteComponent implements AfterViewInit, OnChanges, OnDestro
         this.removed.emit(null);
       }
       else if(data.used_list) {
-        coding = this.autoComp.getItemData(data.final_val);
+        const coding = this.autoComp.getItemData(data.final_val);
         this.selected.emit(this.convertLHCCoding(coding));
       }
       else {
         const prevDisplay = this.model?.display;
         if(prevDisplay && prevDisplay !== data.final_val.trim()) {
           const display = data.final_val?.trim();
-          coding = null;
+          let coding: fhir.Coding = null;
           if(display) {
             coding = {code: display.replace(/\s+/g, '_'), display};
           }

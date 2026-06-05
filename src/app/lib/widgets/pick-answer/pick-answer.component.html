@@ -2,7 +2,7 @@
   <div [ngClass]="{'row': true, 'm-0': true}">
     @if (!nolabel) {
       <lfb-label
-        [for]="id"
+        [for]="'pick-answer_' + linkId"
         [title]="schema.title"
         [helpMessage]="schema.description"
         class="col-2 ps-0 pe-1 ng-star-inserted"

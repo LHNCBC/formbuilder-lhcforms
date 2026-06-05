@@ -3,17 +3,22 @@ import {
   NgbCalendar,
   NgbDate,
   NgbDateAdapter,
-  NgbDateParserFormatter,
+  NgbDateParserFormatter, NgbDatepickerModule,
   NgbDateStruct,
   NgbInputDatepicker,
-  NgbTimeAdapter,
+  NgbTimeAdapter, NgbTimepickerModule,
   NgbTimeStruct
 } from '@ng-bootstrap/ng-bootstrap';
 import {DateComponent} from '../date/date.component';
 import {DateUtil, DateTime} from '../../date-util';
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {NgClass} from "@angular/common";
+import {LabelComponent} from "../label/label.component";
+import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
+import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 
 interface ConfigureDateTime {
-  setDateTime(dateTime: DateTime);
+  setDateTime(dateTime: DateTime): void;
 }
 
 /**
@@ -45,7 +50,7 @@ export class LfbTimeAdapter extends NgbTimeAdapter<NgbTimeStruct> implements Con
 }
 
 /**
- * This Service handles how the date is represented in scripts i.e. ngModel.
+ * This Service handles how the date is represented in scripts i.e., ngModel.
  */
 @Injectable()
 export class LfbDateAdapter extends NgbDateAdapter<string> implements ConfigureDateTime  {
@@ -82,7 +87,7 @@ export class LfbDateAdapter extends NgbDateAdapter<string> implements ConfigureD
 }
 
 /**
- * This Service handles how the date is rendered and parsed from keyboard i.e. in the bound input field.
+ * This Service handles how the date is rendered and parsed from keyboard i.e., in the bound input field.
  */
 @Injectable()
 export class LfbDateParserFormatter extends NgbDateParserFormatter implements ConfigureDateTime  {
@@ -111,8 +116,11 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter implements Co
 }
 
 @Component({
-  standalone: false,
   selector: 'lfb-datetime',
+  imports: [
+    NgbDatepickerModule, NgbTimepickerModule, FormsModule, ReactiveFormsModule, NgClass, LabelComponent,
+    LfbDisableControlDirective, FontAwesomeModule
+  ],
   templateUrl: './datetime.component.html',
   styleUrls: ['./datetime.component.css'],
   providers: [
@@ -128,6 +136,7 @@ export class DatetimeComponent extends DateComponent implements OnInit {
 
   dateTime: DateTime = {dateStruct: null, timeStruct: null, millis: NaN};
   includeTime = true;
+  canToggleTime = true;
 
   model: string;
   @ViewChild('inputBox', {read: ElementRef}) inputRef: ElementRef;
@@ -150,7 +159,7 @@ export class DatetimeComponent extends DateComponent implements OnInit {
    * Used in time input template to update formProperty value.
    * @param event - Not used.
    */
-  updateValue(event?) {
+  updateValue(event?: NgbTimeStruct) {
     this.dateTime.timeStruct = event || null;
     let val: string | null = DateUtil.formatToISO(this.dateTime);
     val = val.length > 0 ? val : null;
@@ -162,7 +171,7 @@ export class DatetimeComponent extends DateComponent implements OnInit {
   }
 
   /**
-   * Select current time.
+   * Select the current time.
    */
   now() {
     this.includeTime = true;
@@ -178,7 +187,7 @@ export class DatetimeComponent extends DateComponent implements OnInit {
   }
 
   /**
-   * Select current date.
+   * Select the current date.
    */
   today() {
     this.dateTime.dateStruct = this.calendar.getToday();

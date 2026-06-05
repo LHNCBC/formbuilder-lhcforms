@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExpressionEditorComponent } from './expression-editor.component';
+import { AnswerExpressionComponent } from './answer-expression.component';
 import { HttpClient, HttpHandler } from '@angular/common/http';
 
 describe('ExpressionEditorComponent', () => {
-  let component: ExpressionEditorComponent;
-  let fixture: ComponentFixture<ExpressionEditorComponent>;
+  let component: AnswerExpressionComponent;
+  let fixture: ComponentFixture<AnswerExpressionComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       providers:[ HttpClient, HttpHandler ],
-      declarations: [ExpressionEditorComponent]
+      declarations: [AnswerExpressionComponent]
     })
     .compileComponents();
-    
-    fixture = TestBed.createComponent(ExpressionEditorComponent);
+
+    fixture = TestBed.createComponent(AnswerExpressionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

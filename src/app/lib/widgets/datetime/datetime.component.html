@@ -14,18 +14,20 @@
         <input [name]="name" [readonly]="(schema.widget.id!=='color') && schema.readOnly"
                class="form-control"
                [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.widget.placeholder"
-               [required]="schema.widget.required"
+               [required]="isRequired"
                [lfbDisableControl]="schema.disabled"
                [footerTemplate]="timeTemplate"
                [startDate]="this.dateTime.dateStruct"
+               [minDate]="minDate"
+               [maxDate]="maxDate"
                ngbDatepicker
                autoClose="false"
                #d="ngbDatepicker"
-               #dateInput
                #inputBox
                (dateSelect)="onDateSelected($event)"
                (keyup)="handleInput()"
                (blur)="suppressInvalidValue($event)"
+               (navigate)="onNavigate($event)"
         >
         <button class="btn btn-outline-secondary py-0" [attr.aria-label]="'Date time picker for '+schema.title"
           [attr.disabled]="schema.readOnly ? '' : null"
@@ -44,22 +46,24 @@
 
 
   <ng-template #timeTemplate>
-    <div class="text-center"><button (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
+    <div class="text-center"><button type="button" (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
     <hr class="my-0" />
     <div class="container">
       <span class="d-block text-center">Time</span>
       <div class="d-flex">
+        @if (canToggleTime) {
         <div class="flex-grow-1">
           <input [attr.id]="'ignoreTimeCheckBox_'+_id" type="checkbox" [(ngModel)]="includeTime" (click)="updateValue()"
             [attr.disabled]="schema.readOnly ? '' : null" class="me-1 form-check-input form-check-inline">
           <label [attr.for]="'ignoreTimeCheckBox_'+_id">Include time</label>
         </div>
+        }
         <div>
-          <button class="btn btn-sm btn-link" [attr.disabled]="schema.readOnly ? '' : null" (click)="d.navigateTo(); now()">Now</button>
+          <button type="button" class="btn btn-sm btn-link" [attr.disabled]="schema.readOnly ? '' : null" (click)="d.navigateTo(); now()">Now</button>
         </div>
       </div>
       <ngb-timepicker class="form-control-sm p-0"
-        [disabled]="schema.readOnly || !includeTime"
+        [disabled]="schema.readOnly || (canToggleTime && !includeTime)"
         [(ngModel)]="dateTime.timeStruct"
         (ngModelChange)="updateValue($event)" [seconds]="true" [meridian]="true"
       [size]="'small'"></ngb-timepicker>

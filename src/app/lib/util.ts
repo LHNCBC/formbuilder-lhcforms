@@ -6,7 +6,7 @@ import fhir from 'fhir/r4';
 import {isEqual} from 'lodash-es';
 import {TreeNode} from '@bugsplat/angular-tree-component';
 import copy from 'fast-copy';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, ISchema} from '@lhncbc/ngx-schema-form';
 import {DateUtil} from './date-util';
 import {v4 as uuidv4} from 'uuid';
 import {fhirPrimitives} from "../fhir";
@@ -97,6 +97,275 @@ export class Util {
     url: 'valueUri'
   };
 
+  /**
+   * Canonical FHIR Questionnaire field order.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire.
+   * Field inclusion/exclusion is handled by questionnaire-version-converter;
+   * this map ensures consistent key order across all versions.
+   */
+  private static readonly QUESTIONNAIRE_FIELD_ORDER: readonly string[] = [
+    'resourceType',
+    'id',
+    'meta',
+    'implicitRules',
+    '_implicitRules',
+    'language',
+    '_language',
+    'text',
+    'contained',
+    'extension',
+    'modifierExtension',
+    'url',
+    '_url',
+    'identifier',
+    'version',
+    '_version',
+    'name',
+    '_name',
+    'title',
+    '_title',
+    'derivedFrom',
+    'status',
+    '_status',
+    'experimental',
+    '_experimental',
+    'subjectType',
+    '_subjectType',
+    'date',
+    '_date',
+    'publisher',
+    '_publisher',
+    'contact',
+    'description',
+    '_description',
+    'useContext',
+    'jurisdiction',
+    'purpose',
+    '_purpose',
+    'copyright',
+    '_copyright',
+    'approvalDate',
+    '_approvalDate',
+    'lastReviewDate',
+    '_lastReviewDate',
+    'effectivePeriod',
+    'code',
+    'item'
+  ];
+
+  /**
+   * Canonical field order for Questionnaire_Item.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire_Item.
+   */
+  private static readonly QUESTIONNAIRE_ITEM_FIELD_ORDER: readonly string[] = [
+    'id',
+    'extension',
+    'modifierExtension',
+    'linkId',
+    '_linkId',
+    'definition',
+    '_definition',
+    'code',
+    'prefix',
+    '_prefix',
+    'text',
+    '_text',
+    'type',
+    '_type',
+    'enableWhen',
+    'enableBehavior',
+    '_enableBehavior',
+    'disabledDisplay',
+    'required',
+    '_required',
+    'repeats',
+    '_repeats',
+    'readOnly',
+    '_readOnly',
+    'maxLength',
+    '_maxLength',
+    'answerConstraint',
+    'answerValueSet',
+    'answerOption',
+    'initial',
+    'item'
+  ];
+
+  /**
+   * Canonical field order for Questionnaire_EnableWhen.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire_EnableWhen.
+   */
+  private static readonly ENABLE_WHEN_FIELD_ORDER: readonly string[] = [
+    'id',
+    'extension',
+    'modifierExtension',
+    'question',
+    '_question',
+    'operator',
+    '_operator',
+    'answerBoolean',
+    '_answerBoolean',
+    'answerDecimal',
+    '_answerDecimal',
+    'answerInteger',
+    '_answerInteger',
+    'answerDate',
+    '_answerDate',
+    'answerDateTime',
+    '_answerDateTime',
+    'answerTime',
+    '_answerTime',
+    'answerString',
+    '_answerString',
+    'answerCoding',
+    'answerQuantity',
+    'answerReference',
+    'answerUri',
+    'answerAttachment'
+  ];
+
+  /**
+   * Canonical field order for Questionnaire_AnswerOption.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire_AnswerOption.
+   */
+  private static readonly ANSWER_OPTION_FIELD_ORDER: readonly string[] = [
+    'id',
+    'extension',
+    'modifierExtension',
+    'valueDecimal',
+    'valueInteger',
+    '_valueInteger',
+    'valueDate',
+    'valueDateTime',
+    'valueTime',
+    '_valueTime',
+    'valueString',
+    'valueUri',
+    'valueCoding',
+    'valueReference',
+    'initialSelected',
+    '_initialSelected'
+  ];
+
+  /**
+   * Canonical field order for Questionnaire_Initial.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire_Initial.
+   */
+  private static readonly INITIAL_FIELD_ORDER: readonly string[] = [
+    'id',
+    'extension',
+    'modifierExtension',
+    'valueBoolean',
+    '_valueBoolean',
+    'valueDecimal',
+    '_valueDecimal',
+    'valueInteger',
+    '_valueInteger',
+    'valueDate',
+    '_valueDate',
+    'valueDateTime',
+    '_valueDateTime',
+    'valueTime',
+    '_valueTime',
+    'valueString',
+    '_valueString',
+    'valueUri',
+    '_valueUri',
+    'valueAttachment',
+    'valueCoding',
+    'valueQuantity',
+    'valueReference'
+  ];
+
+  /**
+   * Map of an element type to its canonical field order.
+   * Used to determine which order map applies to a given object.
+   */
+  private static readonly FIELD_ORDER_MAP = new Map<string, readonly string[]>([
+    ['Questionnaire', Util.QUESTIONNAIRE_FIELD_ORDER],
+    ['QuestionnaireItem', Util.QUESTIONNAIRE_ITEM_FIELD_ORDER],
+    ['EnableWhen', Util.ENABLE_WHEN_FIELD_ORDER],
+    ['AnswerOption', Util.ANSWER_OPTION_FIELD_ORDER],
+    ['Initial', Util.INITIAL_FIELD_ORDER]
+  ]);
+
+  /**
+   * A mapping of field names to their nested relationships.
+   * This map defines the structure for nested fields within a specified entity.
+   * Each key is the name of an entity, and the associated value is an array
+   * of tuples that describe the nested fields for that entity.
+   *
+   * Each tuple contains:
+   * - The name of a field within the entity.
+   * - The type of the related nested entity.
+   *
+   * Example mapping relationships:
+   * - `Questionnaire` includes a nested field `item` of the type `QuestionnaireItem`.
+   * - `QuestionnaireItem` includes nested fields such as `item`, `enableWhen`,
+   *   `answerOption`, and `initial` with their respective types.
+   */
+  private static readonly NESTED_FIELD_MAP: Record<string, Array<[string, string]>> = {
+    Questionnaire: [
+      ['item', 'QuestionnaireItem']
+    ],
+    QuestionnaireItem: [
+      ['item', 'QuestionnaireItem'],
+      ['enableWhen', 'EnableWhen'],
+      ['answerOption', 'AnswerOption'],
+      ['initial', 'Initial']
+    ]
+  };
+
+  /**
+   * Recursively order fields in a Questionnaire object and nested elements
+   * according to FHIR canonical field order.
+   *
+   * Unknown keys are appended at the end (after known keys) for forward compatibility.
+   *
+   * @param obj - Object to order (typically a Questionnaire or backbone element)
+   * @param elementType - Type of element (determines which order map to use)
+   * @returns - Ordered copy of the input object
+   */
+  static orderQuestionnaireFields(obj: any, elementType: string = 'Questionnaire'): any {
+    if (!obj || typeof obj !== 'object') {
+      return obj;
+    }
+
+    const orderMap = this.FIELD_ORDER_MAP.get(elementType);
+    if (!orderMap) {
+      // Unknown element type, return as-is
+      return obj;
+    }
+
+    const ordered: any = {};
+    const processed = new Set<string>();
+
+    // 1. Add known keys in canonical order
+    for (const key of orderMap) {
+      if (key in obj) {
+        ordered[key] = obj[key];
+        processed.add(key);
+      }
+    }
+
+    // 2. Add remaining unknown keys at the end (alphabetically sorted)
+    const unknownKeys = Object.keys(obj).filter(key => !processed.has(key)).sort();
+    for (const key of unknownKeys) {
+      ordered[key] = obj[key];
+    }
+
+    // 3. Recursively order nested elements
+    const nestedFields = this.NESTED_FIELD_MAP[elementType] || [];
+    for (const [fieldName, fieldType] of nestedFields) {
+      if (Array.isArray(ordered[fieldName])) {
+        ordered[fieldName] = ordered[fieldName].map((entry: any) =>
+          Util.orderQuestionnaireFields(entry, fieldType)
+        );
+      }
+    }
+
+    return ordered;
+  }
 
   /**
    * A helper to fetch a `.json5` from a list of urls, intended to fetch json5
@@ -417,7 +686,8 @@ export class Util {
         }
       });
     });
-    return value;
+    // Apply FHIR canonical field ordering to the final output
+    return Util.orderQuestionnaireFields(value);
   }
 
   /**
@@ -429,7 +699,7 @@ export class Util {
       this.before(function () {
         if(node && Array.isArray(node)) {
           // Remove empty elements, nulls and undefined from the array. Note that empty elements do not trigger callbacks.
-          this.update(node.filter((e)=>{return e !== null && e !== undefined}));
+          this.update(node.filter((e)=>{return e !== null && e !== undefined && !Util.isEmpty(e);}));
         }
       });
 
@@ -869,6 +1139,73 @@ export class Util {
   }
 
   /**
+   * Extracts the FHIR type from a field name that starts with a given prefix.
+   * @param prefix - Typical prefix is value | answer.
+   * @param field - The field name from which to extract the FHIR type, example: 'answerBoolean', 'valueString'.
+   * @param isPrimitive - If true, the first character of the extracted type will be converted to lowercase.
+   * @return - The FHIR type as a string, such as 'boolean', 'string', etc.
+   *   Returns null if the field does not start with the prefix.
+   */
+  static extractFhirType(prefix: string, field: string, isPrimitive: boolean = true): string | null {
+    // Extracts the FHIR type from a field name that starts with a prefix.
+    // For example, if the prefix is 'answer' and the field is 'answerBoolean', it returns 'boolean'.
+    let type = field;
+    if (field?.startsWith(prefix)) {
+      type = field.substring(prefix.length);
+    } else {
+      type = null;
+    }
+    if(isPrimitive && type) {
+      type = type.charAt(0).toLowerCase() + type.slice(1); // Convert first character to lowercase
+    }
+    return type;
+  }
+
+  /**
+   * Convert camel case string to title case string.
+   * @param str - Input camel case string.
+   * @returns - Title case string.
+   */
+  static titleFromCamelCase(str: string): string {
+    if(!str) {
+      return str;
+    }
+    return str
+      // Insert a space between lower & upper
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      // Insert a space between upper & upper followed by lower
+      .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+      // Uppercase the first character
+      .replace(/^./, function(str){ return str.toUpperCase(); });
+  }
+
+  /**
+   * Lowercase the first character of a string.
+   * @param str - Input string.
+   * @returns - String with the first character lowercased.
+   */
+  static lowerFirstChar(str: string): string {
+    if(!str) {
+      return str;
+    }
+    return str.charAt(0).toLowerCase() + str.slice(1);
+  }
+
+
+  /**
+   * Check to see if this is a required field as per schema.
+   * @param formProperty - Form Property of the field to check.
+   * @return - true if required, false otherwise.
+   */
+  static getIsRequired(formProperty: FormProperty): boolean {
+    return !!formProperty?.parent?.schema?.required?.some((requiredField) => {
+      const pathArray = formProperty.canonicalPathNotation.split('.');
+      return pathArray[pathArray.length - 1] === requiredField;
+    });
+  }
+
+
+  /**
    * Traverses up the tree from a given descendant node and invokes a callback function for each ancestor node. It
    * returns the first ancestor node for which the callback returns true.
    *
@@ -907,5 +1244,85 @@ export class Util {
     const valueFieldName = this.getValueFieldName(type);
     return !initials.some(initial => initial[valueFieldName]);
   }
-}
 
+  /**
+   * Remove classes from a class list using a prefix.
+   * @param classes - class list string.
+   * @param filterPrefix - prefix to filter out.
+   * @returns - class list string after removal.
+   */
+  static removeClasses(classes: string, filterPrefix: string) {
+    const otherClasses = classes?.split(/\s+/).filter((cls) => {
+      return !cls.startsWith(filterPrefix);
+    });
+    return otherClasses?.join(' ');
+  }
+
+  /**
+   * Search items by linkId and return its extensions.
+   *
+   * @param items - Items list
+   * @param linkId - Target's linkId.
+   * @return - Array of extensions.
+   */
+  static getExtensionsByLinkId(items: fhir.QuestionnaireItem[], linkId: string): fhir.Extension [] {
+    const search = (items, linkId) => {
+      let ret = {continue: true, extensions: null};
+      for(const item of items) {
+        if(item.linkId === linkId) {
+          ret.extensions = item.extension?.filter(ext => ext.url) || null;
+          ret.continue = false; // Done searching
+          break;
+        } else if(item.item) {
+          ret = search(item.item, linkId);
+          if(!ret.continue)
+            break;
+        }
+      }
+      return ret;
+    };
+    return search(items, linkId).extensions;
+  }
+
+  private static resolveSchemaRef(schema: ISchema, rootSchema: ISchema): ISchema {
+    let ret = schema;
+    const visited = new Set<string>();
+    while(ret?.$ref && rootSchema && !visited.has(ret.$ref)) {
+      visited.add(ret.$ref);
+      if(ret.$ref.startsWith('#/')) {
+        ret = ret.$ref.substring(2).split('/').reduce((acc, pathPart) => {
+          return acc?.[pathPart.replace(/~1/g, '/').replace(/~0/g, '~')];
+        }, rootSchema);
+      }
+      else {
+        break;
+      }
+    }
+    return ret;
+  }
+
+  static getSchemaFromArrayProperty(arrayProperty: ArrayProperty, propertyId: string): ISchema {
+    const rootSchema = arrayProperty.root?.schema || arrayProperty.schema;
+    let ret = Util.resolveSchemaRef(arrayProperty.schema.items, rootSchema);
+    for(const pathPart of propertyId.split('.')) {
+      ret = Util.resolveSchemaRef(ret, rootSchema);
+      if(!ret) {
+        break;
+      }
+      if(ret.properties?.[pathPart]) {
+        ret = ret.properties[pathPart];
+      }
+      else if(pathPart === 'properties' && ret.properties) {
+        continue;
+      }
+      else if(ret.items) {
+        const itemSchema = Util.resolveSchemaRef(ret.items, rootSchema);
+        ret = itemSchema?.properties?.[pathPart];
+      }
+      else {
+        ret = null;
+      }
+    }
+    return Util.resolveSchemaRef(ret, rootSchema);
+  }
+}

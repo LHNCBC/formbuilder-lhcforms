@@ -33,7 +33,16 @@
     '$.properties.valueCoding': 'Value coding',
     '$.properties.valueCoding.properties.code': 'Code',
     '$.properties.valueCoding.properties.display': 'Display',
-    '$.properties.valueCoding.properties.system': 'System'
+    '$.properties.valueCoding.properties.system': 'System',
+    '$.properties.valuePeriod': 'Value period',
+    '$.properties.valueAddress.properties.period': 'Period',
+    '$.properties.valueContactPoint.properties.period': 'Period',
+    '$.properties.valueHumanName.properties.period': 'Period',
+    '$.properties.valueIdentifier.properties.period': 'Period',
+    '$.properties.valueContactDetail.properties.telecom.items.properties.period': 'Period',
+    '$.properties.valueContributor.properties.contact.items.properties.telecom.items.properties.period': 'Period',
+    '$.properties.valuePositiveInt': 'Value Positive Integer',
+    '$.properties.valueUnsignedInt': 'Value Unsigned Integer'
   },
   // Specify widget layout.
   // id is widget schema registry defined in lforms-widget-registry.ts
@@ -56,7 +65,8 @@
       id: "string",
       controlClasses: "col-sm-10 m-0 p-0",
       tooltipClass: "custom-tooltip-class",
-      readonly: true
+      readonly: true,
+      tooltipFormat: "json"
     },
     urlMandatory: {
       id: "url",
@@ -144,6 +154,23 @@
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
+    dateRange: {
+      id: "date-range",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-6",
+      showFields: [
+        {"field": "start", "col": 6},
+        {"field": "end", "col": 6}
+      ]
+    },
+    instant: {
+      id: "instant",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-3",
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
     time: {
       id: "time",
       labelPosition: "left",
@@ -157,6 +184,18 @@
       labelClasses: "col-sm-2 m-0 px-1",
       controlClasses: "col-sm-10 m-0 p-0"
     },
+    "positive-integer": {
+      id: "positive-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    "unsigned-integer": {
+      id: "unsigned-integer",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
     number: {
       id: "number",
       labelPosition: "left",
@@ -166,7 +205,8 @@
     expression: {
       "id": "lfb-object",
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 px-1",
+      "labelClasses": "px-1",
+      "childOffsetClass": "ps-4",
       "controlClasses": "col-sm-10",
       "showFields": [
         {"field": "name"},
@@ -178,7 +218,8 @@
     coding: {
       "id": "lfb-object",
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 px-1",
+      "labelClasses": "px-1",
+      "childOffsetClass": "ps-4",
       "controlClasses": "col-sm-10",
       "showFields": [
         {"field": "display"},
@@ -217,15 +258,27 @@
     object: {
       "id": "lfb-object",
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 px-1",
+      "labelClasses": "px-1",
+      "childOffsetClass": "ps-4",
       "controlClasses": "col-sm-10",
     },
     array: {
       "id": "array",
       "noTableLabel": true,
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 px-1",
+      "labelClasses": "px-1",
+      "childOffsetClass": "ps-0",
+      "arrayBodyClasses": "col-sm-12 shadow rounded p-1 mb-1",
       "controlClasses": "col-sm-10",
+      "arrayItemRowClasses": "col-sm-12 row m-0 p-1 lfb-hover-scope",
+      "arrayItemLabelClasses": "lfb-array-item-gutter-narrow d-flex align-items-start p-1",
+      "arrayItemControlClasses": "col p-0 lfb-array-item-control",
+      "arrayItemLabelSpacerClasses": "lfb-array-item-gutter-narrow",
+      "arrayAddButtonClasses": "col p-0 my-1",
+      "arrayItemDeleteClasses": "lfb-array-item-delete d-flex justify-content-center align-items-start p-1",
+      "arrayAddButtonActionSpacerClasses": "lfb-array-item-delete",
+      "deleteButtonAfterControl": true,
+      "collapseButtonNextToLabel": true,
       "addButtonLabel": "Add new item",
     },
     hidden:  {
@@ -282,18 +335,33 @@
     ],
     integer: [
       '$.properties.valueInteger',
+    ],
+    "positive-integer": [
       '$.properties.valuePositiveInt',
+    ],
+    "unsigned-integer": [
       '$.properties.valueUnsignedInt',
     ],
     time: [
       '$.properties.valueTime',
-      '$.properties.valueInstant'
     ],
     date: [
       '$.properties.valueDate',
     ],
     dateTime: [
       '$.properties.valueDateTime',
+    ],
+    dateRange: [
+      '$.properties.valuePeriod',
+      '$.properties.valueAddress.properties.period',
+      '$.properties.valueContactPoint.properties.period',
+      '$.properties.valueHumanName.properties.period',
+      '$.properties.valueIdentifier.properties.period',
+      '$.properties.valueContactDetail.properties.telecom.items.properties.period',
+      '$.properties.valueContributor.properties.contact.items.properties.telecom.items.properties.period',
+    ],
+    instant: [
+      '$.properties.valueInstant',
     ],
     expression: [
       '$.properties.valueExpression',

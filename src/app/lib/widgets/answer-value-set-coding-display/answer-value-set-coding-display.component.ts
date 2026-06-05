@@ -1,9 +1,8 @@
-import {AfterViewInit, ChangeDetectorRef, Component, ElementRef, inject, OnDestroy, OnInit, Renderer2, ViewChild} from '@angular/core';
-import {ObjectWidget} from '@lhncbc/ngx-schema-form';
+import {AfterViewInit, Component, inject, OnDestroy, OnInit} from '@angular/core';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
 import {debounceTime, distinctUntilChanged, startWith, Subscription} from 'rxjs';
-import {AutoCompleteOptions} from '../auto-complete/auto-complete.component';
+import {AutoCompleteComponent, AutoCompleteOptions} from '../auto-complete/auto-complete.component';
 import { ExtensionsService } from 'src/app/services/extensions.service';
 import {faExclamationTriangle} from "@fortawesome/free-solid-svg-icons";
 import { TableService, TableStatus } from 'src/app/services/table.service';
@@ -13,22 +12,18 @@ import {
   ANSWER_OPTION_METHOD_ANSWER_OPTION, ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET,
   TYPE_STRING, TYPE_CODING
 } from '../../constants/constants';
+import {LfbControlWidgetComponent} from "../lfb-control-widget/lfb-control-widget.component";
+import {ReactiveFormsModule} from "@angular/forms";
 
 declare var LForms: any;
 
 @Component({
-  standalone: false,
   selector: 'lfb-answer-value-set-coding-display',
+  imports: [ReactiveFormsModule, AutoCompleteComponent],
   templateUrl: './answer-value-set-coding-display.component.html'
 })
-export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
+export class AnswerValueSetCodingDisplayComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   private formService = inject(FormService);
-  private cdr = inject(ChangeDetectorRef);
-  private renderer = inject(Renderer2);
-
-  @ViewChild('codingDisplay') codingDisplay: ElementRef;
-
-  subscriptions: Subscription[] = [];
   answerOptions: any[] = [];
   _fhir = LForms.FHIR["R4"];
   sdc = this._fhir.SDC;
@@ -147,7 +142,7 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
         this.autoComplete = true;
         if (firstChange) {
           this.acOptions.fhirOptions.valueSetUri = decodeURI(answerValueSetUri);
-          this.acOptions.fhirOptions.fhirServer = this.formService.getPreferredTerminologyServer(sourceNode);
+          this.acOptions.fhirOptions.fhirServer = fhirServer;
         } else {
           const updatedFhirOptions = {
             fhirServer: fhirServer,
@@ -214,38 +209,15 @@ export class AnswerValueSetCodingDisplayComponent extends ObjectWidget implement
    * @param event - The focusout event containing the current input element.
    */
   onFocusOut(event: any) {
-    if (event.target.value && event.target.value !== this.model) {
-      this.model = event.target.value;
-
+    if (event.target.value && event.target.value !== this.model?.display) {
       const coding = this.formProperty.parent.value;
       coding['display'] = event.target.value;
+      this.model = coding;
 
       this.updateValueCoding(coding);
     }
 
   }
-  /**
-   * Handle field change event in <input> tag.
-   * @param coding - Option value
-   */
-  fieldChanged(display: string) {
-    const coding = this.formProperty.parent.value;
-    coding['display'] = display;
-
-    this.updateValueCoding(coding);
-  }
-
-  /**
-   * Lifecycle hook that is called when the component is about to be destroyed.
-   * This function iterates over all subscriptions and unsubscribes from each one
-   * to prevent memory leaks.
-   */
-  ngOnDestroy() {
-    this.subscriptions.forEach((sub) => {
-      sub?.unsubscribe();
-    })
-  }
-
 }
 
 

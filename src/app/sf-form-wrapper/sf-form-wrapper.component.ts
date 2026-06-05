@@ -5,36 +5,37 @@ import {
   Component,
   EventEmitter, Input, OnChanges,
   Output, SimpleChanges,
-  ViewChild,
-  inject
+  ViewChild, OnDestroy, inject, ChangeDetectorRef
 } from '@angular/core';
 import {FormService} from '../services/form.service';
-import {LinkIdCollection} from '../item/item.component';
 import {
   ArrayProperty,
   FormComponent,
   FormProperty,
   PropertyGroup,
-  ObjectProperty,
+  ObjectProperty, SchemaFormModule,
 } from '@lhncbc/ngx-schema-form';
 import {ExtensionsService} from '../services/extensions.service';
 import {Util} from '../lib/util';
 import { SharedObjectService } from '../services/shared-object.service';
 import { ValidationService, EnableWhenValidationObject } from '../services/validation.service';
 import { TableService } from '../services/table.service';
+import {Subscription} from "rxjs";
+import {NgClass} from "@angular/common";
 
 /**
  * This class is intended to isolate customization of sf-form instance.
  */
 @Component({
-  standalone: false,
   selector: 'lfb-sf-form-wrapper',
   templateUrl: './sf-form-wrapper.component.html',
   styleUrls: ['./sf-form-wrapper.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [SchemaFormModule, NgClass],
   providers: [ExtensionsService, TableService]
 })
-export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit {
+export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+  rootProperty: PropertyGroup;
   @ViewChild('itemForm') itemForm: FormComponent;
 
   validators = {
@@ -44,17 +45,21 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
      */
     '/__$start': (value, formProperty: FormProperty, rootProperty: PropertyGroup) => {
       //
-      this.formService.loading = true;
+      // this.formService.loading = true;
+      const extensionsProp = rootProperty.getProperty('extension');
+      this.initializeExtensions(extensionsProp);
       return null;
     },
     '/__$end': (value, formProperty: FormProperty, rootProperty: PropertyGroup) => {
       // At the end of loading, setup extensions service.
+      /*
       const extensionsProp = rootProperty.getProperty('extension');
       const formPropertyChanged = extensionsProp !== this.extensionsService.extensionsProp;
       if(formPropertyChanged) {
         this.extensionsService.setExtensions(extensionsProp);
       }
-      this.formService.loading = false;
+    */
+      // this.formService.loading = false;
       return null;
     },
     '/type': this.validateType.bind(this),
@@ -75,33 +80,30 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   errorsChanged = new EventEmitter<any []>();
   @Output()
   validationErrorsChanged = new EventEmitter<any []>();
-  @Input()
-  linkIdCollection = new LinkIdCollection();
-  loading = false;
 
   questionnaire;
   linkId;
 
-  extensionsService = inject(ExtensionsService);
-  formService = inject(FormService);
-  validationService = inject(ValidationService);
-  modelService = inject(SharedObjectService);
-
-  constructor() {
-    this.mySchema = this.formService.getItemSchema();
-  }
+  subscriptions: Subscription [] = [];
+  private extensionsService = inject(ExtensionsService);
+  private formService = inject(FormService);
+  private validationService = inject(ValidationService);
+  private modelService = inject(SharedObjectService);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
+    this.mySchema = this.formService.getItemSchema();
     // Subscribe to changes to the questionnaire and obtain a set of
     // unique link ids as a result.
-    this.modelService.questionnaire$.subscribe((questionnaire) => {
+    let sub = this.modelService.questionnaire$.subscribe((questionnaire) => {
       this.questionnaire = questionnaire;
     });
+    this.subscriptions.push(sub);
   };
 
   ngOnChanges(changes: SimpleChanges) {
     if(changes.model) {
-      this.loading = true;
+      this.formService.loading = true;
       // Notify the changes to the form.
       this.formService.formChanged(changes.model);
       this.formService.resetForm();
@@ -113,21 +115,32 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     this.adjustRootFormProperty();
   }
 
+  initializeExtensions(extensionsProp: ArrayProperty) {
+    const formPropertyChanged = extensionsProp !== this.extensionsService.extensionsProp;
+    if(extensionsProp && formPropertyChanged) {
+      this.extensionsService.setExtensions(extensionsProp);
+    }
+  }
+
   /**
    * Handle value change event.
    * @param value - Angular event
    */
   updateValue(value) {
-    if(!this.loading) { // Avoid emitting the changes while loading.
+    if(!this.formService.loading) { // Avoid emitting the changes while loading.
       this.valueChange.emit(value);
     }
   }
 
   onModelReset(value) {
-    this.loading = false;
+    const extensionsProp = this.itemForm?.rootProperty.searchProperty('/extension') as ArrayProperty;
+    this.initializeExtensions(extensionsProp);
+    this.formService.loading = false;
+    this.modelService.modelInitialized = value;
     if(!this.adjustRootFormProperty()) {
       this.valueChange.emit(value);
     }
+    this.cdr.detectChanges();
   }
 
   /**
@@ -166,8 +179,6 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
     };
   }
 
-
-
   /**
    * Create a validation object specifically for the 'enableWhen' field validation using 'formProperty'.
    * @param formProperty - Object form property of the 'enableWhen' field.
@@ -187,6 +198,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
         return (source.data.linkId === questionItem.data.linkId);
       });
     }
+
     // The condition key is used to differentiate between each enableWHen conditions.
     let condKey = '';
     if (q._canonicalPath) {
@@ -251,7 +263,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   validateType(value, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
-    if (!this.model) {
+    if (!this.model || this.formService.loading) {
       return null;
     }
     const nodeId = this.model?.[FormService.TREE_NODE_ID];
@@ -315,7 +327,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   validateEnableWhenSingle(value: any, formProperty: ObjectProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
-    if (!this.model) {
+    if (!this.model || this.formService.loading) {
       return null;
     }
 
@@ -347,7 +359,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   validateLinkId (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
-    if (!this.model) {
+    if (!this.model || this.formService.loading) {
       return null;
     }
 
@@ -401,7 +413,7 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
   validatePickInitial (value: any, formProperty: FormProperty, rootProperty: PropertyGroup): any[] | null {
     let errors: any[] = [];
 
-    if (!this.model) {
+    if (!this.model || this.formService.loading) {
       return null;
     }
     const nodeId = this.model?.[FormService.TREE_NODE_ID];
@@ -463,6 +475,10 @@ export class SfFormWrapperComponent implements OnInit, OnChanges, AfterViewInit 
 
     this.validationErrorsChanged.next(errors);
     return errors;
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(sub => sub?.unsubscribe());
   }
 
 }

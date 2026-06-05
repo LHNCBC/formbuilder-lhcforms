@@ -819,7 +819,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     } else {
       modalRef.componentInstance.title = 'Confirm deletion';
       modalRef.componentInstance.message = 'Are you sure you want to delete this item?';
-      modalRef.componentInstance.type = MessageType.WARNING;
+      modalRef.componentInstance.type = MessageType.INFO;
     }
     return modalRef.result.then(() => {
       this.deleteFocusedItem();
@@ -905,15 +905,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     return ret;
   }
 
-  /**
-   * TODO - not sure if we need this yet.
-   * @param linkId - Link id
-   */
-  /*
-  registerLinkId(linkId) {
-    this.linkIdCollection.addLinkId(linkId, this.focusNode.path.join('/'));
-  }
-*/
   /**
    * Fetch loinc item by id
    * loincNum - Loinc number of the item.

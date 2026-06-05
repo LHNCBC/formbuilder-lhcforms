@@ -16,10 +16,6 @@
         },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-          "valueString": "#,###.##"
-        },
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
           "valueString": "Enter value between 15.2 and 20.1"
         }
       ],

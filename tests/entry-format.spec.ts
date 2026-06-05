@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Locator } from '@playwright/test';
 import { MainPO } from './po/main-po';
 import {PWUtils } from "./pw-utils";
 
@@ -6,7 +6,7 @@ import {PWUtils } from "./pw-utils";
   test.describe('Entry format extension', () => {
     let mainPO: MainPO;
     let fileJson;
-    let entryFormatField;
+    let entryFormatField: Locator;
     const entryFormatUrl = "http://hl7.org/fhir/StructureDefinition/entryFormat";
 
     test.beforeEach(async ({ page }) => {
@@ -17,7 +17,7 @@ import {PWUtils } from "./pw-utils";
       fileJson = await PWUtils.uploadFile(page, 'entry-format-sample.json', true);
       await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
 
-      entryFormatField = await PWUtils.getItemEntryFormatField(page);
+      entryFormatField = PWUtils.getItemEntryFormatField(page);
     });
 
     test('should display entry format placeholder for different data types', async ({ page }) => {

@@ -3,9 +3,10 @@
  * with array of objects, typically like a table of rows with columns.
  */
 import {AfterViewInit, Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {ArrayWidget} from '@lhncbc/ngx-schema-form';
+import {ArrayWidget, FormProperty} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {Subscription} from 'rxjs';
+import {Util} from "../../util";
 
 @Component({
   standalone: false,
@@ -38,9 +39,13 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit, Afte
   booleanLabel: string;
   @Input()
   booleanControlledInitial = true;
+  addDefaultItemIfEmpty: boolean = true;
+
+  isRequired = false;
 
   ngOnInit() {
-    if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0) {
+    this.isRequired = Util.getIsRequired(this.formProperty);
+    if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0 && this.addDefaultItemIfEmpty) {
       this.formProperty.addItem();
     }
     const widget = this.formProperty.schema.widget;
@@ -84,6 +89,11 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit, Afte
 
     this.booleanControlledInitial = widget.booleanControlledInitial !== undefined ?
       widget.booleanControlledInitial : this.booleanControlledInitial; // If not defined, show the control.
+  }
+
+  override removeItem(formProperty: FormProperty) {
+    super.removeItem(formProperty);
+    this.control.markAsDirty();
   }
 
   /**
