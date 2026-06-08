@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.2.2] 2026-06-08
+### Fixed
+- Fixed a bug in the Period display when adding multiple items to an array property.
+
 ## [11.2.1] 2026-05-22
 ### Added
 - Exported Questionnaire JSON now follows FHIR canonical field order for all
