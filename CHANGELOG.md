@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.2.3] 2026-06-10
+### Fixed
+- Fix the change of SNOMED url.
+
 ## [11.2.2] 2026-06-08
 ### Fixed
 - Fixed a bug in the Period display when adding multiple items to an array property.
