@@ -67,3 +67,5 @@ export const EXTENSION_URL_RENDERING_XHTML = 'http://hl7.org/fhir/StructureDefin
 export const ANSWER_CONSTRAINT_OPTIONS_ONLY = "optionsOnly";
 export const ANSWER_CONSTRAINT_OPTIONS_OR_TYPE = "optionsOrType";
 export const ANSWER_CONSTRAINT_OPTIONS_OR_STRING = "optionsOrString";
+
+export const SNOMED_SERVER = "https://snomedbrowser.org";
