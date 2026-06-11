@@ -68,6 +68,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
   canceledEvent = false;
   titleAriaLabel: string;
   editMenuTargetStep = 'item-editor';
+  private formFieldsRefreshToken = 0;
+  private pauseFormFieldChanges = false;
 
   private formService = inject(FormService);
   private modelService = inject(SharedObjectService);
@@ -267,7 +269,10 @@ export class BasePageComponent implements OnInit, OnDestroy {
    * @param formChanges - questionnaire (Form level copy)
    */
   formFieldsChanged(formChanges) {
-    [this.formValue, this.questionnaire, this.formFields].forEach((obj) => {
+    if(this.pauseFormFieldChanges) {
+      return;
+    }
+    [this.formValue, this.questionnaire, this.formFields].filter(Boolean).forEach((obj) => {
       const itemsArray = obj.item; // Save item to append it at the bottom.
       for (const key of Object.keys(obj)) {
         delete obj[key];
@@ -307,10 +312,34 @@ export class BasePageComponent implements OnInit, OnDestroy {
     this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
-    this.formFields = Object.assign({}, this.questionnaire);
-    delete this.formFields.item;
+    this.refreshFormFields();
     this.notifyChange(this.formValue);
     return true;
+  }
+
+  /**
+   * Recreate the form-level editor model after loading a new Questionnaire.
+   * This prevents the previous sf-form instance from displaying or emitting stale values.
+   */
+  private refreshFormFields() {
+    const token = ++this.formFieldsRefreshToken;
+    this.pauseFormFieldChanges = true;
+    this.formFields = null;
+
+    setTimeout(() => {
+      if(token !== this.formFieldsRefreshToken) {
+        return;
+      }
+
+      this.formFields = Object.assign({}, this.questionnaire);
+      delete this.formFields.item;
+
+      setTimeout(() => {
+        if(token === this.formFieldsRefreshToken) {
+          this.pauseFormFieldChanges = false;
+        }
+      });
+    });
   }
 
   /**
@@ -406,45 +435,45 @@ export class BasePageComponent implements OnInit, OnDestroy {
    *
    * @param event - Object having selected file from the browser file dialog.
    */
-  onFileSelected(event) {
-    const loadFromFile = () => {
-      const file = event.target.files[0];
-      const selectedFile = Util.validateFile(file);
+  async onFileSelected(event) {
+    const file = event?.target?.files?.[0];
+    const selectedFile = Util.validateFile(file);
 
-      if(!selectedFile) {
-        this.showError(`Invalid file name: ${file?.name}`);
+    if(!selectedFile) {
+      this.showError(`Invalid file name: ${file?.name}`);
+      return;
+    }
+
+    // Clear the file input so selecting the same file again will still trigger change.
+    if(this.fileInputEl?.nativeElement) {
+      this.fileInputEl.nativeElement.value = null;
+    }
+
+    try {
+      const fileText = await selectedFile.text();
+      const parsedQuestionnaire = this.formService.parseQuestionnaire(fileText);
+
+      let shouldLoad = true;
+      if(this.questionnaire) {
+        shouldLoad = await new Promise<boolean>((resolve) => {
+          this.warnFormLoading(
+            (load: boolean) => resolve(!!load),
+            () => resolve(false)
+          );
+        });
+      }
+
+      if(!shouldLoad) {
         return;
       }
 
-      event.target.value = null; //
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        setTimeout(async () => {
-          try {
-            const loaded = await this.setQuestionnaire(this.formService.parseQuestionnaire(fileReader.result as string), true);
-            if(loaded) {
-              this.setStep('fl-editor');
-            }
-          }
-          catch (e) {
-            this.showError(`${e.message}: ${selectedFile.name}`);
-          }
-        });
+      const loaded = await this.setQuestionnaire(parsedQuestionnaire, true);
+      if(loaded) {
+        this.setStep('fl-editor');
       }
-      fileReader.onerror = () => {
-        this.showError(`Error occurred reading file: ${selectedFile.name}`);
-      }
-
-      fileReader.readAsText(selectedFile, 'UTF-8');
-    };
-
-    if(this.questionnaire) {
-      this.warnFormLoading(() => {
-        loadFromFile();
-      }, );
     }
-    else {
-      loadFromFile();
+    catch (e: any) {
+      this.showError(`${e?.message || e}: ${selectedFile.name}`);
     }
   }
 

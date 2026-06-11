@@ -116,6 +116,35 @@ test.describe('Subject type autocomplete', () => {
     await expect(chips.filter({ hasText: 'CatalogEntry (R4)' })).toHaveCount(1);
   });
 
+  test('should replace the loaded form when keeping incompatible imported subjectType values', async ({ page }) => {
+    await startScratchForm(page);
+
+    const subjectTypeInput = getSubjectTypeInput(page);
+    await PWUtils.typeAndSelect(subjectTypeInput, 'Person');
+
+    await PWUtils.importLocalFile(page, 'subject-type-r4-only.json', true);
+
+    const warningDialog = page.getByRole('dialog', { name: 'Subject type compatibility' });
+    await expect(warningDialog).toContainText('CatalogEntry');
+    await warningDialog.getByRole('button', { name: 'Keep and continue' }).click();
+
+    await expect.poll(async () => {
+      const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      return questionnaire.title;
+    }).toBe('Subject type compatibility sample');
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.title).toBe('Subject type compatibility sample');
+    expect(questionnaire.subjectType).toEqual(expect.arrayContaining(['Patient', 'CatalogEntry']));
+    expect(questionnaire.subjectType).not.toContain('Person');
+
+    await PWUtils.expandAdvancedFields(page);
+    const chips = getSubjectTypeChipList(page);
+    await expect(chips.filter({ hasText: 'Patient' })).toHaveCount(1);
+    await expect(chips.filter({ hasText: 'CatalogEntry (R4)' })).toHaveCount(1);
+    await expect(chips.filter({ hasText: 'Person' })).toHaveCount(0);
+  });
+
   test('should remove incompatible imported subjectType values when requested', async ({ page }) => {
     await page.locator('input[type="radio"][value="existing"]').click();
     await page.locator('input[type="radio"][value="local"]').click();
@@ -133,6 +162,35 @@ test.describe('Subject type autocomplete', () => {
 
     const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(questionnaire.subjectType).toEqual(['Patient']);
+  });
+
+  test('should replace the loaded form when removing incompatible imported subjectType values', async ({ page }) => {
+    await startScratchForm(page);
+
+    const subjectTypeInput = getSubjectTypeInput(page);
+    await PWUtils.typeAndSelect(subjectTypeInput, 'Person');
+
+    await PWUtils.importLocalFile(page, 'subject-type-r4-only.json', true);
+
+    const warningDialog = page.getByRole('dialog', { name: 'Subject type compatibility' });
+    await expect(warningDialog).toContainText('CatalogEntry');
+    await warningDialog.getByRole('button', { name: 'Remove incompatible types' }).click();
+
+    await expect.poll(async () => {
+      const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      return questionnaire.title;
+    }).toBe('Subject type compatibility sample');
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.title).toBe('Subject type compatibility sample');
+    expect(questionnaire.subjectType).toEqual(['Patient']);
+    expect(questionnaire.subjectType).not.toContain('Person');
+
+    await PWUtils.expandAdvancedFields(page);
+    const chips = getSubjectTypeChipList(page);
+    await expect(chips.filter({ hasText: 'Patient' })).toHaveCount(1);
+    await expect(chips.filter({ hasText: 'CatalogEntry' })).toHaveCount(0);
+    await expect(chips.filter({ hasText: 'Person' })).toHaveCount(0);
   });
 
   test('should export anyway with incompatible subjectType values when requested', async ({ page }, testInfo) => {

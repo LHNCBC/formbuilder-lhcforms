@@ -158,11 +158,13 @@
   </ng-template>
 
   <ng-template #formLevelFields>
-    <lfb-form-fields
-      [questionnaire]="formFields"
-      (questionnaireChange)="formFieldsChanged($event)"
-      [questionsButtonLabel]="createButtonLabel()"
-    ></lfb-form-fields>
+    @if (formFields) {
+      <lfb-form-fields
+        [questionnaire]="formFields"
+        (questionnaireChange)="formFieldsChanged($event)"
+        [questionsButtonLabel]="createButtonLabel()"
+      ></lfb-form-fields>
+    }
   </ng-template>
 
   <ng-template #itemLevelFields>
