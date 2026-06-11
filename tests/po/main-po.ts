@@ -3,8 +3,9 @@ import {mockLoincLookupData, mockUcumLookupData, mockSnomedLookupData, mockUnitL
 
 const LOINC_SEARCH = /loinc_items\/v3\/search.*terms=.*/;
 const ANSWER_OPTION_UCUM_SEARCH = /ucum\/v3\/search\?terms=.*/;
-const ANSWER_OPTION_SNOMED_SEARCH = /https:\/\/snowstorm\.ihtsdotools\.org\/fhir\/ValueSet\/\$expand.*filter=/;
+const ANSWER_OPTION_SNOMED_SEARCH = /https:\/\/snomedbrowser\.org\/fhir\/ValueSet\/\$expand.*filter=/;
 const UNIT_UCUM_SEARCH = /ucum\/v3\/search\?df=cs_code%2Cname%2Cguidance&terms=.*/;
+export const SNOMED_URL = 'https://snomedbrowser.org';
 
 export class MainPO {
 
@@ -127,7 +128,7 @@ export class MainPO {
    * Mock SNOMED editions request.
    */
   async mockSnomedEditions() {
-    await this._page.route('https://snowstorm.ihtsdotools.org/fhir/CodeSystem', (route) => {
+    await this._page.route(SNOMED_URL + '/fhir/CodeSystem', (route) => {
       route.fulfill({path: 'tests/fixtures/snomedEditions.json'});
     });
   }
