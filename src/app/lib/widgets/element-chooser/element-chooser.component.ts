@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {SchemaFormModule, WidgetChooserComponent} from '@lhncbc/ngx-schema-form';
 
 @Component({
@@ -20,4 +20,11 @@ export class ElementChooserComponent extends WidgetChooserComponent {
   booleanControlled = false;
   @Input()
   booleanLabel: string;
+
+  override ngOnChanges(): void {
+    this.container?.clear();
+    if(this.widgetInfo?.id) {
+      super.ngOnChanges();
+    }
+  }
 }

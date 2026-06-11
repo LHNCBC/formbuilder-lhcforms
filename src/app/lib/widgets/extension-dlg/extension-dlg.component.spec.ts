@@ -9,6 +9,8 @@ import {CommonTestingModule} from "../../../testing/common-testing.module";
 import {DialogData} from "../table-edit-row-in-dlg/table-edit-row-in-dlg.component";
 import fhir from "fhir/r4";
 import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
+import {AppFormElementComponent} from "../form-element/form-element.component";
+import {LfbArrayComponent} from "../lfb-array/lfb-array.component";
 
 
 describe('ExtensionDlgComponent', () => {
@@ -40,13 +42,13 @@ describe('ExtensionDlgComponent', () => {
     await createDialog(inputExt);
   });
 
-  async function createDialog(extensions: fhir.Extension[]) {
+  async function createDialog(extensions: fhir.Extension[], rowIndex = 0) {
     const rootProperty = formPropertyFactory.createProperty(extSchema) as ArrayProperty;
     arrayProperty = formPropertyFactory.createProperty(extSchema.properties.extension, rootProperty, 'extension') as ArrayProperty;
     arrayProperty.setValue(extensions.map((ext) => extensionsService.updateExtension(ext)), false);
     data = {
       arrayProperty,
-      rowIndex: 0,
+      rowIndex,
     } as DialogData;
     fixture = TestBed.createComponent(ExtensionDlgComponent);
     component = fixture.componentInstance;
@@ -176,5 +178,74 @@ describe('ExtensionDlgComponent', () => {
     expect(inputs[0].value).toBe('2024-04-01');
     expect(inputs[1].value).toBe('2024-05-31');
     expect(getDateRangeLabelTexts(dateRange)).toEqual(['Period', 'Start', 'End']);
+  });
+
+  it('should render one period date range per ContactDetail telecom item after adding an item', async () => {
+    await createDialog([], -1);
+
+    const extensionObj = fixture.debugElement.query(By.directive(ExtensionObjComponent))
+      .componentInstance as ExtensionObjComponent;
+    const rootProperty = extensionObj.sfFormRootProperty;
+
+    const categoryElement = fixture.debugElement.queryAll(By.directive(AppFormElementComponent))
+      .find((el) => el.componentInstance.formProperty === rootProperty.getProperty('__$valueTypeCategory'));
+    const metadataTypeRadio = Array.from(categoryElement.nativeElement.querySelectorAll('input[type="radio"]'))
+      .find((input: HTMLInputElement) => input.id.endsWith('__$valueMetadataType')) as HTMLInputElement;
+    expect(metadataTypeRadio).toBeDefined();
+    metadataTypeRadio.click();
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const metadataTypeElement = fixture.debugElement.queryAll(By.directive(AppFormElementComponent))
+      .find((el) => el.componentInstance.formProperty === rootProperty.getProperty('__$valueMetadataType'));
+    const metadataTypeSelect: HTMLSelectElement = metadataTypeElement.nativeElement.querySelector('select');
+    const contactDetailOption = Array.from(metadataTypeSelect.options)
+      .find((option) => option.value.includes('valueContactDetail'));
+    expect(contactDetailOption).toBeDefined();
+    metadataTypeSelect.value = contactDetailOption!.value;
+    metadataTypeSelect.dispatchEvent(new Event('change'));
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const telecomProperty: any = rootProperty.getProperty('valueContactDetail/telecom');
+    expect(telecomProperty.properties.length).toBe(1);
+    const valueProperty = telecomProperty.properties[0].getProperty('value');
+    const valueElement = fixture.debugElement.queryAll(By.directive(AppFormElementComponent))
+      .find((el) => el.componentInstance.formProperty === valueProperty);
+    const valueInput: HTMLInputElement = valueElement.nativeElement.querySelector('input.form-control');
+    valueInput.value = 'v1';
+    valueInput.dispatchEvent(new InputEvent('input'));
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const telecomArray = fixture.debugElement.queryAll(By.directive(LfbArrayComponent))
+      .find((el) => el.componentInstance.formProperty === telecomProperty);
+    const addButton: HTMLButtonElement = telecomArray.nativeElement.querySelector('button.array-add-button');
+    addButton.click();
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const telecomItems = fixture.nativeElement.querySelectorAll(
+      'lfb-extension-obj lfb-array lfb-form-element > div > lfb-element-chooser > lfb-object'
+    );
+    expect(telecomItems.length).toBe(2);
+    expect(telecomItems[0].querySelectorAll('lfb-date-range').length)
+      .withContext('the first telecom item should keep a single Period date-range widget')
+      .toBe(1);
+    const firstPeriod = telecomItems[0].querySelector('lfb-date-range') as HTMLElement;
+    expect(getDateRangeInputs(firstPeriod).length)
+      .withContext('the first telecom Period date-range widget should only contain Start and End inputs')
+      .toBe(2);
+    expect(fixture.nativeElement.querySelectorAll('lfb-extension-obj lfb-date-range').length)
+      .withContext('each telecom item should render one Period date-range widget')
+      .toBe(2);
   });
 });
