@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { MainPO } from './po/main-po';
+import { MainPO, SNOMED_URL } from './po/main-po';
 import { PWUtils } from './pw-utils';
 
 const snomedEclText = '< 429019009 |Finding related to biological sex|';
@@ -251,11 +251,11 @@ test.describe('Home page', () => {
       await PWUtils.expandAdvancedFields(page);
       const tsUrl = getTerminologyServerInput(page);
       await tsUrl.scrollIntoViewIfNeeded();
-      await expect(tsUrl).toHaveValue('https://snowstorm.ihtsdotools.org/fhir');
+      await expect(tsUrl).toHaveValue(SNOMED_URL + '/fhir');
 
       await page.getByRole('button', { name: 'Add another value' }).click();
 
-      await page.route('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', async (route) => {
+      await page.route(SNOMED_URL + '/fhir/ValueSet/**', async (route) => {
         await route.fulfill({ path: 'tests/fixtures/snomed-ecl-expression-mock.json' });
       });
 
@@ -959,7 +959,7 @@ test.describe('Home page', () => {
       await page.locator(eclSel).blur();
       await expect(formattedUri).toContainText('fhir_vs=ecl/123%20456');
 
-      await expect(tsUrl).toHaveValue('https://snowstorm.ihtsdotools.org/fhir');
+      await expect(tsUrl).toHaveValue(SNOMED_URL + '/fhir');
 
       await nonSnomedMethod.click();
       await expect(page.locator('#answerValueSet_ecl')).not.toBeVisible(); //.toHaveCount(0);
@@ -988,7 +988,7 @@ test.describe('Home page', () => {
       expect(preferredTsExt).toEqual([
         {
           url: preferredTsUrl,
-          valueUrl: 'https://snowstorm.ihtsdotools.org/fhir'
+          valueUrl: SNOMED_URL + '/fhir'
         }
       ]);
 
@@ -998,7 +998,7 @@ test.describe('Home page', () => {
       await expect(tsUrl).toHaveValue('https://clinicaltables.nlm.nih.gov/fhir/R4');
 
       await tsUrl.clear();
-      await tsUrl.fill('https://snowstorm.ihtsdotools.org/fhir');
+      await tsUrl.fill(SNOMED_URL + '/fhir');
 
       await page.locator(eclSel).fill('123');
       await page.locator(eclSel).blur();
@@ -1068,7 +1068,7 @@ test.describe('Home page', () => {
       expect(qJson.item[1].answerValueSet).toContain('http://clinicaltables.nlm.nih.gov/fhir/R4/ValueSet/conditions');
       expect(qJson.item[2].answerValueSet).toBeUndefined();
 
-      await page.route('https://snowstorm.ihtsdotools.org/fhir/ValueSet/**', async (route) => {
+      await page.route(SNOMED_URL + '/fhir/ValueSet/**', async (route) => {
         await route.fulfill({ path: 'tests/fixtures/snomed-ecl-expression-mock.json' });
       });
 

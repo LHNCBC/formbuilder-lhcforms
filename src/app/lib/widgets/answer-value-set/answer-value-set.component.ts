@@ -10,7 +10,7 @@ import {Util} from '../../util';
 import {
   ANSWER_OPTION_METHOD_SNOMED_VALUE_SET,
   ANSWER_OPTION_METHOD_VALUE_SET,
-  PREFERRED_TERMINOLOGY_SERVER_URI
+  PREFERRED_TERMINOLOGY_SERVER_URI, SNOMED_SERVER
 } from '../../constants/constants';
 import {SharedObjectService} from "../../../services/shared-object.service";
 
@@ -24,7 +24,7 @@ import {SharedObjectService} from "../../../services/shared-object.service";
 export class AnswerValueSetComponent extends StringComponent implements OnInit, AfterViewInit, OnDestroy {
 
   static snomedBaseUri = 'http://snomed.info/sct';
-  static snomedTerminologyServer = 'https://snowstorm.ihtsdotools.org/fhir';
+  static snomedTerminologyServer = SNOMED_SERVER + '/fhir';
   static snomedTSHint = 'Note that this option also sets the terminology server option below (under "Advanced fields").';
   static nonSnomedTSHint = 'Make sure that you provide a valid URL for a supporting terminology server below (under Advanced fields). Alternatively, you can enter a valid ID for contained ValueSet resource with a prefix \'#\' (example: #123).';
 

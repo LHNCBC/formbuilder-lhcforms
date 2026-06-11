@@ -38,6 +38,29 @@ test.describe('extension.component', async () => {
     }]);
   });
 
+  test('Form level page - should not duplicate ContactDetail telecom period after adding telecom item', async ({page}) => {
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await page.getByRole('button', {name: 'Add new extension'}).first().click();
+
+    const formLoc = page.locator('lfb-extension-dlg lfb-extension-obj sf-form');
+    await expect(formLoc).toBeVisible();
+    await PWUtils.clickRadioButton(page, 'Value Type Category', 'Metadata type', formLoc);
+    await formLoc.getByRole('combobox', {name: 'Value Type'}).selectOption({label: 'Contact Detail'});
+
+    const telecomLoc = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
+    const telecomItems = telecomLoc.locator('lfb-object');
+    await expect(telecomItems).toHaveCount(1);
+
+    await telecomItems.nth(0).getByLabel('Value', {exact: true}).fill('v1');
+    await telecomLoc.getByRole('button', {name: 'Add new item'}).click();
+
+    await expect(telecomItems).toHaveCount(2);
+    const firstPeriod = telecomItems.nth(0).locator('lfb-date-range');
+    await expect(firstPeriod).toHaveCount(1);
+    await expect(firstPeriod.locator('input.form-control')).toHaveCount(2);
+    await expect(telecomLoc.locator('lfb-date-range')).toHaveCount(2);
+  });
+
   test('Item level page - should add an extension and see it in the JSON', async ({page}) => {
     await page.getByRole('button', {name: 'Create questions'}).first().click();
     await PWUtils.expandAdvancedFields(page);
