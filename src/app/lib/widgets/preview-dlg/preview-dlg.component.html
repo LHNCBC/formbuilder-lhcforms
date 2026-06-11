@@ -39,6 +39,11 @@
               <ng-template matTabLabel>{{ fmt }} Version</ng-template>
               <ng-template matTabContent>
                 <ng-container *ngTemplateOutlet="jsonMenu; context: {$implicit: fmt}"></ng-container>
+                @if(fmt === 'STU3') {
+                  <ngb-alert type="info" class="mb-0" [dismissible]="false">
+                    STU3 corresponds to FHIR R3.
+                  </ngb-alert>
+                }
                 @if(compatibilityWarnings[fmt]) {
                   <ngb-alert type="warning" class="mb-0" [dismissible]="false">
                     <span [innerHTML]="compatibilityWarnings[fmt]"></span>

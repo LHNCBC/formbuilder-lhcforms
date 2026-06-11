@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {FormService} from './form.service';
 
-export type SubjectTypeFHIRVersion = 'R4' | 'R5' | 'R6';
+export type SubjectTypeFHIRVersion = 'R3' | 'R4' | 'R5' | 'R6';
 export type SubjectTypeCompatibilityChoice = 'cancel' | 'keep' | 'export' | 'drop';
 
 interface SubjectTypeOption {
@@ -38,6 +38,26 @@ export class SubjectTypeService {
   constructor(private formService: FormService) {}
 
   /**
+   * Normalize external FHIR version labels to schema compatibility versions.
+   * STU3 maps to R3 compatibility checks.
+   */
+  private normalizeCompatibilityVersion(version: string): SubjectTypeFHIRVersion | null {
+    if(version === 'STU3') {
+      return 'R3';
+    }
+    return this.isSubjectTypeFHIRVersion(version) ? version : null;
+  }
+
+  private isSupportedByCompatibilityVersion(
+    subjectType: string,
+    compatibilityVersion: SubjectTypeFHIRVersion,
+    subjectTypeOptions: SubjectTypeOption[]
+  ): boolean {
+    const versions = this.getSubjectTypeVersionsFromOptions(subjectType, subjectTypeOptions);
+    return versions.includes(compatibilityVersion);
+  }
+
+  /**
    * Get the FHIR versions that include the given resource type as a valid subjectType.
    * @param resourceType - FHIR resource type to check.
    * @return FHIR versions that support the resource type.
@@ -53,7 +73,8 @@ export class SubjectTypeService {
    * @return subjectType values that are not supported by the target version.
    */
   getInvalidSubjectTypesForVersion(questionnaire: {subjectType?: string[]}, version: string): string[] {
-    if(!this.isSubjectTypeFHIRVersion(version) || !Array.isArray(questionnaire?.subjectType)) {
+    const compatibilityVersion = this.normalizeCompatibilityVersion(version);
+    if(!compatibilityVersion || !Array.isArray(questionnaire?.subjectType)) {
       return [];
     }
     const subjectTypeOptions = this.getSubjectTypeOptions();
@@ -61,7 +82,7 @@ export class SubjectTypeService {
       return [];
     }
     return questionnaire.subjectType
-      .filter((subjectType) => !this.getSubjectTypeVersionsFromOptions(subjectType, subjectTypeOptions).includes(version));
+      .filter((subjectType) => !this.isSupportedByCompatibilityVersion(subjectType, compatibilityVersion, subjectTypeOptions));
   }
 
   /**
@@ -71,7 +92,8 @@ export class SubjectTypeService {
    * @return Questionnaire copy with invalid subjectType values removed.
    */
   removeInvalidSubjectTypesForVersion<T extends {subjectType?: string[]}>(questionnaire: T, version: string): T {
-    if(!this.isSubjectTypeFHIRVersion(version) || !Array.isArray(questionnaire?.subjectType)) {
+    const compatibilityVersion = this.normalizeCompatibilityVersion(version);
+    if(!compatibilityVersion || !Array.isArray(questionnaire?.subjectType)) {
       return questionnaire;
     }
     const subjectTypeOptions = this.getSubjectTypeOptions();
@@ -79,7 +101,7 @@ export class SubjectTypeService {
       return questionnaire;
     }
     const allowedSubjectTypes = questionnaire.subjectType
-      .filter((subjectType) => this.getSubjectTypeVersionsFromOptions(subjectType, subjectTypeOptions).includes(version));
+      .filter((subjectType) => this.isSupportedByCompatibilityVersion(subjectType, compatibilityVersion, subjectTypeOptions));
     return {
       ...questionnaire,
       subjectType: allowedSubjectTypes.length ? allowedSubjectTypes : undefined
@@ -176,7 +198,7 @@ export class SubjectTypeService {
    * @return True when the version is supported for subjectType compatibility checks.
    */
   private isSubjectTypeFHIRVersion(version: string): version is SubjectTypeFHIRVersion {
-    return ['R4', 'R5', 'R6'].includes(version);
+    return ['R3', 'R4', 'R5', 'R6'].includes(version);
   }
 
   /**

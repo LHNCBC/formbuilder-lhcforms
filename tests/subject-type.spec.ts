@@ -171,4 +171,26 @@ test.describe('Subject type autocomplete', () => {
     const currentQuestionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(currentQuestionnaire.subjectType).toEqual(expect.arrayContaining(['Patient', 'ActorDefinition']));
   });
+
+  test('should show compatibility warning on preview JSON tabs for R4 and STU3', async ({ page }) => {
+    await startScratchForm(page);
+
+    const subjectTypeInput = getSubjectTypeInput(page);
+    await PWUtils.typeAndSelect(subjectTypeInput, 'Patient');
+    await PWUtils.typeAndSelect(subjectTypeInput, 'AdministrableProductDefinition');
+    await PWUtils.typeAndSelect(subjectTypeInput, 'Citation');
+
+    await PWUtils.clickMenuBarButton(page, 'Preview');
+    await page.getByRole('tab', { name: 'View/Validate Questionnaire JSON' }).click();
+
+    const previewDialog = page.locator('lfb-preview-dlg');
+    const r4Warning = page.getByText('This Questionnaire has subject types that are not valid in FHIR R4:');
+    await expect(r4Warning).toBeVisible();
+    await expect(previewDialog).toContainText(/This Questionnaire has subject types that are not valid in FHIR R4:[\s\S]*AdministrableProductDefinition[\s\S]*Citation[\s\S]*the R4 output may fail validation\./);
+
+    await page.getByRole('tab', { name: 'STU3 Version' }).click();
+    const stu3Warning = page.getByText('This Questionnaire has subject types that are not valid in FHIR STU3:');
+    await expect(stu3Warning).toBeVisible();
+    await expect(previewDialog).toContainText(/This Questionnaire has subject types that are not valid in FHIR STU3:[\s\S]*AdministrableProductDefinition[\s\S]*Citation[\s\S]*the STU3 output may fail validation\./);
+  });
 });

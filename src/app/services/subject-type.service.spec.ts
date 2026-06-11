@@ -20,9 +20,11 @@ describe('SubjectTypeService', () => {
                 subjectType: {
                   items: {
                     oneOf: [
-                      {enum: ['Patient'], versions: ['R4', 'R5', 'R6']},
+                      {enum: ['Patient'], versions: ['R3', 'R4', 'R5', 'R6']},
                       {enum: ['CatalogEntry'], versions: ['R4']},
-                      {enum: ['ActorDefinition'], versions: ['R5', 'R6']}
+                      {enum: ['ActorDefinition'], versions: ['R5', 'R6']},
+                      {enum: ['ChargeItem'], versions: ['R4', 'R5']},
+                      {enum: ['MedicinalProductIndication'], versions: ['R4']}
                     ]
                   }
                 }
@@ -44,6 +46,29 @@ describe('SubjectTypeService', () => {
     expect(service.getInvalidSubjectTypesForVersion(questionnaire, 'R4')).toEqual(['ActorDefinition']);
     expect(service.getInvalidSubjectTypesForVersion(questionnaire, 'R5')).toEqual(['CatalogEntry']);
     expect(service.getInvalidSubjectTypesForVersion(questionnaire, 'R6')).toEqual(['CatalogEntry']);
+    expect(service.getInvalidSubjectTypesForVersion(questionnaire, 'STU3')).toEqual(['CatalogEntry', 'ActorDefinition']);
+  });
+
+  it('should treat ChargeItem and MedicinalProductIndication as invalid in STU3 output', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      subjectType: ['Patient', 'ChargeItem', 'MedicinalProductIndication']
+    };
+
+    expect(service.getInvalidSubjectTypesForVersion(questionnaire, 'STU3'))
+      .toEqual(['ChargeItem', 'MedicinalProductIndication']);
+  });
+
+  it('should build subjectType preview warning messages for STU3 using compatibility checks', () => {
+    const warning = service.getSubjectTypeCompatibilityWarning(
+      {subjectType: ['Patient', 'ActorDefinition']},
+      'STU3',
+      'preview'
+    );
+
+    expect(warning).toContain('not valid in FHIR STU3');
+    expect(warning).toContain('<ul><li>ActorDefinition</li></ul>');
+    expect(warning).toContain('STU3 output may fail validation');
   });
 
   it('should build subjectType compatibility warning messages', () => {
@@ -87,6 +112,18 @@ describe('SubjectTypeService', () => {
     };
 
     const exportQuestionnaire = service.removeInvalidSubjectTypesForVersion(questionnaire, 'R4');
+
+    expect(exportQuestionnaire.subjectType).toEqual(['Patient']);
+    expect(questionnaire.subjectType).toEqual(['Patient', 'ActorDefinition']);
+  });
+
+  it('should remove subjectType values incompatible with STU3 from a copy', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      subjectType: ['Patient', 'ActorDefinition']
+    };
+
+    const exportQuestionnaire = service.removeInvalidSubjectTypesForVersion(questionnaire, 'STU3');
 
     expect(exportQuestionnaire.subjectType).toEqual(['Patient']);
     expect(questionnaire.subjectType).toEqual(['Patient', 'ActorDefinition']);
