@@ -873,10 +873,7 @@ export class PWUtils {
    * @returns {Promise<Locator>} A promise that resolves to the Playwright Locator for the input element.
    */
   static async getByLabel(page: Page, parentSelector: string, label: string): Promise<Locator> {
-    const labelElement = page.locator(parentSelector).locator(`label:has-text("${label}")`);
-    const forAttr = await labelElement.getAttribute('for');
-    if (!forAttr) throw new Error(`Label "${label}" has no 'for' attribute`);
-    return page.locator(PWUtils.escapeIdForPlaywright(forAttr));
+    return page.locator(parentSelector).getByLabel(label, { exact: true });
   }
 
   /**
@@ -1485,4 +1482,3 @@ export class PWUtils {
     }
   }
 }
-

@@ -68,7 +68,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
   canceledEvent = false;
   titleAriaLabel: string;
   editMenuTargetStep = 'item-editor';
-  private formFieldsRefreshToken = 0;
+  formFieldsRefreshToken = 0;
   private pauseFormFieldChanges = false;
 
   private formService = inject(FormService);
@@ -322,23 +322,15 @@ export class BasePageComponent implements OnInit, OnDestroy {
    * This prevents the previous sf-form instance from displaying or emitting stale values.
    */
   private refreshFormFields() {
-    const token = ++this.formFieldsRefreshToken;
     this.pauseFormFieldChanges = true;
-    this.formFields = null;
+    const token = ++this.formFieldsRefreshToken;
+    this.formFields = Object.assign({}, this.questionnaire);
+    delete this.formFields.item;
 
     setTimeout(() => {
-      if(token !== this.formFieldsRefreshToken) {
-        return;
+      if(token === this.formFieldsRefreshToken) {
+        this.pauseFormFieldChanges = false;
       }
-
-      this.formFields = Object.assign({}, this.questionnaire);
-      delete this.formFields.item;
-
-      setTimeout(() => {
-        if(token === this.formFieldsRefreshToken) {
-          this.pauseFormFieldChanges = false;
-        }
-      });
     });
   }
 
