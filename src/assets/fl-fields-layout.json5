@@ -134,10 +134,9 @@
       "controlClasses": "col-sm-10",
       "addButtonLabel": "Add new identifier",
       "showFields": [
-        {"field": "use", "col": 2, "nolabel": true},
-        {"field": "type.text", "col": 3, "nolabel": true},
-        {"field": "system", "col": 3, "nolabel": true},
-        {"field": "value", "col": 3, "nolabel": true}
+        {"field": "value", "col": 4, "nolabel": true},
+        {"field": "system", "col": 4, "nolabel": true},
+        {"field": "use", "col": 3, "nolabel": true}
       ]
     },
     contained: {

@@ -130,10 +130,9 @@ async function expectIdentifierDialogValues(dialog: Locator, data: IdentifierInp
 }
 
 async function expectIdentifierTableRow(table: Locator, row: number, data: IdentifierInput): Promise<void> {
-  await expect(PWUtils.getTableCellInput(table, row, 1)).toHaveValue(data.use);
-  await expect(PWUtils.getTableCellInput(table, row, 2)).toHaveValue(data.typeText);
-  await expect(PWUtils.getTableCellInput(table, row, 3)).toHaveValue(data.system);
-  await expect(PWUtils.getTableCellInput(table, row, 4)).toHaveValue(data.value);
+  await expect(PWUtils.getTableCellInput(table, row, 1)).toHaveValue(data.value);
+  await expect(PWUtils.getTableCellInput(table, row, 2)).toHaveValue(data.system);
+  await expect(PWUtils.getTableCellInput(table, row, 3)).toHaveValue(data.use);
 }
 
 test.describe('Identifier in form level', () => {

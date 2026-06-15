@@ -4,10 +4,10 @@
     basic: [
       {
         showFields: [
+          {field: 'value', col: 12},
+          {field: 'system', col: 12},
           {field: 'use', col: 12},
           {field: 'type', col: 12},
-          {field: 'system', col: 12},
-          {field: 'value', col: 12},
           {field: 'period', col: 12},
           {field: 'assigner', col: 12}
         ]
@@ -22,8 +22,6 @@
     '$.properties.type.properties.coding.items.properties.display': 'Display',
     '$.properties.type.properties.coding.items.properties.code': 'Code',
     '$.properties.type.properties.coding.items.properties.system': 'System',
-    '$.properties.period.properties.start': 'Start',
-    '$.properties.period.properties.end': 'End',
     '$.properties.assigner.properties.display': 'Display',
     '$.properties.assigner.properties.reference': 'Reference',
     '$.properties.assigner.properties.type': 'Type'
@@ -33,24 +31,11 @@
     useSelect: {
       id: 'select',
       labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-3',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-10 p-0',
       suppressEmptyInvalidStyle: true
     },
-/*    
-    url: {
-      id: 'url',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10 form-control'
-    },
-    string: {
-      id: 'string',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10 form-control'
-    }, 
-*/
+
     url: {
       id: 'url',
       labelPosition: "left",
@@ -93,15 +78,14 @@
         {field: 'coding', col: 12}
       ]
     },
-    periodObject: {
-      id: 'lfb-object',
+    dateRange: {
+      id: 'date-range',
       labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-6',
       showFields: [
-        {field: 'start', col: 12},
-        {field: 'end', col: 12}
+        {field: 'start', col: 6},
+        {field: 'end', col: 6}
       ]
     },
     assignerObject: {
@@ -145,7 +129,7 @@
     codingTable: [
       '$.properties.type.properties.coding'
     ],
-    periodObject: [
+    dateRange: [
       '$.properties.period'
     ],
     assignerObject: [

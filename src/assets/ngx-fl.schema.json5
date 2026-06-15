@@ -296,7 +296,6 @@
           },
           "use": {
             "description": "The purpose of this identifier.",
-            "title": "Use",
             "enum": [
               "usual",
               "official",
@@ -308,7 +307,6 @@
           },
           "type": {
             "description": "A coded type for the identifier that can be used to determine which identifier to use for a specific purpose.",
-            "title": "Type",
             "properties": {
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -393,19 +391,19 @@
           },
           "system": {
             "description": "Establishes the namespace for the value - that is, a URL that describes a set values that are unique.",
-            "title": "System",
+
             "pattern": "^\\S*$",
             "type": "string"
           },
           "value": {
             "description": "The portion of the identifier typically relevant to the user and which is unique within the context of the system.",
-            "title": "Value",
+
             "pattern": "^[ \\r\\n\\t\\S]+$",
             "type": "string"
           },
           "period": {
             "description": "Time period during which identifier is/was valid for use.",
-            "title": "Period",
+
             "properties": {
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -438,7 +436,7 @@
           },
           "assigner": {
             "description": "Organization that issued/manages the identifier.",
-            "title": "Assigner",
+
             "properties": {
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -478,8 +476,7 @@
         "additionalProperties": false,
         "type": "object"
       },
-      "type": "array",
-      "title": "Identifier"
+      "type": "array"
     },
     "version": {
       "description": "The identifier that is used to identify this version of the questionnaire when it is referenced in a specification, model, design or instance. This is an arbitrary value managed by the questionnaire author and is not expected to be globally unique. For example, it might be a timestamp (e.g. yyyymmdd) if a managed version is not available. There is also no expectation that versions can be placed in a lexicographical sequence.",

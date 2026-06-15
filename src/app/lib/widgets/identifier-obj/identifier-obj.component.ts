@@ -35,7 +35,7 @@ export class IdentifierObjComponent {
   @Output() changed = new EventEmitter<fhir.Identifier>();
   @Input() model!: fhir.Identifier;
 
-  identifierSchema = this.formService.getIdentifierSchema();
+  identifierSchema = this.formService.cloneIdentifierSchema();
 
   /**
    * Handle changes to the <sf-form>.

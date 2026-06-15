@@ -61,6 +61,8 @@ export class IdentifierDlgComponent implements OnInit, AfterViewInit, OnDestroy 
   matDialogService = inject(MatDialog);
   data = inject<DialogData>(MAT_DIALOG_DATA);
   matDialogRef = inject(MatDialogRef<DialogData>);
+  hostEl = inject(ElementRef);
+  private cdr = inject(ChangeDetectorRef);
   formService: FormService = inject(FormService);
   ngbModalService: NgbModal = inject(NgbModal);
   disableSave = signal(true);
@@ -68,15 +70,6 @@ export class IdentifierDlgComponent implements OnInit, AfterViewInit, OnDestroy 
   dirtyObserver: MutationObserver;
   rowIndex = 0;
   previous_origin: {left: number, top: number};
-
-  /**
-   * Create the identifier dialog component.
-   *
-   * @param hostEl - Dialog host element used when positioning the dialog.
-   * @param cdr - Change detector used to update OnPush dialog state.
-   */
-  constructor(protected hostEl: ElementRef, private cdr: ChangeDetectorRef) {
-  }
 
   /**
    * Ng OnInit lifecycle hook.

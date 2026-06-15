@@ -382,9 +382,9 @@ export class FormService {
   }
 
   /**
-   * Get identifier dialog schema.
+   * Clone identifier dialog schema.
    */
-  getIdentifierSchema() {
+  cloneIdentifierSchema() {
     return JSON.parse(JSON.stringify(this.identifierSchema));
   }
 
