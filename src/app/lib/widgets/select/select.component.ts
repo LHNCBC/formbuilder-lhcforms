@@ -7,16 +7,16 @@ import { StringComponent } from '../string/string.component';
 import { FormService } from '../../../services/form.service';
 import {Util} from '../../util';
 import { Subject, Subscription, takeUntil } from 'rxjs';
+import {SubjectTypeOption, SubjectTypeService} from '../../../services/subject-type.service';
 
 import {SharedObjectService} from "../../../services/shared-object.service";
 
 declare var LForms: any;
 
-type SelectOption = {
+type SelectOption = SubjectTypeOption & {
   enum?: string[],
   description?: string,
-  readOnly?: boolean,
-  versions?: string[]
+  readOnly?: boolean
 };
 
 /**
@@ -88,19 +88,13 @@ type SelectOption = {
   `]
 })
 export class SelectComponent extends StringComponent implements AfterViewInit, OnDestroy {
-  private readonly activeVersionOrder = ['R3', 'R4', 'R5'];
-  private readonly versionDisplayNames: {[version: string]: string} = {
-    R3: 'STU3',
-    R4: 'R4',
-    R5: 'R5'
-  };
-
   faInfo = faInfoCircle;
   nolabel = false;
   errorIcon = faExclamationTriangle;
 
   formService = inject(FormService);
   modelService = inject(SharedObjectService);
+  subjectTypeService = inject(SubjectTypeService);
 
   // A mapping for options display string. Typically, the display strings are from schema definition.
   // This map helps to redefine the display string.
@@ -382,41 +376,18 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
    */
   private getDisplayableArrayOptions(): SelectOption[] {
     return (this.schema?.items?.oneOf || [])
-      .filter((option) => !option.versions || this.getActiveOptionVersions(option).length > 0);
+      .filter((option) => this.subjectTypeService.isSubjectTypeOptionDisplayable(option));
   }
 
   /**
    * Build the display label for an array option from its schema metadata.
    * @param option - Schema option.
-   * @returns Display label with active version suffix when the option is version-limited.
+   * @returns Display label.
    */
   private getArrayOptionLabelFromOption(option: SelectOption): string {
-    const label = this.getBaseArrayOptionLabel(option);
-    const versions = this.getActiveOptionVersions(option);
-    if (!option.versions || versions.length === this.activeVersionOrder.length) {
-      return label;
-    }
-    const versionLabel = versions.map((version) => this.versionDisplayNames[version]).join(', ');
-    return versions.length ? `${label} (${versionLabel})` : label;
-  }
-
-  /**
-   * Return the option description without a hard-coded version suffix.
-   * @param option - Schema option.
-   * @returns Base display label.
-   */
-  private getBaseArrayOptionLabel(option: SelectOption): string {
-    const label = option.description || option.enum?.[0] || '';
-    return label.replace(/\s+\((?:STU3|R[3-6])(?:,\s*(?:STU3|R[3-6]))*\)$/, '');
-  }
-
-  /**
-   * Get versions for an option that are currently active in Form Builder.
-   * @param option - Schema option.
-   * @returns Active FHIR release identifiers in display order.
-   */
-  private getActiveOptionVersions(option: SelectOption): string[] {
-    return this.activeVersionOrder.filter((version) => option.versions?.includes(version));
+    return option.versions
+      ? this.subjectTypeService.getSubjectTypeOptionLabel(option)
+      : option.description || option.enum?.[0] || '';
   }
 
   /**

@@ -142,6 +142,23 @@ describe('SubjectTypeService', () => {
     expect(service.getSubjectTypeVersions('ActorDefinition')).toEqual(['R5', 'R6']);
   });
 
+  it('should build subjectType option labels from active version metadata', () => {
+    expect(service.getSubjectTypeOptionLabel({enum: ['ActorDefinition'], description: 'ActorDefinition', versions: ['R5', 'R6']}))
+      .toBe('ActorDefinition (R5)');
+    expect(service.getSubjectTypeOptionLabel({enum: ['CatalogEntry'], description: 'CatalogEntry', versions: ['R4']}))
+      .toBe('CatalogEntry (R4)');
+    expect(service.getSubjectTypeOptionLabel({enum: ['ChargeItem'], description: 'ChargeItem', versions: ['R4', 'R5']}))
+      .toBe('ChargeItem (R4, R5)');
+    expect(service.getSubjectTypeOptionLabel({enum: ['Patient'], description: 'Patient', versions: ['R3', 'R4', 'R5', 'R6']}))
+      .toBe('Patient');
+  });
+
+  it('should hide R6-only subjectType options until R6 is supported', () => {
+    expect(service.isSubjectTypeOptionDisplayable({enum: ['DeviceAlert'], versions: ['R6']})).toBeFalse();
+    expect(service.isSubjectTypeOptionDisplayable({enum: ['ActorDefinition'], versions: ['R5', 'R6']})).toBeTrue();
+    expect(service.isSubjectTypeOptionDisplayable({enum: ['Patient']})).toBeTrue();
+  });
+
   it('should resolve with the original questionnaire when the user keeps invalid subjectType values', async () => {
     const questionnaire = {
       resourceType: 'Questionnaire',

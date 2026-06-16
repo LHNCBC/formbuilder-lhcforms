@@ -4,9 +4,10 @@ import {FormService} from './form.service';
 export type SubjectTypeFHIRVersion = 'R3' | 'R4' | 'R5' | 'R6';
 export type SubjectTypeCompatibilityChoice = 'cancel' | 'keep' | 'export' | 'drop';
 
-interface SubjectTypeOption {
+export interface SubjectTypeOption {
   enum?: string[];
-  versions?: SubjectTypeFHIRVersion[];
+  description?: string;
+  versions?: string[];
 }
 
 export const SUBJECT_TYPE_COMPATIBILITY_DIALOG = {
@@ -35,6 +36,14 @@ export const SUBJECT_TYPE_COMPATIBILITY_WARNING = {
   providedIn: 'root'
 })
 export class SubjectTypeService {
+  private readonly activeSubjectTypeVersionOrder: SubjectTypeFHIRVersion[] = ['R3', 'R4', 'R5'];
+  private readonly versionDisplayNames: {[version in SubjectTypeFHIRVersion]: string} = {
+    R3: 'STU3',
+    R4: 'R4',
+    R5: 'R5',
+    R6: 'R6'
+  };
+
   constructor(private formService: FormService) {}
 
   /**
@@ -64,6 +73,31 @@ export class SubjectTypeService {
    */
   getSubjectTypeVersions(resourceType: string): SubjectTypeFHIRVersion[] {
     return this.getSubjectTypeVersionsFromOptions(resourceType, this.getSubjectTypeOptions());
+  }
+
+  /**
+   * Check whether a versioned subjectType option should be shown in the current UI.
+   * R6 metadata is retained in the schema, but R6-only values are hidden until R6 is supported.
+   * @param option - subjectType schema option.
+   * @return True when the option has no version metadata, or at least one active version.
+   */
+  isSubjectTypeOptionDisplayable(option: SubjectTypeOption): boolean {
+    return !option.versions || this.getActiveSubjectTypeOptionVersions(option).length > 0;
+  }
+
+  /**
+   * Build a display label for a subjectType option from its version metadata.
+   * @param option - subjectType schema option.
+   * @return Resource label with active version suffix when the option is version-limited.
+   */
+  getSubjectTypeOptionLabel(option: SubjectTypeOption): string {
+    const label = this.getBaseSubjectTypeOptionLabel(option);
+    const versions = this.getActiveSubjectTypeOptionVersions(option);
+    if(!option.versions || versions.length === this.activeSubjectTypeVersionOrder.length) {
+      return label;
+    }
+    const versionLabel = versions.map((version) => this.versionDisplayNames[version]).join(', ');
+    return versions.length ? `${label} (${versionLabel})` : label;
   }
 
   /**
@@ -189,7 +223,28 @@ export class SubjectTypeService {
     subjectTypeOptions: SubjectTypeOption[]
   ): SubjectTypeFHIRVersion[] {
     const option = subjectTypeOptions.find((subjectTypeOption) => subjectTypeOption.enum?.[0] === resourceType);
-    return option?.versions || [];
+    return (option?.versions || []).filter((version): version is SubjectTypeFHIRVersion =>
+      this.isSubjectTypeFHIRVersion(version)
+    );
+  }
+
+  /**
+   * Return a subjectType option label without a hard-coded version suffix.
+   * @param option - subjectType schema option.
+   * @return Base option label.
+   */
+  private getBaseSubjectTypeOptionLabel(option: SubjectTypeOption): string {
+    const label = option.description || option.enum?.[0] || '';
+    return label.replace(/\s+\((?:STU3|R[3-6])(?:,\s*(?:STU3|R[3-6]))*\)$/, '');
+  }
+
+  /**
+   * Get versions for an option that are currently active in Form Builder.
+   * @param option - subjectType schema option.
+   * @return Active FHIR release identifiers in display order.
+   */
+  private getActiveSubjectTypeOptionVersions(option: SubjectTypeOption): SubjectTypeFHIRVersion[] {
+    return this.activeSubjectTypeVersionOrder.filter((version) => option.versions?.includes(version));
   }
 
   /**
