@@ -59,6 +59,15 @@ describe('SubjectTypeService', () => {
       .toEqual(['ChargeItem', 'MedicinalProductIndication']);
   });
 
+  it('should skip subjectType compatibility checks for unsupported FHIR versions', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      subjectType: ['Patient', 'CatalogEntry', 'ActorDefinition']
+    };
+
+    expect(service.getInvalidSubjectTypesForVersion(questionnaire, 'not-a-version')).toEqual([]);
+  });
+
   it('should build subjectType preview warning messages for STU3 using compatibility checks', () => {
     const warning = service.getSubjectTypeCompatibilityWarning(
       {subjectType: ['Patient', 'ActorDefinition']},

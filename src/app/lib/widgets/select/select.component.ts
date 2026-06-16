@@ -6,11 +6,18 @@ import {faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-i
 import { StringComponent } from '../string/string.component';
 import { FormService } from '../../../services/form.service';
 import {Util} from '../../util';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 
 import {SharedObjectService} from "../../../services/shared-object.service";
 
 declare var LForms: any;
+
+type SelectOption = {
+  enum?: string[],
+  description?: string,
+  readOnly?: boolean,
+  versions?: string[]
+};
 
 /**
  * A component for a select box with options.
@@ -81,6 +88,13 @@ declare var LForms: any;
   `]
 })
 export class SelectComponent extends StringComponent implements AfterViewInit, OnDestroy {
+  private readonly activeVersionOrder = ['R3', 'R4', 'R5'];
+  private readonly versionDisplayNames: {[version: string]: string} = {
+    R3: 'STU3',
+    R4: 'R4',
+    R5: 'R5'
+  };
+
   faInfo = faInfoCircle;
   nolabel = false;
   errorIcon = faExclamationTriangle;
@@ -101,6 +115,7 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
   arrayAutoComp: any;
   arrayAutocompleteEventsUnsubscribe: (() => void) | null = null;
   controlValueSub: Subscription | null = null;
+  private destroy$ = new Subject<void>();
   arrayAutocompleteOptions = {
     matchListValue: true,
     maxSelect: '*',
@@ -119,9 +134,11 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
 
   ngAfterViewInit() {
     super.ngAfterViewInit();
-    this.modelService?.modelInitialized$.subscribe(() => {
-      this.init();
-    });
+    this.modelService?.modelInitialized$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.init();
+      });
   }
 
   init() {
@@ -169,7 +186,10 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
    * Clean up autocomplete resources.
    */
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
     this.destroyArrayAutocomplete();
+    super.ngOnDestroy();
   }
 
   /**
@@ -180,12 +200,12 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
 
     const inputEl = this.arrayAutocomplete?.nativeElement;
     const inputId = inputEl?.id;
-    const options = this.schema?.items?.oneOf || [];
-    if (!inputEl || !inputId || !options.length) {
+    const options = this.getDisplayableArrayOptions();
+    if (!inputEl || !inputEl.isConnected || !inputId || !options.length) {
       return;
     }
 
-    const displayList = options.map((option) => option.description || option.enum?.[0]).filter((v) => !!v);
+    const displayList = options.map((option) => this.getArrayOptionLabelFromOption(option)).filter((v) => !!v);
     const codeList = options.map((option) => option.enum?.[0]).filter((v) => !!v);
     const acOptions = {
       ...this.arrayAutocompleteOptions,
@@ -322,15 +342,15 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
    * Filters array options by code or description for searchable multi-select fields.
    * @returns Filtered oneOf options for array mode.
    */
-  get filteredArrayOptions(): Array<{enum?: string[], description?: string, readOnly?: boolean}> {
-    const options = this.schema?.items?.oneOf || [];
+  get filteredArrayOptions(): SelectOption[] {
+    const options = this.getDisplayableArrayOptions();
     const term = (this.arraySearchTerm || '').trim().toLowerCase();
     if (!term) {
       return options;
     }
     return options.filter((option) => {
       const value = (option?.enum?.[0] || '').toLowerCase();
-      const description = (option?.description || '').toLowerCase();
+      const description = this.getArrayOptionLabelFromOption(option).toLowerCase();
       return value.indexOf(term) > -1 || description.indexOf(term) > -1;
     });
   }
@@ -351,7 +371,52 @@ export class SelectComponent extends StringComponent implements AfterViewInit, O
    */
   getArrayOptionLabel(value: string): string {
     const option = (this.schema?.items?.oneOf || []).find((opt) => opt?.enum?.[0] === value);
-    return option?.description || value;
+    return option ? this.getArrayOptionLabelFromOption(option) : value;
+  }
+
+  /**
+   * Return schema array options that should be shown in the current UI.
+   * Versioned options with no currently supported version remain in schema metadata,
+   * but are hidden from selection until the app supports that FHIR release.
+   * @returns Options available for display.
+   */
+  private getDisplayableArrayOptions(): SelectOption[] {
+    return (this.schema?.items?.oneOf || [])
+      .filter((option) => !option.versions || this.getActiveOptionVersions(option).length > 0);
+  }
+
+  /**
+   * Build the display label for an array option from its schema metadata.
+   * @param option - Schema option.
+   * @returns Display label with active version suffix when the option is version-limited.
+   */
+  private getArrayOptionLabelFromOption(option: SelectOption): string {
+    const label = this.getBaseArrayOptionLabel(option);
+    const versions = this.getActiveOptionVersions(option);
+    if (!option.versions || versions.length === this.activeVersionOrder.length) {
+      return label;
+    }
+    const versionLabel = versions.map((version) => this.versionDisplayNames[version]).join(', ');
+    return versions.length ? `${label} (${versionLabel})` : label;
+  }
+
+  /**
+   * Return the option description without a hard-coded version suffix.
+   * @param option - Schema option.
+   * @returns Base display label.
+   */
+  private getBaseArrayOptionLabel(option: SelectOption): string {
+    const label = option.description || option.enum?.[0] || '';
+    return label.replace(/\s+\((?:STU3|R[3-6])(?:,\s*(?:STU3|R[3-6]))*\)$/, '');
+  }
+
+  /**
+   * Get versions for an option that are currently active in Form Builder.
+   * @param option - Schema option.
+   * @returns Active FHIR release identifiers in display order.
+   */
+  private getActiveOptionVersions(option: SelectOption): string[] {
+    return this.activeVersionOrder.filter((version) => option.versions?.includes(version));
   }
 
   /**

@@ -35,7 +35,6 @@ test.describe('item-level fields', () => {
     await inputEl.fill('34565-2');
     await expect(dlg.getByRole('listbox')).toBeVisible();
     await dlg.getByRole('option', {name: /34565-2/}).click();
-    await page.keyboard.press('Enter');
     await expect(inputEl).toHaveValue('34565-2: Vital signs, weight & height panel');
     await page.getByRole('button', {name: 'Add'}).click();
 

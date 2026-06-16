@@ -13,19 +13,19 @@ export const SUBJECT_TYPE_COMPATIBILITY_DIALOG = {
   title: 'Subject type compatibility',
   importMessage: (version: string, list: string): string =>
     `Some imported subject types are not valid in FHIR ${version}: ${list}`
-    + 'They can be preserved for review, or removed from this imported form. What would you like to do?',
+    + '<p>They can be preserved for review, or removed from this imported form. What would you like to do?</p>',
   exportMessage: (version: string, list: string): string =>
     `Some subject types are not valid in FHIR ${version}: ${list}`
-    + 'Removing them only affects this export and will not change the current form. What would you like to do?'
+    + '<p>Removing them only affects this export and will not change the current form. What would you like to do?</p>'
 };
 
 export const SUBJECT_TYPE_COMPATIBILITY_WARNING = {
   importMessage: (version: string, list: string): string =>
     `Some imported subject types are not valid in FHIR ${version}: ${list}`
-    + 'They were preserved for review, but may not validate or export cleanly in the current R5 form.',
+    + '<p>They were preserved for review, but may not validate or export cleanly in the current R5 form.</p>',
   outputMessage: (version: string, list: string): string =>
     `This Questionnaire has subject types that are not valid in FHIR ${version}: ${list}`
-    + `They are preserved in the form, but the ${version} output may fail validation.`
+    + `<p>They are preserved in the form, but the ${version} output may fail validation.</p>`
 };
 
 /**

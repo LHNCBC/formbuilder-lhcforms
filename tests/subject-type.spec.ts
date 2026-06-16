@@ -66,12 +66,12 @@ test.describe('Subject type autocomplete', () => {
     const subjectTypeInput = getSubjectTypeInput(page);
     await PWUtils.typeAndSelect(subjectTypeInput, 'ActorDefinition');
     await PWUtils.typeAndSelect(subjectTypeInput, 'CatalogEntry');
-    await PWUtils.typeAndSelect(subjectTypeInput, 'DeviceAlert');
+    await PWUtils.typeAndSelect(subjectTypeInput, 'ChargeItem');
 
     const chips = getSubjectTypeChipList(page);
-    await expect(chips.filter({ hasText: 'ActorDefinition (R5, R6)' })).toHaveCount(1);
+    await expect(chips.filter({ hasText: 'ActorDefinition (R5)' })).toHaveCount(1);
     await expect(chips.filter({ hasText: 'CatalogEntry (R4)' })).toHaveCount(1);
-    await expect(chips.filter({ hasText: 'DeviceAlert (R6)' })).toHaveCount(1);
+    await expect(chips.filter({ hasText: 'ChargeItem (R4, R5)' })).toHaveCount(1);
 
     const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(questionnaire.subjectType).toContain('ActorDefinition');
@@ -143,6 +143,29 @@ test.describe('Subject type autocomplete', () => {
     await expect(chips.filter({ hasText: 'Patient' })).toHaveCount(1);
     await expect(chips.filter({ hasText: 'CatalogEntry (R4)' })).toHaveCount(1);
     await expect(chips.filter({ hasText: 'Person' })).toHaveCount(0);
+  });
+
+  test('should preserve the current form when canceling an incompatible subjectType import', async ({ page }) => {
+    await startScratchForm(page);
+
+    const subjectTypeInput = getSubjectTypeInput(page);
+    await PWUtils.typeAndSelect(subjectTypeInput, 'Person');
+
+    await PWUtils.importLocalFile(page, 'subject-type-r4-only.json', true);
+
+    const warningDialog = page.getByRole('dialog', { name: 'Subject type compatibility' });
+    await expect(warningDialog).toContainText('CatalogEntry');
+    await warningDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(warningDialog).not.toBeVisible();
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.title).not.toBe('Subject type compatibility sample');
+    expect(questionnaire.subjectType).toEqual(['Person']);
+
+    await PWUtils.expandAdvancedFields(page);
+    const chips = getSubjectTypeChipList(page);
+    await expect(chips.filter({ hasText: 'Person' })).toHaveCount(1);
+    await expect(chips.filter({ hasText: 'CatalogEntry' })).toHaveCount(0);
   });
 
   test('should remove incompatible imported subjectType values when requested', async ({ page }) => {
@@ -225,6 +248,28 @@ test.describe('Subject type autocomplete', () => {
     );
 
     expect(questionnaire.subjectType).toEqual(['Patient']);
+
+    const currentQuestionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(currentQuestionnaire.subjectType).toEqual(expect.arrayContaining(['Patient', 'ActorDefinition']));
+  });
+
+  test('should keep the current form and not download when canceling incompatible subjectType export', async ({ page }) => {
+    await startScratchForm(page);
+
+    const subjectTypeInput = getSubjectTypeInput(page);
+    await PWUtils.typeAndSelect(subjectTypeInput, 'Patient');
+    await PWUtils.typeAndSelect(subjectTypeInput, 'ActorDefinition');
+
+    const exportItem = await PWUtils.getMenuBarDropDownItem(page, 'Export', 'Export to file in FHIR R4 format');
+    await exportItem.click();
+
+    const warningDialog = page.getByRole('dialog', { name: 'Subject type compatibility' });
+    await expect(warningDialog).toContainText('ActorDefinition');
+
+    const downloadPromise = page.waitForEvent('download', { timeout: 1000 });
+    await warningDialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(warningDialog).not.toBeVisible();
+    await expect(downloadPromise).rejects.toThrow();
 
     const currentQuestionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(currentQuestionnaire.subjectType).toEqual(expect.arrayContaining(['Patient', 'ActorDefinition']));

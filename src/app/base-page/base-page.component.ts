@@ -228,6 +228,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
                 if(loaded) {
                   this.setStep('fl-editor');
                 }
+              }).catch((err) => {
+                console.error(`Failed to process questionnaire received from ${parentUrl}: ${err}`);
               });
             }
             catch(err) {
