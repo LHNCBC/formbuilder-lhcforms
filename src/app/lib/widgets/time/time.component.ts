@@ -5,6 +5,7 @@ import { NgClass } from "@angular/common";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 import { AsyncPipe } from '@angular/common';
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 
 /**
  * TimeComponent is a component for handling time input in the format HH:MM:SS.mmm.
@@ -19,7 +20,8 @@ import { AsyncPipe } from '@angular/common';
     LfbDisableControlDirective,
     FormsModule,
     ReactiveFormsModule,
-    AsyncPipe
+    AsyncPipe,
+    EnableWhenAnswerOptionsDirective
   ],
   templateUrl: './time.component.html',
   styles: [`

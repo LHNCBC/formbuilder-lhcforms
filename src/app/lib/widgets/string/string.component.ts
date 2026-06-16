@@ -20,16 +20,15 @@ import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.d
 import { Observable, of } from 'rxjs';
 import { AnswerOptionService } from '../../../services/answer-option.service';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 
 @Component({
   selector: 'lfb-string',
-  imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent],
+  imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent, EnableWhenAnswerOptionsDirective],
   templateUrl: './string.component.html'
 })
 export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewChecked, OnDestroy {
-  @ViewChild('enableWhenAnswerOptions', { static: false, read: ElementRef }) enableWhenAnswerOptions: ElementRef;
-
-  @ViewChild('inputEl') inputElRef: ElementRef;
+  @ViewChild('inputEl') inputElRef!: ElementRef;
   showTooltip = true;
   answerOptionService = inject(AnswerOptionService);
   enableWhenAnswerOptionsService = new EnableWhenAnswerOptionsService(this.answerOptionService);
@@ -114,25 +113,6 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
       this.showTooltip = this.inputElRef.nativeElement.scrollWidth > this.inputElRef.nativeElement.clientWidth;
       this.cdr.detectChanges();
     }
-    this.enableWhenAnswerOptionsService.initAutocomplete(this.enableWhenAnswerOptions, this.id);
-  }
-
-  /**
-   * Handles typing in an enableWhen answer-options input.
-   *
-   * @param event - Input event from the answer field.
-   */
-  onEnableWhenAnswerOptionsInput(event: Event): void {
-    this.enableWhenAnswerOptionsService.onInput(event);
-  }
-
-  /**
-   * Clears invalid enableWhen answer-option values after the input loses focus.
-   *
-   * @param event - Blur event from the answer field.
-   */
-  suppressEnableWhenAnswerOptionsInvalidValue(event: Event): void {
-    this.enableWhenAnswerOptionsService.suppressInvalidValue(event);
   }
 
   /**

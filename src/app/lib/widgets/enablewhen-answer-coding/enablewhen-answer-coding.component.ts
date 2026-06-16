@@ -2,7 +2,7 @@
  * Answer coding component for enableWhen. The component is used for answer type coding for
  * selecting codes to satisfy a condition.
  */
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import {ObjectWidget} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import fhir from 'fhir/r4';
@@ -14,24 +14,24 @@ import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
 import { AnswerOptionService } from '../../../services/answer-option.service';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 declare var LForms: any;
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
-  imports: [AutoCompleteComponent, FormsModule],
+  imports: [AutoCompleteComponent, FormsModule, EnableWhenAnswerOptionsDirective],
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
       @if (autoComplete) {
         <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
       } @else {
         <div class="p-0">
-          <input #enableWhenAnswerOptions
+          <input [lfbEnableWhenAnswerOptions]="enableWhenAnswerOptionsService"
+                 [enableWhenAnswerOptionsId]="id"
                  autocomplete="off"
                  type="text"
                  [attr.id]="id"
-                 class="form-control form-control-sm"
-                 (input)="onEnableWhenAnswerOptionsInput($event)"
-                 (blur)="suppressEnableWhenAnswerOptionsInvalidValue($event)" />
+                 class="form-control form-control-sm" />
         </div>
       }
     </div>
@@ -48,13 +48,11 @@ declare var LForms: any;
   ]
 })
 
-export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
-  @ViewChild('enableWhenAnswerOptions', { static: false, read: ElementRef }) enableWhenAnswerOptions: ElementRef;
-
+export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
   private formService = inject(FormService);
   private modelService = inject(SharedObjectService);
   private answerOptionService = inject(AnswerOptionService);
-  private enableWhenAnswerOptionsService = new EnableWhenAnswerOptionsService(this.answerOptionService);
+  enableWhenAnswerOptionsService = new EnableWhenAnswerOptionsService(this.answerOptionService);
 
   subscriptions: Subscription [] = [];
   answerOptions: fhir.QuestionnaireItemAnswerOption [] = [];
@@ -172,34 +170,6 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
       }
     });
     this.subscriptions.push(sub);
-  }
-
-  /**
-   * Attaches answer-option autocomplete after the plain coding input is rendered.
-   *
-   */
-  ngAfterViewChecked(): void {
-    if (!this.autoComplete) {
-      this.enableWhenAnswerOptionsService.initAutocomplete(this.enableWhenAnswerOptions, this.id);
-    }
-  }
-
-  /**
-   * Handles typing in the enableWhen answer coding input.
-   *
-   * @param event - Input event from the coding answer field.
-   */
-  onEnableWhenAnswerOptionsInput(event: Event): void {
-    this.enableWhenAnswerOptionsService.onInput(event);
-  }
-
-  /**
-   * Clears invalid enableWhen answer coding values after the input loses focus.
-   *
-   * @param event - Blur event from the coding answer field.
-   */
-  suppressEnableWhenAnswerOptionsInvalidValue(event: Event): void {
-    this.enableWhenAnswerOptionsService.suppressInvalidValue(event);
   }
 
   /**

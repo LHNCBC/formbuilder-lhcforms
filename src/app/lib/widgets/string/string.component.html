@@ -15,13 +15,12 @@
     <div class="{{controlClasses}}">
       @if (hasAnswerOptions$ | async) {
         <div class="{{controlWidthClass}} p-0">
-          <input #enableWhenAnswerOptions
+          <input [lfbEnableWhenAnswerOptions]="enableWhenAnswerOptionsService"
+                 [enableWhenAnswerOptionsId]="id"
                  autocomplete="off"
                  type="text"
                  [attr.id]="id"
-                 class="form-control form-control-sm"
-                 (input)="onEnableWhenAnswerOptionsInput($event)"
-                 (blur)="suppressEnableWhenAnswerOptionsInvalidValue($event)" />
+                 class="form-control form-control-sm" />
         </div>
         @if (errors?.length && formProperty.value) {
           @for (error of errors; track error.code) {

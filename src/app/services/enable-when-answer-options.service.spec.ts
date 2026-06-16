@@ -124,4 +124,20 @@ describe('EnableWhenAnswerOptionsService', () => {
       code: null
     });
   });
+
+  it('should return null for unmatched coding list selections', () => {
+    answerOptionServiceSpy.getEnableWhenAnswerOptionsState.and.returnValue({
+      ...baseState,
+      answerOptionType: 'coding',
+      codingAnswerOptionsHash: {},
+      codingAnswerOptionsByAutocompleteItem: {}
+    });
+    service.init(formProperty, control);
+
+    expect(service.parseCoding({
+      on_list: true,
+      final_val: 'Missing',
+      list: ['Other']
+    })).toBeNull();
+  });
 });

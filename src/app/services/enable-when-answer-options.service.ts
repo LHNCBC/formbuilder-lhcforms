@@ -9,13 +9,13 @@ declare var LForms: any;
 export class EnableWhenAnswerOptionsService {
   hasAnswerOptions$: Observable<boolean> = of(false);
 
-  private formProperty: FormProperty;
+  private formProperty!: FormProperty;
   private control: any;
   private initialized = false;
-  private enableWhenAnswerProperty: RegExpMatchArray;
+  private enableWhenAnswerProperty: RegExpMatchArray | null = null;
   private subscriptions: Subscription[] = [];
   private autoComp: any;
-  private answerOptionsState: EnableWhenAnswerOptionsState;
+  private answerOptionsState!: EnableWhenAnswerOptionsState;
 
   enableWhenAutocompleteOptions: any = {
     matchListValue: true,
@@ -49,7 +49,7 @@ export class EnableWhenAnswerOptionsService {
     if (this.answerOptionsState.answerOptionType !== 'coding' && this.control?.setValue && this.control?.valueChanges) {
       this.control.setValue(this.formProperty.value);
 
-      this.subscriptions.push(this.control.valueChanges.subscribe(val => {
+      this.subscriptions.push(this.control.valueChanges.subscribe((val: any) => {
         if (val !== this.formProperty.value) {
           this.formProperty.setValue(val, false);
         }
@@ -104,7 +104,7 @@ export class EnableWhenAnswerOptionsService {
       }
     }
 
-    LForms.Def.Autocompleter.Event.observeListSelections(inputId, (data) => this.handleListSelection(data));
+    LForms.Def.Autocompleter.Event.observeListSelections(inputId, (data: any) => this.handleListSelection(data));
   }
 
   /**
@@ -196,6 +196,22 @@ export class EnableWhenAnswerOptionsService {
         code: null
       };
     }
+
+    return null;
+  }
+
+  /**
+   * Destroys the LForms autocomplete widget.
+   *
+   */
+  destroyAutocomplete(): void {
+    if (this.autoComp) {
+      this.autoComp.setFieldVal('', false);
+      this.autoComp.destroy();
+      this.autoComp = null;
+    }
+
+    this.initialized = false;
   }
 
   /**
@@ -203,11 +219,7 @@ export class EnableWhenAnswerOptionsService {
    *
    */
   destroy(): void {
-    if (this.autoComp) {
-      this.autoComp.setFieldVal('', false);
-      this.autoComp.destroy();
-      this.autoComp = null;
-    }
+    this.destroyAutocomplete();
 
     this.subscriptions.forEach((s) => s?.unsubscribe());
     this.subscriptions = [];

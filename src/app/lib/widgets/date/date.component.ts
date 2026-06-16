@@ -14,6 +14,7 @@ import {AsyncPipe, NgClass} from "@angular/common";
 import {LabelComponent} from "../label/label.component";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 
 @Injectable()
 export class LfbDateAdapter extends NgbDateAdapter<string> {
@@ -51,7 +52,7 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter {
   selector: 'lfb-date',
   imports: [
     NgbDatepickerModule, FormsModule, ReactiveFormsModule, NgClass, LabelComponent, AsyncPipe,
-    LfbDisableControlDirective, FontAwesomeModule
+    LfbDisableControlDirective, FontAwesomeModule, EnableWhenAnswerOptionsDirective
   ],
   templateUrl: './date.component.html',
   styleUrls: ['./date.component.css'],

@@ -1,7 +1,7 @@
 /**
  * Customize the layout of an integer component from ngx-schema-form.
  */
-import { AfterViewChecked, AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import {FormProperty, ValidatorRegistry} from '@lhncbc/ngx-schema-form';
 import {ReactiveFormsModule} from "@angular/forms";
 import {AsyncPipe, NgClass} from "@angular/common";
@@ -11,17 +11,16 @@ import { Observable, of } from 'rxjs';
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
 import { AnswerOptionService } from '../../../services/answer-option.service';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 
 
 @Component({
   selector: 'lfb-integer-widget',
-  imports: [ReactiveFormsModule, AsyncPipe, NgClass, LabelComponent, IntegerDirective],
+  imports: [ReactiveFormsModule, AsyncPipe, NgClass, LabelComponent, IntegerDirective, EnableWhenAnswerOptionsDirective],
   templateUrl: './integer.component.html',
   styles: []
 })
-export class IntegerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
-  @ViewChild('enableWhenAnswerOptions', { static: false, read: ElementRef }) enableWhenAnswerOptions: ElementRef;
-
+export class IntegerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   private validatorRegistry = inject(ValidatorRegistry);
   answerOptionService = inject(AnswerOptionService);
   enableWhenAnswerOptionsService = new EnableWhenAnswerOptionsService(this.answerOptionService);
@@ -122,32 +121,6 @@ export class IntegerComponent extends LfbControlWidgetComponent implements OnIni
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
     this.control.setValue(this.formProperty.value);
-  }
-
-  /**
-   * Gives the answer-options service a chance to attach autocomplete after the input is rendered.
-   *
-   */
-  ngAfterViewChecked(): void {
-    this.enableWhenAnswerOptionsService.initAutocomplete(this.enableWhenAnswerOptions, this.id);
-  }
-
-  /**
-   * Handles typing in an enableWhen answer-options integer input.
-   *
-   * @param event - Input event from the answer field.
-   */
-  onEnableWhenAnswerOptionsInput(event: Event): void {
-    this.enableWhenAnswerOptionsService.onInput(event);
-  }
-
-  /**
-   * Clears invalid enableWhen answer-option values after the input loses focus.
-   *
-   * @param event - Blur event from the answer field.
-   */
-  suppressEnableWhenAnswerOptionsInvalidValue(event: Event): void {
-    this.enableWhenAnswerOptionsService.suppressInvalidValue(event);
   }
 
   /**
