@@ -83,7 +83,7 @@ test.describe('Meta field tests', () => {
     ]);
 
     // Check security labels
-    const inputSecurity = (meta.security || []).slice(0, 2);
+    const inputSecurity = meta.security.slice(0, 2);
     expect(inputSecurity).toEqual([
       {
         display: 'test health data',

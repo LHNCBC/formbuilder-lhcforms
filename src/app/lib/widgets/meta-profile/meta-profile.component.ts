@@ -70,9 +70,10 @@ export class MetaProfileComponent extends LfbArrayWidgetComponent implements OnI
   ngOnInit() {
     // Note: Skip parent's ngOnInit which calls formProperty.addItem() if array is empty
     // This prevents creating an empty item that interferes with the default profile value
+    
+    this.addDefaultItemIfEmpty = false;
+    super.ngOnInit();
     const widget = this.formProperty.schema.widget;
-    this.labelClasses = this.labelClasses || widget.labelClasses || '';
-    this.controlClasses = this.controlClasses || widget.controlClasses || '';
     this.addButtonLabel = widget && widget.addButtonLabel ? widget.addButtonLabel : 'Add';
     this.noCollapseButton = !!(widget && widget.noCollapseButton);
     this.noTableLabel = !!(widget && widget.noTableLabel);

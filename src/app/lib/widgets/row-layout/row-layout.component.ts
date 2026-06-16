@@ -39,16 +39,13 @@ import {SharedObjectService} from "../../../services/shared-object.service";
     .lfb-row {
       border-bottom: lightgrey solid 1px;
       padding: 2px 0 2px 0;
-    }      
+    }
     .lfb-row:hover {
       background-color: lightgoldenrodyellow;
     }
     .lfb-row.lfb-row-object:hover {
       background-color: transparent;
     }
-
-
-
     .hideRow {
       border: none !important;
       padding: 0 !important;

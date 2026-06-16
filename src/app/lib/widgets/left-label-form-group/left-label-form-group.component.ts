@@ -118,16 +118,6 @@ import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
       color: var(--bs-link-color) !important;
       min-width: 16px;
       min-height: 16px;
-      font-size: 0;
-    }
-
-    :host ::ng-deep .meta-group-content sf-array-widget .array-remove-button .glyphicon {
-      font-size: 14px;
-      line-height: 1;
-    }
-
-    :host ::ng-deep .meta-group-content sf-array-widget .array-remove-button .glyphicon-minus:before {
-      content: "\\e020" !important;
     }
 
     :host ::ng-deep .meta-group-content sf-array-widget .array-add-button {
@@ -143,15 +133,6 @@ import { faAngleDown, faAngleRight } from '@fortawesome/free-solid-svg-icons';
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
-    }
-
-    :host ::ng-deep .meta-group-content sf-array-widget .array-add-button .glyphicon {
-      font-size: 0.9rem;
-      line-height: 1;
-    }
-
-    :host ::ng-deep .meta-group-content sf-array-widget .array-add-button .glyphicon-plus:before {
-      content: "\\e081" !important;
     }
   `]
 })

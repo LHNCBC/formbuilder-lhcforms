@@ -46,7 +46,7 @@
 
 
   <ng-template #timeTemplate>
-    <div class="text-center"><button type="button" (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
+    <div class="text-center"><button (click)="d.navigateTo(); today()" class="btn btn-sm btn-link">Today</button></div>
     <hr class="my-0" />
     <div class="container">
       <span class="d-block text-center">Time</span>
@@ -59,7 +59,7 @@
         </div>
         }
         <div>
-          <button type="button" class="btn btn-sm btn-link" [attr.disabled]="schema.readOnly ? '' : null" (click)="d.navigateTo(); now()">Now</button>
+          <button class="btn btn-sm btn-link" [attr.disabled]="schema.readOnly ? '' : null" (click)="d.navigateTo(); now()">Now</button>
         </div>
       </div>
       <ngb-timepicker class="form-control-sm p-0"
