@@ -94,7 +94,8 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
 
     const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
       if (submittedValue) {
-        this.formProperty.properties[index].setValue(submittedValue, false);
+        // Replace the full row model so deleted nested fields are not preserved.
+        this.formProperty.properties[index].reset(submittedValue, false);
       }
       sub.unsubscribe();
     });

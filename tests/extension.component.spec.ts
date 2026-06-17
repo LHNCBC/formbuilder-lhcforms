@@ -61,6 +61,50 @@ test.describe('extension.component', async () => {
     await expect(telecomLoc.locator('lfb-date-range')).toHaveCount(2);
   });
 
+  test('Form level page - should persist deleting ContactDetail telecom after save and reopen', async ({page}) => {
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await page.getByRole('button', {name: 'Add new extension'}).first().click();
+
+    const formLoc = page.locator('lfb-extension-dlg lfb-extension-obj sf-form');
+    await expect(formLoc).toBeVisible();
+    await formLoc.getByLabel('Url', {exact: true}).fill('http://example.org/contact-detail');
+    await PWUtils.clickRadioButton(page, 'Value Type Category', 'Metadata type', formLoc);
+    await formLoc.getByRole('combobox', {name: 'Value Type'}).selectOption({label: 'Contact Detail'});
+
+    const telecomLoc = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
+    const telecomItems = telecomLoc.locator('lfb-object');
+    await expect(telecomItems).toHaveCount(1);
+    await telecomItems.nth(0).getByLabel('Value', {exact: true}).fill('555-0100');
+
+    await formLoc.getByRole('button', {name: 'Save and close'}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+
+    const extRows = page.locator('lfb-extension table tbody tr');
+    await expect(extRows).toHaveCount(1);
+    await extRows.nth(0).getByLabel('Edit this row').click();
+    await expect(formLoc).toBeVisible();
+
+    const telecomLocOnEdit = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
+    await expect(telecomLocOnEdit.locator('lfb-object')).toHaveCount(1);
+    await telecomLocOnEdit.getByRole('button', {name: 'Remove this row'}).click();
+    await PWUtils.clickDialogButton(page, {title: 'Confirm deletion'}, 'Delete');
+    await expect(telecomLocOnEdit.locator('lfb-object')).toHaveCount(0);
+
+    await formLoc.getByRole('button', {name: 'Save and close'}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+
+    await extRows.nth(0).getByLabel('Edit this row').click();
+    await expect(formLoc).toBeVisible();
+    const telecomLocAfterReopen = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
+    await expect(telecomLocAfterReopen.locator('lfb-object')).toHaveCount(0);
+    await formLoc.getByRole('button', {name: 'Discard changes'}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(q.extension[0].valueContactDetail.telecom).toBeUndefined();
+    expect(q.extension[0].valueContactDetail.name).toBeUndefined();
+  });
+
   test('Item level page - should add an extension and see it in the JSON', async ({page}) => {
     await page.getByRole('button', {name: 'Create questions'}).first().click();
     await PWUtils.expandAdvancedFields(page);

@@ -95,14 +95,14 @@ async function fillIdentifierDialog(dialog: Locator, data: IdentifierInput): Pro
   await dialog.getByLabel('System', {exact: true}).fill(data.system);
   await dialog.getByLabel('Value', {exact: true}).fill(data.value);
 
+  await dialog.getByLabel('Start', {exact: true}).fill(data.periodStart);
+  await dialog.getByLabel('End', {exact: true}).fill(data.periodEnd);
+
   await dialog.getByLabel('Text', {exact: true}).fill(data.typeText);
   const codingTable = PWUtils.getTableByFieldLabel(dialog, 'Coding');
   await PWUtils.getTableCellInput(codingTable, 1, 1).fill(data.coding.display);
   await PWUtils.getTableCellInput(codingTable, 1, 2).fill(data.coding.code);
   await PWUtils.getTableCellInput(codingTable, 1, 3).fill(data.coding.system);
-
-  await dialog.getByLabel('Start', {exact: true}).fill(data.periodStart);
-  await dialog.getByLabel('End', {exact: true}).fill(data.periodEnd);
 
   await dialog.locator('input[id*="assigner.display"]').first().fill(data.assignerDisplay);
   await dialog.locator('input[id*="assigner.reference"]').first().fill(data.assignerReference);
@@ -283,6 +283,26 @@ test.describe('Identifier in form level', () => {
         type: 'Organization'
       }
     });
+  });
+
+  test('should enable save when deleting identifier type coding', async ({page}) => {
+    await PWUtils.uploadFile(page, 'identifier-sample.json');
+    await ensureAdvancedFieldsExpanded(page);
+
+    const identifierTable = getIdentifierTable(page);
+    const editDialog = await openIdentifierDialogByEdit(identifierTable, 1);
+    const saveButton = editDialog.getByRole('button', {name: 'Save and close'});
+    await expect(saveButton).toBeDisabled();
+
+    const codingTable = PWUtils.getTableByFieldLabel(editDialog, 'Coding');
+    await codingTable.getByRole('button', {name: 'Remove this row'}).click();
+    await PWUtils.clickDialogButton(page, {title: 'Confirm deletion'}, 'Delete');
+
+    await expect(saveButton).toBeEnabled();
+    await saveButton.click();
+
+    const previewJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
+    expect(previewJson.identifier?.[0]?.type?.coding).toBeUndefined();
   });
 
   test('should delete an identifier row and persist the remaining identifier', async ({page}) => {

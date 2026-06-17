@@ -7,6 +7,8 @@ import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {FormService} from "../../../services/form.service";
 import {ArrayProperty, PropertyGroup} from "@lhncbc/ngx-schema-form";
 import sampleQ from '../../../../../cypress/fixtures/sample.R4.json';
+import {of} from 'rxjs';
+import fhir from 'fhir/r4';
 
 describe('TableEditRowInDlgComponent', () => {
   let component: TableEditRowInDlgComponent;
@@ -35,5 +37,37 @@ describe('TableEditRowInDlgComponent', () => {
 
   xit('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should replace row value and remove deleted telecom data from dialog result', () => {
+    const schema = formService.getFormLevelSchema();
+    const rootProperty = CommonTestingModule.createProperty(schema, {}) as PropertyGroup;
+    const extensionProperty = rootProperty.getProperty('extension') as ArrayProperty;
+    extensionProperty.setValue([{
+      url: 'http://some.contact-detail.extension.org',
+      valueContactDetail: {
+        name: 'Support',
+        telecom: [{
+          system: 'phone',
+          value: '555-0100'
+        }]
+      }
+    }], false);
+    component.formProperty = extensionProperty;
+
+    const submittedValue: fhir.Extension = {
+      url: 'http://some.contact-detail.extension.org',
+      valueContactDetail: {
+        name: 'Support'
+      }
+    };
+    spyOn(component, 'openDialog').and.returnValue({
+      afterClosed: () => of(submittedValue)
+    } as any);
+
+    component.onEditProperty(0);
+
+    const savedValue = component.formProperty.properties[0].value as fhir.Extension;
+    expect(savedValue.valueContactDetail.telecom).toBeUndefined();
   });
 });
