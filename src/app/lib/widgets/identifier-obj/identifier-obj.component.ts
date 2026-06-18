@@ -1,12 +1,14 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   EventEmitter,
   inject,
   Input,
   Output,
+  ViewChild,
 } from '@angular/core';
-import {SchemaFormModule, TemplateSchemaModule} from "@lhncbc/ngx-schema-form";
+import {FormComponent, PropertyGroup, SchemaFormModule, TemplateSchemaModule} from "@lhncbc/ngx-schema-form";
 import fhir from "fhir/r4";
 import {FormsModule} from "@angular/forms";
 
@@ -28,14 +30,23 @@ import {TableService} from "../../../services/table.service";
   providers: [TableService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IdentifierObjComponent {
+export class IdentifierObjComponent implements AfterViewInit {
 
   formService = inject(FormService);
 
+  @ViewChild('sfForm', {read: FormComponent}) sfForm: FormComponent;
   @Output() changed = new EventEmitter<fhir.Identifier>();
   @Input() model!: fhir.Identifier;
 
   identifierSchema = this.formService.cloneIdentifierSchema();
+  sfFormRootProperty: PropertyGroup;
+
+  /**
+   * Capture the schema-form root property after the form is initialized.
+   */
+  ngAfterViewInit() {
+    this.sfFormRootProperty = this.sfForm.rootProperty as PropertyGroup;
+  }
 
   /**
    * Handle changes to the <sf-form>.

@@ -201,7 +201,10 @@ export class FormService {
       this.itemSchema = ngxItemSchema;
       this.flSchema = ngxFlSchema;
 
+      this.addIdentifierAssignerRecursion(this.flSchema?.properties?.identifier?.items, 2, identifierLayout, false);
+
       this.identifierSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.identifier?.items || {type: 'object', properties: {}}));
+      this.addIdentifierAssignerRecursion(this.identifierSchema, 2, identifierLayout, true);
       this.identifierSchema.widget = {id: 'row-layout'};
       this.identifierSchema.formLayout = identifierLayout?.formLayout;
       this.overrideSchemaWidgetFromLayout(this.identifierSchema, identifierLayout);
@@ -386,6 +389,71 @@ export class FormService {
    */
   cloneIdentifierSchema() {
     return JSON.parse(JSON.stringify(this.identifierSchema));
+  }
+
+  /**
+   * Add depth-limited recursive support for Identifier.assigner.identifier.
+   *
+   * The generated ngx-* schemas intentionally remove Reference.identifier to avoid circular references,
+   * so we restore nested Identifier support here for assigner references.
+   *
+   * The form-level schema keeps the FHIR object shape. The dialog schema uses an
+   * array wrapper with maxItems: 1 so the existing identifier table can edit it.
+   *
+   * @param schema - Identifier schema node to patch.
+   * @param depth - Remaining recursion depth.
+   * @param layout - Identifier layout settings to keep nested rendering consistent.
+   * @param tableWrapper - True to wrap the identifier in a maxItems: 1 array for table editing.
+   */
+  private addIdentifierAssignerRecursion(schema: any, depth: number, layout: Layout, tableWrapper: boolean): void {
+    const assignerProps = schema?.properties?.assigner?.properties;
+    if(!assignerProps) {
+      return;
+    }
+
+    if(depth <= 0) {
+      delete assignerProps.identifier;
+      return;
+    }
+
+    // Build child from the same configured schema shape to mirror extension-style recursive editing.
+    const childIdentifier = JSON.parse(JSON.stringify(schema));
+    if(childIdentifier?.properties?.assigner?.properties) {
+      delete childIdentifier.properties.assigner.properties.identifier;
+    }
+    childIdentifier.widget = {id: 'row-layout'};
+    childIdentifier.formLayout = layout?.formLayout;
+    this.overrideSchemaWidgetFromLayout(childIdentifier, layout);
+    this.overrideFieldLabelsFromLayout(childIdentifier, layout);
+    this.addIdentifierAssignerRecursion(childIdentifier, depth - 1, layout, tableWrapper);
+    childIdentifier.title = childIdentifier.title || 'Identifier';
+
+    if(!tableWrapper) {
+      assignerProps.identifier = childIdentifier;
+      return;
+    }
+
+    assignerProps.identifier = {
+      type: 'array',
+      items: childIdentifier,
+      minItems: 0,
+      maxItems: 1,
+      title: 'Identifier',
+      description: 'nested identifier',
+      widget: JSON.parse(JSON.stringify(layout?.widgets?.identifierTable || {
+        id: 'identifier',
+        labelPosition: 'left',
+        labelClasses: 'col-sm-2 ps-0 pe-1',
+        controlClasses: 'col-sm-10',
+        addButtonLabel: 'Add new identifier',
+        addDefaultItemIfEmpty: false,
+        showFields: [
+          {field: 'value', col: 4, nolabel: true},
+          {field: 'system', col: 4, nolabel: true},
+          {field: 'use', col: 3, nolabel: true}
+        ]
+      }))
+    };
   }
 
   get windowOpenerUrl(): string {

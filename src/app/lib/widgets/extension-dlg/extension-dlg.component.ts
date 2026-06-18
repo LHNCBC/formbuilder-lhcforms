@@ -27,7 +27,6 @@ import {ExtensionsService} from "../../../services/extensions.service";
 import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base";
-import {Util} from "../../util";
 
 /**
  * A dialog component to edit a FHIR Extension object.
@@ -108,39 +107,18 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
    * Refresh Extension helper fields after structural edits such as nested row deletion.
    */
   protected override beforeSave(value: fhir.Extension): fhir.Extension {
-    const currentValue = this.getCurrentFormPropertyValue(this.extensionObj?.sfFormRootProperty) as fhir.Extension || value;
+    const currentValue = this.extensionObj?.sfFormRootProperty
+      ? this.getCurrentFormPropertyValue(this.extensionObj.sfFormRootProperty) as fhir.Extension
+      : value;
     return this.extensionsService.updateExtension(currentValue);
   }
 
   /**
-   * Rebuild the current value from the form-property tree instead of relying on cached parent values.
+   * Use the live form-property tree so structural table edits are included in dirty checks.
    */
-  private getCurrentFormPropertyValue(property: any): any {
-    if (!property) {
-      return undefined;
-    }
-
-    if (Array.isArray(property.properties)) {
-      return property.properties
-        .map((child) => this.getCurrentFormPropertyValue(child))
-        .filter((childValue) => !Util.isEmpty(childValue));
-    }
-
-    if (property.properties && typeof property.properties === 'object') {
-      const value: {[key: string]: any} = {};
-      Object.keys(property.properties).forEach((key) => {
-        const child = property.properties[key];
-        if (child?.visible === false) {
-          return;
-        }
-        const childValue = this.getCurrentFormPropertyValue(child);
-        if (!Util.isEmpty(childValue)) {
-          value[key] = childValue;
-        }
-      });
-      return value;
-    }
-
-    return property.value;
+  protected override getCurrentValueForChangeDetection(): unknown {
+    return this.extensionObj?.sfFormRootProperty
+      ? this.getCurrentFormPropertyValue(this.extensionObj.sfFormRootProperty)
+      : this.changedValue;
   }
 }

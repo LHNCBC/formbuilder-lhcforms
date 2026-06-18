@@ -30,7 +30,7 @@ describe('ExtensionDlgComponent', () => {
     imports: [ExtensionDlgComponent],
     providers: [
       {provide: MAT_DIALOG_DATA, useValue: {}},
-      {provide: MatDialogRef, useValue: {}},
+      {provide: MatDialogRef, useValue: {close: () => {}, updatePosition: () => {}}},
     ]
   });
 

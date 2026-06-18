@@ -52,6 +52,7 @@ import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base
 export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef;
   @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef;
+  @ViewChild(IdentifierObjComponent) identifierObj: IdentifierObjComponent;
 
   formService: FormService = inject(FormService);
 
@@ -71,5 +72,75 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
    */
   protected createNewModel(): fhir.Identifier {
     return {} as fhir.Identifier;
+  }
+
+  /**
+   * Wrap Reference.identifier as an array for the table-based UI.
+   */
+  protected override prepareInputModel(value: fhir.Identifier): fhir.Identifier {
+    const model = this.cloneIdentifier(value);
+    return this.wrapAssignerIdentifierForUi(model);
+  }
+
+  /**
+   * Unwrap Reference.identifier from the table UI shape back to FHIR shape.
+   */
+  protected override beforeSave(value: fhir.Identifier): fhir.Identifier {
+    const currentValue = this.identifierObj?.sfFormRootProperty
+      ? this.getCurrentFormPropertyValue(this.identifierObj.sfFormRootProperty) as fhir.Identifier
+      : value;
+    const model = this.cloneIdentifier(currentValue);
+    return this.unwrapAssignerIdentifierForFhir(model);
+  }
+
+  /**
+   * Use the live form-property tree so structural table edits are included in dirty checks.
+   */
+  protected override getCurrentValueForChangeDetection(): unknown {
+    return this.identifierObj?.sfFormRootProperty
+      ? this.getCurrentFormPropertyValue(this.identifierObj.sfFormRootProperty)
+      : this.changedValue;
+  }
+
+  /**
+   * Wrap nested Reference.identifier values as arrays for table-based editing.
+   */
+  private wrapAssignerIdentifierForUi(model: fhir.Identifier): fhir.Identifier {
+    const assignerIdentifier = model.assigner?.identifier;
+    if(assignerIdentifier && !Array.isArray(assignerIdentifier)) {
+      this.wrapAssignerIdentifierForUi(assignerIdentifier as fhir.Identifier);
+      (model.assigner as any).identifier = [assignerIdentifier];
+    }
+    else if(Array.isArray(assignerIdentifier)) {
+      assignerIdentifier.forEach((identifier) => this.wrapAssignerIdentifierForUi(identifier as fhir.Identifier));
+    }
+    return model;
+  }
+
+  /**
+   * Unwrap nested Reference.identifier table arrays back to FHIR object shape.
+   */
+  private unwrapAssignerIdentifierForFhir(model: fhir.Identifier): fhir.Identifier {
+    const assignerIdentifier = model.assigner?.identifier;
+    if(Array.isArray(assignerIdentifier)) {
+      if(assignerIdentifier.length) {
+        const identifier = this.unwrapAssignerIdentifierForFhir(assignerIdentifier[0] as fhir.Identifier);
+        (model.assigner as any).identifier = identifier;
+      }
+      else {
+        delete (model.assigner as any).identifier;
+      }
+    }
+    else if(assignerIdentifier) {
+      this.unwrapAssignerIdentifierForFhir(assignerIdentifier as fhir.Identifier);
+    }
+    return model;
+  }
+
+  /**
+   * Clone identifier data before adapting UI-only fields.
+   */
+  private cloneIdentifier(value: fhir.Identifier): fhir.Identifier {
+    return JSON.parse(JSON.stringify(value || {}));
   }
 }

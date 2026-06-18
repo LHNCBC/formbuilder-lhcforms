@@ -132,7 +132,14 @@ async function expectIdentifierDialogValues(dialog: Locator, data: IdentifierInp
 async function expectIdentifierTableRow(table: Locator, row: number, data: IdentifierInput): Promise<void> {
   await expect(PWUtils.getTableCellInput(table, row, 1)).toHaveValue(data.value);
   await expect(PWUtils.getTableCellInput(table, row, 2)).toHaveValue(data.system);
-  await expect(PWUtils.getTableCellInput(table, row, 3)).toHaveValue(data.use);
+  const useInput = PWUtils.getTableCellInput(table, row, 3);
+  if (await useInput.count()) {
+    await expect(useInput).toHaveValue(data.use);
+    return;
+  }
+
+  const useDisplay = PWUtils.getTableCell(table, row, 3).locator('span.form-control');
+  await expect(useDisplay).toContainText(data.use);
 }
 
 test.describe('Identifier in form level', () => {
@@ -303,6 +310,31 @@ test.describe('Identifier in form level', () => {
 
     const previewJson = await PWUtils.getQuestionnaireJSON(page, 'R4');
     expect(previewJson.identifier?.[0]?.type?.coding).toBeUndefined();
+  });
+
+  test('should support recursive assigner identifier fields', async ({page}) => {
+    const dialog = await openIdentifierDialogByAdd(page);
+    await dialog.getByLabel('Use', {exact: true}).selectOption('official');
+    await dialog.getByLabel('System', {exact: true}).fill('urn:sys:parent');
+    await dialog.getByLabel('Value', {exact: true}).fill('ID-PARENT');
+
+    await dialog.locator('input[id*="assigner.display"]').first().fill('Dept Recursive');
+    await dialog.locator('input[id*="assigner.reference"]').first().fill('Organization/org-recursive');
+    await dialog.locator('input[id*="assigner.type"]').first().fill('Organization');
+
+    await dialog.getByRole('button', {name: /Add (new )?identifier/i}).click();
+    const nestedDialog = page.locator('mat-dialog-container').last();
+    await expect(nestedDialog).toBeVisible();
+    await nestedDialog.getByLabel('System', {exact: true}).fill('urn:sys:assigner');
+    await nestedDialog.getByLabel('Value', {exact: true}).fill('ID-ASSIGNER');
+    await nestedDialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(page.locator('mat-dialog-container')).toHaveCount(1);
+
+    await PWUtils.clickDialogButton(page, {selector: 'mat-dialog-container'}, 'Save and close');
+
+    const previewJson = await PWUtils.getQuestionnaireJSON(page, 'R4') as any;
+    expect(previewJson.identifier?.[0]?.assigner?.identifier?.system).toBe('urn:sys:assigner');
+    expect(previewJson.identifier?.[0]?.assigner?.identifier?.value).toBe('ID-ASSIGNER');
   });
 
   test('should delete an identifier row and persist the remaining identifier', async ({page}) => {

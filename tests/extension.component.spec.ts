@@ -76,7 +76,7 @@ test.describe('extension.component', async () => {
     await expect(telecomItems).toHaveCount(1);
     await telecomItems.nth(0).getByLabel('Value', {exact: true}).fill('555-0100');
 
-    await formLoc.getByRole('button', {name: 'Save and close'}).click();
+    await page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Save and close'}).click();
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
 
     const extRows = page.locator('lfb-extension table tbody tr');
@@ -86,23 +86,24 @@ test.describe('extension.component', async () => {
 
     const telecomLocOnEdit = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
     await expect(telecomLocOnEdit.locator('lfb-object')).toHaveCount(1);
-    await telecomLocOnEdit.getByRole('button', {name: 'Remove this row'}).click();
+    await telecomLocOnEdit.getByRole('button', {name: 'Remove this item'}).click();
     await PWUtils.clickDialogButton(page, {title: 'Confirm deletion'}, 'Delete');
-    await expect(telecomLocOnEdit.locator('lfb-object')).toHaveCount(0);
+    await expect(telecomLocOnEdit.locator('lfb-object')).toHaveCount(1);
+    await expect(telecomLocOnEdit.getByLabel('Value', {exact: true})).toHaveValue('');
 
-    await formLoc.getByRole('button', {name: 'Save and close'}).click();
+    await page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Save and close'}).click();
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
 
     await extRows.nth(0).getByLabel('Edit this row').click();
     await expect(formLoc).toBeVisible();
     const telecomLocAfterReopen = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
     await expect(telecomLocAfterReopen.locator('lfb-object')).toHaveCount(0);
-    await formLoc.getByRole('button', {name: 'Discard changes'}).click();
+    await page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Discard changes'}).click();
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
 
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
-    expect(q.extension[0].valueContactDetail.telecom).toBeUndefined();
-    expect(q.extension[0].valueContactDetail.name).toBeUndefined();
+    expect(q.extension[0].valueContactDetail?.telecom).toBeUndefined();
+    expect(q.extension[0].valueContactDetail?.name).toBeUndefined();
   });
 
   test('Item level page - should add an extension and see it in the JSON', async ({page}) => {
@@ -228,7 +229,7 @@ test.describe('extension.component', async () => {
     await expect(arrayItemsLoc.nth(2).getByLabel('Code', {exact: true})).toHaveValue('c3');
     await expect(arrayItemsLoc.nth(2).getByLabel('Display', {exact: true})).toHaveValue('d3');
     await expect(PWUtils.getRadioButton(page, 'User Selected', 'Unspecified', arrayItemsLoc.nth(2))).toBeChecked();
-    await expect(formLoc.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+    await expect(page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Save and close'})).toBeDisabled();
 
     // Make some changes.
     // Change user selected from second to third item.
@@ -317,7 +318,7 @@ test.describe('extension.component', async () => {
     await expect(formLoc.getByRole('button', {name: 'Save and close'})).toBeDisabled();
 
     // Close without changes — should not prompt for confirmation
-    await formLoc.getByRole('button', {name: 'Discard changes'}).click();
+    await page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Discard changes'}).click();
     // No confirmation dialog should appear; dialog should close immediately
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
   });

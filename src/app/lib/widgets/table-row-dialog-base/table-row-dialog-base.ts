@@ -53,15 +53,27 @@ export abstract class TableRowDialogBase<T> {
   }
 
   /**
+   * Allow concrete dialogs to adapt the stored row model for their UI controls.
+   */
+  protected prepareInputModel(value: T): T {
+    return value;
+  }
+
+  /**
+   * Return the value to use when checking whether the dialog has unsaved changes.
+   */
+  protected getCurrentValueForChangeDetection(): unknown {
+    return this.changedValue;
+  }
+
+  /**
    * Ng OnInit lifecycle hook.
    */
   ngOnInit() {
-    if(this.data.rowIndex >= 0) {
-      this.inputModel = this.data.arrayProperty.properties[this.data.rowIndex].value;
-    }
-    else {
-      this.inputModel = this.createNewModel();
-    }
+    const rawInputModel = this.data.rowIndex >= 0
+      ? this.data.arrayProperty.properties[this.data.rowIndex].value
+      : this.createNewModel();
+    this.inputModel = this.prepareInputModel(rawInputModel);
     this.changedValue = this.inputModel;
     this.initialValueJson = this.stringifyForChange(this.inputModel);
     this.rowIndex = this.data.rowIndex >= 0 ? this.data.rowIndex : 0;
@@ -131,7 +143,7 @@ export abstract class TableRowDialogBase<T> {
    * Handle the cancel button event.
    */
   cancel() {
-    const isDirty = this.hasDirtyControl() || this.hasModelChanged();
+    const isDirty = this.hasModelChanged();
     if (!isDirty) {
       this.matDialogRef.close(false);
       return;
@@ -168,8 +180,41 @@ export abstract class TableRowDialogBase<T> {
    * Update the disableSave signal based on dirty state, model changes, and validation.
    */
   protected updateDisableSave() {
-    const hasChanges = this.hasDirtyControl() || this.hasModelChanged();
+    const hasChanges = this.hasModelChanged();
     this.disableSave.set(!hasChanges || !this.isSaveAllowed());
+  }
+
+  /**
+   * Rebuild the current value from a form-property tree instead of relying on cached parent values.
+   */
+  protected getCurrentFormPropertyValue(property: any): any {
+    if (!property) {
+      return undefined;
+    }
+
+    if (Array.isArray(property.properties)) {
+      const value = property.properties
+        .map((child) => this.getCurrentFormPropertyValue(child))
+        .filter((childValue) => !this.isEmptyValue(childValue));
+      return value.length ? value : undefined;
+    }
+
+    if (property.properties && typeof property.properties === 'object') {
+      const value: {[key: string]: any} = {};
+      Object.keys(property.properties).forEach((key) => {
+        const child = property.properties[key];
+        if (child?.visible === false) {
+          return;
+        }
+        const childValue = this.getCurrentFormPropertyValue(child);
+        if (!this.isEmptyValue(childValue)) {
+          value[key] = childValue;
+        }
+      });
+      return Object.keys(value).length ? value : undefined;
+    }
+
+    return property.value;
   }
 
   /**
@@ -193,23 +238,59 @@ export abstract class TableRowDialogBase<T> {
   }
 
   /**
-   * Check whether any form control has been marked dirty.
-   */
-  private hasDirtyControl(): boolean {
-    return !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
-  }
-
-  /**
    * Check whether the emitted model differs from the original input.
    */
   private hasModelChanged(): boolean {
-    return this.stringifyForChange(this.changedValue) !== this.initialValueJson;
+    return this.stringifyForChange(this.getCurrentValueForChangeDetection()) !== this.initialValueJson;
   }
 
   /**
    * Convert a model value into a stable string for change detection.
    */
   private stringifyForChange(value: unknown): string {
-    return JSON.stringify(value ?? null);
+    return JSON.stringify(this.normalizeForChange(value) ?? null);
+  }
+
+  /**
+   * Remove internal helper fields and produce deterministic key ordering for model comparisons.
+   */
+  private normalizeForChange(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      const normalized = value
+        .map((entry) => this.normalizeForChange(entry))
+        .filter((entry) => !this.isEmptyValue(entry));
+      return normalized.length ? normalized : undefined;
+    }
+
+    if (value && typeof value === 'object') {
+      const normalized: {[key: string]: unknown} = {};
+      Object.keys(value as {[key: string]: unknown})
+        .sort()
+        .forEach((key) => {
+          if (key.startsWith('__$')) {
+            return;
+          }
+          const child = this.normalizeForChange((value as {[key: string]: unknown})[key]);
+          if (!this.isEmptyValue(child)) {
+            normalized[key] = child;
+          }
+        });
+      return Object.keys(normalized).length ? normalized : undefined;
+    }
+
+    return value;
+  }
+
+  /**
+   * Check whether a normalized value is empty.
+   */
+  private isEmptyValue(value: unknown): boolean {
+    if (value === null || value === undefined || value === '') {
+      return true;
+    }
+    if (Array.isArray(value)) {
+      return value.length === 0;
+    }
+    return typeof value === 'object' && Object.keys(value).length === 0;
   }
 }

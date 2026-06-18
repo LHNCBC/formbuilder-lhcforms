@@ -7,8 +7,9 @@
           {field: 'value', col: 12},
           {field: 'system', col: 12},
           {field: 'use', col: 12},
-          {field: 'type', col: 12},
           {field: 'period', col: 12},
+          {field: 'type', col: 12},
+
           {field: 'assigner', col: 12}
         ]
       }
@@ -24,7 +25,8 @@
     '$.properties.type.properties.coding.items.properties.system': 'System',
     '$.properties.assigner.properties.display': 'Display',
     '$.properties.assigner.properties.reference': 'Reference',
-    '$.properties.assigner.properties.type': 'Type'
+    '$.properties.assigner.properties.type': 'Type',
+    '$.properties.assigner.properties.identifier': 'Identifier'
   },
 
   widgets: {
@@ -97,7 +99,21 @@
       showFields: [
         {field: 'display', col: 12},
         {field: 'reference', col: 12},
-        {field: 'type', col: 12}
+        {field: 'type', col: 12},
+        {field: 'identifier', col: 12}
+      ]
+    },
+    identifierTable: {
+      id: 'identifier',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      addButtonLabel: 'Add new identifier',
+      addDefaultItemIfEmpty: false,
+      showFields: [
+        {field: 'value', col: 4, nolabel: true},
+        {field: 'system', col: 4, nolabel: true},
+        {field: 'use', col: 3, nolabel: true}
       ]
     },
     dateTime: {
@@ -134,6 +150,9 @@
     ],
     assignerObject: [
       '$.properties.assigner'
+    ],
+    identifierTable: [
+      '$.properties.assigner.properties.identifier'
     ],
     dateTime: [
       '$.properties.period.properties.start',

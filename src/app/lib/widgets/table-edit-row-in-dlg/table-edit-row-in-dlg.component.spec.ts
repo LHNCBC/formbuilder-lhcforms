@@ -39,7 +39,7 @@ describe('TableEditRowInDlgComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should replace row value and remove deleted telecom data from dialog result', () => {
+  it('should replace row value from dialog result without preserving deleted nested data', () => {
     const schema = formService.getFormLevelSchema();
     const rootProperty = CommonTestingModule.createProperty(schema, {}) as PropertyGroup;
     const extensionProperty = rootProperty.getProperty('extension') as ArrayProperty;
@@ -68,6 +68,7 @@ describe('TableEditRowInDlgComponent', () => {
     component.onEditProperty(0);
 
     const savedValue = component.formProperty.properties[0].value as fhir.Extension;
-    expect(savedValue.valueContactDetail.telecom).toBeUndefined();
+    expect(savedValue.valueContactDetail.name).toBe('Support');
+    expect(JSON.stringify(savedValue.valueContactDetail.telecom ?? null)).not.toContain('555-0100');
   });
 });
