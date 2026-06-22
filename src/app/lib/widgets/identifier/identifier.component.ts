@@ -47,7 +47,7 @@ import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
   styleUrl: '../table/table.component.css',
 })
 export class IdentifierComponent extends TableEditRowInDlgComponent implements OnInit, AfterViewInit {
-  private summaryFields = new Set(['type', 'period', 'assigner', 'use']);
+  private summaryFields = new Set(['use']);
 
   /**
    * Create the identifier table component and configure its edit dialog.

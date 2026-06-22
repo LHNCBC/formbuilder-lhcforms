@@ -27,6 +27,7 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
   enableWhenAutocompleteOptions: any = {
     matchListValue: true,
     maxSelect: 1,
+    suggestionMode: LForms.Def.Autocompleter.USE_STATISTICS,
     showLoadingIndicator: false,
     autocomp: true
   }
@@ -99,12 +100,7 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
 
   ngAfterViewChecked() {
     if (this.enableWhenAnswerProperty && !this.initialized) {
-      const lformsAutocompleter = (globalThis as any)?.LForms?.Def?.Autocompleter;
-      if (!lformsAutocompleter) {
-        return;
-      }
       this.initialized = true;
-      this.enableWhenAutocompleteOptions.suggestionMode = lformsAutocompleter.USE_STATISTICS;
       // Guard: ensure input element and id are valid before initializing autocomplete
       const answerOptions = this.answerOptionService.answerOptions;
       if (answerOptions && answerOptions.length > 0) {
@@ -119,7 +115,7 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
           // matching codes to the display for autocomplete
           this.enableWhenAutocompleteOptions['codes'] = this.answerOptionService.codingAnswerOptionsCodes;
 
-          this.autoComp = new lformsAutocompleter.Prefetch(
+          this.autoComp = new LForms.Def.Autocompleter.Prefetch(
             inputId,
             answerOptions,
             this.enableWhenAutocompleteOptions
@@ -129,7 +125,7 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
             this.autoComp.setFieldVal(this.answerOptionService.getAutocompleteItemFromCoding(this.formProperty.value), false);
           }
         } else {
-          this.autoComp = new lformsAutocompleter.Prefetch(
+          this.autoComp = new LForms.Def.Autocompleter.Prefetch(
             inputId,
             answerOptions,
             this.enableWhenAutocompleteOptions
@@ -151,7 +147,7 @@ export class LfbOptionControlWidgetComponent extends LfbControlWidgetComponent i
 
 
         // Listen for autocomplete selection and update answerOption.valueCoding.system
-        lformsAutocompleter.Event.observeListSelections(inputId, (data) => {
+        LForms.Def.Autocompleter.Event.observeListSelections(inputId, (data) => {
           console.log('observeListSelection ::inputId ', inputId, ' ',  data);
           if (data && typeof data.final_val === 'string') {
             if (this.formProperty && this.formProperty.value !== data) {

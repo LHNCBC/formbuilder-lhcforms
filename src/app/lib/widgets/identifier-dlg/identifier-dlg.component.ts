@@ -17,7 +17,6 @@ import {
   MatDialog
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -32,7 +31,7 @@ import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base
  */
 @Component({
   selector: 'lfb-identifier-dlg',
-  imports: [IdentifierObjComponent, MatDialogTitle, MatDialogContent, MatIconButton, MatDialogActions, MatIconModule, MatTabsModule, MatTooltip ],
+  imports: [IdentifierObjComponent, MatDialogTitle, MatDialogContent, MatIconButton, MatDialogActions, MatIconModule, MatTooltip ],
   templateUrl: './identifier-dlg.component.html',
   styles: [`
     .close-button {

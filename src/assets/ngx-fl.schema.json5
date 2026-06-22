@@ -391,19 +391,16 @@
           },
           "system": {
             "description": "Establishes the namespace for the value - that is, a URL that describes a set values that are unique.",
-
             "pattern": "^\\S*$",
             "type": "string"
           },
           "value": {
             "description": "The portion of the identifier typically relevant to the user and which is unique within the context of the system.",
-
             "pattern": "^[ \\r\\n\\t\\S]+$",
             "type": "string"
           },
           "period": {
             "description": "Time period during which identifier is/was valid for use.",
-
             "properties": {
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
@@ -436,7 +433,6 @@
           },
           "assigner": {
             "description": "Organization that issued/manages the identifier.",
-
             "properties": {
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
