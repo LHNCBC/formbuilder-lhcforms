@@ -109,6 +109,13 @@ describe('FormService', () => {
       .toBeDefined();
     expect(secondLevelArray?.type).toBe('array', 'Second level should also be array type');
     expect(secondLevelArray?.maxItems).toBe(1, 'Second level should also have maxItems: 1');
+
+    const thirdLevelArray = secondLevelArray?.items?.properties?.assigner?.properties?.identifier;
+    expect(thirdLevelArray)
+      .withContext('Identifier recursion should include nested assigner.identifier at third level')
+      .toBeDefined();
+    expect(thirdLevelArray?.type).toBe('array', 'Third level should also be array type');
+    expect(thirdLevelArray?.maxItems).toBe(1, 'Third level should also have maxItems: 1');
   });
 
 });

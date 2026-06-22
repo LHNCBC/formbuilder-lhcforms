@@ -52,7 +52,7 @@ import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base
 export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef;
   @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef;
-  @ViewChild(IdentifierObjComponent) identifierObj: IdentifierObjComponent;
+  @ViewChild(IdentifierObjComponent) identifierObj!: IdentifierObjComponent;
 
   formService: FormService = inject(FormService);
 
@@ -69,6 +69,8 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
 
   /**
    * Create a new Identifier row model.
+   *
+   * @returns Empty Identifier model for add-new flow.
    */
   protected createNewModel(): fhir.Identifier {
     return {} as fhir.Identifier;
@@ -76,6 +78,9 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
 
   /**
    * Wrap Reference.identifier as an array for the table-based UI.
+   *
+   * @param value - Identifier value loaded into the dialog.
+   * @returns Identifier model adapted for table-based recursive editing.
    */
   protected override prepareInputModel(value: fhir.Identifier): fhir.Identifier {
     const model = this.cloneIdentifier(value);
@@ -84,17 +89,27 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
 
   /**
    * Unwrap Reference.identifier from the table UI shape back to FHIR shape.
+   *
+   * @param value - Identifier value collected from the dialog form.
+   * @returns Identifier model normalized for persistence.
    */
   protected override beforeSave(value: fhir.Identifier): fhir.Identifier {
     const currentValue = this.identifierObj?.sfFormRootProperty
       ? this.getCurrentFormPropertyValue(this.identifierObj.sfFormRootProperty) as fhir.Identifier
       : value;
     const model = this.cloneIdentifier(currentValue);
+    // Nested identifier dialogs must keep the UI array wrapper so parent dialogs
+    // can continue editing recursive rows without type-mismatch resets.
+    if (this.isNestedIdentifierDialog()) {
+      return model;
+    }
     return this.unwrapAssignerIdentifierForFhir(model);
   }
 
   /**
    * Use the live form-property tree so structural table edits are included in dirty checks.
+   *
+   * @returns Current form tree value used for change detection.
    */
   protected override getCurrentValueForChangeDetection(): unknown {
     return this.identifierObj?.sfFormRootProperty
@@ -104,6 +119,9 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
 
   /**
    * Wrap nested Reference.identifier values as arrays for table-based editing.
+   *
+   * @param model - Identifier model to transform.
+   * @returns Identifier model with recursive identifier nodes array-wrapped.
    */
   private wrapAssignerIdentifierForUi(model: fhir.Identifier): fhir.Identifier {
     const assignerIdentifier = model.assigner?.identifier;
@@ -119,6 +137,9 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
 
   /**
    * Unwrap nested Reference.identifier table arrays back to FHIR object shape.
+   *
+   * @param model - Identifier model to transform.
+   * @returns Identifier model with recursive identifier nodes unwrapped.
    */
   private unwrapAssignerIdentifierForFhir(model: fhir.Identifier): fhir.Identifier {
     const assignerIdentifier = model.assigner?.identifier;
@@ -139,8 +160,23 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
 
   /**
    * Clone identifier data before adapting UI-only fields.
+   *
+   * @param value - Source identifier value.
+   * @returns Deep-cloned identifier object.
    */
   private cloneIdentifier(value: fhir.Identifier): fhir.Identifier {
     return JSON.parse(JSON.stringify(value || {}));
+  }
+
+  /**
+   * True when another Identifier dialog is already open above the current one.
+   *
+   * @returns True when current dialog is nested; otherwise false.
+   */
+  private isNestedIdentifierDialog(): boolean {
+    const count = this.matDialogService.openDialogs.filter((dialogRef) =>
+      dialogRef.componentInstance instanceof IdentifierDlgComponent
+    ).length;
+    return count > 1;
   }
 }

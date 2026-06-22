@@ -327,14 +327,47 @@ test.describe('Identifier in form level', () => {
     await expect(nestedDialog).toBeVisible();
     await nestedDialog.getByLabel('System', {exact: true}).fill('urn:sys:assigner');
     await nestedDialog.getByLabel('Value', {exact: true}).fill('ID-ASSIGNER');
+
+    await nestedDialog.getByRole('button', {name: /Add (new )?identifier/i}).click();
+    const grandchildDialog = page.locator('mat-dialog-container').last();
+    await expect(grandchildDialog).toBeVisible();
+    await grandchildDialog.getByLabel('System', {exact: true}).fill('urn:sys:grandchild');
+    await grandchildDialog.getByLabel('Value', {exact: true}).fill('ID-GRANDCHILD');
+
+    await grandchildDialog.getByRole('button', {name: /Add (new )?identifier/i}).click();
+    const greatGrandchildDialog = page.locator('mat-dialog-container').last();
+    await expect(greatGrandchildDialog).toBeVisible();
+    await greatGrandchildDialog.getByLabel('System', {exact: true}).fill('urn:sys:great-grandchild');
+    await greatGrandchildDialog.getByLabel('Value', {exact: true}).fill('ID-GREAT-GRANDCHILD');
+    await greatGrandchildDialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(page.locator('mat-dialog-container')).toHaveCount(3);
+
+    await grandchildDialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(page.locator('mat-dialog-container')).toHaveCount(2);
+
     await nestedDialog.getByRole('button', {name: 'Save and close'}).click();
     await expect(page.locator('mat-dialog-container')).toHaveCount(1);
 
     await PWUtils.clickDialogButton(page, {selector: 'mat-dialog-container'}, 'Save and close');
 
     const previewJson = await PWUtils.getQuestionnaireJSON(page, 'R4') as any;
+    expect(previewJson.identifier?.[0]?.use).toBe('official');
+    expect(previewJson.identifier?.[0]?.system).toBe('urn:sys:parent');
+    expect(previewJson.identifier?.[0]?.value).toBe('ID-PARENT');
+    expect(previewJson.identifier?.[0]?.assigner?.display).toBe('Dept Recursive');
+    expect(previewJson.identifier?.[0]?.assigner?.reference).toBe('Organization/org-recursive');
+    expect(previewJson.identifier?.[0]?.assigner?.type).toBe('Organization');
+
     expect(previewJson.identifier?.[0]?.assigner?.identifier?.system).toBe('urn:sys:assigner');
     expect(previewJson.identifier?.[0]?.assigner?.identifier?.value).toBe('ID-ASSIGNER');
+
+    expect(previewJson.identifier?.[0]?.assigner?.identifier?.assigner?.identifier?.system).toBe('urn:sys:grandchild');
+    expect(previewJson.identifier?.[0]?.assigner?.identifier?.assigner?.identifier?.value).toBe('ID-GRANDCHILD');
+
+    expect(previewJson.identifier?.[0]?.assigner?.identifier?.assigner?.identifier?.assigner?.identifier?.system)
+      .toBe('urn:sys:great-grandchild');
+    expect(previewJson.identifier?.[0]?.assigner?.identifier?.assigner?.identifier?.assigner?.identifier?.value)
+      .toBe('ID-GREAT-GRANDCHILD');
   });
 
   test('should delete an identifier row and persist the remaining identifier', async ({page}) => {

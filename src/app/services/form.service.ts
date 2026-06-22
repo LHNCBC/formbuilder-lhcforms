@@ -55,6 +55,10 @@ export type Layout = {
   providedIn: 'root'
 })
 export class FormService {
+  // Safety cap for total Identifier levels rendered by schema expansion.
+  // Level count includes the top-level Identifier row itself.
+  private static readonly IDENTIFIER_RECURSION_LEVELS = 10;
+
   private _document = inject<Document>(DOCUMENT);
   private modalService = inject(NgbModal);
   private http = inject(HttpClient);
@@ -200,11 +204,12 @@ export class FormService {
 
       this.itemSchema = ngxItemSchema;
       this.flSchema = ngxFlSchema;
+      const identifierRecursionDepth = Math.max(0, FormService.IDENTIFIER_RECURSION_LEVELS - 1);
 
-      this.addIdentifierAssignerRecursion(this.flSchema?.properties?.identifier?.items, 2, identifierLayout, false);
+      this.addIdentifierAssignerRecursion(this.flSchema?.properties?.identifier?.items, identifierRecursionDepth, identifierLayout, false);
 
       this.identifierSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.identifier?.items || {type: 'object', properties: {}}));
-      this.addIdentifierAssignerRecursion(this.identifierSchema, 2, identifierLayout, true);
+      this.addIdentifierAssignerRecursion(this.identifierSchema, identifierRecursionDepth, identifierLayout, true);
       this.identifierSchema.widget = {id: 'row-layout'};
       this.identifierSchema.formLayout = identifierLayout?.formLayout;
       this.overrideSchemaWidgetFromLayout(this.identifierSchema, identifierLayout);
