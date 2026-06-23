@@ -17,7 +17,7 @@
 
       @if (hasAnswerOptions$ | async) {
         <div class="{{controlWidthClass}} p-0">
-          <input [lfbEnableWhenAnswerOptions]="enableWhenAnswerOptionsService"
+          <input lfbEnableWhenAnswerOptions
                  [enableWhenAnswerOptionsId]="id"
                  autocomplete="off"
                  type="text"

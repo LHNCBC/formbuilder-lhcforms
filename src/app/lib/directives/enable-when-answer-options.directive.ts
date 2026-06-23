@@ -1,14 +1,16 @@
-import { AfterViewChecked, Directive, ElementRef, HostListener, Input, OnDestroy } from '@angular/core';
+import { AfterViewChecked, Directive, ElementRef, HostListener, Input, OnDestroy, Optional } from '@angular/core';
 import { EnableWhenAnswerOptionsService } from '../../services/enable-when-answer-options.service';
 
 @Directive({
   selector: 'input[lfbEnableWhenAnswerOptions]'
 })
 export class EnableWhenAnswerOptionsDirective implements AfterViewChecked, OnDestroy {
-  @Input('lfbEnableWhenAnswerOptions') service!: EnableWhenAnswerOptionsService;
   @Input() enableWhenAnswerOptionsId = '';
 
-  constructor(private elementRef: ElementRef<HTMLInputElement>) {}
+  constructor(
+    private elementRef: ElementRef<HTMLInputElement>,
+    @Optional() private service: EnableWhenAnswerOptionsService | null
+  ) {}
 
   ngAfterViewChecked(): void {
     this.service?.initAutocomplete(this.elementRef, this.enableWhenAnswerOptionsId);

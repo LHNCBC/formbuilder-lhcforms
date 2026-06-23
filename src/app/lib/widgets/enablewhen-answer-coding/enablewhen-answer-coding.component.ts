@@ -12,7 +12,6 @@ import {FormsModule} from "@angular/forms";
 import {SharedObjectService} from "../../../services/shared-object.service";
 import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
-import { AnswerOptionService } from '../../../services/answer-option.service';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 declare var LForms: any;
@@ -20,13 +19,14 @@ declare var LForms: any;
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
   imports: [AutoCompleteComponent, FormsModule, EnableWhenAnswerOptionsDirective],
+  providers: [EnableWhenAnswerOptionsService],
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
       @if (autoComplete) {
         <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
       } @else {
         <div class="p-0">
-          <input [lfbEnableWhenAnswerOptions]="enableWhenAnswerOptionsService"
+          <input lfbEnableWhenAnswerOptions
                  [enableWhenAnswerOptionsId]="id"
                  autocomplete="off"
                  type="text"
@@ -51,8 +51,7 @@ declare var LForms: any;
 export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
   private formService = inject(FormService);
   private modelService = inject(SharedObjectService);
-  private answerOptionService = inject(AnswerOptionService);
-  enableWhenAnswerOptionsService = new EnableWhenAnswerOptionsService(this.answerOptionService);
+  enableWhenAnswerOptionsService = inject(EnableWhenAnswerOptionsService);
 
   subscriptions: Subscription [] = [];
   answerOptions: fhir.QuestionnaireItemAnswerOption [] = [];

@@ -9,7 +9,6 @@ import {LabelComponent} from "../label/label.component";
 import {IntegerDirective} from "../../directives/integer.directive";
 import { Observable, of } from 'rxjs';
 import { LfbControlWidgetComponent } from '../lfb-control-widget/lfb-control-widget.component';
-import { AnswerOptionService } from '../../../services/answer-option.service';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 
@@ -17,13 +16,13 @@ import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-a
 @Component({
   selector: 'lfb-integer-widget',
   imports: [ReactiveFormsModule, AsyncPipe, NgClass, LabelComponent, IntegerDirective, EnableWhenAnswerOptionsDirective],
+  providers: [EnableWhenAnswerOptionsService],
   templateUrl: './integer.component.html',
   styles: []
 })
 export class IntegerComponent extends LfbControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
   private validatorRegistry = inject(ValidatorRegistry);
-  answerOptionService = inject(AnswerOptionService);
-  enableWhenAnswerOptionsService = new EnableWhenAnswerOptionsService(this.answerOptionService);
+  enableWhenAnswerOptionsService = inject(EnableWhenAnswerOptionsService);
   hasAnswerOptions$: Observable<boolean> = of(false);
 
   protected defaultMinimum: number | null = null;

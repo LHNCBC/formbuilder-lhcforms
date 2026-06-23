@@ -9,26 +9,29 @@ import { EnableWhenAnswerOptionsDirective } from './enable-when-answer-options.d
   template: `
     <input
       id="answer-input"
-      [lfbEnableWhenAnswerOptions]="service"
+      lfbEnableWhenAnswerOptions
       [enableWhenAnswerOptionsId]="inputId">
   `
 })
 class TestHostComponent {
   inputId = 'fallback-id';
-  service = jasmine.createSpyObj<EnableWhenAnswerOptionsService>(
-    'EnableWhenAnswerOptionsService',
-    ['initAutocomplete', 'onInput', 'suppressInvalidValue', 'destroyAutocomplete']
-  );
 }
 
 describe('EnableWhenAnswerOptionsDirective', () => {
   let fixture: ComponentFixture<TestHostComponent>;
   let component: TestHostComponent;
   let input: HTMLInputElement;
+  let service: jasmine.SpyObj<EnableWhenAnswerOptionsService>;
 
   beforeEach(() => {
+    service = jasmine.createSpyObj<EnableWhenAnswerOptionsService>(
+      'EnableWhenAnswerOptionsService',
+      ['initAutocomplete', 'onInput', 'suppressInvalidValue', 'destroyAutocomplete']
+    );
+
     TestBed.configureTestingModule({
-      imports: [TestHostComponent]
+      imports: [TestHostComponent],
+      providers: [{ provide: EnableWhenAnswerOptionsService, useValue: service }]
     });
     fixture = TestBed.createComponent(TestHostComponent);
     component = fixture.componentInstance;
@@ -37,7 +40,7 @@ describe('EnableWhenAnswerOptionsDirective', () => {
   });
 
   it('should initialize autocomplete with the host input element', () => {
-    expect(component.service.initAutocomplete).toHaveBeenCalledWith(jasmine.objectContaining({
+    expect(service.initAutocomplete).toHaveBeenCalledWith(jasmine.objectContaining({
       nativeElement: input
     }), 'fallback-id');
   });
@@ -49,13 +52,13 @@ describe('EnableWhenAnswerOptionsDirective', () => {
     input.dispatchEvent(inputEvent);
     input.dispatchEvent(blurEvent);
 
-    expect(component.service.onInput).toHaveBeenCalledWith(inputEvent);
-    expect(component.service.suppressInvalidValue).toHaveBeenCalledWith(blurEvent);
+    expect(service.onInput).toHaveBeenCalledWith(inputEvent);
+    expect(service.suppressInvalidValue).toHaveBeenCalledWith(blurEvent);
   });
 
   it('should destroy autocomplete when the input is destroyed', () => {
     fixture.destroy();
 
-    expect(component.service.destroyAutocomplete).toHaveBeenCalled();
+    expect(service.destroyAutocomplete).toHaveBeenCalled();
   });
 });

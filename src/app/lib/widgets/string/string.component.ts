@@ -18,20 +18,19 @@ import {LabelComponent} from "../label/label.component";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 import { Observable, of } from 'rxjs';
-import { AnswerOptionService } from '../../../services/answer-option.service';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 
 @Component({
   selector: 'lfb-string',
   imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent, EnableWhenAnswerOptionsDirective],
+  providers: [EnableWhenAnswerOptionsService],
   templateUrl: './string.component.html'
 })
 export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('inputEl') inputElRef!: ElementRef;
   showTooltip = true;
-  answerOptionService = inject(AnswerOptionService);
-  enableWhenAnswerOptionsService = new EnableWhenAnswerOptionsService(this.answerOptionService);
+  enableWhenAnswerOptionsService = inject(EnableWhenAnswerOptionsService, { optional: true });
   hasAnswerOptions$: Observable<boolean> = of(false);
 
   Array = Array; // To use in templates.
@@ -58,7 +57,7 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
    */
   initEnableWhenAnswerOptions(): void {
     const canonicalPath = (this.formProperty as any).__canonicalPathNotation || '';
-    if (canonicalPath.match(/^enableWhen\.(\d+)\.answer(\w+).*$/)) {
+    if (canonicalPath.match(/^enableWhen\.(\d+)\.answer(\w+).*$/) && this.enableWhenAnswerOptionsService) {
       this.enableWhenAnswerOptionsService.init(this.formProperty, this.control);
       this.hasAnswerOptions$ = this.enableWhenAnswerOptionsService.hasAnswerOptions$;
     }
@@ -135,7 +134,7 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
    *
    */
   ngOnDestroy() {
-    this.enableWhenAnswerOptionsService.destroy();
+    this.enableWhenAnswerOptionsService?.destroy();
     super.ngOnDestroy();
   }
 

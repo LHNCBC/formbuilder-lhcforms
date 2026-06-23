@@ -15,6 +15,7 @@ import {LabelComponent} from "../label/label.component";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
 import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 
 @Injectable()
 export class LfbDateAdapter extends NgbDateAdapter<string> {
@@ -58,7 +59,8 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter {
   styleUrls: ['./date.component.css'],
   providers: [
     {provide: NgbDateAdapter, useClass: LfbDateAdapter},
-    {provide: NgbDateParserFormatter, useClass: LfbDateParserFormatter}
+    {provide: NgbDateParserFormatter, useClass: LfbDateParserFormatter},
+    EnableWhenAnswerOptionsService
   ]
 })
 export class DateComponent extends StringComponent implements OnInit, AfterViewInit {
