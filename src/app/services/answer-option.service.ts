@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, distinctUntilChanged, map, Subject } from 'rxjs';
-import { FormProperty, ObjectProperty } from '@lhncbc/ngx-schema-form';
+import { Subject } from 'rxjs';
+import { FormProperty } from '@lhncbc/ngx-schema-form';
 import { FormService } from './form.service';
 import { Util } from '../lib/util';
 
@@ -44,15 +44,6 @@ export class AnswerOptionService {
       [enableWhenItemLinkId: string]: EnableWhenReference
     }
   } = {};
-
-  private formProperty$ = new BehaviorSubject<FormProperty | ObjectProperty | null>(null);
-  codingAnswerOptionsHash: { [code: string]: any } = {};
-  codingAnswerOptionsCodes: any[] = [];
-  codingAnswerOptionsBySystem: { [system: string]: any } = {};
-  answerOptions: any[] = [];
-  answerConstraint = "optionsOnly";
-  answerOptionItemLinkId;
-  answerOptionType = "string";
 
   radioSelection$ = this.radioSelection.asObservable();
   checkboxSelection$ = this.checkboxSelection.asObservable();
@@ -199,43 +190,6 @@ export class AnswerOptionService {
   }
 
   /**
-   * Sets the form property used by the legacy hasAnswerOptions$ observable.
-   *
-   * @param fp - Form property for an enableWhen answer[x] field.
-   */
-  setFormProperty(fp: FormProperty) {
-    this.formProperty$.next(fp);
-  }
-
-  /**
-   * Observable that determines if the current enableWhen answer references a question item's answerOption.
-   * - Extracts the relevant question node and its answer options based on the canonical path.
-   * - Populates answer option properties and coding hash for efficient lookup.
-   * - Updates the answer constraint if present.
-   * - Emits true if answer options are available for the referenced question, otherwise false.
-   *
-   * @returns Observable<boolean> indicating the presence of answer options for the enableWhen answer.
-   */
-  hasAnswerOptions$ = this.formProperty$.pipe(
-    map(fp => {
-      const state = this.getEnableWhenAnswerOptionsState(fp as FormProperty);
-      this.applyEnableWhenAnswerOptionsState(state);
-      return state.hasAnswerOptions;
-    }),
-    distinctUntilChanged()
-  );
-
-  /**
-   * Checks whether an enableWhen answer field references a question with answer options.
-   *
-   * @param formProperty - Form property for an enableWhen answer[x] field.
-   * @returns True when the referenced question has answer options.
-   */
-  hasAnswerOptions(formProperty: FormProperty): boolean {
-    return this.getEnableWhenAnswerOptionsState(formProperty).hasAnswerOptions;
-  }
-
-  /**
    * Builds a local answer-option state snapshot for an enableWhen answer field.
    *
    * @param formProperty - Form property for an enableWhen answer[x] field.
@@ -261,6 +215,9 @@ export class AnswerOptionService {
     }
 
     state.answerOptionItemLinkId = formProperty.parent.getProperty('question').value;
+    if (!state.answerOptionItemLinkId) {
+      return state;
+    }
     const node = this.formService.getTreeNodeByLinkId(state.answerOptionItemLinkId);
     if (!node?.data) {
       return state;
@@ -275,7 +232,7 @@ export class AnswerOptionService {
     }
 
     if (valueName === 'valueCoding') {
-      node.data.answerOption.forEach((obj, index) => {
+      node.data.answerOption.forEach((obj: any, index: number) => {
         const coding = obj[valueName];
 
         if (coding) {
@@ -303,9 +260,9 @@ export class AnswerOptionService {
     }
 
     const answerOptions = node.data.answerOption
-      .map(ao => ao[valueName])
-      .filter(v => v !== null && v !== undefined)
-      .map(v => {
+      .map((ao: any) => ao[valueName])
+      .filter((v: any) => v !== null && v !== undefined)
+      .map((v: any) => {
         if (typeof v === 'string') {
           return v;
         }
@@ -317,7 +274,7 @@ export class AnswerOptionService {
         }
         return undefined;
       })
-      .filter(v => v !== undefined);
+      .filter((v: any) => v !== undefined);
 
     state.answerOptions = [...new Set(answerOptions)];
 
@@ -326,21 +283,6 @@ export class AnswerOptionService {
     }
 
     return state;
-  }
-
-  /**
-   * Applies a local enableWhen answer-options state to the service's legacy public fields.
-   *
-   * @param state - Answer-option state to expose through the service fields.
-   */
-  private applyEnableWhenAnswerOptionsState(state: EnableWhenAnswerOptionsState): void {
-    this.answerOptionItemLinkId = state.answerOptionItemLinkId;
-    this.answerOptionType = state.answerOptionType;
-    this.answerOptions = state.answerOptions;
-    this.answerConstraint = state.answerConstraint;
-    this.codingAnswerOptionsHash = state.codingAnswerOptionsHash;
-    this.codingAnswerOptionsCodes = state.codingAnswerOptionsCodes;
-    this.codingAnswerOptionsBySystem = state.codingAnswerOptionsBySystem;
   }
 
   /**
