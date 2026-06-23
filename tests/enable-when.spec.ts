@@ -1018,8 +1018,11 @@ test.describe('enableWhen condition and behavior', () => {
       await enableWhenTimeOffListItem.click();
       await expect(enableWhenTimeOffListItem.locator('fa-icon#error')).toBeVisible();
       await expect(page.locator('[id^="enableWhen.0.answerTime"]')).toHaveValue('08:00:00');
-      await expect(page.locator('[id^="enableWhen.0_err"] small'))
+      const r5TimeErrors = page.locator('[id^="enableWhen.0_err"] small');
+      await expect(r5TimeErrors).toHaveCount(1);
+      await expect(r5TimeErrors)
         .toContainText(enableWhenErrorMsg('time answerOptions', '657367236699'));
+      await expect(r5TimeErrors).not.toContainText('Valid format is');
 
       // ---- string ----
       await PWUtils.clickTreeNode(page, 'string answerOptions');

@@ -89,15 +89,11 @@ describe('EnableWhenAnswerOptionsService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should initialize answer option state and sync non-coding control values', () => {
+  it('should initialize answer option state without syncing non-coding control values', () => {
     service.init(formProperty, control);
 
     expect(answerOptionServiceSpy.getEnableWhenAnswerOptionsState).toHaveBeenCalledWith(formProperty);
-    expect(control.setValue).toHaveBeenCalledWith('one');
-
-    valueChanges.next('two');
-
-    expect(formProperty.setValue).toHaveBeenCalledWith('two', false);
+    expect(control.setValue).not.toHaveBeenCalled();
   });
 
   it('should write typed integer values back to the form property', fakeAsync(() => {

@@ -10,7 +10,6 @@ export class EnableWhenAnswerOptionsService {
   hasAnswerOptions$: Observable<boolean>;
 
   private formProperty!: FormProperty;
-  private control: any;
   private initialized = false;
   private enableWhenAnswerProperty: RegExpMatchArray | null = null;
   private subscriptions: Subscription[] = [];
@@ -41,7 +40,6 @@ export class EnableWhenAnswerOptionsService {
   init(formProperty: FormProperty, control: any): void {
     this.destroyAutocomplete();
     this.formProperty = formProperty;
-    this.control = control;
     const canonicalPath = (this.formProperty as any).__canonicalPathNotation || '';
     this.enableWhenAnswerProperty = canonicalPath.match(/^enableWhen\.(\d+)\.answer(\w+).*$/);
 
@@ -51,16 +49,6 @@ export class EnableWhenAnswerOptionsService {
     }
 
     this.refreshState();
-
-    if (this.answerOptionsState.answerOptionType !== 'coding' && this.control?.setValue && this.control?.valueChanges) {
-      this.control.setValue(this.formProperty.value);
-
-      this.subscriptions.push(this.control.valueChanges.subscribe((val: any) => {
-        if (val !== this.formProperty.value) {
-          this.formProperty.setValue(val, false);
-        }
-      }));
-    }
 
     this.subscribeToSourceQuestionChanges();
   }
