@@ -35,6 +35,25 @@ import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-an
 export class TimeComponent extends StringComponent {
 
   /**
+   * Initializes the time widget and suppresses PATTERN noise for enableWhen answerTime fields.
+   */
+  override ngOnInit(): void {
+    super.ngOnInit();
+
+    const canonicalPath = (this.formProperty as any).__canonicalPathNotation || '';
+    if (!/^enableWhen\.(\d+)\.answerTime/.test(canonicalPath)) {
+      return;
+    }
+
+    const sub = this.formProperty.errorsChanges.subscribe(() => {
+      if (this.errors?.length) {
+        this.errors = this.errors.filter((e) => e.code !== 'PATTERN');
+      }
+    });
+    this.subscriptions.push(sub);
+  }
+
+  /**
    * Set the value of the time input to the current time in HH:MM:SS.mmm format.
    */
   now() {
