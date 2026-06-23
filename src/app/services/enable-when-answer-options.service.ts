@@ -1,5 +1,5 @@
 import { ElementRef, Injectable } from '@angular/core';
-import { Observable, of, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FormProperty } from '@lhncbc/ngx-schema-form';
 import { AnswerOptionService, EnableWhenAnswerOptionsState } from './answer-option.service';
 
@@ -7,7 +7,7 @@ declare var LForms: any;
 
 @Injectable()
 export class EnableWhenAnswerOptionsService {
-  hasAnswerOptions$: Observable<boolean> = of(false);
+  hasAnswerOptions$: Observable<boolean>;
 
   private formProperty!: FormProperty;
   private control: any;
@@ -16,6 +16,9 @@ export class EnableWhenAnswerOptionsService {
   private subscriptions: Subscription[] = [];
   private autoComp: any;
   private answerOptionsState!: EnableWhenAnswerOptionsState;
+  private hasAnswerOptionsSubject = new BehaviorSubject<boolean>(false);
+  private sourceQuestionSubscription: Subscription | null = null;
+  private sourceQuestionProperty: any;
 
   enableWhenAutocompleteOptions: any = {
     matchListValue: true,
@@ -25,7 +28,9 @@ export class EnableWhenAnswerOptionsService {
     autocomp: true
   };
 
-  constructor(private answerOptionService: AnswerOptionService) {}
+  constructor(private answerOptionService: AnswerOptionService) {
+    this.hasAnswerOptions$ = this.hasAnswerOptionsSubject.asObservable();
+  }
 
   /**
    * Initializes enableWhen answer-option state for a widget instance.
@@ -34,17 +39,18 @@ export class EnableWhenAnswerOptionsService {
    * @param control - Angular control backing the visible input.
    */
   init(formProperty: FormProperty, control: any): void {
+    this.destroyAutocomplete();
     this.formProperty = formProperty;
     this.control = control;
     const canonicalPath = (this.formProperty as any).__canonicalPathNotation || '';
     this.enableWhenAnswerProperty = canonicalPath.match(/^enableWhen\.(\d+)\.answer(\w+).*$/);
 
     if (!this.enableWhenAnswerProperty) {
+      this.hasAnswerOptionsSubject.next(false);
       return;
     }
 
-    this.answerOptionsState = this.answerOptionService.getEnableWhenAnswerOptionsState(this.formProperty);
-    this.hasAnswerOptions$ = of(this.answerOptionsState.hasAnswerOptions);
+    this.refreshState();
 
     if (this.answerOptionsState.answerOptionType !== 'coding' && this.control?.setValue && this.control?.valueChanges) {
       this.control.setValue(this.formProperty.value);
@@ -54,6 +60,42 @@ export class EnableWhenAnswerOptionsService {
           this.formProperty.setValue(val, false);
         }
       }));
+    }
+
+    this.subscribeToSourceQuestionChanges();
+  }
+
+  /**
+   * Refreshes enableWhen answer-option state and resets autocomplete so it can rebind with latest options.
+   */
+  private refreshState(): void {
+    this.answerOptionsState = this.answerOptionService.getEnableWhenAnswerOptionsState(this.formProperty);
+    this.hasAnswerOptionsSubject.next(this.answerOptionsState.hasAnswerOptions);
+    this.destroyAutocomplete();
+  }
+
+  /**
+   * Subscribes to source question changes for this enableWhen answer field.
+   */
+  private subscribeToSourceQuestionChanges(): void {
+    const questionProperty = this.formProperty?.parent?.getProperty?.('question');
+
+    if (this.sourceQuestionProperty === questionProperty && this.sourceQuestionSubscription) {
+      return;
+    }
+
+    this.sourceQuestionSubscription?.unsubscribe();
+    this.sourceQuestionProperty = questionProperty;
+
+    if (questionProperty?.valueChanges?.subscribe) {
+      const sourceQuestionSub: Subscription = questionProperty.valueChanges.subscribe(() => {
+        if (!this.enableWhenAnswerProperty) {
+          return;
+        }
+        this.refreshState();
+      });
+      this.sourceQuestionSubscription = sourceQuestionSub;
+      this.subscriptions.push(sourceQuestionSub);
     }
   }
 
@@ -220,6 +262,9 @@ export class EnableWhenAnswerOptionsService {
    */
   destroy(): void {
     this.destroyAutocomplete();
+    this.hasAnswerOptionsSubject.next(false);
+    this.sourceQuestionSubscription = null;
+    this.sourceQuestionProperty = null;
 
     this.subscriptions.forEach((s) => s?.unsubscribe());
     this.subscriptions = [];

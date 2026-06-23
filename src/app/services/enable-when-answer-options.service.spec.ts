@@ -8,6 +8,7 @@ describe('EnableWhenAnswerOptionsService', () => {
   let answerOptionServiceSpy: jasmine.SpyObj<AnswerOptionService>;
   let formProperty: any;
   let valueChanges: Subject<any>;
+  let questionValueChanges: Subject<any>;
   let control: any;
   let originalLForms: any;
 
@@ -52,12 +53,24 @@ describe('EnableWhenAnswerOptionsService', () => {
     answerOptionServiceSpy.getEnableWhenAnswerOptionsState.and.returnValue(baseState);
 
     valueChanges = new Subject<any>();
+    questionValueChanges = new Subject<any>();
     control = {
       valueChanges,
       setValue: jasmine.createSpy('setValue')
     };
     formProperty = {
       __canonicalPathNotation: 'enableWhen.0.answerString',
+      parent: {
+        getProperty: jasmine.createSpy('getProperty').and.callFake((name: string) => {
+          if (name === 'question') {
+            return {
+              value: 'q1',
+              valueChanges: questionValueChanges
+            };
+          }
+          return null;
+        })
+      },
       value: 'one',
       setValue: jasmine.createSpy('setValue').and.callFake((value) => formProperty.value = value),
       updateValueAndValidity: jasmine.createSpy('updateValueAndValidity')
@@ -139,5 +152,34 @@ describe('EnableWhenAnswerOptionsService', () => {
       final_val: 'Missing',
       list: ['Other']
     })).toBeNull();
+  });
+
+  it('should refresh hasAnswerOptions when source question changes', () => {
+    const states: EnableWhenAnswerOptionsState[] = [
+      {
+        ...baseState,
+        hasAnswerOptions: true,
+        answerOptions: ['one', 'two']
+      },
+      {
+        ...baseState,
+        hasAnswerOptions: false,
+        answerOptions: []
+      }
+    ];
+    answerOptionServiceSpy.getEnableWhenAnswerOptionsState.and.callFake(() => states.shift() || {
+      ...baseState,
+      hasAnswerOptions: false,
+      answerOptions: []
+    });
+
+    const values: boolean[] = [];
+    service.hasAnswerOptions$.subscribe((v) => values.push(v));
+
+    service.init(formProperty, control);
+    questionValueChanges.next('q2');
+
+    expect(values).toEqual([false, true, false]);
+    expect(answerOptionServiceSpy.getEnableWhenAnswerOptionsState).toHaveBeenCalledTimes(2);
   });
 });
