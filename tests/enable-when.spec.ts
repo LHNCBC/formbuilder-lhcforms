@@ -1142,6 +1142,14 @@ test.describe('enableWhen condition and behavior', () => {
       await enableWhenIntegerOffListItem.click();
       await expect(enableWhenIntegerOffListItem.locator('fa-icon#error')).toHaveCount(0);
       await expect(page.locator('[id^="enableWhen.0_err"]')).toHaveCount(0);
+
+      await PWUtils.clickTreeNode(page, 'coding answerOptions');
+      await PWUtils.clickRadioButton(page, 'Answer constraint', 'Allow free text');
+      await PWUtils.expectRadioChecked(page, 'Answer constraint', 'Allow free text');
+
+      const enableWhenCodingOffListItem = await PWUtils.getTreeNode(page, 'enableWhen coding off-list', true);
+      await enableWhenCodingOffListItem.click();
+      await expect(enableWhenCodingOffListItem.locator('fa-icon#error')).toHaveCount(0);
     });
 
   });

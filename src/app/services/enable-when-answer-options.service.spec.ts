@@ -110,6 +110,68 @@ describe('EnableWhenAnswerOptionsService', () => {
     expect(formProperty.updateValueAndValidity).toHaveBeenCalledWith(false, true);
   }));
 
+  it('should keep coding onInput as no-op when answer constraint is optionsOnly', fakeAsync(() => {
+    answerOptionServiceSpy.getEnableWhenAnswerOptionsState.and.returnValue({
+      ...baseState,
+      answerOptionType: 'coding',
+      answerConstraint: 'optionsOnly'
+    });
+    service.init(formProperty, control);
+
+    service.onInput({ target: { value: 'Other value' } } as any);
+    tick();
+
+    expect(formProperty.setValue).not.toHaveBeenCalledWith({
+      system: null,
+      display: 'Other value',
+      code: null
+    }, true);
+  }));
+
+  it('should write typed coding free text when answer constraint is not optionsOnly', fakeAsync(() => {
+    answerOptionServiceSpy.getEnableWhenAnswerOptionsState.and.returnValue({
+      ...baseState,
+      answerOptionType: 'coding',
+      answerConstraint: 'optionsOrString'
+    });
+    service.init(formProperty, control);
+
+    service.onInput({ target: { value: 'Other value' } } as any);
+    tick();
+
+    expect(formProperty.setValue).toHaveBeenCalledWith({
+      system: null,
+      display: 'Other value',
+      code: null
+    }, true);
+    expect(formProperty.updateValueAndValidity).toHaveBeenCalledWith(false, true);
+  }));
+
+  it('should honor updated coding answer constraint after init', fakeAsync(() => {
+    answerOptionServiceSpy.getEnableWhenAnswerOptionsState.and.returnValues(
+      {
+        ...baseState,
+        answerOptionType: 'coding',
+        answerConstraint: 'optionsOnly'
+      },
+      {
+        ...baseState,
+        answerOptionType: 'coding',
+        answerConstraint: 'optionsOrString'
+      }
+    );
+    service.init(formProperty, control);
+
+    service.onInput({ target: { value: 'Updated free text' } } as any);
+    tick();
+
+    expect(formProperty.setValue).toHaveBeenCalledWith({
+      system: null,
+      display: 'Updated free text',
+      code: null
+    }, true);
+  }));
+
   it('should clear invalid values on blur', () => {
     service.init(formProperty, control);
     const input = document.createElement('input');

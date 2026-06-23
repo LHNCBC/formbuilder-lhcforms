@@ -149,7 +149,16 @@ export class EnableWhenAnswerOptionsService {
         const intValue = Number(input.value);
         this.formProperty.setValue(Number.isInteger(intValue) ? intValue : '', true);
       } else if (this.answerOptionsState?.answerOptionType === 'coding') {
-        return;
+        // Read current state in case source item settings (e.g. answerConstraint)
+        // changed after init without changing the selected source question.
+        const currentState = this.answerOptionService.getEnableWhenAnswerOptionsState(this.formProperty);
+        const answerConstraint = currentState?.answerConstraint || this.answerOptionsState?.answerConstraint;
+        if (answerConstraint === 'optionsOnly') {
+          return;
+        }
+
+        const typedValue = input.value?.trim();
+        this.formProperty.setValue(typedValue ? this.parseCoding(typedValue) : null, true);
       } else {
         this.formProperty.setValue(input.value, true);
       }
