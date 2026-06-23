@@ -14,6 +14,13 @@ import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
+import {
+  DEFAULT_WIDGET_MODIFIED_MESSAGES,
+  getModifiedErrorForPatternMismatch,
+  mapWidgetErrors,
+  ModifiedMessages,
+  WidgetValidationError
+} from '../../validation-utils';
 declare var LForms: any;
 
 @Component({
@@ -73,25 +80,8 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     }
   }
   model: fhir.Coding;
-  errors: { code: string, originalMessage: string, modifiedMessage: string }[] = null;
-  modifiedMessages = {
-    PATTERN: [
-      {
-        pattern: "^[A-Za-z0-9\\-\\.]{1,64}$",
-        message: 'Only alphanumeric, hyphen and period characters are allowed in this field. Make sure any white space characters are not used.'
-      },
-      {
-        pattern: '^\\S*$',
-        message: 'Spaces and other whitespace characters are not allowed in this field.'
-      },
-      {
-        pattern: '^[^\\s]+(\\s[^\\s]+)*$',
-        message: 'Spaces are not allowed at the beginning or end.'
-      }
-    ],
-    MIN_LENGTH: null,
-    MAX_LENGTH: null
-  }
+  errors: WidgetValidationError[] | null = null;
+  modifiedMessages: ModifiedMessages = DEFAULT_WIDGET_MODIFIED_MESSAGES;
 
   /**
    * Initializes the enableWhen answer coding widget and answer-option autocomplete service.
@@ -137,36 +127,10 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
     this.subscriptions.push(sub);
 
     sub = this.formProperty.errorsChanges.subscribe((errors) => {
-      this.errors = null;
-      if (errors?.length) {
-        const errorsObj = {};
-        errors.reduce((acc, error) => {
-          if (error.code.startsWith('ENABLEWHEN_') && !acc[error.code]) {
-            acc[error.code] = error;
-          }
-
-          return acc;
-        }, errorsObj);
-
-        this.errors = Object.values(errorsObj)
-          .map((e: any) => {
-          let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
-          const errorValue = e.params?.[1];
-          if(typeof errorValue === 'string' && !errorValue.trim() && this.schema.widget.showEmptyError) {
-            // If the error is caused by an empty value, use a generic message.
-            ret.code = 'EMPTY_ERROR';
-            ret.modifiedMessage = 'This field is required.';
-          } else {
-            const modifiedMessage = e.code === 'PATTERN'
-              ? this.getModifiedErrorForPatternMismatch(e.params[0])
-              : this.modifiedMessages[e.code];
-            ret.code = e.code;
-            ret.originalMessage = e.message;
-            ret.modifiedMessage = modifiedMessage;
-          }
-          return ret;
-        });
-      }
+      this.errors = mapWidgetErrors(errors, this.modifiedMessages, {
+        showEmptyError: !!this.schema.widget.showEmptyError,
+        errorFilter: (error: any) => error.code.startsWith('ENABLEWHEN_')
+      });
     });
     this.subscriptions.push(sub);
   }
@@ -259,11 +223,8 @@ export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnI
    * @param pattern - Pattern string from the validation error.
    * @returns A custom validation message when one is configured, otherwise null.
    */
-  getModifiedErrorForPatternMismatch(pattern: string): string {
-    const messageObj = this.modifiedMessages.PATTERN.find((el) => {
-      return el.pattern === pattern;
-    });
-    return messageObj ? messageObj.message : null;
+  getModifiedErrorForPatternMismatch(pattern: string): string | null {
+    return getModifiedErrorForPatternMismatch(pattern, this.modifiedMessages);
   }
 
   /**

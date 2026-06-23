@@ -2,6 +2,7 @@ import { ElementRef, Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { FormProperty } from '@lhncbc/ngx-schema-form';
 import { AnswerOptionService, EnableWhenAnswerOptionsState } from './answer-option.service';
+import { suppressInvalidInputValue } from '../lib/validation-utils';
 
 declare var LForms: any;
 
@@ -172,27 +173,11 @@ export class EnableWhenAnswerOptionsService {
    * @param event - Blur event from the answer input.
    */
   suppressInvalidValue(event: Event): void {
-    const inputEl = event.target as HTMLInputElement;
-    if (inputEl.classList.contains('ng-invalid')) {
-      this.formProperty.setValue(null, false);
-    } else if (this.findParentTdWithInvalid(inputEl)) {
-      inputEl.value = '';
-      this.formProperty.setValue(this.answerOptionsState?.answerOptionType === 'coding' ? null : '', false);
-    }
-  }
-
-  /**
-   * Checks whether an input is inside a table cell marked invalid.
-   *
-   * @param inputEl - Input element where the blur event originated.
-   * @returns True if the nearest parent table cell has the invalid marker class.
-   */
-  findParentTdWithInvalid(inputEl: HTMLElement): boolean {
-    let el: HTMLElement | null = inputEl;
-    while (el && el.tagName !== 'TD') {
-      el = el.parentElement;
-    }
-    return !!el && el.classList.contains('invalid');
+    suppressInvalidInputValue(
+      event,
+      (value) => this.formProperty.setValue(value, false),
+      this.answerOptionsState?.answerOptionType === 'coding' ? null : ''
+    );
   }
 
   /**

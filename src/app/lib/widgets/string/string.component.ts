@@ -20,6 +20,7 @@ import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.d
 import { Observable, of } from 'rxjs';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
+import { suppressInvalidInputValue } from '../../validation-utils';
 
 @Component({
   selector: 'lfb-string',
@@ -120,13 +121,7 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
    * @param event - Blur event from the input element.
    */
   suppressInvalidValue(event: Event): void {
-    const inputEl = event.target as HTMLInputElement;
-    if (inputEl.classList.contains('ng-invalid')) {
-      this.formProperty.setValue(null, false);
-    } else if (this.findParentTdWithInvalid(inputEl)) {
-      inputEl.value = '';
-      this.formProperty.setValue('', false);
-    }
+    suppressInvalidInputValue(event, (value) => this.formProperty.setValue(value, false), '');
   }
 
   /**
@@ -138,17 +133,4 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
     super.ngOnDestroy();
   }
 
-  /**
-   * Checks whether an input is inside a table cell marked invalid.
-   *
-   * @param inputEl - Input element where the blur event originated.
-   * @returns True if the nearest parent table cell has the invalid marker class.
-   */
-  findParentTdWithInvalid(inputEl: HTMLElement): boolean {
-    let el: HTMLElement | null = inputEl;
-    while (el && el.tagName !== 'TD') {
-      el = el.parentElement;
-    }
-    return !!el && el.classList.contains('invalid');
-  }
 }
