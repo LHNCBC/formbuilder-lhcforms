@@ -27,7 +27,7 @@ test.describe('Meta field tests', () => {
     await expect(lastUpdatedInput).toHaveValue(''); // Should be empty initially
 
     // Populate source field (should be editable)
-    const sourceInput = page.locator('input[name="meta.source_2"]');
+    const sourceInput = page.getByRole('textbox', { name: /^Source\b/ });
     await sourceInput.fill('https://example.org/fhir/source');
     await expect(sourceInput).toHaveValue('https://example.org/fhir/source');
 
@@ -132,7 +132,7 @@ test.describe('Meta field tests', () => {
     await expect(lastUpdatedInput).toHaveAttribute('readonly', '');
 
     // Verify source is displayed
-    const sourceInput = page.locator('input[name="meta.source_2"]');
+    const sourceInput = page.getByRole('textbox', { name: /^Source\b/ });
     await expect(sourceInput).toHaveValue('https://example.org/fhir/questionnaire/source');
 
     // Verify profiles are displayed

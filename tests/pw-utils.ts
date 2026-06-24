@@ -873,11 +873,14 @@ export class PWUtils {
    * @returns {Promise<Locator>} A promise that resolves to the Playwright Locator for the input element.
    */
   static async getByLabel(page: Page, parentSelector: string, label: string): Promise<Locator> {
+    return page.locator(parentSelector).getByLabel(label, { exact: true });
+/*    
     const exactLabel = new RegExp(`^\\s*${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
     const labelElement = page.locator(parentSelector).locator('label').filter({ hasText: exactLabel });
     const forAttr = await labelElement.getAttribute('for');
     if (!forAttr) throw new Error(`Label "${label}" has no 'for' attribute`);
     return page.locator(PWUtils.escapeIdForPlaywright(forAttr));
+*/    
   }
 
   /**
@@ -1298,7 +1301,7 @@ export class PWUtils {
     }
 
     if (Array.isArray(expectedResults)) {
-      const selectedList = page.locator('span.autocomp_selected');
+      const selectedList = input.locator('xpath=ancestor::span[contains(@class,"autocomp_selected")][1]');
       const selectedItems = selectedList.locator('ul > li');
 
       await expect(selectedList).toBeVisible();

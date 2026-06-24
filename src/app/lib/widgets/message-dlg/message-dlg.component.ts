@@ -61,10 +61,9 @@ export class MessageDlgComponent implements OnInit {
   ngOnInit() {
     this.title = this.title ?? this.options?.title;
     this.message = this.message ?? this.options?.message;
-    this.type = this.type ?? this.options?.type;
+    this.type = this.options?.type ?? this.type;
     if(this.options?.buttons?.length) {
       this.buttons = this.options?.buttons;
     }
   }
 }
-
