@@ -1150,6 +1150,17 @@ test.describe('enableWhen condition and behavior', () => {
       const enableWhenCodingOffListItem = await PWUtils.getTreeNode(page, 'enableWhen coding off-list', true);
       await enableWhenCodingOffListItem.click();
       await expect(enableWhenCodingOffListItem.locator('fa-icon#error')).toHaveCount(0);
+
+      const freeTextCoding = 'Typed free text coding';
+      const codingAnswerInput = page.locator('[id^="enableWhen.0.answerCoding"]');
+      await codingAnswerInput.click();
+      await codingAnswerInput.fill(freeTextCoding);
+      await codingAnswerInput.blur();
+
+      q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      expect(q.item[17].enableWhen[0].answerCoding.display).toEqual(freeTextCoding);
+      expect([null, undefined]).toContain(q.item[17].enableWhen[0].answerCoding.code);
+      expect([null, undefined]).toContain(q.item[17].enableWhen[0].answerCoding.system);
     });
 
   });

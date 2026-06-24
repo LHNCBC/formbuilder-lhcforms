@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { Subject } from 'rxjs';
 import { EnableWhenAnswerOptionsService } from '../../services/enable-when-answer-options.service';
 import { EnableWhenAnswerOptionsDirective } from './enable-when-answer-options.directive';
 
@@ -22,11 +23,14 @@ describe('EnableWhenAnswerOptionsDirective', () => {
   let component: TestHostComponent;
   let input: HTMLInputElement;
   let service: jasmine.SpyObj<EnableWhenAnswerOptionsService>;
+  let autocompleteRefresh: Subject<void>;
 
   beforeEach(() => {
+    autocompleteRefresh = new Subject<void>();
     service = jasmine.createSpyObj<EnableWhenAnswerOptionsService>(
       'EnableWhenAnswerOptionsService',
-      ['initAutocomplete', 'onInput', 'suppressInvalidValue', 'destroyAutocomplete']
+      ['initAutocomplete', 'onInput', 'suppressInvalidValue', 'destroyAutocomplete'],
+      { autocompleteRefresh$: autocompleteRefresh.asObservable() }
     );
 
     TestBed.configureTestingModule({
@@ -41,6 +45,16 @@ describe('EnableWhenAnswerOptionsDirective', () => {
 
   it('should initialize autocomplete with the host input element', () => {
     expect(service.initAutocomplete).toHaveBeenCalledWith(jasmine.objectContaining({
+      nativeElement: input
+    }), 'fallback-id');
+  });
+
+  it('should reinitialize autocomplete when answer options refresh', () => {
+    service.initAutocomplete.calls.reset();
+
+    autocompleteRefresh.next();
+
+    expect(service.initAutocomplete).toHaveBeenCalledOnceWith(jasmine.objectContaining({
       nativeElement: input
     }), 'fallback-id');
   });

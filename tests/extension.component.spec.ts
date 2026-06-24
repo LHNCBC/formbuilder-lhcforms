@@ -147,15 +147,18 @@ test.describe('extension.component', async () => {
     expect(await extRows.count()).toBe(3);
     await expect(extRows.nth(0).getByLabel('Edit this row')).toBeDisabled();
     await expect(extRows.nth(1).getByLabel('Edit this row')).toBeDisabled();
-    await extRows.nth(2).getByLabel('Edit this row').click();
-    const formLoc = page.locator('lfb-extension-dlg').nth(0);
+    const editableRowEditBtn = extRows.nth(2).getByLabel('Edit this row');
+    await expect(editableRowEditBtn).toBeEnabled();
+    await editableRowEditBtn.click();
+    const dialogLoc = page.locator('lfb-extension-dlg').nth(0);
+    const formLoc = dialogLoc.locator('lfb-extension-obj sf-form');
     await expect(formLoc).toBeVisible();
     await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://hl7.org/fhir/StructureDefinition/questionnaire-unit');
     await expect(formLoc.getByLabel('Value Type', {exact: true})).toHaveValue(/valueCoding$/);
     const codingLoc = formLoc.locator('lfb-object', {has: page.getByText('Value coding', {exact: true})});
     await expect(codingLoc.getByLabel('Code', {exact: true})).toHaveValue('kg');
     await expect(codingLoc.getByLabel('System', {exact: true})).toHaveValue('http://unitsofmeasure.org');
-    await page.getByRole('button', {name: 'Discard changes'}).first().click();
+    await dialogLoc.getByRole('button', {name: 'Discard changes'}).click();
     // No items are changed, should see the same JSON.
     let q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
     expect(q.item).toEqual(fileJson.item);
@@ -184,7 +187,7 @@ test.describe('extension.component', async () => {
     await expect(arrayItemsLoc.nth(2).getByLabel('Code', {exact: true})).toHaveValue('c3');
     await expect(arrayItemsLoc.nth(2).getByLabel('Display', {exact: true})).toHaveValue('d3');
     await expect(PWUtils.getRadioButton(page, 'User Selected', 'Unspecified', arrayItemsLoc.nth(2))).toBeChecked();
-    await expect(formLoc.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+    await expect(dialogLoc.getByRole('button', {name: 'Save and close'})).toBeDisabled();
 
     // Make some changes.
     // Change user selected from second to third item.
@@ -195,7 +198,7 @@ test.describe('extension.component', async () => {
     await arrayItemsLoc.nth(2).getByLabel('System', {exact: true}).clear();
     await arrayItemsLoc.nth(2).getByLabel('System', {exact: true}).fill('Modified_s3');
 
-    await formLoc.getByRole('button', {name: 'Save and close'}).click();
+    await dialogLoc.getByRole('button', {name: 'Save and close'}).click();
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
     // Verify the changes in JSON.
     q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
@@ -253,7 +256,7 @@ test.describe('extension.component', async () => {
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(2);
     await level2FormLoc.getByRole('button', {name: 'Discard changes'}).click({force: true});
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(1);
-    await formLoc.getByRole('button', {name: 'Discard changes'}).click();
+    await dialogLoc.getByRole('button', {name: 'Discard changes'}).click();
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
   });
 

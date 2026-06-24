@@ -1,5 +1,5 @@
 import { ElementRef, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
 import { FormProperty } from '@lhncbc/ngx-schema-form';
 import { AnswerOptionService, EnableWhenAnswerOptionsState } from './answer-option.service';
 import { suppressInvalidInputValue } from '../lib/validation-utils';
@@ -9,6 +9,7 @@ declare var LForms: any;
 @Injectable()
 export class EnableWhenAnswerOptionsService {
   hasAnswerOptions$: Observable<boolean>;
+  autocompleteRefresh$: Observable<void>;
 
   private formProperty!: FormProperty;
   private initialized = false;
@@ -17,6 +18,7 @@ export class EnableWhenAnswerOptionsService {
   private autoComp: any;
   private answerOptionsState!: EnableWhenAnswerOptionsState;
   private hasAnswerOptionsSubject = new BehaviorSubject<boolean>(false);
+  private autocompleteRefreshSubject = new Subject<void>();
   private sourceQuestionSubscription: Subscription | null = null;
   private sourceQuestionProperty: any;
 
@@ -30,6 +32,7 @@ export class EnableWhenAnswerOptionsService {
 
   constructor(private answerOptionService: AnswerOptionService) {
     this.hasAnswerOptions$ = this.hasAnswerOptionsSubject.asObservable();
+    this.autocompleteRefresh$ = this.autocompleteRefreshSubject.asObservable();
   }
 
   /**
@@ -61,6 +64,7 @@ export class EnableWhenAnswerOptionsService {
     this.answerOptionsState = this.answerOptionService.getEnableWhenAnswerOptionsState(this.formProperty);
     this.hasAnswerOptionsSubject.next(this.answerOptionsState.hasAnswerOptions);
     this.destroyAutocomplete();
+    this.autocompleteRefreshSubject.next();
   }
 
   /**
