@@ -7,6 +7,7 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {Util} from "../../util";
 
 @Component({
+  standalone: true,
   selector: 'lfb-object',
   imports: [
     AppFormElementComponent,
@@ -14,7 +15,17 @@ import {Util} from "../../util";
     ReactiveFormsModule,
     NgClass,
   ],
-  templateUrl: './lfb-object.component.html'
+  templateUrl: './lfb-object.component.html',
+  styles: [`
+    .lfb-object-subfield {
+      padding: 2px 6px;
+      border-radius: 0.2rem;
+    }
+
+    .lfb-object-subfield:hover {
+      background-color: lightgoldenrodyellow;
+    }
+  `]
 })
 export class LfbObjectComponent extends ObjectLayoutWidget implements OnInit {
 
@@ -22,7 +33,7 @@ export class LfbObjectComponent extends ObjectLayoutWidget implements OnInit {
   objectLabelClasses = '';
   objectBodyClasses = 'ms-4 shadow rounded p-1 mb-1';
   showFields: {field: string, col: number}[] = [];
-  formProperties: {[key: string]: FormProperty};
+  formProperties: {[key: string]: FormProperty} = {};
   isRequired = false;
 
 
@@ -35,14 +46,14 @@ export class LfbObjectComponent extends ObjectLayoutWidget implements OnInit {
       this.widgetInfo.childOffsetClass || 'ms-4',
       this.widgetInfo.objectBodyClasses || 'shadow rounded p-1 mb-1'
     ].filter((className) => !!className).join(' ');
-    const propertyIds = Object.keys(schema.properties);
+    const propertyIds = Object.keys(schema.properties || {});
     // If no showFields are defined, show all properties
     if (!this.widgetInfo.showFields) {
       this.showFields = propertyIds.map((id) => ({field: id, col: 12}));
     }
     else {
       // Otherwise, filter properties based on showFields
-      this.widgetInfo.showFields.forEach((field) => {
+      this.widgetInfo.showFields.forEach((field: any) => {
         let exp = field.field;
         let flags = '';
         if(!field.regex) {

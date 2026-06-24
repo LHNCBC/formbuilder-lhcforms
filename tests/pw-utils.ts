@@ -874,6 +874,13 @@ export class PWUtils {
    */
   static async getByLabel(page: Page, parentSelector: string, label: string): Promise<Locator> {
     return page.locator(parentSelector).getByLabel(label, { exact: true });
+/*    
+    const exactLabel = new RegExp(`^\\s*${label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
+    const labelElement = page.locator(parentSelector).locator('label').filter({ hasText: exactLabel });
+    const forAttr = await labelElement.getAttribute('for');
+    if (!forAttr) throw new Error(`Label "${label}" has no 'for' attribute`);
+    return page.locator(PWUtils.escapeIdForPlaywright(forAttr));
+*/    
   }
 
   /**
