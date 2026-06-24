@@ -3,12 +3,13 @@
     <lfb-label
                [title]="schema.title"
                [helpMessage]="schema.description"
+               [ngClass]="widgetInfo.labelClasses"
     ></lfb-label>
   </div>
 }
 <div class="lfb-hover-scope" [ngClass]="objectBodyClasses">
   @for (sf of showFields; track sf.field) {
-    <div>
+    <div class="lfb-object-subfield my-2">
       <lfb-form-element [formProperty]="formProperty.getProperty(sf.field)"></lfb-form-element>
     </div>
   }

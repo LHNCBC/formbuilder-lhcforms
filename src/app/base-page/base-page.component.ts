@@ -664,11 +664,47 @@ export class BasePageComponent implements OnInit, OnDestroy {
           modalRef.componentInstance.serverResponse = null;
         }
         else {
-          this.setFieldsAndInvokeChangeDetection({id: response.id});
+          const fields = this.getServerAssignedFields(response as fhir.Questionnaire);
+          this.setFieldsAndInvokeChangeDetection(fields);
           modalRef.componentInstance.error = null;
           modalRef.componentInstance.serverResponse = response;
         }
       });
+  }
+
+  /**
+   * Extract fields assigned by the FHIR server after create/update.
+   *
+   * @param response - FHIR server response.
+   */
+  getServerAssignedFields(response: fhir.Questionnaire): Partial<fhir.Questionnaire> {
+    const fields: Partial<fhir.Questionnaire> = {};
+
+    if(response.id) {
+      fields.id = response.id;
+    }
+
+    const meta = {
+      ...(this.questionnaire?.meta || {})
+    };
+
+    if(response.meta?.versionId) {
+      meta.versionId = response.meta.versionId;
+    }
+
+    if(response.meta?.lastUpdated) {
+      meta.lastUpdated = response.meta.lastUpdated;
+    }
+
+    if(response.meta?.source) {
+      meta.source = response.meta.source;
+    }
+
+    if(Object.keys(meta).length > 0) {
+      fields.meta = meta;
+    }
+
+    return fields;
   }
 
 

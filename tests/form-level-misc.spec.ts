@@ -19,8 +19,7 @@ test.describe('form-level fields', () => {
       ['4a', '4b', '4c']
     ];
     await mainPO.page.getByRole('button', {name: 'Advanced fields'}).click();
-    const tableLoc = page.locator('lfb-table')
-      .filter({has: page.getByLabel('Tags')}).getByRole('table');
+    const tableLoc = PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Tags');
     await mainPO.loadTable(tableLoc, tableData);
 
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
@@ -48,8 +47,8 @@ test.describe('form-level fields', () => {
   test('should import questionnaire with tags', async ({page}) => {
     const q = await PWUtils.uploadFile(page, 'fl-tag-sample.json');
     await mainPO.page.getByRole('button', { name: 'Advanced fields' }).click();
-    const rows = await page.locator('lfb-table')
-      .filter({has: page.getByLabel('Tags')}).locator( 'table > tbody > tr').all();
+    const rows = await PWUtils.getTableByFieldLabel(page.locator('lfb-form-fields'), 'Tags')
+      .locator('tbody > tr').all();
     expect(rows.length).toBe(3);
     const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
     // Ignore the generated tag.

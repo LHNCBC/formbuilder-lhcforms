@@ -2,6 +2,7 @@
  * Component for general input box
  */
 import {
+  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -19,13 +20,21 @@ import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.d
 @Component({
   selector: 'lfb-string',
   imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent],
-  templateUrl: './string.component.html'
+  templateUrl: './string.component.html',
+  styles: [`
+    input:disabled {
+      background-color: #f8f9fa !important;
+      border: 2px solid #dee2e6 !important;
+      cursor: not-allowed !important;
+      opacity: 1 !important;
+      color: #6c757d !important;
+    }
+  `]
 })
-export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit {
+export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewChecked {
 
-  @ViewChild('inputEl') inputElRef: ElementRef;
+  @ViewChild('inputEl') inputElRef!: ElementRef;
   showTooltip = true;
-  // liveAnnouncer = inject(LiveAnnouncer);
 
   Array = Array; // To use in templates.
 
@@ -40,9 +49,16 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
   }
 
   ngAfterViewChecked() {
-    if(this.inputElRef?.nativeElement.clientWidth) {
-      this.showTooltip = this.inputElRef.nativeElement.scrollWidth > this.inputElRef.nativeElement.clientWidth;
-      this.cdr.detectChanges();
+    const el = this.inputElRef?.nativeElement;
+    const width = el?.clientWidth;
+    if(!width) {
+      return;
+    }
+
+    const nextShowTooltip = el.scrollWidth > width;
+    if(nextShowTooltip !== this.showTooltip) {
+      this.showTooltip = nextShowTooltip;
+      this.cdr.markForCheck();
     }
   }
 

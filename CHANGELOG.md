@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.3.0] 2026-06-11
+### Added
+- Added form-level support for Questionnaire meta.
+
 ## [11.2.3] 2026-06-10
 ### Fixed
 - Fix the change of SNOMED url.
