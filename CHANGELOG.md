@@ -2,11 +2,16 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.2.4] 2026-06-11
+## [11.3.1] 2026-06-25
 ### Changed
 - Refactored option widget inheritance with enableWhen answer option service.
 - Migrated enableWhen answer-option inputs to directive-based wiring (replacing template-level service passing).
 - Updated related template/class markup for enableWhen answer-option inputs in date, string, and time widgets.
+
+## [11.3.0] 2026-06-11
+### Added
+- Added form-level support for Questionnaire subjectType.
+- Added form-level support for Questionnaire meta.
 
 ## [11.2.3] 2026-06-10
 ### Fixed

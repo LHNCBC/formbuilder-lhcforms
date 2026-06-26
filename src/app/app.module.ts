@@ -109,6 +109,7 @@ import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
+import { MetaProfileComponent } from './lib/widgets/meta-profile/meta-profile.component';
 import { UnsignedIntegerComponent } from './lib/widgets/unsigned-integer/unsigned-integer.component';
 
 import { environment } from '../environments/environment';
@@ -155,7 +156,8 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     ValueMethodComponent,
     AnswerExpressionComponent,
     ExpressionEditorDlgComponent,
-    InitialNumberComponent
+    InitialNumberComponent,
+    MetaProfileComponent
   ],
   imports: [
     AppFormElementComponent,

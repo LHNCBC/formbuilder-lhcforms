@@ -116,8 +116,9 @@ export class DateComponent extends StringComponent implements OnInit, AfterViewI
    */
   today() {
     const dateStruct = this.calendar.getToday();
-    let val: string = DateUtil.formatToISO({dateStruct, timeStruct: null, millis: NaN});
+    let val: string | null = DateUtil.formatToISO({dateStruct, timeStruct: null, millis: NaN});
     val = val.length > 0 ? val : null;
+    this.control.setValue(val, {emitEvent: false});
     this.formProperty.setValue(val, false);
   }
 

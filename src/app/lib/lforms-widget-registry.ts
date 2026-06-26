@@ -65,6 +65,7 @@ import { CodingSystemComponent } from './widgets/coding-system/coding-system.com
 import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
 import {UnsignedIntegerComponent} from './widgets/unsigned-integer/unsigned-integer.component';
+import { MetaProfileComponent } from './widgets/meta-profile/meta-profile.component';
 import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
@@ -136,7 +137,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('coding-display', CodingDisplayComponent);
     this.register('enable-when-method', EnableWhenMethodComponent);
     this.register('enable-when-expression', EnableWhenExpressionComponent);
-
+    this.register('meta-profile', MetaProfileComponent);
     this.setDefaultWidget(StringComponent);
   }
 }

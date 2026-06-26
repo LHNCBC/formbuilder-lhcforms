@@ -138,10 +138,13 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
     /**
      * Observe the form inside the dialog content for class attribute changes to detect dirty state.
      */
-    this.dirtyObserver.observe(
-      this.dlgContent?.nativeElement.querySelector('form'),
-      {attributes: true, attributeFilter: ['class'], subtree: true}
-    );
+    const formElement = this.dlgContent?.nativeElement.querySelector('form');
+    if (formElement) {
+      this.dirtyObserver.observe(
+        formElement,
+        {attributes: true, attributeFilter: ['class'], subtree: true}
+      );
+    }
 
     this.disableSave.set(true);
     this.cdr.detectChanges();
