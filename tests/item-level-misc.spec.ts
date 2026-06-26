@@ -20,7 +20,7 @@ test.describe('item-level fields', () => {
     await inputEl.fill('18833-4');
     await expect(dlg.getByRole('listbox')).toBeVisible();
     await dlg.getByRole('option', {name: /18833-4/}).click();
-    await expect(inputEl).toHaveValue('18833-4: Body weight');
+    await expect(inputEl).toHaveValue('18833-4: First Body weight');
     await page.getByRole('button', {name: 'Add'}).click();
 
     await expect(page.locator('input[id^="units"]')).toHaveValue('kilogram');
@@ -35,7 +35,7 @@ test.describe('item-level fields', () => {
     await inputEl.fill('34565-2');
     await expect(dlg.getByRole('listbox')).toBeVisible();
     await dlg.getByRole('option', {name: /34565-2/}).click();
-    await expect(inputEl).toHaveValue('34565-2: Vital signs, weight & height panel');
+    await expect(inputEl).toHaveValue('34565-2: Vital signs, weight and height panel');
     await page.getByRole('button', {name: 'Add'}).click();
 
     await expect(page.getByLabel('Question text', {exact: true})).toHaveValue('Vital signs, weight and height panel');

@@ -98,13 +98,13 @@ export class FetchService {
     options.responseType = options.responseType || 'json' as const;
     options.params = (options.params || new HttpParams())
       .set('terms', term)
-      .set('df', 'LOINC_NUM,text')
+      .set('df', 'LOINC_NUM,text,LONG_COMMON_NAME')
       .set('type', 'form_and_section')
       .set('available', 'true');
     return this.http.get<AutoCompleteResult []>(FetchService.loincSearchUrl, options).pipe(
       map((resp: any) => {
         return (resp[3] as Array<any>).map((e) => {
-          return {id: e[0], title: e[1]};
+          return {id: e[0], title: e[2] || e[1]};
         });
       }),
       catchError((error) => {console.log('searching for ' + term, error); return of([]); })
@@ -124,6 +124,7 @@ export class FetchService {
     options.responseType = options.responseType || 'json' as const;
     options.params = (options.params ||
       new HttpParams());
+    options.params = options.params.set('df', 'text,LONG_COMMON_NAME');
     if(loincType === LoincItemType.PANEL) {
       options.params = options.params.set('type', 'form_and_section').set('available', true);
     }
@@ -144,7 +145,7 @@ export class FetchService {
           loincNums.forEach((loincNum, index) => {
             const item: any = this.convertLoincQToItem(
               loincNum,
-              texts[index][0],
+              texts[index][1] || texts[index][0],
               extraFields ? extraFields.answers[index] : null,
               extraFields ? extraFields.units[index] : null,
               extraFields ? extraFields.datatype[index] : null);

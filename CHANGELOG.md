@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.3.1] 2026-06-26
+### Changed
+- When importing forms/panels/questions from LOINC, use LONG_COMMON_NAME as title/text
+  field, instead of LOINC's 'text' field.
+
 ## [11.3.0] 2026-06-11
 ### Added
 - Added form-level support for Questionnaire subjectType.
