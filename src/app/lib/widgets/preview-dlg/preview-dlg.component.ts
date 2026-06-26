@@ -33,6 +33,7 @@ import {FormsModule} from "@angular/forms";
 import {ClipboardModule} from "@angular/cdk/clipboard";
 import {LfbSpinnerComponent} from "../lfb-spinner/lfb-spinner.component";
 import {MatButtonModule} from "@angular/material/button";
+import {SubjectTypeService} from "../../../services/subject-type.service";
 declare var LForms: any;
 
 /**
@@ -73,6 +74,7 @@ type NoErrorsMap = {
 export class PreviewDlgComponent implements OnInit, OnDestroy {
   formService = inject(FormService);
   private fhirService = inject(FhirService);
+  private subjectTypeService = inject(SubjectTypeService);
   dialogRef = inject<MatDialogRef<PreviewDlgComponent>>(MatDialogRef);
   data = inject<PreviewData>(MAT_DIALOG_DATA);
 
@@ -85,6 +87,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   lformsErrors: string;
   inputUrlErrors: string;
   validationErrors: {FHIR_VERSION_TYPE?: string[]} = {};
+  compatibilityWarnings: {[key: string]: string} = {};
   vServer: fhirPrimitives.url;
   spinner$ = new BehaviorSubject<boolean>(false);
   @ViewChild('autoCompNgb', { static: false, read: NgbTypeahead }) autoCompNgb: NgbTypeahead;
@@ -159,6 +162,8 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
     this.format = FHIR_VERSIONS[ngEvent] as FHIR_VERSION_TYPE;
     this.vServer = this.fhirService.getLastUsedValidationServer(this.format);
     this.codeMirrorModel = JSON.stringify(this.getQuestionnaire(this.format), null, 2);
+    this.compatibilityWarnings[this.format] =
+      this.subjectTypeService.getSubjectTypeCompatibilityWarning(this.data.questionnaire, this.format, 'preview');
   }
 
   /**

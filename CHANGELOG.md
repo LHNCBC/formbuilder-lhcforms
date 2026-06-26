@@ -2,9 +2,14 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.3.0] 2026-06-11
+## [11.3.1] 2026-06-25
 ### Added
 - Added form-level support for Questionnaire identifier.
+
+## [11.3.0] 2026-06-11
+### Added
+- Added form-level support for Questionnaire subjectType.
+- Added form-level support for Questionnaire meta.
 
 ## [11.2.3] 2026-06-10
 ### Fixed
