@@ -140,7 +140,7 @@ export class FetchService {
         const results: AutoCompleteResult [] = [];
         if (Array.isArray(resp)) {
           const loincNums: string[] = resp[1];
-          const texts: string [] = resp[3];
+          const texts: string [] [] = resp[3];
           const extraFields: any = resp[2];
           loincNums.forEach((loincNum, index) => {
             const item: any = this.convertLoincQToItem(
