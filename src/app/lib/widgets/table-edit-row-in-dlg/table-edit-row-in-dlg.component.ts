@@ -15,6 +15,7 @@ import {ComponentType} from "@angular/cdk/portal";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
 import {take} from 'rxjs/operators';
+import {Util} from '../../util';
 
 export interface DialogData {
   arrayProperty: ArrayProperty;
@@ -55,9 +56,11 @@ export interface DialogData {
 })
 export class TableEditRowInDlgComponent extends TableComponent implements OnInit, AfterViewInit, DoCheck {
   override includeActionColumn = true;
+  private syntheticEmptyRowRemovalScheduled = false;
 
   @Input()
   dialogComponentType: ComponentType<unknown> = null;
+  dialogOffsetPx = 20;
   matDialogService: MatDialog = inject(MatDialog);
 
   constructor() {
@@ -80,7 +83,26 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     // that can flip template conditions during dev-mode double-check.
     this.booleanControlled = false;
     this.booleanControlledOption = false;
+    this.scheduleSyntheticEmptyRowRemoval();
     this.includeActionColumn = true;
+  }
+
+  /**
+   * Schedule cleanup of an empty placeholder row when the widget is configured to start empty.
+   */
+  private scheduleSyntheticEmptyRowRemoval(): void {
+    if(this.syntheticEmptyRowRemovalScheduled) {
+      return;
+    }
+    this.syntheticEmptyRowRemovalScheduled = true;
+    setTimeout(() => {
+      const props = this.formProperty?.properties || [];
+      if(!this.addDefaultItemIfEmpty && props.length === 1 && Util.isEmpty(props[0]?.value)) {
+        this.formProperty.removeItem(props[0]);
+        this.cdr.markForCheck();
+      }
+      this.syntheticEmptyRowRemovalScheduled = false;
+    });
   }
 
   /**
@@ -108,6 +130,9 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
       if (submittedValue) {
         // Replace the full row model so deleted nested fields are not preserved.
         this.formProperty.properties[index].reset(submittedValue, false);
+        if(this.formProperty.schema?.widget?.id === 'identifier') {
+          (this.formProperty.properties[index] as any).__lfbRawValue = JSON.parse(JSON.stringify(submittedValue));
+        }
       }
     });
   }
@@ -127,8 +152,16 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     });
   }
 
+  /**
+   * Add a new table row and preserve the raw identifier value for nested dialog editing.
+   *
+   * @param newValue - Value to add to the table.
+   */
   addNewItem(newValue: fhir.Extension) {
-    this.formProperty.addItem(newValue);
+    const newProperty = this.formProperty.addItem(newValue);
+    if(this.formProperty.schema?.widget?.id === 'identifier' && newProperty) {
+      (newProperty as any).__lfbRawValue = JSON.parse(JSON.stringify(newValue));
+    }
   }
 
   /**
@@ -139,14 +172,22 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
    */
   openDialog(contentData: DialogData, contentDlg: ComponentType<unknown>) {
     let dPosition: DialogPosition = null;
-    const previousDialogRef = this.matDialogService.openDialogs?.reverse().find((dRef) => {
-      return dRef.componentInstance instanceof contentDlg;
-    });
-    if(previousDialogRef) {
-      const position= previousDialogRef.componentInstance?.dlgContainer?.nativeElement.getBoundingClientRect();
-      dPosition = {top: position.top + 20 + 'px', left: position.left + 20 + 'px'};
+    const overlayPanes = Array.from(
+      this.elementRef.nativeElement.ownerDocument.querySelectorAll('.cdk-overlay-pane')
+    ).filter((pane: Element) =>
+      pane.querySelector('lfb-extension-dlg, lfb-identifier-dlg, lfb-usage-context-dlg')
+    ) as HTMLElement[];
+    const previousPanePosition = overlayPanes.length
+      ? overlayPanes[overlayPanes.length - 1].getBoundingClientRect()
+      : null;
+    const previousDialogRef = this.matDialogService.openDialogs?.slice().reverse().find((dRef) =>
+      !!dRef.componentInstance?.dlgContainer?.nativeElement
+    );
+    const position = previousPanePosition || previousDialogRef?.componentInstance?.dlgContainer?.nativeElement.getBoundingClientRect();
+    if(position) {
+      dPosition = {top: position.top + this.dialogOffsetPx + 'px', left: position.left + this.dialogOffsetPx + 'px'};
     }
-    return this.matDialogService.open(contentDlg, {
+    const matDialogRef = this.matDialogService.open(contentDlg, {
       data: contentData,
       width: '80vw',
       height: '80vh',
@@ -154,5 +195,10 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
       disableClose: true,
       closeOnNavigation: false
     });
+    if(dPosition) {
+      matDialogRef.updatePosition(dPosition);
+      setTimeout(() => matDialogRef.updatePosition(dPosition));
+    }
+    return matDialogRef;
   }
 }

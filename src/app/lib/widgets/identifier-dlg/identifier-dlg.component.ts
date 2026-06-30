@@ -99,7 +99,7 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
     const model = this.cloneIdentifier(currentValue);
     // Nested identifier dialogs must keep the UI array wrapper so parent dialogs
     // can continue editing recursive rows without type-mismatch resets.
-    if (this.isNestedIdentifierDialog()) {
+    if (this.isNestedIdentifierDialog() || this.isUsageContextReferenceIdentifierDialog()) {
       return model;
     }
     return this.unwrapAssignerIdentifierForFhir(model);
@@ -177,5 +177,19 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
       dialogRef.componentInstance instanceof IdentifierDlgComponent
     ).length;
     return count > 1;
+  }
+
+  /**
+   * True when this Identifier row is owned by UsageContext.valueReference.identifier.
+   *
+   * That parent field is array-wrapped for the table UI and gets unwrapped by
+   * UsageContextDlgComponent on save, so the identifier dialog must keep nested
+   * assigner.identifier rows in UI shape while returning to that parent.
+   *
+   * @returns True when this dialog is editing UsageContext.valueReference.identifier.
+   */
+  private isUsageContextReferenceIdentifierDialog(): boolean {
+    const path = this.data.arrayProperty?.path || '';
+    return path.includes('valueReference') && path.includes('identifier');
   }
 }

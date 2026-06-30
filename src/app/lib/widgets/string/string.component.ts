@@ -35,6 +35,7 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
 
   @ViewChild('inputEl') inputElRef!: ElementRef;
   showTooltip = true;
+  private tooltipUpdateScheduled = false;
 
   Array = Array; // To use in templates.
 
@@ -56,24 +57,38 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
     }
 
     const nextShowTooltip = el.scrollWidth > width;
-    if(nextShowTooltip !== this.showTooltip) {
-      this.showTooltip = nextShowTooltip;
-      this.cdr.markForCheck();
+    if(nextShowTooltip !== this.showTooltip && !this.tooltipUpdateScheduled) {
+      this.tooltipUpdateScheduled = true;
+      setTimeout(() => {
+        this.showTooltip = nextShowTooltip;
+        this.tooltipUpdateScheduled = false;
+        this.cdr.markForCheck();
+      });
     }
   }
 
   /**
    * Get the value shown in the tooltip, formatting JSON fields when requested.
    */
-  getTooltipValue(): string | null {
+  getTooltipValue(): string {
     if(!this.showTooltip) {
-      return null;
+      return '';
     }
     const value = this.formProperty.value;
     if(this.shouldFormatTooltipAsJson()) {
       return this.formatJsonTooltip(value);
     }
-    return value == null ? null : String(value);
+    return value == null ? '' : String(value);
+  }
+
+  /**
+   * Normalize optional input attributes for stable template bindings.
+   *
+   * @param value - Attribute value from the schema.
+   * @returns Attribute value, or null when the attribute should be omitted.
+   */
+  getAttributeValue(value: unknown): string | number | null {
+    return value === undefined || value === null || value === '' ? null : value as string | number;
   }
 
   /**
@@ -90,9 +105,9 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
   /**
    * Pretty-print a JSON string for tooltip display, falling back to the original value.
    */
-  private formatJsonTooltip(value: unknown): string | null {
+  private formatJsonTooltip(value: unknown): string {
     if(typeof value !== 'string') {
-      return value == null ? null : String(value);
+      return value == null ? '' : String(value);
     }
     try {
       return JSON.stringify(JSON.parse(value), null, 2);

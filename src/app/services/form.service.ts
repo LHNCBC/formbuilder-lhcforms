@@ -86,6 +86,7 @@ export class FormService {
   flSchema: any = {properties: {}};
   valueSetSchema: any = {properties: {}};
   extensionSchema: any = {properties: {}};
+  usageContextSchema: any = {properties: {}};
   binarySchema: any = {properties: {}};
   identifierSchema: any = {properties: {}};
 
@@ -155,6 +156,7 @@ export class FormService {
         ngxVSSchema: ISchema,
         vsLayout: Layout,
         extLayout: Layout,
+        usageContextLayout: Layout,
         identifierLayout: Layout;
 
       const assetPaths = [
@@ -166,6 +168,7 @@ export class FormService {
         'assets/ngx-vs.schema.json5',
         'assets/value-set-fields-layout.json5',
         'assets/extension-fields-layout.json5',
+        'assets/usage-context-fields-layout.json5',
         'assets/identifier-fields-layout.json5',
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
@@ -177,7 +180,8 @@ export class FormService {
       ngxVSSchema = results[assetPaths[5]];
       vsLayout = results[assetPaths[6]];
       extLayout = results[assetPaths[7]];
-      identifierLayout = results[assetPaths[8]];
+      usageContextLayout = results[assetPaths[8]];
+      identifierLayout = results[assetPaths[9]];
       const extSchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Extension));
       const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
 
@@ -214,6 +218,17 @@ export class FormService {
       this.identifierSchema.formLayout = identifierLayout?.formLayout;
       this.overrideSchemaWidgetFromLayout(this.identifierSchema, identifierLayout);
       this.overrideFieldLabelsFromLayout(this.identifierSchema, identifierLayout);
+
+      this.addIdentifierToUsageContextReference(this.flSchema?.properties?.useContext?.items, identifierLayout, false);
+      this.usageContextSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.useContext?.items || {type: 'object', properties: {}}));
+      delete this.usageContextSchema.properties?.__$valueSummary;
+      this.usageContextSchema.definitions = JSON.parse(JSON.stringify(this.flSchema.definitions || {}));
+      this.addValueTypeToUsageContextSchema(this.usageContextSchema);
+      this.addIdentifierToUsageContextReference(this.usageContextSchema, identifierLayout, true);
+      this.usageContextSchema.widget = {id: 'row-layout'};
+      this.usageContextSchema.formLayout = usageContextLayout?.formLayout;
+      this.overrideSchemaWidgetFromLayout(this.usageContextSchema, usageContextLayout);
+      this.overrideFieldLabelsFromLayout(this.usageContextSchema, usageContextLayout);
       
       this.valueSetSchema = ngxVSSchema;
       delete this.valueSetSchema.definitions.ValueSet;
@@ -390,10 +405,44 @@ export class FormService {
   }
 
   /**
+   * Clone UsageContext dialog schema.
+   */
+  cloneUsageContextSchema() {
+    return JSON.parse(JSON.stringify(this.usageContextSchema));
+  }
+
+  /**
    * Clone identifier dialog schema.
    */
-  cloneIdentifierSchema() {
-    return JSON.parse(JSON.stringify(this.identifierSchema));
+  cloneIdentifierSchema(maxVisibleAssignerDepth = FormService.IDENTIFIER_RECURSION_LEVELS - 1) {
+    const schema = JSON.parse(JSON.stringify(this.identifierSchema));
+    this.trimIdentifierAssignerRecursion(schema, maxVisibleAssignerDepth);
+    return schema;
+  }
+
+  /**
+   * Add a UI-only value type selector to UsageContext and show only the selected value[x].
+   *
+   * @param schema - UsageContext schema used by the edit dialog.
+   */
+  private addValueTypeToUsageContextSchema(schema: any) {
+    if(!schema?.properties) {
+      return;
+    }
+    const valueTypes = ['valueCodeableConcept', 'valueQuantity', 'valueRange', 'valueReference'];
+    schema.properties.__$valueType = {
+      type: 'string',
+      title: 'Value',
+      enum: valueTypes,
+      widget: {id: 'select'}
+    };
+    valueTypes.forEach((valueType) => {
+      if(schema.properties[valueType]) {
+        schema.properties[valueType].visibleIf = {
+          '__$valueType': [valueType]
+        };
+      }
+    });
   }
 
   /**
@@ -445,6 +494,80 @@ export class FormService {
       maxItems: 1,
       title: 'Identifier',
       description: 'nested identifier',
+      widget: JSON.parse(JSON.stringify(layout?.widgets?.identifierTable || {
+        id: 'identifier',
+        labelPosition: 'left',
+        labelClasses: 'col-sm-2 ps-0 pe-1',
+        controlClasses: 'col-sm-10',
+        addButtonLabel: 'Add new identifier',
+        addDefaultItemIfEmpty: false,
+        showFields: [
+          {field: 'value', col: 4, nolabel: true},
+          {field: 'system', col: 4, nolabel: true},
+          {field: 'use', col: 3, nolabel: true}
+        ]
+      }))
+    };
+  }
+
+  /**
+   * Trim visible Identifier.assigner.identifier recursion while preserving hidden data.
+   *
+   * @param schema - Identifier schema node to trim.
+   * @param depth - Number of visible assigner.identifier table levels to keep.
+   */
+  private trimIdentifierAssignerRecursion(schema: any, depth: number): void {
+    const assignerProps = schema?.properties?.assigner?.properties;
+    if(!assignerProps) {
+      return;
+    }
+
+    if(depth <= 0) {
+      delete assignerProps.identifier;
+      schema.properties.assigner.additionalProperties = true;
+      return;
+    }
+
+    const nestedIdentifier = assignerProps.identifier?.items || assignerProps.identifier;
+    if(nestedIdentifier) {
+      this.trimIdentifierAssignerRecursion(nestedIdentifier, depth - 1);
+    }
+  }
+
+  /**
+   * Restore Reference.identifier in UsageContext.valueReference.
+   *
+   * The generated schema omits Reference.identifier to avoid circular Reference -> Identifier
+   * recursion. UsageContext needs that field, so the dialog schema wraps it as a max-one
+   * identifier table while the form-level schema keeps the FHIR object shape.
+   *
+   * @param schema - UsageContext schema node to patch.
+   * @param layout - Identifier layout settings for the nested table widget.
+   * @param tableWrapper - True to wrap Reference.identifier as a one-row array table.
+   */
+  private addIdentifierToUsageContextReference(schema: any, layout: Layout, tableWrapper: boolean): void {
+    const referenceProps = schema?.properties?.valueReference?.properties;
+    if(!referenceProps) {
+      return;
+    }
+
+    if(!tableWrapper) {
+      referenceProps.identifier = JSON.parse(JSON.stringify(this.flSchema?.properties?.identifier?.items || this.identifierSchema));
+      referenceProps.identifier.title = 'Identifier';
+      referenceProps.identifier.description = 'An identifier for the target resource.';
+      return;
+    }
+
+    const identifierTableSchema = JSON.parse(JSON.stringify(this.identifierSchema));
+    delete identifierTableSchema.definitions;
+    this.trimIdentifierAssignerRecursion(identifierTableSchema, 1);
+    referenceProps.identifier = {
+      type: 'array',
+      items: identifierTableSchema,
+      minItems: 0,
+      maxItems: 1,
+      title: 'Identifier',
+      description: 'An identifier for the target resource.',
       widget: JSON.parse(JSON.stringify(layout?.widgets?.identifierTable || {
         id: 'identifier',
         labelPosition: 'left',

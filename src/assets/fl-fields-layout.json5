@@ -22,6 +22,7 @@
           { field:  "name", col:  12},
           { field:  "identifier", col:  12},
           { field:  "meta", col:  12},
+          { field:  "useContext", col:  12},
           { field:  "subjectType", "col": 12},
           { field:  "date", col:  12},
           { field:  "publisher", col:  12},
@@ -46,6 +47,8 @@
     '$.properties.meta.properties.tag': 'Tags',
     '$.properties.identifier': 'Identifiers',
     '$.properties.meta': 'Meta',
+    '$.properties.useContext': 'Use context',
+    '$.properties.useContext.items.properties.__$valueSummary': 'Value',
     '$.definitions.Meta.properties.versionId': 'Version ID (Read-only)',
     '$.definitions.Meta.properties.lastUpdated': 'Last updated (Read-only)',
     '$.definitions.Meta.properties.source': 'Source',
@@ -190,6 +193,20 @@
         {"field": "tag", "col": 12}
       ]
     },
+    usageContext: {
+      "id": "usage-context",
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "noTableLabel": false,
+      "addButtonLabel": "Add use context",
+      "showFields": [
+        {"field": "code.display", "title": "Display", "col": 4, "nolabel": true},
+        {"field": "code.code", "title": "Code", "col": 3, "nolabel": true},
+        {"field": "__$valueSummary", "title": "Value", "col": 4, "nolabel": true}
+      ]
+    },
     contained: {
       "id": "contained",
       "addEditAction": true,
@@ -327,6 +344,9 @@
     ],
     metaGroup: [
       '$.properties.meta',
+    ],
+    usageContext: [
+      '$.properties.useContext'
     ],
     extension: [
       '$.properties.extension'

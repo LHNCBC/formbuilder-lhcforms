@@ -1085,6 +1085,16 @@
             },
             "additionalProperties": false,
             "type": "object"
+          },
+          "__$valueSummary": {
+            "description": "Generated summary of the selected UsageContext value.",
+            "title": "Value",
+            "pattern": "^[ \\r\\n\\t\\S]+$",
+            "type": "string",
+            "widget": {
+              "id": "string",
+              "tooltipFormat": "json"
+            }
           }
         },
         "additionalProperties": false,

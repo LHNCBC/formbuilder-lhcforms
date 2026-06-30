@@ -1,0 +1,250 @@
+{
+  formLayout: {
+    targetPage: 'usageContextDialog',
+    basic: [
+      {
+        showFields: [
+          {field: 'code', col: 12},
+          {field: '__$valueType', col: 12},
+          {field: 'valueCodeableConcept', col: 12},
+          {field: 'valueQuantity', col: 12},
+          {field: 'valueRange', col: 12},
+          {field: 'valueReference', col: 12}
+        ]
+      }
+    ],
+    advanced: []
+  },
+
+  overridePropertyLabels: {
+    '$.properties.code': 'Code',
+    '$.properties.code.properties.display': 'Display',
+    '$.properties.code.properties.code': 'Code',
+    '$.properties.code.properties.system': 'System',
+    '$.properties.__$valueType': 'Value',
+    '$.properties.valueCodeableConcept': 'Value codeable concept',
+    '$.properties.valueCodeableConcept.properties.text': 'Text',
+    '$.properties.valueCodeableConcept.properties.coding': 'Coding',
+    '$.properties.valueCodeableConcept.properties.coding.items.properties.display': 'Display',
+    '$.properties.valueCodeableConcept.properties.coding.items.properties.code': 'Code',
+    '$.properties.valueCodeableConcept.properties.coding.items.properties.system': 'System',
+    '$.properties.valueQuantity': 'Value quantity',
+    '$.properties.valueQuantity.properties.value': 'Value',
+    '$.properties.valueQuantity.properties.comparator': 'Comparator',
+    '$.properties.valueQuantity.properties.unit': 'Unit',
+    '$.properties.valueQuantity.properties.system': 'System',
+    '$.properties.valueQuantity.properties.code': 'Code',
+    '$.properties.valueRange': 'Value range',
+    '$.properties.valueRange.properties.low': 'Low',
+    '$.properties.valueRange.properties.low.properties.value': 'Value',
+    '$.properties.valueRange.properties.low.properties.unit': 'Unit',
+    '$.properties.valueRange.properties.low.properties.system': 'System',
+    '$.properties.valueRange.properties.low.properties.code': 'Code',
+    '$.properties.valueRange.properties.high': 'High',
+    '$.properties.valueRange.properties.high.properties.value': 'Value',
+    '$.properties.valueRange.properties.high.properties.unit': 'Unit',
+    '$.properties.valueRange.properties.high.properties.system': 'System',
+    '$.properties.valueRange.properties.high.properties.code': 'Code',
+    '$.properties.valueReference': 'Value reference',
+    '$.properties.valueReference.properties.display': 'Display',
+    '$.properties.valueReference.properties.reference': 'Reference',
+    '$.properties.valueReference.properties.type': 'Type',
+    '$.properties.valueReference.properties.identifier': 'Identifier'
+  },
+
+  widgets: {
+    string: {
+      id: 'string',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-10 m-0'
+    },
+    url: {
+      id: 'url',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-10 m-0'
+    },
+    number: {
+      id: 'number',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-10 m-0 p-0'
+    },
+    valueTypeSelect: {
+      id: 'select',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10 m-0 p-0',
+      suppressEmptyInvalidStyle: true,
+      selectOptionsMap: {
+        map: {
+          valueCodeableConcept: 'Codeable concept',
+          valueQuantity: 'Quantity',
+          valueRange: 'Range',
+          valueReference: 'Reference'
+        }
+      }
+    },
+    comparatorSelect: {
+      id: 'select',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-10 m-0 p-0',
+      suppressEmptyInvalidStyle: true,
+      addEmptyOption: true
+    },
+    object: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1'
+    },
+    codeObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      showFields: [
+        {field: 'display', col: 12},
+        {field: 'code', col: 12},
+        {field: 'system', col: 12}
+      ]
+    },
+    codeableConceptObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      showFields: [
+        {field: 'text', col: 12},
+        {field: 'coding', col: 12}
+      ]
+    },
+    codingTable: {
+      id: 'table',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      addButtonLabel: 'Add coding',
+      showFields: [
+        {field: 'display', col: 4, nolabel: true},
+        {field: 'code', col: 3, nolabel: true},
+        {field: 'system', col: 4, nolabel: true}
+      ]
+    },
+    quantityObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      showFields: [
+        {field: 'value', col: 12},
+        {field: 'comparator', col: 12},
+        {field: 'unit', col: 12},
+        {field: 'system', col: 12},
+        {field: 'code', col: 12}
+      ]
+    },
+    simpleQuantityObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      showFields: [
+        {field: 'value', col: 12},
+        {field: 'unit', col: 12},
+        {field: 'system', col: 12},
+        {field: 'code', col: 12}
+      ]
+    },
+    rangeObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      showFields: [
+        {field: 'low', col: 12},
+        {field: 'high', col: 12}
+      ]
+    },
+    referenceObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      showFields: [
+        {field: 'display', col: 12},
+        {field: 'reference', col: 12},
+        {field: 'type', col: 12},
+        {field: 'identifier', col: 12}
+      ]
+    }
+  },
+
+  widgetsMap: {
+    valueTypeSelect: [
+      '$.properties.__$valueType'
+    ],
+    comparatorSelect: [
+      '$.properties.valueQuantity.properties.comparator'
+    ],
+    string: [
+      '$.properties.code.properties.display',
+      '$.properties.code.properties.code',
+      '$.properties.valueCodeableConcept.properties.text',
+      '$.properties.valueCodeableConcept.properties.coding.items.properties.display',
+      '$.properties.valueCodeableConcept.properties.coding.items.properties.code',
+      '$.properties.valueQuantity.properties.unit',
+      '$.properties.valueQuantity.properties.code',
+      '$.properties.valueRange.properties.low.properties.unit',
+      '$.properties.valueRange.properties.low.properties.code',
+      '$.properties.valueRange.properties.high.properties.unit',
+      '$.properties.valueRange.properties.high.properties.code',
+      '$.properties.valueReference.properties.display',
+      '$.properties.valueReference.properties.reference',
+      '$.properties.valueReference.properties.type'
+    ],
+    url: [
+      '$.properties.code.properties.system',
+      '$.properties.valueCodeableConcept.properties.coding.items.properties.system',
+      '$.properties.valueQuantity.properties.system',
+      '$.properties.valueRange.properties.low.properties.system',
+      '$.properties.valueRange.properties.high.properties.system'
+    ],
+    number: [
+      '$.properties.valueQuantity.properties.value',
+      '$.properties.valueRange.properties.low.properties.value',
+      '$.properties.valueRange.properties.high.properties.value'
+    ],
+    codeObject: [
+      '$.properties.code'
+    ],
+    codeableConceptObject: [
+      '$.properties.valueCodeableConcept'
+    ],
+    codingTable: [
+      '$.properties.valueCodeableConcept.properties.coding'
+    ],
+    quantityObject: [
+      '$.properties.valueQuantity'
+    ],
+    simpleQuantityObject: [
+      '$.properties.valueRange.properties.low',
+      '$.properties.valueRange.properties.high'
+    ],
+    rangeObject: [
+      '$.properties.valueRange'
+    ],
+    referenceObject: [
+      '$.properties.valueReference'
+    ]
+  }
+}

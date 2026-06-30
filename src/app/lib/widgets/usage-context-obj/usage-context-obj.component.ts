@@ -6,39 +6,36 @@ import {
   inject,
   Input,
   Output,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
-import {FormComponent, PropertyGroup, SchemaFormModule, TemplateSchemaModule} from "@lhncbc/ngx-schema-form";
-import fhir from "fhir/r4";
-import {FormsModule} from "@angular/forms";
-
+import {FormsModule} from '@angular/forms';
+import {FormComponent, PropertyGroup, SchemaFormModule, TemplateSchemaModule} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
-import {TableService} from "../../../services/table.service";
+import {TableService} from '../../../services/table.service';
 
 /**
- * A component to edit a FHIR Identifier object.
+ * A component to edit a FHIR UsageContext object.
  */
 @Component({
   standalone: true,
-  selector: 'lfb-identifier-obj',
+  selector: 'lfb-usage-context-obj',
   imports: [
     TemplateSchemaModule,
     FormsModule,
     SchemaFormModule
   ],
-  templateUrl: './identifier-obj.component.html',
+  templateUrl: './usage-context-obj.component.html',
   providers: [TableService],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class IdentifierObjComponent implements AfterViewInit {
-
+export class UsageContextObjComponent implements AfterViewInit {
   formService = inject(FormService);
 
   @ViewChild('sfForm', {read: FormComponent}) sfForm: FormComponent;
-  @Output() changed = new EventEmitter<fhir.Identifier>();
-  @Input() model!: fhir.Identifier;
+  @Output() changed = new EventEmitter<any>();
+  @Input() model!: any;
 
-  identifierSchema = this.formService.cloneIdentifierSchema(1);
+  usageContextSchema = this.formService.cloneUsageContextSchema();
   sfFormRootProperty: PropertyGroup;
 
   /**
@@ -51,9 +48,9 @@ export class IdentifierObjComponent implements AfterViewInit {
   /**
    * Handle changes to the <sf-form>.
    *
-   * @param value - Updated identifier model emitted by the schema form.
+   * @param value - Updated UsageContext model emitted by the schema form.
    */
-  handleChange(value: fhir.Identifier) {
+  handleChange(value: any) {
     this.changed.emit(value);
   }
 }
