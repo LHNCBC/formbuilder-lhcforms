@@ -324,14 +324,8 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
     if(validationError) {
       return validationError;
     }
-    if(!hasRequiredCode && !hasRequiredValue) {
-      return 'Enter a code and select and fill a value.';
-    }
-    if(!hasRequiredCode) {
-      return 'Enter a code.';
-    }
-    if(!hasRequiredValue) {
-      return 'Select and fill a value.';
+    if(!hasRequiredCode || !hasRequiredValue) {
+      return 'Code and value[x] are required.';
     }
     return modelChanged ? '' : 'Make changes before saving.';
   }

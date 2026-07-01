@@ -235,7 +235,7 @@ test.describe('Use context field tests', () => {
     await expect.poll(() => codeInput.evaluate((el) => el.classList.contains('invalid'))).toBe(false);
     await expect(codeInput).not.toHaveAttribute('aria-invalid', 'true');
     await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeDisabled();
-    await expect(useContextDialog.locator('.save-button-tooltip-wrapper')).toHaveAttribute('title', 'Enter a code.');
+    await expect(useContextDialog.locator('.save-button-tooltip-wrapper')).toHaveAttribute('title', 'Code and value[x] are required.');
     await codeInput.fill('gender');
     await expect.poll(() => codeInput.evaluate((el) => el.classList.contains('invalid'))).toBe(false);
     await expect(codeInput).not.toHaveAttribute('aria-invalid', 'true');
