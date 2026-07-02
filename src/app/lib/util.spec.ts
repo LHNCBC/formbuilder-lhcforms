@@ -533,6 +533,84 @@ describe('Util', () => {
       expect(ordered).toEqual(obj);
     });
   });
+
+  describe('isMissingPreferredTerminologyServer', () => {
+    const TS_URL = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
+    const tsExt = { url: TS_URL, valueUrl: 'https://example.org/fhir' };
+
+    it('returns no linkIds when there are no items', () => {
+      expect(Util.getItemsMissingPreferredTerminologyServer({} as any)).toEqual([]);
+      expect(Util.getItemsMissingPreferredTerminologyServer({ item: [] } as any)).toEqual([]);
+      expect(Util.isMissingPreferredTerminologyServer({ item: [] } as any)).toBe(false);
+    });
+
+    it('returns no linkIds when no item uses an answerValueSet', () => {
+      const q: any = { item: [{ linkId: '1', type: 'string' }] };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual([]);
+    });
+
+    it('returns the linkId when an external answerValueSet has no terminology server', () => {
+      const q: any = { item: [{ linkId: '1', type: 'choice', answerValueSet: 'http://example.org' }] };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual(['1']);
+      expect(Util.isMissingPreferredTerminologyServer(q)).toBe(true);
+    });
+
+    it('returns no linkIds when a contained (#) answerValueSet is used', () => {
+      const q: any = { item: [{ linkId: '1', type: 'choice', answerValueSet: '#vs1' }] };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual([]);
+    });
+
+    it('returns no linkIds when the questionnaire root provides a terminology server', () => {
+      const q: any = { extension: [tsExt], item: [{ linkId: '1', type: 'choice', answerValueSet: 'http://example.org' }] };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual([]);
+    });
+
+    it('returns no linkIds when the item itself provides a terminology server', () => {
+      const q: any = { item: [{ linkId: '1', type: 'choice', answerValueSet: 'http://example.org', extension: [tsExt] }] };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual([]);
+    });
+
+    it('returns no linkIds when an ancestor group provides a terminology server for a nested item', () => {
+      const q: any = {
+        item: [{
+          linkId: 'g', type: 'group', extension: [tsExt],
+          item: [{ linkId: '1', type: 'choice', answerValueSet: 'http://example.org' }]
+        }]
+      };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual([]);
+    });
+
+    it('returns the nested linkId when a nested item has an external answerValueSet and no server in scope', () => {
+      const q: any = {
+        item: [{
+          linkId: 'g', type: 'group',
+          item: [{ linkId: '1', type: 'choice', answerValueSet: 'http://example.org' }]
+        }]
+      };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual(['1']);
+    });
+
+    it('returns only the uncovered linkId when a sibling has a server but another does not', () => {
+      const q: any = {
+        item: [
+          { linkId: '1', type: 'choice', answerValueSet: 'http://a.org', extension: [tsExt] },
+          { linkId: '2', type: 'choice', answerValueSet: 'http://b.org' }
+        ]
+      };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual(['2']);
+      expect(Util.isMissingPreferredTerminologyServer(q)).toBe(true);
+    });
+
+    it('returns all uncovered linkIds in document order', () => {
+      const q: any = {
+        item: [
+          { linkId: '1', type: 'choice', answerValueSet: 'http://a.org' },
+          { linkId: 'g', type: 'group', item: [{ linkId: '2', type: 'choice', answerValueSet: 'http://b.org' }] }
+        ]
+      };
+      expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual(['1', '2']);
+    });
+  });
 });
 
 

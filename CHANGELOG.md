@@ -2,6 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.4.0] 2026-07-02
+### Added
+- The preview dialog now warns when the questionnaire uses an answer value set but
+  does not specify a preferred terminology server. The rendered preview loads answer
+  lists using a default terminology server, but that default is not saved in the
+  questionnaire output.
+
 ## [11.3.0] 2026-06-11
 ### Added
 - Added form-level support for Questionnaire subjectType.

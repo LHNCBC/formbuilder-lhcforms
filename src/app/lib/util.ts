@@ -16,7 +16,8 @@ import {
   EXTENSION_URL_ITEM_CONTROL, EXTENSION_URL_RENDERING_XHTML,
   TYPE_DECIMAL, TYPE_INTEGER, TYPE_STRING, TYPE_TEXT, TYPE_QUANTITY, TYPE_CODING, TYPE_GROUP, TYPE_URL, TYPE_DISPLAY,
   TYPE_DATE, TYPE_DATETIME, TYPE_TIME,
-  EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION
+  EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  PREFERRED_TERMINOLOGY_SERVER_URI
 } from './constants/constants';
 import { HttpClient } from '@angular/common/http';
 import JSON5 from 'json5';
@@ -1282,6 +1283,76 @@ export class Util {
       return ret;
     };
     return search(items, linkId).extensions;
+  }
+
+  /**
+   * Determine whether the questionnaire relies on an answer value set that requires a
+   * terminology server to expand, but does not specify a preferred terminology server
+   * anywhere that would cover it (the questionnaire root, the item itself, or an ancestor
+   * item).
+   *
+   * @param questionnaire - FHIR Questionnaire (any version; shares item/extension shape).
+   * @return true when at least one external answerValueSet has no terminology server in scope.
+   */
+  static isMissingPreferredTerminologyServer(questionnaire: fhir.Questionnaire): boolean {
+    return Util.getItemsMissingPreferredTerminologyServer(questionnaire).length > 0;
+  }
+
+  /**
+   * Collect the linkIds of items that use an answer value set requiring a terminology server
+   * to expand, but do not have a preferred terminology server in scope (the questionnaire
+   * root, the item itself, or an ancestor item).
+   *
+   * Contained value sets (referenced with a leading '#') are excluded, since they are
+   * resolved from the questionnaire's contained resources and do not need a terminology
+   * server.
+   *
+   * This is used to warn the user that, although the preview renders answer lists using a
+   * default terminology server, that server is not part of the questionnaire output.
+   *
+   * @param questionnaire - FHIR Questionnaire (any version; shares item/extension shape).
+   * @return linkIds (in document order) of items with an external answerValueSet and no
+   *   terminology server in scope. Empty when none are missing one.
+   */
+  static getItemsMissingPreferredTerminologyServer(questionnaire: fhir.Questionnaire): string [] {
+    const linkIds: string [] = [];
+    if(!questionnaire?.item?.length) {
+      return linkIds;
+    }
+    const rootHasServer = Util.hasPreferredTerminologyServer(questionnaire.extension);
+    Util.collectItemsMissingTerminologyServer(questionnaire.item, rootHasServer, linkIds);
+    return linkIds;
+  }
+
+  /**
+   * Check whether an extensions array contains a preferred terminology server extension.
+   * @param extensions - Array of FHIR extensions (may be undefined).
+   * @return true when a preferred terminology server extension is present.
+   */
+  private static hasPreferredTerminologyServer(extensions: fhir.Extension []): boolean {
+    return !!Util.findExtensionByUrl(extensions, PREFERRED_TERMINOLOGY_SERVER_URI);
+  }
+
+  /**
+   * Recursively collect linkIds of items (and descendants) that have an external
+   * answerValueSet not covered by a preferred terminology server in scope.
+   * @param items - Questionnaire items to inspect.
+   * @param ancestorHasServer - Whether an ancestor (or the root) already provides a server.
+   * @param linkIds - Accumulator for the linkIds of items missing a terminology server.
+   */
+  private static collectItemsMissingTerminologyServer(
+    items: fhir.QuestionnaireItem [],
+    ancestorHasServer: boolean,
+    linkIds: string []
+  ): void {
+    (items || []).forEach((item) => {
+      const inScope = ancestorHasServer || Util.hasPreferredTerminologyServer(item.extension);
+      const needsServer = !!item.answerValueSet && !item.answerValueSet.startsWith('#');
+      if(needsServer && !inScope) {
+        linkIds.push(item.linkId);
+      }
+      Util.collectItemsMissingTerminologyServer(item.item, inScope, linkIds);
+    });
   }
 
   private static resolveSchemaRef(schema: ISchema, rootSchema: ISchema): ISchema {
