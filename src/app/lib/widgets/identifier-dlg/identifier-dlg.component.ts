@@ -5,24 +5,19 @@ import {
   ElementRef,
   OnInit,
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
   OnDestroy
 } from '@angular/core';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
   MatDialogTitle,
   MatDialogContent,
   MatDialogActions,
-  MatDialog
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import fhir from 'fhir/r4';
 import { FormService } from 'src/app/services/form.service';
-import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {IdentifierObjComponent} from "../identifier-obj/identifier-obj.component";
 import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base";
 
@@ -54,17 +49,6 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
   @ViewChild(IdentifierObjComponent) identifierObj!: IdentifierObjComponent;
 
   formService: FormService = inject(FormService);
-
-  constructor() {
-    super(
-      inject<DialogData>(MAT_DIALOG_DATA),
-      inject(MatDialogRef<DialogData>),
-      inject(MatDialog),
-      inject(NgbModal),
-      inject(ElementRef),
-      inject(ChangeDetectorRef)
-    );
-  }
 
   /**
    * Create a new Identifier row model.

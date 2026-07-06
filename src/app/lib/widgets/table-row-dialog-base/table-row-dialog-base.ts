@@ -1,5 +1,5 @@
-import {ElementRef, ChangeDetectorRef, Directive, signal} from '@angular/core';
-import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {ElementRef, ChangeDetectorRef, Directive, inject, signal} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {MessageDlgComponent, MessageType} from '../message-dlg/message-dlg.component';
@@ -21,17 +21,14 @@ export abstract class TableRowDialogBase<T> {
   rowIndex = 0;
   previous_origin: {left: number, top: number};
 
-  private initialValueJson = '';
+  public data = inject<DialogData>(MAT_DIALOG_DATA);
+  protected matDialogRef = inject(MatDialogRef<DialogData>);
+  protected matDialogService = inject(MatDialog);
+  protected ngbModalService = inject(NgbModal);
+  protected hostEl = inject(ElementRef);
+  protected cdr = inject(ChangeDetectorRef);
 
-  protected constructor(
-    public data: DialogData,
-    protected matDialogRef: MatDialogRef<DialogData>,
-    protected matDialogService: MatDialog,
-    protected ngbModalService: NgbModal,
-    protected hostEl: ElementRef,
-    protected cdr: ChangeDetectorRef
-  ) {
-  }
+  private initialValueJson = '';
 
   /**
    * Create an empty row value for add-new dialogs.
