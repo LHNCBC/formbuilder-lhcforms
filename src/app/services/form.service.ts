@@ -55,10 +55,6 @@ export type Layout = {
   providedIn: 'root'
 })
 export class FormService {
-  // Safety cap for total Identifier levels rendered by schema expansion.
-  // Level count includes the top-level Identifier row itself.
-  private static readonly IDENTIFIER_RECURSION_LEVELS = 10;
-
   private _document = inject<Document>(DOCUMENT);
   private modalService = inject(NgbModal);
   private http = inject(HttpClient);
@@ -204,12 +200,12 @@ export class FormService {
 
       this.itemSchema = ngxItemSchema;
       this.flSchema = ngxFlSchema;
-      const identifierRecursionDepth = Math.max(0, FormService.IDENTIFIER_RECURSION_LEVELS - 1);
+      const baseIdentifierSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.identifier?.items || {type: 'object', properties: {}}));
 
-      this.addIdentifierAssignerRecursion(this.flSchema?.properties?.identifier?.items, identifierRecursionDepth, identifierLayout, false);
+      this.addIdentifierAssignerField(this.flSchema?.properties?.identifier?.items, baseIdentifierSchema, identifierLayout, false);
 
-      this.identifierSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.identifier?.items || {type: 'object', properties: {}}));
-      this.addIdentifierAssignerRecursion(this.identifierSchema, identifierRecursionDepth, identifierLayout, true);
+      this.identifierSchema = JSON.parse(JSON.stringify(baseIdentifierSchema));
+      this.addIdentifierAssignerField(this.identifierSchema, baseIdentifierSchema, identifierLayout, true);
       this.identifierSchema.widget = {id: 'row-layout'};
       this.identifierSchema.formLayout = identifierLayout?.formLayout;
       this.overrideSchemaWidgetFromLayout(this.identifierSchema, identifierLayout);
@@ -397,40 +393,35 @@ export class FormService {
   }
 
   /**
-   * Add depth-limited recursive support for Identifier.assigner.identifier.
+   * Add the next editable Identifier.assigner.identifier schema level.
    *
    * The generated ngx-* schemas intentionally remove Reference.identifier to avoid circular references,
    * so we restore nested Identifier support here for assigner references.
    *
    * The form-level schema keeps the FHIR object shape. The dialog schema uses an
-   * array wrapper with maxItems: 1 so the existing identifier table can edit it.
+   * array wrapper with maxItems: 1 so the existing identifier table can edit it. Each nested dialog
+   * receives a fresh schema with its own next level instead of pre-expanding a fixed depth.
    *
    * @param schema - Identifier schema node to patch.
-   * @param depth - Remaining recursion depth.
+   * @param baseIdentifierSchema - Base Identifier schema used to build the next level.
    * @param layout - Identifier layout settings to keep nested rendering consistent.
    * @param tableWrapper - True to wrap the identifier in a maxItems: 1 array for table editing.
    */
-  private addIdentifierAssignerRecursion(schema: any, depth: number, layout: Layout, tableWrapper: boolean): void {
+  private addIdentifierAssignerField(schema: any, baseIdentifierSchema: any, layout: Layout, tableWrapper: boolean): void {
     const assignerProps = schema?.properties?.assigner?.properties;
     if(!assignerProps) {
       return;
     }
 
-    if(depth <= 0) {
-      delete assignerProps.identifier;
-      return;
-    }
-
-    // Build child from the same configured schema shape to mirror extension-style recursive editing.
-    const childIdentifier = JSON.parse(JSON.stringify(schema));
+    const childIdentifier = JSON.parse(JSON.stringify(baseIdentifierSchema));
     if(childIdentifier?.properties?.assigner?.properties) {
       delete childIdentifier.properties.assigner.properties.identifier;
+      childIdentifier.properties.assigner.additionalProperties = true;
     }
     childIdentifier.widget = {id: 'row-layout'};
     childIdentifier.formLayout = layout?.formLayout;
     this.overrideSchemaWidgetFromLayout(childIdentifier, layout);
     this.overrideFieldLabelsFromLayout(childIdentifier, layout);
-    this.addIdentifierAssignerRecursion(childIdentifier, depth - 1, layout, tableWrapper);
     childIdentifier.title = childIdentifier.title || 'Identifier';
 
     if(!tableWrapper) {

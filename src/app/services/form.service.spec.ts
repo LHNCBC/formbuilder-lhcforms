@@ -87,13 +87,19 @@ describe('FormService', () => {
     expect(service.treeNodeStatusMap.node1.hasError).toBeTrue();
   });
 
-  it('should restore recursive Identifier.assigner.identifier schema', () => {
+  it('should restore lazy Identifier.assigner.identifier schema', () => {
     const identifierItems = service.getFormLevelSchema()?.properties?.identifier?.items as any;
     const firstLevelIdentifier = identifierItems?.properties?.assigner?.properties?.identifier;
     expect(firstLevelIdentifier)
       .withContext('Identifier.assigner.identifier should be an object in the form-level schema')
       .toBeDefined();
     expect(firstLevelIdentifier?.type).toBe('object', 'Should keep FHIR object shape');
+    expect(firstLevelIdentifier?.properties?.assigner?.properties?.identifier)
+      .withContext('Form-level schema should not pre-expand nested identifier levels')
+      .toBeUndefined();
+    expect(firstLevelIdentifier?.properties?.assigner?.additionalProperties)
+      .withContext('Form-level child assigner should preserve deeper identifiers returned from dialogs')
+      .toBeTrue();
 
     const dialogIdentifier = service.cloneIdentifierSchema() as any;
     const firstLevelArray = dialogIdentifier?.properties?.assigner?.properties?.identifier;
@@ -103,19 +109,12 @@ describe('FormService', () => {
     expect(firstLevelArray?.type).toBe('array', 'Dialog schema should use array type for table editing');
     expect(firstLevelArray?.maxItems).toBe(1, 'Dialog schema should have maxItems: 1 for 0..1 cardinality');
 
-    const secondLevelArray = firstLevelArray?.items?.properties?.assigner?.properties?.identifier;
-    expect(secondLevelArray)
-      .withContext('Identifier recursion should include nested assigner.identifier at second level')
-      .toBeDefined();
-    expect(secondLevelArray?.type).toBe('array', 'Second level should also be array type');
-    expect(secondLevelArray?.maxItems).toBe(1, 'Second level should also have maxItems: 1');
-
-    const thirdLevelArray = secondLevelArray?.items?.properties?.assigner?.properties?.identifier;
-    expect(thirdLevelArray)
-      .withContext('Identifier recursion should include nested assigner.identifier at third level')
-      .toBeDefined();
-    expect(thirdLevelArray?.type).toBe('array', 'Third level should also be array type');
-    expect(thirdLevelArray?.maxItems).toBe(1, 'Third level should also have maxItems: 1');
+    expect(firstLevelArray?.items?.properties?.assigner?.properties?.identifier)
+      .withContext('Dialog schema should add only the next editable level; nested dialogs get a fresh schema')
+      .toBeUndefined();
+    expect(firstLevelArray?.items?.properties?.assigner?.additionalProperties)
+      .withContext('Dialog child assigner should preserve deeper identifiers returned from nested dialogs')
+      .toBeTrue();
   });
 
 });

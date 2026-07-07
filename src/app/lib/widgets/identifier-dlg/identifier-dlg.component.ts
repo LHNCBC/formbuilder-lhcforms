@@ -49,6 +49,9 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
   @ViewChild(IdentifierObjComponent) identifierObj!: IdentifierObjComponent;
 
   formService: FormService = inject(FormService);
+  // Lazy recursive Identifier editing returns deeper assigner.identifier values
+  // through parent dialogs whose one-level schema does not render those fields.
+  protected override preserveUnknownObjectFields = true;
 
   /**
    * Create a new Identifier row model.
@@ -107,14 +110,31 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
    * @returns Identifier model with recursive identifier nodes array-wrapped.
    */
   private wrapAssignerIdentifierForUi(model: fhir.Identifier): fhir.Identifier {
-    const assignerIdentifier = model.assigner?.identifier;
-    if(assignerIdentifier && !Array.isArray(assignerIdentifier)) {
-      this.wrapAssignerIdentifierForUi(assignerIdentifier as fhir.Identifier);
-      (model.assigner as any).identifier = [assignerIdentifier];
+    const stack = [model as any];
+    const seen = new WeakSet<object>();
+
+    while(stack.length) {
+      const current = stack.pop();
+      if(!this.isObjectLike(current) || seen.has(current)) {
+        continue;
+      }
+      seen.add(current);
+
+      const currentIdentifier = current as any;
+      const assignerIdentifier = currentIdentifier.assigner?.identifier;
+      if(Array.isArray(assignerIdentifier)) {
+        assignerIdentifier.forEach((identifier) => {
+          if(this.isObjectLike(identifier)) {
+            stack.push(identifier);
+          }
+        });
+      }
+      else if(this.isObjectLike(assignerIdentifier)) {
+        currentIdentifier.assigner.identifier = [assignerIdentifier];
+        stack.push(assignerIdentifier);
+      }
     }
-    else if(Array.isArray(assignerIdentifier)) {
-      assignerIdentifier.forEach((identifier) => this.wrapAssignerIdentifierForUi(identifier as fhir.Identifier));
-    }
+
     return model;
   }
 
@@ -125,19 +145,33 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
    * @returns Identifier model with recursive identifier nodes unwrapped.
    */
   private unwrapAssignerIdentifierForFhir(model: fhir.Identifier): fhir.Identifier {
-    const assignerIdentifier = model.assigner?.identifier;
-    if(Array.isArray(assignerIdentifier)) {
-      if(assignerIdentifier.length) {
-        const identifier = this.unwrapAssignerIdentifierForFhir(assignerIdentifier[0] as fhir.Identifier);
-        (model.assigner as any).identifier = identifier;
+    const stack = [model as any];
+    const seen = new WeakSet<object>();
+
+    while(stack.length) {
+      const current = stack.pop();
+      if(!this.isObjectLike(current) || seen.has(current)) {
+        continue;
       }
-      else {
-        delete (model.assigner as any).identifier;
+      seen.add(current);
+
+      const currentIdentifier = current as any;
+      const assignerIdentifier = currentIdentifier.assigner?.identifier;
+      if(Array.isArray(assignerIdentifier)) {
+        const identifier = assignerIdentifier[0];
+        if(this.isObjectLike(identifier)) {
+          currentIdentifier.assigner.identifier = identifier;
+          stack.push(identifier);
+        }
+        else {
+          delete currentIdentifier.assigner.identifier;
+        }
+      }
+      else if(this.isObjectLike(assignerIdentifier)) {
+        stack.push(assignerIdentifier);
       }
     }
-    else if(assignerIdentifier) {
-      this.unwrapAssignerIdentifierForFhir(assignerIdentifier as fhir.Identifier);
-    }
+
     return model;
   }
 
@@ -148,7 +182,56 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
    * @returns Deep-cloned identifier object.
    */
   private cloneIdentifier(value: fhir.Identifier): fhir.Identifier {
-    return JSON.parse(JSON.stringify(value || {}));
+    return this.cloneValue(value || {}) as fhir.Identifier;
+  }
+
+  /**
+   * Clone arbitrary identifier data without recursing through the call stack.
+   *
+   * @param value - Source value.
+   * @returns Deep-cloned value.
+   */
+  private cloneValue(value: unknown): unknown {
+    if(!this.isObjectLike(value)) {
+      return value;
+    }
+
+    const root = Array.isArray(value) ? [] : {};
+    const seen = new WeakMap<object, any>([[value, root]]);
+    const stack = [{source: value as any, target: root as any}];
+
+    while(stack.length) {
+      const {source, target} = stack.pop();
+      Object.keys(source).forEach((key) => {
+        const child = source[key];
+        if(!this.isObjectLike(child)) {
+          target[key] = child;
+          return;
+        }
+
+        if(seen.has(child)) {
+          target[key] = seen.get(child);
+          return;
+        }
+
+        const clonedChild = Array.isArray(child) ? [] : {};
+        seen.set(child, clonedChild);
+        target[key] = clonedChild;
+        stack.push({source: child, target: clonedChild});
+      });
+    }
+
+    return root;
+  }
+
+  /**
+   * Check whether a value can be tracked by WeakSet/WeakMap traversal.
+   *
+   * @param value - Value to check.
+   * @returns True when value is a non-null object.
+   */
+  private isObjectLike(value: unknown): value is object {
+    return !!value && typeof value === 'object';
   }
 
   /**
