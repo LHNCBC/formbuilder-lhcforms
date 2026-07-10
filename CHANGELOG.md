@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [11.3.1] 2026-07-10
+### Fixed
+- Fix parsing `window-open` path.
+
 ## [11.3.0] 2026-06-11
 ### Added
 - Added form-level support for Questionnaire subjectType.
