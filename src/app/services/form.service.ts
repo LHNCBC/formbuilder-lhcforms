@@ -395,8 +395,10 @@ export class FormService {
   /**
    * Add the next editable Identifier.assigner.identifier schema level.
    *
-   * The generated ngx-* schemas intentionally remove Reference.identifier to avoid circular references,
-   * so we restore nested Identifier support here for assigner references.
+   * The FHIR Reference schema includes Reference.identifier, but the form-level
+   * Questionnaire.identifier schema has an inline copy of Reference for assigner. Because that
+   * inline copy does not inherit changes from definitions.Reference, we add only the next editable
+   * Identifier.assigner.identifier level here.
    *
    * The form-level schema keeps the FHIR object shape. The dialog schema uses an
    * array wrapper with maxItems: 1 so the existing identifier table can edit it. Each nested dialog

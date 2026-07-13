@@ -6,6 +6,10 @@ import {MessageDlgComponent, MessageType} from '../message-dlg/message-dlg.compo
 import {DialogData} from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import copy from 'fast-copy';
 
+type FormPropertyNode = FormProperty & {
+  properties?: FormPropertyNode[] | {[key: string]: FormPropertyNode};
+};
+
 /**
  * Shared behavior for dialogs that edit one row from a table-backed array field.
  */
@@ -208,27 +212,29 @@ export abstract class TableRowDialogBase<T> {
   /**
    * Rebuild the current value from a form-property tree instead of relying on cached parent values.
    *
-   * @param property - Form property node to read.
+   * @param formProperty - Form property node to read.
    * @returns Current value represented by the form-property tree.
    */
-  protected getCurrentFormPropertyValue(property: any): any {
-    if (!property) {
+  protected getCurrentFormPropertyValue(formProperty: FormProperty): any {
+    if (!formProperty) {
       return undefined;
     }
+    const formPropertyNode = formProperty as FormPropertyNode;
 
-    if (Array.isArray(property.properties)) {
-      const value = property.properties
+    if (Array.isArray(formPropertyNode.properties)) {
+      const value = formPropertyNode.properties
         .map((child) => this.getCurrentFormPropertyValue(child))
         .filter((childValue) => !this.isEmptyValue(childValue));
       return value.length ? value : undefined;
     }
 
-    if (property.properties && typeof property.properties === 'object') {
+    if (formPropertyNode.properties && typeof formPropertyNode.properties === 'object') {
+      const childProperties = formPropertyNode.properties as {[key: string]: FormPropertyNode};
       const value: {[key: string]: any} = this.preserveUnknownObjectFields
-        ? this.getObjectValueCopy(property.value)
+        ? this.getObjectValueCopy(formProperty.value)
         : {};
-      Object.keys(property.properties).forEach((key) => {
-        const child = property.properties[key];
+      Object.keys(childProperties).forEach((key) => {
+        const child = childProperties[key];
         if (child?.visible === false) {
           delete value[key];
           return;
@@ -244,7 +250,7 @@ export abstract class TableRowDialogBase<T> {
       return Object.keys(value).length ? value : undefined;
     }
 
-    return property.value;
+    return formProperty.value;
   }
 
   /**
