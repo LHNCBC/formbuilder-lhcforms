@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.0.0] 2026-07-14
+### Fixed
+- Fix missing autocomplete-lhc styles after updating lforms@43.0.0.
+
 ## [11.3.1] 2026-07-10
 ### Fixed
 - Fix parsing `window-open` path.
