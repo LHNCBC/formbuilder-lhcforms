@@ -14,6 +14,28 @@ the final modifications to the questionnaire and the form builder window is clos
 When the user clicks the `cancel` button in the form builder page, the form builder
 window is closed and the parent window will receive a canceled message.
 
+### Important: the form builder now redirects to a different origin
+`https://formbuilder.nlm.nih.gov` remains a supported address, but for
+administrative reasons it now **redirects** to
+`https://lhncbc.nlm.nih.gov/lhcformbuilder`. You can keep opening
+`https://formbuilder.nlm.nih.gov`, but because the redirect lands on a different
+<a href="https://developer.mozilla.org/docs/Glossary/Origin">origin</a>,
+application developers must adjust the `window-open` messaging code:
+
+* **The messages come from the redirected origin.** After the redirect the form
+  builder window runs on `https://lhncbc.nlm.nih.gov`, so the messages it posts
+  back arrive with `event.origin === 'https://lhncbc.nlm.nih.gov'`, not
+  `https://formbuilder.nlm.nih.gov`. The `targetOrigin` you pass to `postMessage()`
+  when replying must match that same origin, or the browser silently drops the
+  message. (An origin is only the scheme, host, and port — never a path — so it is
+  `https://lhncbc.nlm.nih.gov`, not the full `.../lhcformbuilder` URL.)
+* **Capture the origin from the first message; don't hardcode it.** Instead of
+  assuming a fixed origin, read `event.origin` from the first message the form
+  builder sends (`initialized`) and reuse that value as the `targetOrigin` for
+  everything you post back. To trust that first message, confirm it came from the
+  window you opened by comparing `event.source` with the handle returned by
+  `window.open()`. This keeps working even if the redirect target changes later.
+
 ### Set up event listener
 Before opening the form builder window, add an event listener to the parent
 window. The form builder sends four types of messages, namely `initialized`,
@@ -39,7 +61,13 @@ form builder. The form builder defines its own messages with `'initialized'`,
 form builder.
 
 ```
+// Address to open. https://formbuilder.nlm.nih.gov is still supported; it now
+// redirects to https://lhncbc.nlm.nih.gov/lhcformbuilder.
 const fbUrl = 'https://formbuilder.nlm.nih.gov';
+// The form builder's origin. It is captured from the first message it sends (see
+// the 'initialized' case) rather than hardcoded, so it follows the redirect
+// automatically.
+let fbOrigin = null;
 
 /**
 Event handler to handle messages from form builder window.
@@ -50,7 +78,10 @@ Event handler to handle messages from form builder window.
   event.data.questionnaire is undefined.
 */
 function handleFormBuilderMessages(event) {
-  if(event.origin === fbUrl) {
+  // Accept messages only from the window we opened. event.source refers to that
+  // window and is unaffected by the redirect, so it is the reliable check — we do
+  // not know the form builder's post-redirect origin until it first messages us.
+  if(event.source === fbWin) {
     // Handling only form builder events.
     const eventType = event.data.type;
     
@@ -64,8 +95,11 @@ function handleFormBuilderMessages(event) {
          send the initial questionnaire.
         */
 
+        // Capture the form builder's (possibly redirected) origin from this first
+        // message, and reuse it as the targetOrigin whenever we post back.
+        fbOrigin = event.origin;
         // fbWin is the object reference returned by window.open().
-        fbWin.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbUrl);
+        fbWin.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbOrigin);
         break;
 
       case 'updateQuestionnaire':
@@ -122,6 +156,13 @@ Here is an example:
 const fbWin = window.open(fbUrl+'/window-open?referrer='+encodeURIComponent(window.location.href)+'&fhirVersion=R5', 'formBuilderWindow');
 ```
 
+Opening `https://formbuilder.nlm.nih.gov/window-open?...` continues to work; the
+browser follows the redirect to
+`https://lhncbc.nlm.nih.gov/lhcformbuilder/window-open?...`. Because the form
+builder then runs on the `https://lhncbc.nlm.nih.gov` origin, reply with the
+origin captured from its first message (`fbOrigin`) as the `postMessage`
+targetOrigin — see the handler above — rather than assuming `fbUrl`.
+
 Use `fbWin.postMessage` to send the `initialQuestionnaire` message to the child
 window, as described above.
 
@@ -132,8 +173,9 @@ before sending the message to the form builder.
 
 ```
 // fbWin is the object reference returned by window.open().
-// Use 'initialQuestionnaire' message.
-fbWin.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbUrl);
+// Use 'initialQuestionnaire' message. Post to fbOrigin — the origin captured from
+// the form builder's first message — so the browser delivers the message.
+fbWin.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbOrigin);
 
 ```
 
