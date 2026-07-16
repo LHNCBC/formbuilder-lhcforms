@@ -7,6 +7,7 @@ import {ExtensionsService} from "./extensions.service";
 import {
   ANSWER_OPTION_METHOD_ANSWER_OPTION, ANSWER_OPTION_METHOD_SNOMED_VALUE_SET, ANSWER_OPTION_METHOD_VALUE_SET,
   EXTENSION_URL_ANSWER_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION,
+  EXTENSION_URL_CHOICE_ORIENTATION, EXTENSION_URL_COLUMN_COUNT, EXTENSION_URL_COLUMN_COUNT_LEGACY,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION, EXTENSION_URL_ENTRY_FORMAT,
   EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_QUESTIONNAIRE_UNIT,
   EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, EXTENSION_URL_VARIABLE,
@@ -135,6 +136,15 @@ export class ImportQuestionnaireService {
 
         case EXTENSION_URL_ENTRY_FORMAT:
           extParent.__$entryFormat = extension.valueString;
+          break;
+
+        case EXTENSION_URL_CHOICE_ORIENTATION:
+          extParent.__$choiceOrientation = extension.valueCode;
+          break;
+
+        case EXTENSION_URL_COLUMN_COUNT:
+        case EXTENSION_URL_COLUMN_COUNT_LEGACY:
+          extParent.__$columnCount = extension.valuePositiveInt ?? extension.valueInteger;
           break;
 
         case EXTENSION_URL_QUESTIONNAIRE_UNIT:

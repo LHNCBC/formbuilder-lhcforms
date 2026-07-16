@@ -12,6 +12,9 @@ import {
   EXTENSION_URL_CALCULATED_EXPRESSION,
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+  EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_COLUMN_COUNT_LEGACY,
   EXTENSION_URL_ITEM_CONTROL,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from '../lib/constants/constants';
@@ -41,6 +44,9 @@ export class ExtensionsService {
     EXTENSION_URL_CALCULATED_EXPRESSION,
     EXTENSION_URL_ANSWER_EXPRESSION,
     EXTENSION_URL_ENABLEWHEN_EXPRESSION,
+    EXTENSION_URL_CHOICE_ORIENTATION,
+    EXTENSION_URL_COLUMN_COUNT,
+    EXTENSION_URL_COLUMN_COUNT_LEGACY,
     EXTENSION_URL_ITEM_CONTROL,
     PREFERRED_TERMINOLOGY_SERVER_URI,
     ObservationLinkPeriodComponent.extUrl,
@@ -400,9 +406,13 @@ export class ExtensionsService {
    *   Refer angular's reactive form documentation for more information.
    */
   resetExtension(extUrl: fhirPrimitives.url, value: fhir.Extension, valueType: string, selfOnly: boolean) {
+    this.updateExtension(value);
     const extProp: FormProperty = this.getFirstExtensionFormPropertyByUrl(extUrl);
     if(extProp) {
       extProp.reset(value, selfOnly);
+      if(valueType) {
+        this.pruneUnusedValues(extProp, valueType);
+      }
     }
     else {
       this.addExtension(value, valueType);

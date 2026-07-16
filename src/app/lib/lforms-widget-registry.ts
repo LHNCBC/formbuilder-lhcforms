@@ -70,6 +70,7 @@ import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
 import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
+import {ExtensionPrimitiveComponent} from "./widgets/extension-primitive/extension-primitive.component";
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -137,6 +138,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('coding-display', CodingDisplayComponent);
     this.register('enable-when-method', EnableWhenMethodComponent);
     this.register('enable-when-expression', EnableWhenExpressionComponent);
+    this.register('extension-primitive', ExtensionPrimitiveComponent);
     this.register('meta-profile', MetaProfileComponent);
     this.setDefaultWidget(StringComponent);
   }

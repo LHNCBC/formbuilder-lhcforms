@@ -16,6 +16,7 @@ describe('ExtensionsService', () => {
     schemaService._valueXCategoryMap = {
       valueString: '__$primitiveType',
       valueInteger: '__$primitiveType',
+      valuePositiveInt: '__$primitiveType',
       valueCoding: '__$generalPurposeDatatype',
       valueCodeableConcept: '__$generalPurposeDatatype',
       valueBoolean: '__$primitiveType',
@@ -110,6 +111,20 @@ describe('ExtensionsService', () => {
       expect(result['__$isValueX']).toBe(true);
       expect(result['__$valueType']).toBe('valueInteger');
       expect(result['__$stringify']).toBe(JSON.stringify(42, null, 2));
+    });
+
+    it('should handle extension with positive integer value type', () => {
+      const ext: any = {
+        url: 'http://example.org',
+        valuePositiveInt: 3
+      };
+      const result = service.updateExtension(ext);
+
+      expect(result['__$isValueX']).toBe(true);
+      expect(result['__$valueType']).toBe('valuePositiveInt');
+      expect(result['__$valueTypeCategory']).toBe('__$primitiveType');
+      expect(result['__$primitiveType']).toBe('valuePositiveInt');
+      expect(result['__$stringify']).toBe(JSON.stringify(3, null, 2));
     });
   });
 });

@@ -6,7 +6,12 @@ import {Subscription} from 'rxjs';
 import fhir from 'fhir/r4';
 import {Util} from '../../util';
 import {LiveAnnouncer} from "@angular/cdk/a11y";
-import { EXTENSION_URL_ITEM_CONTROL } from '../../constants/constants';
+import {
+  EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_COLUMN_COUNT_LEGACY,
+  EXTENSION_URL_ITEM_CONTROL
+} from '../../constants/constants';
 import {SharedObjectService} from "../../../services/shared-object.service";
 import {FormsModule} from "@angular/forms";
 import {CommonModule, NgClass} from "@angular/common";
@@ -111,6 +116,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   init() {
     this.dataType = this.formProperty.searchProperty('/type').value;
     this.option = this.getItemControl(false);
+    this.syncItemControlProxyValue(this.option);
     this.isRepeat = !!this.formProperty.searchProperty('/repeats').value;
     this.answerMethod = this.formProperty.searchProperty('/__$answerOptionMethods').value;
 
@@ -207,29 +213,36 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     if(this.answerMethod === 'answer-option' && option === 'autocomplete') {
       this.option = 'drop-down';
     }
-    else if(this.isRepeat && this.option === 'radio-button') {
+    else if(this.isRepeat && option === 'radio-button') {
       this.option = 'check-box';
     }
-    else if(!this.isRepeat && this.option === 'check-box') {
+    else if(!this.isRepeat && option === 'check-box') {
       this.option = 'radio-button';
     }
     else {
       this.option = option;
     }
+    this.syncItemControlProxyValue(this.option);
 
     const ext = this.getItemControlExtension();
-    if (option) {
-      this.isItemControlDeprecated = this.checkDeprecatedItemControl(option);
+    if (this.option) {
+      this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
 
       this.extensionsService.resetExtension(
         ItemControlComponent.itemControlUrl,
-        this.createExtension(option),
+        this.createExtension(this.option),
         'valueCodeableConcept',
         false
       );
     }
     else {
       this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl)
+    }
+
+    if(!this.isChoiceLayout(this.option)) {
+      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_CHOICE_ORIENTATION);
+      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_COLUMN_COUNT);
+      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_COLUMN_COUNT_LEGACY);
     }
   }
 
@@ -336,6 +349,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    */
   clearExtensionItemControlSelection() {
     this.option = '';
+    this.syncItemControlProxyValue(this.option);
     this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
     this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
 
@@ -353,5 +367,25 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       return deprecatedNote.replace('${deprecatedItemControl}', optionDisplay);
     }
     return '';
+  }
+
+  /**
+   * Keep the internal item-control proxy field aligned so dependent visibleIf
+   * rules can react to custom item-control UI changes.
+   * @param option - The selected item-control option.
+   */
+  private syncItemControlProxyValue(option: string): void {
+    if(this.formProperty.value !== option) {
+      this.formProperty.setValue(option || '', false);
+    }
+  }
+
+  /**
+   * Determine whether an item-control option supports choice layout settings.
+   * @param option - The item-control option to check.
+   * @returns true if the option is a radio-button or check-box layout, false otherwise.
+   */
+  private isChoiceLayout(option: string): boolean {
+    return option === 'radio-button' || option === 'check-box';
   }
 }

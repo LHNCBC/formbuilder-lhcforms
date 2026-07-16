@@ -115,7 +115,25 @@ export class ExtensionComponent extends TableEditRowInDlgComponent implements On
    */
   _isDisabled(arrayProperty: ArrayProperty, index: number): boolean {
     const extensionProp = arrayProperty.properties[index] as ObjectProperty;
-    return this.extensionsService.isNotEditableInDlg(extensionProp.value.url);
+    const url = extensionProp.value.url;
+    return this.extensionsService.isNotEditableInDlg(url) || this.isExtensionUrlOwnedByWidget(url);
+  }
+
+  /**
+   * Check if an extension URL is edited by a schema-backed custom widget on this form.
+   * This keeps widget-owned proxy fields from becoming editable in the generic
+   * extension dialog if a URL is not explicitly listed in ExtensionsService.
+   * @param url - The canonical URL of the extension to check.
+   * @returns true if a schema-backed custom widget owns the extension URL, false otherwise.
+   */
+  isExtensionUrlOwnedByWidget(url: string): boolean {
+    const rootSchema = this.formProperty.findRoot()?.schema;
+    if(rootSchema?.formLayout?.targetPage === 'extensionResource') {
+      return false;
+    }
+    return Object.values(rootSchema?.properties || {}).some((propertySchema: any) => {
+      return propertySchema?.widget?.extensionUrl === url;
+    });
   }
 
   /**

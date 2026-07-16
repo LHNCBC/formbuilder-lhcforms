@@ -40,4 +40,42 @@ describe('ExtensionComponent', () => {
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
+
+  it('should not treat widget-owned extension URLs as disabled inside extension dialogs', () => {
+    component.formProperty = {
+      findRoot: () => ({
+        schema: {
+          formLayout: {targetPage: 'extensionResource'},
+          properties: {
+            proxyField: {
+              widget: {
+                extensionUrl: 'http://example.org/widget-owned'
+              }
+            }
+          }
+        }
+      })
+    } as any;
+
+    expect(component.isExtensionUrlOwnedByWidget('http://example.org/widget-owned')).toBeFalse();
+  });
+
+  it('should treat widget-owned extension URLs as disabled outside extension dialogs', () => {
+    component.formProperty = {
+      findRoot: () => ({
+        schema: {
+          formLayout: {targetPage: 'itemLevel'},
+          properties: {
+            proxyField: {
+              widget: {
+                extensionUrl: 'http://example.org/widget-owned'
+              }
+            }
+          }
+        }
+      })
+    } as any;
+
+    expect(component.isExtensionUrlOwnedByWidget('http://example.org/widget-owned')).toBeTrue();
+  });
 });

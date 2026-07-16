@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
+import {
+  EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_COLUMN_COUNT
+} from '../src/app/lib/constants/constants';
 
 const itemControlExtensions = {
   'drop-down': {
@@ -44,6 +48,16 @@ const itemControlExtensions = {
     }
   }
 };
+
+const choiceOrientationExtension = (valueCode: 'horizontal' | 'vertical') => ({
+  url: EXTENSION_URL_CHOICE_ORIENTATION,
+  valueCode
+});
+
+const columnCountExtension = (valuePositiveInt: number) => ({
+  url: EXTENSION_URL_COLUMN_COUNT,
+  valuePositiveInt
+});
 
 const groupItemControlExtensions = {
   list: {
@@ -293,6 +307,74 @@ test.describe('Item control', () => {
 
       const repeatJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
       expect(repeatJson.item[0].extension).toEqual([itemControlExtensions['check-box']]);
+    });
+
+    test.describe('Choice orientation and column count', () => {
+      async function prepareAnswerListItem(page, repeated = false) {
+        await PWUtils.selectDataType(page, 'coding');
+        await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+        await PWUtils.clickRadioButton(page, 'Answer constraint', 'Allow free text');
+        if (repeated) {
+          await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
+        }
+      }
+
+      async function expectChoiceLayoutFieldsVisible(page) {
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toBeVisible();
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Vertical')).toBeVisible();
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Unspecified')).toBeVisible();
+        await expect(page.locator('#__\\$columnCount')).toBeVisible();
+      }
+
+      test('should export horizontal orientation and column count for radio-button layout', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        await expectChoiceLayoutFieldsVisible(page);
+
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Horizontal');
+        await page.locator('#__\\$columnCount').fill('3');
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([
+          itemControlExtensions['radio-button'],
+          choiceOrientationExtension('horizontal'),
+          columnCountExtension(3)
+        ]);
+      });
+
+      test('should export vertical orientation and column count for check-box layout', async ({ page }) => {
+        await prepareAnswerListItem(page, true);
+
+        await page.locator('[for^="__\\$itemControl\\.check-box"]').click();
+        await expectChoiceLayoutFieldsVisible(page);
+
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Vertical');
+        await page.locator('#__\\$columnCount').fill('2');
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([
+          itemControlExtensions['check-box'],
+          choiceOrientationExtension('vertical'),
+          columnCountExtension(2)
+        ]);
+      });
+
+      test('should remove orientation and column count when layout no longer supports them', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Horizontal');
+        await page.locator('#__\\$columnCount').fill('4');
+
+        await page.locator('[for^="__\\$itemControl\\.drop-down"]').click();
+
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toHaveCount(0);
+        await expect(page.locator('#__\\$columnCount')).toHaveCount(0);
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([itemControlExtensions['drop-down']]);
+      });
     });
 
     test('should import with item having item-control extension', async ({ page }) => {
