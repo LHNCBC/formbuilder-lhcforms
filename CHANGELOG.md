@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.1.0] 2026-07-16
+### Added
+- Support choice orientation and column count for Questionnaire items.
+
 ## [12.0.0] 2026-07-14
 ### Fixed
 - Fix missing autocomplete-lhc styles after updating lforms@43.0.0.
