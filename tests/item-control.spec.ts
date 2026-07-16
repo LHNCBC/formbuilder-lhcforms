@@ -360,6 +360,38 @@ test.describe('Item control', () => {
         ]);
       });
 
+      test('should reject non-positive and fractional column counts', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        const columnCount = page.locator('#__\\$columnCount');
+        const errorMessage = columnCount.locator('..').locator('small.text-danger[role="alert"]');
+
+        await columnCount.fill('3');
+        await expect(columnCount).not.toHaveClass(/ng-invalid/);
+
+        for (const invalidValue of ['0', '-1', '1.5']) {
+          await columnCount.fill(invalidValue);
+          await expect(columnCount).toHaveClass(/ng-invalid/);
+          await expect(columnCount).toHaveClass(/is-invalid/);
+          await expect(errorMessage).toBeVisible();
+
+          const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+          expect(json.item[0].extension).toEqual([itemControlExtensions['radio-button']]);
+        }
+
+        await columnCount.fill('2');
+        await expect(columnCount).not.toHaveClass(/ng-invalid/);
+        await expect(columnCount).not.toHaveClass(/is-invalid/);
+        await expect(errorMessage).toHaveCount(0);
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([
+          itemControlExtensions['radio-button'],
+          columnCountExtension(2)
+        ]);
+      });
+
       test('should remove orientation and column count when layout no longer supports them', async ({ page }) => {
         await prepareAnswerListItem(page);
 

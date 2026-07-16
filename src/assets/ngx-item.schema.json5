@@ -106,7 +106,7 @@
     "__$columnCount": {
       "description": "The number of columns to use when rendering a list of choices.",
       "title": "Column count",
-      "type": "number",
+      "type": "integer",
       "minimum": 1,
       "visibleIf": {
         "__$itemControl": ["radio-button", "check-box"]

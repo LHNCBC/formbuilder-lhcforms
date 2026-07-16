@@ -5,10 +5,11 @@ import {FormService} from '../../../services/form.service';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgClass} from '@angular/common';
 import {LabelComponent} from '../label/label.component';
+import {IntegerDirective} from '../../directives/integer.directive';
 
 @Component({
   selector: 'lfb-extension-primitive',
-  imports: [FormsModule, ReactiveFormsModule, NgClass, LabelComponent],
+  imports: [FormsModule, ReactiveFormsModule, NgClass, LabelComponent, IntegerDirective],
   template: `
     <div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
       @if (!nolabel) {
@@ -67,16 +68,23 @@ import {LabelComponent} from '../label/label.component';
           </select>
         } @else {
           <input
+            lfbInteger
             [attr.id]="id"
             name="{{name}}"
             class="form-control form-control-sm"
+            [class.is-invalid]="!!errorMessages?.length"
             [formControl]="control"
             type="number"
-            [attr.min]="schema.minimum"
-            [attr.max]="schema.maximum"
-            [attr.step]="schema.widget?.step || 1"
+            [min]="schema.minimum"
+            [max]="schema.maximum"
+            [step]="schema.widget?.step || 1"
             [attr.placeholder]="schema.placeholder"
           >
+          @if (errorMessages?.length) {
+            @for (errorMessage of errorMessages; track errorMessage) {
+              <small class="text-danger form-text" role="alert">{{errorMessage}}</small>
+            }
+          }
         }
       </div>
     </div>
@@ -89,7 +97,7 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
-    const sub = this.formProperty.valueChanges.subscribe((value) => {
+    const sub = this.formProperty.errorsChanges.subscribe((errors) => {
       if (this.formService.loading) {
         return;
       }
@@ -100,6 +108,13 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
         return;
       }
 
+      if (errors?.length) {
+        this.removeLegacyExtensions();
+        this.extensionsService.removeExtensionsByUrl(extUrl);
+        return;
+      }
+
+      const value = this.formProperty.value;
       if (value !== null && value !== undefined && value !== '') {
         const ext: any = {url: extUrl};
         ext[valueX] = this.toFhirValue(value, valueX);
