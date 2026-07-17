@@ -1330,7 +1330,8 @@ export class Util {
    * @return true when a preferred terminology server extension is present.
    */
   private static hasPreferredTerminologyServer(extensions: fhir.Extension []): boolean {
-    return !!Util.findExtensionByUrl(extensions, PREFERRED_TERMINOLOGY_SERVER_URI);
+    const tsExt = Util.findExtensionByUrl(extensions, PREFERRED_TERMINOLOGY_SERVER_URI);
+    return !!(tsExt?.valueUrl?.length);
   }
 
   /**

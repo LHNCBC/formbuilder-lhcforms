@@ -771,6 +771,10 @@ test.describe('Home page', () => {
 
           await approvalDtInput.clear();
           await approvalDtInput.fill('2021-01-01');
+          // Blur to commit the value to the model before reading the JSON without the UI
+          // (getQuestionnaireJSONWithoutUI reads the model synchronously and does not retry).
+          await approvalDtInput.blur();
+          await expect(approvalDtInput).toHaveValue('2021-01-01');
 
           const previewJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
           expect(previewJson.approvalDate).toBe('2021-01-01');

@@ -201,6 +201,16 @@ test.describe('preview-dlg-component.spec.ts', () => {
     test('should warn in the rendered preview when an item has an answerValueSet but no terminology server is set', async ({page}) => {
       // answer-value-set-sample.json has a single 'choice' item whose answerValueSet is
       // 'http://example.org' and no terminology server extension.
+      // Stub value set expansion to avoid a real network round-trip while the form renders;
+      // it does not affect the warning, which is derived from the questionnaire content.
+      await page.route('**/ValueSet/$expand**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/fhir+json',
+          json: {resourceType: 'ValueSet', expansion: {contains: []}}
+        });
+      });
+
       await PWUtils.importLocalFile(page, 'answer-value-set-sample.json');
       const titleField = page.locator('lfb-form-fields').getByLabel('Title', {exact: true});
       await expect(titleField).toHaveValue('Answer value set form');
@@ -214,9 +224,8 @@ test.describe('preview-dlg-component.spec.ts', () => {
 
       // The warning is derived from the questionnaire content, so the user is warned about
       // the missing preferred terminology server regardless of the default server the
-      // preview uses to render answer lists. No value set expansion needs to be mocked to
-      // make it appear. It also names the affected item by linkId (the fixture item's linkId
-      // is '1').
+      // preview uses to render answer lists. It also names the affected item by linkId
+      // (the fixture item's linkId is '1').
       const tsWarning = form.locator('..').locator('.preferred-terminology-server-warning');
       await expect(tsWarning).toBeVisible();
       await expect(tsWarning).toContainText('does not specify a preferred terminology server');

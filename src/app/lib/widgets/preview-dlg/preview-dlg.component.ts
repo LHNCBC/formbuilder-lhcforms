@@ -168,16 +168,16 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
    * @param linkIds - linkIds of the affected items.
    * @return Warning message text, or an empty string when there are no affected items.
    */
-  buildPreferredTerminologyServerMsg(linkIds: string []): string {
+  private buildPreferredTerminologyServerMsg(linkIds: string []): string {
     if(!linkIds.length) {
       return '';
     }
     const formatted = linkIds.map((linkId) => `'${linkId}'`).join(', ');
     return "This questionnaire uses an answer value set but does not specify a preferred " +
       "terminology server for the following item(s): " + formatted + ". Answer lists in this " +
-      "preview are loaded using a default terminology server, but that server is not saved in " +
-      "the questionnaire. To make sure answer value sets can be expanded wherever the " +
-      "questionnaire is used, set a terminology server in the form-level or item-level " +
+      "preview are loaded using a default terminology server (" + this.fhirService.getFhirServer().endpoint +
+      "), but that server is not saved in the questionnaire. To make sure answer value sets can be expanded " +
+      "wherever the questionnaire is used, set a terminology server in the form-level or item-level " +
       "'Advanced fields'.";
   }
 
