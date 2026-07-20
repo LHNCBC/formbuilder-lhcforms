@@ -1285,18 +1285,6 @@ export class Util {
     return search(items, linkId).extensions;
   }
 
-  /**
-   * Determine whether the questionnaire relies on an answer value set that requires a
-   * terminology server to expand, but does not specify a preferred terminology server
-   * anywhere that would cover it (the questionnaire root, the item itself, or an ancestor
-   * item).
-   *
-   * @param questionnaire - FHIR Questionnaire (any version; shares item/extension shape).
-   * @return true when at least one external answerValueSet has no terminology server in scope.
-   */
-  static isMissingPreferredTerminologyServer(questionnaire: fhir.Questionnaire): boolean {
-    return Util.getItemsMissingPreferredTerminologyServer(questionnaire).length > 0;
-  }
 
   /**
    * Collect the linkIds of items that use an answer value set requiring a terminology server

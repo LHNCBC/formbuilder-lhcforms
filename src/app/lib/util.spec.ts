@@ -534,14 +534,13 @@ describe('Util', () => {
     });
   });
 
-  describe('isMissingPreferredTerminologyServer', () => {
+  describe('getItemsMissingPreferredTerminologyServer', () => {
     const TS_URL = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer';
     const tsExt = { url: TS_URL, valueUrl: 'https://example.org/fhir' };
 
     it('returns no linkIds when there are no items', () => {
       expect(Util.getItemsMissingPreferredTerminologyServer({} as any)).toEqual([]);
       expect(Util.getItemsMissingPreferredTerminologyServer({ item: [] } as any)).toEqual([]);
-      expect(Util.isMissingPreferredTerminologyServer({ item: [] } as any)).toBe(false);
     });
 
     it('returns no linkIds when no item uses an answerValueSet', () => {
@@ -552,7 +551,6 @@ describe('Util', () => {
     it('returns the linkId when an external answerValueSet has no terminology server', () => {
       const q: any = { item: [{ linkId: '1', type: 'choice', answerValueSet: 'http://example.org' }] };
       expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual(['1']);
-      expect(Util.isMissingPreferredTerminologyServer(q)).toBe(true);
     });
 
     it('returns no linkIds when a contained (#) answerValueSet is used', () => {
@@ -598,7 +596,6 @@ describe('Util', () => {
         ]
       };
       expect(Util.getItemsMissingPreferredTerminologyServer(q)).toEqual(['2']);
-      expect(Util.isMissingPreferredTerminologyServer(q)).toBe(true);
     });
 
     it('returns all uncovered linkIds in document order', () => {

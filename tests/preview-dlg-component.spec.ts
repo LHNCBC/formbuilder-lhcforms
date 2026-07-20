@@ -199,8 +199,9 @@ test.describe('preview-dlg-component.spec.ts', () => {
     });
 
     test('should warn in the rendered preview when an item has an answerValueSet but no terminology server is set', async ({page}) => {
-      // answer-value-set-sample.json has a single 'choice' item whose answerValueSet is
-      // 'http://example.org' and no terminology server extension.
+      // answer-value-set-sample.json has a single 'choice' item (linkId '1') whose
+      // answerValueSet is 'http://example.org' and whose preferredTerminologyServer
+      // extension has an empty valueUrl, so no terminology server is in scope.
       // Stub value set expansion to avoid a real network round-trip while the form renders;
       // it does not affect the warning, which is derived from the questionnaire content.
       await page.route('**/ValueSet/$expand**', async (route) => {

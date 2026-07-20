@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.1.0] 2026-07-02
+## [12.1.0] 2026-07-20
 ### Added
 - The preview dialog now warns when the questionnaire uses an answer value set but
   does not specify a preferred terminology server. The rendered preview loads answer
