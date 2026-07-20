@@ -18,11 +18,12 @@ import {IntegerDirective} from '../../directives/integer.directive';
           [title]="schema.title"
           [helpMessage]="schema.description"
           [ngClass]="labelClasses"
+          [labelId]="id + '_label'"
         ></lfb-label>
       }
       <div class="{{controlClasses}}">
         @if (schema.enum?.length && schema.widget?.buttonRadio) {
-          <div class="btn-group btn-group-sm" role="radiogroup" [attr.aria-labelledby]="id + '_label'">
+          <div class="btn-group btn-group-sm" role="radiogroup" [attr.id]="id" [attr.aria-labelledby]="id + '_label'">
             @for (option of schema.enum; track option) {
               <input
                 class="btn-check"
