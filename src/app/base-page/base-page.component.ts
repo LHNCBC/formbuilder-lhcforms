@@ -187,7 +187,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
  */
   private parseOpenerUrl(location: Location): string {
     let ret = null;
-    const pathname = location?.pathname.replace(/^\/+/, '').toLowerCase();
+    const pathname = location?.pathname.replace(/^.*\//, '').toLowerCase();
     if(pathname === 'window-open') {
       const params = new URLSearchParams(location.search);
       this.formService.windowOpenerFhirVersion = params.get('fhirVersion');

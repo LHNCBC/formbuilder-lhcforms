@@ -12,22 +12,23 @@ import {
   OnDestroy,
   Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
+  inject
 } from '@angular/core';
 import {ITreeOptions, KEYS, TREE_ACTIONS, TreeComponent, TreeModel, TreeNode} from '@bugsplat/angular-tree-component';
-import {FetchService, LoincItemType} from '../services/fetch.service';
+import {AutoCompleteLoincItem, FetchService, LoincItemType} from '../services/fetch.service';
 import {MatInput} from '@angular/material/input';
 import {FormService} from '../services/form.service';
 import {NgxSchemaFormComponent} from '../ngx-schema-form/ngx-schema-form.component';
 import {NgbActiveModal, NgbDropdown, NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import {BehaviorSubject, Observable, of, Subscription} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {debounceTime, distinctUntilChanged, switchMap,} from 'rxjs/operators';
 import fhir, { QuestionnaireItem } from 'fhir/r4';
 import {TreeService} from '../services/tree.service';
 import {faEllipsisH, faExclamationTriangle, faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {environment} from '../../environments/environment';
 import {NodeDialogComponent, DialogMode} from './node-dialog.component';
+import {AddLoincItemDialogComponent} from './add-loinc-item-dialog.component';
 import {Util} from '../lib/util';
 import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 import {LiveAnnouncer} from '@angular/cdk/a11y';
@@ -268,22 +269,9 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   itemChange = new EventEmitter<any []>();
   isTreeExpanded = false;
   editor = 'ngx';
-  loincType = LoincItemType.PANEL;
   errors$ = new EventEmitter<any []>(true); // Use async emitter.
   treeHelpMessage = 'You can drag and drop items in the tree to move them around in the hierarchy';
 
-  loincTypeOpts = [
-    {
-      value: LoincItemType.PANEL,
-      display: 'Panel'
-    },
-    {
-      value: LoincItemType.QUESTION,
-      display: 'Question'
-    }
-  ];
-
-  loincItem: any;
 
   linkIdCollection = new LinkIdCollection();
   itemLoading$ = new BehaviorSubject<boolean>(false);
@@ -303,29 +291,14 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   validationErrorsAllItemsErrorStr: string;
 
-  /**
-   * A function variable to pass into ng bootstrap typeahead for call back.
-   * Wait at least for two characters, 200 millis of inactivity and not the
-   * same string as previously searched.
-   *
-   * @param term$ - User typed string
-   */
-  acSearch = (term$: Observable<string>): Observable<any []> => {
-    return term$.pipe(
-      debounceTime(200),
-      distinctUntilChanged(),
-      switchMap((term) => term.length < 2 ? [] : this.dataSrv.searchLoincItems(term, this.loincType)));
-  };
 
-  constructor(
-              public liveAnnouncer: LiveAnnouncer,
-              public dialog: MatDialog,
-              private modalService: NgbModal,
-              private treeService: TreeService,
-              private formService: FormService,
-              private dataSrv: FetchService,
-              private validationService: ValidationService) {
-  }
+  liveAnnouncer = inject(LiveAnnouncer);
+  dialog = inject(MatDialog);
+  modalService = inject(NgbModal);
+  treeService = inject(TreeService);
+  formService = inject(FormService);
+  dataSrv = inject(FetchService);
+  validationService = inject(ValidationService);
 
 
   /**
@@ -868,19 +841,17 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   /**
    * Invoke the dialog which returns selected lforms item from the search box.
-   * @param dialogTemplateRef - Dialog template for adding loinc item.
    */
-  addLoincItem(dialogTemplateRef): void {
-    this.modalService.open(dialogTemplateRef, {ariaLabelledBy: 'modal-basic-title'}).result.then((autoCompResult) => {
-      const subscription = this.getLoincItem(autoCompResult, this.loincType).subscribe((item) => {
+  addLoincItem(): void {
+    const modalRef = this.modalService.open(AddLoincItemDialogComponent, {ariaLabelledBy: 'modal-basic-title'});
+    modalRef.result.then((autoCompResult) => {
+      const subscription = this.getLoincItem(autoCompResult, modalRef.componentInstance.loincType).subscribe((item) => {
         item[FormService.TREE_NODE_ID] = Util.generateUniqueId();
         this.formService.updateFhirQuestionnaire(item);
         this.insertAnItem(item);
-        this.loincItem = null;
       });
       this.subscriptions.push(subscription);
     }, (reason) => {
-      this.loincItem = null;
     });
   }
 
@@ -893,10 +864,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    *
    * @param loincType - Loinc item type: panel or question.
    */
-  getLoincItem(autoCompResult, loincType: LoincItemType): Observable<any> {
+  getLoincItem(autoCompResult: AutoCompleteLoincItem, loincType: LoincItemType): Observable<any> {
     let ret: Observable<any>;
     if(loincType === LoincItemType.PANEL) {
-      ret = this.dataSrv.getLoincPanel(autoCompResult.code[0].code);
+      ret = this.dataSrv.getLoincPanel(autoCompResult.LOINC_NUM);
     }
     else if(loincType === LoincItemType.QUESTION) {
       ret = of(autoCompResult);
@@ -913,13 +884,6 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   getItem(loincNum: string) {
   }
 
-  /**
-   * Auto complete result formatting used in add loinc item dialog
-   * @param acResult - Selected result item.
-   */
-  formatter(acResult: any) {
-    return acResult.code[0].code + ': ' + acResult.text;
-  }
 
   /**
    * Truncate a long string to display in the sidebar node tree.
@@ -1214,4 +1178,5 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     return errorMessages;
   }
 
+  public Object;
 }

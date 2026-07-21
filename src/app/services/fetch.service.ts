@@ -19,6 +19,17 @@ enum JsonFormatType {
   LFORMS = 'lforms'
 }
 
+export interface AutoCompleteLoincItem {
+  LOINC_NUM: string,
+  text?: string,
+  COMPONENT?: string,
+  CONSUMER?: string,
+  SHORTNAME?: string,
+  LONG_COMMON_NAME?: string,
+  answers?: any[],
+  units?: any[],
+  datatype?: string
+}
 /**
  * A map with edition id as key and SNOMEDEdition as value.
  */
@@ -98,13 +109,13 @@ export class FetchService {
     options.responseType = options.responseType || 'json' as const;
     options.params = (options.params || new HttpParams())
       .set('terms', term)
-      .set('df', 'LOINC_NUM,text,LONG_COMMON_NAME')
+      .set('df', 'LOINC_NUM,text,LONG_COMMON_NAME,COMPONENT,SHORTNAME,CONSUMER')
       .set('type', 'form_and_section')
       .set('available', 'true');
     return this.http.get<AutoCompleteResult []>(FetchService.loincSearchUrl, options).pipe(
       map((resp: any) => {
         return (resp[3] as Array<any>).map((e) => {
-          return {id: e[0], title: e[2] || e[1]};
+          return {id: e[0], title: e[1]};
         });
       }),
       catchError((error) => {console.log('searching for ' + term, error); return of([]); })
@@ -118,13 +129,13 @@ export class FetchService {
    * @param loincType - Panel or question.
    * @param options - http request options.
    */
-  searchLoincItems(term: string, loincType?: LoincItemType, options?): Observable<AutoCompleteResult []> {
+  searchLoincItems(term: string, loincType?: LoincItemType, options?): Observable<AutoCompleteLoincItem []> {
     options = options || {};
     options.observe = options.observe || 'body' as const;
     options.responseType = options.responseType || 'json' as const;
     options.params = (options.params ||
       new HttpParams());
-    options.params = options.params.set('df', 'text,LONG_COMMON_NAME');
+    options.params = options.params.set('df', 'text,LONG_COMMON_NAME,COMPONENT,SHORTNAME,CONSUMER');
     if(loincType === LoincItemType.PANEL) {
       options.params = options.params.set('type', 'form_and_section').set('available', true);
     }
@@ -134,23 +145,28 @@ export class FetchService {
     options.params = options.params
       .set('terms', term)
       .set('maxList', 20);
-    return this.http.get<AutoCompleteResult []>(FetchService.loincSearchUrl, options).pipe(
+    return this.http.get<AutoCompleteLoincItem []>(FetchService.loincSearchUrl, options).pipe(
     // tap((resp: HttpResponse<AutoCompleteResult []>) => {console.log(resp)}),
       map((resp: any) => {
-        const results: AutoCompleteResult [] = [];
+        const results: AutoCompleteLoincItem [] = [];
         if (Array.isArray(resp)) {
           const loincNums: string[] = resp[1];
           const texts: string [] [] = resp[3];
           const extraFields: any = resp[2];
           loincNums.forEach((loincNum, index) => {
-            const item: any = this.convertLoincQToItem(
-              loincNum,
-              texts[index][1] || texts[index][0],
-              extraFields ? extraFields.answers[index] : null,
-              extraFields ? extraFields.units[index] : null,
-              extraFields ? extraFields.datatype[index] : null);
-            results.push(item);
-            // results.push({id: loincNum[index], title: texts[index][0]});
+            const lItem: AutoCompleteLoincItem = {
+              LOINC_NUM: loincNum,
+              text: texts[index][0]?.trim(),
+              LONG_COMMON_NAME: texts[index][1]?.trim() || null,
+              COMPONENT: texts[index][2]?.trim() || null,
+              CONSUMER: texts[index][3]?.trim() || null,
+              SHORTNAME: texts[index][4]?.trim() || null,
+              answers: extraFields?.answers?.[index] || null,
+              units: extraFields?.units?.[index] || null,
+              datatype: extraFields?.datatype?.[index] || null,
+            };
+            // const item = this.convertLoincQToItem(lItem, 'text'); // Convert to FHIR item to make sure the datatype is valid.
+            results.push(lItem);
           });
         }
         return results;
@@ -198,19 +214,22 @@ export class FetchService {
    * Create FHIR Questionnaire.item from loinc question info.
    *
    */
-  convertLoincQToItem(loincNum: string, text: string, answers: any [], units: any[], datatype: string): any {
-    const ret: any = {};
+  convertLoincQToItem(loincItem: AutoCompleteLoincItem, displayField: string): any {
+    const ret: any = {
+      type: Util.getFhirType(loincItem.datatype),
+      linkId: Util.generateUniqueId()
+    };
     ret.code = [
       {
-        code: loincNum,
+        code: loincItem.LOINC_NUM,
         system: 'http://loinc.org',
-        display: text
+        display: loincItem.text
       }
     ];
-    ret.text = text;
-    if(answers) {
+    ret.text = loincItem[displayField];
+    if(loincItem.answers) {
       const answerOption: any[] = [];
-      answers.forEach((answer) => {
+      loincItem.answers.forEach((answer) => {
         const option: any = {
           valueCoding: {
             code: answer.AnswerStringID,
@@ -222,9 +241,8 @@ export class FetchService {
       });
       ret.answerOption = answerOption;
     }
-    ret.type = Util.getFhirType(datatype);
-    if(units) {
-      ret.extension = Util.convertUnitsToExtensions(units, ret.type);
+    if(loincItem.units) {
+      ret.extension = Util.convertUnitsToExtensions(loincItem.units, ret.type);
     }
     return ret;
   }
