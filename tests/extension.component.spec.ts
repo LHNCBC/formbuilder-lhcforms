@@ -267,8 +267,15 @@ test.describe('extension.component', async () => {
     await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
 
+    // Wait for the item-level advanced fields to finish loading and the extension
+    // table to be fully rendered before interacting. Clicking a row while the table
+    // is still (re)rendering is what made the assertions below flaky.
+    await expect(page.locator('.spinner-border')).not.toBeVisible();
     const extRows = page.locator('lfb-extension table tbody tr');
-    await extRows.nth(2).getByLabel('Edit this row').click();
+    await expect(extRows).toHaveCount(3);
+    const editRowBtn = extRows.nth(2).getByLabel('Edit this row');
+    await expect(editRowBtn).toBeEnabled();
+    await editRowBtn.click();
     const formLoc = page.locator('lfb-extension-dlg').nth(0);
     await expect(formLoc).toBeVisible();
 
