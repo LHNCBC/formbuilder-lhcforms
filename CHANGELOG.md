@@ -7,7 +7,6 @@ This project follows [Semantic Versioning](http://semver.org/).
 - When importing questions from LOINC, give option to the user to pick LOINC's LONG_COMMON_NAME/SHORTNAME/CONSUMER as text
   field, instead of its 'text' field.
 
-### Added
 - The preview dialog now warns when the questionnaire uses an answer value set but
   does not specify a preferred terminology server. The rendered preview loads answer
   lists using a default terminology server, but that default is not saved in the

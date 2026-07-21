@@ -109,7 +109,7 @@ export class FetchService {
     options.responseType = options.responseType || 'json' as const;
     options.params = (options.params || new HttpParams())
       .set('terms', term)
-      .set('df', 'LOINC_NUM,text,LONG_COMMON_NAME,COMPONENT,SHORTNAME,CONSUMER')
+      .set('df', 'LOINC_NUM,text')
       .set('type', 'form_and_section')
       .set('available', 'true');
     return this.http.get<AutoCompleteResult []>(FetchService.loincSearchUrl, options).pipe(
@@ -159,13 +159,12 @@ export class FetchService {
               text: texts[index][0]?.trim(),
               LONG_COMMON_NAME: texts[index][1]?.trim() || null,
               COMPONENT: texts[index][2]?.trim() || null,
-              CONSUMER: texts[index][3]?.trim() || null,
-              SHORTNAME: texts[index][4]?.trim() || null,
+              SHORTNAME: texts[index][3]?.trim() || null,
+              CONSUMER: texts[index][4]?.trim() || null,
               answers: extraFields?.answers?.[index] || null,
               units: extraFields?.units?.[index] || null,
               datatype: extraFields?.datatype?.[index] || null,
             };
-            // const item = this.convertLoincQToItem(lItem, 'text'); // Convert to FHIR item to make sure the datatype is valid.
             results.push(lItem);
           });
         }

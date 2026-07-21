@@ -2,8 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { FetchService, LoincItemType } from '../services/fetch.service';
-import {AutoCompleteLoincItem} from "../services/fetch.service";
+import { FetchService, LoincItemType, AutoCompleteLoincItem } from '../services/fetch.service';
 
 /**
  * Captures the state of a LOINC item selection for a single LOINC item type,
@@ -83,14 +82,6 @@ export class AddLoincItemDialogComponent {
    * Auto complete result formatting used in add loinc item dialog
    * @param acResult - Selected result item.
    */
-  formatter1(acResult: any) {
-    return acResult.code[0].code + ': ' + acResult.text;
-  }
-
-  /**
-   * Auto complete result formatting used in add loinc item dialog
-   * @param acResult - Selected result item.
-   */
   formatter(acResult: any) {
     return acResult.LOINC_NUM + ': ' + acResult.text;
   }
@@ -138,7 +129,7 @@ export class AddLoincItemDialogComponent {
     this.selectedDisplayField = saved.selectedDisplayField;
   }
 
-  onSelectLoincQuestion(loincItem: AutoCompleteLoincItem) {
+  onSelectLoincItem(loincItem: AutoCompleteLoincItem) {
     this.loincItem = loincItem;
     const textFields = ['text', 'COMPONENT', 'LONG_COMMON_NAME', 'SHORTNAME', 'CONSUMER'];
     const uniqueTexts = new Set();
@@ -170,10 +161,10 @@ export class AddLoincItemDialogComponent {
   onAddLoincItem() {
     if(this.loincType === LoincItemType.QUESTION) {
       const qItem = this.dataSrv.convertLoincQToItem(this.loincItem, this.selectedDisplayField);
-      this.activeModal.close(qItem);
+      this.activeModal.close({loincItem: qItem, loincType: LoincItemType.QUESTION});
     }
     else {
-      this.activeModal.close(this.loincItem);
+      this.activeModal.close({loincItem: this.loincItem, loincType: LoincItemType.PANEL});
     }
   }
 

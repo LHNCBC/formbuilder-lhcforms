@@ -25,7 +25,7 @@
         [ngbTypeahead]="acSearch"
         [resultFormatter]="formatter"
         [inputFormatter]="formatter"
-        (selectItem)="onSelectLoincQuestion($event.item)"
+        (selectItem)="onSelectLoincItem($event.item)"
         [editable]='false' />
       @if(loincType === LoincItemType.QUESTION && loincItem &&  Object.keys(loincItemDisplayTexts).length > 0) {
         <label for="loincItemDisplayTextGroup" id="loincItemDisplayTextGroupLabel" class="pt-3">Select display text:</label>

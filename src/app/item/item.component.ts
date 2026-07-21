@@ -172,9 +172,7 @@ export class ConfirmDlgComponent {
   type: MessageType;
 
   MessageType = MessageType;
-
-  constructor(public activeModal: NgbActiveModal) {
-  }
+  activeModal = inject(NgbActiveModal);
 }
 
 @Component({
@@ -294,11 +292,11 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   liveAnnouncer = inject(LiveAnnouncer);
   dialog = inject(MatDialog);
-  modalService = inject(NgbModal);
-  treeService = inject(TreeService);
-  formService = inject(FormService);
-  dataSrv = inject(FetchService);
-  validationService = inject(ValidationService);
+  private modalService = inject(NgbModal);
+  private treeService = inject(TreeService);
+  private formService = inject(FormService);
+  private dataSrv = inject(FetchService);
+  private validationService = inject(ValidationService);
 
 
   /**
@@ -845,7 +843,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
   addLoincItem(): void {
     const modalRef = this.modalService.open(AddLoincItemDialogComponent, {ariaLabelledBy: 'modal-basic-title'});
     modalRef.result.then((autoCompResult) => {
-      const subscription = this.getLoincItem(autoCompResult, modalRef.componentInstance.loincType).subscribe((item) => {
+      const subscription = this.getLoincItem(autoCompResult.loincItem, autoCompResult.loincType).subscribe((item) => {
         item[FormService.TREE_NODE_ID] = Util.generateUniqueId();
         this.formService.updateFhirQuestionnaire(item);
         this.insertAnItem(item);
@@ -1177,6 +1175,4 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
     return errorMessages;
   }
-
-  public Object;
 }
