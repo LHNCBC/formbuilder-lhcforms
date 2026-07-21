@@ -38,7 +38,7 @@ describe('AddLoincItemDialogComponent', () => {
   });
 
   it('should preserve the selected Panel item when toggling item types back and forth', () => {
-    component.onSelectLoincQuestion(panelItem);
+    component.onSelectLoincItem(panelItem);
     expect(component.loincItem).toBe(panelItem);
 
     // Switching to Question must not carry over the Panel selection.
@@ -54,7 +54,7 @@ describe('AddLoincItemDialogComponent', () => {
 
   it('should preserve the Question selection, its display texts and chosen display field across toggles', () => {
     component.onLoincTypeChange(LoincItemType.QUESTION);
-    component.onSelectLoincQuestion(questionItem);
+    component.onSelectLoincItem(questionItem);
 
     expect(component.loincItem).toBe(questionItem);
     expect(Object.keys(component.loincItemDisplayTexts).length).toBeGreaterThan(1);
@@ -82,11 +82,11 @@ describe('AddLoincItemDialogComponent', () => {
 
   it('should keep independent selections for Panel and Question at the same time', () => {
     // Select a panel under the default Panel type.
-    component.onSelectLoincQuestion(panelItem);
+    component.onSelectLoincItem(panelItem);
 
     // Switch to Question and select a question.
     component.onLoincTypeChange(LoincItemType.QUESTION);
-    component.onSelectLoincQuestion(questionItem);
+    component.onSelectLoincItem(questionItem);
 
     // Each type retains its own selection when toggled.
     component.onLoincTypeChange(LoincItemType.PANEL);
@@ -97,7 +97,7 @@ describe('AddLoincItemDialogComponent', () => {
   });
 
   it('should be a no-op when the selected type does not change', () => {
-    component.onSelectLoincQuestion(panelItem);
+    component.onSelectLoincItem(panelItem);
 
     component.onLoincTypeChange(LoincItemType.PANEL);
 
@@ -106,7 +106,7 @@ describe('AddLoincItemDialogComponent', () => {
   });
 
   it('should update the selected type and preserve the selection when the radio group changes', async () => {
-    component.onSelectLoincQuestion(panelItem);
+    component.onSelectLoincItem(panelItem);
     const onChangeSpy = spyOn(component, 'onLoincTypeChange').and.callThrough();
 
     const radios: HTMLInputElement[] =
@@ -138,7 +138,7 @@ describe('AddLoincItemDialogComponent', () => {
     it('should report canAddLoincItem based on whether an item is selected', () => {
       expect(component.canAddLoincItem).toBeFalse();
 
-      component.onSelectLoincQuestion(panelItem);
+      component.onSelectLoincItem(panelItem);
       expect(component.canAddLoincItem).toBeTrue();
     });
 
@@ -148,13 +148,13 @@ describe('AddLoincItemDialogComponent', () => {
       expect(addButton.disabled).toBeTrue();
 
       // Selecting an item enables the button.
-      component.onSelectLoincQuestion(panelItem);
+      component.onSelectLoincItem(panelItem);
       await runOnPushChangeDetection(fixture);
       expect(getAddButton().disabled).toBeFalse();
     });
 
     it('should disable the Add button again after switching to a type with no selection', async () => {
-      component.onSelectLoincQuestion(panelItem);
+      component.onSelectLoincItem(panelItem);
       await runOnPushChangeDetection(fixture);
       expect(getAddButton().disabled).toBeFalse();
 
