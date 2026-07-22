@@ -766,8 +766,11 @@ test.describe('Home page', () => {
           const datepicker = approvalDtInput.locator('xpath=following-sibling::ngb-datepicker');
           await expect(datepicker).toBeVisible();
 
-          await datepicker.getByText('Today').click();
-          await expect(approvalDtInput).toHaveValue(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+          const todayButton = datepicker.getByRole('button', {name: 'Today', exact: true});
+          await expect(async () => {
+            await todayButton.click();
+            await expect(approvalDtInput).toHaveValue(dateRE, {timeout: 1000});
+          }).toPass({timeout: 10000});
 
           await approvalDtInput.clear();
           await approvalDtInput.fill('2021-01-01');
