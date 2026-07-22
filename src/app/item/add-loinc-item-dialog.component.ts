@@ -70,6 +70,9 @@ export class AddLoincItemDialogComponent {
    * same string as previously searched.
    *
    * @param term$ - User typed string
+   * @return An observable emitting the list of matching LOINC items for the
+   *   current LOINC item type, or an empty list when the search term has fewer
+   *   than two characters.
    */
   acSearch = (term$: Observable<string>): Observable<any []> => {
     return term$.pipe(

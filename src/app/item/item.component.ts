@@ -861,6 +861,10 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
    * @param autoCompResult - Auto completion item selected from the search box.
    *
    * @param loincType - Loinc item type: panel or question.
+   *
+   * @return An observable emitting the LOINC item: the panel fetched from the
+   *   server when the type is panel, or the selected auto completion item when
+   *   the type is question.
    */
   getLoincItem(autoCompResult: AutoCompleteLoincItem, loincType: LoincItemType): Observable<any> {
     let ret: Observable<any>;
@@ -876,7 +880,7 @@ export class ItemComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   /**
    * Fetch loinc item by id
-   * loincNum - Loinc number of the item.
+   * @param loincNum - Loinc number of the item.
    *
    */
   getItem(loincNum: string) {
