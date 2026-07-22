@@ -154,9 +154,12 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
       const changed = !(this.dataType === type);
       this.dataType = type;
-      // If type is not coding, cleanup the extension.
+      // Clear item-control selections that do not apply to the new data type.
       if (type !== 'coding' && type !== 'group' && type !== 'display') {
-        this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
+        this.clearExtensionItemControlSelection(false);
+        if(!this.supportsAnswerList(type)) {
+          this.removeAnswerListLayoutExtensions();
+        }
       } else {
         this.option = this.getItemControl(changed);
         this.updateItemControlExt(this.option);
@@ -183,6 +186,16 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       }
 
       this.answerList = answerList;
+      if(!answerList) {
+        const answerListItemControl = this.formProperty.searchProperty('/__$itemControl');
+        if(answerListItemControl.value) {
+          this.clearExtensionItemControlSelection(false);
+          if(answerListItemControl !== this.formProperty) {
+            answerListItemControl.setValue('', false);
+          }
+        }
+        this.removeAnswerListLayoutExtensions();
+      }
     })
     this.subscriptions.push(sub);
 
@@ -208,8 +221,6 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    * @param option - Selected option (angular event).
    */
   updateItemControlExt(option: string) {
-    this.clearExtensionItemControlSelection();
-
     if(this.answerMethod === 'answer-option' && option === 'autocomplete') {
       this.option = 'drop-down';
     }
@@ -236,13 +247,8 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       );
     }
     else {
-      this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl)
-    }
-
-    if(!this.isChoiceLayout(this.option)) {
-      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_CHOICE_ORIENTATION);
-      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_COLUMN_COUNT);
-      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_COLUMN_COUNT_LEGACY);
+      this.clearExtensionItemControlSelection(false);
+      return;
     }
   }
 
@@ -346,15 +352,18 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
 
   /**
    * Clear extension for the 'Item Control' radio button.
+   * @param announce - Whether to announce a user-initiated clear action.
    */
-  clearExtensionItemControlSelection() {
+  clearExtensionItemControlSelection(announce = true) {
     this.option = '';
     this.syncItemControlProxyValue(this.option);
     this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
     this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
 
-    const type = this.dataType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-    this.liveAnnouncer.announce(`${type} item control selection has been cleared.`);
+    if(announce) {
+      const type = this.dataType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+      this.liveAnnouncer.announce(`${type} item control selection has been cleared.`);
+    }
   }
 
   /**
@@ -381,11 +390,19 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   }
 
   /**
-   * Determine whether an item-control option supports choice layout settings.
-   * @param option - The item-control option to check.
-   * @returns true if the option is a radio-button or check-box layout, false otherwise.
+   * Determine whether a data type supports configuring an answer list.
+   * @param type - The Questionnaire item data type.
    */
-  private isChoiceLayout(option: string): boolean {
-    return option === 'radio-button' || option === 'check-box';
+  private supportsAnswerList(type: string): boolean {
+    return ['integer', 'date', 'time', 'string', 'text', 'coding'].includes(type);
+  }
+
+  /**
+   * Remove extensions that are only applicable while the item has an answer list.
+   */
+  private removeAnswerListLayoutExtensions(): void {
+    this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_CHOICE_ORIENTATION);
+    this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_COLUMN_COUNT);
+    this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_COLUMN_COUNT_LEGACY);
   }
 }

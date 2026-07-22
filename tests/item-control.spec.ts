@@ -392,7 +392,7 @@ test.describe('Item control', () => {
         ]);
       });
 
-      test('should remove orientation and column count when layout no longer supports them', async ({ page }) => {
+      test('should preserve orientation and column count for drop-down layout', async ({ page }) => {
         await prepareAnswerListItem(page);
 
         await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
@@ -401,11 +401,96 @@ test.describe('Item control', () => {
 
         await page.locator('[for^="__\\$itemControl\\.drop-down"]').click();
 
-        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toHaveCount(0);
-        await expect(page.locator('#__\\$columnCount')).toHaveCount(0);
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toBeVisible();
+        await expect(page.locator('#__\\$columnCount')).toBeVisible();
 
         const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
-        expect(json.item[0].extension).toEqual([itemControlExtensions['drop-down']]);
+        expect(json.item[0].extension).toEqual([
+          itemControlExtensions['drop-down'],
+          choiceOrientationExtension('horizontal'),
+          columnCountExtension(4)
+        ]);
+      });
+
+      test('should preserve orientation and column count when item control is unspecified', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Horizontal');
+        await page.locator('#__\\$columnCount').fill('4');
+
+        await page.locator('[for^="__\\$itemControl\\.unspecified"]').click();
+
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toBeVisible();
+        await expect(page.locator('#__\\$columnCount')).toBeVisible();
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([
+          choiceOrientationExtension('horizontal'),
+          columnCountExtension(4)
+        ]);
+      });
+
+      test('should edit imported layout extensions without an item-control extension', async ({ page }) => {
+        await PWUtils.uploadFile(page, 'choice-layout-without-item-control.json', true);
+        await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+        await expect(page.locator('.spinner-border')).not.toBeVisible();
+
+        await expect(PWUtils.getRadioButton(page, 'Answer list layout', 'Unspecified')).toBeChecked();
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Vertical')).toBeChecked();
+        await expect(page.locator('#__\\$columnCount')).toHaveValue('3');
+
+        const importedJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(importedJson.item[0].extension).toEqual([
+          choiceOrientationExtension('vertical'),
+          columnCountExtension(3)
+        ]);
+
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Unspecified');
+        await page.locator('#__\\$columnCount').fill('');
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toBeUndefined();
+      });
+
+      test('should exclude choice layout extensions while the answer list is disabled', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Vertical');
+        await page.locator('#__\\$columnCount').fill('2');
+
+        await PWUtils.clickRadioButton(page, 'Create answer list', 'No');
+
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Vertical')).toHaveCount(0);
+        await expect(page.locator('#__\\$columnCount')).toHaveCount(0);
+
+        const disabledJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(disabledJson.item[0].extension).toBeUndefined();
+
+        await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
+
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Vertical')).toBeChecked();
+        await expect(page.locator('#__\\$columnCount')).toHaveValue('2');
+
+        const enabledJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(enabledJson.item[0].extension).toEqual([
+          choiceOrientationExtension('vertical'),
+          columnCountExtension(2)
+        ]);
+      });
+
+      test('should remove choice layout extensions when item type changes', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Horizontal');
+        await page.locator('#__\\$columnCount').fill('3');
+
+        await PWUtils.selectDataType(page, 'boolean');
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toBeUndefined();
       });
     });
 

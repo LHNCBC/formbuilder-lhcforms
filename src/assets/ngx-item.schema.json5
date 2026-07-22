@@ -84,7 +84,7 @@
       ],
       "default": "",
       "visibleIf": {
-        "__$itemControl": ["radio-button", "check-box"]
+        "__$isAnswerList": [true]
       },
       "widget": {
         "id": "extension-primitive",
@@ -109,7 +109,7 @@
       "type": "integer",
       "minimum": 1,
       "visibleIf": {
-        "__$itemControl": ["radio-button", "check-box"]
+        "__$isAnswerList": [true]
       },
       "widget": {
         "id": "extension-primitive",
