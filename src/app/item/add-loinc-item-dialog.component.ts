@@ -129,9 +129,16 @@ export class AddLoincItemDialogComponent {
     this.selectedDisplayField = saved.selectedDisplayField;
   }
 
+  /**
+   * Set the selected LOINC item and collect its unique, non-empty display-text
+   * fields. Preserve a valid display-field choice and synchronize the stored
+   * selection for the active LOINC item type.
+   *
+   * @param loincItem - The LOINC search result selected by the user.
+   */
   onSelectLoincItem(loincItem: AutoCompleteLoincItem) {
     this.loincItem = loincItem;
-    const textFields = ['text', 'COMPONENT', 'LONG_COMMON_NAME', 'SHORTNAME', 'CONSUMER'];
+    const textFields = ['text', 'COMPONENT', 'LONG_COMMON_NAME', 'SHORTNAME', 'CONSUMER_NAME'];
     const uniqueTexts = new Set();
     this.loincItemDisplayTexts = Object.fromEntries(Object.entries(loincItem).filter(([key, value]) => {
       let ret = false;
@@ -153,11 +160,18 @@ export class AddLoincItemDialogComponent {
    * Whether there is a tangible LOINC item selected that can be added to the
    * questionnaire. Used to enable/disable the dialog's Add button so the user
    * cannot confirm an empty selection.
+   *
+   * @return True when a LOINC item is selected; otherwise, false.
    */
   get canAddLoincItem(): boolean {
     return !!this.loincItem;
   }
 
+  /**
+   * Add the selected LOINC item and close the dialog. Questions are converted
+   * to FHIR Questionnaire items using the selected display field, while panels
+   * are returned for the caller to retrieve and convert.
+   */
   onAddLoincItem() {
     if(this.loincType === LoincItemType.QUESTION) {
       const qItem = this.dataSrv.convertLoincQToItem(this.loincItem, this.selectedDisplayField);

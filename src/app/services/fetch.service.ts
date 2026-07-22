@@ -23,7 +23,7 @@ export interface AutoCompleteLoincItem {
   LOINC_NUM: string,
   text?: string,
   COMPONENT?: string,
-  CONSUMER?: string,
+  CONSUMER_NAME?: string,
   SHORTNAME?: string,
   LONG_COMMON_NAME?: string,
   answers?: any[],
@@ -128,6 +128,7 @@ export class FetchService {
    * @param term - Search term.
    * @param loincType - Panel or question.
    * @param options - http request options.
+   * @return An observable of matching LOINC items.
    */
   searchLoincItems(term: string, loincType?: LoincItemType, options?): Observable<AutoCompleteLoincItem []> {
     options = options || {};
@@ -135,7 +136,7 @@ export class FetchService {
     options.responseType = options.responseType || 'json' as const;
     options.params = (options.params ||
       new HttpParams());
-    options.params = options.params.set('df', 'text,LONG_COMMON_NAME,COMPONENT,SHORTNAME,CONSUMER');
+    options.params = options.params.set('df', 'text,LONG_COMMON_NAME,COMPONENT,SHORTNAME,CONSUMER_NAME');
     if(loincType === LoincItemType.PANEL) {
       options.params = options.params.set('type', 'form_and_section').set('available', true);
     }
@@ -160,7 +161,7 @@ export class FetchService {
               LONG_COMMON_NAME: texts[index][1]?.trim() || null,
               COMPONENT: texts[index][2]?.trim() || null,
               SHORTNAME: texts[index][3]?.trim() || null,
-              CONSUMER: texts[index][4]?.trim() || null,
+              CONSUMER_NAME: texts[index][4]?.trim() || null,
               answers: extraFields?.answers?.[index] || null,
               units: extraFields?.units?.[index] || null,
               datatype: extraFields?.datatype?.[index] || null,
@@ -212,6 +213,9 @@ export class FetchService {
   /**
    * Create FHIR Questionnaire.item from loinc question info.
    *
+   * @param loincItem - LOINC question information.
+   * @param displayField - LOINC field to use as the questionnaire item's display text.
+   * @return The converted FHIR Questionnaire item.
    */
   convertLoincQToItem(loincItem: AutoCompleteLoincItem, displayField: string): any {
     const ret: any = {
@@ -273,9 +277,10 @@ export class FetchService {
 
   /**
    * It parses a SNOMED CodeSystem bundle. Stores the editions
-   * in a map with its id as key and the iterator preserves the order of input array.
+   * in a map with its id as a key, and the iterator preserves the order of input array.
    *
    * @param snomedCSBundle - Response from SNOMED CodeSystem API.
+   * @return Map of SNOMED editions with their id as keys.
    */
   parseSNOMEDEditions(snomedCSBundle: fhir.Bundle): SNOMEDEditions {
     const editionVersionRE = /^http:\/\/snomed.info\/sct\/([^\/]+)\/version\/(.+)?$/;
