@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.2.0] 2026-07-23
+### Added
+- Added cardinality validation for general extensions. Duplicate single-occurrence
+  extension URLs are rejected at the same scope with an inline validation message,
+  while known repeatable extensions can be added multiple times.
+
 ## [12.1.0] 2026-07-21
 ### Added
 - When importing questions from LOINC, give option to the user to pick LOINC's LONG_COMMON_NAME/SHORTNAME/CONSUMER as text
@@ -1013,4 +1019,3 @@ ranked higher during the auto-completion.
 - Fixed displaying other in answer list item.
 ### Changed
 - Changed Text and Code fields to be required.
-
