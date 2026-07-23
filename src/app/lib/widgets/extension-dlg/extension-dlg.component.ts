@@ -28,6 +28,7 @@ import { FormService } from 'src/app/services/form.service';
 import {MessageDlgComponent, MessageType} from "../message-dlg/message-dlg.component";
 import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
+import {extensionAllowsMultiple} from '../../extension-defs';
 
 /**
  * A dialog component to edit a FHIR Extension object.
@@ -76,6 +77,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   formService: FormService = inject(FormService);
   ngbModalService: NgbModal = inject(NgbModal);
   disableSave = signal(true);
+  duplicateUrlError = signal<string | null>(null);
 
   dirtyObserver: MutationObserver;
   rowIndex = 0;
@@ -152,6 +154,12 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
    * Handle the dialog save and close event.
    */
   save() {
+    // Revalidate at submission time in case the containing extension array
+    // changed while this dialog was open.
+    this.updateDisableSave();
+    if (this.disableSave()) {
+      return;
+    }
     this.matDialogRef.close(this.changedValue);
   }
 
@@ -183,11 +191,31 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
+   * Check the extension URL against the other extensions at this exact scope.
+   * The current row is ignored when editing an existing extension.
+   * @returns True when another extension has the same URL and the definition does not allow multiple occurrences.
+   */
+  private hasDisallowedDuplicateUrl(): boolean {
+    const url = (this.changedValue?.url || '').trim();
+    if (!url || extensionAllowsMultiple(url)) {
+      return false;
+    }
+
+    return (this.data.arrayProperty?.value || []).some((extension: fhir.Extension, index: number) =>
+      index !== this.data.rowIndex && extension?.url?.trim() === url
+    );
+  }
+
+  /**
    * Update the disableSave signal based on dirty state and URL validity.
    */
   private updateDisableSave() {
     const isDirty = !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
-    this.disableSave.set(!isDirty || !this.isUrlValid());
+    const hasDuplicateUrl = this.hasDisallowedDuplicateUrl();
+    this.duplicateUrlError.set(hasDuplicateUrl
+      ? 'An extension with this URL already exists here and does not allow multiple occurrences.'
+      : null);
+    this.disableSave.set(!isDirty || !this.isUrlValid() || hasDuplicateUrl);
   }
 
   /**

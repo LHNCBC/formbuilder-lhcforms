@@ -78,6 +78,95 @@ describe('ExtensionDlgComponent', () => {
     expect(component.changedValue.url).toBe('http://changed.extension.org');
   });
 
+  it('should not apply duplicate URL styling to unrelated schema errors', async () => {
+    await createDialog([], -1);
+
+    expect(fixture.nativeElement.querySelectorAll('lfb-string input.invalid').length).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('lfb-string .duplicate-extension-url-error-icon').length).toBe(0);
+  });
+
+  it('should reject a duplicate unknown extension URL in the same scope', async () => {
+    await createDialog(inputExt, -1);
+
+    component.onChange({url: inputExt[0].url, valueString: 'another value'});
+
+    expect(component.duplicateUrlError()).toContain('already exists');
+    expect(component.disableSave()).toBeTrue();
+  });
+
+  it('should display a duplicate error with an icon and invalid styling under the URL field', async () => {
+    await createDialog(inputExt, -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = inputExt[0].url;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    urlInput.dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const urlWidget = urlInput.closest('lfb-extension-url');
+    expect(urlInput.classList).toContain('invalid');
+    expect(urlInput.getAttribute('aria-invalid')).toBe('true');
+    expect(urlWidget?.querySelector('fa-icon')).not.toBeNull();
+    expect(urlWidget?.textContent).toContain('already exists');
+    expect(fixture.nativeElement.querySelector('lfb-extension-dlg > p.text-danger')).toBeNull();
+
+    urlInput.value = 'http://unique.extension.org';
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(urlInput.classList).not.toContain('invalid');
+    expect(urlInput.hasAttribute('aria-invalid')).toBeFalse();
+    expect(urlWidget?.textContent).not.toContain('already exists');
+  });
+
+  it('should allow multiple occurrences for a known repeatable extension', async () => {
+    const variableUrl = 'http://hl7.org/fhir/StructureDefinition/variable';
+    await createDialog([{url: variableUrl, valueExpression: {language: 'text/fhirpath', expression: '1'}}], -1);
+
+    component.onChange({url: variableUrl, valueExpression: {language: 'text/fhirpath', expression: '2'}});
+
+    expect(component.duplicateUrlError()).toBeNull();
+  });
+
+  it('should allow multiple MIME type extensions', async () => {
+    const mimeTypeUrl = 'http://hl7.org/fhir/StructureDefinition/mimeType';
+    await createDialog([{url: mimeTypeUrl, valueCode: 'image/png'}], -1);
+
+    component.onChange({url: mimeTypeUrl, valueCode: 'application/pdf'});
+
+    expect(component.duplicateUrlError()).toBeNull();
+  });
+
+  it('should reject duplicates for a known single-occurrence extension', async () => {
+    const entryFormatUrl = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
+    await createDialog([{url: entryFormatUrl, valueString: 'MM/DD/YYYY'}], -1);
+
+    component.onChange({url: entryFormatUrl, valueString: 'YYYY-MM-DD'});
+
+    expect(component.duplicateUrlError()).toContain('already exists');
+    expect(component.disableSave()).toBeTrue();
+  });
+
+  it('should not treat the current extension as a duplicate when editing', async () => {
+    await createDialog(inputExt, 0);
+
+    component.onChange({...inputExt[0], valueString: 'changed value'});
+
+    expect(component.duplicateUrlError()).toBeNull();
+  });
+
+  it('should reject changing an extension URL to another single-occurrence URL in the same scope', async () => {
+    const otherUrl = 'http://other.extension.org';
+    await createDialog([...inputExt, {url: otherUrl, valueString: 'other value'}], 0);
+
+    component.onChange({url: otherUrl, valueString: 'changed value'});
+
+    expect(component.duplicateUrlError()).toContain('already exists');
+    expect(component.disableSave()).toBeTrue();
+  });
+
   it('should render date range widget for an existing valuePeriod extension', async () => {
     await createDialog([{
       url: 'http://some.period.extension.org',

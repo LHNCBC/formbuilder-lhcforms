@@ -36,6 +36,7 @@ export const CONDITIONAL_METHOD_NONE = "none";
 // Extension URL
 // formerly ENTRY_FORMAT_URI
 export const EXTENSION_URL_ENTRY_FORMAT = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
+export const EXTENSION_URL_MIME_TYPE = 'http://hl7.org/fhir/StructureDefinition/mimeType';
 // formerly VARIABLE
 export const EXTENSION_URL_VARIABLE = 'http://hl7.org/fhir/StructureDefinition/variable';
 // formerly CUSTOM_EXT_VARIABLE_TYPE

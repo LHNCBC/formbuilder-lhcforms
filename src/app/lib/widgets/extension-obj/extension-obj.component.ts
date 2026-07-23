@@ -42,6 +42,14 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
   @Output() changed = new EventEmitter<fhir.Extension>();
 
   @Input() model;
+  private _duplicateUrlError: string | null = null;
+
+  @Input()
+  set duplicateUrlError(error: string | null) {
+    this._duplicateUrlError = error;
+    this.updateUrlValidationError();
+  }
+
   extSchema = this.formService.getExtensionSchema();
   sfFormRootProperty: PropertyGroup;
 
@@ -61,7 +69,32 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
       this.subscriptions.push(sub);
     });
     this.handler(this.sfFormRootProperty.getProperty('__$valueTypeCategory').value);
+    this.updateUrlValidationError();
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Add the dialog's scope-aware duplicate check to the URL form property so
+   * the URL widget renders and announces it like its other validation errors.
+   */
+  private updateUrlValidationError() {
+    const urlProperty = this.sfFormRootProperty?.getProperty('url');
+    if (!urlProperty) {
+      return;
+    }
+
+    // Re-run the schema validators first to remove a previous duplicate error
+    // while preserving any built-in URL errors.
+    urlProperty.updateValueAndValidity(true, false);
+    if (this._duplicateUrlError) {
+      urlProperty.extendErrors({
+        code: 'DUPLICATE_EXTENSION_URL',
+        path: '#url',
+        message: this._duplicateUrlError,
+        params: []
+      });
+    }
+    this.cdr.markForCheck();
   }
 
   /**

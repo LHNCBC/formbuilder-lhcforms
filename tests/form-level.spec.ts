@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import { format, parseISO } from 'date-fns';
 import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
-import { ExtensionDefs } from '../src/app/lib/extension-defs';
+import { PREFERRED_TERMINOLOGY_SERVER_URI } from '../src/app/lib/constants/constants';
 
 const termsAcceptedKey = 'acceptedTermsOfUse';
 
@@ -624,7 +624,7 @@ test.describe('Home page', () => {
         await PWUtils.assertValueInQuestionnaire(page, '/extension', [
           {
             valueUrl: 'http://example.org/fhir',
-            url: ExtensionDefs.preferredTerminologyServer.url
+            url: PREFERRED_TERMINOLOGY_SERVER_URI
           }
         ]);
 
@@ -634,7 +634,7 @@ test.describe('Home page', () => {
         await tsUrl.fill('http://example.com/r4');
         await PWUtils.assertValueInQuestionnaire(page, '/extension', [
           {
-            url: ExtensionDefs.preferredTerminologyServer.url,
+            url: PREFERRED_TERMINOLOGY_SERVER_URI,
             valueUrl: 'http://example.com/r4'
           }
         ]);
@@ -654,26 +654,26 @@ test.describe('Home page', () => {
         await PWUtils.assertExtensionsInQuestionnaire(
           page,
           '/extension',
-          ExtensionDefs.preferredTerminologyServer.url,
+          PREFERRED_TERMINOLOGY_SERVER_URI,
           [
             {
-              url: ExtensionDefs.preferredTerminologyServer.url,
+              url: PREFERRED_TERMINOLOGY_SERVER_URI,
               valueUrl: 'https://example.org/fhir'
             }
           ]
         );
 
         await tsUrl.clear();
-        await PWUtils.assertExtensionsInQuestionnaire(page, '/extension', ExtensionDefs.preferredTerminologyServer.url, []);
+        await PWUtils.assertExtensionsInQuestionnaire(page, '/extension', PREFERRED_TERMINOLOGY_SERVER_URI, []);
 
         await tsUrl.fill('http://a.b');
         await PWUtils.assertExtensionsInQuestionnaire(
           page,
           '/extension',
-          ExtensionDefs.preferredTerminologyServer.url,
+          PREFERRED_TERMINOLOGY_SERVER_URI,
           [
             {
-              url: ExtensionDefs.preferredTerminologyServer.url,
+              url: PREFERRED_TERMINOLOGY_SERVER_URI,
               valueUrl: 'http://a.b'
             }
           ]

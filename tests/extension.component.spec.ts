@@ -1,6 +1,10 @@
 import {Page, test, expect} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
+import {
+  EXTENSION_URL_ENTRY_FORMAT,
+  EXTENSION_URL_MIME_TYPE
+} from '../src/app/lib/constants/constants';
 
 
 
@@ -16,6 +20,20 @@ async function assertCreateExtension(page: Page) {
   await expect(formLoc.getByRole('combobox', {name: 'Primitive Type'})).toHaveValue(/valueString/);
   await formLoc.getByText('Value string').fill('Test extension value');
   await page.getByRole('button', {name: 'Save and close'}).first().click();
+}
+
+async function addPrimitiveExtension(page: Page, url: string, valueType: string, value: string) {
+  await page.getByRole('button', {name: 'Add new extension'}).first().click();
+  const dialog = page.locator('lfb-extension-dlg').last();
+  const formLoc = dialog.locator('lfb-extension-obj sf-form');
+  await expect(formLoc).toBeVisible();
+  await formLoc.getByLabel('Url', {exact: true}).fill(url);
+  const primitiveTypeLabel = valueType.replace(/^value/, '').replace(/^./, (character) => character.toLowerCase());
+  await formLoc.getByRole('combobox', {name: 'Primitive Type'}).selectOption({label: primitiveTypeLabel});
+  await formLoc.locator(`input[id^="${valueType}"]`).fill(value);
+  await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeEnabled();
+  await dialog.getByRole('button', {name: 'Save and close'}).click();
+  await expect(dialog).not.toBeVisible();
 }
 
 
@@ -36,6 +54,45 @@ test.describe('extension.component', async () => {
       url: 'http://example.org',
       valueString: 'Test extension value'
     }]);
+  });
+
+  test('Form level page - should reject a second extension when the maximum cardinality is one', async ({page}) => {
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await addPrimitiveExtension(page, EXTENSION_URL_ENTRY_FORMAT, 'valueString', 'First format');
+
+    await page.getByRole('button', {name: 'Add new extension'}).first().click();
+    const dialog = page.locator('lfb-extension-dlg').last();
+    const formLoc = dialog.locator('lfb-extension-obj sf-form');
+    const urlInput = formLoc.getByLabel('Url', {exact: true});
+    await urlInput.fill(EXTENSION_URL_ENTRY_FORMAT);
+    await formLoc.locator('input[id^="valueString"]').fill('Second format');
+
+    const urlWidget = urlInput.locator('xpath=ancestor::lfb-extension-url');
+    await expect(urlInput).toHaveClass(/\binvalid\b/);
+    await expect(urlInput).toHaveAttribute('aria-invalid', 'true');
+    await expect(urlWidget.locator('fa-icon.duplicate-extension-url-error-icon')).toBeVisible();
+    await expect(urlWidget).toContainText(
+      'An extension with this URL already exists here and does not allow multiple occurrences.'
+    );
+    await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(q.extension).toEqual([{
+      url: EXTENSION_URL_ENTRY_FORMAT,
+      valueString: 'First format'
+    }]);
+  });
+
+  test('Form level page - should allow multiple extensions when the cardinality is repeatable', async ({page}) => {
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await addPrimitiveExtension(page, EXTENSION_URL_MIME_TYPE, 'valueCode', 'image/png');
+    await addPrimitiveExtension(page, EXTENSION_URL_MIME_TYPE, 'valueCode', 'application/pdf');
+
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(q.extension).toEqual([
+      {url: EXTENSION_URL_MIME_TYPE, valueCode: 'image/png'},
+      {url: EXTENSION_URL_MIME_TYPE, valueCode: 'application/pdf'}
+    ]);
   });
 
   test('Form level page - should not duplicate ContactDetail telecom period after adding telecom item', async ({page}) => {

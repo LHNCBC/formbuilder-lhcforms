@@ -11,6 +11,7 @@
   <div class="container">
     <lfb-extension-obj
                        [model]="inputModel"
+                       [duplicateUrlError]="duplicateUrlError()"
                        (changed)="onChange($event)"
     ></lfb-extension-obj>
   </div>
@@ -20,4 +21,3 @@
   <button class="btn btn-primary ms-2" [disabled]="disableSave()" (click)="save()">Save and close</button>
 </mat-dialog-actions>
 </div>
-
