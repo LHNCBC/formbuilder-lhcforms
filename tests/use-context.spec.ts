@@ -319,6 +319,34 @@ test.describe('Use context field tests', () => {
     await expect(saveButton).toBeEnabled();
   });
 
+  test('should save a populated Coding without Coding.code', async ({ page }) => {
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextDialog = await addUseContextRow(page);
+    await useContextDialog.locator('input[id^="code.display"]').fill('Clinical Focus');
+    await useContextDialog.locator('input[id^="code.system"]')
+      .fill('http://terminology.hl7.org/CodeSystem/usage-context-type');
+    await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Codeable concept'});
+    await useContextDialog.locator('input[id^="valueCodeableConcept.text"]').fill('Cardiology');
+
+    const saveButton = useContextDialog.getByRole('button', { name: 'Save and close' });
+    await expect(saveButton).toBeEnabled();
+    await saveButton.click();
+    await expect(useContextDialog).toBeHidden();
+
+    const previewJson = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(previewJson.useContext[0]).toMatchObject({
+      code: {
+        display: 'Clinical Focus',
+        system: 'http://terminology.hl7.org/CodeSystem/usage-context-type'
+      },
+      valueCodeableConcept: {
+        text: 'Cardiology'
+      }
+    });
+    expect(previewJson.useContext[0].code.code).toBeUndefined();
+  });
+
   test('should populate all UsageContext value types and persist the expected JSON', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 
@@ -333,8 +361,7 @@ test.describe('Use context field tests', () => {
     await expect(useContextDialog.getByText('Code is required.')).toHaveCount(0);
     await expect.poll(() => codeInput.evaluate((el) => el.classList.contains('invalid'))).toBe(false);
     await expect(codeInput).not.toHaveAttribute('aria-invalid', 'true');
-    await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeDisabled();
-    await expect(useContextDialog.locator('.save-button-tooltip-wrapper')).toHaveAttribute('title', 'Code and value[x] are required.');
+    await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeEnabled();
     await codeInput.fill('gender');
     await expect.poll(() => codeInput.evaluate((el) => el.classList.contains('invalid'))).toBe(false);
     await expect(codeInput).not.toHaveAttribute('aria-invalid', 'true');

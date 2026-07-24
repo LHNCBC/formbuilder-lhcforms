@@ -228,13 +228,16 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
   }
 
   /**
-   * Check whether UsageContext code.code is populated.
+   * Check whether the required UsageContext Coding object is populated.
+   *
+   * Coding.code is optional in FHIR, so any meaningful Coding field satisfies
+   * this requirement.
    *
    * @param currentValue - Current UsageContext form value.
-   * @returns True when code.code has a value.
+   * @returns True when the Coding object contains at least one value.
    */
   private hasRequiredCode(currentValue: any): boolean {
-    return !Util.isEmpty(currentValue?.code?.code);
+    return !Util.isEmpty(currentValue?.code);
   }
 
   /**
@@ -261,7 +264,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * Get the tooltip message explaining why Save is disabled.
    *
    * @param modelChanged - True when the model changed.
-   * @param hasRequiredCode - True when code.code is populated.
+   * @param hasRequiredCode - True when the required Coding object is populated.
    * @param hasRequiredValue - True when a value[x] is populated.
    * @param validationError - Current validation error message.
    * @param schemaFormValid - True when schema-form validation passes.
