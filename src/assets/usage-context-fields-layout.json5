@@ -99,14 +99,14 @@
       labelPosition: 'left',
       labelClasses: 'col-sm-2 ps-0 pe-1',
       controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1'
+      objectBodyClasses: 'shadow rounded p-1 mb-1'
     },
     codeObject: {
       id: 'lfb-object',
       labelPosition: 'left',
       labelClasses: 'col-sm-2 ps-0 pe-1',
       controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      objectBodyClasses: 'shadow rounded p-1 mb-1',
       showFields: [
         {field: 'display', col: 12},
         {field: 'code', col: 12},
@@ -118,7 +118,7 @@
       labelPosition: 'left',
       labelClasses: 'col-sm-2 ps-0 pe-1',
       controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      objectBodyClasses: 'shadow rounded p-1 mb-1',
       showFields: [
         {field: 'text', col: 12},
         {field: 'coding', col: 12}
@@ -141,7 +141,7 @@
       labelPosition: 'left',
       labelClasses: 'col-sm-2 ps-0 pe-1',
       controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      objectBodyClasses: 'shadow rounded p-1 mb-1',
       showFields: [
         {field: 'value', col: 12},
         {field: 'comparator', col: 12},
@@ -155,7 +155,7 @@
       labelPosition: 'left',
       labelClasses: 'col-sm-2 ps-0 pe-1',
       controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      objectBodyClasses: 'shadow rounded p-1 mb-1',
       showFields: [
         {field: 'value', col: 12},
         {field: 'unit', col: 12},
@@ -168,7 +168,7 @@
       labelPosition: 'left',
       labelClasses: 'col-sm-2 ps-0 pe-1',
       controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      objectBodyClasses: 'shadow rounded p-1 mb-1',
       showFields: [
         {field: 'low', col: 12},
         {field: 'high', col: 12}
@@ -179,7 +179,7 @@
       labelPosition: 'left',
       labelClasses: 'col-sm-2 ps-0 pe-1',
       controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      objectBodyClasses: 'shadow rounded p-1 mb-1',
       showFields: [
         {field: 'display', col: 12},
         {field: 'reference', col: 12},
