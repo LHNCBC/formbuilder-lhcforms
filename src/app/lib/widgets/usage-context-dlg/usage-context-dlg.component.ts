@@ -113,7 +113,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
     const currentValue = this.usageContextObj?.sfFormRootProperty
       ? this.getCurrentValueForChangeDetection()
       : value;
-    return this.prepareValue(currentValue || {});
+    return this.normalizeValueForSave(currentValue || {});
   }
 
   /**
@@ -184,7 +184,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - UsageContext value to save.
    * @returns UsageContext with one value[x] and a table summary.
    */
-  prepareValue(value: any): any {
+  private normalizeValueForSave(value: any): any {
     const nextValue = this.cloneUsageContext(value || {});
     this.unwrapValueReferenceIdentifier(nextValue);
     this.pruneExtraValueChoices(nextValue);

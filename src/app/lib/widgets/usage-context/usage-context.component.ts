@@ -13,16 +13,6 @@ import {TitleComponent} from '../title/title.component';
 import {TableEditRowInDlgComponent} from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {UsageContextDlgComponent} from '../usage-context-dlg/usage-context-dlg.component';
 import {IsDisabledPipe} from '../../pipes/is-disabled.pipe';
-import {Util} from '../../util';
-
-type UsageContextValueKey = 'valueCodeableConcept' | 'valueQuantity' | 'valueRange' | 'valueReference';
-
-const VALUE_KEYS: UsageContextValueKey[] = [
-  'valueCodeableConcept',
-  'valueQuantity',
-  'valueRange',
-  'valueReference'
-];
 
 /**
  * Table editor for Questionnaire.useContext.
@@ -90,8 +80,7 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
 
     const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
       if (submittedValue) {
-        const nextValue = this.prepareValue(submittedValue);
-        this.formProperty.properties[index].reset(nextValue, false);
+        this.formProperty.properties[index].reset(submittedValue, false);
         this.updateValueSummaries();
       }
       sub.unsubscribe();
@@ -111,20 +100,11 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
       this.dialogComponentType);
     const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
       if(submittedValue) {
-        this.addNewItem(this.prepareValue(submittedValue));
+        this.addNewItem(submittedValue);
         this.updateValueSummaries();
       }
       sub.unsubscribe();
     });
-  }
-
-  /**
-   * Add a UsageContext row after pruning unused value[x] choices.
-   *
-   * @param newValue - UsageContext value to add.
-   */
-  override addNewItem(newValue: any): void {
-    super.addNewItem(this.prepareValue(newValue));
   }
 
   /**
@@ -184,33 +164,6 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
     finally {
       this.updatingSummaries = false;
     }
-  }
-
-  /**
-   * Prepare a UsageContext value for table storage.
-   *
-   * @param value - UsageContext value from the dialog.
-   * @returns Cloned UsageContext value with one value[x] choice and a display summary.
-   */
-  private prepareValue(value: any): any {
-    const nextValue = JSON.parse(JSON.stringify(value || {}));
-    this.pruneExtraValueChoices(nextValue);
-    nextValue.__$valueSummary = UsageContextDlgComponent.getValueSummary(nextValue);
-    return nextValue;
-  }
-
-  /**
-   * Remove unselected UsageContext value[x] properties.
-   *
-   * @param value - UsageContext value to mutate.
-   */
-  private pruneExtraValueChoices(value: any): void {
-    const selectedKey = VALUE_KEYS.find((key) => !Util.isEmpty(value[key]));
-    VALUE_KEYS.forEach((key) => {
-      if(key !== selectedKey) {
-        delete value[key];
-      }
-    });
   }
 
   /**
