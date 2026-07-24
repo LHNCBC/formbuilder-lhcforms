@@ -82,16 +82,6 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
   }
 
   /**
-   * Normalize optional input attributes for stable template bindings.
-   *
-   * @param value - Attribute value from the schema.
-   * @returns Attribute value, or null when the attribute should be omitted.
-   */
-  getAttributeValue(value: unknown): string | number | null {
-    return value === undefined || value === null || value === '' ? null : value as string | number;
-  }
-
-  /**
    * Check whether the current string field should show formatted JSON in its tooltip.
    */
   private shouldFormatTooltipAsJson(): boolean {
