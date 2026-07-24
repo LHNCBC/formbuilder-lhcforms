@@ -33,6 +33,7 @@ export class UsageContextObjComponent implements AfterViewInit {
 
   @ViewChild('sfForm', {read: FormComponent}) sfForm: FormComponent;
   @Output() changed = new EventEmitter<any>();
+  @Output() validityChanged = new EventEmitter<boolean>();
   @Input() model!: any;
 
   usageContextSchema = this.formService.cloneUsageContextSchema();
@@ -52,5 +53,14 @@ export class UsageContextObjComponent implements AfterViewInit {
    */
   handleChange(value: any) {
     this.changed.emit(value);
+  }
+
+  /**
+   * Forward schema-form validity changes to the dialog.
+   *
+   * @param valid - True when the complete UsageContext schema form is valid.
+   */
+  handleValidityChange(valid: boolean) {
+    this.validityChanged.emit(valid);
   }
 }

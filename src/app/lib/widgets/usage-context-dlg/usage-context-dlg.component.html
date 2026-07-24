@@ -12,6 +12,7 @@
 	    <lfb-usage-context-obj
 	      [model]="inputModel"
 	      (changed)="onChange($event)"
+	      (validityChanged)="onValidityChange($event)"
 	    ></lfb-usage-context-obj>
 	    @if (validationError()) {
 	      <small class="text-danger form-text" role="alert">{{validationError()}}</small>

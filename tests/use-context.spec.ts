@@ -297,6 +297,28 @@ test.describe('Use context field tests', () => {
     });
   });
 
+  test('should disable Save while the schema form is invalid', async ({ page }) => {
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextDialog = await addUseContextRow(page);
+    await useContextDialog.locator('input[id^="code.code"]').fill('focus');
+    await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Codeable concept'});
+    await useContextDialog.locator('input[id^="valueCodeableConcept.text"]').fill('Clinical focus');
+
+    const systemInput = useContextDialog.locator('input[id^="code.system"]');
+    const saveButton = useContextDialog.getByRole('button', { name: 'Save and close' });
+    await systemInput.fill('not a valid uri');
+
+    await expect(systemInput).toHaveClass(/invalid/);
+    await expect(saveButton).toBeDisabled();
+    await expect(useContextDialog.locator('.save-button-tooltip-wrapper'))
+      .toHaveAttribute('title', 'Correct validation errors before saving.');
+
+    await systemInput.fill('http://terminology.hl7.org/CodeSystem/usage-context-type');
+    await expect(systemInput).not.toHaveClass(/invalid/);
+    await expect(saveButton).toBeEnabled();
+  });
+
   test('should populate all UsageContext value types and persist the expected JSON', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 

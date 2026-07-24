@@ -65,6 +65,8 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
 
   private rawValueStore = inject(RawValueStoreService);
   private readonly originalIdentifierRows = new WeakMap<FormProperty, any>();
+  // Fail closed until schema-form reports the validity of the initialized model.
+  private schemaFormValid = false;
 
   constructor() {
     super(
@@ -134,6 +136,20 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
   }
 
   /**
+   * Recalculate the save state when schema validation changes.
+   *
+   * Schema-form emits value changes before completing validation, so this
+   * separate event ensures the dialog uses the validity of the latest value.
+   *
+   * @param valid - True when the complete UsageContext schema form is valid.
+   */
+  onValidityChange(valid: boolean): void {
+    this.schemaFormValid = valid;
+    this.updateDisableSave();
+    this.cdr.detectChanges();
+  }
+
+  /**
    * Build the display summary used by the parent table.
    *
    * @param value - UsageContext value.
@@ -188,12 +204,14 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
       modelChanged,
       hasRequiredCode,
       hasRequiredValue,
-      rangeValidationError
+      rangeValidationError,
+      this.schemaFormValid
     ));
     this.disableSave.set(
       !modelChanged ||
       !hasRequiredCode ||
       !hasRequiredValue ||
+      !this.schemaFormValid ||
       !!rangeValidationError
     );
   }
@@ -246,19 +264,24 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param hasRequiredCode - True when code.code is populated.
    * @param hasRequiredValue - True when a value[x] is populated.
    * @param validationError - Current validation error message.
+   * @param schemaFormValid - True when schema-form validation passes.
    * @returns Tooltip text for the disabled save button.
    */
   private getSaveDisabledReason(
     modelChanged: boolean,
     hasRequiredCode: boolean,
     hasRequiredValue: boolean,
-    validationError: string
+    validationError: string,
+    schemaFormValid: boolean
   ): string {
     if(validationError) {
       return validationError;
     }
     if(!hasRequiredCode || !hasRequiredValue) {
       return 'Code and value[x] are required.';
+    }
+    if(!schemaFormValid) {
+      return 'Correct validation errors before saving.';
     }
     return modelChanged ? '' : 'Make changes before saving.';
   }
