@@ -467,6 +467,9 @@ export class FormService {
 
     if(depth <= 0) {
       delete assignerProps.identifier;
+      // Keep Identifier content deeper than the generated UI recursion limit
+      // when an imported or dialog-produced model is reset into this schema.
+      schema.properties.assigner.additionalProperties = true;
       return;
     }
 

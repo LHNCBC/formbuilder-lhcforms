@@ -59,6 +59,16 @@ export abstract class TableRowDialogBase<T> {
   }
 
   /**
+   * Return the stored value used to initialize an existing row.
+   *
+   * Concrete dialogs can override this when the schema-form row value omits
+   * data that is preserved separately.
+   */
+  protected getExistingRowValue(rowProperty: FormProperty): T {
+    return rowProperty.value as T;
+  }
+
+  /**
    * Return the value to use when checking whether the dialog has unsaved changes.
    */
   protected getCurrentValueForChangeDetection(): unknown {
@@ -70,7 +80,7 @@ export abstract class TableRowDialogBase<T> {
    */
   ngOnInit() {
     const rawInputModel = this.data.rowIndex >= 0
-      ? this.data.arrayProperty.properties[this.data.rowIndex].value
+      ? this.getExistingRowValue(this.data.arrayProperty.properties[this.data.rowIndex] as FormProperty)
       : this.createNewModel();
     this.inputModel = this.prepareInputModel(rawInputModel);
     this.changedValue = this.inputModel;

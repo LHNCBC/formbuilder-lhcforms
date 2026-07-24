@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, DoCheck, inject, Input, OnInit} from '@angular/core';
+import {AfterViewInit, Component, DoCheck, inject, Input, OnDestroy, OnInit} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TableComponent } from '../table/table.component';
@@ -55,9 +55,11 @@ export interface DialogData {
     }
   `]
 })
-export class TableEditRowInDlgComponent extends TableComponent implements OnInit, AfterViewInit, DoCheck {
+export class TableEditRowInDlgComponent extends TableComponent implements OnInit, AfterViewInit, DoCheck, OnDestroy {
   override includeActionColumn = true;
   private syntheticEmptyRowRemovalScheduled = false;
+  private destroyed = false;
+  private syntheticEmptyRowTimerId: ReturnType<typeof setTimeout> | null = null;
 
   @Input()
   dialogComponentType: ComponentType<unknown> = null;
@@ -97,7 +99,11 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
       return;
     }
     this.syntheticEmptyRowRemovalScheduled = true;
-    setTimeout(() => {
+    this.syntheticEmptyRowTimerId = setTimeout(() => {
+      this.syntheticEmptyRowTimerId = null;
+      if(this.destroyed) {
+        return;
+      }
       const props = this.formProperty?.properties || [];
       if(!this.addDefaultItemIfEmpty && props.length === 1 && Util.isEmpty(props[0]?.value)) {
         this.formProperty.removeItem(props[0]);
@@ -192,7 +198,7 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     const overlayPanes = Array.from(
       this.elementRef.nativeElement.ownerDocument.querySelectorAll('.cdk-overlay-pane')
     ).filter((pane: Element) =>
-      pane.querySelector('lfb-extension-dlg, lfb-identifier-dlg, lfb-usage-context-dlg')
+      pane.querySelector('.lfb-row-dialog')
     ) as HTMLElement[];
     const previousPanePosition = overlayPanes.length
       ? overlayPanes[overlayPanes.length - 1].getBoundingClientRect()
@@ -202,7 +208,10 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     );
     const position = previousPanePosition || previousDialogRef?.componentInstance?.dlgContainer?.nativeElement.getBoundingClientRect();
     if(position) {
-      dPosition = {top: position.top + this.dialogOffsetPx + 'px', left: position.left + this.dialogOffsetPx + 'px'};
+      dPosition = this.getStackedDialogPosition(
+        position,
+        this.elementRef.nativeElement.ownerDocument
+      );
     }
     const matDialogRef = this.matDialogService.open(contentDlg, {
       data: contentData,
@@ -214,8 +223,42 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     });
     if(dPosition) {
       matDialogRef.updatePosition(dPosition);
-      setTimeout(() => matDialogRef.updatePosition(dPosition));
+      matDialogRef.afterOpened().pipe(take(1)).subscribe(() => {
+        if(!this.destroyed) {
+          matDialogRef.updatePosition(dPosition);
+        }
+      });
     }
     return matDialogRef;
+  }
+
+  /**
+   * Offset a stacked dialog while keeping its full pane inside the viewport.
+   *
+   * @param previousPane - Bounding rectangle of the dialog beneath the new one.
+   * @param ownerDocument - Document that owns the dialog overlay.
+   * @returns Clamped top and left coordinates for MatDialog.
+   */
+  private getStackedDialogPosition(previousPane: DOMRect, ownerDocument: Document): DialogPosition {
+    const viewport = ownerDocument.defaultView;
+    const viewportWidth = viewport?.innerWidth || ownerDocument.documentElement.clientWidth;
+    const viewportHeight = viewport?.innerHeight || ownerDocument.documentElement.clientHeight;
+    const maxLeft = Math.max(0, viewportWidth - previousPane.width);
+    const maxTop = Math.max(0, viewportHeight - previousPane.height);
+    const left = Math.min(Math.max(0, previousPane.left + this.dialogOffsetPx), maxLeft);
+    const top = Math.min(Math.max(0, previousPane.top + this.dialogOffsetPx), maxTop);
+    return {top: `${top}px`, left: `${left}px`};
+  }
+
+  /**
+   * Clear pending deferred work before the table is destroyed.
+   */
+  override ngOnDestroy() {
+    this.destroyed = true;
+    if(this.syntheticEmptyRowTimerId !== null) {
+      clearTimeout(this.syntheticEmptyRowTimerId);
+      this.syntheticEmptyRowTimerId = null;
+    }
+    super.ngOnDestroy();
   }
 }

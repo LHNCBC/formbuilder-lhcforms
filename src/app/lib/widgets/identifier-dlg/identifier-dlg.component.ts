@@ -25,6 +25,8 @@ import { FormService } from 'src/app/services/form.service';
 import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {IdentifierObjComponent} from "../identifier-obj/identifier-obj.component";
 import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base";
+import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {RawValueStoreService} from '../../../services/raw-value-store.service';
 
 /**
  * A dialog component to edit a FHIR Identifier object.
@@ -54,6 +56,8 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
   @ViewChild(IdentifierObjComponent) identifierObj!: IdentifierObjComponent;
 
   formService: FormService = inject(FormService);
+  private rawValueStore = inject(RawValueStoreService);
+  private readonly originalIdentifierRows = new WeakMap<FormProperty, fhir.Identifier>();
 
   constructor() {
     super(
@@ -73,6 +77,22 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
    */
   protected createNewModel(): fhir.Identifier {
     return {} as fhir.Identifier;
+  }
+
+  /**
+   * Prefer the complete Identifier preserved for a table row over the
+   * depth-limited schema-form value.
+   */
+  protected override getExistingRowValue(rowProperty: FormProperty): fhir.Identifier {
+    return this.rawValueStore.getIdentifier(rowProperty) || rowProperty.value as fhir.Identifier;
+  }
+
+  /**
+   * Preserve complete nested rows after the schema form is materialized.
+   */
+  override ngAfterViewInit() {
+    super.ngAfterViewInit();
+    this.seedOriginalAssignerIdentifierRows();
   }
 
   /**
@@ -114,6 +134,48 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
     return this.identifierObj?.sfFormRootProperty
       ? this.getCurrentFormPropertyValue(this.identifierObj.sfFormRootProperty)
       : this.changedValue;
+  }
+
+  /**
+   * Resolve nested Identifier tables from complete row values before falling
+   * back to the depth-limited live form tree.
+   */
+  protected override getCurrentFormPropertyValue(property: any): any {
+    if(property
+        && Array.isArray(property.properties)
+        && property.schema?.widget?.id === 'identifier'
+        && Array.isArray(property.value)) {
+      const value = property.properties
+        .map((child: FormProperty) =>
+          this.rawValueStore.getIdentifier(child) ||
+          this.originalIdentifierRows.get(child) ||
+          super.getCurrentFormPropertyValue(child)
+        )
+        .map((childValue) => this.cloneIdentifier(childValue))
+        .filter((childValue) => childValue && Object.keys(childValue).length);
+      return value.length ? value : undefined;
+    }
+    return super.getCurrentFormPropertyValue(property);
+  }
+
+  /**
+   * Associate the visible assigner.identifier row with its complete original
+   * value, including descendants beyond the generated schema depth.
+   */
+  private seedOriginalAssignerIdentifierRows(): void {
+    const identifierProperty = this.identifierObj?.sfFormRootProperty?.getProperty?.('assigner/identifier');
+    const identifiers = (this.inputModel as any)?.assigner?.identifier;
+    if(!identifierProperty?.properties || !Array.isArray(identifiers)) {
+      return;
+    }
+    identifierProperty.properties.forEach((rowProperty: FormProperty, index: number) => {
+      const identifier = identifiers[index] as fhir.Identifier;
+      if(identifier && Object.keys(identifier).length) {
+        const original = this.cloneIdentifier(identifier);
+        this.originalIdentifierRows.set(rowProperty, original);
+        this.rawValueStore.setIdentifier(rowProperty, original);
+      }
+    });
   }
 
   /**

@@ -10,7 +10,14 @@ test.describe('Use context field tests', () => {
   const getDialogPaneRects = async (page: Page) => page.evaluate(() => {
     const toRect = (element: Element | undefined) => {
       const rect = element?.getBoundingClientRect();
-      return rect ? {top: rect.top, left: rect.left} : null;
+      return rect ? {
+        top: rect.top,
+        left: rect.left,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height
+      } : null;
     };
     const panes = Array.from(document.querySelectorAll('.cdk-overlay-pane'));
     return {
@@ -66,6 +73,21 @@ test.describe('Use context field tests', () => {
         await identifierDialog.getByRole('button', { name: /Add (new )?identifier/i }).click();
       }
     }
+
+    await expect(page.locator('.cdk-overlay-pane .lfb-row-dialog'))
+      .toHaveCount(identifiers.length + 1);
+    const viewport = page.viewportSize();
+    await expect.poll(async () => {
+      const paneRects = await getDialogPaneRects(page);
+      const rects = [paneRects.usageContext, ...paneRects.identifiers];
+      return !!viewport && rects.every((rect) =>
+        !!rect &&
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.right <= viewport.width + 1 &&
+        rect.bottom <= viewport.height + 1
+      );
+    }).toBe(true);
 
     for (let index = identifiers.length - 1; index >= 0; index--) {
       const identifierDialog = page.locator('lfb-identifier-dlg').nth(index);
@@ -295,6 +317,71 @@ test.describe('Use context field tests', () => {
       value: 'plan-789',
       use: 'official'
     });
+  });
+
+  test('should preserve Identifier data beyond the generated recursion limit', async ({ page }) => {
+    const identifiers = Array.from({length: 12}, (_, index) => ({
+      system: `http://example.org/identifier-level-${index}`,
+      value: `identifier-level-${index}`
+    }));
+    let nestedIdentifier: any;
+    for(let index = identifiers.length - 1; index >= 0; index--) {
+      nestedIdentifier = {
+        ...identifiers[index],
+        ...(nestedIdentifier ? {assigner: {identifier: nestedIdentifier}} : {})
+      };
+    }
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      title: 'Deep Identifier Test',
+      useContext: [{
+        code: {
+          display: 'Workflow Task',
+          code: 'task',
+          system: 'http://terminology.hl7.org/CodeSystem/usage-context-type'
+        },
+        valueReference: {
+          identifier: nestedIdentifier
+        }
+      }]
+    };
+
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from file...');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'deep-identifier.json',
+      mimeType: 'application/fhir+json',
+      buffer: Buffer.from(JSON.stringify(questionnaire))
+    });
+
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+    const useContextRow = page.locator('lfb-usage-context tbody > tr')
+      .filter({ has: page.locator('input[id^="useContext."]') })
+      .first();
+    await useContextRow.getByRole('button', { name: 'Edit this row' }).click();
+    const useContextDialog = getUseContextDialog(page);
+    const identifierTable = useContextDialog.locator('lfb-identifier table');
+    await identifierTable.locator('tbody > tr').first().getByRole('button', { name: 'Edit this row' }).click();
+    const identifierDialog = page.locator('lfb-identifier-dlg').last();
+    await identifierDialog.locator('input[name="value"]').fill('identifier-level-0-updated');
+    await identifierDialog.getByRole('button', { name: 'Save and close' }).click();
+    await expect(identifierDialog).toBeHidden();
+
+    await useContextDialog.getByRole('button', { name: 'Save and close' }).click();
+    await expect(useContextDialog).toBeHidden();
+
+    const previewJson = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    let identifier = previewJson.useContext[0].valueReference.identifier;
+    const expectedIdentifiers = [
+      {...identifiers[0], value: 'identifier-level-0-updated'},
+      ...identifiers.slice(1)
+    ];
+    for(const expected of expectedIdentifiers) {
+      expect(identifier).toMatchObject(expected);
+      identifier = identifier.assigner?.identifier;
+    }
   });
 
   test('should disable Save while the schema form is invalid', async ({ page }) => {
