@@ -368,6 +368,47 @@ test.describe('Use context field tests', () => {
     await expect(saveButton).toBeEnabled();
   });
 
+  test('should reject incompatible low and high Range units', async ({ page }) => {
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextDialog = await addUseContextRow(page);
+    await fillUseContextCode(useContextDialog, {
+      display: 'Age',
+      code: 'age',
+      system: 'http://terminology.hl7.org/CodeSystem/usage-context-type'
+    });
+    await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Range'});
+
+    const rangeValues = {
+      unit: 'years',
+      system: 'http://unitsofmeasure.org',
+      code: 'a'
+    };
+    await useContextDialog.locator('input[id*="valueRange.low.value"]').fill('18');
+    await useContextDialog.locator('input[id*="valueRange.high.value"]').fill('65');
+    for(const [field, value] of Object.entries(rangeValues)) {
+      await useContextDialog.locator(`input[id*="valueRange.low.${field}"]`).fill(value);
+      await useContextDialog.locator(`input[id*="valueRange.high.${field}"]`).fill(value);
+    }
+
+    const saveButton = useContextDialog.getByRole('button', { name: 'Save and close' });
+    const unitError = useContextDialog.getByText('Low and high unit, system, and code must match.');
+    await expect(saveButton).toBeEnabled();
+
+    for(const [field, value] of Object.entries(rangeValues)) {
+      const highInput = useContextDialog.locator(`input[id*="valueRange.high.${field}"]`);
+      await highInput.fill(`${value}-mismatch`);
+      await expect(unitError).toBeVisible();
+      await expect(highInput).toHaveClass(/invalid/);
+      await expect(saveButton).toBeDisabled();
+
+      await highInput.fill(value);
+      await expect(unitError).toBeHidden();
+      await expect(highInput).not.toHaveClass(/invalid/);
+      await expect(saveButton).toBeEnabled();
+    }
+  });
+
   test('should populate all UsageContext value types and persist the expected JSON', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 

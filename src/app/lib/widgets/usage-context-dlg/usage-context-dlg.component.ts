@@ -30,6 +30,7 @@ import {Util} from '../../util';
 import {RawValueStoreService} from '../../../services/raw-value-store.service';
 
 type UsageContextValueKey = 'valueCodeableConcept' | 'valueQuantity' | 'valueRange' | 'valueReference';
+type RangeUnitField = 'unit' | 'system' | 'code';
 
 const VALUE_KEYS: UsageContextValueKey[] = [
   'valueCodeableConcept',
@@ -37,6 +38,9 @@ const VALUE_KEYS: UsageContextValueKey[] = [
   'valueRange',
   'valueReference'
 ];
+const RANGE_UNIT_FIELDS: RangeUnitField[] = ['unit', 'system', 'code'];
+const RANGE_ORDER_ERROR = 'High value must be greater than or equal to low value.';
+const RANGE_UNIT_ERROR = 'Low and high unit, system, and code must match.';
 
 /**
  * A dialog component to edit a FHIR UsageContext object.
@@ -199,7 +203,17 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
     const hasRequiredCode = this.hasRequiredCode(currentValue);
 
     this.validationError.set(rangeValidationError);
-    this.setInputInvalidStyle('input[id*="valueRange.high.value"]', !!rangeValidationError);
+    this.setInputInvalidStyle(
+      'input[id*="valueRange.high.value"]',
+      rangeValidationError === RANGE_ORDER_ERROR
+    );
+    const mismatchedUnitFields = this.getMismatchedRangeUnitFields(currentValue);
+    RANGE_UNIT_FIELDS.forEach((field) => {
+      this.setInputInvalidStyle(
+        `input[id*="valueRange.high.${field}"]`,
+        mismatchedUnitFields.includes(field)
+      );
+    });
     this.saveDisabledReason.set(this.getSaveDisabledReason(
       modelChanged,
       hasRequiredCode,
@@ -265,7 +279,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * Get the validation error for an invalid valueRange.
    *
    * @param currentValue - Current UsageContext form value.
-   * @returns Error message when high is less than low, otherwise an empty string.
+   * @returns Error for reversed bounds or incompatible units, otherwise an empty string.
    */
   private getRangeValidationError(currentValue: any): string {
     const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
@@ -275,10 +289,28 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
 
     const low = this.getComparableNumber(currentValue?.valueRange?.low?.value);
     const high = this.getComparableNumber(currentValue?.valueRange?.high?.value);
-    if(low === null || high === null) {
-      return '';
+    if(low !== null && high !== null && high < low) {
+      return RANGE_ORDER_ERROR;
     }
-    return high < low ? 'High value must be greater than or equal to low value.' : '';
+    return this.getMismatchedRangeUnitFields(currentValue).length ? RANGE_UNIT_ERROR : '';
+  }
+
+  /**
+   * Find incompatible unit fields between populated Range bounds.
+   *
+   * FHIR requires the unit and code/system elements of low and high to match.
+   *
+   * @param currentValue - Current UsageContext form value.
+   * @returns Unit field names whose low and high values differ.
+   */
+  private getMismatchedRangeUnitFields(currentValue: any): RangeUnitField[] {
+    const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
+    const low = currentValue?.valueRange?.low;
+    const high = currentValue?.valueRange?.high;
+    if(selectedKey !== 'valueRange' || Util.isEmpty(low) || Util.isEmpty(high)) {
+      return [];
+    }
+    return RANGE_UNIT_FIELDS.filter((field) => (low?.[field] ?? '') !== (high?.[field] ?? ''));
   }
 
   /**
