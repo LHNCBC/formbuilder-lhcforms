@@ -23,9 +23,9 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
-import {MessageDlgComponent, MessageType} from '../message-dlg/message-dlg.component';
 import {DialogData} from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {UsageContextObjComponent} from '../usage-context-obj/usage-context-obj.component';
+import {TableRowDialogBase} from '../table-row-dialog-base/table-row-dialog-base';
 import {Util} from '../../util';
 import {RawValueStoreService} from '../../../services/raw-value-store.service';
 
@@ -55,92 +55,71 @@ const VALUE_KEYS: UsageContextValueKey[] = [
 	  `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
-  @ViewChild('dlgContainer', {static: false, read: ElementRef}) dlgContainer: ElementRef;
+export class UsageContextDlgComponent extends TableRowDialogBase<any> implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef;
+  @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef;
   @ViewChild(UsageContextObjComponent) usageContextObj!: UsageContextObjComponent;
 
-  inputModel: any;
-  changedValue: any;
-  path = '';
-  disableSave = signal(true);
   saveDisabledReason = signal('');
   validationError = signal('');
 
-  dirtyObserver: MutationObserver;
-  rowIndex = 0;
-  previous_origin: {left: number, top: number};
-  private initialValueJson = '';
-
-  matDialogService = inject(MatDialog);
-  data = inject<DialogData>(MAT_DIALOG_DATA);
-  matDialogRef = inject(MatDialogRef<DialogData>);
-  ngbModalService = inject(NgbModal);
   private rawValueStore = inject(RawValueStoreService);
+  private readonly originalIdentifierRows = new WeakMap<FormProperty, any>();
 
-  constructor(private hostEl: ElementRef, private cdr: ChangeDetectorRef) {
+  constructor() {
+    super(
+      inject<DialogData>(MAT_DIALOG_DATA),
+      inject(MatDialogRef<DialogData>),
+      inject(MatDialog),
+      inject(NgbModal),
+      inject(ElementRef),
+      inject(ChangeDetectorRef)
+    );
   }
 
   /**
-   * Ng OnInit lifecycle hook.
+   * Create an empty UsageContext row model for the add-new flow.
+   *
+   * @returns Empty UsageContext model.
    */
-  ngOnInit() {
-    if(this.data.rowIndex >= 0) {
-      this.inputModel = this.prepareInputModel(this.data.arrayProperty.properties[this.data.rowIndex].value);
-    }
-    else {
-      this.inputModel = {code: {}};
-    }
-    this.changedValue = this.inputModel;
-    this.initialValueJson = this.stringifyForChange(this.inputModel);
-    this.rowIndex = this.data.rowIndex >= 0 ? this.data.rowIndex : 0;
-    this.path = this.buildPath();
-  }
-
-  /**
-   * Move this dialog to its current overlay origin.
-   */
-  movePosition(): void {
-    const currentOrigin = this.hostEl.nativeElement.parentElement.getBoundingClientRect();
-    this.matDialogRef.updatePosition({top: currentOrigin.top + 'px', left: currentOrigin.left + 'px'});
-    this.previous_origin = currentOrigin;
+  protected createNewModel(): any {
+    return {code: {}};
   }
 
   /**
    * Ng AfterViewInit lifecycle hook.
    */
-  ngAfterViewInit() {
-    this.dirtyObserver = new MutationObserver((mutationsList) => {
-      for(const mutation of mutationsList) {
-        if (mutation.type === 'attributes' && (mutation.target as HTMLElement).classList?.contains('ng-dirty')) {
-          this.updateDisableSave();
-          this.cdr.markForCheck();
-          return;
-        }
-      }
-    });
-
-    const formElement = this.dlgContent?.nativeElement.querySelector('form');
-    if(formElement) {
-      this.dirtyObserver.observe(
-        formElement,
-        {attributes: true, attributeFilter: ['class'], subtree: true}
-      );
-    }
-
-    this.updateDisableSave();
+  override ngAfterViewInit() {
+    // Seed complete Identifier rows before the first change calculation so the
+    // parent recomputes its state from committed values, not the stale tree.
     this.seedOriginalIdentifierRows();
+    this.updateDisableSave();
     this.cdr.detectChanges();
   }
 
   /**
-   * Handle the dialog save and close event.
+   * Normalize the UsageContext value immediately before saving.
+   *
+   * @param value - Last emitted dialog value.
+   * @returns UsageContext with one value[x] and a table summary.
    */
-  save() {
+  protected override beforeSave(value: any): any {
     const currentValue = this.usageContextObj?.sfFormRootProperty
+      ? this.getCurrentValueForChangeDetection()
+      : value;
+    return this.prepareValue(currentValue || {});
+  }
+
+  /**
+   * Use the live form-property tree so nested Identifier edits are included in
+   * the dirty check.
+   *
+   * @returns Current UsageContext value used for change detection.
+   */
+  protected override getCurrentValueForChangeDetection(): unknown {
+    return this.usageContextObj?.sfFormRootProperty
       ? this.getCurrentFormPropertyValue(this.usageContextObj.sfFormRootProperty)
       : this.changedValue;
-    this.matDialogRef.close(this.prepareValue(currentValue || {}));
   }
 
   /**
@@ -148,46 +127,10 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
    *
    * @param event - Changed UsageContext value.
    */
-  onChange(event: any) {
+  override onChange(event: any) {
     this.changedValue = event;
     this.updateDisableSave();
     this.cdr.detectChanges();
-  }
-
-  /**
-   * Handle the cancel button event.
-   */
-  cancel() {
-    if (!this.hasModelChanged()) {
-      this.matDialogRef.close(false);
-      return;
-    }
-
-    const modalRef = this.ngbModalService.open(MessageDlgComponent, {scrollable: true});
-    modalRef.componentInstance.options = {
-      title: 'Confirm',
-      message: 'Are you sure you want to discard the changes you made?',
-      type: MessageType.INFO,
-      buttons: [{
-        label: 'Discard changes',
-        value: 'yes'
-      }, {
-        label:  'Do not discard changes',
-        value: 'no'
-      }]};
-
-    modalRef.closed.subscribe((result) => {
-      if (result === 'yes') {
-        this.matDialogRef.close(false);
-      }
-    });
-  }
-
-  /**
-   * Clean up observers when the dialog is destroyed.
-   */
-  ngOnDestroy() {
-    this.dirtyObserver?.disconnect();
   }
 
   /**
@@ -232,8 +175,8 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
   /**
    * Update the save button state based on whether the model changed.
    */
-  private updateDisableSave(): void {
-    const currentValue = this.getCurrentUsageContextValue();
+  protected override updateDisableSave(): void {
+    const currentValue = this.getCurrentValueForChangeDetection();
     const rangeValidationError = this.getRangeValidationError(currentValue);
     const modelChanged = this.hasModelChanged(currentValue);
     const hasRequiredValue = this.hasRequiredValue(currentValue);
@@ -274,17 +217,6 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
    */
   private hasRequiredCode(currentValue: any): boolean {
     return !Util.isEmpty(currentValue?.code?.code);
-  }
-
-  /**
-   * Get the current UsageContext value from the schema form when available.
-   *
-   * @returns Current UsageContext value.
-   */
-  private getCurrentUsageContextValue(): any {
-    return this.usageContextObj?.sfFormRootProperty
-      ? this.getCurrentFormPropertyValue(this.usageContextObj.sfFormRootProperty)
-      : this.changedValue;
   }
 
   /**
@@ -383,70 +315,38 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
   /**
    * Build the current value from a form property tree.
    *
+   * Identifier tables are resolved row-by-row so that complete nested Identifier
+   * edits are never lost: each row falls back from the raw-value store, to the
+   * originally imported row value, and finally to the live property value. This
+   * avoids the all-or-nothing behavior that dropped un-seeded rows when the
+   * table held a mix of edited and untouched Identifier rows.
+   *
    * @param property - Form property to read.
    * @returns Current non-empty property value, or undefined when empty.
    */
-  private getCurrentFormPropertyValue(property: any): any {
-    if(!property) {
-      return undefined;
-    }
-
-    if(Array.isArray(property.properties)) {
-      if(property.schema?.widget?.id === 'identifier' && Array.isArray(property.value)) {
-        const rawValue = property.properties
-          .map((child: FormProperty) => this.rawValueStore.getIdentifier(child))
-          .filter((childValue) => !Util.isEmpty(childValue));
-        const sourceValue = rawValue.length
-          ? rawValue
-          : this.getOriginalIdentifierRows(property) || property.value;
-        const value = this.cloneUsageContext(sourceValue)
-          .filter((childValue) => !Util.isEmpty(childValue));
-        return value.length ? value : undefined;
-      }
+  protected override getCurrentFormPropertyValue(property: any): any {
+    if(property
+        && Array.isArray(property.properties)
+        && property.schema?.widget?.id === 'identifier'
+        && Array.isArray(property.value)) {
       const value = property.properties
-        .map((child) => this.getCurrentFormPropertyValue(child))
+        .map((child: FormProperty) => {
+          const rawValue = this.rawValueStore.getIdentifier(child);
+          if(!Util.isEmpty(rawValue)) {
+            return rawValue;
+          }
+          const originalRow = this.originalIdentifierRows.get(child);
+          if(!Util.isEmpty(originalRow)) {
+            return originalRow;
+          }
+          return super.getCurrentFormPropertyValue(child);
+        })
+        .map((childValue) => this.cloneUsageContext(childValue))
         .filter((childValue) => !Util.isEmpty(childValue));
       return value.length ? value : undefined;
     }
 
-    if(property.properties && typeof property.properties === 'object') {
-      const value: {[key: string]: any} = {};
-      Object.keys(property.properties).forEach((key) => {
-        const child = property.properties[key];
-        if(child?.visible === false || key.startsWith('__$')) {
-          return;
-        }
-        const childValue = this.getCurrentFormPropertyValue(child);
-        if(!Util.isEmpty(childValue)) {
-          value[key] = childValue;
-        }
-      });
-      return Object.keys(value).length ? value : undefined;
-    }
-
-    return property.value;
-  }
-
-  /**
-   * Build the dialog path shown in the header.
-   *
-   * @returns Display path for the UsageContext row being edited.
-   */
-  private buildPath(): string {
-    const dialogRefs = this.matDialogService.openDialogs;
-    const pathArray = dialogRefs.reduce((acc, dRef) => {
-      const instance = dRef.componentInstance;
-      if (instance instanceof UsageContextDlgComponent) {
-        const data = instance.data;
-        let index: number = data.rowIndex;
-        if(index < 0) {
-          index = (data.arrayProperty.properties as FormProperty []).length;
-        }
-        acc.push(`${data.arrayProperty.path.substring(1)}[${index}]`);
-      }
-      return acc;
-    }, [] as string[]);
-    return pathArray.join('.');
+    return super.getCurrentFormPropertyValue(property);
   }
 
   /**
@@ -460,54 +360,6 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   /**
-   * Check whether the edited model differs from the initial model.
-   *
-   * @returns True when the current model has changed.
-   */
-  private hasModelChanged(currentValue = this.getCurrentUsageContextValue()): boolean {
-    return this.stringifyForChange(currentValue) !== this.initialValueJson;
-  }
-
-  /**
-   * Normalize and stringify a value for change detection.
-   *
-   * @param value - Value to stringify.
-   * @returns Stable JSON string for change comparison.
-   */
-  private stringifyForChange(value: any): string {
-    return JSON.stringify(this.normalizeForChange(value) ?? null);
-  }
-
-  /**
-   * Normalize a value by removing empty values and UI-only fields.
-   *
-   * @param value - Value to normalize.
-   * @returns Normalized value, or undefined when the value is empty.
-   */
-  private normalizeForChange(value: any): any {
-    if(Array.isArray(value)) {
-      const normalized = value
-        .map((entry) => this.normalizeForChange(entry))
-        .filter((entry) => !Util.isEmpty(entry));
-      return normalized.length ? normalized : undefined;
-    }
-    if(value && typeof value === 'object') {
-      const normalized: {[key: string]: any} = {};
-      Object.keys(value).sort().forEach((key) => {
-        if(key.startsWith('__$')) {
-          return;
-        }
-        const child = this.normalizeForChange(value[key]);
-        if(!Util.isEmpty(child)) {
-          normalized[key] = child;
-        }
-      });
-      return Object.keys(normalized).length ? normalized : undefined;
-    }
-    return value;
-  }
-
-  /**
    * Preserve original identifier rows on form properties for nested dialog edits.
    */
   private seedOriginalIdentifierRows(): void {
@@ -518,22 +370,10 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
     }
     identifierProperty.properties.forEach((rowProperty: FormProperty, index: number) => {
       if(!Util.isEmpty(identifiers[index])) {
+        this.originalIdentifierRows.set(rowProperty, this.cloneUsageContext(identifiers[index]));
         this.rawValueStore.setIdentifier(rowProperty, identifiers[index]);
       }
     });
-  }
-
-  /**
-   * Get original UsageContext valueReference identifier rows for a form property.
-   *
-   * @param property - Identifier table form property.
-   * @returns Original identifier rows when available, otherwise null.
-   */
-  private getOriginalIdentifierRows(property: any): any[] {
-    if(property.path?.includes('/valueReference/identifier') && property.properties?.length) {
-      return this.inputModel?.valueReference?.identifier;
-    }
-    return null;
   }
 
   /**
@@ -542,7 +382,7 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
    * @param value - UsageContext value from the parent table.
    * @returns Dialog model with selected value type and UI-wrapped identifiers.
    */
-  private prepareInputModel(value: any): any {
+  protected override prepareInputModel(value: any): any {
     const model = this.cloneUsageContext(value);
     model.__$valueType = VALUE_KEYS.find((key) => !Util.isEmpty(model[key]));
     this.wrapValueReferenceIdentifier(model);

@@ -17,7 +17,6 @@ export abstract class TableRowDialogBase<T> {
   dlgContainer: ElementRef;
   disableSave = signal(true);
 
-  dirtyObserver: MutationObserver;
   rowIndex = 0;
   previous_origin: {left: number, top: number};
 
@@ -93,24 +92,8 @@ export abstract class TableRowDialogBase<T> {
    * Ng AfterViewInit lifecycle hook.
    */
   ngAfterViewInit() {
-    this.dirtyObserver = new MutationObserver((mutationsList) => {
-      for(const mutation of mutationsList) {
-        if (mutation.type === 'attributes' && (mutation.target as HTMLElement).classList?.contains('ng-dirty')) {
-          this.updateDisableSave();
-          this.cdr.markForCheck();
-          return;
-        }
-      }
-    });
-
-    const formElement = this.dlgContent?.nativeElement.querySelector('form');
-    if (formElement) {
-      this.dirtyObserver.observe(
-        formElement,
-        {attributes: true, attributeFilter: ['class'], subtree: true}
-      );
-    }
-
+    // Dirty state is derived from value changes emitted through onChange(), so no
+    // DOM MutationObserver is needed to detect edits.
     this.disableSave.set(true);
     this.cdr.detectChanges();
   }
@@ -170,10 +153,9 @@ export abstract class TableRowDialogBase<T> {
   }
 
   /**
-   * Clean up observers when the dialog is destroyed.
+   * Ng OnDestroy lifecycle hook. Reserved for subclass cleanup.
    */
   ngOnDestroy() {
-    this.dirtyObserver?.disconnect();
   }
 
   /**
@@ -203,7 +185,7 @@ export abstract class TableRowDialogBase<T> {
       const value: {[key: string]: any} = {};
       Object.keys(property.properties).forEach((key) => {
         const child = property.properties[key];
-        if (child?.visible === false) {
+        if (child?.visible === false || key.startsWith('__$')) {
           return;
         }
         const childValue = this.getCurrentFormPropertyValue(child);
@@ -240,8 +222,8 @@ export abstract class TableRowDialogBase<T> {
   /**
    * Check whether the emitted model differs from the original input.
    */
-  private hasModelChanged(): boolean {
-    return this.stringifyForChange(this.getCurrentValueForChangeDetection()) !== this.initialValueJson;
+  protected hasModelChanged(currentValue: unknown = this.getCurrentValueForChangeDetection()): boolean {
+    return this.stringifyForChange(currentValue) !== this.initialValueJson;
   }
 
   /**
