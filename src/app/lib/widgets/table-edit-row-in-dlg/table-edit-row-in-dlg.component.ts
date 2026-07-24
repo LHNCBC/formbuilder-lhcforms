@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { TableComponent } from '../table/table.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import {ArrayProperty, PropertyGroup, SchemaFormModule} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, PropertyGroup, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { AppFormElementComponent } from '../form-element/form-element.component';
 import { LabelComponent } from '../label/label.component';
 import { TitleComponent } from '../title/title.component';
@@ -16,6 +16,7 @@ import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
 import {take} from 'rxjs/operators';
 import {Util} from '../../util';
+import {RawValueStoreService} from '../../../services/raw-value-store.service';
 
 export interface DialogData {
   arrayProperty: ArrayProperty;
@@ -62,6 +63,7 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
   dialogComponentType: ComponentType<unknown> = null;
   dialogOffsetPx = 20;
   matDialogService: MatDialog = inject(MatDialog);
+  private rawValueStore = inject(RawValueStoreService);
 
   constructor() {
     super();
@@ -128,11 +130,14 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
 
     matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue) => {
       if (submittedValue) {
-        // Replace the full row model so deleted nested fields are not preserved.
-        this.formProperty.properties[index].reset(submittedValue, false);
-        if(this.formProperty.schema?.widget?.id === 'identifier') {
-          (this.formProperty.properties[index] as any).__lfbRawValue = JSON.parse(JSON.stringify(submittedValue));
+        const rowProperty = this.formProperty.properties[index] as FormProperty;
+        if(this.isIdentifierTable()) {
+          // reset() emits synchronously, so make the complete value available
+          // before parent dialogs recalculate their changed state.
+          this.rawValueStore.setIdentifier(rowProperty, submittedValue as fhir.Identifier);
         }
+        // Replace the full row model so deleted nested fields are not preserved.
+        rowProperty.reset(submittedValue, false);
       }
     });
   }
@@ -159,9 +164,21 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
    */
   addNewItem(newValue: fhir.Extension) {
     const newProperty = this.formProperty.addItem(newValue);
-    if(this.formProperty.schema?.widget?.id === 'identifier' && newProperty) {
-      (newProperty as any).__lfbRawValue = JSON.parse(JSON.stringify(newValue));
+    if(this.isIdentifierTable() && newProperty) {
+      this.rawValueStore.setIdentifier(newProperty, newValue as unknown as fhir.Identifier);
+      // addItem() emits before it returns the new row. Emit again after seeding
+      // the complete value so parent dialogs observe the committed Identifier.
+      this.formProperty.updateValueAndValidity(false, true);
     }
+  }
+
+  /**
+   * Check whether this table edits Identifier rows.
+   *
+   * @returns True for Identifier table widgets.
+   */
+  private isIdentifierTable(): boolean {
+    return this.formProperty.schema?.widget?.id === 'identifier';
   }
 
   /**

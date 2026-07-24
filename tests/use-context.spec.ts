@@ -220,6 +220,83 @@ test.describe('Use context field tests', () => {
     expect(previewJson.useContext[0].valueReference.identifier.assigner.identifier.value).toEqual('assigner-id-only');
   });
 
+  test('should recognize identifier-only edits, deletes, and additions', async ({ page }) => {
+    await PWUtils.uploadFile(page, 'use-context-sample.json');
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextRows = page.locator('lfb-usage-context tbody > tr')
+      .filter({ has: page.locator('input[id^="useContext."]') });
+    const openReferenceUseContext = async () => {
+      await useContextRows.nth(2).getByRole('button', { name: 'Edit this row' }).click();
+      const dialog = getUseContextDialog(page);
+      await expect(dialog).toBeVisible();
+      return dialog;
+    };
+    const declineDiscard = async (dialog: Locator) => {
+      await dialog.getByRole('button', { name: 'Discard changes' }).click();
+      const confirmation = page.locator('lfb-message-dlg');
+      await expect(confirmation.getByText('Are you sure you want to discard the changes you made?')).toBeVisible();
+      await confirmation.getByRole('button', { name: 'Do not discard changes' }).click();
+      await expect(confirmation).toBeHidden();
+      await expect(dialog).toBeVisible();
+    };
+
+    let useContextDialog = await openReferenceUseContext();
+    let identifierTable = useContextDialog.locator('lfb-identifier table');
+    await identifierTable.locator('tbody > tr').nth(0).getByRole('button', { name: 'Edit this row' }).click();
+    let identifierDialog = page.locator('lfb-identifier-dlg').last();
+    await identifierDialog.locator('input[name="value"]').fill('plan-456');
+    await identifierDialog.getByRole('button', { name: 'Save and close' }).click();
+    await expect(identifierDialog).toBeHidden();
+
+    const saveUseContext = useContextDialog.getByRole('button', { name: 'Save and close' });
+    await expect(saveUseContext).toBeEnabled();
+    await declineDiscard(useContextDialog);
+    await saveUseContext.click();
+    await expect(useContextDialog).toBeHidden();
+
+    let previewJson = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(previewJson.useContext[2].valueReference.identifier.value).toEqual('plan-456');
+
+    useContextDialog = await openReferenceUseContext();
+    identifierTable = useContextDialog.locator('lfb-identifier table');
+    await identifierTable.locator('tbody > tr').nth(0).getByRole('button', { name: 'Remove this row' }).click();
+    const deleteConfirmation = page.getByRole('dialog', {name: 'Confirm deletion'});
+    await expect(deleteConfirmation).toBeVisible();
+    await deleteConfirmation.getByRole('button', {name: 'Delete'}).click();
+    await expect(deleteConfirmation).toBeHidden();
+    await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeEnabled();
+    await declineDiscard(useContextDialog);
+    await useContextDialog.getByRole('button', { name: 'Save and close' }).click();
+    await expect(useContextDialog).toBeHidden();
+
+    previewJson = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(previewJson.useContext[2].valueReference.identifier).toBeUndefined();
+
+    useContextDialog = await openReferenceUseContext();
+    await useContextDialog.getByRole('button', { name: /Add (new )?identifier/i }).click();
+    identifierDialog = page.locator('lfb-identifier-dlg').last();
+    await fillIdentifierDialog(identifierDialog, {
+      system: 'http://example.org/replacement-plans',
+      value: 'plan-789',
+      use: 'official'
+    });
+    await identifierDialog.getByRole('button', { name: 'Save and close' }).click();
+    await expect(identifierDialog).toBeHidden();
+
+    await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeEnabled();
+    await declineDiscard(useContextDialog);
+    await useContextDialog.getByRole('button', { name: 'Save and close' }).click();
+    await expect(useContextDialog).toBeHidden();
+
+    previewJson = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(previewJson.useContext[2].valueReference.identifier).toMatchObject({
+      system: 'http://example.org/replacement-plans',
+      value: 'plan-789',
+      use: 'official'
+    });
+  });
+
   test('should populate all UsageContext value types and persist the expected JSON', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 

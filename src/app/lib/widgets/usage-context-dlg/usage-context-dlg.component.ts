@@ -27,6 +27,7 @@ import {MessageDlgComponent, MessageType} from '../message-dlg/message-dlg.compo
 import {DialogData} from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {UsageContextObjComponent} from '../usage-context-obj/usage-context-obj.component';
 import {Util} from '../../util';
+import {RawValueStoreService} from '../../../services/raw-value-store.service';
 
 type UsageContextValueKey = 'valueCodeableConcept' | 'valueQuantity' | 'valueRange' | 'valueReference';
 
@@ -75,6 +76,7 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
   data = inject<DialogData>(MAT_DIALOG_DATA);
   matDialogRef = inject(MatDialogRef<DialogData>);
   ngbModalService = inject(NgbModal);
+  private rawValueStore = inject(RawValueStoreService);
 
   constructor(private hostEl: ElementRef, private cdr: ChangeDetectorRef) {
   }
@@ -156,8 +158,7 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
    * Handle the cancel button event.
    */
   cancel() {
-    const isDirty = !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
-    if (!isDirty) {
+    if (!this.hasModelChanged()) {
       this.matDialogRef.close(false);
       return;
     }
@@ -393,7 +394,7 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
     if(Array.isArray(property.properties)) {
       if(property.schema?.widget?.id === 'identifier' && Array.isArray(property.value)) {
         const rawValue = property.properties
-          .map((child: any) => child.__lfbRawValue)
+          .map((child: FormProperty) => this.rawValueStore.getIdentifier(child))
           .filter((childValue) => !Util.isEmpty(childValue));
         const sourceValue = rawValue.length
           ? rawValue
@@ -515,9 +516,9 @@ export class UsageContextDlgComponent implements OnInit, AfterViewInit, OnDestro
     if(!identifierProperty?.properties || !Array.isArray(identifiers)) {
       return;
     }
-    identifierProperty.properties.forEach((rowProperty: any, index: number) => {
+    identifierProperty.properties.forEach((rowProperty: FormProperty, index: number) => {
       if(!Util.isEmpty(identifiers[index])) {
-        rowProperty.__lfbRawValue = this.cloneUsageContext(identifiers[index]);
+        this.rawValueStore.setIdentifier(rowProperty, identifiers[index]);
       }
     });
   }
