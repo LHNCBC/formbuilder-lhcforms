@@ -347,6 +347,27 @@ test.describe('Use context field tests', () => {
     expect(previewJson.useContext[0].code.code).toBeUndefined();
   });
 
+  test('should reject a valueReference containing only type', async ({ page }) => {
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextDialog = await addUseContextRow(page);
+    await fillUseContextCode(useContextDialog, {
+      display: 'Workflow Task',
+      code: 'task',
+      system: 'http://terminology.hl7.org/CodeSystem/usage-context-type'
+    });
+    await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Reference'});
+    await useContextDialog.locator('input[id^="valueReference.type"]').fill('PlanDefinition');
+
+    const saveButton = useContextDialog.getByRole('button', { name: 'Save and close' });
+    await expect(saveButton).toBeDisabled();
+    await expect(useContextDialog.locator('.save-button-tooltip-wrapper'))
+      .toHaveAttribute('title', 'Code and value[x] are required.');
+
+    await useContextDialog.locator('input[id^="valueReference.display"]').fill('Example plan');
+    await expect(saveButton).toBeEnabled();
+  });
+
   test('should populate all UsageContext value types and persist the expected JSON', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 

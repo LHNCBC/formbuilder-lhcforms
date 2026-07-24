@@ -224,7 +224,28 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    */
   private hasRequiredValue(currentValue: any): boolean {
     const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
-    return !!selectedKey && !Util.isEmpty(currentValue?.[selectedKey]);
+    if(!selectedKey || Util.isEmpty(currentValue?.[selectedKey])) {
+      return false;
+    }
+    if(selectedKey === 'valueReference') {
+      return this.hasReferenceContent(currentValue.valueReference);
+    }
+    return true;
+  }
+
+  /**
+   * Check whether a Reference contains content beyond its optional type hint.
+   *
+   * FHIR Reference requires at least one of reference, identifier, or display;
+   * type alone does not identify the target.
+   *
+   * @param reference - UsageContext valueReference.
+   * @returns True when the Reference has identifying or display content.
+   */
+  private hasReferenceContent(reference: any): boolean {
+    return !Util.isEmpty(reference?.reference) ||
+      !Util.isEmpty(reference?.identifier) ||
+      !Util.isEmpty(reference?.display);
   }
 
   /**
