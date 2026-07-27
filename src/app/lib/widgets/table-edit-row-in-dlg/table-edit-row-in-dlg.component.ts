@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, DoCheck, inject, Input, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, DestroyRef, DoCheck, inject, Input, OnInit} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TableComponent } from '../table/table.component';
@@ -15,6 +15,7 @@ import {ComponentType} from "@angular/cdk/portal";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
 import {take} from 'rxjs/operators';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {Util} from '../../util';
 import {RawValueStoreService} from '../../../services/raw-value-store.service';
 
@@ -55,17 +56,15 @@ export interface DialogData {
     }
   `]
 })
-export class TableEditRowInDlgComponent extends TableComponent implements OnInit, AfterViewInit, DoCheck, OnDestroy {
+export class TableEditRowInDlgComponent extends TableComponent implements OnInit, AfterViewInit, DoCheck {
   override includeActionColumn = true;
-  private syntheticEmptyRowRemovalScheduled = false;
-  private destroyed = false;
-  private syntheticEmptyRowTimerId: ReturnType<typeof setTimeout> | null = null;
 
   @Input()
   dialogComponentType: ComponentType<unknown> = null;
   dialogOffsetPx = 20;
   matDialogService: MatDialog = inject(MatDialog);
   private rawValueStore = inject(RawValueStoreService);
+  private destroyRef = inject(DestroyRef);
 
   constructor() {
     super();
@@ -87,30 +86,26 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     // that can flip template conditions during dev-mode double-check.
     this.booleanControlled = false;
     this.booleanControlledOption = false;
-    this.scheduleSyntheticEmptyRowRemoval();
     this.includeActionColumn = true;
   }
 
   /**
-   * Schedule cleanup of an empty placeholder row when the widget is configured to start empty.
+   * Finish initialization after schema-form has materialized the array rows.
    */
-  private scheduleSyntheticEmptyRowRemoval(): void {
-    if(this.syntheticEmptyRowRemovalScheduled) {
-      return;
+  override ngAfterViewInit(): void {
+    this.removeSyntheticEmptyRow();
+    super.ngAfterViewInit();
+  }
+
+  /**
+   * Remove an empty placeholder row from dialog-backed tables that start empty.
+   */
+  private removeSyntheticEmptyRow(): void {
+    const props = this.formProperty?.properties || [];
+    if(!this.addDefaultItemIfEmpty && props.length === 1 && Util.isEmpty(props[0]?.value)) {
+      this.formProperty.removeItem(props[0]);
+      this.cdr.markForCheck();
     }
-    this.syntheticEmptyRowRemovalScheduled = true;
-    this.syntheticEmptyRowTimerId = setTimeout(() => {
-      this.syntheticEmptyRowTimerId = null;
-      if(this.destroyed) {
-        return;
-      }
-      const props = this.formProperty?.properties || [];
-      if(!this.addDefaultItemIfEmpty && props.length === 1 && Util.isEmpty(props[0]?.value)) {
-        this.formProperty.removeItem(props[0]);
-        this.cdr.markForCheck();
-      }
-      this.syntheticEmptyRowRemovalScheduled = false;
-    });
   }
 
   /**
@@ -223,10 +218,11 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     });
     if(dPosition) {
       matDialogRef.updatePosition(dPosition);
-      matDialogRef.afterOpened().pipe(take(1)).subscribe(() => {
-        if(!this.destroyed) {
-          matDialogRef.updatePosition(dPosition);
-        }
+      matDialogRef.afterOpened().pipe(
+        take(1),
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe(() => {
+        matDialogRef.updatePosition(dPosition);
       });
     }
     return matDialogRef;
@@ -250,15 +246,4 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     return {top: `${top}px`, left: `${left}px`};
   }
 
-  /**
-   * Clear pending deferred work before the table is destroyed.
-   */
-  override ngOnDestroy() {
-    this.destroyed = true;
-    if(this.syntheticEmptyRowTimerId !== null) {
-      clearTimeout(this.syntheticEmptyRowTimerId);
-      this.syntheticEmptyRowTimerId = null;
-    }
-    super.ngOnDestroy();
-  }
 }

@@ -35,7 +35,6 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
 
   @ViewChild('inputEl') inputElRef!: ElementRef;
   showTooltip = true;
-  private tooltipUpdateScheduled = false;
 
   Array = Array; // To use in templates.
 
@@ -57,13 +56,12 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
     }
 
     const nextShowTooltip = el.scrollWidth > width;
-    if(nextShowTooltip !== this.showTooltip && !this.tooltipUpdateScheduled) {
-      this.tooltipUpdateScheduled = true;
-      setTimeout(() => {
-        this.showTooltip = nextShowTooltip;
-        this.tooltipUpdateScheduled = false;
-        this.cdr.markForCheck();
-      });
+    if(nextShowTooltip !== this.showTooltip) {
+      this.showTooltip = nextShowTooltip;
+      // The overflow measurement is available only after the view is checked.
+      // Refresh this component immediately so the tooltip binding and the
+      // checked value stay synchronized without deferred timer work.
+      this.cdr.detectChanges();
     }
   }
 
