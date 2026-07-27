@@ -58,6 +58,21 @@ describe('FormService', () => {
       .toThrowError('Unknown widget preset "missingPreset" requested for "string".');
   });
 
+  it('should scope empty Select invalid-style suppression to the configured dialog fields', () => {
+    const usageContextSchema = service.cloneUsageContextSchema() as any;
+    const identifierSchema = service.cloneIdentifierSchema() as any;
+
+    expect(usageContextSchema.properties.__$valueType.widget.suppressEmptyInvalidStyle)
+      .withContext('Usage Context value type')
+      .toBeTrue();
+    expect(usageContextSchema.properties.valueQuantity.properties.comparator.widget.suppressEmptyInvalidStyle)
+      .withContext('Usage Context quantity comparator')
+      .toBeTrue();
+    expect(identifierSchema.properties.use.widget.suppressEmptyInvalidStyle)
+      .withContext('Identifier use')
+      .toBeTrue();
+  });
+
   it('should update __$helpText', () => {
     const clonedSample = traverse(sampleJson).clone();
     service.updateFhirQuestionnaire(clonedSample);
