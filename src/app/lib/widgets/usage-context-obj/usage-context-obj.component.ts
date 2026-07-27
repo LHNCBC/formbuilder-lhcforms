@@ -12,6 +12,7 @@ import {FormsModule} from '@angular/forms';
 import {FormComponent, PropertyGroup, SchemaFormModule, TemplateSchemaModule} from '@lhncbc/ngx-schema-form';
 import {FormService} from '../../../services/form.service';
 import {TableService} from '../../../services/table.service';
+import type {UsageContextEditModel} from '../usage-context/usage-context.types';
 
 /**
  * A component to edit a FHIR UsageContext object.
@@ -32,9 +33,9 @@ export class UsageContextObjComponent implements AfterViewInit {
   formService = inject(FormService);
 
   @ViewChild('sfForm', {read: FormComponent}) sfForm: FormComponent;
-  @Output() changed = new EventEmitter<any>();
+  @Output() changed = new EventEmitter<UsageContextEditModel>();
   @Output() validityChanged = new EventEmitter<boolean>();
-  @Input() model!: any;
+  @Input() model!: UsageContextEditModel;
 
   usageContextSchema = this.formService.cloneUsageContextSchema();
   sfFormRootProperty: PropertyGroup;
@@ -51,7 +52,7 @@ export class UsageContextObjComponent implements AfterViewInit {
    *
    * @param value - Updated UsageContext model emitted by the schema form.
    */
-  handleChange(value: any) {
+  handleChange(value: UsageContextEditModel) {
     this.changed.emit(value);
   }
 

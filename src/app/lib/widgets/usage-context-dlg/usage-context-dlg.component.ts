@@ -28,8 +28,14 @@ import {UsageContextObjComponent} from '../usage-context-obj/usage-context-obj.c
 import {TableRowDialogBase} from '../table-row-dialog-base/table-row-dialog-base';
 import {Util} from '../../util';
 import {RawValueStoreService} from '../../../services/raw-value-store.service';
+import type fhir from 'fhir/r4';
+import type {
+  EditableIdentifier,
+  EditableReference,
+  UsageContextEditModel,
+  UsageContextValueKey
+} from '../usage-context/usage-context.types';
 
-type UsageContextValueKey = 'valueCodeableConcept' | 'valueQuantity' | 'valueRange' | 'valueReference';
 type RangeUnitField = 'unit' | 'system' | 'code';
 
 const VALUE_KEYS: UsageContextValueKey[] = [
@@ -59,16 +65,16 @@ const RANGE_UNIT_ERROR = 'Low and high unit, system, and code must match.';
 	  `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UsageContextDlgComponent extends TableRowDialogBase<any> implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef;
-  @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef;
+export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEditModel> implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef<HTMLElement>;
+  @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef<HTMLElement>;
   @ViewChild(UsageContextObjComponent) usageContextObj!: UsageContextObjComponent;
 
   saveDisabledReason = signal('');
   validationError = signal('');
 
   private rawValueStore = inject(RawValueStoreService);
-  private readonly originalIdentifierRows = new WeakMap<FormProperty, any>();
+  private readonly originalIdentifierRows = new WeakMap<FormProperty, fhir.Identifier>();
   // Fail closed until schema-form reports the validity of the initialized model.
   private schemaFormValid = false;
 
@@ -88,7 +94,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    *
    * @returns Empty UsageContext model.
    */
-  protected createNewModel(): any {
+  protected createNewModel(): UsageContextEditModel {
     return {code: {}};
   }
 
@@ -109,11 +115,11 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - Last emitted dialog value.
    * @returns UsageContext with one value[x] and a table summary.
    */
-  protected override beforeSave(value: any): any {
+  protected override beforeSave(value: UsageContextEditModel): UsageContextEditModel {
     const currentValue = this.usageContextObj?.sfFormRootProperty
       ? this.getCurrentValueForChangeDetection()
       : value;
-    return this.normalizeValueForSave(currentValue || {});
+    return this.normalizeValueForSave(currentValue || this.createNewModel());
   }
 
   /**
@@ -122,10 +128,10 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    *
    * @returns Current UsageContext value used for change detection.
    */
-  protected override getCurrentValueForChangeDetection(): unknown {
-    return this.usageContextObj?.sfFormRootProperty
+  protected override getCurrentValueForChangeDetection(): UsageContextEditModel {
+    return (this.usageContextObj?.sfFormRootProperty
       ? this.getCurrentFormPropertyValue(this.usageContextObj.sfFormRootProperty)
-      : this.changedValue;
+      : this.changedValue) as UsageContextEditModel;
   }
 
   /**
@@ -133,7 +139,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    *
    * @param event - Changed UsageContext value.
    */
-  override onChange(event: any) {
+  override onChange(event: UsageContextEditModel) {
     this.changedValue = event;
     this.updateDisableSave();
     this.cdr.detectChanges();
@@ -159,7 +165,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - UsageContext value.
    * @returns Summary text for the selected value[x].
    */
-  static getValueSummary(value: any): string {
+  static getValueSummary(value: UsageContextEditModel | null | undefined): string {
     if(!value) {
       return '';
     }
@@ -184,8 +190,8 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - UsageContext value to save.
    * @returns UsageContext with one value[x] and a table summary.
    */
-  private normalizeValueForSave(value: any): any {
-    const nextValue = this.cloneUsageContext(value || {});
+  private normalizeValueForSave(value: UsageContextEditModel): UsageContextEditModel {
+    const nextValue = this.cloneValue(value);
     this.unwrapValueReferenceIdentifier(nextValue);
     this.pruneExtraValueChoices(nextValue);
     nextValue.__$valueSummary = UsageContextDlgComponent.getValueSummary(nextValue);
@@ -236,7 +242,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param currentValue - Current UsageContext form value.
    * @returns True when a selected value[x] has non-empty content.
    */
-  private hasRequiredValue(currentValue: any): boolean {
+  private hasRequiredValue(currentValue: UsageContextEditModel): boolean {
     const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
     if(!selectedKey || Util.isEmpty(currentValue?.[selectedKey])) {
       return false;
@@ -256,7 +262,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param reference - UsageContext valueReference.
    * @returns True when the Reference has identifying or display content.
    */
-  private hasReferenceContent(reference: any): boolean {
+  private hasReferenceContent(reference: EditableReference | undefined): boolean {
     return !Util.isEmpty(reference?.reference) ||
       !Util.isEmpty(reference?.identifier) ||
       !Util.isEmpty(reference?.display);
@@ -271,7 +277,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param currentValue - Current UsageContext form value.
    * @returns True when the Coding object contains at least one value.
    */
-  private hasRequiredCode(currentValue: any): boolean {
+  private hasRequiredCode(currentValue: UsageContextEditModel): boolean {
     return !Util.isEmpty(currentValue?.code);
   }
 
@@ -281,7 +287,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param currentValue - Current UsageContext form value.
    * @returns Error for reversed bounds or incompatible units, otherwise an empty string.
    */
-  private getRangeValidationError(currentValue: any): string {
+  private getRangeValidationError(currentValue: UsageContextEditModel): string {
     const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
     if(selectedKey !== 'valueRange') {
       return '';
@@ -303,7 +309,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param currentValue - Current UsageContext form value.
    * @returns Unit field names whose low and high values differ.
    */
-  private getMismatchedRangeUnitFields(currentValue: any): RangeUnitField[] {
+  private getMismatchedRangeUnitFields(currentValue: UsageContextEditModel): RangeUnitField[] {
     const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
     const low = currentValue?.valueRange?.low;
     const high = currentValue?.valueRange?.high;
@@ -381,7 +387,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    *
    * @param value - UsageContext value to mutate.
    */
-  private pruneExtraValueChoices(value: any): void {
+  private pruneExtraValueChoices(value: UsageContextEditModel): void {
     const selectedKey = value.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(value[key]));
     VALUE_KEYS.forEach((key) => {
       if(key !== selectedKey) {
@@ -403,12 +409,16 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param property - Form property to read.
    * @returns Current non-empty property value, or undefined when empty.
    */
-  protected override getCurrentFormPropertyValue(property: any): any {
-    if(property
-        && Array.isArray(property.properties)
-        && property.schema?.widget?.id === 'identifier'
-        && Array.isArray(property.value)) {
-      const value = property.properties
+  protected override getCurrentFormPropertyValue(property: FormProperty): unknown {
+    const tableProperty = property as FormProperty & {
+      properties?: FormProperty[];
+      schema?: {widget?: {id?: string}};
+    };
+    if(tableProperty
+        && Array.isArray(tableProperty.properties)
+        && tableProperty.schema?.widget?.id === 'identifier'
+        && Array.isArray(tableProperty.value)) {
+      const value = tableProperty.properties
         .map((child: FormProperty) => {
           const rawValue = this.rawValueStore.getIdentifier(child);
           if(!Util.isEmpty(rawValue)) {
@@ -420,7 +430,9 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
           }
           return super.getCurrentFormPropertyValue(child);
         })
-        .map((childValue) => this.cloneUsageContext(childValue))
+        .map((childValue) =>
+          this.wrapAssignerIdentifierForUi(this.cloneValue(childValue as EditableIdentifier))
+        )
         .filter((childValue) => !Util.isEmpty(childValue));
       return value.length ? value : undefined;
     }
@@ -434,8 +446,8 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - Value to clone.
    * @returns Cloned UsageContext value.
    */
-  private cloneUsageContext(value: any): any {
-    return JSON.parse(JSON.stringify(value || {}));
+  private cloneValue<T>(value: T): T {
+    return JSON.parse(JSON.stringify(value ?? null)) as T;
   }
 
   /**
@@ -449,8 +461,9 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
     }
     identifierProperty.properties.forEach((rowProperty: FormProperty, index: number) => {
       if(!Util.isEmpty(identifiers[index])) {
-        this.originalIdentifierRows.set(rowProperty, this.cloneUsageContext(identifiers[index]));
-        this.rawValueStore.setIdentifier(rowProperty, identifiers[index]);
+        const identifier = this.unwrapAssignerIdentifierForFhir(this.cloneValue(identifiers[index]));
+        this.originalIdentifierRows.set(rowProperty, identifier);
+        this.rawValueStore.setIdentifier(rowProperty, identifier);
       }
     });
   }
@@ -461,8 +474,8 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - UsageContext value from the parent table.
    * @returns Dialog model with selected value type and UI-wrapped identifiers.
    */
-  protected override prepareInputModel(value: any): any {
-    const model = this.cloneUsageContext(value);
+  protected override prepareInputModel(value: UsageContextEditModel): UsageContextEditModel {
+    const model = this.cloneValue(value);
     model.__$valueType = VALUE_KEYS.find((key) => !Util.isEmpty(model[key]));
     this.wrapValueReferenceIdentifier(model);
     return model;
@@ -473,7 +486,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    *
    * @param model - UsageContext dialog model to mutate.
    */
-  private wrapValueReferenceIdentifier(model: any): void {
+  private wrapValueReferenceIdentifier(model: UsageContextEditModel): void {
     const identifier = model?.valueReference?.identifier;
     if(identifier && !Array.isArray(identifier)) {
       this.wrapAssignerIdentifierForUi(identifier);
@@ -486,7 +499,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    *
    * @param model - UsageContext value to mutate before save.
    */
-  private unwrapValueReferenceIdentifier(model: any): void {
+  private unwrapValueReferenceIdentifier(model: UsageContextEditModel): void {
     const identifier = model?.valueReference?.identifier;
     if(Array.isArray(identifier)) {
       if(identifier.length) {
@@ -507,7 +520,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param identifier - Identifier value to unwrap.
    * @returns Identifier value with nested assigner.identifier objects.
    */
-  private unwrapAssignerIdentifierForFhir(identifier: any): any {
+  private unwrapAssignerIdentifierForFhir(identifier: EditableIdentifier): fhir.Identifier {
     const assignerIdentifier = identifier?.assigner?.identifier;
     if(Array.isArray(assignerIdentifier)) {
       if(assignerIdentifier.length) {
@@ -520,7 +533,9 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
     else if(assignerIdentifier) {
       this.unwrapAssignerIdentifierForFhir(assignerIdentifier);
     }
-    return identifier;
+    // Recursive array wrappers have been removed, so the result now satisfies
+    // the FHIR Identifier shape even though the input edit type allowed both.
+    return identifier as fhir.Identifier;
   }
 
   /**
@@ -529,7 +544,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param identifier - Identifier value to wrap.
    * @returns Identifier value with nested assigner.identifier arrays.
    */
-  private wrapAssignerIdentifierForUi(identifier: any): any {
+  private wrapAssignerIdentifierForUi(identifier: EditableIdentifier): EditableIdentifier {
     const assignerIdentifier = identifier?.assigner?.identifier;
     if(assignerIdentifier && !Array.isArray(assignerIdentifier)) {
       this.wrapAssignerIdentifierForUi(assignerIdentifier);
@@ -547,11 +562,11 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - CodeableConcept value.
    * @returns Human-readable CodeableConcept summary.
    */
-  private static codeableConceptSummary(value: any): string {
+  private static codeableConceptSummary(value: fhir.CodeableConcept | undefined): string {
     if(value?.text) {
       return value.text;
     }
-    const coding = value?.coding?.find((entry) => !Util.isEmpty(entry));
+    const coding = value?.coding?.find((entry: fhir.Coding) => !Util.isEmpty(entry));
     return [coding?.display, coding?.code, coding?.system].filter(Boolean).join(' | ');
   }
 
@@ -561,8 +576,8 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - Quantity value.
    * @returns Human-readable Quantity summary.
    */
-  private static quantitySummary(value: any): string {
-    const amount = [value?.comparator, value?.value].filter((entry) => entry !== undefined && entry !== null && entry !== '').join('');
+  private static quantitySummary(value: fhir.Quantity | undefined): string {
+    const amount = [value?.comparator, value?.value].filter((entry) => entry !== undefined && entry !== null).join('');
     return [amount, value?.unit || value?.code, value?.system].filter((entry) => entry !== undefined && entry !== null && entry !== '').join(' ');
   }
 
@@ -572,7 +587,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - Range value.
    * @returns Human-readable Range summary.
    */
-  private static rangeSummary(value: any): string {
+  private static rangeSummary(value: fhir.Range | undefined): string {
     const low = UsageContextDlgComponent.quantitySummary(value?.low);
     const high = UsageContextDlgComponent.quantitySummary(value?.high);
     return [low, high].filter(Boolean).join(' - ');
@@ -584,7 +599,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - Reference value.
    * @returns Human-readable Reference summary.
    */
-  private static referenceSummary(value: any): string {
+  private static referenceSummary(value: EditableReference | undefined): string {
     const referenceSummary = [value?.display, value?.reference, value?.type].filter(Boolean).join(' | ');
     if(referenceSummary) {
       return referenceSummary;
@@ -600,7 +615,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<any> implements
    * @param value - Identifier value.
    * @returns Human-readable Identifier summary.
    */
-  private static identifierSummary(value: any): string {
+  private static identifierSummary(value: EditableIdentifier | undefined): string {
     return [value?.value, value?.system, value?.use].filter(Boolean).join(' | ');
   }
 }

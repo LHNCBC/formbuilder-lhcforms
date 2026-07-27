@@ -5,7 +5,7 @@ import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatTooltip} from '@angular/material/tooltip';
-import {FormProperty, SchemaFormModule} from '@lhncbc/ngx-schema-form';
+import {FormProperty, ObjectProperty, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import {AppFormElementComponent} from '../form-element/form-element.component';
 import {BooleanControlledComponent} from '../boolean-controlled/boolean-controlled.component';
 import {LabelComponent} from '../label/label.component';
@@ -13,6 +13,7 @@ import {TitleComponent} from '../title/title.component';
 import {TableEditRowInDlgComponent} from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {UsageContextDlgComponent} from '../usage-context-dlg/usage-context-dlg.component';
 import {IsDisabledPipe} from '../../pipes/is-disabled.pipe';
+import type {UsageContextEditModel, UsageContextTableField} from './usage-context.types';
 
 /**
  * Table editor for Questionnaire.useContext.
@@ -78,7 +79,7 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
       title: 'Use context'
     }, this.dialogComponentType);
 
-    const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
+    const sub = matDialogRef.afterClosed().subscribe((submittedValue: UsageContextEditModel | false | undefined) => {
       if (submittedValue) {
         this.formProperty.properties[index].reset(submittedValue, false);
         this.updateValueSummaries();
@@ -92,15 +93,15 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
    *
    * @param popover - Optional popover trigger passed by the base table widget.
    */
-  override addItemWithAlert(popover): void {
+  override addItemWithAlert(_popover: unknown): void {
     const matDialogRef = this.openDialog({
         arrayProperty: this.formProperty,
         rowIndex: -1
       },
       this.dialogComponentType);
-    const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
+    const sub = matDialogRef.afterClosed().subscribe((submittedValue: UsageContextEditModel | false | undefined) => {
       if(submittedValue) {
-        this.addNewItem(submittedValue);
+        this.formProperty.addItem(submittedValue);
         this.updateValueSummaries();
       }
       sub.unsubscribe();
@@ -126,7 +127,7 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
    * @param showField - Field display configuration from the table widget.
    * @returns True when the value summary renderer should be used.
    */
-  override useDisplayRenderer(showField: any): boolean {
+  override useDisplayRenderer(showField: UsageContextTableField): boolean {
     return showField?.field === this.valueSummaryField;
   }
 
@@ -137,7 +138,7 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
    * @param showField - Field display configuration from the table widget.
    * @returns Display text for the requested table cell.
    */
-  override getDisplayValue(itemProperty: FormProperty, showField: any): string {
+  override getDisplayValue(itemProperty: FormProperty, showField: UsageContextTableField): string {
     if(showField?.field === this.valueSummaryField) {
       return this.getValueSummary(itemProperty.value);
     }
@@ -153,7 +154,7 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
     }
     this.updatingSummaries = true;
     try {
-      ((this.formProperty.properties || []) as FormProperty[]).forEach((rowProperty: any) => {
+      ((this.formProperty.properties || []) as ObjectProperty[]).forEach((rowProperty: ObjectProperty) => {
         const nextSummary = this.getValueSummary(rowProperty.value);
         const summaryProperty = rowProperty.getProperty('__$valueSummary');
         if(summaryProperty && summaryProperty.value !== nextSummary) {
@@ -172,7 +173,7 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
    * @param value - UsageContext value to summarize.
    * @returns Human-readable summary for the selected value[x].
    */
-  private getValueSummary(value: any): string {
+  private getValueSummary(value: UsageContextEditModel): string {
     return UsageContextDlgComponent.getValueSummary(value);
   }
 }
