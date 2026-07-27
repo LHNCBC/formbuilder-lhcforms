@@ -234,6 +234,7 @@ export class FormService {
       this.usageContextSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.useContext?.items || {type: 'object', properties: {}}));
       delete this.usageContextSchema.properties?.__$valueSummary;
       this.usageContextSchema.definitions = JSON.parse(JSON.stringify(this.flSchema.definitions || {}));
+      this.removeUsageContextRangeComparators(this.usageContextSchema);
       this.addValueTypeToUsageContextSchema(this.usageContextSchema);
       this.addIdentifierToUsageContextReference(this.usageContextSchema, identifierLayout, true);
       this.usageContextSchema.widget = {id: 'row-layout'};
@@ -479,6 +480,19 @@ export class FormService {
         };
       }
     });
+  }
+
+  /**
+   * Remove Quantity.comparator from UsageContext Range endpoints.
+   *
+   * The generated JSON schema reuses Quantity for Range.low/high, but FHIR
+   * prohibits comparators on Range boundaries.
+   *
+   * @param schema - UsageContext dialog schema to constrain.
+   */
+  private removeUsageContextRangeComparators(schema: any): void {
+    delete schema?.properties?.valueRange?.properties?.low?.properties?.comparator;
+    delete schema?.properties?.valueRange?.properties?.high?.properties?.comparator;
   }
 
   /**

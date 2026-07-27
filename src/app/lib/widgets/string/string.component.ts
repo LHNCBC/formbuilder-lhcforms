@@ -2,11 +2,8 @@
  * Component for general input box
  */
 import {
-  AfterViewChecked,
-  ChangeDetectorRef,
   Component,
   ElementRef,
-  inject,
   OnInit,
   ViewChild
 } from '@angular/core';
@@ -31,14 +28,13 @@ import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.d
     }
   `]
 })
-export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewChecked {
+export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit {
 
   @ViewChild('inputEl') inputElRef!: ElementRef;
-  showTooltip = true;
+  showTooltip = false;
 
   Array = Array; // To use in templates.
 
-  cdr = inject(ChangeDetectorRef);
   constructor() {
     super();
   }
@@ -48,21 +44,23 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
     this.controlClasses = this.controlClasses || '';
   }
 
-  ngAfterViewChecked() {
+  /**
+   * Check whether the rendered input text exceeds its visible width.
+   */
+  hasOverflow(): boolean {
     const el = this.inputElRef?.nativeElement;
     const width = el?.clientWidth;
     if(!width) {
-      return;
+      return false;
     }
+    return el.scrollWidth > width;
+  }
 
-    const nextShowTooltip = el.scrollWidth > width;
-    if(nextShowTooltip !== this.showTooltip) {
-      this.showTooltip = nextShowTooltip;
-      // The overflow measurement is available only after the view is checked.
-      // Refresh this component immediately so the tooltip binding and the
-      // checked value stay synchronized without deferred timer work.
-      this.cdr.detectChanges();
-    }
+  /**
+   * Refresh tooltip visibility immediately before hover or focus display.
+   */
+  updateTooltipVisibility(): void {
+    this.showTooltip = this.hasOverflow();
   }
 
   /**

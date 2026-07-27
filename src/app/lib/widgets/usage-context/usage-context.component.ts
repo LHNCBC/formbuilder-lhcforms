@@ -14,6 +14,7 @@ import {TableEditRowInDlgComponent} from '../table-edit-row-in-dlg/table-edit-ro
 import {UsageContextDlgComponent} from '../usage-context-dlg/usage-context-dlg.component';
 import {IsDisabledPipe} from '../../pipes/is-disabled.pipe';
 import type {UsageContextEditModel, UsageContextTableField} from './usage-context.types';
+import {take} from 'rxjs/operators';
 
 /**
  * Table editor for Questionnaire.useContext.
@@ -79,12 +80,11 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
       title: 'Use context'
     }, this.dialogComponentType);
 
-    const sub = matDialogRef.afterClosed().subscribe((submittedValue: UsageContextEditModel | false | undefined) => {
+    matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue: UsageContextEditModel | false | undefined) => {
       if (submittedValue) {
         this.formProperty.properties[index].reset(submittedValue, false);
         this.updateValueSummaries();
       }
-      sub.unsubscribe();
     });
   }
 
@@ -99,12 +99,11 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
         rowIndex: -1
       },
       this.dialogComponentType);
-    const sub = matDialogRef.afterClosed().subscribe((submittedValue: UsageContextEditModel | false | undefined) => {
+    matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue: UsageContextEditModel | false | undefined) => {
       if(submittedValue) {
         this.formProperty.addItem(submittedValue);
         this.updateValueSummaries();
       }
-      sub.unsubscribe();
     });
   }
 

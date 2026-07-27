@@ -4,7 +4,6 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  OnDestroy,
   OnInit,
   ViewChild,
   inject,
@@ -65,7 +64,7 @@ const RANGE_UNIT_ERROR = 'Low and high unit, system, and code must match.';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEditModel> implements OnInit, AfterViewInit, OnDestroy {
+export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEditModel> implements OnInit, AfterViewInit {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef<HTMLElement>;
   @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef<HTMLElement>;
   @ViewChild(UsageContextObjComponent) usageContextObj!: UsageContextObjComponent;
@@ -74,7 +73,6 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
   validationError = signal('');
 
   private rawValueStore = inject(RawValueStoreService);
-  private readonly originalIdentifierRows = new WeakMap<FormProperty, fhir.Identifier>();
   // Fail closed until schema-form reports the validity of the initialized model.
   private schemaFormValid = false;
 
@@ -192,6 +190,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
    */
   private normalizeValueForSave(value: UsageContextEditModel): UsageContextEditModel {
     const nextValue = this.cloneValue(value);
+    this.removeRangeComparators(nextValue);
     this.unwrapValueReferenceIdentifier(nextValue);
     this.pruneExtraValueChoices(nextValue);
     nextValue.__$valueSummary = UsageContextDlgComponent.getValueSummary(nextValue);
@@ -418,13 +417,14 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
         && Array.isArray(tableProperty.properties)
         && tableProperty.schema?.widget?.id === 'identifier'
         && Array.isArray(tableProperty.value)) {
+      const originalRows = this.getOriginalIdentifierRows(tableProperty);
       const value = tableProperty.properties
-        .map((child: FormProperty) => {
+        .map((child: FormProperty, index: number) => {
           const rawValue = this.rawValueStore.getIdentifier(child);
           if(!Util.isEmpty(rawValue)) {
             return rawValue;
           }
-          const originalRow = this.originalIdentifierRows.get(child);
+          const originalRow = originalRows?.[index];
           if(!Util.isEmpty(originalRow)) {
             return originalRow;
           }
@@ -451,6 +451,23 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
   }
 
   /**
+   * Resolve imported Identifier rows directly from the input model.
+   *
+   * This fallback deliberately does not depend on ngAfterViewInit seeding:
+   * schema-form may materialize its row properties after that lifecycle hook.
+   *
+   * @param property - Identifier table property being rebuilt.
+   * @returns Original rows for valueReference.identifier, when applicable.
+   */
+  private getOriginalIdentifierRows(property: FormProperty): EditableIdentifier[] | undefined {
+    const identifiers = this.inputModel?.valueReference?.identifier;
+    if(!property.path?.endsWith('/valueReference/identifier') || !Array.isArray(identifiers)) {
+      return undefined;
+    }
+    return identifiers;
+  }
+
+  /**
    * Preserve original identifier rows on form properties for nested dialog edits.
    */
   private seedOriginalIdentifierRows(): void {
@@ -462,7 +479,6 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
     identifierProperty.properties.forEach((rowProperty: FormProperty, index: number) => {
       if(!Util.isEmpty(identifiers[index])) {
         const identifier = this.unwrapAssignerIdentifierForFhir(this.cloneValue(identifiers[index]));
-        this.originalIdentifierRows.set(rowProperty, identifier);
         this.rawValueStore.setIdentifier(rowProperty, identifier);
       }
     });
@@ -476,9 +492,23 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
    */
   protected override prepareInputModel(value: UsageContextEditModel): UsageContextEditModel {
     const model = this.cloneValue(value);
+    this.removeRangeComparators(model);
     model.__$valueType = VALUE_KEYS.find((key) => !Util.isEmpty(model[key]));
     this.wrapValueReferenceIdentifier(model);
     return model;
+  }
+
+  /**
+   * Remove comparator fields that are invalid on FHIR Range endpoints.
+   *
+   * The generated schema models Range endpoints as Quantity, where comparator
+   * exists, even though the FHIR Range datatype prohibits it.
+   *
+   * @param model - UsageContext edit or save model.
+   */
+  private removeRangeComparators(model: UsageContextEditModel): void {
+    delete model.valueRange?.low?.comparator;
+    delete model.valueRange?.high?.comparator;
   }
 
   /**

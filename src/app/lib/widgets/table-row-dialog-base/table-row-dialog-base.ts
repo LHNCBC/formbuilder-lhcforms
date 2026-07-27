@@ -1,4 +1,4 @@
-import {ElementRef, ChangeDetectorRef, Directive, signal} from '@angular/core';
+import {AfterViewInit, ElementRef, ChangeDetectorRef, Directive, OnInit, signal} from '@angular/core';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
@@ -9,7 +9,7 @@ import {DialogData} from '../table-edit-row-in-dlg/table-edit-row-in-dlg.compone
  * Shared behavior for dialogs that edit one row from a table-backed array field.
  */
 @Directive()
-export abstract class TableRowDialogBase<T> {
+export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
   inputModel: T;
   changedValue: T;
   path: string = '';
@@ -160,12 +160,6 @@ export abstract class TableRowDialogBase<T> {
         this.matDialogRef.close(false);
       }
     });
-  }
-
-  /**
-   * Ng OnDestroy lifecycle hook. Reserved for subclass cleanup.
-   */
-  ngOnDestroy() {
   }
 
   /**

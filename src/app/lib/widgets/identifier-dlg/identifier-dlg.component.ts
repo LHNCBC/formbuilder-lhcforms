@@ -5,8 +5,7 @@ import {
   ElementRef,
   OnInit,
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef,
-  OnDestroy
+  ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
 import {
   MatDialogRef,
@@ -50,14 +49,13 @@ import {RawValueStoreService} from '../../../services/raw-value-store.service';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> implements OnInit, AfterViewInit, OnDestroy {
+export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> implements OnInit, AfterViewInit {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef;
   @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef;
   @ViewChild(IdentifierObjComponent) identifierObj!: IdentifierObjComponent;
 
   formService: FormService = inject(FormService);
   private rawValueStore = inject(RawValueStoreService);
-  private readonly originalIdentifierRows = new WeakMap<FormProperty, fhir.Identifier>();
 
   constructor() {
     super(
@@ -145,10 +143,11 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
         && Array.isArray(property.properties)
         && property.schema?.widget?.id === 'identifier'
         && Array.isArray(property.value)) {
+      const originalRows = this.getOriginalAssignerIdentifierRows(property);
       const value = property.properties
-        .map((child: FormProperty) =>
+        .map((child: FormProperty, index: number) =>
           this.rawValueStore.getIdentifier(child) ||
-          this.originalIdentifierRows.get(child) ||
+          originalRows?.[index] ||
           super.getCurrentFormPropertyValue(child)
         )
         .map((childValue) => this.cloneIdentifier(childValue))
@@ -156,6 +155,20 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
       return value.length ? value : undefined;
     }
     return super.getCurrentFormPropertyValue(property);
+  }
+
+  /**
+   * Resolve imported assigner.identifier rows without relying on lifecycle seeding.
+   *
+   * @param property - Identifier table property being rebuilt.
+   * @returns Original rows for the direct assigner.identifier table.
+   */
+  private getOriginalAssignerIdentifierRows(property: FormProperty): fhir.Identifier[] | undefined {
+    const identifiers = this.inputModel?.assigner?.identifier;
+    if(!property.path?.endsWith('/assigner/identifier') || !Array.isArray(identifiers)) {
+      return undefined;
+    }
+    return identifiers as fhir.Identifier[];
   }
 
   /**
@@ -172,7 +185,6 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
       const identifier = identifiers[index] as fhir.Identifier;
       if(identifier && Object.keys(identifier).length) {
         const original = this.cloneIdentifier(identifier);
-        this.originalIdentifierRows.set(rowProperty, original);
         this.rawValueStore.setIdentifier(rowProperty, original);
       }
     });

@@ -1,9 +1,13 @@
 import {UsageContextDlgComponent} from './usage-context-dlg.component';
 import type {UsageContextEditModel} from '../usage-context/usage-context.types';
+import type {FormProperty} from '@lhncbc/ngx-schema-form';
 
 type DialogInternals = {
   normalizeValueForSave(value: UsageContextEditModel): UsageContextEditModel;
   getRangeValidationError(value: UsageContextEditModel): string;
+  getCurrentFormPropertyValue(property: FormProperty): unknown;
+  inputModel: UsageContextEditModel;
+  rawValueStore: {getIdentifier: (property: FormProperty) => undefined};
 };
 
 describe('UsageContextDlgComponent', () => {
@@ -49,6 +53,10 @@ describe('UsageContextDlgComponent', () => {
       code: {code: 'task'},
       __$valueType: 'valueReference',
       valueQuantity: {value: 10},
+      valueRange: {
+        low: {value: 1, comparator: '>='},
+        high: {value: 2, comparator: '<='}
+      },
       valueReference: {
         identifier: [{
           value: 'plan-123',
@@ -63,6 +71,7 @@ describe('UsageContextDlgComponent', () => {
 
     expect(normalized.__$valueType).toBeUndefined();
     expect(normalized.valueQuantity).toBeUndefined();
+    expect(normalized.valueRange).toBeUndefined();
     expect(Array.isArray(normalized.valueReference?.identifier)).toBeFalse();
     expect(normalized.valueReference?.identifier).toEqual(jasmine.objectContaining({
       value: 'plan-123',
@@ -71,6 +80,55 @@ describe('UsageContextDlgComponent', () => {
       })
     }));
     expect(normalized.__$valueSummary).toBe('plan-123');
+  });
+
+  it('should remove invalid Range comparators during normalization', () => {
+    const normalized = internals.normalizeValueForSave({
+      code: {code: 'age'},
+      __$valueType: 'valueRange',
+      valueRange: {
+        low: {value: 18, comparator: '>='},
+        high: {value: 65, comparator: '<='}
+      }
+    });
+
+    expect(normalized.valueRange?.low?.comparator).toBeUndefined();
+    expect(normalized.valueRange?.high?.comparator).toBeUndefined();
+  });
+
+  it('should preserve an original Identifier row when lifecycle seeding did not run', () => {
+    const liveChild = {
+      value: {value: 'plan-123'},
+      properties: {
+        value: {value: 'plan-123'}
+      }
+    };
+    const tableProperty = {
+      path: '/valueReference/identifier',
+      value: [{value: 'plan-123'}],
+      properties: [liveChild],
+      schema: {widget: {id: 'identifier'}}
+    } as unknown as FormProperty;
+    internals.inputModel = {
+      code: {code: 'task'},
+      valueReference: {
+        identifier: [{
+          value: 'plan-123',
+          assigner: {
+            identifier: [{
+              value: 'deep-identifier'
+            }]
+          }
+        }]
+      }
+    };
+    internals.rawValueStore = {getIdentifier: () => undefined};
+
+    const currentValue = internals.getCurrentFormPropertyValue(tableProperty) as Array<{
+      assigner?: {identifier?: Array<{value?: string}>}
+    }>;
+
+    expect(currentValue[0].assigner?.identifier?.[0].value).toBe('deep-identifier');
   });
 
   it('should reject reversed Range bounds and incompatible units', () => {

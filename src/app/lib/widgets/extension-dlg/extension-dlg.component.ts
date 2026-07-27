@@ -5,8 +5,7 @@ import {
   ElementRef,
   OnInit,
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef,
-  OnDestroy
+  ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
 import {
   MatDialogRef,
@@ -62,7 +61,7 @@ import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> implements OnInit, AfterViewInit, OnDestroy {
+export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> implements OnInit, AfterViewInit {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef;
   @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef;
   @ViewChild(ExtensionObjComponent) extensionObj: ExtensionObjComponent;

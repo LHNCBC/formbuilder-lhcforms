@@ -73,6 +73,15 @@ describe('FormService', () => {
       .toBeTrue();
   });
 
+  it('should remove invalid comparator fields from UsageContext Range endpoints', () => {
+    const usageContextSchema = service.cloneUsageContextSchema() as any;
+
+    expect(usageContextSchema.properties.valueRange.properties.low.properties.comparator)
+      .toBeUndefined();
+    expect(usageContextSchema.properties.valueRange.properties.high.properties.comparator)
+      .toBeUndefined();
+  });
+
   it('should update __$helpText', () => {
     const clonedSample = traverse(sampleJson).clone();
     service.updateFhirQuestionnaire(clonedSample);
