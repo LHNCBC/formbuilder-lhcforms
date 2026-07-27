@@ -55,14 +55,14 @@ const RANGE_UNIT_ERROR = 'Low and high unit, system, and code must match.';
   selector: 'lfb-usage-context-dlg',
   imports: [UsageContextObjComponent, MatDialogTitle, MatDialogContent, MatIconButton, MatDialogActions, MatIconModule, MatTooltip],
   templateUrl: './usage-context-dlg.component.html',
-	  styles: [`
-	    .close-button {
-	      float: right;
-	    }
-	    .save-button-tooltip-wrapper {
-	      display: inline-block;
-	    }
-	  `],
+  styles: [`
+    .close-button {
+      float: right;
+    }
+    .save-button-tooltip-wrapper {
+      display: inline-block;
+    }
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEditModel> implements OnInit, AfterViewInit, OnDestroy {

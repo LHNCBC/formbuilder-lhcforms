@@ -8,27 +8,27 @@
   <h2 class="m-3 mb-1">Edit use context fields</h2>
   <div class="m-3 mt-1">{{path}}</div>
   <hr/>
-	  <div class="container">
-	    <lfb-usage-context-obj
-	      [model]="inputModel"
-	      (changed)="onChange($event)"
-	      (validityChanged)="onValidityChange($event)"
-	    ></lfb-usage-context-obj>
-	    @if (validationError()) {
-	      <small class="text-danger form-text" role="alert">{{validationError()}}</small>
-	    }
-	  </div>
-	</mat-dialog-content>
-	<mat-dialog-actions class="border-top pe-3 pt-3" align="end">
-	  <button class="btn btn-primary" (click)="cancel()">Discard changes</button>
-	  <span
-	    class="save-button-tooltip-wrapper ms-2"
-	    tabindex="0"
-	    [matTooltip]="saveDisabledReason()"
-	    [matTooltipDisabled]="!disableSave() || !saveDisabledReason()"
-	    [attr.title]="disableSave() && saveDisabledReason() ? saveDisabledReason() : null"
-	  >
-	    <button class="btn btn-primary" [disabled]="disableSave()" (click)="save()">Save and close</button>
-	  </span>
-	</mat-dialog-actions>
+  <div class="container">
+    <lfb-usage-context-obj
+      [model]="inputModel"
+      (changed)="onChange($event)"
+      (validityChanged)="onValidityChange($event)"
+    ></lfb-usage-context-obj>
+    @if (validationError()) {
+      <small class="text-danger form-text" role="alert">{{validationError()}}</small>
+    }
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions class="border-top pe-3 pt-3" align="end">
+  <button class="btn btn-primary" (click)="cancel()">Discard changes</button>
+  <span
+    class="save-button-tooltip-wrapper ms-2"
+    tabindex="0"
+    [matTooltip]="saveDisabledReason()"
+    [matTooltipDisabled]="!disableSave() || !saveDisabledReason()"
+    [attr.title]="disableSave() && saveDisabledReason() ? saveDisabledReason() : null"
+  >
+    <button class="btn btn-primary" [disabled]="disableSave()" (click)="save()">Save and close</button>
+  </span>
+</mat-dialog-actions>
 </div>
