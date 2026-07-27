@@ -1,0 +1,95 @@
+{
+  // Presets are opt-in. Feature layouts map their local widget names to these
+  // deliberately scoped names through widgetPresetMap.
+  presets: {
+    dialogStringField: {
+      id: 'string',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-10 m-0 p-0'
+    },
+    dialogNumberField: {
+      id: 'number',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-10 m-0 p-0'
+    },
+    dialogDateRangeField: {
+      id: 'date-range',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-6',
+      showFields: [
+        {field: 'start', col: 6},
+        {field: 'end', col: 6}
+      ]
+    },
+    dialogCodingTable: {
+      id: 'table',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      addButtonLabel: 'Add coding',
+      showFields: [
+        {field: 'display', col: 4, nolabel: true},
+        {field: 'code', col: 3, nolabel: true},
+        {field: 'system', col: 4, nolabel: true}
+      ]
+    },
+    dialogCodeableConceptObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1',
+      showFields: [
+        {field: 'text', col: 12},
+        {field: 'coding', col: 12}
+      ]
+    },
+    dialogReferenceObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1',
+      showFields: [
+        {field: 'display', col: 12},
+        {field: 'reference', col: 12},
+        {field: 'type', col: 12},
+        {field: 'identifier', col: 12}
+      ]
+    },
+    formStringField: {
+      id: 'string',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 ps-0 pe-1',
+      controlClasses: 'col-sm-10 m-0 p-0'
+    },
+    formTextareaField: {
+      id: 'textarea',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 ps-0 pe-1',
+      controlClasses: 'col-sm-10 m-0 p-0'
+    },
+    formInstantField: {
+      id: 'instant',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 ps-0 pe-1',
+      controlClasses: 'col-sm-3',
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    },
+    formPositiveIntegerField: {
+      id: 'positive-integer',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 ps-0 pe-1',
+      controlClasses: 'col-sm-10 m-0 p-0'
+    },
+    formUnsignedIntegerField: {
+      id: 'unsigned-integer',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 ps-0 pe-1',
+      controlClasses: 'col-sm-10 m-0 p-0'
+    }
+  }
+}

@@ -24,6 +24,40 @@ describe('FormService', () => {
     expect(service.lformsVersion).toMatch(/^[0-9]+\.[0-9]+\.[0-9]+$/);
   });
 
+  it('should apply explicitly requested widget presets without sharing mutable objects', () => {
+    const layout: any = {
+      widgetPresetMap: {
+        string: 'dialogStringField',
+        locallyCustomized: 'dialogStringField'
+      },
+      widgets: {
+        locallyCustomized: {id: 'custom-string'}
+      }
+    };
+    const presets = {
+      dialogStringField: {
+        id: 'string',
+        controlClasses: 'col-sm-10'
+      }
+    };
+
+    service.applyWidgetPresets(layout, presets);
+
+    expect(layout.widgets.string).toEqual(presets.dialogStringField);
+    expect(layout.widgets.string).not.toBe(presets.dialogStringField);
+    expect(layout.widgets.locallyCustomized).toEqual({id: 'custom-string'});
+  });
+
+  it('should reject an unknown widget preset', () => {
+    const layout: any = {
+      widgetPresetMap: {string: 'missingPreset'},
+      widgets: {}
+    };
+
+    expect(() => service.applyWidgetPresets(layout, {}))
+      .toThrowError('Unknown widget preset "missingPreset" requested for "string".');
+  });
+
   it('should update __$helpText', () => {
     const clonedSample = traverse(sampleJson).clone();
     service.updateFhirQuestionnaire(clonedSample);

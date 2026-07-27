@@ -48,7 +48,8 @@ export type Layout = {
   formLayout: any,
   widgets: any,
   widgetsMap: any,
-  overridePropertyLabels: any
+  overridePropertyLabels: any,
+  widgetPresetMap?: {[widgetName: string]: string}
 }
 
 @Injectable({
@@ -170,6 +171,7 @@ export class FormService {
         'assets/extension-fields-layout.json5',
         'assets/usage-context-fields-layout.json5',
         'assets/identifier-fields-layout.json5',
+        'assets/shared-widget-presets.json5',
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
       fhirSchemaDefinitions = results[assetPaths[0]];
@@ -182,6 +184,15 @@ export class FormService {
       extLayout = results[assetPaths[7]];
       usageContextLayout = results[assetPaths[8]];
       identifierLayout = results[assetPaths[9]];
+      const sharedWidgetPresets = results[assetPaths[10]]?.presets || {};
+      [
+        flLayout,
+        itemLayout,
+        vsLayout,
+        extLayout,
+        usageContextLayout,
+        identifierLayout
+      ].forEach((layout) => this.applyWidgetPresets(layout, sharedWidgetPresets));
       const extSchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Extension));
       const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
 
@@ -364,6 +375,31 @@ export class FormService {
         });
       }
     });
+  }
+
+  /**
+   * Resolve the shared widget presets explicitly requested by a feature layout.
+   *
+   * Feature-local widget definitions take precedence, allowing an intentional
+   * specialization without changing other preset consumers.
+   *
+   * @param layout - Feature layout containing an optional local-to-preset map.
+   * @param presets - Shared, deliberately named widget definitions.
+   */
+  applyWidgetPresets(layout: Layout, presets: {[presetName: string]: any}): void {
+    if(!layout?.widgetPresetMap) {
+      return;
+    }
+
+    const resolvedWidgets: {[widgetName: string]: any} = {};
+    Object.entries(layout.widgetPresetMap).forEach(([widgetName, presetName]) => {
+      const preset = presets[presetName];
+      if(!preset) {
+        throw new Error(`Unknown widget preset "${presetName}" requested for "${widgetName}".`);
+      }
+      resolvedWidgets[widgetName] = JSON.parse(JSON.stringify(preset));
+    });
+    layout.widgets = {...resolvedWidgets, ...(layout.widgets || {})};
   }
 
   /**

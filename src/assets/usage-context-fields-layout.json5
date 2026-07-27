@@ -52,6 +52,13 @@
     '$.properties.valueReference.properties.identifier': 'Identifier'
   },
 
+  widgetPresetMap: {
+    number: 'dialogNumberField',
+    codingTable: 'dialogCodingTable',
+    codeableConceptObject: 'dialogCodeableConceptObject',
+    referenceObject: 'dialogReferenceObject'
+  },
+
   widgets: {
     string: {
       id: 'string',
@@ -64,12 +71,6 @@
       labelPosition: 'left',
       labelClasses: 'col-sm-2 m-0 px-1',
       controlClasses: 'col-sm-10 m-0'
-    },
-    number: {
-      id: 'number',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 m-0 px-1',
-      controlClasses: 'col-sm-10 m-0 p-0'
     },
     valueTypeSelect: {
       id: 'select',
@@ -113,29 +114,6 @@
         {field: 'system', col: 12}
       ]
     },
-    codeableConceptObject: {
-      id: 'lfb-object',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1',
-      showFields: [
-        {field: 'text', col: 12},
-        {field: 'coding', col: 12}
-      ]
-    },
-    codingTable: {
-      id: 'table',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10',
-      addButtonLabel: 'Add coding',
-      showFields: [
-        {field: 'display', col: 4, nolabel: true},
-        {field: 'code', col: 3, nolabel: true},
-        {field: 'system', col: 4, nolabel: true}
-      ]
-    },
     quantityObject: {
       id: 'lfb-object',
       labelPosition: 'left',
@@ -174,19 +152,6 @@
         {field: 'high', col: 12}
       ]
     },
-    referenceObject: {
-      id: 'lfb-object',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1',
-      showFields: [
-        {field: 'display', col: 12},
-        {field: 'reference', col: 12},
-        {field: 'type', col: 12},
-        {field: 'identifier', col: 12}
-      ]
-    }
   },
 
   widgetsMap: {

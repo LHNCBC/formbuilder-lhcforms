@@ -60,19 +60,15 @@
   // Specify widget layout.
   // id is widget schema registry defined in lforms-widget-registry.ts
   // Label classes and control classes are used in the widget templates to fine tune widget layout positions
+  widgetPresetMap: {
+    inputBox: 'formStringField',
+    textArea: 'formTextareaField',
+    instant: 'formInstantField',
+    'positive-integer': 'formPositiveIntegerField',
+    'unsigned-integer': 'formUnsignedIntegerField'
+  },
+
   widgets: {
-    inputBox: {
-      id: "string",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
-    textArea: {
-      id: "textarea",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
     inputDate: {
       id: "date",
       labelPosition: "left",
@@ -102,25 +98,6 @@
         {"field": "start", "col": 6},
         {"field": "end", "col": 6}
       ]
-    },
-    instant: {
-      id: "instant",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-3",
-      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
-    },
-    "positive-integer": {
-      id: "positive-integer",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
-    "unsigned-integer": {
-      id: "unsigned-integer",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
     },
     __$terminologyServer: {
       "id": "terminology-server",

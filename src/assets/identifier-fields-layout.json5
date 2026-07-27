@@ -29,6 +29,14 @@
     '$.properties.assigner.properties.identifier': 'Identifier'
   },
 
+  widgetPresetMap: {
+    string: 'dialogStringField',
+    codingTable: 'dialogCodingTable',
+    typeObject: 'dialogCodeableConceptObject',
+    dateRange: 'dialogDateRangeField',
+    assignerObject: 'dialogReferenceObject'
+  },
+
   widgets: {
     useSelect: {
       id: 'select',
@@ -44,64 +52,11 @@
       labelClasses: "col-sm-2 m-0 px-1",
       controlClasses: "col-sm-10 m-0 p-0"
     },
-    string: {
-      id: 'string',
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 px-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
-
     object: {
       id: 'lfb-object',
       labelPosition: 'left',
       labelClasses: 'col-sm-2 ps-0 pe-1',
       controlClasses: 'col-sm-10'
-    },
-    codingTable: {
-      id: 'table',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10',
-      addButtonLabel: 'Add coding',
-      showFields: [
-        {field: 'display', col: 4, nolabel: true},
-        {field: 'code', col: 3, nolabel: true},
-        {field: 'system', col: 4, nolabel: true}
-      ]
-    },
-    typeObject: {
-      id: 'lfb-object',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1',
-      showFields: [
-        {field: 'text', col: 12},
-        {field: 'coding', col: 12}
-      ]
-    },
-    dateRange: {
-      id: 'date-range',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 m-0 px-1',
-      controlClasses: 'col-sm-6',
-      showFields: [
-        {field: 'start', col: 6},
-        {field: 'end', col: 6}
-      ]
-    },
-    assignerObject: {
-      id: 'lfb-object',
-      labelPosition: 'left',
-      labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1',
-      showFields: [
-        {field: 'display', col: 12},
-        {field: 'reference', col: 12},
-        {field: 'type', col: 12},
-        {field: 'identifier', col: 12}
-      ]
     },
     identifierTable: {
       id: 'identifier',
