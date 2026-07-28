@@ -124,6 +124,34 @@ describe('ExtensionDlgComponent', () => {
     expect(urlWidget?.textContent).not.toContain('already exists');
   });
 
+  it('should display a duplicate error when only the value of an imported duplicate is edited', async () => {
+    await createDialog([
+      {url: inputExt[0].url, valueString: 'first value'},
+      {url: inputExt[0].url, valueString: 'second value'}
+    ], 1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+    const valueInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="valueString"]');
+
+    expect(urlInput.classList).toContain('ng-pristine');
+    valueInput.value = 'changed value';
+    valueInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const urlWidget = urlInput.closest('lfb-extension-url');
+    const duplicateErrorId = urlInput.getAttribute('aria-describedby');
+    expect(valueInput.classList).toContain('ng-dirty');
+    expect(urlInput.classList).toContain('ng-pristine');
+    expect(component.disableSave()).toBeTrue();
+    expect(urlInput.classList).toContain('invalid');
+    expect(urlInput.getAttribute('aria-invalid')).toBe('true');
+    expect(duplicateErrorId).toBe(`duplicate-extension-url-error-${urlInput.id}`);
+    expect(urlWidget?.querySelector(`[id="${duplicateErrorId}"]`)).not.toBeNull();
+    expect(urlWidget?.querySelector('fa-icon')).not.toBeNull();
+    expect(urlWidget?.querySelector('[role="alert"]')).not.toBeNull();
+    expect(urlWidget?.textContent).toContain('already exists');
+  });
+
   it('should allow multiple occurrences for a known repeatable extension', async () => {
     const variableUrl = 'http://hl7.org/fhir/StructureDefinition/variable';
     await createDialog([{url: variableUrl, valueExpression: {language: 'text/fhirpath', expression: '1'}}], -1);

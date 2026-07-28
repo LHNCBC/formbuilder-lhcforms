@@ -24,9 +24,10 @@
            [matTooltip]="getTooltipValue()"
            matTooltipClass="lfb-tooltip-pre-wrap"
            [lfbDisableControl]="schema.disabled">
-    @if (control.dirty && errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
+    @let errorsToDisplay = displayedErrors;
+    @if (errorsToDisplay?.length) {
       <ul class="mb-0 ps-0 list-unstyled">
-        @for (error of errors; track error.code) {
+        @for (error of errorsToDisplay; track error.code) {
           <li [attr.id]="error.code === 'DUPLICATE_EXTENSION_URL' ? duplicateErrorId : null">
             @if (error.code === 'DUPLICATE_EXTENSION_URL') {
               <fa-icon

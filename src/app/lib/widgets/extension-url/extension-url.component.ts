@@ -25,6 +25,19 @@ export class ExtensionUrlComponent extends StringComponent {
   readonly errorIcon = faExclamationTriangle;
 
   /**
+   * Return errors that should currently be rendered below the URL field.
+   * Duplicate errors are always shown because they can be introduced by edits
+   * to another field while the URL control remains pristine.
+   */
+  get displayedErrors(): typeof this.errors {
+    if (this.control.dirty && (this.formProperty.value || this.schema.widget.showEmptyError)) {
+      return this.errors;
+    }
+
+    return this.errors?.filter((error) => error.code === 'DUPLICATE_EXTENSION_URL');
+  }
+
+  /**
    * Check whether the URL field has the scope-aware duplicate extension error.
    * @returns True when the field contains a duplicate extension URL error.
    */
