@@ -90,7 +90,7 @@ describe('ExtensionDlgComponent', () => {
 
     component.onChange({url: inputExt[0].url, valueString: 'another value'});
 
-    expect(component.duplicateUrlError()).toContain('already exists');
+    expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();
   });
 
@@ -122,6 +122,41 @@ describe('ExtensionDlgComponent', () => {
     expect(urlInput.classList).not.toContain('invalid');
     expect(urlInput.hasAttribute('aria-invalid')).toBeFalse();
     expect(urlWidget?.textContent).not.toContain('already exists');
+  });
+
+  it('should retain the duplicate error when changing directly between duplicate URLs', async () => {
+    const duplicateUrlA = 'http://duplicate-a.extension.org';
+    const duplicateUrlB = 'http://duplicate-b.extension.org';
+    await createDialog([
+      {url: duplicateUrlA, valueString: 'first value'},
+      {url: duplicateUrlB, valueString: 'second value'}
+    ], -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+    const urlWidget = urlInput.closest('lfb-extension-url');
+
+    urlInput.value = duplicateUrlA;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(urlInput.classList).toContain('invalid');
+    expect(urlWidget?.textContent).toContain('already exists');
+
+    urlInput.value = duplicateUrlB;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const duplicateErrorId = urlInput.getAttribute('aria-describedby');
+    expect(component.duplicateUrlError()?.url).toBe(duplicateUrlB);
+    expect(component.disableSave()).toBeTrue();
+    expect(urlInput.classList).toContain('invalid');
+    expect(urlInput.getAttribute('aria-invalid')).toBe('true');
+    expect(duplicateErrorId).toBe(`duplicate-extension-url-error-${urlInput.id}`);
+    expect(urlWidget?.querySelector(`[id="${duplicateErrorId}"]`)).not.toBeNull();
+    expect(urlWidget?.querySelector('fa-icon')).not.toBeNull();
+    expect(urlWidget?.querySelector('[role="alert"]')).not.toBeNull();
+    expect(urlWidget?.textContent).toContain('already exists');
   });
 
   it('should display a duplicate error when only the value of an imported duplicate is edited', async () => {
@@ -176,7 +211,7 @@ describe('ExtensionDlgComponent', () => {
 
     component.onChange({url: entryFormatUrl, valueString: 'YYYY-MM-DD'});
 
-    expect(component.duplicateUrlError()).toContain('already exists');
+    expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();
   });
 
@@ -194,7 +229,7 @@ describe('ExtensionDlgComponent', () => {
 
     component.onChange({url: otherUrl, valueString: 'changed value'});
 
-    expect(component.duplicateUrlError()).toContain('already exists');
+    expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();
   });
 

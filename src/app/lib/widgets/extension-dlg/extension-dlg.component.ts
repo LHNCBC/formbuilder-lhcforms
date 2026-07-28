@@ -27,7 +27,10 @@ import {FormProperty} from '@lhncbc/ngx-schema-form';
 import { FormService } from 'src/app/services/form.service';
 import {MessageDlgComponent, MessageType} from "../message-dlg/message-dlg.component";
 import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
-import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
+import {
+  DuplicateUrlErrorState,
+  ExtensionObjComponent
+} from "../extension-obj/extension-obj.component";
 import {extensionAllowsMultiple} from '../../extension-defs';
 
 /**
@@ -77,7 +80,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   formService: FormService = inject(FormService);
   ngbModalService: NgbModal = inject(NgbModal);
   disableSave = signal(true);
-  duplicateUrlError = signal<string | null>(null);
+  duplicateUrlError = signal<DuplicateUrlErrorState | null>(null);
 
   dirtyObserver: MutationObserver;
   rowIndex = 0;
@@ -213,7 +216,10 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
     const isDirty = !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
     const hasDuplicateUrl = this.hasDisallowedDuplicateUrl();
     this.duplicateUrlError.set(hasDuplicateUrl
-      ? 'An extension with this URL already exists here and does not allow multiple occurrences.'
+      ? {
+        url: this.changedValue.url.trim(),
+        message: 'An extension with this URL already exists here and does not allow multiple occurrences.'
+      }
       : null);
     this.disableSave.set(!isDirty || !this.isUrlValid() || hasDuplicateUrl);
   }

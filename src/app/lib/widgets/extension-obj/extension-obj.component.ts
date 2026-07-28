@@ -18,6 +18,11 @@ import {FormService} from '../../../services/form.service';
 import {TableService} from "../../../services/table.service";
 import {Subscription} from "rxjs";
 
+export interface DuplicateUrlErrorState {
+  url: string;
+  message: string;
+}
+
 /**
  * A component to edit a FHIR Extension object.
  */
@@ -42,10 +47,10 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
   @Output() changed = new EventEmitter<fhir.Extension>();
 
   @Input() model;
-  private _duplicateUrlError: string | null = null;
+  private _duplicateUrlError: DuplicateUrlErrorState | null = null;
 
   @Input()
-  set duplicateUrlError(error: string | null) {
+  set duplicateUrlError(error: DuplicateUrlErrorState | null) {
     this._duplicateUrlError = error;
     this.updateUrlValidationError();
   }
@@ -90,7 +95,7 @@ export class ExtensionObjComponent implements AfterViewInit, OnDestroy {
       urlProperty.extendErrors({
         code: 'DUPLICATE_EXTENSION_URL',
         path: '#url',
-        message: this._duplicateUrlError,
+        message: this._duplicateUrlError.message,
         params: []
       });
     }
