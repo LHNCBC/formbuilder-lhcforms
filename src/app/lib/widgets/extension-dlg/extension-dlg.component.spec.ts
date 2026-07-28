@@ -105,8 +105,11 @@ describe('ExtensionDlgComponent', () => {
     fixture.detectChanges();
 
     const urlWidget = urlInput.closest('lfb-extension-url');
+    const duplicateErrorId = urlInput.getAttribute('aria-describedby');
     expect(urlInput.classList).toContain('invalid');
     expect(urlInput.getAttribute('aria-invalid')).toBe('true');
+    expect(duplicateErrorId).toBe(`duplicate-extension-url-error-${urlInput.id}`);
+    expect(urlWidget?.querySelector(`[id="${duplicateErrorId}"]`)).not.toBeNull();
     expect(urlWidget?.querySelector('fa-icon')).not.toBeNull();
     expect(urlWidget?.textContent).toContain('already exists');
     expect(fixture.nativeElement.querySelector('lfb-extension-dlg > p.text-danger')).toBeNull();

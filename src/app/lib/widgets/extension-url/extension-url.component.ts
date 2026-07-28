@@ -37,6 +37,6 @@ export class ExtensionUrlComponent extends StringComponent {
    * @returns The duplicate URL error element ID.
    */
   get duplicateErrorId(): string {
-    return `duplicate-extension-url-error-${this.id}`;
+    return `duplicate-extension-url-error-${this.id}${this._id}`;
   }
 }
