@@ -64,6 +64,7 @@ describe('FhirService', () => {
     expect(service).toBeTruthy();
     const serverUrl = service.getSmartClient().getState('serverUrl');
     expect(service.getFhirServer().endpoint).toBe(serverUrl);
+    expect(service.getDefaultFhirServer().endpoint).toBe('https://lforms-fhir.nlm.nih.gov/baseR5');
   });
 
   it('should read()', (done) => {

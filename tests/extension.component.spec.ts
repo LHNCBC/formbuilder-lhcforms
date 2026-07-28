@@ -2,9 +2,10 @@ import {Page, test, expect} from '@playwright/test';
 import {MainPO} from "./po/main-po";
 import {PWUtils} from "./pw-utils";
 import {
-  EXTENSION_URL_ENTRY_FORMAT,
-  EXTENSION_URL_MIME_TYPE
+  EXTENSION_URL_ENTRY_FORMAT
 } from '../src/app/lib/constants/constants';
+
+const EXTENSION_URL_REPLACES = 'http://hl7.org/fhir/StructureDefinition/replaces';
 
 
 
@@ -83,15 +84,46 @@ test.describe('extension.component', async () => {
     }]);
   });
 
-  test('Form level page - should allow multiple extensions when the cardinality is repeatable', async ({page}) => {
+  test('Form level page - should allow a known repeatable extension in a valid context', async ({page}) => {
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
-    await addPrimitiveExtension(page, EXTENSION_URL_MIME_TYPE, 'valueCode', 'image/png');
-    await addPrimitiveExtension(page, EXTENSION_URL_MIME_TYPE, 'valueCode', 'application/pdf');
+    await addPrimitiveExtension(page, EXTENSION_URL_REPLACES, 'valueCanonical', 'http://example.org/Questionnaire/first');
+    await addPrimitiveExtension(page, EXTENSION_URL_REPLACES, 'valueCanonical', 'http://example.org/Questionnaire/second');
 
     const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
     expect(q.extension).toEqual([
-      {url: EXTENSION_URL_MIME_TYPE, valueCode: 'image/png'},
-      {url: EXTENSION_URL_MIME_TYPE, valueCode: 'application/pdf'}
+      {url: EXTENSION_URL_REPLACES, valueCanonical: 'http://example.org/Questionnaire/first'},
+      {url: EXTENSION_URL_REPLACES, valueCanonical: 'http://example.org/Questionnaire/second'}
+    ]);
+  });
+
+  test('Form level page - should warn but allow an unresolved duplicate extension', async ({page}) => {
+    const extensionUrl = 'http://example.org/StructureDefinition/unresolved-extension';
+    await page.route('https://lforms-fhir.nlm.nih.gov/baseR5/StructureDefinition**', async (route) => {
+      await route.fulfill({
+        contentType: 'application/fhir+json',
+        json: {resourceType: 'Bundle', type: 'searchset', total: 0}
+      });
+    });
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await addPrimitiveExtension(page, extensionUrl, 'valueString', 'First value');
+
+    await page.getByRole('button', {name: 'Add new extension'}).first().click();
+    const dialog = page.locator('lfb-extension-dlg').last();
+    const formLoc = dialog.locator('lfb-extension-obj sf-form');
+    const urlInput = formLoc.getByLabel('Url', {exact: true});
+    await urlInput.fill(extensionUrl);
+    await formLoc.locator('input[id^="valueString"]').fill('Second value');
+
+    await expect(dialog.getByRole('status')).toContainText('cardinality could not be verified');
+    await expect(urlInput).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeEnabled();
+    await dialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(dialog).not.toBeVisible();
+
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(q.extension).toEqual([
+      {url: extensionUrl, valueString: 'First value'},
+      {url: extensionUrl, valueString: 'Second value'}
     ]);
   });
 

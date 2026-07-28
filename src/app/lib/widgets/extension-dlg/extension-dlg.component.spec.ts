@@ -11,6 +11,12 @@ import fhir from "fhir/r4";
 import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 import {AppFormElementComponent} from "../form-element/form-element.component";
 import {LfbArrayComponent} from "../lfb-array/lfb-array.component";
+import {
+  EXTENSION_URL_CHOICE_ORIENTATION,
+  EXTENSION_URL_ENTRY_FORMAT
+} from '../../constants/constants';
+import {ExtensionCardinalityService} from '../../../services/extension-cardinality.service';
+import {of, Subject} from 'rxjs';
 
 
 describe('ExtensionDlgComponent', () => {
@@ -25,6 +31,8 @@ describe('ExtensionDlgComponent', () => {
   let formPropertyFactory: FormPropertyFactory;
   let arrayProperty: ArrayProperty;
   let data: DialogData;
+  let cardinalityService: ExtensionCardinalityService;
+  let resolveCardinalitySpy: jasmine.Spy;
 
   CommonTestingModule.setUpTestBedConfig({
     imports: [ExtensionDlgComponent],
@@ -38,6 +46,9 @@ describe('ExtensionDlgComponent', () => {
     formPropertyFactory = CommonTestingModule.formPropertyFactory;
     formService = TestBed.inject<FormService>(FormService);
     extensionsService = TestBed.inject<ExtensionsService>(ExtensionsService);
+    cardinalityService = TestBed.inject(ExtensionCardinalityService);
+    resolveCardinalitySpy = spyOn(cardinalityService, 'resolveMaxCardinality')
+      .and.returnValue(of('unknown'));
     extSchema = formService.getFormLevelSchema();
     await createDialog(inputExt);
   });
@@ -85,20 +96,87 @@ describe('ExtensionDlgComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('lfb-string .duplicate-extension-url-error-icon').length).toBe(0);
   });
 
-  it('should reject a duplicate unknown extension URL in the same scope', async () => {
+  it('should allow a duplicate unknown extension URL when definition metadata is unavailable', async () => {
     await createDialog(inputExt, -1);
 
     component.onChange({url: inputExt[0].url, valueString: 'another value'});
 
-    expect(component.duplicateUrlError()?.message).toContain('already exists');
+    expect(resolveCardinalitySpy).toHaveBeenCalledOnceWith(inputExt[0].url);
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.unverifiedDuplicateUrl()).toBe(inputExt[0].url);
+    expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
+      .toContain('cardinality could not be verified');
+  });
+
+  it('should reject an unknown duplicate resolved as a singleton by the FHIR server', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-singleton';
+    resolveCardinalitySpy.and.returnValue(of('1'));
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = extensionUrl;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(resolveCardinalitySpy).toHaveBeenCalledOnceWith(extensionUrl);
+    expect(component.duplicateUrlError()?.url).toBe(extensionUrl);
+    expect(component.unverifiedDuplicateUrl()).toBeNull();
     expect(component.disableSave()).toBeTrue();
+    expect(urlInput.classList).toContain('invalid');
+  });
+
+  it('should allow an unknown duplicate resolved as repeatable by the FHIR server', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-repeatable';
+    resolveCardinalitySpy.and.returnValue(of('*'));
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = extensionUrl;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(resolveCardinalitySpy).toHaveBeenCalledOnceWith(extensionUrl);
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.unverifiedDuplicateUrl()).toBeNull();
+    expect(component.disableSave()).toBeFalse();
+    expect(urlInput.classList).not.toContain('invalid');
+  });
+
+  it('should disable Save and announce status while cardinality lookup is pending', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/pending-extension';
+    const cardinalityResult = new Subject<'1' | '*' | 'unknown'>();
+    resolveCardinalitySpy.and.returnValue(cardinalityResult);
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = extensionUrl;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.checkingExtensionCardinality()).toBeTrue();
+    expect(component.disableSave()).toBeTrue();
+    expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent)
+      .toContain('Checking extension cardinality');
+
+    cardinalityResult.next('unknown');
+    fixture.detectChanges();
+
+    expect(component.checkingExtensionCardinality()).toBeFalse();
+    expect(component.unverifiedDuplicateUrl()).toBe(extensionUrl);
+    expect(component.disableSave()).toBeFalse();
+    expect(urlInput.hasAttribute('aria-invalid')).toBeFalse();
+    expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent)
+      .toContain('cardinality could not be verified');
   });
 
   it('should display a duplicate error with an icon and invalid styling under the URL field', async () => {
-    await createDialog(inputExt, -1);
+    await createDialog([{url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'first'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
 
-    urlInput.value = inputExt[0].url;
+    urlInput.value = EXTENSION_URL_ENTRY_FORMAT;
     urlInput.dispatchEvent(new InputEvent('input'));
     urlInput.dispatchEvent(new Event('blur'));
     await fixture.whenStable();
@@ -125,8 +203,8 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should retain the duplicate error when changing directly between duplicate URLs', async () => {
-    const duplicateUrlA = 'http://duplicate-a.extension.org';
-    const duplicateUrlB = 'http://duplicate-b.extension.org';
+    const duplicateUrlA = EXTENSION_URL_ENTRY_FORMAT;
+    const duplicateUrlB = EXTENSION_URL_CHOICE_ORIENTATION;
     await createDialog([
       {url: duplicateUrlA, valueString: 'first value'},
       {url: duplicateUrlB, valueString: 'second value'}
@@ -161,8 +239,8 @@ describe('ExtensionDlgComponent', () => {
 
   it('should display a duplicate error when only the value of an imported duplicate is edited', async () => {
     await createDialog([
-      {url: inputExt[0].url, valueString: 'first value'},
-      {url: inputExt[0].url, valueString: 'second value'}
+      {url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'first value'},
+      {url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'second value'}
     ], 1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
     const valueInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="valueString"]');
@@ -206,28 +284,27 @@ describe('ExtensionDlgComponent', () => {
   });
 
   it('should reject duplicates for a known single-occurrence extension', async () => {
-    const entryFormatUrl = 'http://hl7.org/fhir/StructureDefinition/entryFormat';
-    await createDialog([{url: entryFormatUrl, valueString: 'MM/DD/YYYY'}], -1);
+    await createDialog([{url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'MM/DD/YYYY'}], -1);
 
-    component.onChange({url: entryFormatUrl, valueString: 'YYYY-MM-DD'});
+    component.onChange({url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'YYYY-MM-DD'});
 
     expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();
   });
 
   it('should not treat the current extension as a duplicate when editing', async () => {
-    await createDialog(inputExt, 0);
+    const extension = {url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'format'};
+    await createDialog([extension], 0);
 
-    component.onChange({...inputExt[0], valueString: 'changed value'});
+    component.onChange({...extension, valueString: 'changed value'});
 
     expect(component.duplicateUrlError()).toBeNull();
   });
 
   it('should reject changing an extension URL to another single-occurrence URL in the same scope', async () => {
-    const otherUrl = 'http://other.extension.org';
-    await createDialog([...inputExt, {url: otherUrl, valueString: 'other value'}], 0);
+    await createDialog([...inputExt, {url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'other value'}], 0);
 
-    component.onChange({url: otherUrl, valueString: 'changed value'});
+    component.onChange({url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'changed value'});
 
     expect(component.duplicateUrlError()?.message).toContain('already exists');
     expect(component.disableSave()).toBeTrue();

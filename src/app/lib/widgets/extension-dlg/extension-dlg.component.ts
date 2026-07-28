@@ -31,7 +31,9 @@ import {
   DuplicateUrlErrorState,
   ExtensionObjComponent
 } from "../extension-obj/extension-obj.component";
-import {extensionAllowsMultiple} from '../../extension-defs';
+import {getExtensionMaxCardinality} from '../../extension-defs';
+import {ExtensionCardinalityService} from '../../../services/extension-cardinality.service';
+import {Subscription} from 'rxjs';
 
 /**
  * A dialog component to edit a FHIR Extension object.
@@ -78,11 +80,15 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   data = inject<DialogData>(MAT_DIALOG_DATA);
   matDialogRef = inject(MatDialogRef<DialogData>);
   formService: FormService = inject(FormService);
+  extensionCardinalityService = inject(ExtensionCardinalityService);
   ngbModalService: NgbModal = inject(NgbModal);
   disableSave = signal(true);
   duplicateUrlError = signal<DuplicateUrlErrorState | null>(null);
+  checkingExtensionCardinality = signal(false);
+  unverifiedDuplicateUrl = signal<string | null>(null);
 
   dirtyObserver: MutationObserver;
+  cardinalityLookupSubscription: Subscription;
   rowIndex = 0;
   previous_origin: {left: number, top: number};
 
@@ -180,6 +186,9 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   onChange(event: any) {
     this.changedValue = event;
+    // Let the form controls render their current dirty state before Save is
+    // recalculated. Cached cardinality lookups may complete synchronously.
+    this.cdr.detectChanges();
     this.updateDisableSave();
     this.cdr.detectChanges();
 
@@ -196,11 +205,11 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Check the extension URL against the other extensions at this exact scope.
    * The current row is ignored when editing an existing extension.
-   * @returns True when another extension has the same URL and the definition does not allow multiple occurrences.
+   * @returns True when another extension has the same URL.
    */
-  private hasDisallowedDuplicateUrl(): boolean {
+  private hasDuplicateUrlAtCurrentScope(): boolean {
     const url = (this.changedValue?.url || '').trim();
-    if (!url || extensionAllowsMultiple(url)) {
+    if (!url) {
       return false;
     }
 
@@ -213,15 +222,46 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
    * Update the disableSave signal based on dirty state and URL validity.
    */
   private updateDisableSave() {
+    const url = (this.changedValue?.url || '').trim();
+    const hasDuplicateUrl = this.hasDuplicateUrlAtCurrentScope();
+    const localCardinality = getExtensionMaxCardinality(url);
+
+    this.cardinalityLookupSubscription?.unsubscribe();
+    if (hasDuplicateUrl && localCardinality === 'unknown') {
+      this.checkingExtensionCardinality.set(true);
+      this.applyDuplicateValidation(false, true);
+      this.cardinalityLookupSubscription = this.extensionCardinalityService.resolveMaxCardinality(url)
+        .subscribe((cardinality) => {
+          if ((this.changedValue?.url || '').trim() !== url || !this.hasDuplicateUrlAtCurrentScope()) {
+            return;
+          }
+          this.checkingExtensionCardinality.set(false);
+          this.applyDuplicateValidation(cardinality === '1', false, cardinality === 'unknown');
+          this.cdr.markForCheck();
+        });
+      return;
+    }
+
+    this.checkingExtensionCardinality.set(false);
+    this.applyDuplicateValidation(hasDuplicateUrl && localCardinality === '1');
+  }
+
+  private applyDuplicateValidation(
+    hasDisallowedDuplicateUrl: boolean,
+    isPending = false,
+    isUnverifiedDuplicate = false
+  ) {
     const isDirty = !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
-    const hasDuplicateUrl = this.hasDisallowedDuplicateUrl();
-    this.duplicateUrlError.set(hasDuplicateUrl
+    this.unverifiedDuplicateUrl.set(isUnverifiedDuplicate
+      ? this.changedValue.url.trim()
+      : null);
+    this.duplicateUrlError.set(hasDisallowedDuplicateUrl
       ? {
         url: this.changedValue.url.trim(),
         message: 'An extension with this URL already exists here and does not allow multiple occurrences.'
       }
       : null);
-    this.disableSave.set(!isDirty || !this.isUrlValid() || hasDuplicateUrl);
+    this.disableSave.set(!isDirty || !this.isUrlValid() || hasDisallowedDuplicateUrl || isPending);
   }
 
   /**
@@ -258,5 +298,6 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.dirtyObserver?.disconnect();
+    this.cardinalityLookupSubscription?.unsubscribe();
   }
 }

@@ -79,6 +79,7 @@ export class FhirService {
     }
   ];
 
+  private readonly defaultFhirServer = this.fhirServerList[0];
   currentServer: FHIRServer;
   smartClient: Client;
 
@@ -87,7 +88,7 @@ export class FhirService {
   httpClient: HttpClient = inject<HttpClient>(HttpClient);
   constructor() {
     // this.smartClient = FHIR.client(window.location.href+'fhir-api');
-    this.setFhirServer(this.fhirServerList[0]);
+    this.setFhirServer(this.defaultFhirServer);
   }
 
     /**
@@ -219,6 +220,14 @@ export class FhirService {
 
     getFhirServer(): FHIRServer {
       return this.currentServer;
+    }
+
+    /**
+     * Get the built-in FHIR server used when no user-selected server should
+     * influence an application-level lookup.
+     */
+    getDefaultFhirServer(): FHIRServer {
+      return this.defaultFhirServer;
     }
 
     /**
