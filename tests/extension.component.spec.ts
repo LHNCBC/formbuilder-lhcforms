@@ -96,7 +96,7 @@ test.describe('extension.component', async () => {
     ]);
   });
 
-  test('Form level page - should warn but allow an unresolved duplicate extension', async ({page}) => {
+  test('Form level page - should silently allow an unresolved duplicate extension', async ({page}) => {
     const extensionUrl = 'http://example.org/StructureDefinition/unresolved-extension';
     await page.route('https://lforms-fhir.nlm.nih.gov/baseR5/StructureDefinition**', async (route) => {
       await route.fulfill({
@@ -114,8 +114,8 @@ test.describe('extension.component', async () => {
     await urlInput.fill(extensionUrl);
     await formLoc.locator('input[id^="valueString"]').fill('Second value');
 
-    await expect(dialog.getByRole('status')).toContainText('cardinality could not be verified');
     await expect(urlInput).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(dialog.locator('.alert-warning')).toHaveCount(0);
     await expect(dialog.getByRole('button', {name: 'Save and close'})).toBeEnabled();
     await dialog.getByRole('button', {name: 'Save and close'}).click();
     await expect(dialog).not.toBeVisible();

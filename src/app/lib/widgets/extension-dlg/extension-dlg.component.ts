@@ -85,7 +85,6 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   disableSave = signal(true);
   duplicateUrlError = signal<DuplicateUrlErrorState | null>(null);
   checkingExtensionCardinality = signal(false);
-  unverifiedDuplicateUrl = signal<string | null>(null);
 
   dirtyObserver: MutationObserver;
   cardinalityLookupSubscription: Subscription;
@@ -236,7 +235,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
             return;
           }
           this.checkingExtensionCardinality.set(false);
-          this.applyDuplicateValidation(cardinality === '1', false, cardinality === 'unknown');
+          this.applyDuplicateValidation(cardinality === '1');
           this.cdr.markForCheck();
         });
       return;
@@ -248,13 +247,9 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private applyDuplicateValidation(
     hasDisallowedDuplicateUrl: boolean,
-    isPending = false,
-    isUnverifiedDuplicate = false
+    isPending = false
   ) {
     const isDirty = !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
-    this.unverifiedDuplicateUrl.set(isUnverifiedDuplicate
-      ? this.changedValue.url.trim()
-      : null);
     this.duplicateUrlError.set(hasDisallowedDuplicateUrl
       ? {
         url: this.changedValue.url.trim(),

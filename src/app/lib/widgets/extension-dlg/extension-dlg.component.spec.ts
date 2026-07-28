@@ -96,16 +96,14 @@ describe('ExtensionDlgComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('lfb-string .duplicate-extension-url-error-icon').length).toBe(0);
   });
 
-  it('should allow a duplicate unknown extension URL when definition metadata is unavailable', async () => {
+  it('should allow a duplicate unknown extension URL without warning when definition metadata is unavailable', async () => {
     await createDialog(inputExt, -1);
 
     component.onChange({url: inputExt[0].url, valueString: 'another value'});
 
     expect(resolveCardinalitySpy).toHaveBeenCalledOnceWith(inputExt[0].url);
     expect(component.duplicateUrlError()).toBeNull();
-    expect(component.unverifiedDuplicateUrl()).toBe(inputExt[0].url);
-    expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
-      .toContain('cardinality could not be verified');
+    expect(fixture.nativeElement.querySelector('.alert-warning')).toBeNull();
   });
 
   it('should reject an unknown duplicate resolved as a singleton by the FHIR server', async () => {
@@ -121,7 +119,6 @@ describe('ExtensionDlgComponent', () => {
 
     expect(resolveCardinalitySpy).toHaveBeenCalledOnceWith(extensionUrl);
     expect(component.duplicateUrlError()?.url).toBe(extensionUrl);
-    expect(component.unverifiedDuplicateUrl()).toBeNull();
     expect(component.disableSave()).toBeTrue();
     expect(urlInput.classList).toContain('invalid');
   });
@@ -139,7 +136,6 @@ describe('ExtensionDlgComponent', () => {
 
     expect(resolveCardinalitySpy).toHaveBeenCalledOnceWith(extensionUrl);
     expect(component.duplicateUrlError()).toBeNull();
-    expect(component.unverifiedDuplicateUrl()).toBeNull();
     expect(component.disableSave()).toBeFalse();
     expect(urlInput.classList).not.toContain('invalid');
   });
@@ -165,11 +161,9 @@ describe('ExtensionDlgComponent', () => {
     fixture.detectChanges();
 
     expect(component.checkingExtensionCardinality()).toBeFalse();
-    expect(component.unverifiedDuplicateUrl()).toBe(extensionUrl);
     expect(component.disableSave()).toBeFalse();
     expect(urlInput.hasAttribute('aria-invalid')).toBeFalse();
-    expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent)
-      .toContain('cardinality could not be verified');
+    expect(fixture.nativeElement.querySelector('.alert-warning')).toBeNull();
   });
 
   it('should display a duplicate error with an icon and invalid styling under the URL field', async () => {

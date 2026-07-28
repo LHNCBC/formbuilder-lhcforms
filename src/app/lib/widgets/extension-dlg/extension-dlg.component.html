@@ -16,10 +16,6 @@
     ></lfb-extension-obj>
     @if (checkingExtensionCardinality()) {
       <p class="text-secondary mt-2" role="status">Checking extension cardinality…</p>
-    } @else if (unverifiedDuplicateUrl()) {
-      <p class="alert alert-warning py-2 mt-2" role="status">
-        The extension's cardinality could not be verified. Confirm that multiple occurrences are allowed before saving.
-      </p>
     }
   </div>
 </mat-dialog-content>
