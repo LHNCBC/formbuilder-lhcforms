@@ -5,9 +5,16 @@ import {
   EXTENSION_URL_VARIABLE,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from './constants/constants';
-import {REPEATABLE_EXTENSION_URLS, extensionAllowsMultiple} from './extension-defs';
+import {ExtensionDefs, REPEATABLE_EXTENSION_URLS, extensionAllowsMultiple} from './extension-defs';
 
 describe('repeatable extension URLs', () => {
+  it('should retain the legacy preferred terminology server definition', () => {
+    expect(ExtensionDefs.preferredTerminologyServer).toEqual({
+      url: PREFERRED_TERMINOLOGY_SERVER_URI,
+      valueX: 'valueUrl'
+    });
+  });
+
   it('should contain the known repeatable extension URLs', () => {
     expect(REPEATABLE_EXTENSION_URLS).toEqual(new Set([
       EXTENSION_URL_MIME_TYPE,

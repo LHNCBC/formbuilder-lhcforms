@@ -6,6 +6,29 @@ import {
 } from './constants/constants';
 
 /**
+ * Legacy extension metadata shape retained for compatibility with historical
+ * consumers of ExtensionDefs.
+ * @deprecated Use the exported extension URL constants instead.
+ */
+export interface ExtensionDef {
+  url: string;
+  valueX?: string;
+  multiple?: boolean;
+}
+
+/**
+ * Legacy extension definitions retained for compatibility with historical
+ * Cypress sources and external consumers.
+ * @deprecated Use PREFERRED_TERMINOLOGY_SERVER_URI instead.
+ */
+export class ExtensionDefs {
+  static preferredTerminologyServer: ExtensionDef = {
+    url: PREFERRED_TERMINOLOGY_SERVER_URI,
+    valueX: 'valueUrl'
+  };
+}
+
+/**
  * Extension URLs that permit more than one occurrence at the same location.
  *
  * This is intentionally an allowlist rather than a complete extension registry.
