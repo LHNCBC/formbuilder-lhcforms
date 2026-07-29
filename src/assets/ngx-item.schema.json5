@@ -54,7 +54,7 @@
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col-10 p-0",
         "selectOptionsMap": {
-          "remove": ["reference", "attachment"],
+          "remove": ["reference"],
           "validateType": true
         }
       },
@@ -65,7 +65,7 @@
       "title": "Entry format",
       "type": "string",
       "visibleIf": {
-        "type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'boolean' && target.value != 'reference'"]
+        "type": ["$EXP$ target.value != 'group' && target.value != 'display' && target.value != 'boolean' && target.value != 'reference' && target.value != 'attachment'"]
       },
       "widget": {
         "id": "entry-format",
@@ -90,7 +90,7 @@
               "regex",
               "minValue",
               "maxValue",
-              "mazSize",
+              "maxSize",
               "mimeType"
             ],
             "title": "Restriction",
@@ -99,7 +99,8 @@
           "value": {
             "description": "Value to restrict the input",
             "type": "string",
-            "title": "Value"
+            "title": "Value",
+            "widget": {"id": "restrictions-value"}
           }
         },
         "additionalProperties": false,
@@ -131,9 +132,14 @@
                 "answerConstraint": ["$EXP$ target.value == 'optionsOrType' || target.value == 'optionsOrString'"]
               }
             ],
+          },
+          // Attachment cannot be an answer list; its maxSize/mimeType restrictions always apply.
+          // This branch depends only on 'type' (always visible), because '__$isAnswerList' is
+          // hidden for attachment and hidden dependencies evaluate to false in visibleIf.
+          {
+            "type": ["attachment"]
           }
-        ],
-        "type": ["$EXP$ target.value == 'decimal' || target.value == 'integer' || target.value == 'string' || target.value == 'text' || target.value == 'url'"]
+        ]
       },
       "widget": {
         "id": "restrictions",
@@ -1736,7 +1742,10 @@
               "id": {
                 "description": "Unique id for the element within a resource (for internal references). This may be any string value that does not contain spaces.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "hidden"
+                }
               },
               "extension": {
                 "description": "May be used to represent additional information that is not part of the basic definition of the element. To make the use of extensions safe and manageable, there is a strict set of governance  applied to the definition and use of extensions. Though any implementer can define an extension, there is a set of requirements that SHALL be met as part of the definition of the extension.",
@@ -1750,43 +1759,82 @@
               },
               "contentType": {
                 "description": "Identifies the type of the data in the attachment and allows a method to be chosen to interpret or render the data. Includes mime type parameters such as charset where appropriate.",
+                "title": "Content type",
                 "pattern": "^[^\\s]+(\\s[^\\s]+)*$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "string",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+                  "controlClasses": "col-sm-10",
+                  "placeholder": "e.g. application/pdf"
+                }
               },
               "language": {
                 "description": "The human language of the content. The value can be any valid value according to BCP 47.",
                 "pattern": "^[^\\s]+(\\s[^\\s]+)*$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "hidden"
+                }
               },
               "data": {
                 "description": "The actual data of the attachment - a sequence of bytes, base64 encoded.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "hidden"
+                }
               },
               "url": {
                 "description": "A location where the data can be accessed.",
+                "title": "URL",
                 "pattern": "^\\S*$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "string",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+                  "controlClasses": "col-sm-10",
+                  "placeholder": "https://example.org/file.pdf"
+                }
               },
               "size": {
                 "description": "The number of bytes of data that make up this attachment (before base64 encoding, if that is done).",
                 "pattern": "^[0]|([1-9][0-9]*)$",
-                "type": "number"
+                "type": "number",
+                "widget": {
+                  "id": "hidden"
+                }
               },
               "hash": {
                 "description": "The calculated hash of the data using SHA-1. Represented using base64.",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "hidden"
+                }
               },
               "title": {
                 "description": "A label or set of text to display in place of the data.",
+                "title": "Title",
                 "pattern": "^[ \\r\\n\\t\\S]+$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "string",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+                  "controlClasses": "col-sm-10",
+                  "placeholder": "Label to display for the file"
+                }
               },
               "creation": {
                 "description": "The date that the attachment was first created.",
                 "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$",
-                "type": "string"
+                "type": "string",
+                "widget": {
+                  "id": "hidden"
+                }
               }
             },
             "additionalProperties": false,
@@ -2035,6 +2083,9 @@
           {"field": "valueQuantity.unit", "title": "Unit", "col": 4, "nolabel": true},
           {"field": "valueQuantity.code", "title": "Code", "col": 3, "nolabel": true},
           {"field": "valueQuantity.system", "title": "System", "col": 3, "nolabel": true},
+          {"field": "valueAttachment.url", "title": "URL", "col": 5, "nolabel": true},
+          {"field": "valueAttachment.title", "title": "Title", "col": 4, "nolabel": true},
+          {"field": "valueAttachment.contentType", "title": "Content type", "col": 3, "nolabel": true},
           {"field": "valueReference", "noHeader": true, "nolabel": true}
         ],
         "showErrorTypeList": [

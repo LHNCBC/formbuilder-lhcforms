@@ -72,6 +72,7 @@ import { LoincNoticeComponent } from './lib/widgets/loinc-notice/loinc-notice.co
 import { StringWithCssComponent } from './lib/widgets/string-with-css/string-with-css.component';
 import { RestrictionsComponent } from './lib/widgets/restrictions/restrictions.component';
 import { RestrictionsOperatorComponent } from './lib/widgets/restrictions-operator/restrictions-operator.component';
+import { RestrictionsValueComponent } from './lib/widgets/restrictions-value/restrictions-value.component';
 import { ObservationLinkPeriodComponent } from './lib/widgets/observation-link-period/observation-link-period.component';
 import { LfbDisableControlDirective } from './lib/directives/lfb-disable-control.directive';
 import { LfbSpinnerComponent } from './lib/widgets/lfb-spinner/lfb-spinner.component';
@@ -203,6 +204,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     PositiveIntegerComponent,
     UnsignedIntegerComponent,
     PreviewDlgComponent,
+    RestrictionsValueComponent,
     SchemaFormModule.forRoot(),
     StringComponent,
     TitleComponent,

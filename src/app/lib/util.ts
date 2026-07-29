@@ -93,6 +93,7 @@ export class Util {
     string: 'valueString',
     text: 'valueString',
     coding: 'valueCoding',
+    attachment: 'valueAttachment',
     quantity: 'valueQuantity',
     reference: 'valueReference',
     url: 'valueUri'

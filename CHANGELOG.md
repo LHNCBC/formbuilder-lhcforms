@@ -2,6 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.2.0] 2026-07-28
+### Added
+- Added support for the `attachment` item data type. This includes the "Maximum size"
+  restriction (entered with a Bytes/KB/MB/GB helper and stored in bytes) and the
+  "Mime type" restriction, as well as an initial Attachment value (URL, title and
+  content type).
+
 ## [12.1.0] 2026-07-21
 ### Added
 - When importing questions from LOINC, give option to the user to pick LOINC's LONG_COMMON_NAME/SHORTNAME/CONSUMER as text

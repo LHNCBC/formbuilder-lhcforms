@@ -242,6 +242,19 @@ describe('Util', () => {
     expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption4, "coding")).toBe(false);
   });
 
+  it('should map attachment type to the valueAttachment field', () => {
+    expect(Util.getValueFieldName('attachment')).toBe('valueAttachment');
+    expect(Util.getValueDataTypeName('attachment')).toBe('valueAttachment');
+  });
+
+  it('should detect empty/non-empty attachment initial values', () => {
+    expect(Util.isEmptyInitialForType(null, 'attachment')).toBe(true);
+    expect(Util.isEmptyInitialForType([], 'attachment')).toBe(true);
+    expect(Util.isEmptyInitialForType([{}], 'attachment')).toBe(true);
+    expect(Util.isEmptyInitialForType(
+      [{valueAttachment: {url: 'http://example.org/file.pdf'}}], 'attachment')).toBe(false);
+  });
+
   it('should extract FHIR type from field name', () => {
     const testCases = [
       {prefix: 'value', primitive: true, fieldName: 'valueString', expectedType: 'string'},
