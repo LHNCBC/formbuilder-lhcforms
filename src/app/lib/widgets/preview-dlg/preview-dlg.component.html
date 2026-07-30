@@ -17,6 +17,11 @@
           <small class="float-sm-end fw-bold">LForms version: {{formService.lformsVersion}}</small>
           <div>&nbsp;</div> <!-- Needed to float the above div -->
         </div>
+        @if (missingTerminologyServerLinkIds.length) {
+          <ngb-alert type="warning" class="mb-2 preferred-terminology-server-warning" [dismissible]="false">
+            {{preferredTerminologyServerMsg}}
+          </ngb-alert>
+        }
         @if (lformsErrors) {
           <div class="card bg-danger-subtle text-center">
             <div class="lforms-validation">{{lformsErrors}}</div>

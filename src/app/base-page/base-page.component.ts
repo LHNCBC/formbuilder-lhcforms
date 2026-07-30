@@ -187,7 +187,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
  */
   private parseOpenerUrl(location: Location): string {
     let ret = null;
-    const pathname = location?.pathname.replace(/^\/+/, '').toLowerCase();
+    const pathname = location?.pathname.replace(/^.*\//, '').toLowerCase();
     if(pathname === 'window-open') {
       const params = new URLSearchParams(location.search);
       this.formService.windowOpenerFhirVersion = params.get('fhirVersion');
@@ -541,6 +541,8 @@ export class BasePageComponent implements OnInit, OnDestroy {
   /**
    * Call back to auto complete search.
    * @param term$ - Search term
+   * @return An observable emitting the list of matching LOINC forms, or an
+   *   empty list when the search term has fewer than two characters.
    */
   acSearch = (term$: Observable<string>): Observable<AutoCompleteResult []> => {
     return term$.pipe(

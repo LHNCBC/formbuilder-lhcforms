@@ -131,16 +131,42 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
 
     matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue) => {
       if (submittedValue) {
-        const rowProperty = this.formProperty.properties[index] as FormProperty;
-        if(this.isIdentifierTable()) {
-          // reset() emits synchronously, so make the complete value available
-          // before parent dialogs recalculate their changed state.
-          this.rawValueStore.setIdentifier(rowProperty, submittedValue as fhir.Identifier);
-        }
-        // Replace the full row model so deleted nested fields are not preserved.
-        rowProperty.reset(submittedValue, false);
+        this.replaceRowValue(index, submittedValue);
       }
     });
+  }
+
+  /**
+   * Replace a complete row by rebuilding the array property.
+   *
+   * ObjectProperty.reset() retains absent additionalProperties. Rebuilding the
+   * array prevents deleted schema-unknown descendants from surviving a dialog
+   * save while preserving complete values in all unaffected rows.
+   *
+   * @param index - Row index to replace.
+   * @param submittedValue - Complete value returned by the row dialog.
+   */
+  protected replaceRowValue(index: number, submittedValue: unknown): void {
+    const properties = Array.isArray(this.formProperty?.properties)
+      ? this.formProperty.properties as FormProperty[]
+      : [];
+    const values = properties.map((property, rowIndex) => {
+      if(rowIndex === index) {
+        return submittedValue;
+      }
+      return this.isIdentifierTable()
+        ? this.rawValueStore.getIdentifier(property) || property.value
+        : property.value;
+    });
+
+    this.formProperty.reset(values, false);
+    if(this.isIdentifierTable()) {
+      (this.formProperty.properties as FormProperty[]).forEach((property, rowIndex) => {
+        this.rawValueStore.setIdentifier(property, values[rowIndex] as fhir.Identifier);
+      });
+      this.rawValueStore.setIdentifierTable(this.formProperty, values as fhir.Identifier[]);
+      this.formProperty.updateValueAndValidity(false, true);
+    }
   }
 
   /**
@@ -167,10 +193,53 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
     const newProperty = this.formProperty.addItem(newValue);
     if(this.isIdentifierTable() && newProperty) {
       this.rawValueStore.setIdentifier(newProperty, newValue as unknown as fhir.Identifier);
+      this.storeCurrentIdentifierRows();
       // addItem() emits before it returns the new row. Emit again after seeding
       // the complete value so parent dialogs observe the committed Identifier.
       this.formProperty.updateValueAndValidity(false, true);
     }
+  }
+
+  /**
+   * Remove a dialog-backed row without allowing preserved schema-unknown
+   * Identifier descendants to keep the row alive.
+   *
+   * @param index - Index of the row to remove.
+   */
+  override removeProperty(index: number): void {
+    const rowProperty = this.formProperty?.properties?.[index] as FormProperty | undefined;
+    if(this.isIdentifierTable() && rowProperty) {
+      this.rawValueStore.markIdentifierDeleted(rowProperty);
+    }
+    super.removeProperty(index);
+    if(this.isIdentifierTable()) {
+      const values = this.storeCurrentIdentifierRows();
+      // Rebuild the ArrayProperty from the exact remaining rows. ObjectProperty
+      // reset does not remove absent additionalProperties, so removing only the
+      // visible row can otherwise leave a hidden Identifier descendant behind.
+      this.formProperty.reset(values, false);
+      (this.formProperty.properties as FormProperty[]).forEach((property, rowIndex) => {
+        this.rawValueStore.setIdentifier(property, values[rowIndex]);
+      });
+      this.rawValueStore.setIdentifierTable(this.formProperty, values);
+      this.formProperty.updateValueAndValidity(false, true);
+    }
+  }
+
+  /**
+   * Preserve the exact rows remaining after a structural Identifier table edit.
+   */
+  private storeCurrentIdentifierRows(): fhir.Identifier[] {
+    const properties = Array.isArray(this.formProperty?.properties)
+      ? this.formProperty.properties as FormProperty[]
+      : [];
+    const values = properties
+      .filter((property: FormProperty) => !this.rawValueStore.isIdentifierDeleted(property))
+      .map((property: FormProperty) =>
+        this.rawValueStore.getIdentifier(property) || property.value as fhir.Identifier
+      );
+    this.rawValueStore.setIdentifierTable(this.formProperty, values);
+    return values;
   }
 
   /**

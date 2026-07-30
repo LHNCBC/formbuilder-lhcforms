@@ -9,7 +9,11 @@ type DialogInternals = {
   hasReferenceContent(reference: UsageContextEditModel['valueReference']): boolean;
   getCurrentFormPropertyValue(property: FormProperty): unknown;
   inputModel: UsageContextEditModel;
-  rawValueStore: {getIdentifier: (property: FormProperty) => undefined};
+  rawValueStore: {
+    getIdentifier: (property: FormProperty) => undefined;
+    getIdentifierTable: (property: FormProperty) => undefined;
+    isIdentifierDeleted: (property: FormProperty) => false;
+  };
 };
 
 describe('UsageContextDlgComponent', () => {
@@ -124,7 +128,11 @@ describe('UsageContextDlgComponent', () => {
         }]
       }
     };
-    internals.rawValueStore = {getIdentifier: () => undefined};
+    internals.rawValueStore = {
+      getIdentifier: () => undefined,
+      getIdentifierTable: () => undefined,
+      isIdentifierDeleted: () => false
+    };
 
     const currentValue = internals.getCurrentFormPropertyValue(tableProperty) as Array<{
       assigner?: {identifier?: Array<{value?: string}>}

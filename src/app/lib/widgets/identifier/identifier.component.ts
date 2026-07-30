@@ -20,6 +20,8 @@ import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatTooltip} from "@angular/material/tooltip";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
+import {Util} from "../../util";
+import copy from "fast-copy";
 
 /**
  * A component to edit FHIR identifiers as a table with each row representing an identifier.
@@ -101,8 +103,9 @@ export class IdentifierComponent extends TableEditRowInDlgComponent implements O
    * @returns Compact JSON/text representation, or empty string when no meaningful value exists.
    */
   private compactJson(value: any): string {
-    const cleaned = this.removeEmpty(value);
-    if (cleaned === null || cleaned === undefined || cleaned === '') {
+    const cleaned = copy(value);
+    Util.eliminateEmptyFields(cleaned);
+    if (Util.isEmpty(cleaned)) {
       return '';
     }
     if (typeof cleaned === 'string') {
@@ -112,41 +115,5 @@ export class IdentifierComponent extends TableEditRowInDlgComponent implements O
       return String(cleaned);
     }
     return JSON.stringify(cleaned);
-  }
-
-  /**
-   * Recursively remove null/undefined/empty-string values from an object or array.
-   *
-   * @param value - Value to normalize.
-   * @returns Normalized value with empty branches removed.
-   */
-  private removeEmpty(value: any): any {
-    if (Array.isArray(value)) {
-      const items = value
-        .map((item) => this.removeEmpty(item))
-        .filter((item) => !this.isEmptyValue(item));
-      return items.length ? items : undefined;
-    }
-    if (value && typeof value === 'object') {
-      const ret: {[key: string]: any} = {};
-      Object.keys(value).forEach((key) => {
-        const cleaned = this.removeEmpty(value[key]);
-        if (!this.isEmptyValue(cleaned)) {
-          ret[key] = cleaned;
-        }
-      });
-      return Object.keys(ret).length ? ret : undefined;
-    }
-    return value;
-  }
-
-  /**
-   * Check whether a value should be treated as empty for summary rendering.
-   *
-   * @param value - Value to evaluate.
-   * @returns True when value is null, undefined, or empty string.
-   */
-  private isEmptyValue(value: any): boolean {
-    return value === null || value === undefined || value === '';
   }
 }

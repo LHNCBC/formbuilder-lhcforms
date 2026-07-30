@@ -4,7 +4,11 @@ import {IdentifierDlgComponent} from './identifier-dlg.component';
 
 type IdentifierDialogInternals = {
   inputModel: fhir.Identifier;
-  rawValueStore: {getIdentifier: (property: FormProperty) => undefined};
+  rawValueStore: {
+    getIdentifier: (property: FormProperty) => undefined;
+    getIdentifierTable: (property: FormProperty) => undefined;
+    isIdentifierDeleted: (property: FormProperty) => false;
+  };
   getCurrentFormPropertyValue(property: FormProperty): unknown;
 };
 
@@ -35,7 +39,11 @@ describe('IdentifierDlgComponent', () => {
         }]
       }
     } as unknown as fhir.Identifier;
-    internals.rawValueStore = {getIdentifier: () => undefined};
+    internals.rawValueStore = {
+      getIdentifier: () => undefined,
+      getIdentifierTable: () => undefined,
+      isIdentifierDeleted: () => false
+    };
 
     const currentValue = internals.getCurrentFormPropertyValue(tableProperty) as fhir.Identifier[];
 

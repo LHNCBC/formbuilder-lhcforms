@@ -101,7 +101,17 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
 
   codeMirrorModel: string = '';
 
-  fhirValidationMsg = "Select the 'View/Validate Questionnaire JSON' tab to access a feature that validates your Questionnaire against a supplied FHIR server, offering more detailed error insights.";
+  fhirValidationMsg =
+    "Select the 'View/Validate Questionnaire JSON' tab to access a feature that validates your " +
+    "Questionnaire against a supplied FHIR server, offering more detailed error insights.";
+
+  // linkIds of items that use an external answerValueSet but have no preferred terminology
+  // server in scope. The preview renders answer lists using a default terminology server,
+  // but that default is not part of the questionnaire output.
+  missingTerminologyServerLinkIds: string [] = [];
+
+  // Warning shown in the rendered-form tab, built in ngOnInit to include the affected linkIds.
+  preferredTerminologyServerMsg = '';
 
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
@@ -148,7 +158,28 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.activeTopLevelTabIndex = 0;
     this.activeJsonTabIndex = FHIR_VERSIONS.R4;
+    this.missingTerminologyServerLinkIds = Util.getItemsMissingPreferredTerminologyServer(this.data.questionnaire);
+    this.preferredTerminologyServerMsg = this.buildPreferredTerminologyServerMsg(this.missingTerminologyServerLinkIds);
     this.onJsonVersionSelected(this.activeJsonTabIndex);
+  }
+
+  /**
+   * Build the warning about items that use an answer value set without a preferred terminology
+   * server in scope, naming the affected items by linkId.
+   * @param linkIds - linkIds of the affected items.
+   * @return Warning message text, or an empty string when there are no affected items.
+   */
+  private buildPreferredTerminologyServerMsg(linkIds: string []): string {
+    if(!linkIds.length) {
+      return '';
+    }
+    const formatted = linkIds.map((linkId) => `'${linkId}'`).join(', ');
+    return "This questionnaire uses an answer value set but does not specify a preferred " +
+      "terminology server for the following item(s): " + formatted + ". Answer lists in this " +
+      "preview are loaded using a default terminology server (" + this.fhirService.getFhirServer().endpoint +
+      "), but that server is not saved in the questionnaire. To make sure answer value sets can be expanded " +
+      "wherever the questionnaire is used, set a terminology server in the form-level or item-level " +
+      "'Advanced fields'.";
   }
 
   close() {

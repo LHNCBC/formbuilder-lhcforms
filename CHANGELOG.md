@@ -2,9 +2,27 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.3.1] 2026-06-25
+## [12.2.0] 2026-07-30
 ### Added
 - Added form-level support for Questionnaire identifier.
+
+## [12.1.0] 2026-07-21
+### Added
+- When importing questions from LOINC, give option to the user to pick LOINC's LONG_COMMON_NAME/SHORTNAME/CONSUMER as text
+  field, instead of its 'text' field.
+
+- The preview dialog now warns when the questionnaire uses an answer value set but
+  does not specify a preferred terminology server. The rendered preview loads answer
+  lists using a default terminology server, but that default is not saved in the
+  questionnaire output.
+
+## [12.0.0] 2026-07-14
+### Fixed
+- Fix missing autocomplete-lhc styles after updating lforms@43.0.0.
+
+## [11.3.1] 2026-07-10
+### Fixed
+- Fix parsing `window-open` path.
 
 ## [11.3.0] 2026-06-11
 ### Added

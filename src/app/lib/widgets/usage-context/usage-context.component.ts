@@ -82,7 +82,7 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
 
     matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue: UsageContextEditModel | false | undefined) => {
       if (submittedValue) {
-        this.formProperty.properties[index].reset(submittedValue, false);
+        this.replaceRowValue(index, submittedValue);
         this.updateValueSummaries();
       }
     });

@@ -1,9 +1,14 @@
-import {AfterViewInit, ElementRef, ChangeDetectorRef, Directive, OnInit, signal} from '@angular/core';
-import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {AfterViewInit, ElementRef, ChangeDetectorRef, Directive, inject, OnInit, signal} from '@angular/core';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import {MessageDlgComponent, MessageType} from '../message-dlg/message-dlg.component';
 import {DialogData} from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
+import copy from 'fast-copy';
+
+type FormPropertyNode = FormProperty & {
+  properties?: FormPropertyNode[] | {[key: string]: FormPropertyNode};
+};
 
 /**
  * Shared behavior for dialogs that edit one row from a table-backed array field.
@@ -20,25 +25,33 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
   rowIndex = 0;
   previous_origin: {left: number, top: number};
 
-  private initialValueJson = '';
+  public data = inject<DialogData>(MAT_DIALOG_DATA);
+  protected matDialogRef = inject(MatDialogRef<DialogData>);
+  protected matDialogService = inject(MatDialog);
+  protected ngbModalService = inject(NgbModal);
+  protected hostEl = inject(ElementRef);
+  protected cdr = inject(ChangeDetectorRef);
 
-  protected constructor(
-    public data: DialogData,
-    protected matDialogRef: MatDialogRef<DialogData>,
-    protected matDialogService: MatDialog,
-    protected ngbModalService: NgbModal,
-    protected hostEl: ElementRef,
-    protected cdr: ChangeDetectorRef
-  ) {
-  }
+  // Keep the default save reconstruction schema-driven. Identifier overrides this
+  // because lazy recursive dialogs must preserve deeper assigner.identifier data
+  // that is returned from child dialogs but not rendered by the current schema.
+  // Extension does not override it, so it keeps the previous behavior of dropping
+  // schema-unknown fields during save reconstruction.
+  protected preserveUnknownObjectFields = false;
+
+  private initialValueJson = '';
 
   /**
    * Create an empty row value for add-new dialogs.
+   *
+   * @returns Empty model for a new table row.
    */
   protected abstract createNewModel(): T;
 
   /**
    * Additional save validation supplied by the concrete row dialog.
+   *
+   * @returns True when the current row can be saved.
    */
   protected isSaveAllowed(): boolean {
     return true;
@@ -46,6 +59,9 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Allow concrete dialogs to normalize the row value immediately before saving.
+   *
+   * @param value - Current row value to normalize.
+   * @returns Row value to close the dialog with.
    */
   protected beforeSave(value: T): T {
     return value;
@@ -53,6 +69,9 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Allow concrete dialogs to adapt the stored row model for their UI controls.
+   *
+   * @param value - Stored row value loaded into the dialog.
+   * @returns Row value adapted for the dialog UI.
    */
   protected prepareInputModel(value: T): T {
     return value;
@@ -70,6 +89,8 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Return the value to use when checking whether the dialog has unsaved changes.
+   *
+   * @returns Current value used for dirty checking.
    */
   protected getCurrentValueForChangeDetection(): unknown {
     return this.changedValue;
@@ -118,6 +139,8 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Get the input value supplied to the dialog.
+   *
+   * @returns Initial row model used by the dialog.
    */
   getInputModel(): T {
     return this.inputModel;
@@ -125,6 +148,8 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Handle changes emitted by the row object form.
+   *
+   * @param event - Updated row value emitted by the form.
    */
   onChange(event: T) {
     this.changedValue = event;
@@ -172,39 +197,64 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Rebuild the current value from a form-property tree instead of relying on cached parent values.
+   *
+   * @param formProperty - Form property node to read.
+   * @returns Current value represented by the form-property tree.
    */
-  protected getCurrentFormPropertyValue(property: any): any {
-    if (!property) {
+  protected getCurrentFormPropertyValue(formProperty: FormProperty): any {
+    if (!formProperty) {
       return undefined;
     }
+    const formPropertyNode = formProperty as FormPropertyNode;
 
-    if (Array.isArray(property.properties)) {
-      const value = property.properties
+    if (Array.isArray(formPropertyNode.properties)) {
+      const value = formPropertyNode.properties
         .map((child) => this.getCurrentFormPropertyValue(child))
         .filter((childValue) => !this.isEmptyValue(childValue));
       return value.length ? value : undefined;
     }
 
-    if (property.properties && typeof property.properties === 'object') {
-      const value: {[key: string]: any} = {};
-      Object.keys(property.properties).forEach((key) => {
-        const child = property.properties[key];
+    if (formPropertyNode.properties && typeof formPropertyNode.properties === 'object') {
+      const childProperties = formPropertyNode.properties as {[key: string]: FormPropertyNode};
+      const value: {[key: string]: any} = this.preserveUnknownObjectFields
+        ? this.getObjectValueCopy(formProperty.value)
+        : {};
+      Object.keys(childProperties).forEach((key) => {
+        const child = childProperties[key];
         if (child?.visible === false || key.startsWith('__$')) {
+          delete value[key];
           return;
         }
         const childValue = this.getCurrentFormPropertyValue(child);
         if (!this.isEmptyValue(childValue)) {
           value[key] = childValue;
         }
+        else {
+          delete value[key];
+        }
       });
       return Object.keys(value).length ? value : undefined;
     }
 
-    return property.value;
+    return formProperty.value;
+  }
+
+  /**
+   * Copy raw object values so schema-unknown fields returned from nested dialogs are preserved.
+   *
+   * @param value - Raw property value to copy.
+   * @returns Object copy, or an empty object when the value is not a plain object.
+   */
+  private getObjectValueCopy(value: unknown): {[key: string]: any} {
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? copy(value as {[key: string]: any})
+      : {};
   }
 
   /**
    * Build the table row path shown in the dialog.
+   *
+   * @returns Dot/bracket path for the row being edited.
    */
   private buildPath(): string {
     const dialogType = this.constructor;
@@ -225,6 +275,8 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Check whether the emitted model differs from the original input.
+   *
+   * @returns True when the current model differs from the initial model.
    */
   protected hasModelChanged(currentValue: unknown = this.getCurrentValueForChangeDetection()): boolean {
     return this.stringifyForChange(currentValue) !== this.initialValueJson;
@@ -232,6 +284,9 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Convert a model value into a stable string for change detection.
+   *
+   * @param value - Model value to serialize.
+   * @returns Stable JSON string for comparison.
    */
   private stringifyForChange(value: unknown): string {
     return JSON.stringify(this.normalizeForChange(value) ?? null);
@@ -239,6 +294,9 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Remove internal helper fields and produce deterministic key ordering for model comparisons.
+   *
+   * @param value - Value to normalize.
+   * @returns Normalized value for comparison, or undefined when empty.
    */
   private normalizeForChange(value: unknown): unknown {
     if (Array.isArray(value)) {
@@ -269,6 +327,9 @@ export abstract class TableRowDialogBase<T> implements OnInit, AfterViewInit {
 
   /**
    * Check whether a normalized value is empty.
+   *
+   * @param value - Value to check.
+   * @returns True when the value should be treated as empty.
    */
   private isEmptyValue(value: unknown): boolean {
     if (value === null || value === undefined || value === '') {

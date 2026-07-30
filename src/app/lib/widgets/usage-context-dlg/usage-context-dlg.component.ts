@@ -1,7 +1,6 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   ElementRef,
   OnInit,
@@ -9,20 +8,11 @@ import {
   inject,
   signal
 } from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogActions,
-  MatDialogContent,
-  MatDialogRef,
-  MatDialogTitle
-} from '@angular/material/dialog';
+import {MatDialogActions, MatDialogContent, MatDialogTitle} from '@angular/material/dialog';
 import {MatIconButton} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import {MatTooltip} from '@angular/material/tooltip';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
-import {DialogData} from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {UsageContextObjComponent} from '../usage-context-obj/usage-context-obj.component';
 import {TableRowDialogBase} from '../table-row-dialog-base/table-row-dialog-base';
 import {Util} from '../../util';
@@ -82,17 +72,6 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
   private rawValueStore = inject(RawValueStoreService);
   // Fail closed until schema-form reports the validity of the initialized model.
   private schemaFormValid = false;
-
-  constructor() {
-    super(
-      inject<DialogData>(MAT_DIALOG_DATA),
-      inject(MatDialogRef<DialogData>),
-      inject(MatDialog),
-      inject(NgbModal),
-      inject(ElementRef),
-      inject(ChangeDetectorRef)
-    );
-  }
 
   /**
    * Create an empty UsageContext row model for the add-new flow.
@@ -474,9 +453,19 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
         && Array.isArray(tableProperty.properties)
         && tableProperty.schema?.widget?.id === 'identifier'
         && Array.isArray(tableProperty.value)) {
+      const storedRows = this.rawValueStore.getIdentifierTable(tableProperty);
+      if(storedRows) {
+        const value = storedRows
+          .map((row) => this.wrapAssignerIdentifierForUi(this.cloneValue(row)))
+          .filter((row) => !Util.isEmpty(row));
+        return value.length ? value : undefined;
+      }
       const originalRows = this.getOriginalIdentifierRows(tableProperty);
       const value = tableProperty.properties
         .map((child: FormProperty, index: number) => {
+          if(this.rawValueStore.isIdentifierDeleted(child)) {
+            return undefined;
+          }
           const rawValue = this.rawValueStore.getIdentifier(child);
           if(!Util.isEmpty(rawValue)) {
             return rawValue;

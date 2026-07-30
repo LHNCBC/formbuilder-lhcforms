@@ -5,25 +5,20 @@ import {
   ElementRef,
   OnInit,
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
   MatDialogTitle,
   MatDialogContent,
   MatDialogActions,
-  MatDialog
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import fhir from 'fhir/r4';
 import { FormService } from 'src/app/services/form.service';
 import {ExtensionsService} from "../../../services/extensions.service";
-import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {ExtensionObjComponent} from "../extension-obj/extension-obj.component";
 import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base";
 
@@ -68,17 +63,6 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
 
   formService: FormService = inject(FormService);
   extensionsService = inject(ExtensionsService);
-
-  constructor() {
-    super(
-      inject<DialogData>(MAT_DIALOG_DATA),
-      inject(MatDialogRef<DialogData>),
-      inject(MatDialog),
-      inject(NgbModal),
-      inject(ElementRef),
-      inject(ChangeDetectorRef)
-    );
-  }
 
   /**
    * Create a new Extension row model.
