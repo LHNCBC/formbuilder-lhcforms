@@ -5,6 +5,7 @@ import type {FormProperty} from '@lhncbc/ngx-schema-form';
 type DialogInternals = {
   normalizeValueForSave(value: UsageContextEditModel): UsageContextEditModel;
   getRangeValidationError(value: UsageContextEditModel): string;
+  getMissingQuantitySystemPaths(value: UsageContextEditModel): string[];
   getCurrentFormPropertyValue(property: FormProperty): unknown;
   inputModel: UsageContextEditModel;
   rawValueStore: {getIdentifier: (property: FormProperty) => undefined};
@@ -149,5 +150,40 @@ describe('UsageContextDlgComponent', () => {
         high: {value: 20, unit: 'months'}
       }
     })).toBe('Low and high unit, system, and code must match.');
+  });
+
+  it('should require system for coded Quantity values and Range bounds', () => {
+    expect(internals.getMissingQuantitySystemPaths({
+      code: {},
+      __$valueType: 'valueQuantity',
+      valueQuantity: {value: 1, code: 'mg'}
+    })).toEqual(['valueQuantity']);
+
+    expect(internals.getMissingQuantitySystemPaths({
+      code: {},
+      __$valueType: 'valueRange',
+      valueRange: {
+        low: {value: 1, code: 'mg'},
+        high: {value: 5, code: 'mg'}
+      }
+    })).toEqual(['valueRange.low', 'valueRange.high']);
+  });
+
+  it('should allow a display unit without a code or a coded unit with its system', () => {
+    expect(internals.getMissingQuantitySystemPaths({
+      code: {},
+      __$valueType: 'valueQuantity',
+      valueQuantity: {value: 1, unit: 'mg'}
+    })).toEqual([]);
+
+    expect(internals.getMissingQuantitySystemPaths({
+      code: {},
+      __$valueType: 'valueQuantity',
+      valueQuantity: {
+        value: 1,
+        code: 'mg',
+        system: 'http://unitsofmeasure.org'
+      }
+    })).toEqual([]);
   });
 });

@@ -519,6 +519,27 @@ test.describe('Usage Context field tests', () => {
     }
   });
 
+  test('should require a system for a coded Quantity', async ({ page }) => {
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextDialog = await addUseContextRow(page);
+    await useContextDialog.locator('select[name="usageContextType"]').selectOption('age');
+    await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Quantity'});
+    await useContextDialog.locator('input[id*="valueQuantity.value"]').fill('1');
+    await useContextDialog.locator('input[id*="valueQuantity.code"]').fill('mg');
+
+    const systemInput = useContextDialog.locator('input[id*="valueQuantity.system"]');
+    const saveButton = useContextDialog.getByRole('button', { name: 'Save and close' });
+    await expect(useContextDialog.getByText('System is required when Code is provided.')).toBeVisible();
+    await expect(systemInput).toHaveClass(/invalid/);
+    await expect(saveButton).toBeDisabled();
+
+    await systemInput.fill('http://unitsofmeasure.org');
+    await expect(useContextDialog.getByText('System is required when Code is provided.')).toBeHidden();
+    await expect(systemInput).not.toHaveClass(/invalid/);
+    await expect(saveButton).toBeEnabled();
+  });
+
   test('should populate all UsageContext value types and persist the expected JSON', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 

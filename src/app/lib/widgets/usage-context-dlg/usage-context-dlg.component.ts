@@ -36,6 +36,7 @@ import type {
 } from '../usage-context/usage-context.types';
 
 type RangeUnitField = 'unit' | 'system' | 'code';
+type QuantitySystemPath = 'valueQuantity' | 'valueRange.low' | 'valueRange.high';
 
 const VALUE_KEYS: UsageContextValueKey[] = [
   'valueCodeableConcept',
@@ -44,8 +45,14 @@ const VALUE_KEYS: UsageContextValueKey[] = [
   'valueReference'
 ];
 const RANGE_UNIT_FIELDS: RangeUnitField[] = ['unit', 'system', 'code'];
+const QUANTITY_SYSTEM_PATHS: QuantitySystemPath[] = [
+  'valueQuantity',
+  'valueRange.low',
+  'valueRange.high'
+];
 const RANGE_ORDER_ERROR = 'High value must be greater than or equal to low value.';
 const RANGE_UNIT_ERROR = 'Low and high unit, system, and code must match.';
+const QUANTITY_SYSTEM_ERROR = 'System is required when Code is provided.';
 
 /**
  * A dialog component to edit a FHIR UsageContext object.
@@ -202,17 +209,29 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
    */
   protected override updateDisableSave(): void {
     const currentValue = this.getCurrentValueForChangeDetection();
+    const missingQuantitySystemPaths = this.getMissingQuantitySystemPaths(currentValue);
     const rangeValidationError = this.getRangeValidationError(currentValue);
+    const validationError = missingQuantitySystemPaths.length
+      ? QUANTITY_SYSTEM_ERROR
+      : rangeValidationError;
     const modelChanged = this.hasModelChanged(currentValue);
     const hasRequiredValue = this.hasRequiredValue(currentValue);
     const hasRequiredCode = this.hasRequiredCode(currentValue);
 
-    this.validationError.set(rangeValidationError);
+    this.validationError.set(validationError);
+    QUANTITY_SYSTEM_PATHS.forEach((path) => {
+      this.setInputInvalidStyle(
+        `input[id*="${path}.system"]`,
+        missingQuantitySystemPaths.includes(path)
+      );
+    });
     this.setInputInvalidStyle(
       'input[id*="valueRange.high.value"]',
       rangeValidationError === RANGE_ORDER_ERROR
     );
-    const mismatchedUnitFields = this.getMismatchedRangeUnitFields(currentValue);
+    const mismatchedUnitFields = missingQuantitySystemPaths.length
+      ? []
+      : this.getMismatchedRangeUnitFields(currentValue);
     RANGE_UNIT_FIELDS.forEach((field) => {
       this.setInputInvalidStyle(
         `input[id*="valueRange.high.${field}"]`,
@@ -223,7 +242,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
       modelChanged,
       hasRequiredCode,
       hasRequiredValue,
-      rangeValidationError,
+      validationError,
       this.schemaFormValid
     ));
     this.disableSave.set(
@@ -231,7 +250,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
       !hasRequiredCode ||
       !hasRequiredValue ||
       !this.schemaFormValid ||
-      !!rangeValidationError
+      !!validationError
     );
   }
 
@@ -316,6 +335,43 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
       return [];
     }
     return RANGE_UNIT_FIELDS.filter((field) => (low?.[field] ?? '') !== (high?.[field] ?? ''));
+  }
+
+  /**
+   * Find Quantity values that violate FHIR qty-3.
+   *
+   * A coded unit must identify the terminology system that defines its code.
+   * This applies independently to valueQuantity and both Range bounds.
+   *
+   * @param currentValue - Current UsageContext form value.
+   * @returns Paths whose Quantity has a code but no system.
+   */
+  private getMissingQuantitySystemPaths(currentValue: UsageContextEditModel): QuantitySystemPath[] {
+    const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
+    if(selectedKey === 'valueQuantity') {
+      return this.isQuantitySystemMissing(currentValue.valueQuantity)
+        ? ['valueQuantity']
+        : [];
+    }
+    if(selectedKey !== 'valueRange') {
+      return [];
+    }
+
+    const missingPaths: QuantitySystemPath[] = [];
+    if(this.isQuantitySystemMissing(currentValue.valueRange?.low)) {
+      missingPaths.push('valueRange.low');
+    }
+    if(this.isQuantitySystemMissing(currentValue.valueRange?.high)) {
+      missingPaths.push('valueRange.high');
+    }
+    return missingPaths;
+  }
+
+  /**
+   * Check the FHIR qty-3 invariant for one Quantity.
+   */
+  private isQuantitySystemMissing(quantity: fhir.Quantity | undefined): boolean {
+    return !Util.isEmpty(quantity?.code) && Util.isEmpty(quantity?.system);
   }
 
   /**
