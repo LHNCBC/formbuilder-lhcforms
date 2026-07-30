@@ -2,11 +2,15 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.2.0] 2026-07-23
+## [12.3.0] 2026-07-30
 ### Added
 - Added cardinality validation for general extensions. Duplicate single-occurrence
   extension URLs are rejected at the same scope with an inline validation message,
   while known repeatable extensions can be added multiple times.
+
+## [12.2.0] 2026-07-30
+### Added
+- Added form-level support for Questionnaire identifier.
 
 ## [12.1.0] 2026-07-21
 ### Added

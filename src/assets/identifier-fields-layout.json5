@@ -1,0 +1,162 @@
+{
+  formLayout: {
+    targetPage: 'identifierDialog',
+    basic: [
+      {
+        showFields: [
+          {field: 'value', col: 12},
+          {field: 'system', col: 12},
+          {field: 'use', col: 12},
+          {field: 'period', col: 12},
+          {field: 'type', col: 12},
+
+          {field: 'assigner', col: 12}
+        ]
+      }
+    ],
+    advanced: []
+  },
+
+  overridePropertyLabels: {
+    '$.properties.type.properties.text': 'Text',
+    '$.properties.type.properties.coding': 'Coding',
+    '$.properties.type.properties.coding.items.properties.display': 'Display',
+    '$.properties.type.properties.coding.items.properties.code': 'Code',
+    '$.properties.type.properties.coding.items.properties.system': 'System',
+    '$.properties.assigner.properties.display': 'Display',
+    '$.properties.assigner.properties.reference': 'Reference',
+    '$.properties.assigner.properties.type': 'Type',
+    '$.properties.assigner.properties.identifier': 'Identifier'
+  },
+
+  widgets: {
+    useSelect: {
+      id: 'select',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-10 p-0',
+      suppressEmptyInvalidStyle: true
+    },
+
+    url: {
+      id: 'url',
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+    string: {
+      id: 'string',
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 px-1",
+      controlClasses: "col-sm-10 m-0 p-0"
+    },
+
+    object: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10'
+    },
+    codingTable: {
+      id: 'table',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      addButtonLabel: 'Add coding',
+      showFields: [
+        {field: 'display', col: 4, nolabel: true},
+        {field: 'code', col: 3, nolabel: true},
+        {field: 'system', col: 4, nolabel: true}
+      ]
+    },
+    typeObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      showFields: [
+        {field: 'text', col: 12},
+        {field: 'coding', col: 12}
+      ]
+    },
+    dateRange: {
+      id: 'date-range',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 m-0 px-1',
+      controlClasses: 'col-sm-6',
+      showFields: [
+        {field: 'start', col: 6},
+        {field: 'end', col: 6}
+      ]
+    },
+    assignerObject: {
+      id: 'lfb-object',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      objectBodyClasses: 'shadow rounded p-1 mb-1 d-grid gap-1',
+      showFields: [
+        {field: 'display', col: 12},
+        {field: 'reference', col: 12},
+        {field: 'type', col: 12},
+        {field: 'identifier', col: 12}
+      ]
+    },
+    identifierTable: {
+      id: 'identifier',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-10',
+      addButtonLabel: 'Add new identifier',
+      addDefaultItemIfEmpty: false,
+      showFields: [
+        {field: 'value', col: 4, nolabel: true},
+        {field: 'system', col: 4, nolabel: true},
+        {field: 'use', col: 3, nolabel: true}
+      ]
+    },
+    dateTime: {
+      id: 'datetime',
+      labelPosition: 'left',
+      labelClasses: 'col-sm-2 ps-0 pe-1',
+      controlClasses: 'col-sm-3',
+      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
+    }
+  },
+
+  widgetsMap: {
+    useSelect: [
+      '$.properties.use'
+    ],
+    url: [
+      '$.properties.system'
+    ],
+    string: [
+      '$.properties.value',
+      '$.properties.type.properties.text',
+      '$.properties.assigner.properties.display',
+      '$.properties.assigner.properties.reference',
+      '$.properties.assigner.properties.type'
+    ],
+    typeObject: [
+      '$.properties.type'
+    ],
+    codingTable: [
+      '$.properties.type.properties.coding'
+    ],
+    dateRange: [
+      '$.properties.period'
+    ],
+    assignerObject: [
+      '$.properties.assigner'
+    ],
+    identifierTable: [
+      '$.properties.assigner.properties.identifier'
+    ],
+    dateTime: [
+      '$.properties.period.properties.start',
+      '$.properties.period.properties.end'
+    ]
+  }
+}

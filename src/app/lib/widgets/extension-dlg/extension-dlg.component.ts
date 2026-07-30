@@ -6,31 +6,25 @@ import {
   OnInit,
   signal,
   AfterViewInit,
-  ChangeDetectionStrategy, ChangeDetectorRef,
+  ChangeDetectionStrategy,
   OnDestroy
 } from '@angular/core';
 import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
   MatDialogTitle,
   MatDialogContent,
   MatDialogActions,
-  MatDialog
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
-import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
+import {NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
 import fhir from 'fhir/r4';
-import {FormProperty} from '@lhncbc/ngx-schema-form';
 import { FormService } from 'src/app/services/form.service';
-import {MessageDlgComponent, MessageType} from "../message-dlg/message-dlg.component";
-import { DialogData } from '../table-edit-row-in-dlg/table-edit-row-in-dlg.component';
 import {
   DuplicateUrlErrorState,
   ExtensionObjComponent
-} from "../extension-obj/extension-obj.component";
+} from '../extension-obj/extension-obj.component';
 import {ExtensionMaxCardinality, getExtensionMaxCardinality} from '../../extension-defs';
 import {
   ExtensionCardinalityCandidate,
@@ -40,6 +34,8 @@ import {Subscription} from 'rxjs';
 import {
   ExtensionCardinalitySelectionDlgComponent
 } from '../extension-cardinality-selection-dlg/extension-cardinality-selection-dlg.component';
+import {ExtensionsService} from '../../../services/extensions.service';
+import {TableRowDialogBase} from '../table-row-dialog-base/table-row-dialog-base';
 
 /**
  * A dialog component to edit a FHIR Extension object.
@@ -75,142 +71,29 @@ import {
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
-  inputModel: fhir.Extension;
-  changedValue: fhir.Extension;
-  path: string = '';
-  @ViewChild('dlgContent', {static: false, read: ElementRef}) dlgContent: ElementRef;
-  @ViewChild('dlgContainer', {static: false, read: ElementRef}) dlgContainer: ElementRef;
+export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef;
+  @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef;
+  @ViewChild(ExtensionObjComponent) extensionObj: ExtensionObjComponent;
 
-  matDialogService = inject(MatDialog);
-  data = inject<DialogData>(MAT_DIALOG_DATA);
-  matDialogRef = inject(MatDialogRef<DialogData>);
   formService: FormService = inject(FormService);
+  extensionsService = inject(ExtensionsService);
   extensionCardinalityService = inject(ExtensionCardinalityService);
-  ngbModalService: NgbModal = inject(NgbModal);
-  disableSave = signal(true);
+  public override ngbModalService = inject(NgbModal);
   duplicateUrlError = signal<DuplicateUrlErrorState | null>(null);
   checkingExtensionCardinality = signal(false);
   cardinalityWarning = signal<string | null>(null);
 
-  dirtyObserver: MutationObserver;
   cardinalityLookupSubscription: Subscription;
   cardinalitySelectionModalRef?: NgbModalRef;
-  rowIndex = 0;
-  previous_origin: {left: number, top: number};
 
   /**
-   * Create an extension editor dialog.
-   * @param hostEl - Host element used to calculate dialog position.
-   * @param cdr - Change detector used after asynchronous validation updates.
+   * Create a new Extension row model.
+   *
+   * @returns Empty Extension model.
    */
-  constructor(protected hostEl: ElementRef, private cdr: ChangeDetectorRef) {
-  }
-
-  /**
-   * Ng OnInit lifecycle hook.
-   */
-  ngOnInit() {
-    if(this.data.rowIndex >= 0) {
-      this.inputModel = this.data.arrayProperty.properties[this.data.rowIndex].value;
-    }
-    else {
-      this.inputModel = {url: ''};
-    }
-    this.changedValue = this.inputModel;
-    this.rowIndex = this.data.rowIndex >= 0 ? this.data.rowIndex : 0;
-
-    const dialogRefs = this.matDialogService.openDialogs;
-    const pathArray = dialogRefs.reduce((acc, dRef) => {
-      const instance = dRef.componentInstance;
-      if (instance instanceof ExtensionDlgComponent) {
-        const data = instance.data;
-        // Less than zero indicates a new item.
-        let index: number = data.rowIndex;
-        if(index < 0) {
-          index = (data.arrayProperty.properties as FormProperty []).length;
-        }
-        acc.push(`${data.arrayProperty.path.substring(1)}[${index}]`);
-      }
-      return acc;
-    }, [] as string[]);
-    this.path = pathArray.join('.');
-  }
-
-  /**
-   * Move the dialog back to the host element's current screen position.
-   */
-  movePosition() {
-    const current_origin = this.hostEl.nativeElement.parentElement.getBoundingClientRect();
-    this.matDialogRef.updatePosition({top: (current_origin.top)+'px', left: (current_origin.left)+'px'});
-    this.previous_origin = current_origin;
-  }
-
-  /**
-   * Start observing form dirtiness after the dialog view is initialized.
-   */
-  ngAfterViewInit() {
-
-    /**
-     * Observe the dialog content for changes to the form's dirty state.
-     */
-    this.dirtyObserver = new MutationObserver((mutationsList, observer) => {
-      for(const mutation of mutationsList) {
-        if (mutation.type === 'attributes' && (mutation.target as HTMLElement).classList?.contains('ng-dirty')) {
-          this.updateDisableSave();
-          this.cdr.markForCheck();
-          return;
-        }
-      }
-    });
-
-    /**
-     * Observe the form inside the dialog content for class attribute changes to detect dirty state.
-     */
-    this.dirtyObserver.observe(
-      this.dlgContent?.nativeElement.querySelector('form'),
-      {attributes: true, attributeFilter: ['class'], subtree: true}
-    );
-
-    this.disableSave.set(true);
-    this.cdr.detectChanges();
-  }
-
-
-  /**
-   * Handle the dialog save and close event.
-   */
-  save() {
-    // Revalidate at submission time in case the containing extension array
-    // changed while this dialog was open.
-    this.updateDisableSave();
-    if (this.disableSave()) {
-      return;
-    }
-    this.matDialogRef.close(this.changedValue);
-  }
-
-  /**
-   * Get the extension model supplied to the editor.
-   * @returns Extension model being edited.
-   */
-  getInputModel(): fhir.Extension {
-    return this.inputModel as fhir.Extension;
-  }
-
-
-  /**
-   * Handle an extension value change and rerun save validation.
-   * @param event - Updated extension object emitted by the editor.
-   */
-  onChange(event: any) {
-    this.changedValue = event;
-    // Let the form controls render their current dirty state before Save is
-    // recalculated. Cached cardinality lookups may complete synchronously.
-    this.cdr.detectChanges();
-    this.updateDisableSave();
-    this.cdr.detectChanges();
-
+  protected createNewModel(): fhir.Extension {
+    return {url: ''};
   }
 
   /**
@@ -225,6 +108,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Count other extensions with the same URL at this exact scope.
    * The current row is ignored when editing an existing extension.
+   *
    * @param url - Extension URL to compare against sibling rows.
    * @returns Number of matching sibling extensions.
    */
@@ -240,6 +124,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Check whether adding the current extension would exceed a finite maximum.
+   *
    * @param maxCardinality - Resolved maximum cardinality.
    * @param url - Extension URL whose sibling occurrences should be counted.
    * @returns True when the proposed occurrence exceeds a known finite maximum.
@@ -250,9 +135,9 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Update the disableSave signal based on dirty state and URL validity.
+   * Update Save availability using row changes, URL validity, and resolved cardinality.
    */
-  private updateDisableSave() {
+  protected override updateDisableSave(): void {
     const url = (this.changedValue?.url || '').trim();
     const hasDuplicateUrl = this.countMatchingSiblingExtensions(url) > 0;
     const localCardinality = getExtensionMaxCardinality(url);
@@ -294,7 +179,8 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Apply duplicate validation state and recalculate whether Save is available.
+   * Apply duplicate validation state and ask the base dialog to recalculate Save availability.
+   *
    * @param hasDisallowedDuplicateUrl - Whether the proposed occurrence exceeds its maximum.
    * @param isPending - Whether remote cardinality resolution is still pending.
    * @param maxCardinality - Cardinality used to construct the validation message.
@@ -303,8 +189,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
     hasDisallowedDuplicateUrl: boolean,
     isPending = false,
     maxCardinality: ExtensionMaxCardinality = 'unknown'
-  ) {
-    const isDirty = !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
+  ): void {
     this.duplicateUrlError.set(hasDisallowedDuplicateUrl
       ? {
         url: this.changedValue.url.trim(),
@@ -313,11 +198,13 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
           : `This extension allows at most ${maxCardinality} occurrences here.`
       }
       : null);
-    this.disableSave.set(!isDirty || !this.isUrlValid() || hasDisallowedDuplicateUrl || isPending);
+    this.checkingExtensionCardinality.set(isPending);
+    super.updateDisableSave();
   }
 
   /**
    * Open a dialog for choosing among StructureDefinitions with conflicting maxima.
+   *
    * @param url - Canonical extension URL being resolved.
    * @param candidates - Conflicting StructureDefinition candidates to display.
    */
@@ -361,6 +248,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Apply the selected or unverified cardinality result to the extension editor.
+   *
    * @param url - Canonical URL associated with the completed selection.
    * @param cardinality - Selected maximum or "unknown".
    * @param wasSkipped - Whether the user chose to continue without verification.
@@ -384,45 +272,58 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Handle the cancel button event.
+   * Require a valid URL and a completed cardinality check before saving an Extension row.
+   *
+   * @returns True when URL and cardinality validation allow the row to be saved.
    */
-  cancel() {
-    // Check if the form is dirty
-    const isDirty = !!this.dlgContent.nativeElement.querySelector('.ng-dirty');
-    if (!isDirty) {
-      this.matDialogRef.close(false);
-      return;
-    } else {
-      // Ask for confirmation to discard changes
-      const modalRef = this.ngbModalService.open(MessageDlgComponent, {scrollable: true});
-      modalRef.componentInstance.options = {
-        title: 'Confirm',
-        message: 'Are you sure you want to discard the changes you made?',
-        type: MessageType.INFO,
-        buttons: [{
-          label: 'Discard changes',
-          value: 'yes'
-        }, {
-          label:  'Do not discard changes',
-          value: 'no'
-        }]};
+  protected override isSaveAllowed(): boolean {
+    return this.isUrlValid()
+      && !this.duplicateUrlError()
+      && !this.checkingExtensionCardinality();
+  }
 
-      modalRef.closed.subscribe((result) => {
-        if (result === 'yes') {
-          this.matDialogRef.close(false);
-        }
-      });
+  /**
+   * Revalidate cardinality immediately before saving the Extension row.
+   */
+  override save(): void {
+    this.updateDisableSave();
+    if (!this.disableSave()) {
+      super.save();
     }
+  }
+
+  /**
+   * Refresh Extension helper fields after structural edits such as nested row deletion.
+   *
+   * @param value - Current Extension row value.
+   * @returns Extension value with helper fields refreshed.
+   */
+  protected override beforeSave(value: fhir.Extension): fhir.Extension {
+    const currentValue = this.extensionObj?.sfFormRootProperty
+      ? this.getCurrentFormPropertyValue(this.extensionObj.sfFormRootProperty) as fhir.Extension
+      : value;
+    return this.extensionsService.updateExtension(currentValue);
   }
 
   /**
    * Stop observers, subscriptions, and any open cardinality selection dialog.
    */
-  ngOnDestroy() {
-    this.dirtyObserver?.disconnect();
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
     this.cardinalityLookupSubscription?.unsubscribe();
     const modalRef = this.cardinalitySelectionModalRef;
     this.cardinalitySelectionModalRef = undefined;
     modalRef?.dismiss();
+  }
+
+  /**
+   * Use the live form-property tree so structural table edits are included in dirty checks.
+   *
+   * @returns Current Extension value represented by the form-property tree.
+   */
+  protected override getCurrentValueForChangeDetection(): unknown {
+    return this.extensionObj?.sfFormRootProperty
+      ? this.getCurrentFormPropertyValue(this.extensionObj.sfFormRootProperty)
+      : this.changedValue;
   }
 }

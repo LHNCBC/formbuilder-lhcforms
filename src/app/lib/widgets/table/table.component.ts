@@ -66,6 +66,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
   noHeader = false;
   // Flag to control hiding of add/remove buttons.
   singleItem = false;
+  addDefaultItemIfEmpty = true; // Flag to control whether to add default empty row when array is empty
   keyField = 'type'; // Key property of the object, based on which some fields could be hidden/shown.
   booleanControlledOption = false;
   booleanControlled = false;
@@ -104,7 +105,7 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
    * Make sure at least one row is present for zero length array?
    */
   ngDoCheck(): void {
-    if (this.formProperty.properties.length === 0 && this.booleanControlledOption) {
+    if (this.addDefaultItemIfEmpty && this.formProperty.properties.length === 0 && this.booleanControlledOption) {
       this.addItem();
     }
     this.includeActionColumn = this.shouldIncludeActionColumn();
@@ -128,6 +129,9 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
       ? widget.addButtonLabel : 'Add';
 
     this.addEditAction = widget && widget.addEditAction || false;
+    if(widget?.addDefaultItemIfEmpty !== undefined) {
+      this.addDefaultItemIfEmpty = widget.addDefaultItemIfEmpty !== false;
+    }
     this.noTableLabel = !!widget.noTableLabel;
     this.noCollapseButton = !!widget.noCollapseButton;
     this.singleItem = !!widget.singleItem;
@@ -384,6 +388,22 @@ export class TableComponent extends LfbArrayWidgetComponent implements OnInit, A
 
   getFieldDescription(propertyId: string) {
     return Util.getSchemaFromArrayProperty(this.formProperty, propertyId)?.description;
+  }
+
+  /**
+   * Indicates whether a column should render as read-only display text.
+   * Subclasses can override this to switch specific columns to display mode.
+   */
+  useDisplayRenderer(_showField: any): boolean {
+    return false;
+  }
+
+  /**
+   * Provides display text for read-only display-rendered columns.
+   * Subclasses can override this to customize formatting.
+   */
+  getDisplayValue(_itemProperty: FormProperty, _showField: any): string {
+    return '';
   }
 
   /**

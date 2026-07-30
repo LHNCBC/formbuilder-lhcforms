@@ -1,0 +1,57 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "identifier-sample",
+  "status": "draft",
+  "title": "Identifier fixture sample",
+  "identifier": [
+    {
+      "use": "official",
+      "system": "urn:sys:alpha",
+      "value": "ID-ALPHA",
+      "type": {
+        "text": "alpha-type",
+        "coding": [
+          {
+            "display": "Alpha Display",
+            "code": "A1",
+            "system": "http://example.org/codes"
+          }
+        ]
+      },
+      "period": {
+        "start": "2024-01-02T10:20:30Z",
+        "end": "2025-03-04T11:22:33Z"
+      },
+      "assigner": {
+        "display": "Dept A",
+        "reference": "Organization/org-a",
+        "type": "Organization"
+      }
+    },
+    {
+      "use": "secondary",
+      "system": "urn:sys:beta",
+      "value": "ID-BETA",
+      "type": {
+        "text": "beta-type",
+        "coding": [
+          {
+            "display": "Beta Display",
+            "code": "B2",
+            "system": "http://example.org/codes"
+          }
+        ]
+      },
+      "period": {
+        "start": "2023-05-06T07:08:09Z",
+        "end": "2026-09-10T11:12:13Z"
+      },
+      "assigner": {
+        "display": "Dept B",
+        "reference": "Organization/org-b",
+        "type": "Organization"
+      }
+    }
+  ],
+  "item": []
+}
