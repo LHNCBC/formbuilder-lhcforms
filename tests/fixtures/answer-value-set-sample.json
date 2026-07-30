@@ -7,7 +7,13 @@
       "text": "Item with answer value set",
       "linkId": "1",
       "type": "choice",
-      "answerValueSet": "http://example.org"
+      "answerValueSet": "http://example.org",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-preferredTerminologyServer",
+          "valueUrl": ""
+        }
+      ]
     }
   ]
 }
