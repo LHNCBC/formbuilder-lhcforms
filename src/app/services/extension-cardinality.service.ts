@@ -1,4 +1,3 @@
-import {HttpClient, HttpParams} from '@angular/common/http';
 import {inject, Injectable} from '@angular/core';
 import {Observable, of, timeout} from 'rxjs';
 import {catchError, map, shareReplay} from 'rxjs/operators';
@@ -13,13 +12,12 @@ const CARDINALITY_LOOKUP_TIMEOUT_MS = 5000;
 
 /**
  * Resolves extension root cardinalities from local metadata and, when needed,
- * the application's default FHIR server.
+ * the FHIR server currently selected for import and export.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class ExtensionCardinalityService {
-  private readonly http = inject(HttpClient);
   private readonly fhirService = inject(FhirService);
   private readonly lookupCache = new Map<string, Observable<ExtensionMaxCardinality>>();
 
@@ -27,7 +25,7 @@ export class ExtensionCardinalityService {
    * Resolve an extension's maximum cardinality.
    *
    * Locally bundled metadata always takes precedence. Unknown absolute
-   * canonical URLs are looked up once per default server and cached, including
+   * canonical URLs are looked up once per selected server and cached, including
    * not-found and failed lookups.
    */
   resolveMaxCardinality(url: string): Observable<ExtensionMaxCardinality> {
@@ -37,15 +35,15 @@ export class ExtensionCardinalityService {
       return of(localCardinality);
     }
 
-    const serverEndpoint = this.fhirService.getDefaultFhirServer().endpoint.replace(/\/$/, '');
+    const serverEndpoint = this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
     const cacheKey = `${serverEndpoint}|${normalizedUrl}`;
     let lookup = this.lookupCache.get(cacheKey);
     if (!lookup) {
-      const params = new HttpParams()
-        .set('url', normalizedUrl)
-        .set('_count', '2')
-        .set('_format', 'application/fhir+json');
-      lookup = this.http.get<fhir.Bundle>(`${serverEndpoint}/StructureDefinition`, {params}).pipe(
+      const query = 'StructureDefinition?'
+        + `url=${encodeURIComponent(normalizedUrl)}`
+        + '&_count=2'
+        + `&_format=${encodeURIComponent('application/fhir+json')}`;
+      lookup = this.fhirService.getBundleByUrl(query).pipe(
         timeout(CARDINALITY_LOOKUP_TIMEOUT_MS),
         map((bundle) => this.getCardinalityFromBundle(bundle, normalizedUrl)),
         catchError(() => of<ExtensionMaxCardinality>('unknown')),

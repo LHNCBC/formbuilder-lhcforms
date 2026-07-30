@@ -1,36 +1,42 @@
-import {provideHttpClient} from '@angular/common/http';
-import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {TestBed} from '@angular/core/testing';
+import {of, Subject, throwError} from 'rxjs';
+import fhir from 'fhir/r4';
 import {EXTENSION_URL_ENTRY_FORMAT} from '../lib/constants/constants';
 import {ExtensionCardinalityService} from './extension-cardinality.service';
-import {FhirService} from './fhir.service';
+import {FhirService, FHIRServer} from './fhir.service';
 
 describe('ExtensionCardinalityService', () => {
-  const defaultServerEndpoint = 'https://example.org/fhir';
+  const selectedServerEndpoint = 'https://example.org/fhir';
   let service: ExtensionCardinalityService;
-  let httpTestingController: HttpTestingController;
+  let fhirService: jasmine.SpyObj<FhirService>;
+  let selectedServer: FHIRServer;
 
   beforeEach(() => {
+    selectedServer = {
+      endpoint: selectedServerEndpoint,
+      version: 'R5'
+    };
+    fhirService = jasmine.createSpyObj<FhirService>(
+      'FhirService',
+      ['getFhirServer', 'getBundleByUrl']
+    );
+    fhirService.getFhirServer.and.callFake(() => selectedServer);
+
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
         ExtensionCardinalityService,
-        {
-          provide: FhirService,
-          useValue: {
-            getDefaultFhirServer: () => ({endpoint: defaultServerEndpoint, version: 'R5'})
-          }
-        }
+        {provide: FhirService, useValue: fhirService}
       ]
     });
     service = TestBed.inject(ExtensionCardinalityService);
-    httpTestingController = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => {
-    httpTestingController.verify();
-  });
+  function expectedQuery(extensionUrl: string): string {
+    return 'StructureDefinition?'
+      + `url=${encodeURIComponent(extensionUrl)}`
+      + '&_count=2'
+      + `&_format=${encodeURIComponent('application/fhir+json')}`;
+  }
 
   it('should return locally known cardinality without querying the FHIR server', () => {
     let result;
@@ -38,21 +44,21 @@ describe('ExtensionCardinalityService', () => {
       .subscribe((cardinality) => result = cardinality);
 
     expect(result).toBe('1');
-    httpTestingController.expectNone(() => true);
+    expect(fhirService.getBundleByUrl).not.toHaveBeenCalled();
   });
 
-  it('should query and cache an unknown extension cardinality', () => {
+  it('should query the selected FHIR client and cache an unknown extension cardinality', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/custom-extension';
+    const response = new Subject<fhir.Bundle>();
     const results = [];
+    fhirService.getBundleByUrl.and.returnValue(response);
 
     service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
     service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
 
-    const request = httpTestingController.expectOne((req) =>
-      req.url === `${defaultServerEndpoint}/StructureDefinition`
-      && req.params.get('url') === extensionUrl);
-    expect(request.request.params.get('_count')).toBe('2');
-    request.flush({
+    expect(fhirService.getFhirServer).toHaveBeenCalled();
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledOnceWith(expectedQuery(extensionUrl));
+    response.next({
       resourceType: 'Bundle',
       type: 'searchset',
       entry: [{
@@ -64,21 +70,18 @@ describe('ExtensionCardinalityService', () => {
           }
         }
       }]
-    });
+    } as fhir.Bundle);
+    response.complete();
 
     service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
     expect(results).toEqual(['1', '1', '1']);
-    httpTestingController.expectNone(() => true);
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(1);
   });
 
   it('should preserve a finite maximum greater than one', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/twice-only-extension';
     let result;
-    service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => result = cardinality);
-
-    const request = httpTestingController.expectOne((req) =>
-      req.url === `${defaultServerEndpoint}/StructureDefinition`);
-    request.flush({
+    fhirService.getBundleByUrl.and.returnValue(of({
       resourceType: 'Bundle',
       type: 'searchset',
       entry: [{
@@ -90,33 +93,64 @@ describe('ExtensionCardinalityService', () => {
           }
         }
       }]
-    });
+    } as fhir.Bundle));
+
+    service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => result = cardinality);
 
     expect(result).toBe('2');
+  });
+
+  it('should use a separately cached lookup after import or export selects another server', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-specific-extension';
+    const results = [];
+    fhirService.getBundleByUrl.and.returnValues(
+      of({resourceType: 'Bundle', type: 'searchset', entry: []}),
+      of({
+        resourceType: 'Bundle',
+        type: 'searchset',
+        entry: [{
+          resource: {
+            resourceType: 'StructureDefinition',
+            url: extensionUrl,
+            snapshot: {element: [{path: 'Extension', max: '1'}]}
+          }
+        }]
+      } as fhir.Bundle)
+    );
+
+    service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
+    selectedServer = {
+      endpoint: 'https://another.example.org/fhir',
+      version: 'R4'
+    };
+    service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
+
+    expect(results).toEqual(['unknown', '1']);
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(2);
   });
 
   it('should cache an unknown result when no matching definition is returned', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/missing-extension';
     const results = [];
-    service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
-
-    const request = httpTestingController.expectOne((req) =>
-      req.url === `${defaultServerEndpoint}/StructureDefinition`);
-    request.flush({resourceType: 'Bundle', type: 'searchset', entry: []});
+    fhirService.getBundleByUrl.and.returnValue(
+      of({resourceType: 'Bundle', type: 'searchset', entry: []})
+    );
 
     service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
+    service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
+
     expect(results).toEqual(['unknown', 'unknown']);
-    httpTestingController.expectNone(() => true);
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(1);
   });
 
   it('should remain permissive when the FHIR server lookup fails', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/unavailable-extension';
     let result;
-    service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => result = cardinality);
+    fhirService.getBundleByUrl.and.returnValue(
+      throwError(() => new Error('Server unavailable'))
+    );
 
-    const request = httpTestingController.expectOne((req) =>
-      req.url === `${defaultServerEndpoint}/StructureDefinition`);
-    request.flush('Server unavailable', {status: 503, statusText: 'Service Unavailable'});
+    service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => result = cardinality);
 
     expect(result).toBe('unknown');
   });
@@ -126,6 +160,6 @@ describe('ExtensionCardinalityService', () => {
     service.resolveMaxCardinality('child-slice').subscribe((cardinality) => result = cardinality);
 
     expect(result).toBe('unknown');
-    httpTestingController.expectNone(() => true);
+    expect(fhirService.getBundleByUrl).not.toHaveBeenCalled();
   });
 });
