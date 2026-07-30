@@ -2,6 +2,10 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.2.0] 2026-07-30
+### Added
+- Added form-level support for Questionnaire identifier.
+
 ## [12.1.0] 2026-07-21
 ### Added
 - When importing questions from LOINC, give option to the user to pick LOINC's LONG_COMMON_NAME/SHORTNAME/CONSUMER as text
