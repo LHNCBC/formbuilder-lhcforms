@@ -6,6 +6,7 @@ type DialogInternals = {
   normalizeValueForSave(value: UsageContextEditModel): UsageContextEditModel;
   getRangeValidationError(value: UsageContextEditModel): string;
   getMissingQuantitySystemPaths(value: UsageContextEditModel): string[];
+  hasReferenceContent(reference: UsageContextEditModel['valueReference']): boolean;
   getCurrentFormPropertyValue(property: FormProperty): unknown;
   inputModel: UsageContextEditModel;
   rawValueStore: {getIdentifier: (property: FormProperty) => undefined};
@@ -185,5 +186,17 @@ describe('UsageContextDlgComponent', () => {
         system: 'http://unitsofmeasure.org'
       }
     })).toEqual([]);
+  });
+
+  it('should accept an extension-only Reference but reject type-only content', () => {
+    expect(internals.hasReferenceContent({
+      extension: [{
+        url: 'http://example.org/fhir/StructureDefinition/reference-note',
+        valueString: 'Imported reference metadata'
+      }]
+    })).toBeTrue();
+
+    expect(internals.hasReferenceContent({extension: []})).toBeFalse();
+    expect(internals.hasReferenceContent({type: 'PlanDefinition'})).toBeFalse();
   });
 });

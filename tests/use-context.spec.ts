@@ -478,6 +478,55 @@ test.describe('Usage Context field tests', () => {
     await expect(saveButton).toBeEnabled();
   });
 
+  test('should preserve and accept an imported extension-only valueReference', async ({ page }) => {
+    const extension = {
+      url: 'http://example.org/fhir/StructureDefinition/reference-note',
+      valueString: 'Imported reference metadata'
+    };
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      title: 'Extension-only Reference Test',
+      useContext: [{
+        code: {
+          display: 'Workflow Task',
+          code: 'task',
+          system: usageContextTypeSystem
+        },
+        valueReference: {
+          extension: [extension]
+        }
+      }]
+    };
+
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await PWUtils.clickMenuBarDropdownItem(page, 'Import', 'Import from file...');
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles({
+      name: 'extension-only-reference.json',
+      mimeType: 'application/fhir+json',
+      buffer: Buffer.from(JSON.stringify(questionnaire))
+    });
+
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+    const useContextRow = page.locator('lfb-usage-context tbody > tr')
+      .filter({has: page.locator('input[id^="useContext."]')})
+      .first();
+    await useContextRow.getByRole('button', {name: 'Edit this row'}).click();
+
+    const useContextDialog = getUseContextDialog(page);
+    await useContextDialog.locator('input[id^="valueReference.type"]').fill('PlanDefinition');
+    const saveButton = useContextDialog.getByRole('button', {name: 'Save and close'});
+    await expect(saveButton).toBeEnabled();
+    await saveButton.click();
+
+    const previewJson = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(previewJson.useContext[0].valueReference).toEqual({
+      extension: [extension],
+      type: 'PlanDefinition'
+    });
+  });
+
   test('should reject incompatible low and high Range units', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 

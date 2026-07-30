@@ -274,16 +274,17 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
   /**
    * Check whether a Reference contains content beyond its optional type hint.
    *
-   * FHIR Reference requires at least one of reference, identifier, or display;
-   * type alone does not identify the target.
+   * FHIR Reference requires at least one of reference, identifier, display, or
+   * extension; type alone does not identify the target.
    *
    * @param reference - UsageContext valueReference.
-   * @returns True when the Reference has identifying or display content.
+   * @returns True when the Reference satisfies the FHIR ref-2 content rule.
    */
   private hasReferenceContent(reference: EditableReference | undefined): boolean {
     return !Util.isEmpty(reference?.reference) ||
       !Util.isEmpty(reference?.identifier) ||
-      !Util.isEmpty(reference?.display);
+      !Util.isEmpty(reference?.display) ||
+      !Util.isEmpty(reference?.extension);
   }
 
   /**
