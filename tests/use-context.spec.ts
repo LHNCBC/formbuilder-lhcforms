@@ -6,6 +6,18 @@ test.describe('Usage Context field tests', () => {
   let mainPO: MainPO;
 
   test.setTimeout(90000);
+  const usageContextTypeSystem = 'http://terminology.hl7.org/CodeSystem/usage-context-type';
+  const standardUsageContextTypes = new Set([
+    'gender',
+    'age',
+    'focus',
+    'user',
+    'workflow',
+    'task',
+    'venue',
+    'species',
+    'program'
+  ]);
 
   const getDialogPaneRects = async (page: Page) => page.evaluate(() => {
     const toRect = (element: Element | undefined) => {
@@ -41,6 +53,13 @@ test.describe('Usage Context field tests', () => {
     dialog: Locator,
     code: { display: string; code: string; system: string }
   ) => {
+    const typeSelect = dialog.locator('select[name="usageContextType"]');
+    if(code.system === usageContextTypeSystem && standardUsageContextTypes.has(code.code)) {
+      await typeSelect.selectOption(code.code);
+      return;
+    }
+
+    await typeSelect.selectOption('__custom');
     await dialog.locator('input[id^="code.display"]').fill(code.display);
     await dialog.locator('input[id^="code.code"]').fill(code.code);
     await dialog.locator('input[id^="code.system"]').fill(code.system);
@@ -133,6 +152,8 @@ test.describe('Usage Context field tests', () => {
     await expect(dialog.getByRole('heading', { name: 'Edit Usage Context fields' })).toBeVisible();
     await expect(dialog.locator('lfb-usage-context-obj')).toBeVisible();
     await expect(dialog.getByText('useContext[0]')).toBeVisible();
+    await expect(dialog.locator('select[name="usageContextType"]')).toHaveValue('gender');
+    await expect(dialog.locator('input[id^="code.code"]')).toHaveCount(0);
     await expect(dialog.locator('select[name="__$valueType"]')).toHaveValue(/valueCodeableConcept$/);
     await expect(dialog.getByText('Value codeable concept', { exact: true })).toBeVisible();
     await expect(dialog.getByText('Value quantity', { exact: true })).toBeHidden();
@@ -388,6 +409,7 @@ test.describe('Usage Context field tests', () => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 
     const useContextDialog = await addUseContextRow(page);
+    await useContextDialog.locator('select[name="usageContextType"]').selectOption('__custom');
     await useContextDialog.locator('input[id^="code.code"]').fill('focus');
     await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Codeable concept'});
     await useContextDialog.locator('input[id^="valueCodeableConcept.text"]').fill('Clinical focus');
@@ -410,6 +432,7 @@ test.describe('Usage Context field tests', () => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 
     const useContextDialog = await addUseContextRow(page);
+    await useContextDialog.locator('select[name="usageContextType"]').selectOption('__custom');
     await useContextDialog.locator('input[id^="code.display"]').fill('Clinical Focus');
     await useContextDialog.locator('input[id^="code.system"]')
       .fill('http://terminology.hl7.org/CodeSystem/usage-context-type');
@@ -500,20 +523,25 @@ test.describe('Usage Context field tests', () => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 
     let useContextDialog = await addUseContextRow(page);
-    await useContextDialog.locator('input[id^="code.display"]').fill('Gender');
-    await useContextDialog.locator('input[id^="code.system"]').fill('http://terminology.hl7.org/CodeSystem/usage-context-type');
+    const contextTypeSelect = useContextDialog.locator('select[name="usageContextType"]');
+    await expect(contextTypeSelect.locator('option')).toHaveText([
+      'Select a Usage Context type',
+      'Gender',
+      'Age Range',
+      'Clinical Focus',
+      'User Type',
+      'Workflow Setting',
+      'Workflow Task',
+      'Clinical Venue',
+      'Species',
+      'Program',
+      'Other/custom coding'
+    ]);
+    await contextTypeSelect.selectOption('gender');
     await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeDisabled();
     await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Codeable concept'});
     await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeDisabled();
     await useContextDialog.locator('input[id^="valueCodeableConcept.text"]').fill('Female');
-    const codeInput = useContextDialog.locator('input[id^="code.code"]');
-    await expect(useContextDialog.getByText('Code is required.')).toHaveCount(0);
-    await expect.poll(() => codeInput.evaluate((el) => el.classList.contains('invalid'))).toBe(false);
-    await expect(codeInput).not.toHaveAttribute('aria-invalid', 'true');
-    await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeEnabled();
-    await codeInput.fill('gender');
-    await expect.poll(() => codeInput.evaluate((el) => el.classList.contains('invalid'))).toBe(false);
-    await expect(codeInput).not.toHaveAttribute('aria-invalid', 'true');
     await expect(useContextDialog.getByRole('button', { name: 'Save and close' })).toBeEnabled();
     await useContextDialog.getByRole('button', { name: 'Save and close' }).click();
     await expect(useContextDialog).toBeHidden();
@@ -596,7 +624,7 @@ test.describe('Usage Context field tests', () => {
     });
     expect(previewJson.useContext[1]).toMatchObject({
       code: {
-        display: 'Age',
+        display: 'Age Range',
         code: 'age',
         system: 'http://terminology.hl7.org/CodeSystem/usage-context-type'
       },

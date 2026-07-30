@@ -103,16 +103,9 @@
       objectBodyClasses: 'shadow rounded p-1 mb-1'
     },
     codeObject: {
-      id: 'lfb-object',
-      labelPosition: 'left',
+      id: 'usage-context-code',
       labelClasses: 'col-sm-2 ps-0 pe-1',
-      controlClasses: 'col-sm-10',
-      objectBodyClasses: 'shadow rounded p-1 mb-1',
-      showFields: [
-        {field: 'display', col: 12},
-        {field: 'code', col: 12},
-        {field: 'system', col: 12}
-      ]
+      objectBodyClasses: 'col-sm-10 shadow rounded p-1 mb-1'
     },
     quantityObject: {
       id: 'lfb-object',

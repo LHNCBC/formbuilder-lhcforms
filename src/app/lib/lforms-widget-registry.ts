@@ -68,6 +68,7 @@ import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-w
 import {UnsignedIntegerComponent} from './widgets/unsigned-integer/unsigned-integer.component';
 import { MetaProfileComponent } from './widgets/meta-profile/meta-profile.component';
 import { UsageContextComponent } from './widgets/usage-context/usage-context.component';
+import {UsageContextCodeComponent} from './widgets/usage-context-code/usage-context-code.component';
 import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
@@ -142,6 +143,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('enable-when-expression', EnableWhenExpressionComponent);
     this.register('meta-profile', MetaProfileComponent);
     this.register('usage-context', UsageContextComponent);
+    this.register('usage-context-code', UsageContextCodeComponent);
     this.setDefaultWidget(StringComponent);
   }
 }

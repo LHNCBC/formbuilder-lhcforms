@@ -82,6 +82,12 @@ describe('FormService', () => {
       .toBeUndefined();
   });
 
+  it('should use the extensible UsageContextType editor for UsageContext.code', () => {
+    const usageContextSchema = service.cloneUsageContextSchema() as any;
+
+    expect(usageContextSchema.properties.code.widget.id).toBe('usage-context-code');
+  });
+
   it('should update __$helpText', () => {
     const clonedSample = traverse(sampleJson).clone();
     service.updateFhirQuestionnaire(clonedSample);

@@ -1,7 +1,12 @@
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {By} from '@angular/platform-browser';
 import {CommonTestingModule} from '../../../testing/common-testing.module';
 import {UsageContextObjComponent} from './usage-context-obj.component';
 import type {UsageContextEditModel} from '../usage-context/usage-context.types';
+import {
+  USAGE_CONTEXT_TYPE_SYSTEM,
+  UsageContextCodeComponent
+} from '../usage-context-code/usage-context-code.component';
 
 describe('UsageContextObjComponent', () => {
   let component: UsageContextObjComponent;
@@ -15,7 +20,11 @@ describe('UsageContextObjComponent', () => {
     fixture = TestBed.createComponent(UsageContextObjComponent);
     component = fixture.componentInstance;
     component.model = {
-      code: {code: 'focus'},
+      code: {
+        system: USAGE_CONTEXT_TYPE_SYSTEM,
+        code: 'focus',
+        display: 'Clinical Focus'
+      },
       __$valueType: 'valueCodeableConcept',
       valueCodeableConcept: {text: 'Cardiology'}
     };
@@ -26,6 +35,21 @@ describe('UsageContextObjComponent', () => {
   it('should create the schema form and capture its root property', () => {
     expect(component).toBeTruthy();
     expect(component.sfFormRootProperty).toBe(component.sfForm.rootProperty as typeof component.sfFormRootProperty);
+  });
+
+  it('should initialize the bound UsageContext type selector from the model', () => {
+    const codeEditor = fixture.debugElement
+      .query(By.directive(UsageContextCodeComponent))
+      .componentInstance as UsageContextCodeComponent;
+
+    expect(codeEditor.formProperty.value).toEqual(jasmine.objectContaining({
+      system: USAGE_CONTEXT_TYPE_SYSTEM,
+      code: 'focus'
+    }));
+    expect(codeEditor.selectedType()).toBe('focus');
+    expect((fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLSelectElement>('select[name="usageContextType"]')?.value)
+      .toBe('focus');
   });
 
   it('should forward schema-form value changes', () => {
