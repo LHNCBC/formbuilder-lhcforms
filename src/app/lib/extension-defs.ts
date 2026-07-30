@@ -19,7 +19,7 @@ import {
 
 const FHIR_STRUCTURE_DEFINITION_BASE = 'http://hl7.org/fhir/StructureDefinition';
 
-export type KnownExtensionMaxCardinality = '1' | '*';
+export type KnownExtensionMaxCardinality = `${number}` | '*';
 export type ExtensionMaxCardinality = KnownExtensionMaxCardinality | 'unknown';
 
 /**

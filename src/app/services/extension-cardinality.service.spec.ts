@@ -71,8 +71,8 @@ describe('ExtensionCardinalityService', () => {
     httpTestingController.expectNone(() => true);
   });
 
-  it('should treat a maximum greater than one as repeatable', () => {
-    const extensionUrl = 'http://example.org/StructureDefinition/repeatable-extension';
+  it('should preserve a finite maximum greater than one', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/twice-only-extension';
     let result;
     service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => result = cardinality);
 
@@ -86,13 +86,13 @@ describe('ExtensionCardinalityService', () => {
           resourceType: 'StructureDefinition',
           url: extensionUrl,
           differential: {
-            element: [{id: 'Extension', path: 'Extension', max: '*'}]
+            element: [{id: 'Extension', path: 'Extension', max: '2'}]
           }
         }
       }]
     });
 
-    expect(result).toBe('*');
+    expect(result).toBe('2');
   });
 
   it('should cache an unknown result when no matching definition is returned', () => {

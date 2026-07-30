@@ -70,11 +70,11 @@ export class ExtensionCardinalityService {
       ?? definition?.differential?.element?.find((element) => element.path === 'Extension');
     const max = rootElement?.max;
 
-    if (max === '1') {
-      return '1';
-    }
-    if (max === '*' || (/^\d+$/.test(max) && Number(max) > 1)) {
+    if (max === '*') {
       return '*';
+    }
+    if (/^\d+$/.test(max)) {
+      return max as `${number}`;
     }
     return 'unknown';
   }

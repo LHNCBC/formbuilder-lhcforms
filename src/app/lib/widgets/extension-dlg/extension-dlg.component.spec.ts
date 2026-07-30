@@ -140,9 +140,62 @@ describe('ExtensionDlgComponent', () => {
     expect(urlInput.classList).not.toContain('invalid');
   });
 
+  it('should allow a second occurrence when the resolved maximum is two', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-max-two';
+    resolveCardinalitySpy.and.returnValue(of('2'));
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = extensionUrl;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.disableSave()).toBeFalse();
+    expect(urlInput.classList).not.toContain('invalid');
+  });
+
+  it('should reject a third occurrence when the resolved maximum is two', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-max-two';
+    resolveCardinalitySpy.and.returnValue(of('2'));
+    await createDialog([
+      {url: extensionUrl, valueString: 'first value'},
+      {url: extensionUrl, valueString: 'second value'}
+    ], -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = extensionUrl;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.duplicateUrlError()?.message).toContain('at most 2 occurrences');
+    expect(component.disableSave()).toBeTrue();
+    expect(urlInput.classList).toContain('invalid');
+  });
+
+  it('should exclude the current row when enforcing a resolved finite maximum', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-max-two';
+    resolveCardinalitySpy.and.returnValue(of('2'));
+    await createDialog([
+      {url: extensionUrl, valueString: 'first value'},
+      {url: extensionUrl, valueString: 'second value'}
+    ], 1);
+    const valueInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="valueString"]');
+
+    valueInput.value = 'changed value';
+    valueInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.disableSave()).toBeFalse();
+  });
+
   it('should disable Save and announce status while cardinality lookup is pending', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/pending-extension';
-    const cardinalityResult = new Subject<'1' | '*' | 'unknown'>();
+    const cardinalityResult = new Subject<`${number}` | '*' | 'unknown'>();
     resolveCardinalitySpy.and.returnValue(cardinalityResult);
     await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');

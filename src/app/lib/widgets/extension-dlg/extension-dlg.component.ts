@@ -31,7 +31,7 @@ import {
   DuplicateUrlErrorState,
   ExtensionObjComponent
 } from "../extension-obj/extension-obj.component";
-import {getExtensionMaxCardinality} from '../../extension-defs';
+import {ExtensionMaxCardinality, getExtensionMaxCardinality} from '../../extension-defs';
 import {ExtensionCardinalityService} from '../../../services/extension-cardinality.service';
 import {Subscription} from 'rxjs';
 
@@ -202,19 +202,25 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Check the extension URL against the other extensions at this exact scope.
+   * Count other extensions with the same URL at this exact scope.
    * The current row is ignored when editing an existing extension.
-   * @returns True when another extension has the same URL.
    */
-  private hasDuplicateUrlAtCurrentScope(): boolean {
-    const url = (this.changedValue?.url || '').trim();
+  private countMatchingSiblingExtensions(url = (this.changedValue?.url || '').trim()): number {
     if (!url) {
-      return false;
+      return 0;
     }
 
-    return (this.data.arrayProperty?.value || []).some((extension: fhir.Extension, index: number) =>
+    return (this.data.arrayProperty?.value || []).filter((extension: fhir.Extension, index: number) =>
       index !== this.data.rowIndex && extension?.url?.trim() === url
-    );
+    ).length;
+  }
+
+  /**
+   * Check whether adding the current extension would exceed a finite maximum.
+   */
+  private wouldExceedMaximum(maxCardinality: ExtensionMaxCardinality, url: string): boolean {
+    return maxCardinality !== '*' && maxCardinality !== 'unknown'
+      && this.countMatchingSiblingExtensions(url) >= Number(maxCardinality);
   }
 
   /**
@@ -222,7 +228,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private updateDisableSave() {
     const url = (this.changedValue?.url || '').trim();
-    const hasDuplicateUrl = this.hasDuplicateUrlAtCurrentScope();
+    const hasDuplicateUrl = this.countMatchingSiblingExtensions(url) > 0;
     const localCardinality = getExtensionMaxCardinality(url);
 
     this.cardinalityLookupSubscription?.unsubscribe();
@@ -231,29 +237,37 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
       this.applyDuplicateValidation(false, true);
       this.cardinalityLookupSubscription = this.extensionCardinalityService.resolveMaxCardinality(url)
         .subscribe((cardinality) => {
-          if ((this.changedValue?.url || '').trim() !== url || !this.hasDuplicateUrlAtCurrentScope()) {
+          if ((this.changedValue?.url || '').trim() !== url
+            || this.countMatchingSiblingExtensions(url) === 0) {
             return;
           }
           this.checkingExtensionCardinality.set(false);
-          this.applyDuplicateValidation(cardinality === '1');
+          this.applyDuplicateValidation(this.wouldExceedMaximum(cardinality, url), false, cardinality);
           this.cdr.markForCheck();
         });
       return;
     }
 
     this.checkingExtensionCardinality.set(false);
-    this.applyDuplicateValidation(hasDuplicateUrl && localCardinality === '1');
+    this.applyDuplicateValidation(
+      this.wouldExceedMaximum(localCardinality, url),
+      false,
+      localCardinality
+    );
   }
 
   private applyDuplicateValidation(
     hasDisallowedDuplicateUrl: boolean,
-    isPending = false
+    isPending = false,
+    maxCardinality: ExtensionMaxCardinality = 'unknown'
   ) {
     const isDirty = !!this.dlgContent?.nativeElement.querySelector('.ng-dirty');
     this.duplicateUrlError.set(hasDisallowedDuplicateUrl
       ? {
         url: this.changedValue.url.trim(),
-        message: 'An extension with this URL already exists here and does not allow multiple occurrences.'
+        message: maxCardinality === '1'
+          ? 'An extension with this URL already exists here and does not allow multiple occurrences.'
+          : `This extension allows at most ${maxCardinality} occurrences here.`
       }
       : null);
     this.disableSave.set(!isDirty || !this.isUrlValid() || hasDisallowedDuplicateUrl || isPending);
