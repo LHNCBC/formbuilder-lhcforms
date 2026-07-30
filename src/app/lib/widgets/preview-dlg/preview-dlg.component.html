@@ -38,7 +38,6 @@
             <mat-tab>
               <ng-template matTabLabel>{{ fmt }} Version</ng-template>
               <ng-template matTabContent>
-                <ng-container *ngTemplateOutlet="jsonMenu; context: {$implicit: fmt}"></ng-container>
                 @if(fmt === 'STU3') {
                   <ngb-alert type="info" class="mb-0" [dismissible]="false">
                     STU3 corresponds to FHIR R3.
@@ -49,8 +48,16 @@
                     <span [innerHTML]="compatibilityWarnings[fmt]"></span>
                   </ngb-alert>
                 }
-                <ng-container *ngTemplateOutlet="validations; context: {$implicit: fmt}"></ng-container>
-                <ng-container *ngTemplateOutlet="jsonQ; context: {$implicit: fmt}"></ng-container>
+                @if(conversionErrors[fmt]) {
+                  <ngb-alert type="danger" class="mb-0" [dismissible]="false">
+                    <span>{{conversionErrors[fmt]}}</span>
+                  </ngb-alert>
+                }
+                @else {
+                  <ng-container *ngTemplateOutlet="jsonMenu; context: {$implicit: fmt}"></ng-container>
+                  <ng-container *ngTemplateOutlet="validations; context: {$implicit: fmt}"></ng-container>
+                  <ng-container *ngTemplateOutlet="jsonQ; context: {$implicit: fmt}"></ng-container>
+                }
               </ng-template>
             </mat-tab>
           }

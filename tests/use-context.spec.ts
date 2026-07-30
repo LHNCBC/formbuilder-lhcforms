@@ -540,6 +540,38 @@ test.describe('Usage Context field tests', () => {
     await expect(saveButton).toBeEnabled();
   });
 
+  test('should preserve the R5 ad comparator and block older-version output', async ({ page }) => {
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextDialog = await addUseContextRow(page);
+    await useContextDialog.locator('select[name="usageContextType"]').selectOption('age');
+    await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Quantity'});
+    await useContextDialog.locator('input[id*="valueQuantity.value"]').fill('10');
+    await useContextDialog.locator('select[id*="valueQuantity.comparator"]').selectOption('ad');
+    await useContextDialog.locator('input[id*="valueQuantity.unit"]').fill('mL');
+    await useContextDialog.getByRole('button', { name: 'Save and close' }).click();
+    await expect(useContextDialog).toBeHidden();
+
+    const r5Questionnaire = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(r5Questionnaire.useContext[0].valueQuantity).toMatchObject({
+      value: 10,
+      comparator: 'ad',
+      unit: 'mL'
+    });
+
+    await page.getByRole('button', {name: 'Preview'}).click();
+    const previewDialog = page.locator('lfb-preview-dlg');
+    await previewDialog.getByText('View/Validate Questionnaire JSON', {exact: true}).click();
+    const compatibilityError =
+      'Quantity comparator "ad" is supported only in FHIR R5. Choose another comparator before exporting to R4 or STU3.';
+
+    await previewDialog.getByText('R4 Version', {exact: true}).click();
+    await expect(previewDialog.getByRole('alert').filter({hasText: compatibilityError})).toBeVisible();
+    await previewDialog.getByText('STU3 Version', {exact: true}).click();
+    await expect(previewDialog.getByRole('alert').filter({hasText: compatibilityError})).toBeVisible();
+    await previewDialog.getByRole('button', {name: 'Close'}).click();
+  });
+
   test('should populate all UsageContext value types and persist the expected JSON', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 

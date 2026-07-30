@@ -68,6 +68,9 @@ describe('FormService', () => {
     expect(usageContextSchema.properties.valueQuantity.properties.comparator.widget.suppressEmptyInvalidStyle)
       .withContext('Usage Context quantity comparator')
       .toBeTrue();
+    expect(usageContextSchema.properties.valueQuantity.properties.comparator.enum)
+      .withContext('R5 Usage Context quantity comparators')
+      .toContain('ad');
     expect(identifierSchema.properties.use.widget.suppressEmptyInvalidStyle)
       .withContext('Identifier use')
       .toBeTrue();
@@ -86,6 +89,27 @@ describe('FormService', () => {
     const usageContextSchema = service.cloneUsageContextSchema() as any;
 
     expect(usageContextSchema.properties.code.widget.id).toBe('usage-context-code');
+  });
+
+  it('should preserve the R5 ad Quantity comparator and reject older-version conversion', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      useContext: [{
+        code: {code: 'age'},
+        valueQuantity: {
+          value: 10,
+          comparator: 'ad',
+          unit: 'mL'
+        }
+      }]
+    } as unknown as fhir.Questionnaire;
+
+    expect(service.convertFromR5(questionnaire, 'R5')).toBe(questionnaire);
+    expect(() => service.convertFromR5(questionnaire, 'R4'))
+      .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+    expect(() => service.convertFromR5(questionnaire, 'STU3'))
+      .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
   });
 
   it('should update __$helpText', () => {

@@ -98,14 +98,18 @@ export class FhirService {
      * @returns - An http promise
      */
     create(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
-      // There is no equivalent field to identify the author/publisher in lforms.
-      // This field could be handy to retrieve user's resources from fhir server.
-      // For now combine name and email to make it unique and searchable by name.
-      let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
-      this.assignPublisher(res, userProfile);
+      return defer(() => {
+        // There is no equivalent field to identify the author/publisher in lforms.
+        // This field could be handy to retrieve user's resources from fhir server.
+        // For now combine name and email to make it unique and searchable by name.
+        let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
+        this.assignPublisher(res, userProfile);
 
-      res = this.formService.convertFromR5(res, this.getFhirServer().version);
-      return this.promiseToObservable(this.smartClient.create(res));
+        res = this.formService.convertFromR5(res, this.getFhirServer().version);
+        return this.promiseToObservable(
+          this.smartClient.create(res) as unknown as Promise<fhir.Resource>
+        );
+      });
     };
 
 
@@ -117,10 +121,14 @@ export class FhirService {
      * @returns - An http promise
      */
     update(resource: string | fhir.Resource, userProfile): Observable<fhir.Resource> {
-      let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
-      this.assignPublisher(res, userProfile);
-      res = this.formService.convertFromR5(res, this.getFhirServer().version);
-      return this.promiseToObservable(this.smartClient.update(res));
+      return defer(() => {
+        let res = typeof resource === 'string' ? JSON.parse(resource) : resource;
+        this.assignPublisher(res, userProfile);
+        res = this.formService.convertFromR5(res, this.getFhirServer().version);
+        return this.promiseToObservable(
+          this.smartClient.update(res) as unknown as Promise<fhir.Resource>
+        );
+      });
     };
 
 

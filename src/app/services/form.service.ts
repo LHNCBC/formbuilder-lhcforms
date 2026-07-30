@@ -59,6 +59,8 @@ export class FormService {
   // Safety cap for total Identifier levels rendered by schema expansion.
   // Level count includes the top-level Identifier row itself.
   private static readonly IDENTIFIER_RECURSION_LEVELS = 10;
+  static readonly R5_QUANTITY_COMPARATOR_ERROR =
+    'Quantity comparator "ad" is supported only in FHIR R5. Choose another comparator before exporting to R4 or STU3.';
 
   private _document = inject<Document>(DOCUMENT);
   private modalService = inject(NgbModal);
@@ -1465,11 +1467,33 @@ export class FormService {
     if (version === 'LHC-Forms') {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
     } else if (version !== 'R5') {
+      const compatibilityError = this.getQuantityComparatorCompatibilityError(fhirQ, version);
+      if(compatibilityError) {
+        throw new Error(compatibilityError);
+      }
       ret = Util.convertQuestionnaire(fhirQ, version);
       // Apply FHIR canonical field ordering after version conversion
       ret = Util.orderQuestionnaireFields(ret);
     }
     return ret;
+  }
+
+  /**
+   * Check whether a target FHIR version can represent the Questionnaire's
+   * UsageContext Quantity comparators without changing their meaning.
+   *
+   * @param fhirQ - Questionnaire in the internal R5 representation.
+   * @param version - Requested output version.
+   * @returns An explanatory error for an incompatible conversion, otherwise an empty string.
+   */
+  getQuantityComparatorCompatibilityError(fhirQ: fhir.Questionnaire, version: string): string {
+    if(version !== 'R4' && version !== 'STU3') {
+      return '';
+    }
+    const hasR5Comparator = fhirQ?.useContext?.some(
+      (usageContext) => (usageContext.valueQuantity?.comparator as string | undefined) === 'ad'
+    );
+    return hasR5Comparator ? FormService.R5_QUANTITY_COMPARATOR_ERROR : '';
   }
 
   /**
