@@ -1104,7 +1104,7 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Use context"
+      "title": "Usage Context"
     },
     "jurisdiction": {
       "description": "A legal or geographic region in which the questionnaire is intended to be used.",

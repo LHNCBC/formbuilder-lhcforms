@@ -47,7 +47,7 @@
     '$.properties.meta.properties.tag': 'Tags',
     '$.properties.identifier': 'Identifiers',
     '$.properties.meta': 'Meta',
-    '$.properties.useContext': 'Use context',
+    '$.properties.useContext': 'Usage Context',
     '$.properties.useContext.items.properties.__$valueSummary': 'Value',
     '$.definitions.Meta.properties.versionId': 'Version ID (Read-only)',
     '$.definitions.Meta.properties.lastUpdated': 'Last updated (Read-only)',
@@ -177,7 +177,7 @@
       "labelClasses": "col-sm-2 ps-0 pe-1",
       "controlClasses": "col-sm-10",
       "noTableLabel": false,
-      "addButtonLabel": "Add use context",
+      "addButtonLabel": "Add Usage Context",
       "showFields": [
         {"field": "code.display", "title": "Display", "col": 4, "nolabel": true},
         {"field": "code.code", "title": "Code", "col": 3, "nolabel": true},

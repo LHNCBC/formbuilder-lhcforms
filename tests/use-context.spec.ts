@@ -2,7 +2,7 @@ import { test, expect, Page, Locator } from '@playwright/test';
 import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
 
-test.describe('Use context field tests', () => {
+test.describe('Usage Context field tests', () => {
   let mainPO: MainPO;
 
   test.setTimeout(90000);
@@ -31,7 +31,7 @@ test.describe('Use context field tests', () => {
   const getUseContextDialog = (page: Page) => page.locator('lfb-usage-context-dlg');
 
   const addUseContextRow = async (page: Page) => {
-    await page.getByRole('button', { name: 'Add use context' }).click();
+    await page.getByRole('button', { name: 'Add Usage Context' }).click();
     const dialog = getUseContextDialog(page);
     await expect(dialog).toBeVisible();
     return dialog;
@@ -128,9 +128,9 @@ test.describe('Use context field tests', () => {
 
     await useContextRows.nth(0).getByRole('button', { name: 'Edit this row' }).click();
     const dialog = page.getByRole('dialog')
-      .filter({has: page.getByRole('heading', {name: 'Use context', exact: true})});
-    await expect(dialog.getByRole('heading', { name: 'Use context', exact: true })).toBeVisible();
-    await expect(dialog.getByRole('heading', { name: 'Edit use context fields' })).toBeVisible();
+      .filter({has: page.getByRole('heading', {name: 'Usage Context', exact: true})});
+    await expect(dialog.getByRole('heading', { name: 'Usage Context', exact: true })).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: 'Edit Usage Context fields' })).toBeVisible();
     await expect(dialog.locator('lfb-usage-context-obj')).toBeVisible();
     await expect(dialog.getByText('useContext[0]')).toBeVisible();
     await expect(dialog.locator('select[name="__$valueType"]')).toHaveValue(/valueCodeableConcept$/);
@@ -222,7 +222,7 @@ test.describe('Use context field tests', () => {
     await useContextRows.nth(0).getByRole('button', { name: 'Edit this row' }).click();
 
     const useContextDialog = page.getByRole('dialog')
-      .filter({has: page.getByRole('heading', {name: 'Use context', exact: true})});
+      .filter({has: page.getByRole('heading', {name: 'Usage Context', exact: true})});
     const identifierTable = useContextDialog.locator('lfb-identifier table');
     await identifierTable.locator('tbody > tr').nth(0).getByRole('button', { name: 'Edit this row' }).click();
 

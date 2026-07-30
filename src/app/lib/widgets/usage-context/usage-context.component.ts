@@ -77,7 +77,7 @@ export class UsageContextComponent extends TableEditRowInDlgComponent implements
     const matDialogRef = this.openDialog({
       arrayProperty: this.formProperty,
       rowIndex: index,
-      title: 'Use context'
+      title: 'Usage Context'
     }, this.dialogComponentType);
 
     matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue: UsageContextEditModel | false | undefined) => {
