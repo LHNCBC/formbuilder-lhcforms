@@ -1,14 +1,31 @@
 import {inject, Injectable} from '@angular/core';
 import {Observable, of, timeout} from 'rxjs';
-import {catchError, map, shareReplay} from 'rxjs/operators';
+import {catchError, map, shareReplay, switchMap} from 'rxjs/operators';
 import fhir from 'fhir/r4';
 import {
   ExtensionMaxCardinality,
-  getExtensionMaxCardinality
+  getExtensionMaxCardinality,
+  KnownExtensionMaxCardinality
 } from '../lib/extension-defs';
 import {FhirService} from './fhir.service';
 
 const CARDINALITY_LOOKUP_TIMEOUT_MS = 5000;
+
+export interface ExtensionCardinalityCandidate {
+  id?: string;
+  version?: string;
+  fhirVersion?: string;
+  title?: string;
+  status?: string;
+  date?: string;
+  publisher?: string;
+  maxCardinality: ExtensionMaxCardinality;
+}
+
+export type ExtensionCardinalityResolution =
+  | {status: 'resolved'; maxCardinality: KnownExtensionMaxCardinality}
+  | {status: 'unknown'}
+  | {status: 'ambiguous'; candidates: ExtensionCardinalityCandidate[]};
 
 /**
  * Resolves extension root cardinalities from local metadata and, when needed,
@@ -19,34 +36,62 @@ const CARDINALITY_LOOKUP_TIMEOUT_MS = 5000;
 })
 export class ExtensionCardinalityService {
   private readonly fhirService = inject(FhirService);
-  private readonly lookupCache = new Map<string, Observable<ExtensionMaxCardinality>>();
+  private readonly lookupCache = new Map<string, Observable<ExtensionCardinalityResolution>>();
+  private readonly selectionCache = new Map<string, ExtensionMaxCardinality>();
 
   /**
    * Resolve an extension's maximum cardinality.
    *
+   * Ambiguous server results remain unknown for callers that do not support
+   * selecting a specific StructureDefinition.
+   * @param url - Canonical extension URL to resolve.
+   * @returns Observable containing the resolved maximum or "unknown".
+   */
+  resolveMaxCardinality(url: string): Observable<ExtensionMaxCardinality> {
+    return this.resolveCardinality(url).pipe(
+      map((resolution) =>
+        resolution.status === 'resolved' ? resolution.maxCardinality : 'unknown')
+    );
+  }
+
+  /**
+   * Resolve cardinality while preserving conflicting StructureDefinition
+   * versions so the caller can ask the user which definition applies.
+   *
    * Locally bundled metadata always takes precedence. Unknown absolute
    * canonical URLs are looked up once per selected server and cached, including
    * not-found and failed lookups.
+   * @param url - Canonical extension URL to resolve.
+   * @returns Observable containing a resolved, unknown, or ambiguous result.
    */
-  resolveMaxCardinality(url: string): Observable<ExtensionMaxCardinality> {
+  resolveCardinality(url: string): Observable<ExtensionCardinalityResolution> {
     const normalizedUrl = url?.trim();
     const localCardinality = getExtensionMaxCardinality(normalizedUrl);
-    if (localCardinality !== 'unknown' || !this.isAbsoluteCanonical(normalizedUrl)) {
-      return of(localCardinality);
+    if (localCardinality !== 'unknown') {
+      return of({status: 'resolved', maxCardinality: localCardinality});
+    }
+    if (!this.isAbsoluteCanonical(normalizedUrl)) {
+      return of({status: 'unknown'});
     }
 
     const serverEndpoint = this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
-    const cacheKey = `${serverEndpoint}|${normalizedUrl}`;
+    const cacheKey = this.getCacheKey(serverEndpoint, normalizedUrl);
+    const selectedCardinality = this.selectionCache.get(cacheKey);
+    if (selectedCardinality) {
+      return selectedCardinality === 'unknown'
+        ? of({status: 'unknown'})
+        : of({status: 'resolved', maxCardinality: selectedCardinality});
+    }
+
     let lookup = this.lookupCache.get(cacheKey);
     if (!lookup) {
       const query = 'StructureDefinition?'
         + `url=${encodeURIComponent(normalizedUrl)}`
-        + '&_count=2'
+        + '&_count=100'
         + `&_format=${encodeURIComponent('application/fhir+json')}`;
-      lookup = this.fhirService.getBundleByUrl(query).pipe(
-        timeout(CARDINALITY_LOOKUP_TIMEOUT_MS),
-        map((bundle) => this.getCardinalityFromBundle(bundle, normalizedUrl)),
-        catchError(() => of<ExtensionMaxCardinality>('unknown')),
+      lookup = this.getMatchingDefinitions(query, normalizedUrl).pipe(
+        map((definitions) => this.resolveDefinitions(definitions)),
+        catchError(() => of<ExtensionCardinalityResolution>({status: 'unknown'})),
         shareReplay({bufferSize: 1, refCount: false})
       );
       this.lookupCache.set(cacheKey, lookup);
@@ -55,15 +100,136 @@ export class ExtensionCardinalityService {
     return lookup;
   }
 
+  /**
+   * Remember a user's choice for the currently selected server and canonical URL.
+   * @param url - Canonical extension URL associated with the choice.
+   * @param candidate - StructureDefinition candidate selected by the user.
+   */
+  rememberSelection(url: string, candidate: ExtensionCardinalityCandidate): void {
+    this.rememberCardinality(url, candidate.maxCardinality);
+  }
+
+  /**
+   * Remember that the user declined to choose among ambiguous definitions.
+   * @param url - Canonical extension URL whose cardinality remains unknown.
+   */
+  rememberUnknown(url: string): void {
+    this.rememberCardinality(url, 'unknown');
+  }
+
+  /**
+   * Cache a cardinality decision for the selected server and canonical URL.
+   * @param url - Canonical extension URL associated with the decision.
+   * @param cardinality - Maximum cardinality to cache.
+   */
+  private rememberCardinality(url: string, cardinality: ExtensionMaxCardinality): void {
+    const normalizedUrl = url?.trim();
+    const serverEndpoint = this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
+    this.selectionCache.set(
+      this.getCacheKey(serverEndpoint, normalizedUrl),
+      cardinality
+    );
+  }
+
+  /**
+   * Determine whether a URL is an absolute HTTP or HTTPS canonical URL.
+   * @param url - URL to inspect.
+   * @returns True when the URL is an absolute HTTP or HTTPS URL.
+   */
   private isAbsoluteCanonical(url: string): boolean {
     return /^https?:\/\//i.test(url);
   }
 
-  private getCardinalityFromBundle(bundle: fhir.Bundle, canonicalUrl: string): ExtensionMaxCardinality {
-    const definition = bundle?.entry
-      ?.map((entry) => entry.resource)
-      .find((resource): resource is fhir.StructureDefinition =>
-        resource?.resourceType === 'StructureDefinition' && resource.url === canonicalUrl);
+  /**
+   * Build a cache key scoped to a FHIR server and canonical URL.
+   * @param serverEndpoint - Base endpoint of the selected FHIR server.
+   * @param canonicalUrl - Canonical extension URL.
+   * @returns Stable cache key for the server and URL pair.
+   */
+  private getCacheKey(serverEndpoint: string, canonicalUrl: string): string {
+    return `${serverEndpoint}|${canonicalUrl}`;
+  }
+
+  /**
+   * Retrieve matching StructureDefinitions from the current page and all subsequent pages.
+   * @param requestUrl - Relative or absolute FHIR search URL to request.
+   * @param canonicalUrl - Canonical URL used to filter returned resources.
+   * @returns Observable containing every matching StructureDefinition.
+   */
+  private getMatchingDefinitions(
+    requestUrl: string,
+    canonicalUrl: string
+  ): Observable<fhir.StructureDefinition[]> {
+    return this.fhirService.getBundleByUrl(requestUrl).pipe(
+      timeout(CARDINALITY_LOOKUP_TIMEOUT_MS),
+      switchMap((bundle) => {
+        const definitions = bundle?.entry
+          ?.map((entry) => entry.resource)
+          .filter((resource): resource is fhir.StructureDefinition =>
+            resource?.resourceType === 'StructureDefinition' && resource.url === canonicalUrl)
+          ?? [];
+        const nextUrl = bundle?.link?.find((link) => link.relation === 'next')?.url;
+        if (!nextUrl) {
+          return of(definitions);
+        }
+
+        return this.getMatchingDefinitions(nextUrl, canonicalUrl).pipe(
+          map((nextDefinitions) => [...definitions, ...nextDefinitions])
+        );
+      })
+    );
+  }
+
+  /**
+   * Resolve a set of matching StructureDefinitions by comparing their maxima.
+   * @param definitions - Matching StructureDefinitions returned by the FHIR server.
+   * @returns Resolved cardinality, unknown state, or candidates requiring user selection.
+   */
+  private resolveDefinitions(
+    definitions: fhir.StructureDefinition[]
+  ): ExtensionCardinalityResolution {
+    const candidates = definitions.map((definition) => this.toCandidate(definition));
+    if (candidates.length === 0) {
+      return {status: 'unknown'};
+    }
+
+    const maxima = new Set(candidates.map((candidate) => candidate.maxCardinality));
+    if (maxima.size === 1) {
+      const maxCardinality = candidates[0].maxCardinality;
+      return maxCardinality === 'unknown'
+        ? {status: 'unknown'}
+        : {status: 'resolved', maxCardinality};
+    }
+
+    return {status: 'ambiguous', candidates};
+  }
+
+  /**
+   * Convert a StructureDefinition into display and cardinality metadata.
+   * @param definition - StructureDefinition to convert.
+   * @returns Candidate metadata for the selection dialog.
+   */
+  private toCandidate(definition: fhir.StructureDefinition): ExtensionCardinalityCandidate {
+    return {
+      id: definition.id,
+      version: definition.version,
+      fhirVersion: definition.fhirVersion,
+      title: definition.title,
+      status: definition.status,
+      date: definition.date,
+      publisher: definition.publisher,
+      maxCardinality: this.getCardinalityFromDefinition(definition)
+    };
+  }
+
+  /**
+   * Read the root Extension maximum from a StructureDefinition.
+   * @param definition - StructureDefinition containing snapshot or differential elements.
+   * @returns Root maximum cardinality, or "unknown" when it cannot be determined.
+   */
+  private getCardinalityFromDefinition(
+    definition: fhir.StructureDefinition
+  ): ExtensionMaxCardinality {
     const rootElement = definition?.snapshot?.element?.find((element) => element.path === 'Extension')
       ?? definition?.differential?.element?.find((element) => element.path === 'Extension');
     const max = rootElement?.max;

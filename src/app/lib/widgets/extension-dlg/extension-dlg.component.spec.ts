@@ -15,7 +15,11 @@ import {
   EXTENSION_URL_CHOICE_ORIENTATION,
   EXTENSION_URL_ENTRY_FORMAT
 } from '../../constants/constants';
-import {ExtensionCardinalityService} from '../../../services/extension-cardinality.service';
+import {
+  ExtensionCardinalityCandidate,
+  ExtensionCardinalityResolution,
+  ExtensionCardinalityService
+} from '../../../services/extension-cardinality.service';
 import {of, Subject} from 'rxjs';
 
 
@@ -47,12 +51,17 @@ describe('ExtensionDlgComponent', () => {
     formService = TestBed.inject<FormService>(FormService);
     extensionsService = TestBed.inject<ExtensionsService>(ExtensionsService);
     cardinalityService = TestBed.inject(ExtensionCardinalityService);
-    resolveCardinalitySpy = spyOn(cardinalityService, 'resolveMaxCardinality')
-      .and.returnValue(of('unknown'));
+    resolveCardinalitySpy = spyOn(cardinalityService, 'resolveCardinality')
+      .and.returnValue(of({status: 'unknown'}));
     extSchema = formService.getFormLevelSchema();
     await createDialog(inputExt);
   });
 
+  /**
+   * Create an extension dialog fixture for a supplied extension array.
+   * @param extensions - Extensions used to populate the parent array property.
+   * @param rowIndex - Existing row to edit, or a negative value for a new row.
+   */
   async function createDialog(extensions: fhir.Extension[], rowIndex = 0) {
     const rootProperty = formPropertyFactory.createProperty(extSchema) as ArrayProperty;
     arrayProperty = formPropertyFactory.createProperty(extSchema.properties.extension, rootProperty, 'extension') as ArrayProperty;
@@ -69,10 +78,20 @@ describe('ExtensionDlgComponent', () => {
     fixture.detectChanges();
   }
 
+  /**
+   * Find the date inputs rendered by a date-range widget.
+   * @param dateRange - Date-range widget element to inspect.
+   * @returns Input elements contained in the widget.
+   */
   function getDateRangeInputs(dateRange: HTMLElement): NodeListOf<HTMLInputElement> {
     return dateRange.querySelectorAll('input.form-control');
   }
 
+  /**
+   * Read normalized label text from a date-range widget.
+   * @param dateRange - Date-range widget element to inspect.
+   * @returns Non-empty normalized label strings.
+   */
   function getDateRangeLabelTexts(dateRange: HTMLElement): string[] {
     return Array.from(dateRange.querySelectorAll('lfb-label label'))
       .map((label) => label.textContent?.replace(/\s+/g, ' ').trim())
@@ -108,7 +127,7 @@ describe('ExtensionDlgComponent', () => {
 
   it('should reject an unknown duplicate resolved as a singleton by the FHIR server', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/server-singleton';
-    resolveCardinalitySpy.and.returnValue(of('1'));
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '1'}));
     await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
 
@@ -125,7 +144,7 @@ describe('ExtensionDlgComponent', () => {
 
   it('should allow an unknown duplicate resolved as repeatable by the FHIR server', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/server-repeatable';
-    resolveCardinalitySpy.and.returnValue(of('*'));
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '*'}));
     await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
 
@@ -140,9 +159,93 @@ describe('ExtensionDlgComponent', () => {
     expect(urlInput.classList).not.toContain('invalid');
   });
 
+  it('should ask the user to select among definitions with conflicting maxima', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
+    const candidates: ExtensionCardinalityCandidate[] = [{
+      version: '1.0.0',
+      fhirVersion: '4.0.1',
+      maxCardinality: '1'
+    }, {
+      version: '2.0.0',
+      fhirVersion: '5.0.0',
+      maxCardinality: '*'
+    }];
+    const closed = new Subject<ExtensionCardinalityCandidate | null>();
+    const dismissed = new Subject<void>();
+    const modalRef = {
+      componentInstance: {},
+      closed,
+      dismissed
+    } as any;
+    resolveCardinalitySpy.and.returnValue(of({
+      status: 'ambiguous',
+      candidates
+    }));
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const modalOpenSpy = spyOn(component.ngbModalService, 'open').and.returnValue(modalRef);
+    const rememberSelectionSpy = spyOn(cardinalityService, 'rememberSelection');
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = extensionUrl;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(modalOpenSpy).toHaveBeenCalled();
+    expect(component.checkingExtensionCardinality()).toBeTrue();
+    expect(component.disableSave()).toBeTrue();
+    expect(modalRef.componentInstance.candidates).toBe(candidates);
+
+    closed.next(candidates[0]);
+    fixture.detectChanges();
+
+    expect(rememberSelectionSpy).toHaveBeenCalledOnceWith(extensionUrl, candidates[0]);
+    expect(component.checkingExtensionCardinality()).toBeFalse();
+    expect(component.duplicateUrlError()?.message).toContain('does not allow multiple');
+    expect(component.disableSave()).toBeTrue();
+  });
+
+  it('should remain permissive with a warning when definition selection is skipped', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
+    const candidates: ExtensionCardinalityCandidate[] = [{
+      version: '1.0.0',
+      maxCardinality: '1'
+    }, {
+      version: '2.0.0',
+      maxCardinality: '*'
+    }];
+    const closed = new Subject<ExtensionCardinalityCandidate | null>();
+    const modalRef = {
+      componentInstance: {},
+      closed,
+      dismissed: new Subject<void>()
+    } as any;
+    resolveCardinalitySpy.and.returnValue(of({
+      status: 'ambiguous',
+      candidates
+    }));
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    spyOn(component.ngbModalService, 'open').and.returnValue(modalRef);
+    const rememberUnknownSpy = spyOn(cardinalityService, 'rememberUnknown');
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = extensionUrl;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    closed.next(null);
+    fixture.detectChanges();
+
+    expect(rememberUnknownSpy).toHaveBeenCalledOnceWith(extensionUrl);
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.disableSave()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
+      .toContain('Cardinality was not verified');
+  });
+
   it('should allow a second occurrence when the resolved maximum is two', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/server-max-two';
-    resolveCardinalitySpy.and.returnValue(of('2'));
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '2'}));
     await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
 
@@ -158,7 +261,7 @@ describe('ExtensionDlgComponent', () => {
 
   it('should reject a third occurrence when the resolved maximum is two', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/server-max-two';
-    resolveCardinalitySpy.and.returnValue(of('2'));
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '2'}));
     await createDialog([
       {url: extensionUrl, valueString: 'first value'},
       {url: extensionUrl, valueString: 'second value'}
@@ -177,7 +280,7 @@ describe('ExtensionDlgComponent', () => {
 
   it('should exclude the current row when enforcing a resolved finite maximum', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/server-max-two';
-    resolveCardinalitySpy.and.returnValue(of('2'));
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '2'}));
     await createDialog([
       {url: extensionUrl, valueString: 'first value'},
       {url: extensionUrl, valueString: 'second value'}
@@ -195,7 +298,7 @@ describe('ExtensionDlgComponent', () => {
 
   it('should disable Save and announce status while cardinality lookup is pending', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/pending-extension';
-    const cardinalityResult = new Subject<`${number}` | '*' | 'unknown'>();
+    const cardinalityResult = new Subject<ExtensionCardinalityResolution>();
     resolveCardinalitySpy.and.returnValue(cardinalityResult);
     await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
@@ -210,7 +313,7 @@ describe('ExtensionDlgComponent', () => {
     expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent)
       .toContain('Checking extension cardinality');
 
-    cardinalityResult.next('unknown');
+    cardinalityResult.next({status: 'unknown'});
     fixture.detectChanges();
 
     expect(component.checkingExtensionCardinality()).toBeFalse();

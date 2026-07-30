@@ -8,7 +8,10 @@ import {
 const EXTENSION_URL_REPLACES = 'http://hl7.org/fhir/StructureDefinition/replaces';
 
 
-
+/**
+ * Create a basic form-level extension through the extension editor.
+ * @param page - Playwright page containing Form Builder.
+ */
 async function assertCreateExtension(page: Page) {
   const addBtn = page.getByRole('button', {name: 'Add new extension'}).first();
   await expect(addBtn).toBeVisible();
@@ -23,6 +26,13 @@ async function assertCreateExtension(page: Page) {
   await page.getByRole('button', {name: 'Save and close'}).first().click();
 }
 
+/**
+ * Add and save a primitive-valued form-level extension.
+ * @param page - Playwright page containing Form Builder.
+ * @param url - Extension URL to enter.
+ * @param valueType - FHIR value[x] property to select.
+ * @param value - Primitive value to enter.
+ */
 async function addPrimitiveExtension(page: Page, url: string, valueType: string, value: string) {
   await page.getByRole('button', {name: 'Add new extension'}).first().click();
   const dialog = page.locator('lfb-extension-dlg').last();
@@ -125,6 +135,82 @@ test.describe('extension.component', async () => {
       {url: extensionUrl, valueString: 'First value'},
       {url: extensionUrl, valueString: 'Second value'}
     ]);
+  });
+
+  test('Form level page - should select among extension definitions with conflicting maxima', async ({page}) => {
+    const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
+    await page.route('https://lforms-fhir.nlm.nih.gov/baseR5/StructureDefinition**', async (route) => {
+      await route.fulfill({
+        contentType: 'application/fhir+json',
+        json: {
+          resourceType: 'Bundle',
+          type: 'searchset',
+          total: 2,
+          entry: [{
+            resource: {
+              resourceType: 'StructureDefinition',
+              id: 'conflicting-extension-r4',
+              url: extensionUrl,
+              version: '1.0.0',
+              fhirVersion: '4.0.1',
+              snapshot: {element: [{path: 'Extension', max: '1'}]}
+            }
+          }, {
+            resource: {
+              resourceType: 'StructureDefinition',
+              id: 'conflicting-extension-r5',
+              url: extensionUrl,
+              version: '2.0.0',
+              fhirVersion: '5.0.0',
+              snapshot: {element: [{path: 'Extension', max: '*'}]}
+            }
+          }]
+        }
+      });
+    });
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await addPrimitiveExtension(page, extensionUrl, 'valueString', 'First value');
+
+    await page.getByRole('button', {name: 'Add new extension'}).first().click();
+    const extensionDialog = page.locator('lfb-extension-dlg').last();
+    const urlInput = extensionDialog.getByLabel('Url', {exact: true});
+    await urlInput.fill(extensionUrl);
+
+    const selectionDialog = page.getByRole('dialog', {name: 'Select extension definition'});
+    await expect(selectionDialog).toBeVisible();
+    const definitionRows = selectionDialog.getByRole('row');
+    await expect(definitionRows).toHaveCount(4);
+    const r4Cells = definitionRows.nth(1).getByRole('cell');
+    await expect(r4Cells.nth(1)).toHaveText('conflicting-extension-r4');
+    await expect(r4Cells.nth(2)).toHaveText('1.0.0');
+    await expect(r4Cells.nth(3)).toHaveText('4.0.1');
+    await expect(r4Cells.nth(4)).toHaveText('1');
+    const r5Cells = definitionRows.nth(2).getByRole('cell');
+    await expect(r5Cells.nth(1)).toHaveText('conflicting-extension-r5');
+    await expect(r5Cells.nth(2)).toHaveText('2.0.0');
+    await expect(r5Cells.nth(3)).toHaveText('5.0.0');
+    await expect(r5Cells.nth(4)).toHaveText('*');
+    const applySelectionButton = selectionDialog.getByRole('button', {
+      name: 'Apply selection'
+    });
+    const r4Definition = selectionDialog.getByRole('radio', {
+      name: 'Select conflicting-extension-r4'
+    });
+    const allowUnverified = selectionDialog.getByRole('radio', {
+      name: 'Allow without verifying cardinality'
+    });
+    await expect(applySelectionButton).toBeDisabled();
+    await r4Definition.check();
+    await expect(applySelectionButton).toBeEnabled();
+    await allowUnverified.check();
+    await expect(r4Definition).not.toBeChecked();
+    await r4Definition.check();
+    await expect(allowUnverified).not.toBeChecked();
+    await applySelectionButton.click();
+
+    await expect(selectionDialog).not.toBeVisible();
+    await expect(urlInput).toHaveAttribute('aria-invalid', 'true');
+    await expect(extensionDialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
   });
 
   test('Form level page - should not duplicate ContactDetail telecom period after adding telecom item', async ({page}) => {

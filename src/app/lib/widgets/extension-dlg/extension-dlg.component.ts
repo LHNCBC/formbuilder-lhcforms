@@ -21,7 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import fhir from 'fhir/r4';
 import {FormProperty} from '@lhncbc/ngx-schema-form';
 import { FormService } from 'src/app/services/form.service';
@@ -32,8 +32,14 @@ import {
   ExtensionObjComponent
 } from "../extension-obj/extension-obj.component";
 import {ExtensionMaxCardinality, getExtensionMaxCardinality} from '../../extension-defs';
-import {ExtensionCardinalityService} from '../../../services/extension-cardinality.service';
+import {
+  ExtensionCardinalityCandidate,
+  ExtensionCardinalityService
+} from '../../../services/extension-cardinality.service';
 import {Subscription} from 'rxjs';
+import {
+  ExtensionCardinalitySelectionDlgComponent
+} from '../extension-cardinality-selection-dlg/extension-cardinality-selection-dlg.component';
 
 /**
  * A dialog component to edit a FHIR Extension object.
@@ -85,12 +91,19 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   disableSave = signal(true);
   duplicateUrlError = signal<DuplicateUrlErrorState | null>(null);
   checkingExtensionCardinality = signal(false);
+  cardinalityWarning = signal<string | null>(null);
 
   dirtyObserver: MutationObserver;
   cardinalityLookupSubscription: Subscription;
+  cardinalitySelectionModalRef?: NgbModalRef;
   rowIndex = 0;
   previous_origin: {left: number, top: number};
 
+  /**
+   * Create an extension editor dialog.
+   * @param hostEl - Host element used to calculate dialog position.
+   * @param cdr - Change detector used after asynchronous validation updates.
+   */
   constructor(protected hostEl: ElementRef, private cdr: ChangeDetectorRef) {
   }
 
@@ -124,12 +137,18 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
     this.path = pathArray.join('.');
   }
 
+  /**
+   * Move the dialog back to the host element's current screen position.
+   */
   movePosition() {
     const current_origin = this.hostEl.nativeElement.parentElement.getBoundingClientRect();
     this.matDialogRef.updatePosition({top: (current_origin.top)+'px', left: (current_origin.left)+'px'});
     this.previous_origin = current_origin;
   }
 
+  /**
+   * Start observing form dirtiness after the dialog view is initialized.
+   */
   ngAfterViewInit() {
 
     /**
@@ -172,16 +191,17 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Get the input value as a ValueSet.
+   * Get the extension model supplied to the editor.
+   * @returns Extension model being edited.
    */
-  getInputModel() {
+  getInputModel(): fhir.Extension {
     return this.inputModel as fhir.Extension;
   }
 
 
   /**
-   * Handle the ValueSet change event.
-   * @param event - The ValueSet object that has changed.
+   * Handle an extension value change and rerun save validation.
+   * @param event - Updated extension object emitted by the editor.
    */
   onChange(event: any) {
     this.changedValue = event;
@@ -195,6 +215,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Check if the URL field has a valid URI (non-empty).
+   * @returns True when the current URL contains a non-whitespace value.
    */
   private isUrlValid(): boolean {
     const url = (this.changedValue?.url || '').trim();
@@ -204,6 +225,8 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
   /**
    * Count other extensions with the same URL at this exact scope.
    * The current row is ignored when editing an existing extension.
+   * @param url - Extension URL to compare against sibling rows.
+   * @returns Number of matching sibling extensions.
    */
   private countMatchingSiblingExtensions(url = (this.changedValue?.url || '').trim()): number {
     if (!url) {
@@ -217,6 +240,9 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /**
    * Check whether adding the current extension would exceed a finite maximum.
+   * @param maxCardinality - Resolved maximum cardinality.
+   * @param url - Extension URL whose sibling occurrences should be counted.
+   * @returns True when the proposed occurrence exceeds a known finite maximum.
    */
   private wouldExceedMaximum(maxCardinality: ExtensionMaxCardinality, url: string): boolean {
     return maxCardinality !== '*' && maxCardinality !== 'unknown'
@@ -233,14 +259,24 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.cardinalityLookupSubscription?.unsubscribe();
     if (hasDuplicateUrl && localCardinality === 'unknown') {
+      this.cardinalityWarning.set(null);
       this.checkingExtensionCardinality.set(true);
       this.applyDuplicateValidation(false, true);
-      this.cardinalityLookupSubscription = this.extensionCardinalityService.resolveMaxCardinality(url)
-        .subscribe((cardinality) => {
+      this.cardinalityLookupSubscription = this.extensionCardinalityService.resolveCardinality(url)
+        .subscribe((resolution) => {
           if ((this.changedValue?.url || '').trim() !== url
             || this.countMatchingSiblingExtensions(url) === 0) {
             return;
           }
+
+          if (resolution.status === 'ambiguous') {
+            this.openCardinalitySelection(url, resolution.candidates);
+            return;
+          }
+
+          const cardinality = resolution.status === 'resolved'
+            ? resolution.maxCardinality
+            : 'unknown';
           this.checkingExtensionCardinality.set(false);
           this.applyDuplicateValidation(this.wouldExceedMaximum(cardinality, url), false, cardinality);
           this.cdr.markForCheck();
@@ -249,6 +285,7 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.checkingExtensionCardinality.set(false);
+    this.cardinalityWarning.set(null);
     this.applyDuplicateValidation(
       this.wouldExceedMaximum(localCardinality, url),
       false,
@@ -256,6 +293,12 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  /**
+   * Apply duplicate validation state and recalculate whether Save is available.
+   * @param hasDisallowedDuplicateUrl - Whether the proposed occurrence exceeds its maximum.
+   * @param isPending - Whether remote cardinality resolution is still pending.
+   * @param maxCardinality - Cardinality used to construct the validation message.
+   */
   private applyDuplicateValidation(
     hasDisallowedDuplicateUrl: boolean,
     isPending = false,
@@ -271,6 +314,73 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       : null);
     this.disableSave.set(!isDirty || !this.isUrlValid() || hasDisallowedDuplicateUrl || isPending);
+  }
+
+  /**
+   * Open a dialog for choosing among StructureDefinitions with conflicting maxima.
+   * @param url - Canonical extension URL being resolved.
+   * @param candidates - Conflicting StructureDefinition candidates to display.
+   */
+  private openCardinalitySelection(
+    url: string,
+    candidates: ExtensionCardinalityCandidate[]
+  ): void {
+    if (this.cardinalitySelectionModalRef) {
+      return;
+    }
+
+    const modalRef = this.ngbModalService.open(ExtensionCardinalitySelectionDlgComponent, {
+      scrollable: true,
+      size: 'xl'
+    });
+    this.cardinalitySelectionModalRef = modalRef;
+    modalRef.componentInstance.candidates = candidates;
+
+    modalRef.closed.subscribe((candidate: ExtensionCardinalityCandidate | null) => {
+      if (this.cardinalitySelectionModalRef !== modalRef) {
+        return;
+      }
+      this.cardinalitySelectionModalRef = undefined;
+      if (candidate) {
+        this.extensionCardinalityService.rememberSelection(url, candidate);
+        this.finishCardinalitySelection(url, candidate.maxCardinality);
+      } else {
+        this.extensionCardinalityService.rememberUnknown(url);
+        this.finishCardinalitySelection(url, 'unknown', true);
+      }
+    });
+    modalRef.dismissed.subscribe(() => {
+      if (this.cardinalitySelectionModalRef !== modalRef) {
+        return;
+      }
+      this.cardinalitySelectionModalRef = undefined;
+      this.extensionCardinalityService.rememberUnknown(url);
+      this.finishCardinalitySelection(url, 'unknown', true);
+    });
+  }
+
+  /**
+   * Apply the selected or unverified cardinality result to the extension editor.
+   * @param url - Canonical URL associated with the completed selection.
+   * @param cardinality - Selected maximum or "unknown".
+   * @param wasSkipped - Whether the user chose to continue without verification.
+   */
+  private finishCardinalitySelection(
+    url: string,
+    cardinality: ExtensionMaxCardinality,
+    wasSkipped = false
+  ): void {
+    if ((this.changedValue?.url || '').trim() !== url
+      || this.countMatchingSiblingExtensions(url) === 0) {
+      return;
+    }
+
+    this.checkingExtensionCardinality.set(false);
+    this.cardinalityWarning.set(wasSkipped
+      ? 'Cardinality was not verified because no extension definition was selected. Additional occurrences will be allowed.'
+      : null);
+    this.applyDuplicateValidation(this.wouldExceedMaximum(cardinality, url), false, cardinality);
+    this.cdr.markForCheck();
   }
 
   /**
@@ -305,8 +415,14 @@ export class ExtensionDlgComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /**
+   * Stop observers, subscriptions, and any open cardinality selection dialog.
+   */
   ngOnDestroy() {
     this.dirtyObserver?.disconnect();
     this.cardinalityLookupSubscription?.unsubscribe();
+    const modalRef = this.cardinalitySelectionModalRef;
+    this.cardinalitySelectionModalRef = undefined;
+    modalRef?.dismiss();
   }
 }

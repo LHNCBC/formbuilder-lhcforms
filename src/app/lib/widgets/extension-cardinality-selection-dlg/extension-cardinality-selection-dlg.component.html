@@ -1,0 +1,81 @@
+<div role="dialog" aria-labelledby="extensionCardinalitySelectionTitle"
+     aria-describedby="extensionCardinalitySelectionDescription">
+  <div class="modal-header bg-primary">
+    <h4 class="modal-title text-white" id="extensionCardinalitySelectionTitle">
+      Select extension definition
+    </h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close"
+            (click)="activeModal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body">
+    <p id="extensionCardinalitySelectionDescription">
+      The FHIR server returned multiple definitions with different maximum cardinalities.
+      Select the definition that applies to this Questionnaire.
+    </p>
+
+    <div class="definition-table-container border rounded">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th scope="col"><span class="visually-hidden">Select</span></th>
+            <th scope="col">Definition</th>
+            <th scope="col">Version</th>
+            <th scope="col">FHIR version</th>
+            <th scope="col">Maximum</th>
+            <th scope="col">Status</th>
+            <th scope="col">Published</th>
+            <th scope="col">Publisher</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (candidate of candidates; track candidate.id || $index; let index = $index) {
+            <tr (click)="select(index)" [class.table-primary]="selection === index">
+              <td>
+                <input class="form-check-input" type="radio"
+                       name="extensionDefinition"
+                       [value]="index"
+                       [(ngModel)]="selection"
+                       [attr.aria-label]="'Select ' + definitionName(candidate, index)">
+              </td>
+              <td class="definition-name">{{definitionName(candidate, index)}}</td>
+              <td>{{candidate.version || '—'}}</td>
+              <td>{{candidate.fhirVersion || '—'}}</td>
+              <td><strong>{{candidate.maxCardinality}}</strong></td>
+              <td>{{candidate.status || '—'}}</td>
+              <td>{{candidate.date || '—'}}</td>
+              <td>{{candidate.publisher || '—'}}</td>
+            </tr>
+          }
+          <tr (click)="selection = 'unknown'" [class.table-primary]="selection === 'unknown'">
+            <td>
+              <input class="form-check-input" type="radio"
+                     name="extensionDefinition"
+                     value="unknown"
+                     [(ngModel)]="selection"
+                     aria-label="Allow without verifying cardinality">
+            </td>
+            <td class="definition-name">
+              <strong>No definition</strong>
+              <span class="d-block text-secondary">Allow without verifying cardinality</span>
+            </td>
+            <td>—</td>
+            <td>—</td>
+            <td><strong>Unknown</strong></td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary"
+            [disabled]="selection === null"
+            (click)="applySelection()">
+      Apply selection
+    </button>
+  </div>
+</div>
