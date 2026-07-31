@@ -3,7 +3,8 @@ import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
 import {
   EXTENSION_URL_CHOICE_ORIENTATION,
-  EXTENSION_URL_COLUMN_COUNT
+  EXTENSION_URL_COLUMN_COUNT,
+  EXTENSION_URL_COLUMN_COUNT_LEGACY
 } from '../src/app/lib/constants/constants';
 
 const itemControlExtensions = {
@@ -472,6 +473,22 @@ test.describe('Item control', () => {
 
         const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(json.item[0].extension).toBeUndefined();
+      });
+
+      test('should migrate legacy column count to the canonical extension on edit and export', async ({ page }) => {
+        await PWUtils.uploadFile(page, 'choice-layout-legacy-column-count.json', true);
+        await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+        await expect(page.locator('.spinner-border')).not.toBeVisible();
+
+        const columnCount = page.locator('#__\\$columnCount');
+        await expect(columnCount).toHaveValue('2');
+        await columnCount.fill('3');
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([columnCountExtension(3)]);
+        expect(json.item[0].extension.some((extension) =>
+          extension.url === EXTENSION_URL_COLUMN_COUNT_LEGACY
+        )).toBe(false);
       });
 
       test('should exclude choice layout extensions while the answer list is disabled', async ({ page }) => {
