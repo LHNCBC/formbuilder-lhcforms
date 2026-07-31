@@ -98,6 +98,8 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
+    // visibleIf destroys this widget while retaining the proxy field value. When the widget is recreated,
+    // errorsChanges emits immediately and synchronizes that retained value back into its FHIR extension.
     const sub = this.formProperty.errorsChanges.subscribe((errors) => {
       if (this.formService.loading) {
         return;
