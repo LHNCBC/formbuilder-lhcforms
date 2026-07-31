@@ -119,6 +119,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.syncItemControlProxyValue(this.option);
     this.isRepeat = !!this.formProperty.searchProperty('/repeats').value;
     this.answerMethod = this.formProperty.searchProperty('/__$answerOptionMethods').value;
+    this.answerList = !!this.formProperty.searchProperty('/__$isAnswerList')?.value;
 
     this.hasCodeSystemItemControl = (this.formProperty?.schema?.oneOf && this.formProperty.schema.oneOf.length > 0);
     if (this.hasCodeSystemItemControl) {
@@ -359,6 +360,9 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     this.syncItemControlProxyValue(this.option);
     this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
     this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
+    if (this.answerList) {
+      this.removeAnswerListLayoutExtensions();
+    }
 
     if(announce) {
       const type = this.dataType.replace(/-([a-z])/g, (g) => g[1].toUpperCase());

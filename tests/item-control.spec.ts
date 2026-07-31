@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
 import {
@@ -310,7 +310,7 @@ test.describe('Item control', () => {
     });
 
     test.describe('Choice orientation and column count', () => {
-      async function prepareAnswerListItem(page, repeated = false) {
+      async function prepareAnswerListItem(page: Page, repeated = false) {
         await PWUtils.selectDataType(page, 'coding');
         await PWUtils.clickRadioButton(page, 'Create answer list', 'Yes');
         await PWUtils.clickRadioButton(page, 'Answer constraint', 'Allow free text');
@@ -319,7 +319,7 @@ test.describe('Item control', () => {
         }
       }
 
-      async function expectChoiceLayoutFieldsVisible(page) {
+      async function expectChoiceLayoutFieldsVisible(page: Page) {
         await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toBeVisible();
         await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Vertical')).toBeVisible();
         await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Unspecified')).toBeVisible();
@@ -412,7 +412,7 @@ test.describe('Item control', () => {
         ]);
       });
 
-      test('should preserve orientation and column count when item control is unspecified', async ({ page }) => {
+      test('should remove item-control, orientation, and column count when item control is unspecified', async ({ page }) => {
         await prepareAnswerListItem(page);
 
         await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
@@ -425,9 +425,30 @@ test.describe('Item control', () => {
         await expect(page.locator('#__\\$columnCount')).toBeVisible();
 
         const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toBeUndefined();
+      });
+
+      test('should preserve column count when choice orientation is unspecified', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Vertical');
+        await page.locator('#__\\$columnCount').fill('3');
+
+        let json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(json.item[0].extension).toEqual([
-          choiceOrientationExtension('horizontal'),
-          columnCountExtension(4)
+          itemControlExtensions['radio-button'],
+          choiceOrientationExtension('vertical'),
+          columnCountExtension(3)
+        ]);
+
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Unspecified');
+        await expect(page.locator('#__\\$columnCount')).toHaveValue('3');
+
+        json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([
+          itemControlExtensions['radio-button'],
+          columnCountExtension(3)
         ]);
       });
 
