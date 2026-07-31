@@ -45,10 +45,13 @@ export class LfbArrayWidgetComponent extends ArrayWidget implements OnInit, Afte
 
   ngOnInit() {
     this.isRequired = Util.getIsRequired(this.formProperty);
+    const widget = this.formProperty.schema.widget;
+    if(widget?.addDefaultItemIfEmpty !== undefined) {
+      this.addDefaultItemIfEmpty = widget.addDefaultItemIfEmpty !== false;
+    }
     if(Array.isArray(this.formProperty.properties) && this.formProperty.properties.length === 0 && this.addDefaultItemIfEmpty) {
       this.formProperty.addItem();
     }
-    const widget = this.formProperty.schema.widget;
     this.labelClasses = this.labelClasses || widget.labelClasses || '';
     this.controlClasses = this.controlClasses || widget.controlClasses || '';
   }

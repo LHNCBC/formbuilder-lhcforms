@@ -1,0 +1,54 @@
+<div class="modal-header bg-primary">
+  <h4 class="modal-title text-white" id="modal-basic-title">Add LOINC item</h4>
+  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+  </button>
+</div>
+<div class="modal-body">
+  <form>
+    <div class="form-group">
+      <label for="loincTypeSelect1" class="align-middle" id="loincItemRadioGroupLabel">Select LOINC item type:</label>
+      <div class="btn-group" id="loincTypeSelect1" role="radiogroup" aria-labelledby="loincItemRadioGroupLabel">
+        @for (opt of loincTypeOpts; track opt.value) {
+          <label class="btn">
+            <input type="radio" name="loincType"
+              [value]="opt.value"
+              [ngModel]="loincType"
+              (ngModelChange)="onLoincTypeChange($event)"
+              [ngModelOptions]="{standalone: true}"> {{ opt.display }}
+          </label>
+        }
+      </div>
+      <label class="" for="acSearchBoxId">Search for a LOINC item:</label>
+      <input id="acSearchBoxId"  type="text" class="form-control form-control-sm"
+        [(ngModel)]="loincItem"
+        [ngModelOptions]="{standalone: true}"
+        [ngbTypeahead]="acSearch"
+        [resultFormatter]="formatter"
+        [inputFormatter]="formatter"
+        (selectItem)="onSelectLoincItem($event.item)"
+        [editable]='false' />
+      @if(loincType === LoincItemType.QUESTION && loincItem &&  Object.keys(loincItemDisplayTexts).length > 0) {
+        <label for="loincItemDisplayTextGroup" id="loincItemDisplayTextGroupLabel" class="pt-3">Select display text:</label>
+        <div class="" id="loincItemDisplayTextGroup" role="radiogroup" aria-labelledby="loincItemDisplayTextGroupLabel">
+          @for (opt of Object.keys(loincItemDisplayTexts); track opt) {
+            @if(loincItemDisplayTexts[opt]) {
+              <div class="form-check ms-2">
+                <label class="form-check-label">
+                  <input type="radio" name="loincDisplayText" class="form-check-input"
+                         [value]="opt"
+                         [ngModelOptions]="{standalone: true}"
+                         [(ngModel)]="selectedDisplayField">{{ loincItemDisplayTexts[opt] }}
+                </label>
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="activeModal.dismiss(false)">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="!canAddLoincItem" (click)="onAddLoincItem()">Add</button>
+</div>
+

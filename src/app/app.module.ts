@@ -79,6 +79,7 @@ import { EnableWhenComponent } from './lib/widgets/enable-when/enable-when.compo
 import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit.component';
 import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
+import {AddLoincItemDialogComponent} from './item/add-loinc-item-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
 import { PositiveIntegerComponent } from './lib/widgets/positive-integer/positive-integer.component';
@@ -151,6 +152,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     ObservationLinkPeriodComponent,
     QuantityUnitComponent,
     NodeDialogComponent,
+    AddLoincItemDialogComponent,
     NumberComponent,
     AnswerValueSetComponent,
     TextAreaComponent,

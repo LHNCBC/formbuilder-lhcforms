@@ -2,12 +2,19 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.2.0] 2026-07-22
+## [12.3.0] 2026-07-31
 ### Added
 - Support choice orientation and column count for Questionnaire items.
 
-## [12.1.0] 2026-07-20
+## [12.2.0] 2026-07-30
 ### Added
+- Added form-level support for Questionnaire identifier.
+
+## [12.1.0] 2026-07-21
+### Added
+- When importing questions from LOINC, give option to the user to pick LOINC's LONG_COMMON_NAME/SHORTNAME/CONSUMER as text
+  field, instead of its 'text' field.
+
 - The preview dialog now warns when the questionnaire uses an answer value set but
   does not specify a preferred terminology server. The rendered preview loads answer
   lists using a default terminology server, but that default is not saved in the
