@@ -119,8 +119,14 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
 
       const value = this.formProperty.value;
       if (value !== null && value !== undefined && value !== '') {
+        const fhirValue = this.toFhirValue(value, valueX);
+        if (fhirValue === undefined) {
+          this.removeLegacyExtensions();
+          this.extensionsService.removeExtensionsByUrl(extUrl);
+          return;
+        }
         const ext: any = {url: extUrl};
-        ext[valueX] = this.toFhirValue(value, valueX);
+        ext[valueX] = fhirValue;
         this.removeLegacyExtensions();
         this.extensionsService.resetExtension(extUrl, ext, valueX, false);
       }
@@ -137,7 +143,11 @@ export class ExtensionPrimitiveComponent extends LfbControlWidgetComponent imple
   }
 
   private toFhirValue(value: any, valueX: string): any {
-    return valueX === 'valueInteger' || valueX === 'valuePositiveInt' ? Number(value) : value;
+    if (valueX === 'valueInteger' || valueX === 'valuePositiveInt') {
+      const numericValue = Number(value);
+      return Number.isFinite(numericValue) ? numericValue : undefined;
+    }
+    return value;
   }
 
   private removeLegacyExtensions(): void {
