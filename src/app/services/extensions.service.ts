@@ -406,9 +406,9 @@ export class ExtensionsService {
    *   Refer angular's reactive form documentation for more information.
    */
   resetExtension(extUrl: fhirPrimitives.url, value: fhir.Extension, valueType: string, selfOnly: boolean) {
-    this.updateExtension(value);
     const extProp: FormProperty = this.getFirstExtensionFormPropertyByUrl(extUrl);
     if(extProp) {
+      this.updateExtension(value);
       extProp.reset(value, selfOnly);
       if(valueType) {
         this.pruneUnusedValues(extProp, valueType);
