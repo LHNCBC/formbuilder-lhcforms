@@ -236,7 +236,6 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
     }
     this.syncItemControlProxyValue(this.option);
 
-    const ext = this.getItemControlExtension();
     if (this.option) {
       this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
 
