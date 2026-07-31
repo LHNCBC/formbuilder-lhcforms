@@ -1,5 +1,6 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, inject} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {FhirService} from '../../../services/fhir.service';
 import {LfbControlWidgetComponent} from '../lfb-control-widget/lfb-control-widget.component';
 
 /**
@@ -21,7 +22,8 @@ interface SizeUnit {
  *  - `maxSize`  -> a numeric input plus a Bytes/KB/MB/GB unit selector. The value is
  *                  always stored (and exported) in bytes, so authors can enter a size in
  *                  a friendly unit without having to compute the byte count themselves.
- *  - `mimeType` -> a text input backed by a datalist of common MIME types (free text).
+ *  - `mimeType` -> a text input backed by common suggestions and validated against the
+ *                  IANA media type registry before it is stored.
  *  - anything else -> a plain text input, preserving the previous default behavior for
  *                  string/number restrictions.
  */
@@ -58,8 +60,11 @@ interface SizeUnit {
              name="{{name}}"
              [attr.id]="id"
              class="form-control form-control-sm"
+             [class.is-invalid]="isMimeType && mimeTypeInvalid"
              [attr.placeholder]="schema.placeholder || null"
              [attr.list]="isMimeType ? id + '_mime' : null"
+             [attr.aria-invalid]="isMimeType && mimeTypeInvalid ? 'true' : null"
+             [attr.aria-describedby]="isMimeType && mimeTypeInvalid ? id + '_mime_error' : null"
              [attr.disabled]="schema.readOnly ? '' : null"
              [ngModel]="textValue"
              [ngModelOptions]="{standalone: true}"
@@ -70,6 +75,11 @@ interface SizeUnit {
             <option [value]="mime"></option>
           }
         </datalist>
+        @if (mimeTypeInvalid) {
+          <div class="invalid-feedback" [attr.id]="id + '_mime_error'" role="alert">
+            Enter a valid IANA-registered MIME type, such as application/pdf.
+          </div>
+        }
       }
     }
   `,
@@ -80,6 +90,8 @@ interface SizeUnit {
   `]
 })
 export class RestrictionsValueComponent extends LfbControlWidgetComponent implements OnInit {
+
+  private fhirService = inject(FhirService);
 
   static readonly SIZE_UNITS: SizeUnit[] = [
     {value: 'B', label: 'Bytes', factor: 1},
@@ -119,6 +131,7 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
   sizeUnit = 'KB';
   sizeValue: number | null = null;
   textValue = '';
+  mimeTypeInvalid = false;
 
   // Guard to avoid re-syncing the UI from value changes that this widget itself made.
   private selfUpdating = false;
@@ -167,6 +180,9 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
   private applyOperator(operator: string): void {
     this.isMaxSize = operator === 'maxSize';
     this.isMimeType = operator === 'mimeType';
+    if (!this.isMimeType) {
+      this.mimeTypeInvalid = false;
+    }
   }
 
   /**
@@ -187,6 +203,19 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
       }
     } else {
       this.textValue = value === null || value === undefined ? '' : `${value}`;
+      if (this.isMimeType) {
+        const normalizedValue = this.textValue.trim();
+        this.mimeTypeInvalid = normalizedValue !== '' &&
+          !this.fhirService.isValidMimeType(normalizedValue);
+        if (this.mimeTypeInvalid) {
+          // Preserve the invalid text for correction, but do not retain it in the
+          // restriction model or export it as a FHIR valueCode.
+          this.setValueGuarded(null);
+        } else if (normalizedValue !== this.textValue) {
+          this.textValue = normalizedValue;
+          this.setValueGuarded(normalizedValue === '' ? null : normalizedValue);
+        }
+      }
     }
   }
 
@@ -222,12 +251,23 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
   }
 
   /**
-   * Handle a change to the plain text value (all non-maxSize operators).
+   * Handle a change to the plain text value (all non-maxSize operators). MIME values
+   * are normalized and committed only when they are registered and syntactically valid.
    * @param value - Text entered by the user.
    */
   onTextChange(value: string): void {
     this.textValue = value ?? '';
-    this.setValueGuarded(this.textValue === '' ? null : this.textValue);
+    if (this.isMimeType) {
+      const normalizedValue = this.textValue.trim();
+      this.mimeTypeInvalid = normalizedValue !== '' &&
+        !this.fhirService.isValidMimeType(normalizedValue);
+      this.setValueGuarded(
+        normalizedValue === '' || this.mimeTypeInvalid ? null : normalizedValue
+      );
+    } else {
+      this.mimeTypeInvalid = false;
+      this.setValueGuarded(this.textValue === '' ? null : this.textValue);
+    }
   }
 
   /**
@@ -267,6 +307,3 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
     return {value: bytes, unit: 'B'};
   }
 }
-
-
-

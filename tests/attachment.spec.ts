@@ -55,7 +55,7 @@ test.describe('attachment data type', () => {
       page,
       '/item/0/extension',
       MAX_SIZE_URL,
-      [{ url: MAX_SIZE_URL, valueInteger: 5 * 1024 * 1024 }],
+      [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 * 1024 }],
       'R4'
     );
     await PWUtils.assertExtensionsInQuestionnaire(
@@ -99,13 +99,61 @@ test.describe('attachment data type', () => {
     await sizeUnit.selectOption({ label: 'KB' });
     await PWUtils.assertExtensionsInQuestionnaire(
       page, '/item/0/extension', MAX_SIZE_URL,
-      [{ url: MAX_SIZE_URL, valueInteger: 2048 }], 'R4');
+      [{ url: MAX_SIZE_URL, valueDecimal: 2048 }], 'R4');
 
     // Switch the unit to MB, keeping the number: 2 MB -> 2097152 bytes.
     await sizeUnit.selectOption({ label: 'MB' });
     await PWUtils.assertExtensionsInQuestionnaire(
       page, '/item/0/extension', MAX_SIZE_URL,
-      [{ url: MAX_SIZE_URL, valueInteger: 2 * 1024 * 1024 }], 'R4');
+      [{ url: MAX_SIZE_URL, valueDecimal: 2 * 1024 * 1024 }], 'R4');
+  });
+
+  test('should remove attachment restrictions when they are disabled', async ({ page }) => {
+    await PWUtils.selectDataType(page, 'attachment');
+    await PWUtils.expectDataTypeValue(page, /attachment/);
+
+    await page.locator('lfb-restrictions [for^="booleanControlled_Yes"]').click();
+    await page.locator('[id^="__\$restrictions.0.operator"]').selectOption({ label: 'Maximum size' });
+    await page.locator('input[aria-label="Maximum size value"]').fill('5');
+
+    await page.getByRole('button', { name: 'Add new restriction' }).click();
+    await page.locator('[id^="__\$restrictions.1.operator"]').selectOption({ label: 'Mime type' });
+    await page.locator('input[id^="__\$restrictions.1.value"]').fill('application/pdf');
+
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MAX_SIZE_URL,
+      [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 }], 'R4');
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MIME_TYPE_URL,
+      [{ url: MIME_TYPE_URL, valueCode: 'application/pdf' }], 'R4');
+
+    await page.locator('lfb-restrictions [for^="booleanControlled_No"]').click();
+
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MAX_SIZE_URL, [], 'R4');
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MIME_TYPE_URL, [], 'R4');
+  });
+
+  test('should reject invalid MIME types and normalize a valid value', async ({ page }) => {
+    await PWUtils.selectDataType(page, 'attachment');
+    await PWUtils.expectDataTypeValue(page, /attachment/);
+
+    await page.locator('lfb-restrictions [for^="booleanControlled_Yes"]').click();
+    await page.locator('[id^="__\$restrictions.0.operator"]').selectOption({ label: 'Mime type' });
+
+    const mimeTypeInput = page.locator('input[id^="__\$restrictions.0.value"]');
+    await mimeTypeInput.fill('text/xxxx');
+    await expect(mimeTypeInput).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByText('Enter a valid IANA-registered MIME type')).toBeVisible();
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MIME_TYPE_URL, [], 'R4');
+
+    await mimeTypeInput.fill('  application/pdf  ');
+    await expect(mimeTypeInput).not.toHaveAttribute('aria-invalid', 'true');
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MIME_TYPE_URL,
+      [{ url: MIME_TYPE_URL, valueCode: 'application/pdf' }], 'R4');
   });
 
   test('should import an attachment questionnaire and round-trip the stored maxSize into the KB/MB helper', async ({ page }) => {
@@ -139,7 +187,7 @@ test.describe('attachment data type', () => {
     // Re-exporting keeps the exact byte count, confirming the round-trip is lossless.
     await PWUtils.assertExtensionsInQuestionnaire(
       page, '/item/0/extension', MAX_SIZE_URL,
-      [{ url: MAX_SIZE_URL, valueInteger: 5 * 1024 * 1024 }], 'R4');
+      [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 * 1024 }], 'R4');
   });
 
   test('should render an attachment item as a file-upload control in the preview', async ({ page }) => {
@@ -163,4 +211,3 @@ test.describe('attachment data type', () => {
     await PWUtils.clickDialogButton(page, { selector: 'lfb-preview-dlg' }, 'Close');
   });
 });
-

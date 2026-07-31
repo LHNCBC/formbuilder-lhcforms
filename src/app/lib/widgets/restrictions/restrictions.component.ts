@@ -1,4 +1,9 @@
+import {CommonModule} from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {TableComponent} from '../table/table.component';
 import {PropertyGroup} from '@lhncbc/ngx-schema-form';
 import fhir from 'fhir/r4';
@@ -6,14 +11,30 @@ import {RestrictionOperatorService} from '../../../services/restriction-operator
 import {AcceptChange} from '../restrictions-operator/restrictions-operator.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {FormService} from '../../../services/form.service';
+import {IsDisabledPipe} from '../../pipes/is-disabled.pipe';
+import {BooleanControlledComponent} from '../boolean-controlled/boolean-controlled.component';
+import {AppFormElementComponent} from '../form-element/form-element.component';
+import {LabelComponent} from '../label/label.component';
+import {TitleComponent} from '../title/title.component';
 
 /**
  * Restrictions are based on table component.
  * Combines maxLength field which is part of standard FHIR with SDC extensions.
  */
 @Component({
-  standalone: false,
   selector: 'lfb-restrictions',
+  imports: [
+    AppFormElementComponent,
+    BooleanControlledComponent,
+    CommonModule,
+    FontAwesomeModule,
+    FormsModule,
+    IsDisabledPipe,
+    LabelComponent,
+    MatTooltipModule,
+    NgbModule,
+    TitleComponent
+  ],
   templateUrl: '../table/table.component.html',
   styleUrls: ['../table/table.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -164,7 +185,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    */
   onBooleanControlledChange(event: boolean) {
     super.onBooleanControlledChange(event);
-    if(this.booleanControlledOption) {
+    if(!event) {
       this.formProperty.reset(null, false);
     }
   }
@@ -234,8 +255,10 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    */
   updateRelevantExtensions(extensions: fhir.Extension [], restrictions: any []) {
     let ret = false; // Return true if extensions are changed.
-    const indices = this.getRelevantExtensionIndices(extensions);
     Object.keys(RestrictionsComponent.optionsDef).forEach((opt) => {
+      // Recompute indices after every mutation. Removing one restriction shifts the
+      // positions of any later extensions in the array.
+      const indices = this.getRelevantExtensionIndices(extensions);
       let ext: fhir.Extension;
       const extUrl = RestrictionsComponent.optionsDef[opt].extUrl;
       const restriction = restrictions.find((r) => r.operator === opt);
@@ -315,9 +338,13 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     const ret = {fieldName: '', fieldType: ''};
     switch (option) {
       case 'minLength':
-      case 'maxSize':
         ret.fieldName = 'valueInteger';
         ret.fieldType = 'integer';
+        break;
+
+      case 'maxSize':
+        ret.fieldName = 'valueDecimal';
+        ret.fieldType = 'decimal';
         break;
 
       case 'regex':

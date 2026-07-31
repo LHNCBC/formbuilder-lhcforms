@@ -10,7 +10,7 @@
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/maxSize",
-          "valueInteger": 5242880
+          "valueDecimal": 5242880
         },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/mimeType",
@@ -29,4 +29,3 @@
     }
   ]
 }
-

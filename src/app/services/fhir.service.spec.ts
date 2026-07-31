@@ -196,4 +196,82 @@ describe('FhirService', () => {
       done.fail(error);
     }});
   });
+
+  describe('isValidMimeType()', () => {
+    it('should accept real IANA-registered MIME types', () => {
+      [
+        'text/plain',
+        'application/json',
+        'application/fhir+json',
+        'image/png',
+        'image/jpeg',
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'audio/mpeg',
+        'video/mp4',
+        'message/rfc822',
+        'font/woff2',
+        'model/gltf+json',
+        'TEXT/PLAIN' // case-insensitive
+      ].forEach((mimeType) => {
+        expect(service.isValidMimeType(mimeType)).withContext(mimeType).toBe(true);
+      });
+    });
+
+    it('should accept registered MIME types with parameters and surrounding whitespace', () => {
+      expect(service.isValidMimeType('text/plain; charset=utf-8')).toBe(true);
+      expect(service.isValidMimeType('text/plain;charset=UTF-8')).toBe(true);
+      expect(service.isValidMimeType('multipart/form-data; boundary=something')).toBe(true);
+      expect(service.isValidMimeType('  application/xml  ')).toBe(true);
+      expect(service.isValidMimeType('application/x-www-form-urlencoded')).toBe(true);
+      expect(service.isValidMimeType('text/plain; charset="utf-8"')).toBe(true);        // quoted value
+      expect(service.isValidMimeType('text/plain; charset="a;b"')).toBe(true);          // ';' inside quotes
+      expect(service.isValidMimeType('multipart/mixed; boundary=abc; charset=utf-8')).toBe(true); // multiple params
+    });
+
+    it('should reject well-formed but unregistered (non-IANA) types', () => {
+      [
+        'text/xxxx',
+        'application/xxxx',
+        'image/notarealsubtype',
+        'text/x-madeup',
+        'foo/bar'
+      ].forEach((value) => {
+        expect(service.isValidMimeType(value)).withContext(value).toBe(false);
+      });
+    });
+
+    it('should reject malformed values', () => {
+      [
+        '',
+        '   ',
+        'plaintext',
+        'text',
+        'text/',
+        '/plain',
+        'text//plain',
+        'text plain',
+        null,
+        undefined,
+        123 as any
+      ].forEach((value) => {
+        expect(service.isValidMimeType(value as any)).withContext(`${value}`).toBe(false);
+      });
+    });
+
+    it('should reject a registered essence carrying a malformed parameter portion', () => {
+      // The essence (text/plain, application/json) is IANA-registered, but per RFC 7231 a
+      // parameter must be `token "=" ( token / quoted-string )`, so these are not legal MIME types.
+      [
+        'text/plain; blahblah',      // bare word - parameters require name=value
+        'text/plain; charset',       // missing '=value'
+        'application/json; a=b; c',  // trailing bare word
+        'text/plain;',               // trailing ';' with no parameter
+        'text/plain; =utf-8',        // missing parameter name
+        'text/plain; charset=;'      // missing parameter value
+      ].forEach((value) => {
+        expect(service.isValidMimeType(value)).withContext(value).toBe(false);
+      });
+    });
+  });
 });
