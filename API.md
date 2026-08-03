@@ -3,20 +3,20 @@
 ##### Important: For this to work, make sure that the browser settings are not blocking the display of popup windows.
 
 The form builder web application can be invoked using JavaScript from another
-web page. It can be opened in a new page/tab (sometimes referred as child
-window). The choice of new page or a new tab depends on the browser settings or
+web page. It can be opened in a new page/tab (sometimes referred to as the child
+window). The choice of a new page or a new tab depends on the browser settings or
 preferences. The newly opened form builder can be loaded with an initial
-questionnaire. The parent page (sometimes referred as parent window) can listen
-to real time changes in the form builder as the user makes the changes to the
+questionnaire. The parent page (sometimes referred to as the parent window) can listen
+to real-time changes in the form builder as the user makes the changes to the
 questionnaire. When the user clicks `Save & Close` button in the form builder page, or
-close button on browser tab, the parent window will receive a closed message with
-the final modifications to the questionnaire and the form builder window is closed.
+close button on the browser tab, the parent window will receive a closed message with
+the final modifications to the questionnaire, and the form builder window is closed.
 When the user clicks the `cancel` button in the form builder page, the form builder
 window is closed and the parent window will receive a canceled message.
 
 ### Important: the form builder now redirects to a different origin
-`https://formbuilder.nlm.nih.gov` remains a supported address, but for
-administrative reasons it now **redirects** to
+While `https://formbuilder.nlm.nih.gov` remains a supported address, the requests are
+now **redirected** to 
 `https://lhncbc.nlm.nih.gov/lhcformbuilder`. You can keep opening
 `https://formbuilder.nlm.nih.gov`, but because the redirect lands on a different
 <a href="https://developer.mozilla.org/docs/Glossary/Origin">origin</a>,
@@ -41,8 +41,8 @@ Before opening the form builder window, add an event listener to the parent
 window. The form builder sends four types of messages, namely `initialized`,
 `updateQuestionnaire`, `closed`, and `canceled`. It can also receive a message with type
 `initialQuestionnaire`. The data object exchanged with the form builder consists
-of two fields, `type` and `questionnaire`. The `type` is one of the above
-defined message types. The `questionnaire` is the associated questionnaire for
+of two fields, `type` and `questionnaire`. The `type` is one of the above-defined
+message types. The `questionnaire` is the associated questionnaire for
 that message type. For the `initialized` and `canceled` messages this field is undefined.
 Here is a code snippet to add an event listener.
 
@@ -147,7 +147,7 @@ prevent accessing the information, so the caller needs to provide the
 communication. The pathname to provide the url parameter is `/window-open`.
 
 A new http parameter `fhirVersion` is introduced to request a particular version of
-questionnaire. The permitted values are `STU3`, `R4`, and `R5`. Any unrecognized
+the questionnaire. The permitted values are `STU3`, `R4`, and `R5`. Any unrecognized
 versions will be ignored. The default output is `R4`.
 
 Here is an example:
