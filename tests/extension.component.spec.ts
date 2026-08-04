@@ -61,6 +61,51 @@ test.describe('extension.component', async () => {
     await expect(telecomLoc.locator('lfb-date-range')).toHaveCount(2);
   });
 
+  test('Form level page - should persist deleting ContactDetail telecom after save and reopen', async ({page}) => {
+    await page.getByRole('button', {name: 'Advanced fields'}).first().click();
+    await page.getByRole('button', {name: 'Add new extension'}).first().click();
+
+    const formLoc = page.locator('lfb-extension-dlg lfb-extension-obj sf-form');
+    await expect(formLoc).toBeVisible();
+    await formLoc.getByLabel('Url', {exact: true}).fill('http://example.org/contact-detail');
+    await PWUtils.clickRadioButton(page, 'Value Type Category', 'Metadata type', formLoc);
+    await formLoc.getByRole('combobox', {name: 'Value Type'}).selectOption({label: 'Contact Detail'});
+
+    const telecomLoc = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
+    const telecomItems = telecomLoc.locator('lfb-object');
+    await expect(telecomItems).toHaveCount(1);
+    await telecomItems.nth(0).getByLabel('Value', {exact: true}).fill('555-0100');
+
+    await page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Save and close'}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+
+    const extRows = page.locator('lfb-extension table tbody tr');
+    await expect(extRows).toHaveCount(1);
+    await extRows.nth(0).getByLabel('Edit this row').click();
+    await expect(formLoc).toBeVisible();
+
+    const telecomLocOnEdit = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
+    await expect(telecomLocOnEdit.locator('lfb-object')).toHaveCount(1);
+    await telecomLocOnEdit.getByRole('button', {name: 'Remove this item'}).click();
+    await PWUtils.clickDialogButton(page, {title: 'Confirm deletion'}, 'Delete');
+    await expect(telecomLocOnEdit.locator('lfb-object')).toHaveCount(1);
+    await expect(telecomLocOnEdit.getByLabel('Value', {exact: true})).toHaveValue('');
+
+    await page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Save and close'}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+
+    await extRows.nth(0).getByLabel('Edit this row').click();
+    await expect(formLoc).toBeVisible();
+    const telecomLocAfterReopen = formLoc.locator('lfb-array div[id^="valueContactDetail.telecom"]').first();
+    await expect(telecomLocAfterReopen.locator('lfb-object')).toHaveCount(0);
+    await page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Discard changes'}).click();
+    await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
+
+    const q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(q.extension[0].valueContactDetail?.telecom).toBeUndefined();
+    expect(q.extension[0].valueContactDetail?.name).toBeUndefined();
+  });
+
   test('Item level page - should add an extension and see it in the JSON', async ({page}) => {
     await page.getByRole('button', {name: 'Create questions'}).first().click();
     await PWUtils.expandAdvancedFields(page);
@@ -82,7 +127,7 @@ test.describe('extension.component', async () => {
     // Check form controls for extensions
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
     let extRows = page.locator('lfb-extension table tbody tr');
-    expect(await extRows.count()).toBe(3);
+    await expect(extRows).toHaveCount(3);
     extRows = page.locator('lfb-extension table tbody tr');
     // Verify the popup tooltip in the table cell
     const valueCell = extRows.nth(0).locator('td:nth-of-type(3)');
@@ -111,9 +156,9 @@ test.describe('extension.component', async () => {
     await expect(extRows.nth(2).getByLabel('Move this row up')).toBeEnabled();
     // Test the Hide uneditable extensions checkbox
     await page.getByLabel('Hide extensions that are created').check();
-    expect(await extRows.filter({visible: true}).count()).toBe(1);
+    await expect(extRows.filter({visible: true})).toHaveCount(1);
     await page.getByLabel('Hide extensions that are created').uncheck();
-    expect(await extRows.count()).toBe(3);
+    await expect(extRows).toHaveCount(3);
 
     // Check the extension fields in the dialog.
     await extRows.nth(2).getByLabel('Edit this row').click();
@@ -147,7 +192,7 @@ test.describe('extension.component', async () => {
     await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
     let extRows = page.locator('lfb-extension table tbody tr');
-    expect(await extRows.count()).toBe(3);
+    await expect(extRows).toHaveCount(3);
     await expect(extRows.nth(0).getByLabel('Edit this row')).toBeDisabled();
     await expect(extRows.nth(1).getByLabel('Edit this row')).toBeDisabled();
     await extRows.nth(2).getByLabel('Edit this row').click();
@@ -165,7 +210,7 @@ test.describe('extension.component', async () => {
 
     await PWUtils.clickTreeNode(page, 'Extension with array value type');
     await expect(page.locator('.spinner-border')).not.toBeVisible();
-    expect(await extRows.count()).toBe(1);
+    await expect(extRows).toHaveCount(1);
     await extRows.nth(0).getByLabel('Edit this row').click();
     await expect(formLoc).toBeVisible();
     await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://example.org/codeable-concept')
@@ -174,7 +219,7 @@ test.describe('extension.component', async () => {
     expect(await formLoc.getByLabel('Value Type', {exact: true}).inputValue()).toMatch(/valueCodeableConcept$/);
     const ccCodingLoc = formLoc.locator('lfb-array div[id^="valueCodeableConcept\.coding"]');
     const arrayItemsLoc = ccCodingLoc.locator('lfb-object');
-    expect(await arrayItemsLoc.count()).toBe(3);
+    await expect(arrayItemsLoc).toHaveCount(3);
     await expect(arrayItemsLoc.nth(0).getByLabel('System', {exact: true})).toHaveValue('s1');
     await expect(arrayItemsLoc.nth(0).getByLabel('Code', {exact: true})).toHaveValue('c1');
     await expect(arrayItemsLoc.nth(0).getByLabel('Display', {exact: true})).toHaveValue('d1');
@@ -187,7 +232,7 @@ test.describe('extension.component', async () => {
     await expect(arrayItemsLoc.nth(2).getByLabel('Code', {exact: true})).toHaveValue('c3');
     await expect(arrayItemsLoc.nth(2).getByLabel('Display', {exact: true})).toHaveValue('d3');
     await expect(PWUtils.getRadioButton(page, 'User Selected', 'Unspecified', arrayItemsLoc.nth(2))).toBeChecked();
-    await expect(formLoc.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+    await expect(page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Save and close'})).toBeDisabled();
 
     // Make some changes.
     // Change user selected from second to third item.
@@ -217,13 +262,13 @@ test.describe('extension.component', async () => {
     // Check nested extensions
     await PWUtils.clickTreeNode(page, 'Nested extensions');
     await expect(page.locator('.spinner-border')).not.toBeVisible();
-    expect(await extRows.count()).toBe(1);
+    await expect(extRows).toHaveCount(1);
     await extRows.nth(0).getByLabel('Edit this row').click();
     await expect(formLoc).toBeVisible();
     await expect(formLoc.getByLabel('Url', {exact: true})).toHaveValue('http://example.org/level1');
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use an extension', formLoc)).toBeChecked();
     let level1ExtRows = formLoc.locator('lfb-extension table tbody tr');
-    expect(await level1ExtRows.count()).toBe(1);
+    await expect(level1ExtRows).toHaveCount(1);
     await level1ExtRows.nth(0).getByLabel('Edit this row').click();
     // Invoked second level extension dialog
     // Note that the nested dialogs do not have parent child relationship in the DOM. Use nth(1) to get the next dialog.
@@ -232,7 +277,7 @@ test.describe('extension.component', async () => {
     await expect(level2FormLoc.getByLabel('Url', {exact: true})).toHaveValue('http://example.org/level2')
     await expect(PWUtils.getRadioButton(page, 'Value or extension?', 'Use an extension', level2FormLoc)).toBeChecked();
     let level2ExtRows = level2FormLoc.locator('lfb-extension table tbody tr');
-    expect(await level2ExtRows.count()).toBe(1);
+    await expect(level2ExtRows).toHaveCount(1);
     // The force click on deeply nested dialogs can intermittently fail to open the next dialog.
     // Retry the click if the 3rd dialog doesn't appear.
     const editLevel3Btn = level2ExtRows.nth(0).getByLabel('Edit this row');
@@ -267,8 +312,15 @@ test.describe('extension.component', async () => {
     await page.getByRole('button', {name: 'Edit questions'}).first().click();
     await page.getByRole('button', {name: 'Advanced fields'}).first().click();
 
+    // Wait for the item-level advanced fields to finish loading and the extension
+    // table to be fully rendered before interacting. Clicking a row while the table
+    // is still (re)rendering is what made the assertions below flaky.
+    await expect(page.locator('.spinner-border')).not.toBeVisible();
     const extRows = page.locator('lfb-extension table tbody tr');
-    await extRows.nth(2).getByLabel('Edit this row').click();
+    await expect(extRows).toHaveCount(3);
+    const editRowBtn = extRows.nth(2).getByLabel('Edit this row');
+    await expect(editRowBtn).toBeEnabled();
+    await editRowBtn.click();
     const formLoc = page.locator('lfb-extension-dlg').nth(0);
     await expect(formLoc).toBeVisible();
 
@@ -276,7 +328,7 @@ test.describe('extension.component', async () => {
     await expect(formLoc.getByRole('button', {name: 'Save and close'})).toBeDisabled();
 
     // Close without changes — should not prompt for confirmation
-    await formLoc.getByRole('button', {name: 'Discard changes'}).click();
+    await page.locator('lfb-extension-dlg').first().getByRole('button', {name: 'Discard changes'}).click();
     // No confirmation dialog should appear; dialog should close immediately
     await expect(page.locator('lfb-extension-dlg')).toHaveCount(0);
   });

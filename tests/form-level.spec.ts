@@ -766,11 +766,18 @@ test.describe('Home page', () => {
           const datepicker = approvalDtInput.locator('xpath=following-sibling::ngb-datepicker');
           await expect(datepicker).toBeVisible();
 
-          await datepicker.getByText('Today').click();
-          await expect(approvalDtInput).toHaveValue(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+          const todayButton = datepicker.getByRole('button', {name: 'Today', exact: true});
+          await expect(async () => {
+            await todayButton.click();
+            await expect(approvalDtInput).toHaveValue(dateRE, {timeout: 1000});
+          }).toPass({timeout: 10000});
 
           await approvalDtInput.clear();
           await approvalDtInput.fill('2021-01-01');
+          // Blur to commit the value to the model before reading the JSON without the UI
+          // (getQuestionnaireJSONWithoutUI reads the model synchronously and does not retry).
+          await approvalDtInput.blur();
+          await expect(approvalDtInput).toHaveValue('2021-01-01');
 
           const previewJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
           expect(previewJson.approvalDate).toBe('2021-01-01');

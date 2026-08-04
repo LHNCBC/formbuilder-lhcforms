@@ -61,6 +61,7 @@ import {TableEditRowInDlgComponent} from "./widgets/table-edit-row-in-dlg/table-
 import {LfbObjectComponent} from "./widgets/lfb-object/lfb-object.component";
 import {LfbArrayComponent} from "./widgets/lfb-array/lfb-array.component";
 import {ExtensionContainerComponent} from "./widgets/extension-container/extension-container.component";
+import { IdentifierComponent } from './widgets/identifier/identifier.component';
 import { CodingSystemComponent } from './widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
@@ -130,6 +131,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
     this.register('extension', ExtensionComponent);
     this.register('extension-container', ExtensionContainerComponent);
+    this.register('identifier', IdentifierComponent);
     this.register('table-edit-row-in-dlg', TableEditRowInDlgComponent);
     this.register('lfb-object', LfbObjectComponent);
     this.register('array', LfbArrayComponent);
