@@ -17,7 +17,7 @@ window is closed and the parent window will receive a canceled message.
 ### Important: the form builder now redirects to a different origin
 While `https://formbuilder.nlm.nih.gov` remains a supported address, the requests are
 now **redirected** to 
-`https://lhncbc.nlm.nih.gov/lhcformbuilder`. You can keep opening
+`https://lhncbc.nlm.nih.gov/formbuilder`. You can keep opening
 `https://formbuilder.nlm.nih.gov`, but because the redirect lands on a different
 <a href="https://developer.mozilla.org/docs/Glossary/Origin">origin</a>,
 application developers must adjust the `window-open` messaging code:
@@ -28,7 +28,7 @@ application developers must adjust the `window-open` messaging code:
   `https://formbuilder.nlm.nih.gov`. The `targetOrigin` you pass to `postMessage()`
   when replying must match that same origin, or the browser silently drops the
   message. (An origin is only the scheme, host, and port — never a path — so it is
-  `https://lhncbc.nlm.nih.gov`, not the full `.../lhcformbuilder` URL.)
+  `https://lhncbc.nlm.nih.gov`, not the full `.../formbuilder` URL.)
 * **Capture the origin from the first message; don't hardcode it.** Instead of
   assuming a fixed origin, read `event.origin` from the first message the form
   builder sends (`initialized`) and reuse that value as the `targetOrigin` for
@@ -62,7 +62,7 @@ form builder.
 
 ```
 // Address to open. https://formbuilder.nlm.nih.gov is still supported; it now
-// redirects to https://lhncbc.nlm.nih.gov/lhcformbuilder.
+// redirects to https://lhncbc.nlm.nih.gov/formbuilder.
 const fbUrl = 'https://formbuilder.nlm.nih.gov';
 // The form builder's origin. It is captured from the first message it sends (see
 // the 'initialized' case) rather than hardcoded, so it follows the redirect
@@ -158,7 +158,7 @@ const fbWin = window.open(fbUrl+'/window-open?referrer='+encodeURIComponent(wind
 
 Opening `https://formbuilder.nlm.nih.gov/window-open?...` continues to work; the
 browser follows the redirect to
-`https://lhncbc.nlm.nih.gov/lhcformbuilder/window-open?...`. Because the form
+`https://lhncbc.nlm.nih.gov/formbuilder/window-open?...`. Because the form
 builder then runs on the `https://lhncbc.nlm.nih.gov` origin, reply with the
 origin captured from its first message (`fbOrigin`) as the `postMessage`
 targetOrigin — see the handler above — rather than assuming `fbUrl`.
