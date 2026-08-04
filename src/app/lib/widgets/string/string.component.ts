@@ -109,9 +109,16 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
    *
    */
   ngAfterViewChecked(): void {
-    if(this.inputElRef?.nativeElement.clientWidth) {
-      this.showTooltip = this.inputElRef.nativeElement.scrollWidth > this.inputElRef.nativeElement.clientWidth;
-      this.cdr.detectChanges();
+    const el = this.inputElRef?.nativeElement;
+    const width = el?.clientWidth;
+    if(!width) {
+      return;
+    }
+
+    const nextShowTooltip = el.scrollWidth > width;
+    if(nextShowTooltip !== this.showTooltip) {
+      this.showTooltip = nextShowTooltip;
+      this.cdr.markForCheck();
     }
   }
 

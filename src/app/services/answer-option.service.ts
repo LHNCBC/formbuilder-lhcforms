@@ -232,6 +232,15 @@ export class AnswerOptionService {
     }
 
     if (valueName === 'valueCoding') {
+      // Count bare displays so ambiguous ones are not aliased to an arbitrary coding.
+      const displayCounts = new Map<string, number>();
+      node.data.answerOption.forEach((obj: any) => {
+        const display = obj[valueName]?.display;
+        if (display) {
+          displayCounts.set(display, (displayCounts.get(display) || 0) + 1);
+        }
+      });
+
       node.data.answerOption.forEach((obj: any, index: number) => {
         const coding = obj[valueName];
 
@@ -252,7 +261,8 @@ export class AnswerOptionService {
 
           const autocompleteItem = this.getEnableWhenAutocompleteItemFromCoding(coding, state);
           state.codingAnswerOptionsByAutocompleteItem[autocompleteItem] = coding;
-          if (coding.display) {
+          // Only alias by bare display when it unambiguously maps to a single coding.
+          if (coding.display && displayCounts.get(coding.display) === 1) {
             state.codingAnswerOptionsByAutocompleteItem[coding.display] = coding;
           }
         }
