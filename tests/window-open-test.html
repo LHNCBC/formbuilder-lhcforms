@@ -31,6 +31,7 @@
   // Open the form builder window running on separate origin
   // Read the URL from the http params.
   let fbUrl = new URLSearchParams(window.location.search).get('targetUrl');
+  let originUrl = new URL(fbUrl).origin; // This could be different if the target is redirected
 
   let initHeader = document.getElementById('initH');
   let updateHeader = document.getElementById('updateH');
@@ -50,9 +51,10 @@
    */
   function handleMessage(event) {
     const messageFromOpenedWindow = JSON.stringify(event.data, null, 2);
-    if (!fbUrl.startsWith(event.origin)) {
+    if (fbWindow !== event.source) {
       return;
     }
+    originUrl = event.origin;
     switch (event.data?.type) {
       case 'initialized':
         // Wait for the child window to be ready, before sending initial questionnaire.
@@ -101,7 +103,7 @@
    */
   function sendQuestionnaire() {
     if(fbWindow && !fbWindow.closed) {
-      fbWindow?.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, fbUrl);
+      fbWindow?.postMessage({type: 'initialQuestionnaire', questionnaire: initialQ}, originUrl);
     }
   }
 
