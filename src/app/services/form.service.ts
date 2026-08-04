@@ -83,6 +83,7 @@ export class FormService {
   valueSetSchema: any = {properties: {}};
   extensionSchema: any = {properties: {}};
   binarySchema: any = {properties: {}};
+  identifierSchema: any = {properties: {}};
 
   snomedUser = false;
   _lformsVersion = '';
@@ -149,7 +150,8 @@ export class FormService {
         ngxItemSchema: ISchema,
         ngxVSSchema: ISchema,
         vsLayout: Layout,
-        extLayout: Layout;
+        extLayout: Layout,
+        identifierLayout: Layout;
 
       const assetPaths = [
         'assets/fhir-definitions.schema.json5',
@@ -160,6 +162,7 @@ export class FormService {
         'assets/ngx-vs.schema.json5',
         'assets/value-set-fields-layout.json5',
         'assets/extension-fields-layout.json5',
+        'assets/identifier-fields-layout.json5',
       ];
       const results = await Util.loadJson5Assets(this.http, assetPaths);
       fhirSchemaDefinitions = results[assetPaths[0]];
@@ -170,6 +173,7 @@ export class FormService {
       ngxVSSchema = results[assetPaths[5]];
       vsLayout = results[assetPaths[6]];
       extLayout = results[assetPaths[7]];
+      identifierLayout = results[assetPaths[8]];
       const extSchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Extension));
       const binarySchema = JSON.parse(JSON.stringify(fhirSchemaDefinitions.definitions.Binary));
 
@@ -196,6 +200,17 @@ export class FormService {
 
       this.itemSchema = ngxItemSchema;
       this.flSchema = ngxFlSchema;
+      const baseIdentifierSchema = JSON.parse(JSON.stringify(this.flSchema?.properties?.identifier?.items || {type: 'object', properties: {}}));
+
+      this.addIdentifierAssignerField(this.flSchema?.properties?.identifier?.items, baseIdentifierSchema, identifierLayout, false);
+
+      this.identifierSchema = JSON.parse(JSON.stringify(baseIdentifierSchema));
+      this.addIdentifierAssignerField(this.identifierSchema, baseIdentifierSchema, identifierLayout, true);
+      this.identifierSchema.widget = {id: 'row-layout'};
+      this.identifierSchema.formLayout = identifierLayout?.formLayout;
+      this.overrideSchemaWidgetFromLayout(this.identifierSchema, identifierLayout);
+      this.overrideFieldLabelsFromLayout(this.identifierSchema, identifierLayout);
+      
       this.valueSetSchema = ngxVSSchema;
       delete this.valueSetSchema.definitions.ValueSet;
       delete this.valueSetSchema.definitions.ResourceList;
@@ -368,6 +383,75 @@ export class FormService {
    */
   getFormLevelSchema() {
     return this.flSchema;
+  }
+
+  /**
+   * Clone identifier dialog schema.
+   */
+  cloneIdentifierSchema() {
+    return JSON.parse(JSON.stringify(this.identifierSchema));
+  }
+
+  /**
+   * Add the next editable Identifier.assigner.identifier schema level.
+   *
+   * The FHIR Reference schema includes Reference.identifier, but the form-level
+   * Questionnaire.identifier schema has an inline copy of Reference for assigner. Because that
+   * inline copy does not inherit changes from definitions.Reference, we add only the next editable
+   * Identifier.assigner.identifier level here.
+   *
+   * The form-level schema keeps the FHIR object shape. The dialog schema uses an
+   * array wrapper with maxItems: 1 so the existing identifier table can edit it. Each nested dialog
+   * receives a fresh schema with its own next level instead of pre-expanding a fixed depth.
+   *
+   * @param schema - Identifier schema node to patch.
+   * @param baseIdentifierSchema - Base Identifier schema used to build the next level.
+   * @param layout - Identifier layout settings to keep nested rendering consistent.
+   * @param tableWrapper - True to wrap the identifier in a maxItems: 1 array for table editing.
+   */
+  private addIdentifierAssignerField(schema: any, baseIdentifierSchema: any, layout: Layout, tableWrapper: boolean): void {
+    const assignerProps = schema?.properties?.assigner?.properties;
+    if(!assignerProps) {
+      return;
+    }
+
+    const childIdentifier = JSON.parse(JSON.stringify(baseIdentifierSchema));
+    if(childIdentifier?.properties?.assigner?.properties) {
+      delete childIdentifier.properties.assigner.properties.identifier;
+      childIdentifier.properties.assigner.additionalProperties = true;
+    }
+    childIdentifier.widget = {id: 'row-layout'};
+    childIdentifier.formLayout = layout?.formLayout;
+    this.overrideSchemaWidgetFromLayout(childIdentifier, layout);
+    this.overrideFieldLabelsFromLayout(childIdentifier, layout);
+    childIdentifier.title = childIdentifier.title || 'Identifier';
+
+    if(!tableWrapper) {
+      assignerProps.identifier = childIdentifier;
+      return;
+    }
+
+    assignerProps.identifier = {
+      type: 'array',
+      items: childIdentifier,
+      minItems: 0,
+      maxItems: 1,
+      title: 'Identifier',
+      description: 'nested identifier',
+      widget: JSON.parse(JSON.stringify(layout?.widgets?.identifierTable || {
+        id: 'identifier',
+        labelPosition: 'left',
+        labelClasses: 'col-sm-2 ps-0 pe-1',
+        controlClasses: 'col-sm-10',
+        addButtonLabel: 'Add new identifier',
+        addDefaultItemIfEmpty: false,
+        showFields: [
+          {field: 'value', col: 4, nolabel: true},
+          {field: 'system', col: 4, nolabel: true},
+          {field: 'use', col: 3, nolabel: true}
+        ]
+      }))
+    };
   }
 
   get windowOpenerUrl(): string {

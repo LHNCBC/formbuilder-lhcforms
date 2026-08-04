@@ -30,7 +30,7 @@ describe('ExtensionDlgComponent', () => {
     imports: [ExtensionDlgComponent],
     providers: [
       {provide: MAT_DIALOG_DATA, useValue: {}},
-      {provide: MatDialogRef, useValue: {}},
+      {provide: MatDialogRef, useValue: {close: () => {}, updatePosition: () => {}}},
     ]
   });
 
@@ -178,6 +178,41 @@ describe('ExtensionDlgComponent', () => {
     expect(inputs[0].value).toBe('2024-04-01');
     expect(inputs[1].value).toBe('2024-05-31');
     expect(getDateRangeLabelTexts(dateRange)).toEqual(['Period', 'Start', 'End']);
+  });
+
+  it('should save ContactDetail without telecom after deleting telecom row', async () => {
+    await createDialog([{
+      url: 'http://some.contact-detail.extension.org',
+      valueContactDetail: {
+        name: 'Support',
+        telecom: [{
+          system: 'phone',
+          value: '555-0100',
+          period: {
+            start: '2024-04-01',
+            end: '2024-05-31'
+          }
+        }]
+      }
+    }]);
+    const closeSpy = spyOn(component['matDialogRef'], 'close');
+
+    const extensionObj = fixture.debugElement.query(By.directive(ExtensionObjComponent))
+      .componentInstance as ExtensionObjComponent;
+    const telecomProperty: any = extensionObj.sfFormRootProperty.getProperty('valueContactDetail/telecom');
+    const telecomArray = fixture.debugElement.queryAll(By.directive(LfbArrayComponent))
+      .find((el) => el.componentInstance.formProperty === telecomProperty)
+      .componentInstance as LfbArrayComponent;
+
+    telecomArray.removeItem(telecomProperty.properties[0]);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    component.save();
+
+    const savedExtension = closeSpy.calls.mostRecent().args[0] as fhir.Extension;
+    expect(savedExtension.valueContactDetail.telecom).toBeUndefined();
+    expect(savedExtension['__$stringify']).toBe(JSON.stringify({name: 'Support'}));
   });
 
   it('should render one period date range per ContactDetail telecom item after adding an item', async () => {

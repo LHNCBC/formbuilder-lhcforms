@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'autocomplete-lhc/source/auto_completion.css';
 @import 'codemirror/lib/codemirror.css';
 @import 'codemirror/theme/idea.css';
 @import 'codemirror/addon/fold/foldgutter.css';
@@ -161,18 +162,21 @@ div.has-error > ul:empty {
 }
 
 /*
- * In the extension dialog, highlight only the nearest local scope under the
+ * In nested dialog forms, highlight only the nearest local scope under the
  * pointer so child and sibling fields do not get highlighted together.
  */
-lfb-extension-dlg .dlg-content .lfb-row:hover {
+lfb-extension-dlg .dlg-content .lfb-row:hover,
+lfb-identifier-dlg .dlg-content .lfb-row:hover {
   background-color: transparent;
 }
 
-lfb-extension-dlg .dlg-content .lfb-hover-scope:hover {
+lfb-extension-dlg .dlg-content .lfb-hover-scope:hover,
+lfb-identifier-dlg .dlg-content .lfb-hover-scope:hover {
   background-color: lightgoldenrodyellow;
 }
 
-lfb-extension-dlg .dlg-content .lfb-hover-scope:has(.lfb-hover-scope:hover) {
+lfb-extension-dlg .dlg-content .lfb-hover-scope:has(.lfb-hover-scope:hover),
+lfb-identifier-dlg .dlg-content .lfb-hover-scope:has(.lfb-hover-scope:hover) {
   background-color: transparent;
 }
 

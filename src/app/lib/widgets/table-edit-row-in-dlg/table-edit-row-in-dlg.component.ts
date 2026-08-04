@@ -14,6 +14,7 @@ import {MatTooltip} from "@angular/material/tooltip";
 import {ComponentType} from "@angular/cdk/portal";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
+import {take} from 'rxjs/operators';
 
 export interface DialogData {
   arrayProperty: ArrayProperty;
@@ -53,6 +54,7 @@ export interface DialogData {
   `]
 })
 export class TableEditRowInDlgComponent extends TableComponent implements OnInit, AfterViewInit, DoCheck {
+  override includeActionColumn = true;
 
   @Input()
   dialogComponentType: ComponentType<unknown> = null;
@@ -68,6 +70,17 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
   ngOnInit() {
     this.addDefaultItemIfEmpty = false;
     super.ngOnInit();
+    const widget = this.formProperty?.schema?.widget || {};
+    this.labelPosition = this.labelPosition || widget.labelPosition || 'top';
+    this.labelWidthClass = this.labelPosition === 'left'
+      ? (this.labelWidthClass || widget.labelWidthClass || 'col-sm') : '';
+    this.controlWidthClass = this.labelPosition === 'left'
+      ? (this.controlWidthClass || widget.controlWidthClass || 'col-sm') : '';
+    // Dialog row tables are always shown directly; avoid boolean-control toggles
+    // that can flip template conditions during dev-mode double-check.
+    this.booleanControlled = false;
+    this.booleanControlledOption = false;
+    this.includeActionColumn = true;
   }
 
   /**
@@ -75,7 +88,6 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
    * Use the hook to set the attribute on all the inputs.
    */
   ngDoCheck(): void {
-    this.includeActionColumn = true;
     const inputs = this.elementRef.nativeElement.querySelectorAll("input");
     inputs.forEach((input) => {
       input.setAttribute("readonly", true);
@@ -92,11 +104,11 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
       rowIndex: index
     }, this.dialogComponentType);
 
-    const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
+    matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue) => {
       if (submittedValue) {
-        this.formProperty.properties[index].setValue(submittedValue, false);
+        // Replace the full row model so deleted nested fields are not preserved.
+        this.formProperty.properties[index].reset(submittedValue, false);
       }
-      sub.unsubscribe();
     });
   }
 
@@ -108,11 +120,10 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
         arrayProperty: this.formProperty, rowIndex: -1
       },
       this.dialogComponentType);
-    const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
+    matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue) => {
       if(submittedValue) {
         this.addNewItem(submittedValue);
       }
-      sub.unsubscribe();
     });
   }
 

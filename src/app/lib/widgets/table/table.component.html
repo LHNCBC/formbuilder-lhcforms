@@ -79,7 +79,13 @@
                       class="col-sm{{showField.col ? ('-'+showField.col) : ''}}"
                       [ngClass]="{'fill-column': isLastShowField && hasTrailingColumns()}"
                     >
-                      <lfb-form-element [nolabel]="true" [controlClasses]="filterOutClasses(getProperty(itemProperty, showField.field), 'col-')" [labelPosition]="'none'" [formProperty]="getProperty(itemProperty, showField.field)" (focusin)="onEdit($event, ind)"></lfb-form-element>
+                        @if (useDisplayRenderer(showField)) {
+                          <span class="form-control form-control-sm text-truncate d-block w-100" [attr.title]="getDisplayValue(itemProperty, showField)">
+                            {{getDisplayValue(itemProperty, showField)}}
+                          </span>
+                        } @else {
+                          <lfb-form-element [nolabel]="true" [controlClasses]="filterOutClasses(getProperty(itemProperty, showField.field), 'col-')" [labelPosition]="'none'" [formProperty]="getProperty(itemProperty, showField.field)" (focusin)="onEdit($event, ind)"></lfb-form-element>
+                        }
                     </td>
                   }
                   @if (rowSelectionType === 'radio' && id !=='answerOption') {

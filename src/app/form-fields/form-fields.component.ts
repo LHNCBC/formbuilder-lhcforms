@@ -127,11 +127,15 @@ export class FormFieldsComponent implements OnChanges, AfterViewInit {
   adjustRootFormProperty(): boolean {
     let ret = false;
     const rootProperty = this.ngxForm?.rootProperty;
+    const codeProperty = rootProperty?.searchProperty('/code');
+    const codeYesNoProperty = rootProperty?.searchProperty('/__$codeYesNo');
     // Emit the value after any adjustments.
-    // Set '__$codeYesNo' to true, when 'code' is present. The default is false.
-    if(!Util.isEmpty(rootProperty?.searchProperty('/code').value)) {
+    // searchProperty() can return undefined during some load paths, so guard both
+    // properties before reading/setting values.
+    // Set '__$codeYesNo' to true when 'code' is present. The default is false.
+    if(!Util.isEmpty(codeProperty?.value) && codeYesNoProperty) {
       // Loading is done. Change of value should emit the value in valueChanged().
-      rootProperty?.searchProperty('/__$codeYesNo').setValue(true, false);
+      codeYesNoProperty.setValue(true, false);
       ret = true;
     }
     return ret;
