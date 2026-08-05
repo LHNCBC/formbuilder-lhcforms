@@ -226,6 +226,37 @@ describe('ExtensionCardinalityService', () => {
     expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(1);
   });
 
+  it('should ignore a verified selection completed for a previous Questionnaire', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/stale-selection';
+    const previousGeneration = service.getSelectionGeneration();
+    const candidate = {maxCardinality: '1'} as const;
+
+    service.clearSelections();
+    service.rememberSelection(extensionUrl, candidate, previousGeneration);
+    fhirService.getBundleByUrl.and.returnValue(of(bundle()));
+
+    let result: ExtensionCardinalityResolution;
+    service.resolveCardinality(extensionUrl).subscribe((resolution) => result = resolution);
+
+    expect(result).toEqual({status: 'unknown'});
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledOnceWith(expectedQuery(extensionUrl));
+  });
+
+  it('should ignore an unverified selection completed for a previous Questionnaire', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/stale-unverified-selection';
+    const previousGeneration = service.getSelectionGeneration();
+
+    service.clearSelections();
+    service.rememberUnverified(extensionUrl, previousGeneration);
+    fhirService.getBundleByUrl.and.returnValue(of(bundle()));
+
+    let result: ExtensionCardinalityResolution;
+    service.resolveCardinality(extensionUrl).subscribe((resolution) => result = resolution);
+
+    expect(result).toEqual({status: 'unknown'});
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledOnceWith(expectedQuery(extensionUrl));
+  });
+
   it('should follow search pagination before deciding whether results conflict', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/paged-extension';
     const nextUrl = `${selectedServerEndpoint}/StructureDefinition?url=paged-extension&page=2`;

@@ -146,17 +146,22 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
 
     this.cardinalityLookupSubscription?.unsubscribe();
     if (hasDuplicateUrl && localCardinality === 'unknown') {
+      const selectionGeneration = this.extensionCardinalityService.getSelectionGeneration();
       this.checkingExtensionCardinality.set(true);
       this.applyDuplicateValidation(false, true);
       this.cardinalityLookupSubscription = this.extensionCardinalityService.resolveCardinality(url)
         .subscribe((resolution) => {
+          if (this.extensionCardinalityService.getSelectionGeneration() !== selectionGeneration) {
+            this.matDialogRef.close(false);
+            return;
+          }
           if ((this.changedValue?.url || '').trim() !== url
             || this.countMatchingSiblingExtensions(url) === 0) {
             return;
           }
 
           if (resolution.status === 'ambiguous') {
-            this.openCardinalitySelection(url, resolution.candidates);
+            this.openCardinalitySelection(url, resolution.candidates, selectionGeneration);
             return;
           }
 
@@ -213,10 +218,12 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
    *
    * @param url - Canonical extension URL being resolved.
    * @param candidates - Conflicting StructureDefinition candidates to display.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
    */
   private openCardinalitySelection(
     url: string,
-    candidates: ExtensionCardinalityCandidate[]
+    candidates: ExtensionCardinalityCandidate[],
+    selectionGeneration: number
   ): void {
     if (this.cardinalitySelectionModalRef) {
       return;
@@ -236,11 +243,15 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         return;
       }
       this.cardinalitySelectionModalRef = undefined;
+      if (this.extensionCardinalityService.getSelectionGeneration() !== selectionGeneration) {
+        this.matDialogRef.close(false);
+        return;
+      }
       if (candidate) {
-        this.extensionCardinalityService.rememberSelection(url, candidate);
+        this.extensionCardinalityService.rememberSelection(url, candidate, selectionGeneration);
         this.finishCardinalitySelection(url, candidate.maxCardinality);
       } else {
-        this.extensionCardinalityService.rememberUnverified(url);
+        this.extensionCardinalityService.rememberUnverified(url, selectionGeneration);
         this.finishCardinalitySelection(url, 'unknown', true);
       }
     });

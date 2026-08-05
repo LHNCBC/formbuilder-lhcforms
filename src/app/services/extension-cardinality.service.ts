@@ -39,6 +39,7 @@ export class ExtensionCardinalityService {
   private readonly fhirService = inject(FhirService);
   private readonly lookupCache = new Map<string, Observable<ExtensionCardinalityResolution>>();
   private readonly selectionCache = new Map<string, ExtensionMaxCardinality | 'unverified'>();
+  private selectionGeneration = 0;
 
   /**
    * Resolve an extension's maximum cardinality.
@@ -108,16 +109,28 @@ export class ExtensionCardinalityService {
    * Remember a user's choice for the currently selected server and canonical URL.
    * @param url - Canonical extension URL associated with the choice.
    * @param candidate - StructureDefinition candidate selected by the user.
+   * @param selectionGeneration - Questionnaire generation that opened the selection dialog.
    */
-  rememberSelection(url: string, candidate: ExtensionCardinalityCandidate): void {
+  rememberSelection(
+    url: string,
+    candidate: ExtensionCardinalityCandidate,
+    selectionGeneration = this.selectionGeneration
+  ): void {
+    if (selectionGeneration !== this.selectionGeneration) {
+      return;
+    }
     this.rememberCardinality(url, candidate.maxCardinality);
   }
 
   /**
    * Remember that the user chose to continue without verifying cardinality.
    * @param url - Canonical extension URL whose cardinality remains unknown.
+   * @param selectionGeneration - Questionnaire generation that opened the selection dialog.
    */
-  rememberUnverified(url: string): void {
+  rememberUnverified(url: string, selectionGeneration = this.selectionGeneration): void {
+    if (selectionGeneration !== this.selectionGeneration) {
+      return;
+    }
     const normalizedUrl = url?.trim();
     const serverEndpoint = this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
     this.selectionCache.set(
@@ -131,7 +144,16 @@ export class ExtensionCardinalityService {
    * Server lookup results remain cached because they are not Questionnaire-specific.
    */
   clearSelections(): void {
+    this.selectionGeneration++;
     this.selectionCache.clear();
+  }
+
+  /**
+   * Get the generation associated with the currently loaded Questionnaire.
+   * @returns Current Questionnaire selection generation.
+   */
+  getSelectionGeneration(): number {
+    return this.selectionGeneration;
   }
 
   /**

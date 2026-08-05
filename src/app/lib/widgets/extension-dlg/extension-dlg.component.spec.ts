@@ -199,7 +199,11 @@ describe('ExtensionDlgComponent', () => {
     closed.next(candidates[0]);
     fixture.detectChanges();
 
-    expect(rememberSelectionSpy).toHaveBeenCalledOnceWith(extensionUrl, candidates[0]);
+    expect(rememberSelectionSpy).toHaveBeenCalledOnceWith(
+      extensionUrl,
+      candidates[0],
+      cardinalityService.getSelectionGeneration()
+    );
     expect(component.checkingExtensionCardinality()).toBeFalse();
     expect(component.duplicateUrlError()?.message).toContain('does not allow multiple');
     expect(component.disableSave()).toBeTrue();
@@ -236,7 +240,10 @@ describe('ExtensionDlgComponent', () => {
     closed.next(null);
     fixture.detectChanges();
 
-    expect(rememberUnverifiedSpy).toHaveBeenCalledOnceWith(extensionUrl);
+    expect(rememberUnverifiedSpy).toHaveBeenCalledOnceWith(
+      extensionUrl,
+      cardinalityService.getSelectionGeneration()
+    );
     expect(component.duplicateUrlError()).toBeNull();
     expect(component.disableSave()).toBeFalse();
     expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
