@@ -21,6 +21,7 @@ import {
   ExtensionCardinalityService
 } from '../../../services/extension-cardinality.service';
 import {of, Subject} from 'rxjs';
+import {FhirService} from '../../../services/fhir.service';
 
 
 describe('ExtensionDlgComponent', () => {
@@ -36,6 +37,7 @@ describe('ExtensionDlgComponent', () => {
   let arrayProperty: ArrayProperty;
   let data: DialogData;
   let cardinalityService: ExtensionCardinalityService;
+  let fhirService: FhirService;
   let resolveCardinalitySpy: jasmine.Spy;
 
   CommonTestingModule.setUpTestBedConfig({
@@ -51,6 +53,7 @@ describe('ExtensionDlgComponent', () => {
     formService = TestBed.inject<FormService>(FormService);
     extensionsService = TestBed.inject<ExtensionsService>(ExtensionsService);
     cardinalityService = TestBed.inject(ExtensionCardinalityService);
+    fhirService = TestBed.inject(FhirService);
     resolveCardinalitySpy = spyOn(cardinalityService, 'resolveCardinality')
       .and.returnValue(of({status: 'unknown'}));
     extSchema = formService.getFormLevelSchema();
@@ -499,6 +502,29 @@ describe('ExtensionDlgComponent', () => {
     endpointSpy.and.returnValue('https://new.example.org/fhir');
     resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '*'}));
     oldServerResult.next({status: 'resolved', maxCardinality: '1'});
+
+    expect(resolveCardinalitySpy).toHaveBeenCalledTimes(2);
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.checkingExtensionCardinality()).toBeFalse();
+    expect(component['isSaveAllowed']()).toBeTrue();
+  });
+
+  it('should revalidate a settled singleton result when the FHIR server changes', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-change-settled-extension';
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '1'}));
+    fixture.destroy();
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+
+    component.onChange({url: extensionUrl, valueString: 'second value'});
+
+    expect(component.duplicateUrlError()).not.toBeNull();
+    expect(component['isSaveAllowed']()).toBeFalse();
+
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '*'}));
+    fhirService.setFhirServer({
+      endpoint: 'https://new.example.org/fhir',
+      version: 'R4'
+    });
 
     expect(resolveCardinalitySpy).toHaveBeenCalledTimes(2);
     expect(component.duplicateUrlError()).toBeNull();

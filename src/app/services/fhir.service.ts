@@ -1,7 +1,7 @@
 import {Injectable, inject} from '@angular/core';
 import Client from 'fhirclient/lib/Client';
 import * as fhirClient from 'fhirclient';
-import {defer, from, mergeMap, Observable, of, timeout, TimeoutError} from 'rxjs';
+import {defer, from, mergeMap, Observable, of, Subject, timeout, TimeoutError} from 'rxjs';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../fhir';
 import {FormService} from './form.service';
@@ -80,6 +80,8 @@ export class FhirService {
   ];
 
   private readonly defaultFhirServer = this.fhirServerList[0];
+  private readonly fhirServerChanges = new Subject<FHIRServer>();
+  readonly fhirServerChanges$ = this.fhirServerChanges.asObservable();
   currentServer: FHIRServer;
   smartClient: Client;
 
@@ -220,6 +222,7 @@ export class FhirService {
     setFhirServer(fhirServer: FHIRServer): void {
       this.currentServer = fhirServer;
       this.smartClient = fhirClient.client(this.currentServer.endpoint);
+      this.fhirServerChanges.next(fhirServer);
     };
 
     getFhirServer(): FHIRServer {

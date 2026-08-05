@@ -36,6 +36,7 @@ import {
 } from '../extension-cardinality-selection-dlg/extension-cardinality-selection-dlg.component';
 import {ExtensionsService} from '../../../services/extensions.service';
 import {TableRowDialogBase} from '../table-row-dialog-base/table-row-dialog-base';
+import {FhirService} from '../../../services/fhir.service';
 
 /**
  * A dialog component to edit a FHIR Extension object.
@@ -79,6 +80,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   formService: FormService = inject(FormService);
   extensionsService = inject(ExtensionsService);
   extensionCardinalityService = inject(ExtensionCardinalityService);
+  fhirService = inject(FhirService);
   public override ngbModalService = inject(NgbModal);
   duplicateUrlError = signal<DuplicateUrlErrorState | null>(null);
   checkingExtensionCardinality = signal(false);
@@ -87,6 +89,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   cardinalityLookupSubscription: Subscription;
   cardinalitySelectionWaitSubscription: Subscription;
   cardinalityGenerationSubscription: Subscription;
+  fhirServerSubscription: Subscription;
   cardinalitySelectionModalRef?: NgbModalRef;
   activeCardinalitySelection?: {
     url: string;
@@ -107,6 +110,10 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         modalRef?.dismiss();
         this.matDialogRef.close(false);
       });
+    this.fhirServerSubscription = this.fhirService.fhirServerChanges$.subscribe(() => {
+      this.updateDisableSave();
+      this.cdr.markForCheck();
+    });
   }
 
   /**
@@ -475,6 +482,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     this.cardinalityLookupSubscription?.unsubscribe();
     this.cardinalitySelectionWaitSubscription?.unsubscribe();
     this.cardinalityGenerationSubscription?.unsubscribe();
+    this.fhirServerSubscription?.unsubscribe();
     if (this.activeCardinalitySelection) {
       this.extensionCardinalityService.endSelection(
         this.activeCardinalitySelection.url,
