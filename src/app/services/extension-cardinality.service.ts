@@ -40,6 +40,8 @@ export class ExtensionCardinalityService {
   private readonly lookupCache = new Map<string, Observable<ExtensionCardinalityResolution>>();
   private readonly selectionCache = new Map<string, ExtensionMaxCardinality | 'unverified'>();
   private readonly pendingSelectionChanges = new Map<string, Subject<void>>();
+  private readonly selectionGenerationChanges = new Subject<number>();
+  readonly selectionGenerationChanges$ = this.selectionGenerationChanges.asObservable();
   private selectionGeneration = 0;
 
   /**
@@ -155,6 +157,7 @@ export class ExtensionCardinalityService {
     this.selectionCache.clear();
     this.pendingSelectionChanges.forEach((selectionChange) => selectionChange.complete());
     this.pendingSelectionChanges.clear();
+    this.selectionGenerationChanges.next(this.selectionGeneration);
   }
 
   /**

@@ -86,12 +86,28 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
 
   cardinalityLookupSubscription: Subscription;
   cardinalitySelectionWaitSubscription: Subscription;
+  cardinalityGenerationSubscription: Subscription;
   cardinalitySelectionModalRef?: NgbModalRef;
   activeCardinalitySelection?: {
     url: string;
     selectionGeneration: number;
     serverEndpoint: string;
   };
+
+  /**
+   * Initialize the row and close this editor if another Questionnaire replaces its data.
+   */
+  override ngOnInit(): void {
+    super.ngOnInit();
+    this.cardinalityGenerationSubscription = this.extensionCardinalityService
+      .selectionGenerationChanges$.subscribe(() => {
+        this.activeCardinalitySelection = undefined;
+        const modalRef = this.cardinalitySelectionModalRef;
+        this.cardinalitySelectionModalRef = undefined;
+        modalRef?.dismiss();
+        this.matDialogRef.close(false);
+      });
+  }
 
   /**
    * Create a new Extension row model.
@@ -395,6 +411,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     super.ngOnDestroy();
     this.cardinalityLookupSubscription?.unsubscribe();
     this.cardinalitySelectionWaitSubscription?.unsubscribe();
+    this.cardinalityGenerationSubscription?.unsubscribe();
     if (this.activeCardinalitySelection) {
       this.extensionCardinalityService.endSelection(
         this.activeCardinalitySelection.url,

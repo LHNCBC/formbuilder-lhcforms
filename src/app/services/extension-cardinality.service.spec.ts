@@ -226,6 +226,15 @@ describe('ExtensionCardinalityService', () => {
     expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(1);
   });
 
+  it('should notify open extension editors when selections are cleared', () => {
+    const generations = [];
+    service.selectionGenerationChanges$.subscribe((generation) => generations.push(generation));
+
+    service.clearSelections();
+
+    expect(generations).toEqual([service.getSelectionGeneration()]);
+  });
+
   it('should ignore a verified selection completed for a previous Questionnaire', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/stale-selection';
     const previousGeneration = service.getSelectionGeneration();

@@ -244,6 +244,24 @@ describe('ExtensionDlgComponent', () => {
     expect(component.disableSave()).toBeTrue();
   });
 
+  it('should close obsolete extension and selection dialogs when the Questionnaire changes', () => {
+    const dismissSpy = jasmine.createSpy('dismiss');
+    const closeSpy = spyOn(component['matDialogRef'], 'close');
+    component.cardinalitySelectionModalRef = {dismiss: dismissSpy} as any;
+    component.activeCardinalitySelection = {
+      url: 'http://example.org/StructureDefinition/obsolete-extension',
+      selectionGeneration: cardinalityService.getSelectionGeneration(),
+      serverEndpoint: cardinalityService.getCurrentServerEndpoint()
+    };
+
+    cardinalityService.clearSelections();
+
+    expect(dismissSpy).toHaveBeenCalledOnceWith();
+    expect(closeSpy).toHaveBeenCalledOnceWith(false);
+    expect(component.cardinalitySelectionModalRef).toBeUndefined();
+    expect(component.activeCardinalitySelection).toBeUndefined();
+  });
+
   it('should remain permissive with a warning when definition selection is skipped', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
     const candidates: ExtensionCardinalityCandidate[] = [{
