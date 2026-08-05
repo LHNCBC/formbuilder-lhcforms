@@ -309,6 +309,40 @@ describe('ExtensionCardinalityService', () => {
     expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(2);
   });
 
+  it('should cache a delayed selection against the server that returned it', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/delayed-server-selection';
+    const originalServerEndpoint = service.getCurrentServerEndpoint();
+    const selectionGeneration = service.getSelectionGeneration();
+    const candidate = {maxCardinality: '1'} as const;
+
+    selectedServer = {
+      endpoint: 'https://another.example.org/fhir',
+      version: 'R4'
+    };
+    service.rememberSelection(
+      extensionUrl,
+      candidate,
+      selectionGeneration,
+      originalServerEndpoint
+    );
+    fhirService.getBundleByUrl.and.returnValue(of(bundle()));
+
+    let resultOnNewServer: ExtensionCardinalityResolution;
+    service.resolveCardinality(extensionUrl)
+      .subscribe((resolution) => resultOnNewServer = resolution);
+    expect(resultOnNewServer).toEqual({status: 'unknown'});
+
+    selectedServer = {
+      endpoint: originalServerEndpoint,
+      version: 'R5'
+    };
+    let resultOnOriginalServer: ExtensionCardinalityResolution;
+    service.resolveCardinality(extensionUrl)
+      .subscribe((resolution) => resultOnOriginalServer = resolution);
+    expect(resultOnOriginalServer).toEqual({status: 'resolved', maxCardinality: '1'});
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(1);
+  });
+
   it('should cache an unknown result when no matching definition is returned', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/missing-extension';
     const results = [];

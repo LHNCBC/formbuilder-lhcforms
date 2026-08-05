@@ -202,7 +202,8 @@ describe('ExtensionDlgComponent', () => {
     expect(rememberSelectionSpy).toHaveBeenCalledOnceWith(
       extensionUrl,
       candidates[0],
-      cardinalityService.getSelectionGeneration()
+      cardinalityService.getSelectionGeneration(),
+      cardinalityService.getCurrentServerEndpoint()
     );
     expect(component.checkingExtensionCardinality()).toBeFalse();
     expect(component.duplicateUrlError()?.message).toContain('does not allow multiple');
@@ -242,7 +243,8 @@ describe('ExtensionDlgComponent', () => {
 
     expect(rememberUnverifiedSpy).toHaveBeenCalledOnceWith(
       extensionUrl,
-      cardinalityService.getSelectionGeneration()
+      cardinalityService.getSelectionGeneration(),
+      cardinalityService.getCurrentServerEndpoint()
     );
     expect(component.duplicateUrlError()).toBeNull();
     expect(component.disableSave()).toBeFalse();

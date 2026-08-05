@@ -147,6 +147,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     this.cardinalityLookupSubscription?.unsubscribe();
     if (hasDuplicateUrl && localCardinality === 'unknown') {
       const selectionGeneration = this.extensionCardinalityService.getSelectionGeneration();
+      const serverEndpoint = this.extensionCardinalityService.getCurrentServerEndpoint();
       this.checkingExtensionCardinality.set(true);
       this.applyDuplicateValidation(false, true);
       this.cardinalityLookupSubscription = this.extensionCardinalityService.resolveCardinality(url)
@@ -161,7 +162,12 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
           }
 
           if (resolution.status === 'ambiguous') {
-            this.openCardinalitySelection(url, resolution.candidates, selectionGeneration);
+            this.openCardinalitySelection(
+              url,
+              resolution.candidates,
+              selectionGeneration,
+              serverEndpoint
+            );
             return;
           }
 
@@ -219,11 +225,13 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
    * @param url - Canonical extension URL being resolved.
    * @param candidates - Conflicting StructureDefinition candidates to display.
    * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
    */
   private openCardinalitySelection(
     url: string,
     candidates: ExtensionCardinalityCandidate[],
-    selectionGeneration: number
+    selectionGeneration: number,
+    serverEndpoint: string
   ): void {
     if (this.cardinalitySelectionModalRef) {
       return;
@@ -248,10 +256,15 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         return;
       }
       if (candidate) {
-        this.extensionCardinalityService.rememberSelection(url, candidate, selectionGeneration);
+        this.extensionCardinalityService.rememberSelection(
+          url,
+          candidate,
+          selectionGeneration,
+          serverEndpoint
+        );
         this.finishCardinalitySelection(url, candidate.maxCardinality);
       } else {
-        this.extensionCardinalityService.rememberUnverified(url, selectionGeneration);
+        this.extensionCardinalityService.rememberUnverified(url, selectionGeneration, serverEndpoint);
         this.finishCardinalitySelection(url, 'unknown', true);
       }
     });

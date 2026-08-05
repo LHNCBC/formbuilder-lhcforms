@@ -76,7 +76,7 @@ export class ExtensionCardinalityService {
       return of({status: 'unknown'});
     }
 
-    const serverEndpoint = this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
+    const serverEndpoint = this.getCurrentServerEndpoint();
     const cacheKey = this.getCacheKey(serverEndpoint, normalizedUrl);
     const selectedCardinality = this.selectionCache.get(cacheKey);
     if (selectedCardinality) {
@@ -110,29 +110,35 @@ export class ExtensionCardinalityService {
    * @param url - Canonical extension URL associated with the choice.
    * @param candidate - StructureDefinition candidate selected by the user.
    * @param selectionGeneration - Questionnaire generation that opened the selection dialog.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidate.
    */
   rememberSelection(
     url: string,
     candidate: ExtensionCardinalityCandidate,
-    selectionGeneration = this.selectionGeneration
+    selectionGeneration = this.selectionGeneration,
+    serverEndpoint = this.getCurrentServerEndpoint()
   ): void {
     if (selectionGeneration !== this.selectionGeneration) {
       return;
     }
-    this.rememberCardinality(url, candidate.maxCardinality);
+    this.rememberCardinality(url, candidate.maxCardinality, serverEndpoint);
   }
 
   /**
    * Remember that the user chose to continue without verifying cardinality.
    * @param url - Canonical extension URL whose cardinality remains unknown.
    * @param selectionGeneration - Questionnaire generation that opened the selection dialog.
+   * @param serverEndpoint - FHIR server endpoint used for the lookup.
    */
-  rememberUnverified(url: string, selectionGeneration = this.selectionGeneration): void {
+  rememberUnverified(
+    url: string,
+    selectionGeneration = this.selectionGeneration,
+    serverEndpoint = this.getCurrentServerEndpoint()
+  ): void {
     if (selectionGeneration !== this.selectionGeneration) {
       return;
     }
     const normalizedUrl = url?.trim();
-    const serverEndpoint = this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
     this.selectionCache.set(
       this.getCacheKey(serverEndpoint, normalizedUrl),
       'unverified'
@@ -157,13 +163,25 @@ export class ExtensionCardinalityService {
   }
 
   /**
+   * Get the normalized endpoint of the FHIR server currently selected for import and export.
+   * @returns Current FHIR server endpoint without a trailing slash.
+   */
+  getCurrentServerEndpoint(): string {
+    return this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
+  }
+
+  /**
    * Cache a cardinality decision for the selected server and canonical URL.
    * @param url - Canonical extension URL associated with the decision.
    * @param cardinality - Maximum cardinality to cache.
+   * @param serverEndpoint - FHIR server endpoint that supplied the decision.
    */
-  private rememberCardinality(url: string, cardinality: ExtensionMaxCardinality): void {
+  private rememberCardinality(
+    url: string,
+    cardinality: ExtensionMaxCardinality,
+    serverEndpoint: string
+  ): void {
     const normalizedUrl = url?.trim();
-    const serverEndpoint = this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
     this.selectionCache.set(
       this.getCacheKey(serverEndpoint, normalizedUrl),
       cardinality
