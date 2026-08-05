@@ -34,7 +34,7 @@
                        [attr.name]="radioGroupName"
                        [value]="index"
                        [(ngModel)]="selection"
-                       [attr.aria-label]="'Select ' + definitionName(candidate, index)">
+                       [attr.aria-label]="definitionAccessibleLabel(candidate, index)">
               </td>
               <td class="definition-name">{{definitionName(candidate, index)}}</td>
               <td>{{candidate.version || '—'}}</td>

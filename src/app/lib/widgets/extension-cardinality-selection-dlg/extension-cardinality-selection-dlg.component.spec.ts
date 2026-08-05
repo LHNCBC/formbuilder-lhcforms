@@ -39,4 +39,36 @@ describe('ExtensionCardinalitySelectionDlgComponent', () => {
     expect(secondFixture.nativeElement.querySelector(`[id="${secondTitleId}"]`)).not.toBeNull();
     expect(secondFixture.nativeElement.querySelector(`[id="${secondDescriptionId}"]`)).not.toBeNull();
   });
+
+  it('should distinguish versioned definitions in radio accessible names', () => {
+    const fixture: ComponentFixture<ExtensionCardinalitySelectionDlgComponent> =
+      TestBed.createComponent(ExtensionCardinalitySelectionDlgComponent);
+    fixture.componentInstance.candidates = [{
+      title: 'Shared extension',
+      version: '1.0.0',
+      fhirVersion: '4.0.1',
+      maxCardinality: '1'
+    }, {
+      title: 'Shared extension',
+      version: '2.0.0',
+      fhirVersion: '5.0.0',
+      maxCardinality: '*'
+    }];
+    fixture.detectChanges();
+
+    const radios: HTMLInputElement[] = Array.from(
+      fixture.nativeElement.querySelectorAll('input[type="radio"]')
+    );
+    const firstLabel = radios[0].getAttribute('aria-label');
+    const secondLabel = radios[1].getAttribute('aria-label');
+
+    expect(firstLabel).toContain('Shared extension');
+    expect(firstLabel).toContain('version 1.0.0');
+    expect(firstLabel).toContain('FHIR version 4.0.1');
+    expect(firstLabel).toContain('maximum 1');
+    expect(secondLabel).toContain('version 2.0.0');
+    expect(secondLabel).toContain('FHIR version 5.0.0');
+    expect(secondLabel).toContain('maximum *');
+    expect(firstLabel).not.toBe(secondLabel);
+  });
 });

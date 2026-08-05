@@ -71,6 +71,19 @@ export class ExtensionCardinalitySelectionDlgComponent {
   }
 
   /**
+   * Build an accessible radio label that distinguishes versioned definitions.
+   * @param candidate - Candidate represented by the radio button.
+   * @param index - Candidate position used for the fallback definition name.
+   * @returns Accessible label containing identity, version, FHIR version, and maximum.
+   */
+  definitionAccessibleLabel(candidate: ExtensionCardinalityCandidate, index: number): string {
+    return `Select ${this.definitionName(candidate, index)}, `
+      + `version ${candidate.version || 'not specified'}, `
+      + `FHIR version ${candidate.fhirVersion || 'not specified'}, `
+      + `maximum ${candidate.maxCardinality}`;
+  }
+
+  /**
    * Select a StructureDefinition row.
    * @param index - Index of the candidate to select.
    */
