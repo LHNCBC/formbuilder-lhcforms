@@ -85,7 +85,13 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   cardinalityWarning = signal<string | null>(null);
 
   cardinalityLookupSubscription: Subscription;
+  cardinalitySelectionWaitSubscription: Subscription;
   cardinalitySelectionModalRef?: NgbModalRef;
+  activeCardinalitySelection?: {
+    url: string;
+    selectionGeneration: number;
+    serverEndpoint: string;
+  };
 
   /**
    * Create a new Extension row model.
@@ -145,6 +151,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     this.cardinalityWarning.set(null);
 
     this.cardinalityLookupSubscription?.unsubscribe();
+    this.cardinalitySelectionWaitSubscription?.unsubscribe();
     if (hasDuplicateUrl && localCardinality === 'unknown') {
       const selectionGeneration = this.extensionCardinalityService.getSelectionGeneration();
       const serverEndpoint = this.extensionCardinalityService.getCurrentServerEndpoint();
@@ -162,7 +169,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
           }
 
           if (resolution.status === 'ambiguous') {
-            this.openCardinalitySelection(
+            this.coordinateCardinalitySelection(
               url,
               resolution.candidates,
               selectionGeneration,
@@ -193,6 +200,43 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
       false,
       localCardinality
     );
+  }
+
+  /**
+   * Open one shared selection dialog or wait for another editor resolving the same definition.
+   * @param url - Canonical extension URL being resolved.
+   * @param candidates - Conflicting StructureDefinition candidates to display.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   */
+  private coordinateCardinalitySelection(
+    url: string,
+    candidates: ExtensionCardinalityCandidate[],
+    selectionGeneration: number,
+    serverEndpoint: string
+  ): void {
+    if (this.cardinalitySelectionModalRef) {
+      return;
+    }
+    if (this.extensionCardinalityService.tryBeginSelection(
+      url,
+      selectionGeneration,
+      serverEndpoint
+    )) {
+      this.openCardinalitySelection(url, candidates, selectionGeneration, serverEndpoint);
+      return;
+    }
+
+    this.cardinalitySelectionWaitSubscription = this.extensionCardinalityService.waitForSelection(
+      url,
+      selectionGeneration,
+      serverEndpoint
+    ).subscribe(() => {
+      if (this.extensionCardinalityService.getSelectionGeneration() === selectionGeneration) {
+        this.updateDisableSave();
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   /**
@@ -244,6 +288,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
       size: 'xl'
     });
     this.cardinalitySelectionModalRef = modalRef;
+    this.activeCardinalitySelection = {url, selectionGeneration, serverEndpoint};
     modalRef.componentInstance.candidates = candidates;
 
     modalRef.closed.subscribe((candidate: ExtensionCardinalityCandidate | null) => {
@@ -251,7 +296,9 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         return;
       }
       this.cardinalitySelectionModalRef = undefined;
+      this.activeCardinalitySelection = undefined;
       if (this.extensionCardinalityService.getSelectionGeneration() !== selectionGeneration) {
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
         this.matDialogRef.close(false);
         return;
       }
@@ -262,9 +309,11 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
           selectionGeneration,
           serverEndpoint
         );
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
         this.finishCardinalitySelection(url, candidate.maxCardinality);
       } else {
         this.extensionCardinalityService.rememberUnverified(url, selectionGeneration, serverEndpoint);
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
         this.finishCardinalitySelection(url, 'unknown', true);
       }
     });
@@ -273,6 +322,8 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         return;
       }
       this.cardinalitySelectionModalRef = undefined;
+      this.activeCardinalitySelection = undefined;
+      this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
       this.applyDuplicateValidation(false, true);
       this.cdr.markForCheck();
     });
@@ -343,6 +394,15 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   override ngOnDestroy(): void {
     super.ngOnDestroy();
     this.cardinalityLookupSubscription?.unsubscribe();
+    this.cardinalitySelectionWaitSubscription?.unsubscribe();
+    if (this.activeCardinalitySelection) {
+      this.extensionCardinalityService.endSelection(
+        this.activeCardinalitySelection.url,
+        this.activeCardinalitySelection.selectionGeneration,
+        this.activeCardinalitySelection.serverEndpoint
+      );
+      this.activeCardinalitySelection = undefined;
+    }
     const modalRef = this.cardinalitySelectionModalRef;
     this.cardinalitySelectionModalRef = undefined;
     modalRef?.dismiss();

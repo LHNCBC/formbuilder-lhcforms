@@ -32,6 +32,8 @@ describe('ExtensionCardinalitySelectionDlgComponent', () => {
 
     expect(firstTitleId).not.toBe(secondTitleId);
     expect(firstDescriptionId).not.toBe(secondDescriptionId);
+    expect(firstFixture.nativeElement.querySelector('input[type="radio"]').getAttribute('name'))
+      .not.toBe(secondFixture.nativeElement.querySelector('input[type="radio"]').getAttribute('name'));
     expect(firstFixture.nativeElement.querySelector(`[id="${firstTitleId}"]`)).not.toBeNull();
     expect(firstFixture.nativeElement.querySelector(`[id="${firstDescriptionId}"]`)).not.toBeNull();
     expect(secondFixture.nativeElement.querySelector(`[id="${secondTitleId}"]`)).not.toBeNull();

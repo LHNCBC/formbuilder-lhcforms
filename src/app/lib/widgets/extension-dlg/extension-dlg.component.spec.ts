@@ -210,6 +210,40 @@ describe('ExtensionDlgComponent', () => {
     expect(component.disableSave()).toBeTrue();
   });
 
+  it('should wait for another editor selecting the same definition', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/shared-selection';
+    const candidates: ExtensionCardinalityCandidate[] = [{
+      version: '1.0.0',
+      maxCardinality: '1'
+    }, {
+      version: '2.0.0',
+      maxCardinality: '*'
+    }];
+    const selectionChange = new Subject<void>();
+    resolveCardinalitySpy.and.returnValue(of({status: 'ambiguous', candidates}));
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const tryBeginSelectionSpy = spyOn(cardinalityService, 'tryBeginSelection').and.returnValue(false);
+    spyOn(cardinalityService, 'waitForSelection').and.returnValue(selectionChange);
+    const modalOpenSpy = spyOn(component.ngbModalService, 'open');
+
+    component.onChange({url: extensionUrl, valueString: 'second value'});
+
+    expect(tryBeginSelectionSpy).toHaveBeenCalledOnceWith(
+      extensionUrl,
+      cardinalityService.getSelectionGeneration(),
+      cardinalityService.getCurrentServerEndpoint()
+    );
+    expect(modalOpenSpy).not.toHaveBeenCalled();
+    expect(component.checkingExtensionCardinality()).toBeTrue();
+
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '1'}));
+    selectionChange.next();
+    fixture.detectChanges();
+
+    expect(component.duplicateUrlError()?.message).toContain('does not allow multiple');
+    expect(component.disableSave()).toBeTrue();
+  });
+
   it('should remain permissive with a warning when definition selection is skipped', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
     const candidates: ExtensionCardinalityCandidate[] = [{

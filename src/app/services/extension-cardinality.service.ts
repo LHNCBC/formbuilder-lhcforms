@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {Observable, of, timeout} from 'rxjs';
+import {Observable, of, Subject, timeout} from 'rxjs';
 import {catchError, map, shareReplay, switchMap} from 'rxjs/operators';
 import fhir from 'fhir/r4';
 import {
@@ -39,6 +39,7 @@ export class ExtensionCardinalityService {
   private readonly fhirService = inject(FhirService);
   private readonly lookupCache = new Map<string, Observable<ExtensionCardinalityResolution>>();
   private readonly selectionCache = new Map<string, ExtensionMaxCardinality | 'unverified'>();
+  private readonly pendingSelectionChanges = new Map<string, Subject<void>>();
   private selectionGeneration = 0;
 
   /**
@@ -152,6 +153,8 @@ export class ExtensionCardinalityService {
   clearSelections(): void {
     this.selectionGeneration++;
     this.selectionCache.clear();
+    this.pendingSelectionChanges.forEach((selectionChange) => selectionChange.complete());
+    this.pendingSelectionChanges.clear();
   }
 
   /**
@@ -168,6 +171,62 @@ export class ExtensionCardinalityService {
    */
   getCurrentServerEndpoint(): string {
     return this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
+  }
+
+  /**
+   * Claim ownership of the definition-selection dialog for one resolution context.
+   * @param url - Canonical extension URL requiring a user selection.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   * @returns True when the caller should open the selection dialog.
+   */
+  tryBeginSelection(
+    url: string,
+    selectionGeneration: number,
+    serverEndpoint: string
+  ): boolean {
+    if (selectionGeneration !== this.selectionGeneration) {
+      return false;
+    }
+    const selectionKey = this.getPendingSelectionKey(url, selectionGeneration, serverEndpoint);
+    if (this.pendingSelectionChanges.has(selectionKey)) {
+      return false;
+    }
+    this.pendingSelectionChanges.set(selectionKey, new Subject<void>());
+    return true;
+  }
+
+  /**
+   * Observe completion or release of another dialog selecting the same definition.
+   * @param url - Canonical extension URL awaiting a user selection.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   * @returns Observable that emits when the waiting editor should revalidate.
+   */
+  waitForSelection(
+    url: string,
+    selectionGeneration: number,
+    serverEndpoint: string
+  ): Observable<void> {
+    const selectionKey = this.getPendingSelectionKey(url, selectionGeneration, serverEndpoint);
+    return this.pendingSelectionChanges.get(selectionKey)?.asObservable() ?? of(undefined);
+  }
+
+  /**
+   * Release ownership and notify editors waiting for the same definition selection.
+   * @param url - Canonical extension URL whose selection dialog completed or closed.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   */
+  endSelection(url: string, selectionGeneration: number, serverEndpoint: string): void {
+    const selectionKey = this.getPendingSelectionKey(url, selectionGeneration, serverEndpoint);
+    const selectionChange = this.pendingSelectionChanges.get(selectionKey);
+    if (!selectionChange) {
+      return;
+    }
+    this.pendingSelectionChanges.delete(selectionKey);
+    selectionChange.next();
+    selectionChange.complete();
   }
 
   /**
@@ -205,6 +264,21 @@ export class ExtensionCardinalityService {
    */
   private getCacheKey(serverEndpoint: string, canonicalUrl: string): string {
     return `${serverEndpoint}|${canonicalUrl}`;
+  }
+
+  /**
+   * Build a key for an outstanding user selection within one Questionnaire.
+   * @param url - Canonical extension URL requiring a selection.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   * @returns Stable key for coordinating one selection dialog.
+   */
+  private getPendingSelectionKey(
+    url: string,
+    selectionGeneration: number,
+    serverEndpoint: string
+  ): string {
+    return `${selectionGeneration}|${this.getCacheKey(serverEndpoint, url?.trim())}`;
   }
 
   /**

@@ -31,7 +31,7 @@
             <tr (click)="select(index)" [class.table-primary]="selection === index">
               <td>
                 <input class="form-check-input" type="radio"
-                       name="extensionDefinition"
+                       [attr.name]="radioGroupName"
                        [value]="index"
                        [(ngModel)]="selection"
                        [attr.aria-label]="'Select ' + definitionName(candidate, index)">
@@ -48,7 +48,7 @@
           <tr (click)="selection = 'unknown'" [class.table-primary]="selection === 'unknown'">
             <td>
               <input class="form-check-input" type="radio"
-                     name="extensionDefinition"
+                     [attr.name]="radioGroupName"
                      value="unknown"
                      [(ngModel)]="selection"
                      aria-label="Allow without verifying cardinality">

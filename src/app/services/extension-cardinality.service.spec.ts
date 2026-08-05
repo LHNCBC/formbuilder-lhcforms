@@ -343,6 +343,24 @@ describe('ExtensionCardinalityService', () => {
     expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(1);
   });
 
+  it('should coordinate one outstanding selection per Questionnaire, server, and URL', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/coordinated-selection';
+    const selectionGeneration = service.getSelectionGeneration();
+    const serverEndpoint = service.getCurrentServerEndpoint();
+    let notifications = 0;
+
+    expect(service.tryBeginSelection(extensionUrl, selectionGeneration, serverEndpoint)).toBeTrue();
+    expect(service.tryBeginSelection(extensionUrl, selectionGeneration, serverEndpoint)).toBeFalse();
+    service.waitForSelection(extensionUrl, selectionGeneration, serverEndpoint)
+      .subscribe(() => notifications++);
+
+    service.endSelection(extensionUrl, selectionGeneration, serverEndpoint);
+
+    expect(notifications).toBe(1);
+    expect(service.tryBeginSelection(extensionUrl, selectionGeneration, serverEndpoint)).toBeTrue();
+    service.endSelection(extensionUrl, selectionGeneration, serverEndpoint);
+  });
+
   it('should cache an unknown result when no matching definition is returned', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/missing-extension';
     const results = [];

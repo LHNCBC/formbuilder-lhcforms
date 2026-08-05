@@ -45,6 +45,7 @@ export class ExtensionCardinalitySelectionDlgComponent {
   readonly dialogId = ++ExtensionCardinalitySelectionDlgComponent.nextDialogId;
   readonly titleId = `extensionCardinalitySelectionTitle-${this.dialogId}`;
   readonly descriptionId = `extensionCardinalitySelectionDescription-${this.dialogId}`;
+  readonly radioGroupName = `extensionDefinition-${this.dialogId}`;
 
   @Input()
   candidates: ExtensionCardinalityCandidate[] = [];
