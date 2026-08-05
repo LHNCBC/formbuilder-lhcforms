@@ -241,6 +241,19 @@ describe('ExtensionDlgComponent', () => {
     expect(component.disableSave()).toBeFalse();
     expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
       .toContain('Cardinality was not verified');
+
+    resolveCardinalitySpy.and.returnValue(of({status: 'unknown'}));
+    component.onChange({url: extensionUrl, valueString: 'second value'});
+    fixture.detectChanges();
+
+    expect(component.disableSave()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
+      .toContain('Cardinality was not verified');
+
+    component.onChange({url: 'http://example.org/StructureDefinition/different-extension'});
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.alert-warning')).toBeNull();
   });
 
   it('should allow a second occurrence when the resolved maximum is two', async () => {
