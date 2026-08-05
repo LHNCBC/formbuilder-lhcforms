@@ -161,6 +161,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
    */
   protected override updateDisableSave(): void {
     const url = (this.changedValue?.url || '').trim();
+    this.dismissObsoleteCardinalitySelection(url);
     const hasDuplicateUrl = this.countMatchingSiblingExtensions(url) > 0;
     const localCardinality = getExtensionMaxCardinality(url);
 
@@ -221,6 +222,35 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
       false,
       localCardinality
     );
+  }
+
+  /**
+   * Dismiss a selector that no longer belongs to the current URL or resolution context.
+   * @param url - Current normalized extension URL.
+   */
+  private dismissObsoleteCardinalitySelection(url: string): void {
+    const activeSelection = this.activeCardinalitySelection;
+    if (!activeSelection) {
+      return;
+    }
+    const isCurrentSelection = activeSelection.url === url
+      && activeSelection.selectionGeneration
+        === this.extensionCardinalityService.getSelectionGeneration()
+      && activeSelection.serverEndpoint
+        === this.extensionCardinalityService.getCurrentServerEndpoint();
+    if (isCurrentSelection) {
+      return;
+    }
+
+    const modalRef = this.cardinalitySelectionModalRef;
+    this.cardinalitySelectionModalRef = undefined;
+    this.activeCardinalitySelection = undefined;
+    this.extensionCardinalityService.endSelection(
+      activeSelection.url,
+      activeSelection.selectionGeneration,
+      activeSelection.serverEndpoint
+    );
+    modalRef?.dismiss();
   }
 
   /**
@@ -338,6 +368,13 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         return;
       }
       if (this.extensionCardinalityService.getCurrentServerEndpoint() !== serverEndpoint) {
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
+        this.updateDisableSave();
+        this.cdr.markForCheck();
+        return;
+      }
+      if ((this.changedValue?.url || '').trim() !== url
+        || this.countMatchingSiblingExtensions(url) === 0) {
         this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
         this.updateDisableSave();
         this.cdr.markForCheck();

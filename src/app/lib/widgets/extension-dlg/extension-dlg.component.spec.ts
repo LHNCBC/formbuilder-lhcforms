@@ -367,6 +367,47 @@ describe('ExtensionDlgComponent', () => {
     expect(fixture.nativeElement.querySelector('.alert-warning')).toBeNull();
   });
 
+  it('should replace an open definition selector when the extension URL changes', async () => {
+    const duplicateUrlA = 'http://example.org/StructureDefinition/conflicting-extension-a';
+    const duplicateUrlB = 'http://example.org/StructureDefinition/conflicting-extension-b';
+    const candidates: ExtensionCardinalityCandidate[] = [{
+      version: '1.0.0',
+      maxCardinality: '1'
+    }, {
+      version: '2.0.0',
+      maxCardinality: '*'
+    }];
+    const firstModalRef = {
+      componentInstance: {},
+      closed: new Subject<ExtensionCardinalityCandidate | null>(),
+      dismissed: new Subject<void>(),
+      dismiss: jasmine.createSpy('dismiss first selector')
+    } as any;
+    const replacementModalRef = {
+      componentInstance: {},
+      closed: new Subject<ExtensionCardinalityCandidate | null>(),
+      dismissed: new Subject<void>(),
+      dismiss: jasmine.createSpy('dismiss replacement selector')
+    } as any;
+    resolveCardinalitySpy.and.returnValue(of({status: 'ambiguous', candidates}));
+    await createDialog([
+      {url: duplicateUrlA, valueString: 'first A value'},
+      {url: duplicateUrlB, valueString: 'first B value'}
+    ], -1);
+    const modalOpenSpy = spyOn(component.ngbModalService, 'open')
+      .and.returnValues(firstModalRef, replacementModalRef);
+
+    component.onChange({url: duplicateUrlA, valueString: 'second A value'});
+    component.onChange({url: duplicateUrlB, valueString: 'second B value'});
+
+    expect(firstModalRef.dismiss).toHaveBeenCalledOnceWith();
+    expect(modalOpenSpy).toHaveBeenCalledTimes(2);
+    expect(component.cardinalitySelectionModalRef).toBe(replacementModalRef);
+    expect(component.activeCardinalitySelection?.url).toBe(duplicateUrlB);
+    expect(component.checkingExtensionCardinality()).toBeTrue();
+    expect(component.disableSave()).toBeTrue();
+  });
+
   it('should allow a second occurrence when the resolved maximum is two', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/server-max-two';
     resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '2'}));
