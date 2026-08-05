@@ -2,6 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {Observable, of, Subject, timeout} from 'rxjs';
 import {catchError, map, shareReplay, switchMap} from 'rxjs/operators';
 import fhir from 'fhir/r4';
+import Client from 'fhirclient/lib/Client';
 import {
   ExtensionMaxCardinality,
   getExtensionMaxCardinality,
@@ -97,7 +98,8 @@ export class ExtensionCardinalityService {
         + `url=${encodeURIComponent(normalizedUrl)}`
         + '&_count=100'
         + `&_format=${encodeURIComponent('application/fhir+json')}`;
-      lookup = this.getMatchingDefinitions(query, normalizedUrl).pipe(
+      const fhirClient = this.fhirService.getSmartClient();
+      lookup = this.getMatchingDefinitions(query, normalizedUrl, fhirClient).pipe(
         map((definitions) => this.resolveDefinitions(definitions)),
         catchError(() => of<ExtensionCardinalityResolution>({status: 'unknown'})),
         shareReplay({bufferSize: 1, refCount: false})
@@ -288,13 +290,15 @@ export class ExtensionCardinalityService {
    * Retrieve matching StructureDefinitions from the current page and all subsequent pages.
    * @param requestUrl - Relative or absolute FHIR search URL to request.
    * @param canonicalUrl - Canonical URL used to filter returned resources.
+   * @param fhirClient - FHIR client captured when the lookup began.
    * @returns Observable containing every matching StructureDefinition.
    */
   private getMatchingDefinitions(
     requestUrl: string,
-    canonicalUrl: string
+    canonicalUrl: string,
+    fhirClient: Client
   ): Observable<fhir.StructureDefinition[]> {
-    return this.fhirService.getBundleByUrl(requestUrl).pipe(
+    return this.fhirService.getBundleByUrl(requestUrl, fhirClient).pipe(
       timeout(CARDINALITY_LOOKUP_TIMEOUT_MS),
       switchMap((bundle) => {
         const definitions = bundle?.entry
@@ -307,7 +311,7 @@ export class ExtensionCardinalityService {
           return of(definitions);
         }
 
-        return this.getMatchingDefinitions(nextUrl, canonicalUrl).pipe(
+        return this.getMatchingDefinitions(nextUrl, canonicalUrl, fhirClient).pipe(
           map((nextDefinitions) => [...definitions, ...nextDefinitions])
         );
       })

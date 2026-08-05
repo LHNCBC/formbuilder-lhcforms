@@ -181,10 +181,14 @@ export class FhirService {
     /**
      * Get FHIR results using a url. The paginated results are obtained using a url in the result bundle
      * @param url - The URL referring to the resource bundle on the FHIR server.
+     * @param client - FHIR client that should perform the request.
      * @returns - FHIR resource bundle
      */
-    getBundleByUrl(url: fhirPrimitives.url): Observable<fhir.Bundle> {
-      return this.promiseToObservable(this.smartClient.request(url));
+    getBundleByUrl(
+      url: fhirPrimitives.url,
+      client: Client = this.smartClient
+    ): Observable<fhir.Bundle> {
+      return this.promiseToObservable(client.request(url));
     };
 
     /**

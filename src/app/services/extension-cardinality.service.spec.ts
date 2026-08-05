@@ -13,17 +13,20 @@ describe('ExtensionCardinalityService', () => {
   let service: ExtensionCardinalityService;
   let fhirService: jasmine.SpyObj<FhirService>;
   let selectedServer: FHIRServer;
+  let selectedClient: any;
 
   beforeEach(() => {
     selectedServer = {
       endpoint: selectedServerEndpoint,
       version: 'R5'
     };
+    selectedClient = {name: 'selected client'};
     fhirService = jasmine.createSpyObj<FhirService>(
       'FhirService',
-      ['getFhirServer', 'getBundleByUrl']
+      ['getFhirServer', 'getSmartClient', 'getBundleByUrl']
     );
     fhirService.getFhirServer.and.callFake(() => selectedServer);
+    fhirService.getSmartClient.and.callFake(() => selectedClient);
 
     TestBed.configureTestingModule({
       providers: [
@@ -83,7 +86,8 @@ describe('ExtensionCardinalityService', () => {
     service.resolveMaxCardinality(extensionUrl).subscribe((cardinality) => results.push(cardinality));
 
     expect(fhirService.getFhirServer).toHaveBeenCalled();
-    expect(fhirService.getBundleByUrl).toHaveBeenCalledOnceWith(expectedQuery(extensionUrl));
+    expect(fhirService.getBundleByUrl)
+      .toHaveBeenCalledOnceWith(expectedQuery(extensionUrl), selectedClient);
     response.next(bundle([{
       resourceType: 'StructureDefinition',
       url: extensionUrl,
@@ -248,7 +252,8 @@ describe('ExtensionCardinalityService', () => {
     service.resolveCardinality(extensionUrl).subscribe((resolution) => result = resolution);
 
     expect(result).toEqual({status: 'unknown'});
-    expect(fhirService.getBundleByUrl).toHaveBeenCalledOnceWith(expectedQuery(extensionUrl));
+    expect(fhirService.getBundleByUrl)
+      .toHaveBeenCalledOnceWith(expectedQuery(extensionUrl), selectedClient);
   });
 
   it('should ignore an unverified selection completed for a previous Questionnaire', () => {
@@ -263,7 +268,8 @@ describe('ExtensionCardinalityService', () => {
     service.resolveCardinality(extensionUrl).subscribe((resolution) => result = resolution);
 
     expect(result).toEqual({status: 'unknown'});
-    expect(fhirService.getBundleByUrl).toHaveBeenCalledOnceWith(expectedQuery(extensionUrl));
+    expect(fhirService.getBundleByUrl)
+      .toHaveBeenCalledOnceWith(expectedQuery(extensionUrl), selectedClient);
   });
 
   it('should follow search pagination before deciding whether results conflict', () => {
@@ -287,12 +293,41 @@ describe('ExtensionCardinalityService', () => {
 
     service.resolveCardinality(extensionUrl).subscribe((resolution) => result = resolution);
 
-    expect(fhirService.getBundleByUrl).toHaveBeenCalledWith(expectedQuery(extensionUrl));
-    expect(fhirService.getBundleByUrl).toHaveBeenCalledWith(nextUrl);
+    expect(fhirService.getBundleByUrl)
+      .toHaveBeenCalledWith(expectedQuery(extensionUrl), selectedClient);
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledWith(nextUrl, selectedClient);
     expect(result.status).toBe('ambiguous');
     if (result.status === 'ambiguous') {
       expect(result.candidates.length).toBe(2);
     }
+  });
+
+  it('should use the originating FHIR client for every page after the selected server changes', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-switch-paged-extension';
+    const nextUrl = 'StructureDefinition?url=server-switch-paged-extension&page=2';
+    const firstPage = new Subject<fhir.Bundle>();
+    const originatingClient = selectedClient;
+    const replacementClient = {name: 'replacement client'};
+    let result: ExtensionCardinalityResolution;
+    fhirService.getBundleByUrl.and.returnValues(
+      firstPage,
+      of(bundle([{
+        resourceType: 'StructureDefinition',
+        url: extensionUrl,
+        snapshot: {element: [{path: 'Extension', max: '1'}]}
+      }]))
+    );
+
+    service.resolveCardinality(extensionUrl).subscribe((resolution) => result = resolution);
+    selectedClient = replacementClient;
+    firstPage.next(bundle([], [{relation: 'next', url: nextUrl}]));
+    firstPage.complete();
+
+    expect(fhirService.getBundleByUrl.calls.allArgs()).toEqual([
+      [expectedQuery(extensionUrl), originatingClient],
+      [nextUrl, originatingClient]
+    ]);
+    expect(result).toEqual({status: 'resolved', maxCardinality: '1'});
   });
 
   it('should use a separately cached lookup after import or export selects another server', () => {
