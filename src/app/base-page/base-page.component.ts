@@ -303,9 +303,14 @@ export class BasePageComponent implements OnInit, OnDestroy {
    * Make
    * @param questionnaire - Input FHIR questionnaire
    * @param confirmSubjectTypeImport - Whether to ask how to handle imported subjectType values invalid in internal R5.
+   * @param clearCardinalitySelections - Whether to clear choices associated with the previous Questionnaire.
    * @return True when the questionnaire was loaded; false when the import was canceled.
    */
-  async setQuestionnaire(questionnaire: fhir.Questionnaire, confirmSubjectTypeImport = false): Promise<boolean> {
+  async setQuestionnaire(
+    questionnaire: fhir.Questionnaire,
+    confirmSubjectTypeImport = false,
+    clearCardinalitySelections = true
+  ): Promise<boolean> {
     let q = this.formService.convertToR5(questionnaire);
     if(confirmSubjectTypeImport) {
       q = await this.resolveSubjectTypeImportQuestionnaire(q, 'R5');
@@ -313,7 +318,9 @@ export class BasePageComponent implements OnInit, OnDestroy {
         return false;
       }
     }
-    this.extensionCardinalityService.clearSelections();
+    if(clearCardinalitySelections) {
+      this.extensionCardinalityService.clearSelections();
+    }
     this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
@@ -349,7 +356,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
     Object.keys(fieldsObj).forEach((f) => {
       q[f] = fieldsObj[f];
     });
-    this.setQuestionnaire(q);
+    this.setQuestionnaire(q, false, false);
   }
 
   /**

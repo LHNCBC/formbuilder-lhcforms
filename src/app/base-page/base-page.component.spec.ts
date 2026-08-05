@@ -42,6 +42,17 @@ describe('BasePageComponent', () => {
     expect(clearSelectionsSpy).toHaveBeenCalledOnceWith();
   });
 
+  it('should preserve extension cardinality selections when applying server-assigned fields', () => {
+    const cardinalityService = TestBed.inject(ExtensionCardinalityService);
+    const clearSelectionsSpy = spyOn(cardinalityService, 'clearSelections');
+    component.questionnaire = {resourceType: 'Questionnaire', status: 'draft'};
+
+    component.setFieldsAndInvokeChangeDetection({id: 'server-assigned-id'});
+
+    expect(clearSelectionsSpy).not.toHaveBeenCalled();
+    expect(component.questionnaire.id).toBe('server-assigned-id');
+  });
+
   describe('parseOpenerUrl()', () => {
     let formService: FormService;
 
