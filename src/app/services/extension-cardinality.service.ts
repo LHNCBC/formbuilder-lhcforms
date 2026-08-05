@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {Observable, of, Subject, timeout} from 'rxjs';
+import {Observable, of, Subject, throwError, timeout} from 'rxjs';
 import {catchError, map, shareReplay, switchMap} from 'rxjs/operators';
 import fhir from 'fhir/r4';
 import Client from 'fhirclient/lib/Client';
@@ -11,6 +11,7 @@ import {
 import {FhirService} from './fhir.service';
 
 const CARDINALITY_LOOKUP_TIMEOUT_MS = 5000;
+const MAX_CARDINALITY_LOOKUP_PAGES = 20;
 
 export interface ExtensionCardinalityCandidate {
   id?: string;
@@ -291,13 +292,21 @@ export class ExtensionCardinalityService {
    * @param requestUrl - Relative or absolute FHIR search URL to request.
    * @param canonicalUrl - Canonical URL used to filter returned resources.
    * @param fhirClient - FHIR client captured when the lookup began.
+   * @param visitedRequestUrls - Page URLs already requested during this lookup.
    * @returns Observable containing every matching StructureDefinition.
    */
   private getMatchingDefinitions(
     requestUrl: string,
     canonicalUrl: string,
-    fhirClient: Client
+    fhirClient: Client,
+    visitedRequestUrls = new Set<string>()
   ): Observable<fhir.StructureDefinition[]> {
+    if (visitedRequestUrls.has(requestUrl)
+      || visitedRequestUrls.size >= MAX_CARDINALITY_LOOKUP_PAGES) {
+      return throwError(() => new Error('Invalid or excessive FHIR pagination'));
+    }
+    const nextVisitedRequestUrls = new Set(visitedRequestUrls).add(requestUrl);
+
     return this.fhirService.getBundleByUrl(requestUrl, fhirClient).pipe(
       timeout(CARDINALITY_LOOKUP_TIMEOUT_MS),
       switchMap((bundle) => {
@@ -311,7 +320,12 @@ export class ExtensionCardinalityService {
           return of(definitions);
         }
 
-        return this.getMatchingDefinitions(nextUrl, canonicalUrl, fhirClient).pipe(
+        return this.getMatchingDefinitions(
+          nextUrl,
+          canonicalUrl,
+          fhirClient,
+          nextVisitedRequestUrls
+        ).pipe(
           map((nextDefinitions) => [...definitions, ...nextDefinitions])
         );
       })

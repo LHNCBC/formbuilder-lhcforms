@@ -302,6 +302,35 @@ describe('ExtensionCardinalityService', () => {
     }
   });
 
+  it('should return unknown when FHIR pagination contains a cycle', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/cyclic-pagination-extension';
+    const firstPageUrl = expectedQuery(extensionUrl);
+    let result: ExtensionCardinalityResolution;
+    fhirService.getBundleByUrl.and.returnValue(
+      of(bundle([], [{relation: 'next', url: firstPageUrl}]))
+    );
+
+    service.resolveCardinality(extensionUrl).subscribe((resolution) => result = resolution);
+
+    expect(result).toEqual({status: 'unknown'});
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledOnceWith(firstPageUrl, selectedClient);
+  });
+
+  it('should return unknown when FHIR pagination exceeds the page limit', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/excessive-pagination-extension';
+    let nextPage = 2;
+    let result: ExtensionCardinalityResolution;
+    fhirService.getBundleByUrl.and.callFake(() => of(bundle([], [{
+      relation: 'next',
+      url: `StructureDefinition?url=excessive-pagination-extension&page=${nextPage++}`
+    }])));
+
+    service.resolveCardinality(extensionUrl).subscribe((resolution) => result = resolution);
+
+    expect(result).toEqual({status: 'unknown'});
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(20);
+  });
+
   it('should use the originating FHIR client for every page after the selected server changes', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/server-switch-paged-extension';
     const nextUrl = 'StructureDefinition?url=server-switch-paged-extension&page=2';
