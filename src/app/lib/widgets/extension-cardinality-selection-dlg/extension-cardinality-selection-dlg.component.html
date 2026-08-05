@@ -1,13 +1,13 @@
-<div role="dialog" aria-labelledby="extensionCardinalitySelectionTitle"
-     aria-describedby="extensionCardinalitySelectionDescription">
+<div role="dialog" [attr.aria-labelledby]="titleId"
+     [attr.aria-describedby]="descriptionId">
   <div class="modal-header bg-primary">
-    <h4 class="modal-title text-white" id="extensionCardinalitySelectionTitle">
+    <h4 class="modal-title text-white" [attr.id]="titleId">
       Select extension definition
     </h4>
   </div>
 
   <div class="modal-body">
-    <p id="extensionCardinalitySelectionDescription">
+    <p [attr.id]="descriptionId">
       The FHIR server returned multiple definitions with different maximum cardinalities.
       Select the definition that applies to this Questionnaire.
     </p>

@@ -39,7 +39,12 @@ import {ExtensionCardinalityCandidate} from '../../../services/extension-cardina
   `]
 })
 export class ExtensionCardinalitySelectionDlgComponent {
+  private static nextDialogId = 0;
+
   activeModal = inject(NgbActiveModal);
+  readonly dialogId = ++ExtensionCardinalitySelectionDlgComponent.nextDialogId;
+  readonly titleId = `extensionCardinalitySelectionTitle-${this.dialogId}`;
+  readonly descriptionId = `extensionCardinalitySelectionDescription-${this.dialogId}`;
 
   @Input()
   candidates: ExtensionCardinalityCandidate[] = [];
