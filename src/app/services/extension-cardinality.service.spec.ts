@@ -196,6 +196,36 @@ describe('ExtensionCardinalityService', () => {
     expect(fhirService.getBundleByUrl).not.toHaveBeenCalled();
   });
 
+  it('should clear user selections without discarding the server lookup', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
+    fhirService.getBundleByUrl.and.returnValue(of(bundle([{
+      resourceType: 'StructureDefinition',
+      url: extensionUrl,
+      version: '1.0.0',
+      snapshot: {element: [{path: 'Extension', max: '1'}]}
+    }, {
+      resourceType: 'StructureDefinition',
+      url: extensionUrl,
+      version: '2.0.0',
+      snapshot: {element: [{path: 'Extension', max: '*'}]}
+    }])));
+    let initialResult: ExtensionCardinalityResolution;
+    service.resolveCardinality(extensionUrl).subscribe((resolution) => initialResult = resolution);
+    expect(initialResult.status).toBe('ambiguous');
+    if (initialResult.status !== 'ambiguous') {
+      fail('Expected ambiguous cardinality results');
+      return;
+    }
+    service.rememberSelection(extensionUrl, initialResult.candidates[0]);
+
+    service.clearSelections();
+
+    let resultAfterClear: ExtensionCardinalityResolution;
+    service.resolveCardinality(extensionUrl).subscribe((resolution) => resultAfterClear = resolution);
+    expect(resultAfterClear.status).toBe('ambiguous');
+    expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(1);
+  });
+
   it('should follow search pagination before deciding whether results conflict', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/paged-extension';
     const nextUrl = `${selectedServerEndpoint}/StructureDefinition?url=paged-extension&page=2`;

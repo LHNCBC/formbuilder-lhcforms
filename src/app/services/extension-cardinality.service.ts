@@ -127,6 +127,14 @@ export class ExtensionCardinalityService {
   }
 
   /**
+   * Clear user decisions when a different Questionnaire is loaded.
+   * Server lookup results remain cached because they are not Questionnaire-specific.
+   */
+  clearSelections(): void {
+    this.selectionCache.clear();
+  }
+
+  /**
    * Cache a cardinality decision for the selected server and canonical URL.
    * @param url - Canonical extension URL associated with the decision.
    * @param cardinality - Maximum cardinality to cache.

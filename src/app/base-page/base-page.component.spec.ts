@@ -3,6 +3,7 @@ import {ComponentFixture, TestBed} from '@angular/core/testing';
 import { BasePageComponent } from './base-page.component';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import {FormService} from '../services/form.service';
+import {ExtensionCardinalityService} from '../services/extension-cardinality.service';
 
 describe('BasePageComponent', () => {
   let component: BasePageComponent;
@@ -30,6 +31,15 @@ describe('BasePageComponent', () => {
         .toContain('How do you want to create your form?');
       done();
     });
+  });
+
+  it('should clear extension cardinality selections when loading a Questionnaire', async () => {
+    const cardinalityService = TestBed.inject(ExtensionCardinalityService);
+    const clearSelectionsSpy = spyOn(cardinalityService, 'clearSelections');
+
+    await component.setQuestionnaire({resourceType: 'Questionnaire', status: 'draft'});
+
+    expect(clearSelectionsSpy).toHaveBeenCalledOnceWith();
   });
 
   describe('parseOpenerUrl()', () => {

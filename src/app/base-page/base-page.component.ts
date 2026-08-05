@@ -29,6 +29,7 @@ import {FhirExportDlgComponent} from '../lib/widgets/fhir-export-dlg/fhir-export
 import {LoincNoticeComponent} from '../lib/widgets/loinc-notice/loinc-notice.component';
 import {SharedObjectService} from '../services/shared-object.service';
 import {SUBJECT_TYPE_COMPATIBILITY_DIALOG, SubjectTypeService} from '../services/subject-type.service';
+import {ExtensionCardinalityService} from '../services/extension-cardinality.service';
 
 type ExportType = 'CREATE' | 'UPDATE';
 type SubjectTypeExportChoice = 'cancel' | 'export' | 'drop';
@@ -79,6 +80,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
   private appJsonPipe = inject(AppJsonPipe);
   private matDlg = inject(MatDialog);
   private subjectTypeService = inject(SubjectTypeService);
+  private extensionCardinalityService = inject(ExtensionCardinalityService);
 
   constructor() {
     this.acResult = null;
@@ -311,6 +313,7 @@ export class BasePageComponent implements OnInit, OnDestroy {
         return false;
       }
     }
+    this.extensionCardinalityService.clearSelections();
     this.questionnaire = this.formService.updateFhirQuestionnaire(q);
     this.modelService.questionnaire = this.questionnaire;
     this.formValue = Object.assign({}, this.questionnaire);
