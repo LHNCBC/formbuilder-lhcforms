@@ -200,6 +200,18 @@ describe('ExtensionCardinalityService', () => {
     expect(fhirService.getBundleByUrl).not.toHaveBeenCalled();
   });
 
+  it('should preserve a selected definition with an unknown maximum as unverified', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/unknown-maximum-extension';
+    let result: ExtensionCardinalityResolution;
+
+    service.rememberSelection(extensionUrl, {maxCardinality: 'unknown'});
+    service.resolveCardinality(extensionUrl)
+      .subscribe((resolution) => result = resolution);
+
+    expect(result).toEqual({status: 'unverified'});
+    expect(fhirService.getBundleByUrl).not.toHaveBeenCalled();
+  });
+
   it('should clear user selections without discarding the server lookup', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
     fhirService.getBundleByUrl.and.returnValue(of(bundle([{

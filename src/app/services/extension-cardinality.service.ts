@@ -127,6 +127,10 @@ export class ExtensionCardinalityService {
     if (selectionGeneration !== this.selectionGeneration) {
       return;
     }
+    if (candidate.maxCardinality === 'unknown') {
+      this.rememberUnverified(url, selectionGeneration, serverEndpoint);
+      return;
+    }
     this.rememberCardinality(url, candidate.maxCardinality, serverEndpoint);
   }
 

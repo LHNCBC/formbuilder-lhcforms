@@ -327,6 +327,39 @@ describe('ExtensionDlgComponent', () => {
       .toContain('Cardinality was not verified');
   });
 
+  it('should warn when the selected definition has an unknown maximum', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/unknown-maximum-extension';
+    const candidates: ExtensionCardinalityCandidate[] = [{
+      version: '1.0.0',
+      maxCardinality: '1'
+    }, {
+      version: '2.0.0',
+      maxCardinality: 'unknown'
+    }];
+    const closed = new Subject<ExtensionCardinalityCandidate | null>();
+    const modalRef = {
+      componentInstance: {},
+      closed,
+      dismissed: new Subject<void>()
+    } as any;
+    resolveCardinalitySpy.and.returnValue(of({status: 'ambiguous', candidates}));
+    fixture.destroy();
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    spyOn(component.ngbModalService, 'open').and.returnValue(modalRef);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = extensionUrl;
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    closed.next(candidates[1]);
+    fixture.detectChanges();
+
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.disableSave()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
+      .toContain('Cardinality was not verified');
+  });
+
   it('should reopen definition selection when its dialog is unexpectedly dismissed', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
     const candidates: ExtensionCardinalityCandidate[] = [{

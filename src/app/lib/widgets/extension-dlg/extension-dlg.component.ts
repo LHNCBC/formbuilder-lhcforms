@@ -395,7 +395,11 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
           serverEndpoint
         );
         this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
-        this.finishCardinalitySelection(url, candidate.maxCardinality);
+        this.finishCardinalitySelection(
+          url,
+          candidate.maxCardinality,
+          candidate.maxCardinality === 'unknown'
+        );
       } else {
         this.extensionCardinalityService.rememberUnverified(url, selectionGeneration, serverEndpoint);
         this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
@@ -420,12 +424,12 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
    *
    * @param url - Canonical URL associated with the completed selection.
    * @param cardinality - Selected maximum or "unknown".
-   * @param wasSkipped - Whether the user chose to continue without verification.
+   * @param wasUnverified - Whether the selected result has no verified cardinality.
    */
   private finishCardinalitySelection(
     url: string,
     cardinality: ExtensionMaxCardinality,
-    wasSkipped = false
+    wasUnverified = false
   ): void {
     if ((this.changedValue?.url || '').trim() !== url
       || this.countMatchingSiblingExtensions(url) === 0) {
@@ -433,8 +437,8 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     }
 
     this.checkingExtensionCardinality.set(false);
-    this.cardinalityWarning.set(wasSkipped
-      ? 'Cardinality was not verified because no extension definition was selected. Additional occurrences will be allowed.'
+    this.cardinalityWarning.set(wasUnverified
+      ? 'Cardinality was not verified. Additional occurrences will be allowed.'
       : null);
     this.applyDuplicateValidation(this.wouldExceedMaximum(cardinality, url), false, cardinality);
     this.cdr.markForCheck();
