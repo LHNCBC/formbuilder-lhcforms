@@ -263,6 +263,40 @@ describe('ExtensionDlgComponent', () => {
       .toContain('Cardinality was not verified');
   });
 
+  it('should keep Save disabled when definition selection is unexpectedly dismissed', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
+    const candidates: ExtensionCardinalityCandidate[] = [{
+      version: '1.0.0',
+      maxCardinality: '1'
+    }, {
+      version: '2.0.0',
+      maxCardinality: '*'
+    }];
+    const dismissed = new Subject<void>();
+    const modalRef = {
+      componentInstance: {},
+      closed: new Subject<ExtensionCardinalityCandidate | null>(),
+      dismissed
+    } as any;
+    resolveCardinalitySpy.and.returnValue(of({status: 'ambiguous', candidates}));
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const modalOpenSpy = spyOn(component.ngbModalService, 'open').and.returnValue(modalRef);
+    const rememberUnverifiedSpy = spyOn(cardinalityService, 'rememberUnverified');
+
+    component.onChange({url: extensionUrl, valueString: 'second value'});
+    dismissed.next();
+    fixture.detectChanges();
+
+    expect(modalOpenSpy).toHaveBeenCalledOnceWith(
+      jasmine.any(Function),
+      jasmine.objectContaining({backdrop: 'static', keyboard: false})
+    );
+    expect(rememberUnverifiedSpy).not.toHaveBeenCalled();
+    expect(component.checkingExtensionCardinality()).toBeTrue();
+    expect(component.disableSave()).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.alert-warning')).toBeNull();
+  });
+
   it('should allow a second occurrence when the resolved maximum is two', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/server-max-two';
     resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '2'}));

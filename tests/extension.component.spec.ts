@@ -178,6 +178,9 @@ test.describe('extension.component', async () => {
 
     const selectionDialog = page.getByRole('dialog', {name: 'Select extension definition'});
     await expect(selectionDialog).toBeVisible();
+    await expect(selectionDialog.getByRole('button', {name: 'Close'})).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(selectionDialog).toBeVisible();
     const definitionRows = selectionDialog.getByRole('row');
     await expect(definitionRows).toHaveCount(4);
     const r4Cells = definitionRows.nth(1).getByRole('cell');

@@ -223,6 +223,8 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     }
 
     const modalRef = this.ngbModalService.open(ExtensionCardinalitySelectionDlgComponent, {
+      backdrop: 'static',
+      keyboard: false,
       scrollable: true,
       size: 'xl'
     });
@@ -247,8 +249,8 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         return;
       }
       this.cardinalitySelectionModalRef = undefined;
-      this.extensionCardinalityService.rememberUnverified(url);
-      this.finishCardinalitySelection(url, 'unknown', true);
+      this.applyDuplicateValidation(false, true);
+      this.cdr.markForCheck();
     });
   }
 
