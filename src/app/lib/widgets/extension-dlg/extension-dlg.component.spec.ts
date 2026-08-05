@@ -324,7 +324,7 @@ describe('ExtensionDlgComponent', () => {
       .toContain('Cardinality was not verified');
   });
 
-  it('should keep Save disabled when definition selection is unexpectedly dismissed', async () => {
+  it('should reopen definition selection when its dialog is unexpectedly dismissed', async () => {
     const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
     const candidates: ExtensionCardinalityCandidate[] = [{
       version: '1.0.0',
@@ -333,26 +333,35 @@ describe('ExtensionDlgComponent', () => {
       version: '2.0.0',
       maxCardinality: '*'
     }];
-    const dismissed = new Subject<void>();
-    const modalRef = {
+    const firstDismissed = new Subject<void>();
+    const firstModalRef = {
       componentInstance: {},
       closed: new Subject<ExtensionCardinalityCandidate | null>(),
-      dismissed
+      dismissed: firstDismissed
+    } as any;
+    const replacementModalRef = {
+      componentInstance: {},
+      closed: new Subject<ExtensionCardinalityCandidate | null>(),
+      dismissed: new Subject<void>(),
+      dismiss: jasmine.createSpy('dismiss')
     } as any;
     resolveCardinalitySpy.and.returnValue(of({status: 'ambiguous', candidates}));
     await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
-    const modalOpenSpy = spyOn(component.ngbModalService, 'open').and.returnValue(modalRef);
+    const modalOpenSpy = spyOn(component.ngbModalService, 'open')
+      .and.returnValues(firstModalRef, replacementModalRef);
     const rememberUnverifiedSpy = spyOn(cardinalityService, 'rememberUnverified');
 
     component.onChange({url: extensionUrl, valueString: 'second value'});
-    dismissed.next();
+    firstDismissed.next();
     fixture.detectChanges();
 
-    expect(modalOpenSpy).toHaveBeenCalledOnceWith(
+    expect(modalOpenSpy).toHaveBeenCalledTimes(2);
+    expect(modalOpenSpy).toHaveBeenCalledWith(
       jasmine.any(Function),
       jasmine.objectContaining({backdrop: 'static', keyboard: false})
     );
     expect(rememberUnverifiedSpy).not.toHaveBeenCalled();
+    expect(component.cardinalitySelectionModalRef).toBe(replacementModalRef);
     expect(component.checkingExtensionCardinality()).toBeTrue();
     expect(component.disableSave()).toBeTrue();
     expect(fixture.nativeElement.querySelector('.alert-warning')).toBeNull();

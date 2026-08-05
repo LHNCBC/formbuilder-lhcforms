@@ -248,6 +248,20 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
       return;
     }
 
+    this.waitForCardinalitySelection(url, selectionGeneration, serverEndpoint);
+  }
+
+  /**
+   * Revalidate after the editor coordinating this definition selection releases ownership.
+   * @param url - Canonical extension URL awaiting a user selection.
+   * @param selectionGeneration - Questionnaire generation that initiated the lookup.
+   * @param serverEndpoint - FHIR server endpoint that returned the candidates.
+   */
+  private waitForCardinalitySelection(
+    url: string,
+    selectionGeneration: number,
+    serverEndpoint: string
+  ): void {
     this.cardinalitySelectionWaitSubscription = this.extensionCardinalityService.waitForSelection(
       url,
       selectionGeneration,
@@ -350,6 +364,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
       }
       this.cardinalitySelectionModalRef = undefined;
       this.activeCardinalitySelection = undefined;
+      this.waitForCardinalitySelection(url, selectionGeneration, serverEndpoint);
       this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
       this.applyDuplicateValidation(false, true);
       this.cdr.markForCheck();
