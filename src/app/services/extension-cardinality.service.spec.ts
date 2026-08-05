@@ -184,6 +184,18 @@ describe('ExtensionCardinalityService', () => {
     expect(fhirService.getBundleByUrl).toHaveBeenCalledTimes(1);
   });
 
+  it('should preserve an unverified selection separately from an unknown lookup', () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/conflicting-extension';
+    let result: ExtensionCardinalityResolution;
+
+    service.rememberUnverified(extensionUrl);
+    service.resolveCardinality(extensionUrl)
+      .subscribe((resolution) => result = resolution);
+
+    expect(result).toEqual({status: 'unverified'});
+    expect(fhirService.getBundleByUrl).not.toHaveBeenCalled();
+  });
+
   it('should follow search pagination before deciding whether results conflict', () => {
     const extensionUrl = 'http://example.org/StructureDefinition/paged-extension';
     const nextUrl = `${selectedServerEndpoint}/StructureDefinition?url=paged-extension&page=2`;

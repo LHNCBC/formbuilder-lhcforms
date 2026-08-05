@@ -25,6 +25,7 @@ export interface ExtensionCardinalityCandidate {
 export type ExtensionCardinalityResolution =
   | {status: 'resolved'; maxCardinality: KnownExtensionMaxCardinality}
   | {status: 'unknown'}
+  | {status: 'unverified'}
   | {status: 'ambiguous'; candidates: ExtensionCardinalityCandidate[]};
 
 /**
@@ -37,7 +38,7 @@ export type ExtensionCardinalityResolution =
 export class ExtensionCardinalityService {
   private readonly fhirService = inject(FhirService);
   private readonly lookupCache = new Map<string, Observable<ExtensionCardinalityResolution>>();
-  private readonly selectionCache = new Map<string, ExtensionMaxCardinality>();
+  private readonly selectionCache = new Map<string, ExtensionMaxCardinality | 'unverified'>();
 
   /**
    * Resolve an extension's maximum cardinality.
@@ -62,7 +63,7 @@ export class ExtensionCardinalityService {
    * canonical URLs are looked up once per selected server and cached, including
    * not-found and failed lookups.
    * @param url - Canonical extension URL to resolve.
-   * @returns Observable containing a resolved, unknown, or ambiguous result.
+   * @returns Observable containing a resolved, unknown, unverified, or ambiguous result.
    */
   resolveCardinality(url: string): Observable<ExtensionCardinalityResolution> {
     const normalizedUrl = url?.trim();
@@ -78,6 +79,9 @@ export class ExtensionCardinalityService {
     const cacheKey = this.getCacheKey(serverEndpoint, normalizedUrl);
     const selectedCardinality = this.selectionCache.get(cacheKey);
     if (selectedCardinality) {
+      if (selectedCardinality === 'unverified') {
+        return of({status: 'unverified'});
+      }
       return selectedCardinality === 'unknown'
         ? of({status: 'unknown'})
         : of({status: 'resolved', maxCardinality: selectedCardinality});
@@ -110,11 +114,16 @@ export class ExtensionCardinalityService {
   }
 
   /**
-   * Remember that the user declined to choose among ambiguous definitions.
+   * Remember that the user chose to continue without verifying cardinality.
    * @param url - Canonical extension URL whose cardinality remains unknown.
    */
-  rememberUnknown(url: string): void {
-    this.rememberCardinality(url, 'unknown');
+  rememberUnverified(url: string): void {
+    const normalizedUrl = url?.trim();
+    const serverEndpoint = this.fhirService.getFhirServer().endpoint.replace(/\/$/, '');
+    this.selectionCache.set(
+      this.getCacheKey(serverEndpoint, normalizedUrl),
+      'unverified'
+    );
   }
 
   /**

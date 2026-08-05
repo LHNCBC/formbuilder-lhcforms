@@ -86,7 +86,6 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
 
   cardinalityLookupSubscription: Subscription;
   cardinalitySelectionModalRef?: NgbModalRef;
-  private skippedCardinalityUrl: string | null = null;
 
   /**
    * Create a new Extension row model.
@@ -143,10 +142,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     const hasDuplicateUrl = this.countMatchingSiblingExtensions(url) > 0;
     const localCardinality = getExtensionMaxCardinality(url);
 
-    if (this.skippedCardinalityUrl !== url) {
-      this.skippedCardinalityUrl = null;
-      this.cardinalityWarning.set(null);
-    }
+    this.cardinalityWarning.set(null);
 
     this.cardinalityLookupSubscription?.unsubscribe();
     if (hasDuplicateUrl && localCardinality === 'unknown') {
@@ -164,6 +160,11 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
             return;
           }
 
+          if (resolution.status === 'unverified') {
+            this.finishCardinalitySelection(url, 'unknown', true);
+            return;
+          }
+
           const cardinality = resolution.status === 'resolved'
             ? resolution.maxCardinality
             : 'unknown';
@@ -175,7 +176,6 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     }
 
     this.checkingExtensionCardinality.set(false);
-    this.skippedCardinalityUrl = null;
     this.cardinalityWarning.set(null);
     this.applyDuplicateValidation(
       this.wouldExceedMaximum(localCardinality, url),
@@ -238,7 +238,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         this.extensionCardinalityService.rememberSelection(url, candidate);
         this.finishCardinalitySelection(url, candidate.maxCardinality);
       } else {
-        this.extensionCardinalityService.rememberUnknown(url);
+        this.extensionCardinalityService.rememberUnverified(url);
         this.finishCardinalitySelection(url, 'unknown', true);
       }
     });
@@ -247,7 +247,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
         return;
       }
       this.cardinalitySelectionModalRef = undefined;
-      this.extensionCardinalityService.rememberUnknown(url);
+      this.extensionCardinalityService.rememberUnverified(url);
       this.finishCardinalitySelection(url, 'unknown', true);
     });
   }
@@ -270,7 +270,6 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
     }
 
     this.checkingExtensionCardinality.set(false);
-    this.skippedCardinalityUrl = wasSkipped ? url : null;
     this.cardinalityWarning.set(wasSkipped
       ? 'Cardinality was not verified because no extension definition was selected. Additional occurrences will be allowed.'
       : null);

@@ -226,7 +226,7 @@ describe('ExtensionDlgComponent', () => {
     }));
     await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
     spyOn(component.ngbModalService, 'open').and.returnValue(modalRef);
-    const rememberUnknownSpy = spyOn(cardinalityService, 'rememberUnknown');
+    const rememberUnverifiedSpy = spyOn(cardinalityService, 'rememberUnverified');
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
 
     urlInput.value = extensionUrl;
@@ -236,13 +236,13 @@ describe('ExtensionDlgComponent', () => {
     closed.next(null);
     fixture.detectChanges();
 
-    expect(rememberUnknownSpy).toHaveBeenCalledOnceWith(extensionUrl);
+    expect(rememberUnverifiedSpy).toHaveBeenCalledOnceWith(extensionUrl);
     expect(component.duplicateUrlError()).toBeNull();
     expect(component.disableSave()).toBeFalse();
     expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
       .toContain('Cardinality was not verified');
 
-    resolveCardinalitySpy.and.returnValue(of({status: 'unknown'}));
+    resolveCardinalitySpy.and.returnValue(of({status: 'unverified'}));
     component.onChange({url: extensionUrl, valueString: 'second value'});
     fixture.detectChanges();
 
@@ -254,6 +254,13 @@ describe('ExtensionDlgComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.alert-warning')).toBeNull();
+
+    component.onChange({url: extensionUrl, valueString: 'second value'});
+    fixture.detectChanges();
+
+    expect(component.disableSave()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.alert-warning')?.textContent)
+      .toContain('Cardinality was not verified');
   });
 
   it('should allow a second occurrence when the resolved maximum is two', async () => {
