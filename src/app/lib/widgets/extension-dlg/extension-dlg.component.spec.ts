@@ -437,6 +437,59 @@ describe('ExtensionDlgComponent', () => {
     expect(fixture.nativeElement.querySelector('.alert-warning')).toBeNull();
   });
 
+  it('should discard a lookup result from a previously selected FHIR server', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-switch-extension';
+    const oldServerResult = new Subject<ExtensionCardinalityResolution>();
+    resolveCardinalitySpy.and.returnValue(oldServerResult);
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const endpointSpy = spyOn(cardinalityService, 'getCurrentServerEndpoint')
+      .and.returnValue('https://old.example.org/fhir');
+
+    component.onChange({url: extensionUrl, valueString: 'second value'});
+    endpointSpy.and.returnValue('https://new.example.org/fhir');
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '*'}));
+    oldServerResult.next({status: 'resolved', maxCardinality: '1'});
+
+    expect(resolveCardinalitySpy).toHaveBeenCalledTimes(2);
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.checkingExtensionCardinality()).toBeFalse();
+    expect(component['isSaveAllowed']()).toBeTrue();
+  });
+
+  it('should discard a definition selected after the FHIR server changes', async () => {
+    const extensionUrl = 'http://example.org/StructureDefinition/server-switch-selection';
+    const candidates: ExtensionCardinalityCandidate[] = [{
+      version: '1.0.0',
+      maxCardinality: '1'
+    }, {
+      version: '2.0.0',
+      maxCardinality: '*'
+    }];
+    const closed = new Subject<ExtensionCardinalityCandidate | null>();
+    const modalRef = {
+      componentInstance: {},
+      closed,
+      dismissed: new Subject<void>()
+    } as any;
+    resolveCardinalitySpy.and.returnValue(of({status: 'ambiguous', candidates}));
+    await createDialog([{url: extensionUrl, valueString: 'first value'}], -1);
+    const endpointSpy = spyOn(cardinalityService, 'getCurrentServerEndpoint')
+      .and.returnValue('https://old.example.org/fhir');
+    spyOn(component.ngbModalService, 'open').and.returnValue(modalRef);
+    const rememberSelectionSpy = spyOn(cardinalityService, 'rememberSelection');
+
+    component.onChange({url: extensionUrl, valueString: 'second value'});
+    endpointSpy.and.returnValue('https://new.example.org/fhir');
+    resolveCardinalitySpy.and.returnValue(of({status: 'resolved', maxCardinality: '*'}));
+    closed.next(candidates[0]);
+
+    expect(rememberSelectionSpy).not.toHaveBeenCalled();
+    expect(resolveCardinalitySpy).toHaveBeenCalledTimes(2);
+    expect(component.duplicateUrlError()).toBeNull();
+    expect(component.checkingExtensionCardinality()).toBeFalse();
+    expect(component['isSaveAllowed']()).toBeTrue();
+  });
+
   it('should display a duplicate error with an icon and invalid styling under the URL field', async () => {
     await createDialog([{url: EXTENSION_URL_ENTRY_FORMAT, valueString: 'first'}], -1);
     const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');

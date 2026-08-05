@@ -179,6 +179,11 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
             this.matDialogRef.close(false);
             return;
           }
+          if (this.extensionCardinalityService.getCurrentServerEndpoint() !== serverEndpoint) {
+            this.updateDisableSave();
+            this.cdr.markForCheck();
+            return;
+          }
           if ((this.changedValue?.url || '').trim() !== url
             || this.countMatchingSiblingExtensions(url) === 0) {
             return;
@@ -316,6 +321,12 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
       if (this.extensionCardinalityService.getSelectionGeneration() !== selectionGeneration) {
         this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
         this.matDialogRef.close(false);
+        return;
+      }
+      if (this.extensionCardinalityService.getCurrentServerEndpoint() !== serverEndpoint) {
+        this.extensionCardinalityService.endSelection(url, selectionGeneration, serverEndpoint);
+        this.updateDisableSave();
+        this.cdr.markForCheck();
         return;
       }
       if (candidate) {
