@@ -530,6 +530,25 @@ test.describe('Item control', () => {
         const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(json.item[0].extension).toBeUndefined();
       });
+
+      test('should preserve choice layout extensions when item type still supports an answer list', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Horizontal');
+        await page.locator('#__\\$columnCount').fill('3');
+
+        await PWUtils.selectDataType(page, 'string');
+
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toBeChecked();
+        await expect(page.locator('#__\\$columnCount')).toHaveValue('3');
+
+        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([
+          choiceOrientationExtension('horizontal'),
+          columnCountExtension(3)
+        ]);
+      });
     });
 
     test('should import with item having item-control extension', async ({ page }) => {

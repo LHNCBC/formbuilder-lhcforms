@@ -157,7 +157,7 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
       this.dataType = type;
       // Clear item-control selections that do not apply to the new data type.
       if (type !== 'coding' && type !== 'group' && type !== 'display') {
-        this.clearExtensionItemControlSelection(false);
+        this.clearExtensionItemControlSelection(false, false);
         if(!this.supportsAnswerList(type)) {
           this.removeAnswerListLayoutExtensions();
         }
@@ -353,13 +353,14 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
   /**
    * Clear extension for the 'Item Control' radio button.
    * @param announce - Whether to announce a user-initiated clear action.
+   * @param removeAnswerListLayout - Whether to also remove answer-list layout extensions.
    */
-  clearExtensionItemControlSelection(announce = true) {
+  clearExtensionItemControlSelection(announce = true, removeAnswerListLayout = true) {
     this.option = '';
     this.syncItemControlProxyValue(this.option);
     this.isItemControlDeprecated = this.checkDeprecatedItemControl(this.option);
     this.extensionsService.removeExtensionsByUrl(ItemControlComponent.itemControlUrl);
-    if (this.answerList) {
+    if (removeAnswerListLayout && this.answerList) {
       this.removeAnswerListLayoutExtensions();
     }
 
