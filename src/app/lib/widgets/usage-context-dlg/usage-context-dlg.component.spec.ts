@@ -6,6 +6,7 @@ type DialogInternals = {
   normalizeValueForSave(value: UsageContextEditModel): UsageContextEditModel;
   getRangeValidationError(value: UsageContextEditModel): string;
   getMissingQuantitySystemPaths(value: UsageContextEditModel): string[];
+  getReferenceValidationError(value: UsageContextEditModel): string;
   hasReferenceContent(reference: UsageContextEditModel['valueReference']): boolean;
   getCurrentFormPropertyValue(property: FormProperty): unknown;
   inputModel: UsageContextEditModel;
@@ -13,6 +14,13 @@ type DialogInternals = {
     getIdentifier: (property: FormProperty) => undefined;
     getIdentifierTable: (property: FormProperty) => undefined;
     isIdentifierDeleted: (property: FormProperty) => false;
+  };
+  data: {
+    arrayProperty: {
+      findRoot: () => {
+        getProperty: (path: string) => {value: unknown};
+      };
+    };
   };
 };
 
@@ -206,5 +214,54 @@ describe('UsageContextDlgComponent', () => {
 
     expect(internals.hasReferenceContent({extension: []})).toBeFalse();
     expect(internals.hasReferenceContent({type: 'PlanDefinition'})).toBeFalse();
+  });
+
+  it('should require a local Reference to resolve to a contained resource', () => {
+    internals.data = {
+      arrayProperty: {
+        findRoot: () => ({
+          getProperty: () => ({
+            value: [{resourceType: 'ValueSet', id: 'present'}]
+          })
+        })
+      }
+    };
+
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: '#present'}
+    })).toBe('');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: '#missing'}
+    })).toBe('Local reference must match the id of a contained resource.');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: '#'}
+    })).toBe('Local reference must match the id of a contained resource.');
+  });
+
+  it('should leave non-local References to external resolution', () => {
+    internals.data = {
+      arrayProperty: {
+        findRoot: () => ({
+          getProperty: () => ({value: []})
+        })
+      }
+    };
+
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: 'PlanDefinition/example'}
+    })).toBe('');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: 'https://example.org/fhir/PlanDefinition/example'}
+    })).toBe('');
   });
 });

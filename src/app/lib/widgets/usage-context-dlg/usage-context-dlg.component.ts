@@ -43,6 +43,7 @@ const QUANTITY_SYSTEM_PATHS: QuantitySystemPath[] = [
 const RANGE_ORDER_ERROR = 'High value must be greater than or equal to low value.';
 const RANGE_UNIT_ERROR = 'Low and high unit, system, and code must match.';
 const QUANTITY_SYSTEM_ERROR = 'System is required when Code is provided.';
+const LOCAL_REFERENCE_ERROR = 'Local reference must match the id of a contained resource.';
 
 /**
  * A dialog component to edit a FHIR UsageContext object.
@@ -190,9 +191,10 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
     const currentValue = this.getCurrentValueForChangeDetection();
     const missingQuantitySystemPaths = this.getMissingQuantitySystemPaths(currentValue);
     const rangeValidationError = this.getRangeValidationError(currentValue);
+    const referenceValidationError = this.getReferenceValidationError(currentValue);
     const validationError = missingQuantitySystemPaths.length
       ? QUANTITY_SYSTEM_ERROR
-      : rangeValidationError;
+      : rangeValidationError || referenceValidationError;
     const modelChanged = this.hasModelChanged(currentValue);
     const hasRequiredValue = this.hasRequiredValue(currentValue);
     const hasRequiredCode = this.hasRequiredCode(currentValue);
@@ -207,6 +209,10 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
     this.setInputInvalidStyle(
       'input[id*="valueRange.high.value"]',
       rangeValidationError === RANGE_ORDER_ERROR
+    );
+    this.setInputInvalidStyle(
+      'input[id*="valueReference.reference"]',
+      !!referenceValidationError
     );
     const mismatchedUnitFields = missingQuantitySystemPaths.length
       ? []
@@ -264,6 +270,32 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
       !Util.isEmpty(reference?.identifier) ||
       !Util.isEmpty(reference?.display) ||
       !Util.isEmpty(reference?.extension);
+  }
+
+  /**
+   * Validate a fragment Reference against the current Questionnaire's contained resources.
+   *
+   * FHIR ref-1 requires a Reference beginning with "#" to resolve to an id in
+   * the root resource's contained collection. Other literal reference forms are
+   * resolved outside the Questionnaire and are not checked here.
+   *
+   * @param currentValue - Current UsageContext form value.
+   * @returns A validation error for an unresolved local reference, otherwise an empty string.
+   */
+  private getReferenceValidationError(currentValue: UsageContextEditModel): string {
+    const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
+    const literalReference = currentValue?.valueReference?.reference;
+    if(selectedKey !== 'valueReference' || !literalReference?.startsWith('#')) {
+      return '';
+    }
+
+    const containedId = literalReference.substring(1);
+    const containedResources = this.data?.arrayProperty
+      ?.findRoot()
+      ?.getProperty('contained')
+      ?.value as fhir.Resource[] | undefined;
+    const targetExists = !!containedId && containedResources?.some((resource) => resource?.id === containedId);
+    return targetExists ? '' : LOCAL_REFERENCE_ERROR;
   }
 
   /**
