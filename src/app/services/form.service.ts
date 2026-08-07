@@ -73,6 +73,7 @@ export class FormService {
   _validationStatusChanged$: Subject<void> = new Subject<void>();
 
   private _loading = false;
+  private windowOpenerNotificationError = '';
   _guidingStep$: Subject<GuidingStep> = new Subject<GuidingStep>();
   _formReset$: Subject<void> = new Subject<void>();
   _formChanged$: Subject<SimpleChange> = new Subject<SimpleChange>();
@@ -1553,8 +1554,18 @@ export class FormService {
         }
         catch(error) {
           console.error('Unable to send the questionnaire to the opener window.', error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if(this.windowOpenerNotificationError !== errorMessage) {
+            this.windowOpenerNotificationError = errorMessage;
+            this.showMessage(
+              'Questionnaire update not sent',
+              `${errorMessage} The opener application has not received the latest Questionnaire.`,
+              MessageType.DANGER
+            );
+          }
           return false;
         }
+        this.windowOpenerNotificationError = '';
       }
       window.opener.postMessage(data, this._windowOpenerUrl);
       return true;

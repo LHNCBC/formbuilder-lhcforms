@@ -7,6 +7,7 @@ import {provideHttpClient} from '@angular/common/http';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
+import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 
 describe('FormService', () => {
   let service: FormService;
@@ -112,7 +113,7 @@ describe('FormService', () => {
       .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
   });
 
-  it('should skip an incompatible opener notification without throwing', () => {
+  it('should report an incompatible opener notification without repeating the dialog', () => {
     const questionnaire = {
       resourceType: 'Questionnaire',
       status: 'draft',
@@ -128,7 +129,12 @@ describe('FormService', () => {
     service.windowOpenerUrl = 'https://parent.example.com';
     service['_windowOpenerFhirVersion'] = 'R4';
     spyOn(console, 'error');
+    const showMessage = spyOn(service, 'showMessage');
 
+    expect(service.notifyWindowOpener({
+      type: 'updateQuestionnaire',
+      questionnaire
+    })).toBeFalse();
     expect(service.notifyWindowOpener({
       type: 'updateQuestionnaire',
       questionnaire
@@ -136,6 +142,12 @@ describe('FormService', () => {
     expect(console.error).toHaveBeenCalledWith(
       'Unable to send the questionnaire to the opener window.',
       jasmine.any(Error)
+    );
+    expect(showMessage).toHaveBeenCalledOnceWith(
+      'Questionnaire update not sent',
+      FormService.R5_QUANTITY_COMPARATOR_ERROR +
+        ' The opener application has not received the latest Questionnaire.',
+      MessageType.DANGER
     );
   });
 
