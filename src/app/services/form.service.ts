@@ -1515,17 +1515,25 @@ export class FormService {
    *
    * @param data - Data to post.
    */
-  notifyWindowOpener(data: any) {
+  notifyWindowOpener(data: any): boolean {
     if(this._windowOpenerUrl) {
       // Return the data in the requested format
       if(data.questionnaire) {
-        data.questionnaire = this.convertFromR5(
-          data.questionnaire,
-          this._windowOpenerFhirVersion
-        );
+        try {
+          data.questionnaire = this.convertFromR5(
+            data.questionnaire,
+            this._windowOpenerFhirVersion
+          );
+        }
+        catch(error) {
+          console.error('Unable to send the questionnaire to the opener window.', error);
+          return false;
+        }
       }
       window.opener.postMessage(data, this._windowOpenerUrl);
+      return true;
     }
+    return false;
   }
 
 

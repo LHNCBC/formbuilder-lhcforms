@@ -112,6 +112,33 @@ describe('FormService', () => {
       .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
   });
 
+  it('should skip an incompatible opener notification without throwing', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      useContext: [{
+        code: {code: 'age'},
+        valueQuantity: {
+          value: 10,
+          comparator: 'ad',
+          unit: 'mL'
+        }
+      }]
+    } as unknown as fhir.Questionnaire;
+    service.windowOpenerUrl = 'https://parent.example.com';
+    service['_windowOpenerFhirVersion'] = 'R4';
+    spyOn(console, 'error');
+
+    expect(service.notifyWindowOpener({
+      type: 'updateQuestionnaire',
+      questionnaire
+    })).toBeFalse();
+    expect(console.error).toHaveBeenCalledWith(
+      'Unable to send the questionnaire to the opener window.',
+      jasmine.any(Error)
+    );
+  });
+
   it('should update __$helpText', () => {
     const clonedSample = traverse(sampleJson).clone();
     service.updateFhirQuestionnaire(clonedSample);

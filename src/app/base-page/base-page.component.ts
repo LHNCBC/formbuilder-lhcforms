@@ -513,7 +513,14 @@ export class BasePageComponent implements OnInit, OnDestroy {
     if(!exportQuestionnaire) {
       return;
     }
-    const questionnaire = this.formService.convertFromR5(exportQuestionnaire, exportVersion);
+    let questionnaire: fhir.Questionnaire;
+    try {
+      questionnaire = this.formService.convertFromR5(exportQuestionnaire, exportVersion);
+    }
+    catch(error) {
+      this.showError(error);
+      return;
+    }
     const content = this.toString(questionnaire);
     const blob = new Blob([content], {type: 'application/json;charset=utf-8'});
     const formName = questionnaire.title;
