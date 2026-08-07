@@ -283,7 +283,15 @@ describe('UsageContextDlgComponent', () => {
         reference: 'https://example.org/fhir/Patient/123/_history/4',
         type: 'Observation'
       }
-    })).toBe('Reference type must match the referenced resource type.');
+    })).toBe('');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {
+        reference: 'https://documents.example.org/archive/Patient/123',
+        type: 'Observation'
+      }
+    })).toBe('');
     expect(internals.getReferenceValidationError({
       code: {},
       __$valueType: 'valueReference',

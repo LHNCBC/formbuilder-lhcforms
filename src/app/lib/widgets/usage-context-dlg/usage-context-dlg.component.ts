@@ -321,25 +321,20 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
   }
 
   /**
-   * Extract the resource type from a relative or absolute FHIR REST reference.
+   * Extract the resource type from a relative FHIR REST reference.
+   *
+   * An arbitrary absolute URL can resemble a FHIR type/id path without being a
+   * FHIR REST endpoint, so its target type must be left to external resolution.
    *
    * @param reference - Literal Reference.reference value.
-   * @returns Resource type when the URL has a recognizable type/id shape.
+   * @returns Resource type when a relative reference has a recognizable type/id shape.
    */
   private getLiteralReferenceResourceType(reference: string): string {
-    let path = reference.split(/[?#]/, 1)[0];
-    if(/^[a-z][a-z0-9+.-]*:/i.test(reference)) {
-      if(!/^https?:/i.test(reference)) {
-        return '';
-      }
-      try {
-        path = new URL(reference).pathname;
-      }
-      catch {
-        return '';
-      }
+    if(/^[a-z][a-z0-9+.-]*:/i.test(reference) || reference.startsWith('//')) {
+      return '';
     }
 
+    const path = reference.split(/[?#]/, 1)[0];
     const segments = path.split('/').filter(Boolean);
     const typeIndex = segments.length >= 4 && segments[segments.length - 2] === '_history'
       ? segments.length - 4
