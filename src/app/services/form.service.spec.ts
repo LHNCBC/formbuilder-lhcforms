@@ -232,11 +232,17 @@ describe('FormService', () => {
       .toBeTrue();
   });
 
-  it('should keep Reference.identifier scoped to Usage Context schemas', () => {
+  it('should restore Reference.identifier only in cycle-safe scoped schemas', () => {
     const valueSetSchema = service.getResourceSchema('ValueSet') as any;
     expect(valueSetSchema?.definitions?.Reference?.properties?.identifier)
-      .withContext('Shared Reference must not create a Reference/Identifier schema cycle')
+      .withContext('Contained ValueSet References should preserve imported identifiers')
+      .toBeDefined();
+    expect(valueSetSchema?.definitions?.Reference?.properties?.identifier?.properties?.assigner?.$ref)
+      .withContext('The scoped Identifier assigner must not point back to the shared Reference')
       .toBeUndefined();
+    expect(valueSetSchema?.definitions?.Reference?.properties?.identifier?.properties?.assigner?.additionalProperties)
+      .withContext('Deeper imported assigner identifiers should remain preserved')
+      .toBeTrue();
 
     const formUsageContext = service.getFormLevelSchema()?.properties?.useContext?.items as any;
     expect(formUsageContext?.properties?.valueReference?.properties?.identifier)
@@ -254,18 +260,40 @@ describe('FormService', () => {
     const importedValueSet = {
       resourceType: 'ValueSet',
       status: 'active',
-      identifier: [{system: 'http://example.org/identifier', value: 'example'}],
+      identifier: [{
+        system: 'http://example.org/identifier',
+        value: 'example',
+        assigner: {
+          identifier: {
+            system: 'http://example.org/assigner-identifier',
+            value: 'nested-example',
+            assigner: {
+              identifier: {value: 'deep-example'}
+            }
+          }
+        }
+      }],
       useContext: [{
         code: {
           system: 'http://terminology.hl7.org/CodeSystem/usage-context-type',
           code: 'focus'
         },
-        valueReference: {reference: 'PlanDefinition/example'}
+        valueReference: {
+          reference: 'PlanDefinition/example',
+          identifier: {value: 'reference-identifier'}
+        }
       }]
     };
-    expect(() => CommonTestingModule.createProperty(valueSetSchema, importedValueSet))
-      .withContext('Imported ValueSet rows should materialize without recursive schema expansion')
-      .not.toThrow();
+    const valueSetProperty = CommonTestingModule.createProperty(valueSetSchema, importedValueSet);
+    expect(valueSetProperty.value.identifier[0].assigner.identifier.value)
+      .withContext('Imported ValueSet Identifier.assigner.identifier should be preserved')
+      .toBe('nested-example');
+    expect(valueSetProperty.value.identifier[0].assigner.identifier.assigner.identifier.value)
+      .withContext('Identifier descendants beyond the scoped schema should be preserved')
+      .toBe('deep-example');
+    expect(valueSetProperty.value.useContext[0].valueReference.identifier.value)
+      .withContext('Imported ValueSet UsageContext Reference.identifier should be preserved')
+      .toBe('reference-identifier');
   });
 
 });

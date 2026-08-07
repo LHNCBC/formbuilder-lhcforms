@@ -213,6 +213,7 @@ export class FormService {
         this.overrideSchemaWidgetFromLayout(obj.schema, obj.layout);
         this.overrideFieldLabelsFromLayout(obj.schema, obj.layout);
       });
+      this.addIdentifierToValueSetReferences(ngxVSSchema);
       extSchema.widget = {id: 'row-layout', keyField: '/__$valueType'};
       this.schemaService.addDefaultWidgets(extSchema, extLayout);
       this.addValueXFieldsToExtensionLayout(extSchema);
@@ -631,6 +632,31 @@ export class FormService {
         ]
       }))
     };
+  }
+
+  /**
+   * Restore Reference.identifier in the contained ValueSet schema without
+   * recreating the Reference -> Identifier -> assigner -> Reference cycle.
+   *
+   * The scoped Identifier uses an inline, non-recursive assigner Reference.
+   * Deeper imported assigner identifiers remain additional properties so they
+   * survive unrelated ValueSet edits even though this editor does not render
+   * them.
+   *
+   * @param schema - ValueSet resource schema to patch.
+   */
+  private addIdentifierToValueSetReferences(schema: any): void {
+    const referenceSchema = schema?.definitions?.Reference;
+    const identifierSchema = schema?.definitions?.Identifier;
+    if(!referenceSchema?.properties || !identifierSchema?.properties) {
+      return;
+    }
+
+    const scopedIdentifier = JSON.parse(JSON.stringify(identifierSchema));
+    const shallowAssignerReference = JSON.parse(JSON.stringify(referenceSchema));
+    shallowAssignerReference.additionalProperties = true;
+    scopedIdentifier.properties.assigner = shallowAssignerReference;
+    referenceSchema.properties.identifier = scopedIdentifier;
   }
 
   get windowOpenerUrl(): string {
