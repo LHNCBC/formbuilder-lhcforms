@@ -509,6 +509,48 @@ test.describe('Usage Context field tests', () => {
     });
   });
 
+  test('should protect contained resources referenced by Usage Context', async ({ page }) => {
+    await PWUtils.uploadFile(page, 'contained-value-set-sample.json');
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextDialog = await addUseContextRow(page);
+    await fillUseContextCode(useContextDialog, {
+      display: 'Workflow Task',
+      code: 'task',
+      system: usageContextTypeSystem
+    });
+    await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Reference'});
+    await useContextDialog.locator('input[id^="valueReference.reference"]').fill('#vs1');
+    await useContextDialog.locator('input[id^="valueReference.type"]').fill('ValueSet');
+    await useContextDialog.getByRole('button', { name: 'Save and close' }).click();
+
+    const containedTable = PWUtils.getTableByFieldLabel(
+      page.locator('lfb-form-fields'),
+      'Contained resources'
+    );
+    const referencedRow = containedTable.locator('tbody > tr').nth(0);
+    await expect(PWUtils.getTableCellInput(containedTable, 1, 2)).toHaveValue('vs1');
+
+    await referencedRow.getByRole('button', {name: 'Remove this row'}).click();
+    const inUseDialog = page.getByRole('dialog', {name: 'Contained resource is in use'});
+    await expect(inUseDialog).toContainText(
+      'The contained resource #vs1 is referenced by Usage Context and cannot be deleted.'
+    );
+    await inUseDialog.getByRole('button', {name: 'Close', exact: true}).last().click();
+    await expect(referencedRow).toHaveCount(1);
+
+    await referencedRow.getByRole('button', {name: 'Edit this row'}).click();
+    const resourceDialog = page.locator('lfb-resource-dlg');
+    await resourceDialog.getByLabel('Id', {exact: true}).fill('renamed');
+    await resourceDialog.getByRole('button', {name: 'Save and close'}).click();
+    const idErrorDialog = page.getByRole('dialog', {name: 'Fix errors'});
+    await expect(idErrorDialog).toContainText(
+      'Id cannot be changed because Usage Context references #vs1.'
+    );
+    await idErrorDialog.getByRole('button', {name: 'OK'}).click();
+    await expect(resourceDialog).toBeVisible();
+  });
+
   test('should preserve and accept an imported extension-only valueReference', async ({ page }) => {
     const extension = {
       url: 'http://example.org/fhir/StructureDefinition/reference-note',
