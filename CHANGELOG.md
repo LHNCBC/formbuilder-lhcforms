@@ -2,9 +2,13 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.3.0] 2026-07-31
+## [12.3.0] 2026-08-07
 ### Added
 - Support choice orientation and column count for Questionnaire items.
+
+## [12.2.1] 2026-08-04
+### Changed
+- Updated window-open API documentation.
 
 ## [12.2.0] 2026-07-30
 ### Added
