@@ -14,6 +14,8 @@ export type ModifiedMessages = {
   [key: string]: string | null | PatternMessage[];
 };
 
+export const FHIR_TIME_PATTERN = '^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$';
+
 export const DEFAULT_WIDGET_MODIFIED_MESSAGES: ModifiedMessages = {
   PATTERN: [
     {
@@ -47,6 +49,10 @@ export const DEFAULT_WIDGET_MODIFIED_MESSAGES: ModifiedMessages = {
     {
       pattern: '^[0]|([1-9][0-9]*)$',
       message: 'Enter an integer greater than or equal to 0.'
+    },
+    {
+      pattern: FHIR_TIME_PATTERN,
+      message: 'Valid format is HH:mm:ss, optionally followed by fractional seconds.'
     }
   ],
   MIN_LENGTH: null,

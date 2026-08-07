@@ -1,5 +1,6 @@
 import {
   DEFAULT_WIDGET_MODIFIED_MESSAGES,
+  FHIR_TIME_PATTERN,
   getModifiedErrorForPatternMismatch,
   hasInvalidParentTd,
   mapWidgetErrors,
@@ -16,6 +17,11 @@ describe('validation-utils', () => {
     it('returns null for unknown pattern', () => {
       const message = getModifiedErrorForPatternMismatch('unknown-pattern', DEFAULT_WIDGET_MODIFIED_MESSAGES);
       expect(message).toBeNull();
+    });
+
+    it('returns a readable message for the FHIR time pattern', () => {
+      const message = getModifiedErrorForPatternMismatch(FHIR_TIME_PATTERN, DEFAULT_WIDGET_MODIFIED_MESSAGES);
+      expect(message).toContain('Valid format is HH:mm:ss');
     });
   });
 

@@ -7,6 +7,7 @@ import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.d
 import { AsyncPipe } from '@angular/common';
 import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
 import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
+import { filterSpuriousTimePatternErrors } from './time-util';
 
 /**
  * TimeComponent is a component for handling time input in the format HH:MM:SS.mmm.
@@ -46,9 +47,7 @@ export class TimeComponent extends StringComponent {
     }
 
     const sub = this.formProperty.errorsChanges.subscribe(() => {
-      if (this.errors?.length) {
-        this.errors = this.errors.filter((e) => e.code !== 'PATTERN');
-      }
+      this.errors = filterSpuriousTimePatternErrors(this.errors, this.formProperty.value);
     });
     this.subscriptions.push(sub);
   }
