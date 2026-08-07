@@ -205,4 +205,40 @@ describe('FormService', () => {
       .toBeTrue();
   });
 
+  it('should keep Reference.identifier scoped to Usage Context schemas', () => {
+    const valueSetSchema = service.getResourceSchema('ValueSet') as any;
+    expect(valueSetSchema?.definitions?.Reference?.properties?.identifier)
+      .withContext('Shared Reference must not create a Reference/Identifier schema cycle')
+      .toBeUndefined();
+
+    const formUsageContext = service.getFormLevelSchema()?.properties?.useContext?.items as any;
+    expect(formUsageContext?.properties?.valueReference?.properties?.identifier)
+      .withContext('Form-level Usage Context should retain Reference.identifier')
+      .toBeDefined();
+
+    const dialogUsageContext = service.cloneUsageContextSchema() as any;
+    const dialogIdentifier = dialogUsageContext?.properties?.valueReference?.properties?.identifier;
+    expect(dialogIdentifier)
+      .withContext('Usage Context dialog should retain Reference.identifier')
+      .toBeDefined();
+    expect(dialogIdentifier?.type).toBe('array');
+    expect(dialogIdentifier?.maxItems).toBe(1);
+
+    const importedValueSet = {
+      resourceType: 'ValueSet',
+      status: 'active',
+      identifier: [{system: 'http://example.org/identifier', value: 'example'}],
+      useContext: [{
+        code: {
+          system: 'http://terminology.hl7.org/CodeSystem/usage-context-type',
+          code: 'focus'
+        },
+        valueReference: {reference: 'PlanDefinition/example'}
+      }]
+    };
+    expect(() => CommonTestingModule.createProperty(valueSetSchema, importedValueSet))
+      .withContext('Imported ValueSet rows should materialize without recursive schema expansion')
+      .not.toThrow();
+  });
+
 });
