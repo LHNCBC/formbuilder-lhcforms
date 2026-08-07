@@ -336,10 +336,13 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
 
     const path = reference.split(/[?#]/, 1)[0];
     const segments = path.split('/').filter(Boolean);
-    const typeIndex = segments.length >= 4 && segments[segments.length - 2] === '_history'
-      ? segments.length - 4
-      : segments.length - 2;
-    const resourceType = typeIndex >= 0 ? segments[typeIndex] : '';
+    let resourceType = '';
+    if(segments.length === 2) {
+      resourceType = segments[0];
+    }
+    else if(segments.length === 4 && segments[2] === '_history') {
+      resourceType = segments[0];
+    }
     return /^[A-Z][A-Za-z0-9]*$/.test(resourceType) ? resourceType : '';
   }
 
