@@ -16,6 +16,7 @@ export class EnableWhenAnswerOptionsService {
   private enableWhenAnswerProperty: RegExpMatchArray | null = null;
   private subscriptions: Subscription[] = [];
   private autoComp: any;
+  private listSelectionUnsubscribe: (() => void) | null = null;
   private answerOptionsState!: EnableWhenAnswerOptionsState;
   private hasAnswerOptionsSubject = new BehaviorSubject<boolean>(false);
   private autocompleteRefreshSubject = new Subject<void>();
@@ -139,7 +140,10 @@ export class EnableWhenAnswerOptionsService {
       }
     }
 
-    LForms.Def.Autocompleter.Event.observeListSelections(inputId, (data: any) => this.handleListSelection(data));
+    this.listSelectionUnsubscribe = LForms.Def.Autocompleter.Event.observeListSelections(
+      inputId,
+      (data: any) => this.handleListSelection(data)
+    ) || null;
   }
 
   /**
@@ -233,6 +237,9 @@ export class EnableWhenAnswerOptionsService {
    *
    */
   destroyAutocomplete(): void {
+    this.listSelectionUnsubscribe?.();
+    this.listSelectionUnsubscribe = null;
+
     if (this.autoComp) {
       this.autoComp.setFieldVal('', false);
       this.autoComp.destroy();

@@ -240,4 +240,41 @@ describe('EnableWhenAnswerOptionsService', () => {
     expect(values).toEqual([false, true, false]);
     expect(answerOptionServiceSpy.getEnableWhenAnswerOptionsState).toHaveBeenCalledTimes(2);
   });
+
+  it('should dispose list selection observers when autocomplete is refreshed and destroyed', () => {
+    const firstDispose = jasmine.createSpy('firstDispose');
+    const secondDispose = jasmine.createSpy('secondDispose');
+    const firstAutoComp = {
+      setFieldVal: jasmine.createSpy('firstSetFieldVal'),
+      destroy: jasmine.createSpy('firstDestroy')
+    };
+    const secondAutoComp = {
+      setFieldVal: jasmine.createSpy('secondSetFieldVal'),
+      destroy: jasmine.createSpy('secondDestroy')
+    };
+    const autocompleter = (window as any).LForms.Def.Autocompleter;
+    spyOn(autocompleter, 'Prefetch').and.returnValues(firstAutoComp, secondAutoComp);
+    const observeSpy = spyOn(autocompleter.Event, 'observeListSelections')
+      .and.returnValues(firstDispose, secondDispose);
+    const input = { nativeElement: { id: 'enableWhen.0.answerString' } } as any;
+
+    service.init(formProperty, control);
+    service.initAutocomplete(input, input.nativeElement.id);
+
+    expect(observeSpy).toHaveBeenCalledTimes(1);
+    expect(firstDispose).not.toHaveBeenCalled();
+
+    questionValueChanges.next('q2');
+
+    expect(firstDispose).toHaveBeenCalledTimes(1);
+    expect(firstAutoComp.destroy).toHaveBeenCalledTimes(1);
+
+    service.initAutocomplete(input, input.nativeElement.id);
+    service.destroy();
+
+    expect(observeSpy).toHaveBeenCalledTimes(2);
+    expect(firstDispose).toHaveBeenCalledTimes(1);
+    expect(secondDispose).toHaveBeenCalledTimes(1);
+    expect(secondAutoComp.destroy).toHaveBeenCalledTimes(1);
+  });
 });
