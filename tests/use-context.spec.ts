@@ -16,7 +16,9 @@ test.describe('Usage Context field tests', () => {
     'task',
     'venue',
     'species',
-    'program'
+    'program',
+    'jurisdiction',
+    'topic'
   ]);
 
   const getDialogPaneRects = async (page: Page) => page.evaluate(() => {
@@ -637,6 +639,8 @@ test.describe('Usage Context field tests', () => {
       'Clinical Venue',
       'Species',
       'Program',
+      'Jurisdiction',
+      'Topic',
       'Other/custom coding'
     ]);
     await contextTypeSelect.selectOption('gender');

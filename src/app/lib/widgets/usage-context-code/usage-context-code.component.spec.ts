@@ -46,7 +46,9 @@ describe('UsageContextCodeComponent', () => {
       'task',
       'venue',
       'species',
-      'program'
+      'program',
+      'jurisdiction',
+      'topic'
     ]);
   });
 
@@ -58,6 +60,21 @@ describe('UsageContextCodeComponent', () => {
     });
 
     expect(component.selectedType()).toBe('focus');
+  });
+
+  [
+    {code: 'jurisdiction', display: 'Jurisdiction'},
+    {code: 'topic', display: 'Topic'}
+  ].forEach(({code, display}) => {
+    it(`should recognize imported ${code} as a standard UsageContextType coding`, () => {
+      const {component} = createComponent({
+        system: USAGE_CONTEXT_TYPE_SYSTEM,
+        code,
+        display
+      });
+
+      expect(component.selectedType()).toBe(code);
+    });
   });
 
   it('should treat a materialized Coding with only empty child values as unselected', () => {

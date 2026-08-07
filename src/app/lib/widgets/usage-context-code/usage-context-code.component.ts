@@ -27,7 +27,9 @@ export const USAGE_CONTEXT_TYPE_OPTIONS: ReadonlyArray<Readonly<{
   {code: 'task', display: 'Workflow Task'},
   {code: 'venue', display: 'Clinical Venue'},
   {code: 'species', display: 'Species'},
-  {code: 'program', display: 'Program'}
+  {code: 'program', display: 'Program'},
+  {code: 'jurisdiction', display: 'Jurisdiction'},
+  {code: 'topic', display: 'Topic'}
 ];
 
 /**
