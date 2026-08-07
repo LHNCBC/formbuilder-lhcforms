@@ -88,6 +88,7 @@ test.describe('attachment data type', () => {
     await PWUtils.expectDataTypeValue(page, /attachment/);
 
     await page.locator('lfb-restrictions [for^="booleanControlled_Yes"]').click();
+    await expect(page.locator('input[id^="__\$restrictions.0.value"]')).toBeDisabled();
     await page.locator('[id^="__\$restrictions.0.operator"]').selectOption({ label: 'Maximum size' });
 
     const sizeValue = page.locator('input[aria-label="Maximum size value"]');
@@ -114,11 +115,17 @@ test.describe('attachment data type', () => {
 
     await page.locator('lfb-restrictions [for^="booleanControlled_Yes"]').click();
     await page.locator('[id^="__\$restrictions.0.operator"]').selectOption({ label: 'Maximum size' });
-    await page.locator('input[aria-label="Maximum size value"]').fill('5');
+    const maxSizeInput = page.locator('input[aria-label="Maximum size value"]');
+    const maxSizeUnit = page.locator('select[aria-label="Maximum size unit"]');
+    await expect(maxSizeInput).toBeEnabled();
+    await expect(maxSizeUnit).toBeEnabled();
+    await maxSizeInput.fill('5');
 
     await page.getByRole('button', { name: 'Add new restriction' }).click();
     await page.locator('[id^="__\$restrictions.1.operator"]').selectOption({ label: 'Mime type' });
-    await page.locator('input[id^="__\$restrictions.1.value"]').fill('application/pdf');
+    const firstMimeTypeInput = page.locator('input[id^="__\$restrictions.1.value"]');
+    await expect(firstMimeTypeInput).toBeEnabled();
+    await firstMimeTypeInput.fill('application/pdf');
 
     await PWUtils.assertExtensionsInQuestionnaire(
       page, '/item/0/extension', MAX_SIZE_URL,
@@ -156,6 +163,54 @@ test.describe('attachment data type', () => {
       [{ url: MIME_TYPE_URL, valueCode: 'application/pdf' }], 'R4');
   });
 
+  test('should allow multiple MIME types for a repeating item while keeping maxSize singular', async ({ page }) => {
+    await PWUtils.selectDataType(page, 'attachment');
+    await PWUtils.expectDataTypeValue(page, /attachment/);
+    await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
+
+    await page.locator('lfb-restrictions [for^="booleanControlled_Yes"]').click();
+
+    await page.locator('[id^="__\$restrictions.0.operator"]').selectOption({ label: 'Maximum size' });
+    await page.locator('input[aria-label="Maximum size value"]').fill('5');
+
+    await page.getByRole('button', { name: 'Add new restriction' }).click();
+    await page.locator('[id^="__\$restrictions.1.operator"]').selectOption({ label: 'Mime type' });
+    await page.locator('input[id^="__\$restrictions.1.value"]').fill('application/pdf');
+
+    await page.getByRole('button', { name: 'Add new restriction' }).click();
+    await page.locator('[id^="__\$restrictions.2.operator"]').selectOption({ label: 'Mime type' });
+    await page.locator('input[id^="__\$restrictions.2.value"]').fill('image/png');
+
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MAX_SIZE_URL,
+      [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 }], 'R4');
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MIME_TYPE_URL,
+      [
+        { url: MIME_TYPE_URL, valueCode: 'application/pdf' },
+        { url: MIME_TYPE_URL, valueCode: 'image/png' }
+      ], 'R4');
+
+    // Even for a repeating item, selecting a second maxSize is rejected.
+    await page.getByRole('button', { name: 'Add new restriction' }).click();
+    const fourthOperator = page.locator('[id^="__\$restrictions.3.operator"]');
+    await fourthOperator.selectOption({ label: 'Mime type' });
+    await fourthOperator.selectOption({ label: 'Maximum size' });
+    await expect(page.getByText('That restriction is already selected.')).toBeVisible();
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MAX_SIZE_URL,
+      [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 }], 'R4');
+
+    // Turning repeats off collapses MIME types back to a single extension.
+    await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'No');
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MIME_TYPE_URL,
+      [{ url: MIME_TYPE_URL, valueCode: 'application/pdf' }], 'R4');
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MAX_SIZE_URL,
+      [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 }], 'R4');
+  });
+
   test('should import an attachment questionnaire and round-trip the stored maxSize into the KB/MB helper', async ({ page }) => {
     // Import a questionnaire whose attachment item stores maxSize as a byte count (5 MB = 5242880 bytes),
     // a mimeType restriction, and an initial Attachment value.
@@ -188,6 +243,30 @@ test.describe('attachment data type', () => {
     await PWUtils.assertExtensionsInQuestionnaire(
       page, '/item/0/extension', MAX_SIZE_URL,
       [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 * 1024 }], 'R4');
+  });
+
+  test('should normalize imported attachment restriction cardinalities', async ({ page }) => {
+    await PWUtils.uploadFile(page, 'attachment-restrictions-repeat-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickTreeNode(page, 'Upload repeated files');
+
+    await PWUtils.expectDataTypeValue(page, /attachment/);
+
+    const mimeTypeInputs = page.locator('lfb-restrictions input[type="text"]');
+    await expect(mimeTypeInputs).toHaveCount(2);
+    await expect(mimeTypeInputs.nth(0)).toHaveValue('application/pdf');
+    await expect(mimeTypeInputs.nth(1)).toHaveValue('image/png');
+
+    // maxSize remains singular while both MIME type extensions are preserved.
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MAX_SIZE_URL,
+      [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 * 1024 }], 'R4');
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MIME_TYPE_URL,
+      [
+        { url: MIME_TYPE_URL, valueCode: 'application/pdf' },
+        { url: MIME_TYPE_URL, valueCode: 'image/png' }
+      ], 'R4');
   });
 
   test('should render an attachment item as a file-upload control in the preview', async ({ page }) => {

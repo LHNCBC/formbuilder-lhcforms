@@ -34,5 +34,27 @@ describe('RestrictionsValueComponent (size conversion)', () => {
     expect(bytes).toBe(5242880);
     expect(RestrictionsValueComponent.bytesToBestUnit(bytes)).toEqual({value: 5, unit: 'MB'});
   });
-});
 
+  it('should enable an attachment restriction value only for a valid operator', () => {
+    const component = Object.create(RestrictionsValueComponent.prototype) as RestrictionsValueComponent;
+    component.schema = {readOnly: false};
+    (component as any).dataType = 'attachment';
+
+    (component as any).currentOperator = 'maxLength';
+    component.isMaxSize = false;
+    component.isMimeType = false;
+    expect(component.isValueDisabled).toBeTrue();
+
+    (component as any).currentOperator = 'maxSize';
+    component.isMaxSize = true;
+    expect(component.isValueDisabled).toBeFalse();
+
+    (component as any).currentOperator = 'mimeType';
+    component.isMaxSize = false;
+    component.isMimeType = true;
+    expect(component.isValueDisabled).toBeFalse();
+
+    component.schema.readOnly = true;
+    expect(component.isValueDisabled).toBeTrue();
+  });
+});

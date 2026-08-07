@@ -38,14 +38,14 @@ interface SizeUnit {
                [attr.id]="id"
                class="form-control form-control-sm restrictions-value-size__number"
                [attr.placeholder]="'Max size'"
-               [attr.disabled]="schema.readOnly ? '' : null"
+               [disabled]="isValueDisabled"
                [ngModel]="sizeValue"
                [ngModelOptions]="{standalone: true}"
                (ngModelChange)="onSizeValueChange($event)"
                aria-label="Maximum size value">
         <select name="{{name}}_unit"
                 class="form-select form-select-sm restrictions-value-size__unit"
-                [attr.disabled]="schema.readOnly ? '' : null"
+                [disabled]="isValueDisabled"
                 [ngModel]="sizeUnit"
                 [ngModelOptions]="{standalone: true}"
                 (ngModelChange)="onSizeUnitChange($event)"
@@ -65,7 +65,7 @@ interface SizeUnit {
              [attr.list]="isMimeType ? id + '_mime' : null"
              [attr.aria-invalid]="isMimeType && mimeTypeInvalid ? 'true' : null"
              [attr.aria-describedby]="isMimeType && mimeTypeInvalid ? id + '_mime_error' : null"
-             [attr.disabled]="schema.readOnly ? '' : null"
+             [disabled]="isValueDisabled"
              [ngModel]="textValue"
              [ngModelOptions]="{standalone: true}"
              (ngModelChange)="onTextChange($event)">
@@ -139,6 +139,18 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
   // The operator currently applied to this row. Used to distinguish a genuine operator
   // switch from the initial assignment so a stale value can be cleared appropriately.
   private currentOperator: string;
+  private dataType: string;
+
+  /**
+   * A restriction value has no meaning until the operator control commits one
+   * of its type-filtered options. This also avoids treating the select element's
+   * visually displayed first option as a real selection.
+   */
+  get isValueDisabled(): boolean {
+    const invalidAttachmentOperator = this.dataType === 'attachment' &&
+      !this.isMaxSize && !this.isMimeType;
+    return !!this.schema.readOnly || !this.currentOperator || invalidAttachmentOperator;
+  }
 
   ngOnInit(): void {
     super.ngOnInit();
@@ -147,6 +159,14 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
     this.currentOperator = operatorProperty?.value;
     this.applyOperator(this.currentOperator);
     this.syncFromModel();
+
+    const typeProperty = this.formProperty.root.getProperty('type');
+    this.dataType = typeProperty?.value;
+    if(typeProperty) {
+      this.subscriptions.push(typeProperty.valueChanges.subscribe((type) => {
+        this.dataType = type;
+      }));
+    }
 
     if (operatorProperty) {
       this.subscriptions.push(operatorProperty.valueChanges.subscribe((operator) => {

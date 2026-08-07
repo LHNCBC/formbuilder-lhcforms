@@ -161,11 +161,57 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
 
     // Watch changes in operator to reject unwanted selections.
     sub = this.restrictionOperatorService.subscribe((change: AcceptChange) => {
-      if(this.selectedOptions.has(change.newValue)) {
+      if(this.selectedOptions.has(change.newValue) && !this.isRepeatableOption(change.newValue)) {
         change.reject = true;
       }
     });
     this.subscriptions.push(sub);
+
+    // If a repeating attachment becomes singular, keep the first MIME type and
+    // remove the remaining MIME type rows/extensions. maxSize remains singular
+    // regardless of the repeats setting.
+    let repeatsInitialized = false;
+    let previousRepeats = this.formProperty.root.getProperty('repeats').value;
+    sub = this.formProperty.root.getProperty('repeats').valueChanges.subscribe((repeats) => {
+      if(repeatsInitialized && repeats !== previousRepeats) {
+        const restrictions = repeats === true ?
+          this.getRestrictions(this.formProperty.root, this.appliedOptions) :
+          this.normalizeRestrictionCardinality(this.formProperty.value || []);
+        this.updateSelectedOptions(restrictions);
+        this.formProperty.setValue(restrictions, false);
+      }
+      previousRepeats = repeats;
+      repeatsInitialized = true;
+    });
+    this.subscriptions.push(sub);
+  }
+
+  /**
+   * MIME type is the only repeatable restriction, and only when an attachment
+   * item explicitly allows repeating answers.
+   */
+  isRepeatableOption(option: string): boolean {
+    const root = this.formProperty.root;
+    return option === 'mimeType' &&
+      root.getProperty('type').value === 'attachment' &&
+      root.getProperty('repeats').value === true;
+  }
+
+  /**
+   * Enforce the FHIR extension cardinalities represented by this widget.
+   */
+  normalizeRestrictionCardinality(restrictions: any[]): any[] {
+    const seenOptions = new Set<string>();
+    return (restrictions || []).filter((restriction) => {
+      if(this.isRepeatableOption(restriction.operator)) {
+        return true;
+      }
+      if(seenOptions.has(restriction.operator)) {
+        return false;
+      }
+      seenOptions.add(restriction.operator);
+      return true;
+    });
   }
 
   /**
@@ -211,29 +257,10 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     });
     extensionsFound?.forEach((ext) => {
       const restriction = this.getRestrictionValue(ext);
-      if(restriction) {
+      if(restriction &&
+        (this.isRepeatableOption(restriction.operator) || !this.selectedOptions.has(restriction.operator))) {
         ret.push(restriction);
         this.selectedOptions.add(restriction.operator);
-      }
-    });
-    return ret;
-  }
-
-  /**
-   * Return object with relevant extension url as key and extension's index in array as value
-   * @param extensions - Full array of fhir extensions belonging to the item.
-   */
-  getRelevantExtensionIndices(extensions: fhir.Extension []): any [] {
-    let ret: any = null;
-    Object.keys(RestrictionsComponent.optionsDef).forEach((opt) => {
-      const index = extensions?.findIndex((ext) => {
-        return ext.url === RestrictionsComponent.optionsDef[opt].extUrl;
-      });
-      if(index >= 0) {
-        if(!ret) {
-          ret = {};
-        }
-        ret[extensions[index].url] = index;
       }
     });
     return ret;
@@ -256,39 +283,64 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   updateRelevantExtensions(extensions: fhir.Extension [], restrictions: any []) {
     let ret = false; // Return true if extensions are changed.
     Object.keys(RestrictionsComponent.optionsDef).forEach((opt) => {
-      // Recompute indices after every mutation. Removing one restriction shifts the
-      // positions of any later extensions in the array.
-      const indices = this.getRelevantExtensionIndices(extensions);
-      let ext: fhir.Extension;
-      const extUrl = RestrictionsComponent.optionsDef[opt].extUrl;
-      const restriction = restrictions.find((r) => r.operator === opt);
+      const optionRestrictions = (restrictions || []).filter((restriction) => {
+        return restriction.operator === opt &&
+          restriction.value !== null &&
+          restriction.value !== undefined &&
+          `${restriction.value}` !== '';
+      });
       if(opt === 'maxLength') {
-        this.updateMaxLength(restriction?.value || null);
+        this.updateMaxLength(optionRestrictions[0]?.value || null);
       }
-      else if(restriction?.value) {
-        if(indices && indices[extUrl] !== undefined && indices[extUrl] !== null) {
-          // Update
-          ext = extensions[indices[extUrl]];
-          for(const key in ext) {
-            if(/^value/.test(key)) delete ext[key];
-          }
-        }
-        else {
-          // new
-          ext = {url: extUrl};
-          extensions.push(ext);
-        }
-        const fieldInfo = this.getValueFieldName(opt, this.dataType);
-        ext[fieldInfo.fieldName] = this.getValue(restriction.value, fieldInfo.fieldType);
-        ret = true;
-      }
-      else if(indices && indices[extUrl] !== undefined && indices[extUrl] !== null) {
-        // delete
-        extensions.splice(indices[extUrl], 1);
-        ret = true;
+      else {
+        const allowedRestrictions = this.isRepeatableOption(opt) ?
+          optionRestrictions : optionRestrictions.slice(0, 1);
+        ret = this.updateOptionExtensions(extensions, opt, allowedRestrictions) || ret;
       }
     });
     return ret;
+  }
+
+  /**
+   * Synchronize all extensions for one restriction operator. This deliberately
+   * handles every matching extension rather than only the first, so singular
+   * restrictions cannot leave duplicate extensions behind.
+   */
+  updateOptionExtensions(extensions: fhir.Extension[], option: string, restrictions: any[]): boolean {
+    const extUrl = RestrictionsComponent.optionsDef[option].extUrl;
+    const fieldInfo = this.getValueFieldName(option, this.dataType);
+    const extensionIndices = extensions.reduce((indices, extension, index) => {
+      if(extension.url === extUrl) {
+        indices.push(index);
+      }
+      return indices;
+    }, [] as number[]);
+    let changed = false;
+
+    restrictions.forEach((restriction, index) => {
+      const value = this.getValue(restriction.value, fieldInfo.fieldType);
+      if(index < extensionIndices.length) {
+        const extension = extensions[extensionIndices[index]];
+        const valueFields = Object.keys(extension).filter((key) => /^value/.test(key));
+        if(valueFields.length !== 1 || valueFields[0] !== fieldInfo.fieldName ||
+          extension[fieldInfo.fieldName] !== value) {
+          valueFields.forEach((key) => delete extension[key]);
+          extension[fieldInfo.fieldName] = value;
+          changed = true;
+        }
+      }
+      else {
+        extensions.push({url: extUrl, [fieldInfo.fieldName]: value} as fhir.Extension);
+        changed = true;
+      }
+    });
+
+    for(let index = extensionIndices.length - 1; index >= restrictions.length; index--) {
+      extensions.splice(extensionIndices[index], 1);
+      changed = true;
+    }
+
+    return changed;
   }
 
   /**
