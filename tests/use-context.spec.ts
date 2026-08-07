@@ -459,7 +459,7 @@ test.describe('Usage Context field tests', () => {
     expect(previewJson.useContext[0].code.code).toBeUndefined();
   });
 
-  test('should reject a valueReference containing only type', async ({ page }) => {
+  test('should reject a valueReference containing only type or an invalid resource type', async ({ page }) => {
     await page.getByRole('button', { name: 'Advanced fields' }).click();
 
     const useContextDialog = await addUseContextRow(page);
@@ -469,7 +469,8 @@ test.describe('Usage Context field tests', () => {
       system: 'http://terminology.hl7.org/CodeSystem/usage-context-type'
     });
     await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Reference'});
-    await useContextDialog.locator('input[id^="valueReference.type"]').fill('PlanDefinition');
+    const typeInput = useContextDialog.locator('input[id^="valueReference.type"]');
+    await typeInput.fill('PlanDefinition');
 
     const saveButton = useContextDialog.getByRole('button', { name: 'Save and close' });
     await expect(saveButton).toBeDisabled();
@@ -477,6 +478,16 @@ test.describe('Usage Context field tests', () => {
       .toHaveAttribute('title', 'Code and value[x] are required.');
 
     await useContextDialog.locator('input[id^="valueReference.display"]').fill('Example plan');
+    await expect(saveButton).toBeEnabled();
+
+    await typeInput.fill('NotAResource');
+    await expect(saveButton).toBeDisabled();
+    await expect(typeInput).toHaveClass(/invalid/);
+    await expect(useContextDialog.locator('.save-button-tooltip-wrapper'))
+      .toHaveAttribute('title', 'Type must be a valid FHIR R5 resource type.');
+
+    await typeInput.fill('Observation');
+    await expect(typeInput).not.toHaveClass(/invalid/);
     await expect(saveButton).toBeEnabled();
   });
 

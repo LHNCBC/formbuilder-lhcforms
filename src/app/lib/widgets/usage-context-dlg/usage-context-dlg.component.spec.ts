@@ -249,6 +249,24 @@ describe('UsageContextDlgComponent', () => {
     })).toBe('Local reference must match the id of a contained resource.');
   });
 
+  it('should require Reference.type to name a concrete R5 resource', () => {
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {display: 'Target', type: 'NotAResource'}
+    })).toBe('Type must be a valid FHIR R5 resource type.');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {display: 'Target', type: 'Parameters'}
+    })).toBe('Type must be a valid FHIR R5 resource type.');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {display: 'Target', type: 'Observation'}
+    })).toBe('');
+  });
+
   it('should leave non-local References to external resolution', () => {
     internals.data = {
       arrayProperty: {
@@ -290,6 +308,11 @@ describe('UsageContextDlgComponent', () => {
       code: {},
       __$valueType: 'valueReference',
       valueReference: {reference: 'archive/Patient/123/_history/4', type: 'Observation'}
+    })).toBe('');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: 'Archive/123', type: 'Observation'}
     })).toBe('');
     expect(internals.getReferenceValidationError({
       code: {},

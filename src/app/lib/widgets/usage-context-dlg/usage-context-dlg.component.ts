@@ -24,6 +24,7 @@ import type {
   UsageContextEditModel,
   UsageContextValueKey
 } from '../usage-context/usage-context.types';
+import {FHIR_R5_REFERENCE_RESOURCE_TYPES} from '../usage-context/fhir-r5-resource-types';
 
 type RangeUnitField = 'unit' | 'system' | 'code';
 type QuantitySystemPath = 'valueQuantity' | 'valueRange.low' | 'valueRange.high';
@@ -45,6 +46,7 @@ const RANGE_UNIT_ERROR = 'Low and high unit, system, and code must match.';
 const QUANTITY_SYSTEM_ERROR = 'System is required when Code is provided.';
 const LOCAL_REFERENCE_ERROR = 'Local reference must match the id of a contained resource.';
 const REFERENCE_TYPE_ERROR = 'Reference type must match the referenced resource type.';
+const REFERENCE_RESOURCE_TYPE_ERROR = 'Type must be a valid FHIR R5 resource type.';
 
 /**
  * A dialog component to edit a FHIR UsageContext object.
@@ -213,11 +215,11 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
     );
     this.setInputInvalidStyle(
       'input[id*="valueReference.reference"]',
-      !!referenceValidationError
+      referenceValidationError === LOCAL_REFERENCE_ERROR || referenceValidationError === REFERENCE_TYPE_ERROR
     );
     this.setInputInvalidStyle(
       'input[id*="valueReference.type"]',
-      referenceValidationError === REFERENCE_TYPE_ERROR
+      referenceValidationError === REFERENCE_TYPE_ERROR || referenceValidationError === REFERENCE_RESOURCE_TYPE_ERROR
     );
     const mismatchedUnitFields = missingQuantitySystemPaths.length
       ? []
@@ -290,8 +292,18 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
   private getReferenceValidationError(currentValue: UsageContextEditModel): string {
     const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
     const reference = currentValue?.valueReference;
+    if(selectedKey !== 'valueReference') {
+      return '';
+    }
+
+    const declaredType = reference?.type?.trim();
+    const declaredResourceType = this.getDeclaredReferenceResourceType(declaredType);
+    if(declaredType && !FHIR_R5_REFERENCE_RESOURCE_TYPES.has(declaredResourceType)) {
+      return REFERENCE_RESOURCE_TYPE_ERROR;
+    }
+
     const literalReference = reference?.reference?.trim();
-    if(selectedKey !== 'valueReference' || !literalReference) {
+    if(!literalReference) {
       return '';
     }
 
@@ -314,7 +326,6 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
       referencedResourceType = this.getLiteralReferenceResourceType(literalReference);
     }
 
-    const declaredResourceType = this.getDeclaredReferenceResourceType(reference?.type);
     return declaredResourceType && referencedResourceType && declaredResourceType !== referencedResourceType
       ? REFERENCE_TYPE_ERROR
       : '';
@@ -343,7 +354,7 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
     else if(segments.length === 4 && segments[2] === '_history') {
       resourceType = segments[0];
     }
-    return /^[A-Z][A-Za-z0-9]*$/.test(resourceType) ? resourceType : '';
+    return FHIR_R5_REFERENCE_RESOURCE_TYPES.has(resourceType) ? resourceType : '';
   }
 
   /**
