@@ -230,8 +230,13 @@ describe('UsageContextDlgComponent', () => {
     expect(internals.getReferenceValidationError({
       code: {},
       __$valueType: 'valueReference',
-      valueReference: {reference: '#present'}
+      valueReference: {reference: '#present', type: 'ValueSet'}
     })).toBe('');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: '#present', type: 'PlanDefinition'}
+    })).toBe('Reference type must match the referenced resource type.');
     expect(internals.getReferenceValidationError({
       code: {},
       __$valueType: 'valueReference',
@@ -256,12 +261,33 @@ describe('UsageContextDlgComponent', () => {
     expect(internals.getReferenceValidationError({
       code: {},
       __$valueType: 'valueReference',
-      valueReference: {reference: 'PlanDefinition/example'}
+      valueReference: {reference: 'PlanDefinition/example', type: 'PlanDefinition'}
     })).toBe('');
     expect(internals.getReferenceValidationError({
       code: {},
       __$valueType: 'valueReference',
-      valueReference: {reference: 'https://example.org/fhir/PlanDefinition/example'}
+      valueReference: {
+        reference: 'https://example.org/fhir/PlanDefinition/example',
+        type: 'http://hl7.org/fhir/StructureDefinition/PlanDefinition'
+      }
+    })).toBe('');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: 'Patient/123', type: 'Observation'}
+    })).toBe('Reference type must match the referenced resource type.');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {
+        reference: 'https://example.org/fhir/Patient/123/_history/4',
+        type: 'Observation'
+      }
+    })).toBe('Reference type must match the referenced resource type.');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {reference: 'urn:uuid:1234', type: 'Observation'}
     })).toBe('');
   });
 });

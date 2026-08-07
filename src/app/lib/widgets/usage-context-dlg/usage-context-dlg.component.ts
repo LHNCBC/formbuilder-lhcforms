@@ -44,6 +44,7 @@ const RANGE_ORDER_ERROR = 'High value must be greater than or equal to low value
 const RANGE_UNIT_ERROR = 'Low and high unit, system, and code must match.';
 const QUANTITY_SYSTEM_ERROR = 'System is required when Code is provided.';
 const LOCAL_REFERENCE_ERROR = 'Local reference must match the id of a contained resource.';
+const REFERENCE_TYPE_ERROR = 'Reference type must match the referenced resource type.';
 
 /**
  * A dialog component to edit a FHIR UsageContext object.
@@ -214,6 +215,10 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
       'input[id*="valueReference.reference"]',
       !!referenceValidationError
     );
+    this.setInputInvalidStyle(
+      'input[id*="valueReference.type"]',
+      referenceValidationError === REFERENCE_TYPE_ERROR
+    );
     const mismatchedUnitFields = missingQuantitySystemPaths.length
       ? []
       : this.getMismatchedRangeUnitFields(currentValue);
@@ -276,26 +281,87 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
    * Validate a fragment Reference against the current Questionnaire's contained resources.
    *
    * FHIR ref-1 requires a Reference beginning with "#" to resolve to an id in
-   * the root resource's contained collection. Other literal reference forms are
-   * resolved outside the Questionnaire and are not checked here.
+   * the root resource's contained collection. When a literal target type can
+   * be determined, FHIR also requires Reference.type to agree with it.
    *
    * @param currentValue - Current UsageContext form value.
    * @returns A validation error for an unresolved local reference, otherwise an empty string.
    */
   private getReferenceValidationError(currentValue: UsageContextEditModel): string {
     const selectedKey = currentValue?.__$valueType || VALUE_KEYS.find((key) => !Util.isEmpty(currentValue?.[key]));
-    const literalReference = currentValue?.valueReference?.reference;
-    if(selectedKey !== 'valueReference' || !literalReference?.startsWith('#')) {
+    const reference = currentValue?.valueReference;
+    const literalReference = reference?.reference?.trim();
+    if(selectedKey !== 'valueReference' || !literalReference) {
       return '';
     }
 
-    const containedId = literalReference.substring(1);
-    const containedResources = this.data?.arrayProperty
-      ?.findRoot()
-      ?.getProperty('contained')
-      ?.value as fhir.Resource[] | undefined;
-    const targetExists = !!containedId && containedResources?.some((resource) => resource?.id === containedId);
-    return targetExists ? '' : LOCAL_REFERENCE_ERROR;
+    let referencedResourceType = '';
+    if(literalReference.startsWith('#')) {
+      const containedId = literalReference.substring(1);
+      const containedResources = this.data?.arrayProperty
+        ?.findRoot()
+        ?.getProperty('contained')
+        ?.value as fhir.Resource[] | undefined;
+      const target = containedId
+        ? containedResources?.find((resource) => resource?.id === containedId)
+        : undefined;
+      if(!target) {
+        return LOCAL_REFERENCE_ERROR;
+      }
+      referencedResourceType = target.resourceType;
+    }
+    else {
+      referencedResourceType = this.getLiteralReferenceResourceType(literalReference);
+    }
+
+    const declaredResourceType = this.getDeclaredReferenceResourceType(reference?.type);
+    return declaredResourceType && referencedResourceType && declaredResourceType !== referencedResourceType
+      ? REFERENCE_TYPE_ERROR
+      : '';
+  }
+
+  /**
+   * Extract the resource type from a relative or absolute FHIR REST reference.
+   *
+   * @param reference - Literal Reference.reference value.
+   * @returns Resource type when the URL has a recognizable type/id shape.
+   */
+  private getLiteralReferenceResourceType(reference: string): string {
+    let path = reference.split(/[?#]/, 1)[0];
+    if(/^[a-z][a-z0-9+.-]*:/i.test(reference)) {
+      if(!/^https?:/i.test(reference)) {
+        return '';
+      }
+      try {
+        path = new URL(reference).pathname;
+      }
+      catch {
+        return '';
+      }
+    }
+
+    const segments = path.split('/').filter(Boolean);
+    const typeIndex = segments.length >= 4 && segments[segments.length - 2] === '_history'
+      ? segments.length - 4
+      : segments.length - 2;
+    const resourceType = typeIndex >= 0 ? segments[typeIndex] : '';
+    return /^[A-Z][A-Za-z0-9]*$/.test(resourceType) ? resourceType : '';
+  }
+
+  /**
+   * Normalize Reference.type from either its relative resource name or the
+   * canonical StructureDefinition URL form.
+   *
+   * @param referenceType - Reference.type value.
+   * @returns Comparable FHIR resource type, or an empty string when absent.
+   */
+  private getDeclaredReferenceResourceType(referenceType: string | undefined): string {
+    const normalizedType = referenceType?.trim().replace(/\/+$/, '') || '';
+    if(!normalizedType) {
+      return '';
+    }
+    const resourceType = normalizedType.substring(normalizedType.lastIndexOf('/') + 1);
+    return /^[A-Z][A-Za-z0-9]*$/.test(resourceType) ? resourceType : '';
   }
 
   /**

@@ -480,6 +480,35 @@ test.describe('Usage Context field tests', () => {
     await expect(saveButton).toBeEnabled();
   });
 
+  test('should require Reference.type to match a resolvable literal target', async ({ page }) => {
+    await page.getByRole('button', { name: 'Advanced fields' }).click();
+
+    const useContextDialog = await addUseContextRow(page);
+    await fillUseContextCode(useContextDialog, {
+      display: 'Workflow Task',
+      code: 'task',
+      system: usageContextTypeSystem
+    });
+    await useContextDialog.locator('select[id^="__"]').selectOption({label: 'Reference'});
+    await useContextDialog.locator('input[id^="valueReference.reference"]').fill('Patient/123');
+    await useContextDialog.locator('input[id^="valueReference.type"]').fill('Observation');
+
+    const saveButton = useContextDialog.getByRole('button', { name: 'Save and close' });
+    await expect(saveButton).toBeDisabled();
+    await expect(useContextDialog.locator('.save-button-tooltip-wrapper'))
+      .toHaveAttribute('title', 'Reference type must match the referenced resource type.');
+
+    await useContextDialog.locator('input[id^="valueReference.type"]').fill('Patient');
+    await expect(saveButton).toBeEnabled();
+    await saveButton.click();
+
+    const previewJson = await PWUtils.getQuestionnaireJSON(page, 'R5');
+    expect(previewJson.useContext[0].valueReference).toMatchObject({
+      reference: 'Patient/123',
+      type: 'Patient'
+    });
+  });
+
   test('should preserve and accept an imported extension-only valueReference', async ({ page }) => {
     const extension = {
       url: 'http://example.org/fhir/StructureDefinition/reference-note',
