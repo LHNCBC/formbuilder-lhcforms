@@ -2,11 +2,15 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.3.0] 2026-07-30
+## [12.3.0] 2026-08-10
 ### Added
 - Added cardinality validation for general extensions. Duplicate single-occurrence
   extension URLs are rejected at the same scope with an inline validation message,
   while known repeatable extensions can be added multiple times.
+  
+## [12.2.1] 2026-08-04
+### Changed
+- Updated window-open API documentation.
 
 ## [12.2.0] 2026-07-30
 ### Added
