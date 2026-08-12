@@ -390,23 +390,28 @@ test.describe('Item control', () => {
         }
       });
 
-      test('should reject non-positive and fractional column counts', async ({ page }) => {
+      test('should enforce the FHIR positiveInt range for column count', async ({ page }) => {
         await prepareAnswerListItem(page);
 
         await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
         const columnCount = page.locator('#__\\$columnCount');
         const errorMessage = columnCount.locator('..').locator('small.text-danger[role="alert"]');
 
-        await columnCount.fill('3');
+        await columnCount.fill('2147483647');
         await expect(columnCount).not.toHaveClass(/ng-invalid/);
+        let json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([
+          itemControlExtensions['radio-button'],
+          columnCountExtension(2147483647)
+        ]);
 
-        for (const invalidValue of ['0', '-1', '1.5']) {
+        for (const invalidValue of ['0', '-1', '1.5', '2147483648']) {
           await columnCount.fill(invalidValue);
           await expect(columnCount).toHaveClass(/ng-invalid/);
           await expect(columnCount).toHaveClass(/is-invalid/);
           await expect(errorMessage).toBeVisible();
 
-          const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+          json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
           expect(json.item[0].extension).toEqual([itemControlExtensions['radio-button']]);
         }
 
@@ -415,7 +420,7 @@ test.describe('Item control', () => {
         await expect(columnCount).not.toHaveClass(/is-invalid/);
         await expect(errorMessage).toHaveCount(0);
 
-        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(json.item[0].extension).toEqual([
           itemControlExtensions['radio-button'],
           columnCountExtension(2)
