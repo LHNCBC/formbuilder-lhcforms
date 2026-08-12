@@ -543,7 +543,7 @@ test.describe('Item control', () => {
         ]);
       });
 
-      test('should remove choice layout extensions when item type changes', async ({ page }) => {
+      test('should discard choice layout settings when item type no longer supports an answer list', async ({ page }) => {
         await prepareAnswerListItem(page);
 
         await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
@@ -552,11 +552,20 @@ test.describe('Item control', () => {
 
         await PWUtils.selectDataType(page, 'boolean');
 
-        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        let json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toBeUndefined();
+
+        await PWUtils.selectDataType(page, 'coding');
+
+        await expect(page.locator('#__\\$itemControl\\.unspecified')).toBeChecked();
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Unspecified')).toBeChecked();
+        await expect(page.locator('#__\\$columnCount')).toHaveValue('');
+
+        json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(json.item[0].extension).toBeUndefined();
       });
 
-      test('should preserve choice layout extensions when item type still supports an answer list', async ({ page }) => {
+      test('should preserve valid choice layout settings across compatible item types', async ({ page }) => {
         await prepareAnswerListItem(page);
 
         await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
@@ -565,11 +574,26 @@ test.describe('Item control', () => {
 
         await PWUtils.selectDataType(page, 'string');
 
+        await expect(page.locator('#__\\$itemControl\\.radio-button')).toBeChecked();
         await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toBeChecked();
         await expect(page.locator('#__\\$columnCount')).toHaveValue('3');
 
-        const json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        let json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
         expect(json.item[0].extension).toEqual([
+          itemControlExtensions['radio-button'],
+          choiceOrientationExtension('horizontal'),
+          columnCountExtension(3)
+        ]);
+
+        await PWUtils.selectDataType(page, 'coding');
+
+        await expect(page.locator('#__\\$itemControl\\.radio-button')).toBeChecked();
+        await expect(PWUtils.getRadioButton(page, 'Choice orientation', 'Horizontal')).toBeChecked();
+        await expect(page.locator('#__\\$columnCount')).toHaveValue('3');
+
+        json = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+        expect(json.item[0].extension).toEqual([
+          itemControlExtensions['radio-button'],
           choiceOrientationExtension('horizontal'),
           columnCountExtension(3)
         ]);

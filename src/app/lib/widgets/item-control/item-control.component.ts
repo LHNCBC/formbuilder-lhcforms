@@ -153,17 +153,23 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
         return;
       }
 
-      const changed = !(this.dataType === type);
       this.dataType = type;
-      // Clear item-control selections that do not apply to the new data type.
-      if (type !== 'coding' && type !== 'group' && type !== 'display') {
-        this.clearExtensionItemControlSelection(false);
-        if(!this.supportsAnswerList(type)) {
-          this.removeAnswerListLayoutExtensions();
-        }
-      } else {
-        this.option = this.getItemControl(changed);
+      if (type === 'group' || type === 'display') {
+        // Group and display have their own valid item controls, so keep their
+        // existing initialization behavior while clearing answer-list layout below.
+        this.option = this.getItemControl(true);
         this.updateItemControlExt(this.option);
+      }
+      else if (!this.supportsAnswerList(type)) {
+        this.clearExtensionItemControlSelection(false);
+      }
+      else if(this.option && !this.getItemControlOptions().some((option) => option.enum[0] === this.option)) {
+        // Preserve answer-list settings across compatible types, but clear an item control
+        // that is not available for the destination type (for example, autocomplete on string).
+        this.clearExtensionItemControlSelection(false);
+      }
+      if(!this.supportsAnswerList(type)) {
+        this.clearAnswerListLayoutSelections();
       }
       this.cdr.markForCheck();
     })
@@ -395,6 +401,19 @@ export class ItemControlComponent extends LfbControlWidgetComponent implements O
    */
   private supportsAnswerList(type: string): boolean {
     return ['integer', 'date', 'time', 'string', 'text', 'coding'].includes(type);
+  }
+
+  /**
+   * Clear retained answer-list layout values after an incompatible data-type change.
+   */
+  private clearAnswerListLayoutSelections(): void {
+    for (const path of ['/__$choiceOrientation', '/__$columnCount']) {
+      const property = this.formProperty.searchProperty(path);
+      if(property?.value !== '' && property?.value !== null && property?.value !== undefined) {
+        property.setValue('', false);
+      }
+    }
+    this.removeAnswerListLayoutExtensions();
   }
 
   /**
