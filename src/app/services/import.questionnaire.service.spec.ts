@@ -68,4 +68,41 @@ describe('ImportQuestionnaireService', () => {
 
     expect(item.__$columnCount).toBe(2);
   });
+
+  [
+    {
+      description: 'canonical extension first',
+      extensions: [
+        {
+          url: EXTENSION_URL_COLUMN_COUNT,
+          valuePositiveInt: 3
+        },
+        {
+          url: EXTENSION_URL_COLUMN_COUNT_LEGACY,
+          valueInteger: 2
+        }
+      ]
+    },
+    {
+      description: 'legacy extension first',
+      extensions: [
+        {
+          url: EXTENSION_URL_COLUMN_COUNT_LEGACY,
+          valueInteger: 2
+        },
+        {
+          url: EXTENSION_URL_COLUMN_COUNT,
+          valuePositiveInt: 3
+        }
+      ]
+    }
+  ].forEach(({description, extensions}) => {
+    it(`should prefer canonical column count when the ${description}`, () => {
+      const item: any = {extension: extensions};
+
+      service.updateExtensionRelatedCustomFields(item);
+
+      expect(item.__$columnCount).toBe(3);
+    });
+  });
 });

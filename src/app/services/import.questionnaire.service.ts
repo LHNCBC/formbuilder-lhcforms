@@ -97,6 +97,10 @@ export class ImportQuestionnaireService {
    *   fields, on this object based on the extensions it contains.
    */
   updateExtensionRelatedCustomFields(extParent: {extension: fhir.Extension[], [key: string]: any}) {
+    const hasCanonicalColumnCount = extParent.extension.some(
+      (extension) => extension.url === EXTENSION_URL_COLUMN_COUNT
+    );
+
     // Terminology server.
     for (let i = 0; i < extParent.extension.length; i++) {
 
@@ -143,8 +147,13 @@ export class ImportQuestionnaireService {
           break;
 
         case EXTENSION_URL_COLUMN_COUNT:
-        case EXTENSION_URL_COLUMN_COUNT_LEGACY:
           extParent.__$columnCount = extension.valuePositiveInt ?? extension.valueInteger;
+          break;
+
+        case EXTENSION_URL_COLUMN_COUNT_LEGACY:
+          if(!hasCanonicalColumnCount) {
+            extParent.__$columnCount = extension.valuePositiveInt ?? extension.valueInteger;
+          }
           break;
 
         case EXTENSION_URL_QUESTIONNAIRE_UNIT:
