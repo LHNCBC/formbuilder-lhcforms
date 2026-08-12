@@ -149,6 +149,46 @@ describe('Util', () => {
     });
   });
 
+  it('should remove choice orientation from incompatible R4/STU3 item types without changing the source', () => {
+    const choiceOrientation = {
+      url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation',
+      valueCode: 'horizontal'
+    };
+    const columnCount = {
+      url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount',
+      valuePositiveInt: 3
+    };
+    const questionnaire: any = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      item: [
+        {
+          linkId: 'choice',
+          type: 'choice',
+          extension: [choiceOrientation, columnCount]
+        },
+        {
+          linkId: 'string',
+          type: 'string',
+          extension: [choiceOrientation, columnCount],
+          item: [{
+            linkId: 'nested-integer',
+            type: 'integer',
+            extension: [choiceOrientation]
+          }]
+        }
+      ]
+    };
+
+    const cleaned = Util.removeInvalidChoiceOrientation(questionnaire);
+
+    expect(cleaned.item[0].extension).toEqual([choiceOrientation, columnCount]);
+    expect(cleaned.item[1].extension).toEqual([columnCount]);
+    expect(cleaned.item[1].item[0].extension).toBeUndefined();
+    expect(questionnaire.item[1].extension).toEqual([choiceOrientation, columnCount]);
+    expect(questionnaire.item[1].item[0].extension).toEqual([choiceOrientation]);
+  });
+
   it('should check for empty answer options', () => {
 
     const answerOption = [
@@ -609,5 +649,4 @@ describe('Util', () => {
     });
   });
 });
-
 

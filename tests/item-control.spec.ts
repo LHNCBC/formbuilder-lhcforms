@@ -361,6 +361,35 @@ test.describe('Item control', () => {
         ]);
       });
 
+      test('should omit incompatible choice orientation from R4 and STU3 exports', async ({ page }) => {
+        await prepareAnswerListItem(page);
+
+        await page.locator('[for^="__\\$itemControl\\.radio-button"]').click();
+        await PWUtils.clickRadioButton(page, 'Choice orientation', 'Horizontal');
+        await page.locator('#__\\$columnCount').fill('3');
+
+        for (const version of ['R4', 'STU3']) {
+          let json = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+          expect(json.item[0].type).toBe('open-choice');
+          expect(json.item[0].extension).toEqual([
+            itemControlExtensions['radio-button'],
+            choiceOrientationExtension('horizontal'),
+            columnCountExtension(3)
+          ]);
+
+          await PWUtils.selectDataType(page, 'string');
+
+          json = await PWUtils.getQuestionnaireJSONWithoutUI(page, version);
+          expect(json.item[0].type).toBe('string');
+          expect(json.item[0].extension).toEqual([
+            itemControlExtensions['radio-button'],
+            columnCountExtension(3)
+          ]);
+
+          await PWUtils.selectDataType(page, 'coding');
+        }
+      });
+
       test('should reject non-positive and fractional column counts', async ({ page }) => {
         await prepareAnswerListItem(page);
 
