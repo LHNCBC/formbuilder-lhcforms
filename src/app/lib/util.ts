@@ -79,6 +79,7 @@ export class Util {
     string: 'answerString',
     text: 'answerString',
     coding: 'answerCoding',
+    attachment: 'answerBoolean',
     quantity: 'answerQuantity',
     reference: 'answerReference'
   };
@@ -222,8 +223,7 @@ export class Util {
     'answerCoding',
     'answerQuantity',
     'answerReference',
-    'answerUri',
-    'answerAttachment'
+    'answerUri'
   ];
 
   /**

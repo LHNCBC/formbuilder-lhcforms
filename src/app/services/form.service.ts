@@ -20,6 +20,7 @@ import { LiveAnnouncer } from '@angular/cdk/a11y';
 import {ISchema} from "@lhncbc/ngx-schema-form";
 import {ImportQuestionnaireService} from "./import.questionnaire.service";
 import {PREFERRED_TERMINOLOGY_SERVER_URI} from "../lib/constants/constants";
+import {AttachmentUtil} from '../lib/attachment-util';
 
 declare var LForms: any;
 
@@ -118,6 +119,11 @@ export class FormService {
     );
   });
 
+  // Attachment enableWhen conditions only test whether an answer exists.
+  attachmentOperatorOptions: any [] = this.operatorOptions.filter((e) => {
+    return e.option === 'exists' || e.option === 'notexists';
+  });
+
   // Operators based on type.
   enableWhenOperatorOptions = {
     decimal: this.operatorOptions,
@@ -131,7 +137,7 @@ export class FormService {
     url: this.operatorOptions2,
     boolean: this.operatorOptions2,
     coding: this.operatorOptions2,
-    attachment: this.operatorOptions2,
+    attachment: this.attachmentOperatorOptions,
     reference: this.operatorOptions2
   };
   private importService = inject(ImportQuestionnaireService);
@@ -1184,7 +1190,7 @@ export class FormService {
     if(fhirVersion !== 'R5') {
       ret = Util.convertQuestionnaire(fhirQ, 'R5');
     }
-    return ret;
+    return AttachmentUtil.normalizeQuestionnaireAttachments(ret, 'R5');
   }
 
   /**
@@ -1199,6 +1205,7 @@ export class FormService {
       ret = LForms.Util.convertFHIRQuestionnaireToLForms(fhirQ);
     } else if (version !== 'R5') {
       ret = Util.convertQuestionnaire(fhirQ, version);
+      AttachmentUtil.normalizeQuestionnaireAttachments(ret, version);
       // Apply FHIR canonical field ordering after version conversion
       ret = Util.orderQuestionnaireFields(ret);
     }

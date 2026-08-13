@@ -1,0 +1,27 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Repeated Attachment Restrictions Test",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "attachment-repeat-1",
+      "text": "Upload repeated files",
+      "type": "attachment",
+      "repeats": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxSize",
+          "valueDecimal": 5242880
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/mimeType",
+          "valueCode": "application/pdf"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/mimeType",
+          "valueCode": "image/png"
+        }
+      ]
+    }
+  ]
+}

@@ -152,6 +152,7 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
     return !!this.schema.readOnly || !this.currentOperator || invalidAttachmentOperator;
   }
 
+  /** Initialize the operator-specific editor and keep it synchronized with the form model. */
   ngOnInit(): void {
     super.ngOnInit();
 

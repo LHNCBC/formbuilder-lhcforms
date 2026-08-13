@@ -1,0 +1,80 @@
+<div class="attachment-dlg-container">
+  <h2 mat-dialog-title class="bg-primary text-white pe-2 pb-3">Attachment
+    <button mat-icon-button class="close-button mt-2" (click)="cancel()">
+      <mat-icon class="close-icon" matTooltip="Discard changes">close</mat-icon>
+    </button>
+  </h2>
+  <mat-dialog-content #dlgContent class="dlg-content">
+    <h2 class="m-3 mb-1">Edit attachment fields</h2>
+    <hr>
+    <div class="container pb-3">
+      <fieldset class="row attachment-field-row">
+        <legend class="col-sm-2 col-form-label p-0">Input Method</legend>
+        <div class="col-sm-10 px-0 d-flex align-items-center gap-3" role="radiogroup" aria-label="Input Method">
+          <div class="form-check form-check-inline m-0">
+            <input id="attachment-input-file" class="form-check-input" type="radio" name="attachmentInputMethod"
+                   value="file" [ngModel]="inputMethod" (ngModelChange)="onInputMethodChange($event)">
+            <label class="form-check-label" for="attachment-input-file">File upload</label>
+          </div>
+          <div class="form-check form-check-inline m-0">
+            <input id="attachment-input-url" class="form-check-input" type="radio" name="attachmentInputMethod"
+                   value="url" [ngModel]="inputMethod" (ngModelChange)="onInputMethodChange($event)">
+            <label class="form-check-label" for="attachment-input-url">URL</label>
+          </div>
+          <div class="form-check form-check-inline m-0">
+            <input id="attachment-input-base64" class="form-check-input" type="radio" name="attachmentInputMethod"
+                   value="base64Binary" [ngModel]="inputMethod" (ngModelChange)="onInputMethodChange($event)">
+            <label class="form-check-label" for="attachment-input-base64">base64Binary</label>
+          </div>
+        </div>
+      </fieldset>
+
+      @if (inputMethod === 'file') {
+        <div class="row attachment-field-row">
+          <div class="col-sm-2 col-form-label p-0">File</div>
+          <div class="col-sm-10 px-0">
+            <button type="button" class="btn btn-sm btn-light text-primary shadow-sm"
+                    (click)="fileInput.click()">Upload local file</button>
+            <input #fileInput class="d-none" type="file" (change)="onFileSelected($event)">
+            @if (fileError) {
+              <div class="text-danger small" role="alert">{{fileError}}</div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (inputMethod === 'base64Binary') {
+        <div class="row attachment-field-row">
+          <label class="col-sm-2 col-form-label p-0" for="attachment-data">Data</label>
+          <div class="col-sm-10 px-0">
+            <button type="button" class="btn btn-sm btn-light text-primary shadow-sm mb-1"
+                    [disabled]="!draft.data" (click)="clearData()">Clear data</button>
+            <textarea id="attachment-data" class="form-control form-control-sm"
+                      name="attachmentData" [ngModel]="draft.data" (ngModelChange)="onDataChange($event)"
+                      (paste)="onPaste($event)" [class.is-invalid]="!!dataError"
+                      aria-describedby="attachment-data-help attachment-data-error"
+                      placeholder="Paste base64Binary data, a base64 data URI, or a clipboard file"></textarea>
+            <small id="attachment-data-help" class="form-text">
+              FHIR stores only the base64 content, without a data URI prefix.
+            </small>
+            @if (dataError) {
+              <div id="attachment-data-error" class="invalid-feedback d-block" role="alert">{{dataError}}</div>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="row attachment-metadata-form">
+        <div class="col-12 px-0">
+          <sf-form [schema]="attachmentSchema" [model]="draft" [validators]="attachmentValidators"
+                   (onChange)="onAttachmentChange($event.value)"
+                   (isValid)="attachmentFormValid = $event"></sf-form>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+  <mat-dialog-actions class="border-top pe-3 pt-3" align="end">
+    <button class="btn btn-primary" (click)="cancel()">Discard changes</button>
+    <button class="btn btn-primary ms-2" [disabled]="!dirty || isInvalid || isEmpty" (click)="save()">Save and close</button>
+  </mat-dialog-actions>
+</div>

@@ -66,14 +66,119 @@ test.describe('attachment data type', () => {
       'R4'
     );
 
-    // Default value: an initial Attachment (URL / Title / Content type).
+    // Default value: add an Attachment through the dialog.
     await PWUtils.clickRadioButton(page, 'Value method', 'Type initial value');
+    const emptyInitialTable = page.locator('lfb-table').filter({hasText: 'Initial value'});
+    const emptyInitialHeaders = emptyInitialTable.locator('thead th');
+    await expect(emptyInitialHeaders).toHaveCount(4);
+    await expect(emptyInitialHeaders.nth(0)).toContainText('Title');
+    await expect(emptyInitialHeaders.nth(1)).toContainText('Mime Type');
+    await expect(emptyInitialHeaders.nth(2)).toContainText('Size');
+    await expect(emptyInitialHeaders.nth(3)).toContainText('Value');
+    await page.getByRole('button', {name: 'Add another value'}).click();
+    const attachmentDialog = page.locator('lfb-attachment-dlg');
+    await expect(attachmentDialog).toBeVisible();
+    await expect(attachmentDialog.getByRole('radiogroup', {name: 'Input Method'})).toBeVisible();
+    await expect(attachmentDialog.getByRole('radio', {name: 'File upload'})).toBeChecked();
+    await attachmentDialog.getByRole('radio', {name: 'URL'}).check();
+    await expect(attachmentDialog.getByText('Value attachment', {exact: true})).toHaveCount(0);
+    await expect(attachmentDialog.getByText('The actual value to for an initial answer.', {exact: true}))
+      .toHaveCount(0);
+    await expect(attachmentDialog.getByRole('textbox', {name: 'Data', exact: true})).toHaveCount(0);
+    await expect(attachmentDialog.getByRole('button', {name: 'Upload local file'})).toHaveCount(0);
+    const urlInput = attachmentDialog.getByRole('textbox', {name: 'URL'});
+    const titleInput = attachmentDialog.getByRole('textbox', {name: /^Title/});
+    const metadataLabels = attachmentDialog.locator('.attachment-metadata-form lfb-label label');
+    await expect(metadataLabels.nth(0)).toContainText('URL');
+    await expect(metadataLabels.nth(1)).toContainText('Title');
+    await urlInput.fill('http://example.org/report.pdf');
+    await titleInput.fill('Report');
+    const mimeTypeInput = attachmentDialog.getByRole('combobox', {name: /^Mime Type/});
+    await mimeTypeInput.fill('application/pdf');
+    await mimeTypeInput.press('Escape');
+    await attachmentDialog.getByRole('textbox', {name: /^Size/}).fill('9007199254740993');
+    await attachmentDialog.getByRole('spinbutton', {name: /^Height/}).fill('1080');
+    await attachmentDialog.getByRole('spinbutton', {name: /^Width/}).fill('1920');
+    await attachmentDialog.getByRole('spinbutton', {name: /^Frames/}).fill('24');
+    await attachmentDialog.getByRole('spinbutton', {name: /^Duration/}).fill('1.5');
+    await attachmentDialog.getByRole('spinbutton', {name: /^Pages/}).fill('2');
+    await expect(attachmentDialog.getByLabel(/Tooltip for Title:/)).toBeVisible();
+    await expect(attachmentDialog.getByLabel(/Tooltip for Mime Type:/)).toBeVisible();
+    await expect(attachmentDialog.getByLabel(/Tooltip for Height:/)).toBeVisible();
+    await expect(attachmentDialog.locator('lfb-datetime')).toBeVisible();
+    await expect(attachmentDialog.getByRole('button', {name: 'Date time picker for Creation'})).toBeVisible();
+    await expect(attachmentDialog.locator('lfb-datetime label')).toHaveCSS('padding-bottom', '0px');
+    const titleWidget = titleInput.locator('xpath=ancestor::lfb-string');
+    await expect(titleWidget.locator('label'))
+      .toHaveCSS('padding-bottom', '0px');
+    const titleBounds = await titleInput.boundingBox();
+    const titleRowBounds = await titleWidget.locator(':scope > div').boundingBox();
+    expect(titleBounds!.x + titleBounds!.width)
+      .toBeCloseTo(titleRowBounds!.x + titleRowBounds!.width, 0);
+    const creationBounds = await attachmentDialog.locator('lfb-datetime input.form-control').boundingBox();
+    expect(creationBounds?.x).toBeCloseTo(titleBounds?.x || 0, 0);
+    const languageInput = attachmentDialog.getByRole('combobox', {name: /^Language/});
+    const languageRow = languageInput.locator('xpath=ancestor::sf-form-element[1]/parent::div');
+    const titleRow = titleInput.locator('xpath=ancestor::sf-form-element[1]/parent::div');
+    await expect(languageRow).toHaveCSS('border-bottom-width', '1px');
+    await languageRow.hover();
+    await expect(languageRow).toHaveCSS('background-color', 'rgb(250, 250, 210)');
+    await expect(titleRow).not.toHaveCSS('background-color', 'rgb(250, 250, 210)');
+    await languageInput.click();
+    const languageSuggestion = attachmentDialog.getByRole(
+      'option', {name: 'English (United States) — en-US', exact: true}
+    );
+    await expect(languageSuggestion).toHaveText('English (United States) — en-US');
+    await languageSuggestion.click();
+    await expect(languageInput).toHaveValue('en-US');
+    await languageInput.fill('en_US');
+    await expect(attachmentDialog.getByText('Enter a valid BCP-47 language tag, such as en, en-US, or zh-Hant-TW.'))
+      .toBeVisible();
+    await languageInput.fill('zh-Hant-TW');
+    await expect(attachmentDialog.getByText('Enter a valid BCP-47 language tag, such as en, en-US, or zh-Hant-TW.'))
+      .toHaveCount(0);
+    const saveAttachment = attachmentDialog.getByRole('button', {name: 'Save and close'});
+    await expect(saveAttachment).toBeEnabled();
+    await saveAttachment.click();
+    await expect(attachmentDialog).not.toBeVisible();
 
-    const urlField = page.locator('[id^="initial.0.valueAttachment.url"]');
-    await expect(urlField).toBeVisible();
-    await urlField.fill('http://example.org/report.pdf');
-    await page.locator('[id^="initial.0.valueAttachment.title"]').fill('Report');
-    await page.locator('[id^="initial.0.valueAttachment.contentType"]').fill('application/pdf');
+    const initialRow = page.locator('lfb-table').filter({hasText: 'Initial value'}).locator('tbody tr').first();
+    const initialTable = page.locator('lfb-table').filter({hasText: 'Initial value'});
+    const initialHeaders = initialTable.locator('thead th');
+    await expect(initialHeaders.nth(0)).toContainText('Title');
+    await expect(initialHeaders.nth(1)).toContainText('Mime Type');
+    await expect(initialHeaders.nth(2)).toContainText('Size');
+    await expect(initialHeaders.nth(3)).toContainText('Value');
+    await expect(initialRow.locator('td').nth(0).locator('input')).toHaveValue('Report');
+    await expect(initialRow.locator('td').nth(1).locator('input')).toHaveValue('application/pdf');
+    const valueInput = initialRow.locator('td').nth(3).locator('input');
+    expect(JSON.parse(await valueInput.inputValue())).toEqual({
+      url: 'http://example.org/report.pdf',
+      title: 'Report',
+      contentType: 'application/pdf',
+      language: 'zh-Hant-TW',
+      size: '9007199254740993',
+      height: 1080,
+      width: 1920,
+      frames: 24,
+      duration: 1.5,
+      pages: 2
+    });
+    await expect(initialRow.locator('input').first()).toHaveAttribute('readonly', /^(|true)$/);
+
+    const r5Questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(r5Questionnaire.item[0].initial[0].valueAttachment).toEqual({
+      contentType: 'application/pdf',
+      language: 'zh-Hant-TW',
+      url: 'http://example.org/report.pdf',
+      size: '9007199254740993',
+      title: 'Report',
+      height: 1080,
+      width: 1920,
+      frames: 24,
+      duration: 1.5,
+      pages: 2
+    });
 
     await PWUtils.assertValueInQuestionnaire(
       page, '/item/0/initial/0/valueAttachment/url', 'http://example.org/report.pdf', 'R4');
@@ -81,6 +186,120 @@ test.describe('attachment data type', () => {
       page, '/item/0/initial/0/valueAttachment/title', 'Report', 'R4');
     await PWUtils.assertValueInQuestionnaire(
       page, '/item/0/initial/0/valueAttachment/contentType', 'application/pdf', 'R4');
+    await PWUtils.assertValueInQuestionnaire(
+      page, '/item/0/initial/0/valueAttachment/language', 'zh-Hant-TW', 'R4');
+    const r4Questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(r4Questionnaire.item[0].initial[0].valueAttachment.size).toBeUndefined();
+    expect(r4Questionnaire.item[0].initial[0].valueAttachment.height).toBeUndefined();
+  });
+
+  test('should populate attachment data and metadata from a file and clipboard paste', async ({ page }) => {
+    await PWUtils.selectDataType(page, 'attachment');
+    await PWUtils.clickRadioButton(page, 'Value method', 'Type initial value');
+    await page.getByRole('button', {name: 'Add another value'}).click();
+
+    const attachmentDialog = page.locator('lfb-attachment-dlg');
+    await expect(attachmentDialog.getByRole('radio', {name: 'File upload'})).toBeChecked();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'})).toHaveCount(0);
+    await expect(attachmentDialog.getByRole('textbox', {name: 'Data', exact: true})).toHaveCount(0);
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Size/})).toHaveCount(0);
+    await expect(attachmentDialog.getByLabel('Hash', {exact: true})).toHaveCount(0);
+    await expect(attachmentDialog.locator('.row.mb-2')).toHaveCount(0);
+    const fileInput = attachmentDialog.locator('input[type="file"]');
+    await fileInput.setInputFiles({
+      name: 'hello.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('Hello')
+    });
+
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('hello.txt');
+    await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('text/plain');
+
+    const saveAttachment = attachmentDialog.getByRole('button', {name: 'Save and close'});
+    await expect(saveAttachment).toBeEnabled();
+    await saveAttachment.click();
+    await expect(attachmentDialog).not.toBeVisible();
+    let questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(questionnaire.item[0].initial[0].valueAttachment).toEqual({
+      contentType: 'text/plain',
+      data: 'SGVsbG8=',
+      hash: '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=',
+      size: 5,
+      title: 'hello.txt'
+    });
+
+    const initialRow = page.locator('lfb-table').filter({hasText: 'Initial value'}).locator('tbody tr').first();
+    const jsonValue = initialRow.locator('td').nth(3).locator('input');
+    expect(JSON.parse(await jsonValue.inputValue())).toEqual({
+      contentType: 'text/plain',
+      data: 'SGVsbG8=',
+      hash: '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=',
+      size: '5',
+      title: 'hello.txt'
+    });
+    await initialRow.getByLabel('Edit this row').click();
+
+    await expect(attachmentDialog.getByRole('radio', {name: 'File upload'})).toBeChecked();
+    await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'})).toHaveCount(0);
+    await expect(attachmentDialog.getByRole('button', {name: 'Upload local file'})).toHaveCount(0);
+    const dataInput = attachmentDialog.getByRole('textbox', {name: 'Data', exact: true});
+    await expect(dataInput.locator('xpath=ancestor::div[contains(@class, "attachment-field-row")]'))
+      .toHaveCSS('border-bottom-width', '1px');
+    await dataInput.evaluate((element) => {
+      const clipboardData = new DataTransfer();
+      clipboardData.setData('text/plain', 'data:application/pdf;base64,JVBERg==');
+      element.dispatchEvent(new ClipboardEvent('paste', {
+        bubbles: true,
+        cancelable: true,
+        clipboardData
+      }));
+    });
+    await expect(dataInput).toHaveValue('JVBERg==');
+    await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('application/pdf');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('');
+    await attachmentDialog.getByRole('textbox', {name: /^Title/}).fill('pasted.pdf');
+
+    // Each input method keeps an independent draft while the user switches between them.
+    await attachmentDialog.getByRole('radio', {name: 'URL'}).check();
+    await attachmentDialog.getByRole('textbox', {name: 'URL'}).fill('https://example.org/remote.pdf');
+    await attachmentDialog.getByRole('textbox', {name: /^Title/}).fill('remote.pdf');
+    await attachmentDialog.getByRole('combobox', {name: /^Mime Type/}).fill('application/pdf');
+
+    await attachmentDialog.getByRole('radio', {name: 'File upload'}).check();
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('hello.txt');
+    await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('text/plain');
+
+    await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'Data', exact: true})).toHaveValue('JVBERg==');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('pasted.pdf');
+    await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('application/pdf');
+
+    await attachmentDialog.getByRole('radio', {name: 'URL'}).check();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'}))
+      .toHaveValue('https://example.org/remote.pdf');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('remote.pdf');
+
+    // Saving base64Binary picks only that method's values.
+    await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
+    await attachmentDialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(attachmentDialog).not.toBeVisible();
+    expect(JSON.parse(await jsonValue.inputValue())).toEqual({
+      contentType: 'application/pdf',
+      data: 'JVBERg==',
+      hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
+      size: '4',
+      title: 'pasted.pdf'
+    });
+
+    questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(questionnaire.item[0].initial[0].valueAttachment).toEqual({
+      contentType: 'application/pdf',
+      data: 'JVBERg==',
+      hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
+      size: 4,
+      title: 'pasted.pdf'
+    });
   });
 
   test('should convert the Max size unit and keep the byte count exact', async ({ page }) => {
@@ -234,10 +453,21 @@ test.describe('attachment data type', () => {
     // so this locator is independent of the restriction row order.
     await expect(page.locator('lfb-restrictions input[type="text"]')).toHaveValue('application/pdf');
 
-    // The initial Attachment value round-trips (URL / Title / Content type).
-    await expect(page.locator('[id^="initial.0.valueAttachment.url"]')).toHaveValue('http://example.org/report.pdf');
-    await expect(page.locator('[id^="initial.0.valueAttachment.title"]')).toHaveValue('Report');
-    await expect(page.locator('[id^="initial.0.valueAttachment.contentType"]')).toHaveValue('application/pdf');
+    // The initial Attachment value appears in a read-only row and can be reopened in the dialog.
+    const initialRow = page.locator('lfb-table').filter({hasText: 'Initial value'}).locator('tbody tr').first();
+    await expect(initialRow.locator('td').nth(0).locator('input')).toHaveValue('Report');
+    await expect(initialRow.locator('td').nth(1).locator('input')).toHaveValue('application/pdf');
+    expect(JSON.parse(await initialRow.locator('td').nth(3).locator('input').inputValue())).toEqual({
+      url: 'http://example.org/report.pdf',
+      title: 'Report',
+      contentType: 'application/pdf'
+    });
+    await initialRow.getByLabel('Edit this row').click();
+    const attachmentDialog = page.locator('lfb-attachment-dlg');
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'})).toHaveValue('http://example.org/report.pdf');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('Report');
+    await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('application/pdf');
+    await attachmentDialog.getByRole('button', {name: 'Discard changes'}).click();
 
     // Re-exporting keeps the exact byte count, confirming the round-trip is lossless.
     await PWUtils.assertExtensionsInQuestionnaire(
@@ -267,6 +497,71 @@ test.describe('attachment data type', () => {
         { url: MIME_TYPE_URL, valueCode: 'application/pdf' },
         { url: MIME_TYPE_URL, valueCode: 'image/png' }
       ], 'R4');
+  });
+
+  test('should support attachment existence in enableWhen conditions', async ({ page }) => {
+    const itemTextField = await PWUtils.getItemTextField(page);
+    await itemTextField.fill('Attachment source');
+    await PWUtils.selectDataType(page, 'attachment');
+
+    const addNewItemButton = PWUtils.getButton(page, 'Toolbar with item action buttons', 'Add new item');
+    await addNewItemButton.click();
+    await expect(await PWUtils.getItemTextField(page)).toHaveValue('New item 1');
+
+    await PWUtils.expandAdvancedFields(page);
+    await PWUtils.clickRadioButton(page, 'Conditional method', 'enableWhen condition and behavior');
+    const question = page.locator('[id^="enableWhen.0.question"]');
+    await question.press('Enter');
+    await expect(question).toHaveValue('1 - Attachment source');
+
+    const operator = page.locator('[id^="enableWhen.0.operator"]');
+    await expect(page.getByLabel('Attachment field')).toHaveCount(0);
+    await expect(operator.locator('option')).toHaveText(['Not empty', 'Empty']);
+    await expect(page.locator('[id^="enableWhen.0.answer"]')).toHaveCount(0);
+
+    await operator.selectOption({label: 'Empty'});
+    let questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.item[1].enableWhen).toEqual([{
+      question: questionnaire.item[0].linkId,
+      operator: 'exists',
+      answerBoolean: false
+    }]);
+
+    await operator.selectOption({label: 'Not empty'});
+    questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.item[1].enableWhen).toEqual([{
+      question: questionnaire.item[0].linkId,
+      operator: 'exists',
+      answerBoolean: true
+    }]);
+  });
+
+  test('should import and round-trip attachment existence conditions and behavior', async ({page}) => {
+    await PWUtils.uploadFile(page, 'attachment-enablewhen-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickTreeNode(page, 'Attachment dependent');
+    await PWUtils.expandAdvancedFields(page);
+
+    await expect(page.getByLabel('Attachment field')).toHaveCount(0);
+    await expect(page.locator('[id^="enableWhen.0.operator"] option:checked')).toHaveText('Not empty');
+    await expect(page.locator('[id^="enableWhen.1.operator"] option:checked')).toHaveText('Empty');
+    await expect(page.locator('[id^="enableWhen.0.answer"], [id^="enableWhen.1.answer"]')).toHaveCount(0);
+    await PWUtils.expectRadioChecked(page, 'Show this item when', 'All conditions are true');
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.item[1].enableBehavior).toBe('all');
+    expect(questionnaire.item[1].enableWhen).toEqual([
+      {
+        question: 'attachment-source',
+        operator: 'exists',
+        answerBoolean: true
+      },
+      {
+        question: 'attachment-source',
+        operator: 'exists',
+        answerBoolean: false
+      }
+    ]);
   });
 
   test('should render an attachment item as a file-upload control in the preview', async ({ page }) => {

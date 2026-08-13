@@ -16,10 +16,23 @@ import {AsyncPipe, NgClass} from "@angular/common";
 import {LabelComponent} from "../label/label.component";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
+import {NgbTypeahead, NgbTypeaheadSelectItemEvent} from '@ng-bootstrap/ng-bootstrap';
+import {merge, Observable, Subject} from 'rxjs';
+import {debounceTime, distinctUntilChanged, filter, map} from 'rxjs/operators';
+
+type StringSuggestion = string | {value: string; label?: string};
 
 @Component({
   selector: 'lfb-string',
-  imports: [ReactiveFormsModule, MatTooltipModule, NgClass, AsyncPipe, LfbDisableControlDirective, LabelComponent],
+  imports: [
+    ReactiveFormsModule,
+    MatTooltipModule,
+    NgClass,
+    AsyncPipe,
+    LfbDisableControlDirective,
+    LabelComponent,
+    NgbTypeahead
+  ],
   templateUrl: './string.component.html',
   styles: [`
     input:disabled {
@@ -34,7 +47,10 @@ import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.d
 export class StringComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewChecked {
 
   @ViewChild('inputEl') inputElRef!: ElementRef;
+  @ViewChild('suggestionTypeahead') suggestionTypeahead?: NgbTypeahead;
   showTooltip = true;
+  suggestionFocus$ = new Subject<string>();
+  suggestionClick$ = new Subject<string>();
 
   Array = Array; // To use in templates.
 
@@ -60,6 +76,40 @@ export class StringComponent extends LfbOptionControlWidgetComponent implements 
       this.showTooltip = nextShowTooltip;
       this.cdr.markForCheck();
     }
+  }
+
+  /** Filter schema-provided suggestions for the reusable typeahead menu. */
+  searchSuggestions = (input$: Observable<string>): Observable<StringSuggestion[]> => {
+    const typedInput$ = input$.pipe(debounceTime(100), distinctUntilChanged());
+    const clicksWithClosedPopup$ = this.suggestionClick$.pipe(
+      filter(() => !this.suggestionTypeahead?.isPopupOpen())
+    );
+    return merge(typedInput$, this.suggestionFocus$, clicksWithClosedPopup$).pipe(
+      map((term) => {
+        const searchTerm = (term || '').trim().toLowerCase();
+        return (this.schema.widget?.suggestions || []).filter((suggestion: StringSuggestion) => {
+          const value = this.suggestionValue(suggestion).toLowerCase();
+          const label = this.suggestionLabel(suggestion).toLowerCase();
+          return !searchTerm || value.includes(searchTerm) || label.includes(searchTerm);
+        });
+      })
+    );
+  };
+
+  /** Render each suggestion as one display line. */
+  suggestionLabel = (suggestion: StringSuggestion): string =>
+    typeof suggestion === 'string' ? suggestion : suggestion.label || suggestion.value;
+
+  /** Store the suggestion's underlying code instead of its display label. */
+  onSuggestionSelected(event: NgbTypeaheadSelectItemEvent<StringSuggestion>): void {
+    event.preventDefault();
+    this.control.setValue(this.suggestionValue(event.item));
+    this.control.markAsDirty();
+  }
+
+  /** Resolve the value stored by a primitive or labeled suggestion. */
+  private suggestionValue(suggestion: StringSuggestion): string {
+    return typeof suggestion === 'string' ? suggestion : suggestion.value;
   }
 
   /**

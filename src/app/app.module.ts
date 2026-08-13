@@ -114,7 +114,7 @@ import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-disp
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
 import { MetaProfileComponent } from './lib/widgets/meta-profile/meta-profile.component';
 import { UnsignedIntegerComponent } from './lib/widgets/unsigned-integer/unsigned-integer.component';
-
+import { InitialComponent } from './lib/widgets/initial/initial.component';
 import { environment } from '../environments/environment';
 import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
 
@@ -172,6 +172,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     DatetimeComponent,
     DateRangeComponent,
     InstantComponent,
+    InitialComponent,
     ElementChooserComponent,
     EnableWhenComponent,
     EwValidateDirective,

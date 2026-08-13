@@ -1635,6 +1635,28 @@
               "id": "hidden"
             }
           },
+          "__$stringify": {
+            "description": "JSON representation used to display an Attachment initial value.",
+            "title": "Value",
+            "type": "string",
+            "visibleIf": {
+              "/type": ["attachment"]
+            },
+            "widget": {
+              "id": "string",
+              "readOnly": true,
+              "tooltipFormat": "json"
+            }
+          },
+          "__$attachmentInputMethod": {
+            "description": "Attachment input method used by the initial-value editor.",
+            "type": "string",
+            "enum": ["file", "url", "base64Binary"],
+            "visibleIf": {
+              "/type": ["attachment"]
+            },
+            "widget": {"id": "hidden"}
+          },
           "valueBoolean": {
             "description": "The actual value to for an initial answer.",
             "pattern": "^true|false$",
@@ -1759,23 +1781,29 @@
               },
               "contentType": {
                 "description": "Identifies the type of the data in the attachment and allows a method to be chosen to interpret or render the data. Includes mime type parameters such as charset where appropriate.",
-                "title": "Content type",
+                "title": "Mime Type",
                 "pattern": "^[^\\s]+(\\s[^\\s]+)*$",
                 "type": "string",
                 "widget": {
                   "id": "string",
+                  "readOnly": true,
                   "labelPosition": "left",
-                  "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
-                  "controlClasses": "col-sm-10",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
                   "placeholder": "e.g. application/pdf"
                 }
               },
               "language": {
                 "description": "The human language of the content. The value can be any valid value according to BCP 47.",
+                "title": "Language",
                 "pattern": "^[^\\s]+(\\s[^\\s]+)*$",
                 "type": "string",
                 "widget": {
-                  "id": "hidden"
+                  "id": "string",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
+                  "placeholder": "Search or enter a BCP-47 language tag"
                 }
               },
               "data": {
@@ -1792,19 +1820,25 @@
                 "pattern": "^\\S*$",
                 "type": "string",
                 "widget": {
-                  "id": "string",
+                  "id": "url",
                   "labelPosition": "left",
-                  "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
-                  "controlClasses": "col-sm-10",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
                   "placeholder": "https://example.org/file.pdf"
                 }
               },
               "size": {
                 "description": "The number of bytes of data that make up this attachment (before base64 encoding, if that is done).",
-                "pattern": "^[0]|([1-9][0-9]*)$",
-                "type": "number",
+                "title": "Size",
+                "pattern": "^(0|[1-9][0-9]*)$",
+                "type": "string",
                 "widget": {
-                  "id": "hidden"
+                  "id": "string",
+                  "readOnly": true,
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
+                  "placeholder": "Number of bytes"
                 }
               },
               "hash": {
@@ -1822,18 +1856,92 @@
                 "type": "string",
                 "widget": {
                   "id": "string",
+                  "readOnly": true,
                   "labelPosition": "left",
-                  "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
-                  "controlClasses": "col-sm-10",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
                   "placeholder": "Label to display for the file"
                 }
               },
               "creation": {
                 "description": "The date that the attachment was first created.",
+                "title": "Creation",
                 "pattern": "^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$",
                 "type": "string",
                 "widget": {
-                  "id": "hidden"
+                  "id": "datetime",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0"
+                }
+              },
+              "height": {
+                "description": "Height of the image in pixels (photo/video).",
+                "title": "Height",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647,
+                "widget": {
+                  "id": "positive-integer",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
+                  "placeholder": "Pixels"
+                }
+              },
+              "width": {
+                "description": "Width of the image in pixels (photo/video).",
+                "title": "Width",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647,
+                "widget": {
+                  "id": "positive-integer",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
+                  "placeholder": "Pixels"
+                }
+              },
+              "frames": {
+                "description": "Number of frames if greater than one (photo).",
+                "title": "Frames",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647,
+                "widget": {
+                  "id": "positive-integer",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
+                  "placeholder": "Number of frames"
+                }
+              },
+              "duration": {
+                "description": "Length in seconds (audio/video).",
+                "title": "Duration",
+                "type": "number",
+                "minimum": 0,
+                "widget": {
+                  "id": "number",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
+                  "placeholder": "Seconds"
+                }
+              },
+              "pages": {
+                "description": "Number of printed pages.",
+                "title": "Pages",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647,
+                "widget": {
+                  "id": "positive-integer",
+                  "labelPosition": "left",
+                  "labelClasses": "col-sm-2 p-0",
+                  "controlClasses": "col-sm-10 px-0",
+                  "placeholder": "Number of printed pages"
                 }
               }
             },
@@ -2061,7 +2169,7 @@
         ]
       },
       "widget": {
-        "id": "table",
+        "id": "initial",
         "labelPosition": "left",
         "labelClasses": "col-2 ps-0 pe-1",
         "controlClasses": "col p-0",
@@ -2083,9 +2191,10 @@
           {"field": "valueQuantity.unit", "title": "Unit", "col": 4, "nolabel": true},
           {"field": "valueQuantity.code", "title": "Code", "col": 3, "nolabel": true},
           {"field": "valueQuantity.system", "title": "System", "col": 3, "nolabel": true},
-          {"field": "valueAttachment.url", "title": "URL", "col": 5, "nolabel": true},
-          {"field": "valueAttachment.title", "title": "Title", "col": 4, "nolabel": true},
-          {"field": "valueAttachment.contentType", "title": "Content type", "col": 3, "nolabel": true},
+          {"field": "valueAttachment.title", "title": "Title", "col": 2, "nolabel": true},
+          {"field": "valueAttachment.contentType", "title": "Mime Type", "col": 2, "nolabel": true},
+          {"field": "valueAttachment.size", "title": "Size", "col": 2, "nolabel": true},
+          {"field": "__$stringify", "title": "Value", "col": 5, "nolabel": true},
           {"field": "valueReference", "noHeader": true, "nolabel": true}
         ],
         "showErrorTypeList": [

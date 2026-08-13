@@ -242,9 +242,10 @@ describe('Util', () => {
     expect(Util.isEmptyAnswerOptionForType(emptyAnswerOption4, "coding")).toBe(false);
   });
 
-  it('should map attachment type to the valueAttachment field', () => {
+  it('should map attachment enableWhen answers to answerBoolean', () => {
     expect(Util.getValueFieldName('attachment')).toBe('valueAttachment');
     expect(Util.getValueDataTypeName('attachment')).toBe('valueAttachment');
+    expect(Util.getAnswerFieldName('attachment')).toBe('answerBoolean');
   });
 
   it('should detect empty/non-empty attachment initial values', () => {
@@ -622,5 +623,3 @@ describe('Util', () => {
     });
   });
 });
-
-

@@ -1,0 +1,30 @@
+{
+  "resourceType": "Questionnaire",
+  "title": "Attachment enableWhen round-trip",
+  "status": "draft",
+  "item": [
+    {
+      "linkId": "attachment-source",
+      "text": "Attachment source",
+      "type": "attachment"
+    },
+    {
+      "linkId": "attachment-dependent",
+      "text": "Attachment dependent",
+      "type": "string",
+      "enableBehavior": "all",
+      "enableWhen": [
+        {
+          "question": "attachment-source",
+          "operator": "exists",
+          "answerBoolean": true
+        },
+        {
+          "question": "attachment-source",
+          "operator": "exists",
+          "answerBoolean": false
+        }
+      ]
+    }
+  ]
+}

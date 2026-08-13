@@ -29,18 +29,30 @@
           }
         }
       } @else {
-          <input #inputEl [name]="name" [readonly]="(schema.widget.id!=='color') && (schema.readOnly || schema.widget?.readOnly)"
-                 class="form-control form-control-sm"
-                 [ngClass]="controlClasses"
-                 [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
-                 [attr.id]="id+_id"  [formControl]="control" [attr.placeholder]="schema.placeholder"
-                 [attr.maxLength]="schema.maxLength || null"
-                 [attr.minLength]="schema.minLength || null"
-                 [attr.pattern]="schema.pattern || null"
-                 [required]="isRequired"
-                 [matTooltip]="getTooltipValue()"
-                 matTooltipClass="lfb-tooltip-pre-wrap"
-                 [lfbDisableControl]="schema.disabled">
+          @if (schema.widget?.suggestions?.length) {
+            <input #inputEl #suggestionTypeahead="ngbTypeahead"
+                   [name]="name" [readonly]="schema.readOnly || schema.widget?.readOnly"
+                   class="form-control form-control-sm" [ngClass]="controlClasses" type="text"
+                   [attr.id]="id+_id" [formControl]="control" [attr.placeholder]="schema.placeholder"
+                   [attr.maxLength]="schema.maxLength || null" [attr.minLength]="schema.minLength || null"
+                   [attr.pattern]="schema.pattern || null" [required]="isRequired"
+                   [ngbTypeahead]="searchSuggestions" [editable]="true"
+                   [inputFormatter]="suggestionLabel" [resultFormatter]="suggestionLabel"
+                   (focus)="suggestionFocus$.next($any($event).target.value)"
+                   (click)="suggestionClick$.next($any($event).target.value)"
+                   (selectItem)="onSuggestionSelected($event)" popupClass="add-scrolling"
+                   [matTooltip]="getTooltipValue()" matTooltipClass="lfb-tooltip-pre-wrap"
+                   [lfbDisableControl]="schema.disabled">
+          } @else {
+            <input #inputEl [name]="name" [readonly]="(schema.widget.id!=='color') && (schema.readOnly || schema.widget?.readOnly)"
+                   class="form-control form-control-sm" [ngClass]="controlClasses"
+                   [attr.type]="!schema.widget.id || schema.widget.id === 'string' ? 'text' : schema.widget.id"
+                   [attr.id]="id+_id" [formControl]="control" [attr.placeholder]="schema.placeholder"
+                   [attr.maxLength]="schema.maxLength || null" [attr.minLength]="schema.minLength || null"
+                   [attr.pattern]="schema.pattern || null" [required]="isRequired"
+                   [matTooltip]="getTooltipValue()" matTooltipClass="lfb-tooltip-pre-wrap"
+                   [lfbDisableControl]="schema.disabled">
+          }
           @if (control.dirty && errors?.length && (formProperty.value || schema.widget.showEmptyError)) {
             <ul class="mb-0 ps-4">
               @for (error of errors; track error.code) {

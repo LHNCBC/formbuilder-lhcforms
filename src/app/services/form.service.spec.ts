@@ -87,4 +87,9 @@ describe('FormService', () => {
     expect(service.treeNodeStatusMap.node1.hasError).toBeTrue();
   });
 
+  it('should limit Attachment enableWhen operators to existence checks', () => {
+    expect(service.getEnableWhenOperatorListByAnswerType('attachment').map((option) => option.option))
+      .toEqual(['exists', 'notexists']);
+  });
+
 });
