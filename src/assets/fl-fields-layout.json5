@@ -20,6 +20,7 @@
           { field:  "implicitRules", col:  12},
           { field:  "version", col:  12},
           { field:  "name", col:  12},
+          { field:  "identifier", col:  12},
           { field:  "meta", col:  12},
           { field:  "subjectType", "col": 12},
           { field:  "date", col:  12},
@@ -42,6 +43,8 @@
     '$.properties.contained': 'Contained resources',
     '$.properties.name': 'Questionnaire name',
     '$.properties.date': 'Revision date',
+    '$.properties.meta.properties.tag': 'Tags',
+    '$.properties.identifier': 'Identifiers',
     '$.properties.meta': 'Meta',
     '$.definitions.Meta.properties.versionId': 'Version ID (Read-only)',
     '$.definitions.Meta.properties.lastUpdated': 'Last updated (Read-only)',
@@ -136,6 +139,20 @@
         {"field": "display", "col": 4, "nolabel": true},
         {"field": "code", "col": 3, "nolabel": true},
         {"field": "system", "col": 4, "nolabel": true}
+      ]
+    },
+    identifier: {
+      "id": "identifier",
+      "addDefaultItemIfEmpty": false,
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new identifier",
+      "showFields": [
+        {"field": "value", "col": 4, "nolabel": true},
+        {"field": "system", "col": 4, "nolabel": true},
+        {"field": "use", "col": 3, "nolabel": true}
       ]
     },
     metaSecurity: {
@@ -313,6 +330,9 @@
     ],
     extension: [
       '$.properties.extension'
+    ],
+    identifier: [
+      '$.properties.identifier'
     ],
     contained: [
       '$.properties.contained'

@@ -92,4 +92,34 @@ describe('FormService', () => {
       .toEqual(['exists', 'notexists']);
   });
 
+  it('should restore lazy Identifier.assigner.identifier schema', () => {
+    const identifierItems = service.getFormLevelSchema()?.properties?.identifier?.items as any;
+    const firstLevelIdentifier = identifierItems?.properties?.assigner?.properties?.identifier;
+    expect(firstLevelIdentifier)
+      .withContext('Identifier.assigner.identifier should be an object in the form-level schema')
+      .toBeDefined();
+    expect(firstLevelIdentifier?.type).toBe('object', 'Should keep FHIR object shape');
+    expect(firstLevelIdentifier?.properties?.assigner?.properties?.identifier)
+      .withContext('Form-level schema should not pre-expand nested identifier levels')
+      .toBeUndefined();
+    expect(firstLevelIdentifier?.properties?.assigner?.additionalProperties)
+      .withContext('Form-level child assigner should preserve deeper identifiers returned from dialogs')
+      .toBeTrue();
+
+    const dialogIdentifier = service.cloneIdentifierSchema() as any;
+    const firstLevelArray = dialogIdentifier?.properties?.assigner?.properties?.identifier;
+    expect(firstLevelArray)
+      .withContext('Identifier.assigner.identifier should be an array in the dialog schema')
+      .toBeDefined();
+    expect(firstLevelArray?.type).toBe('array', 'Dialog schema should use array type for table editing');
+    expect(firstLevelArray?.maxItems).toBe(1, 'Dialog schema should have maxItems: 1 for 0..1 cardinality');
+
+    expect(firstLevelArray?.items?.properties?.assigner?.properties?.identifier)
+      .withContext('Dialog schema should add only the next editable level; nested dialogs get a fresh schema')
+      .toBeUndefined();
+    expect(firstLevelArray?.items?.properties?.assigner?.additionalProperties)
+      .withContext('Dialog child assigner should preserve deeper identifiers returned from nested dialogs')
+      .toBeTrue();
+  });
+
 });

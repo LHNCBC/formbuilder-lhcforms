@@ -6,8 +6,16 @@ This project follows [Semantic Versioning](http://semver.org/).
 ### Added
 - Added support for the `attachment` item data type. This includes the "Maximum size"
   restriction (entered with a Bytes/KB/MB/GB helper and stored in bytes) and the
-  "Mime type" restriction, as well as an initial Attachment value (URL, title and
-  content type).
+  "Mime type" restriction, as well as an initial Attachment value (URL, file upload and
+  base64Binary).
+
+## [12.2.1] 2026-08-04
+### Changed
+- Updated window-open API documentation.
+
+## [12.2.0] 2026-07-30
+### Added
+- Added form-level support for Questionnaire identifier.
 
 ## [12.1.0] 2026-07-21
 ### Added
