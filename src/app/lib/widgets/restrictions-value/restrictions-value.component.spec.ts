@@ -57,4 +57,40 @@ describe('RestrictionsValueComponent (size conversion)', () => {
     component.schema.readOnly = true;
     expect(component.isValueDisabled).toBeTrue();
   });
+
+  it('should withhold negative and non-finite maximum sizes from the form model', () => {
+    const component = Object.create(RestrictionsValueComponent.prototype) as RestrictionsValueComponent;
+    const formProperty = jasmine.createSpyObj('formProperty', ['setValue']);
+    component.sizeUnit = 'KB';
+    component.formProperty = formProperty;
+
+    component.sizeValue = -1;
+    (component as any).commitSize();
+    expect(component.maxSizeInvalid).toBeTrue();
+    expect(formProperty.setValue).toHaveBeenCalledWith(null, false);
+
+    formProperty.setValue.calls.reset();
+    component.sizeValue = Number.POSITIVE_INFINITY;
+    (component as any).commitSize();
+    expect(component.maxSizeInvalid).toBeTrue();
+    expect(formProperty.setValue).toHaveBeenCalledWith(null, false);
+  });
+
+  it('should accept zero and finite positive maximum sizes', () => {
+    const component = Object.create(RestrictionsValueComponent.prototype) as RestrictionsValueComponent;
+    const formProperty = jasmine.createSpyObj('formProperty', ['setValue']);
+    component.sizeUnit = 'KB';
+    component.formProperty = formProperty;
+
+    component.sizeValue = 0;
+    (component as any).commitSize();
+    expect(component.maxSizeInvalid).toBeFalse();
+    expect(formProperty.setValue).toHaveBeenCalledWith('0', false);
+
+    formProperty.setValue.calls.reset();
+    component.sizeValue = 2;
+    (component as any).commitSize();
+    expect(component.maxSizeInvalid).toBeFalse();
+    expect(formProperty.setValue).toHaveBeenCalledWith('2048', false);
+  });
 });

@@ -314,8 +314,17 @@ test.describe('attachment data type', () => {
     const sizeUnit = page.locator('select[aria-label="Maximum size unit"]');
     await expect(sizeValue).toBeVisible();
 
+    // Negative sizes are invalid and must not produce an extension.
+    await sizeValue.fill('-1');
+    await expect(sizeValue).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByText('Enter a finite, non-negative maximum size.')).toBeVisible();
+    await PWUtils.assertExtensionsInQuestionnaire(
+      page, '/item/0/extension', MAX_SIZE_URL, [], 'R4');
+
     // 2 KB -> 2048 bytes.
     await sizeValue.fill('2');
+    await expect(sizeValue).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByText('Enter a finite, non-negative maximum size.')).toHaveCount(0);
     await sizeUnit.selectOption({ label: 'KB' });
     await PWUtils.assertExtensionsInQuestionnaire(
       page, '/item/0/extension', MAX_SIZE_URL,
@@ -382,10 +391,10 @@ test.describe('attachment data type', () => {
       [{ url: MIME_TYPE_URL, valueCode: 'application/pdf' }], 'R4');
   });
 
-  test('should allow multiple MIME types for a repeating item while keeping maxSize singular', async ({ page }) => {
+  test('should allow multiple MIME types independently of item repetition while keeping maxSize singular', async ({ page }) => {
     await PWUtils.selectDataType(page, 'attachment');
     await PWUtils.expectDataTypeValue(page, /attachment/);
-    await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
+    await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'No');
 
     await page.locator('lfb-restrictions [for^="booleanControlled_Yes"]').click();
 
@@ -410,7 +419,7 @@ test.describe('attachment data type', () => {
         { url: MIME_TYPE_URL, valueCode: 'image/png' }
       ], 'R4');
 
-    // Even for a repeating item, selecting a second maxSize is rejected.
+    // Even though MIME type is repeatable, selecting a second maxSize is rejected.
     await page.getByRole('button', { name: 'Add new restriction' }).click();
     const fourthOperator = page.locator('[id^="__\$restrictions.3.operator"]');
     await fourthOperator.selectOption({ label: 'Mime type' });
@@ -420,11 +429,15 @@ test.describe('attachment data type', () => {
       page, '/item/0/extension', MAX_SIZE_URL,
       [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 }], 'R4');
 
-    // Turning repeats off collapses MIME types back to a single extension.
+    // Answer repetition does not affect the MIME extension cardinality.
+    await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
     await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'No');
     await PWUtils.assertExtensionsInQuestionnaire(
       page, '/item/0/extension', MIME_TYPE_URL,
-      [{ url: MIME_TYPE_URL, valueCode: 'application/pdf' }], 'R4');
+      [
+        { url: MIME_TYPE_URL, valueCode: 'application/pdf' },
+        { url: MIME_TYPE_URL, valueCode: 'image/png' }
+      ], 'R4');
     await PWUtils.assertExtensionsInQuestionnaire(
       page, '/item/0/extension', MAX_SIZE_URL,
       [{ url: MAX_SIZE_URL, valueDecimal: 5 * 1024 }], 'R4');
@@ -478,7 +491,7 @@ test.describe('attachment data type', () => {
   test('should normalize imported attachment restriction cardinalities', async ({ page }) => {
     await PWUtils.uploadFile(page, 'attachment-restrictions-repeat-sample.json', true);
     await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
-    await PWUtils.clickTreeNode(page, 'Upload repeated files');
+    await PWUtils.clickTreeNode(page, 'Upload one file');
 
     await PWUtils.expectDataTypeValue(page, /attachment/);
 

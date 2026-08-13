@@ -2,7 +2,7 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.2.0] 2026-07-28
+## [12.3.0] 2026-08-13
 ### Added
 - Added support for the `attachment` item data type. This includes the "Maximum size"
   restriction (entered with a Bytes/KB/MB/GB helper and stored in bytes) and the

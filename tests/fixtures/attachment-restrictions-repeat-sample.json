@@ -1,13 +1,13 @@
 {
   "resourceType": "Questionnaire",
-  "title": "Repeated Attachment Restrictions Test",
+  "title": "Attachment Restrictions Cardinality Test",
   "status": "draft",
   "item": [
     {
       "linkId": "attachment-repeat-1",
-      "text": "Upload repeated files",
+      "text": "Upload one file",
       "type": "attachment",
-      "repeats": true,
+      "repeats": false,
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/maxSize",

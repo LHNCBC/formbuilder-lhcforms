@@ -38,6 +38,9 @@ interface SizeUnit {
                [attr.id]="id"
                class="form-control form-control-sm restrictions-value-size__number"
                [attr.placeholder]="'Max size'"
+               [class.is-invalid]="maxSizeInvalid"
+               [attr.aria-invalid]="maxSizeInvalid ? 'true' : null"
+               [attr.aria-describedby]="maxSizeInvalid ? id + '_max_size_error' : null"
                [disabled]="isValueDisabled"
                [ngModel]="sizeValue"
                [ngModelOptions]="{standalone: true}"
@@ -54,6 +57,11 @@ interface SizeUnit {
             <option [ngValue]="unit.value">{{unit.label}}</option>
           }
         </select>
+        @if (maxSizeInvalid) {
+          <div class="invalid-feedback d-block" [attr.id]="id + '_max_size_error'" role="alert">
+            Enter a finite, non-negative maximum size.
+          </div>
+        }
       </div>
     } @else {
       <input type="text"
@@ -84,9 +92,10 @@ interface SizeUnit {
     }
   `,
   styles: [`
-    .restrictions-value-size { gap: 0.25rem; }
+    .restrictions-value-size { flex-wrap: wrap; gap: 0.25rem; }
     .restrictions-value-size__number { flex: 1 1 auto; min-width: 0; }
     .restrictions-value-size__unit { flex: 0 0 auto; width: auto; }
+    .restrictions-value-size .invalid-feedback { flex-basis: 100%; }
   `]
 })
 export class RestrictionsValueComponent extends LfbControlWidgetComponent implements OnInit {
@@ -131,6 +140,7 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
   sizeUnit = 'KB';
   sizeValue: number | null = null;
   textValue = '';
+  maxSizeInvalid = false;
   mimeTypeInvalid = false;
 
   // Guard to avoid re-syncing the UI from value changes that this widget itself made.
@@ -201,6 +211,9 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
   private applyOperator(operator: string): void {
     this.isMaxSize = operator === 'maxSize';
     this.isMimeType = operator === 'mimeType';
+    if (!this.isMaxSize) {
+      this.maxSizeInvalid = false;
+    }
     if (!this.isMimeType) {
       this.mimeTypeInvalid = false;
     }
@@ -213,11 +226,21 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
   private syncFromModel(): void {
     const value = this.formProperty.value;
     if (this.isMaxSize) {
-      const bytes = value === null || value === undefined || value === '' ? NaN : parseInt(`${value}`, 10);
-      if (isNaN(bytes)) {
+      if (value === null || value === undefined || value === '') {
         this.sizeValue = null;
+        this.maxSizeInvalid = false;
         // Keep the currently selected unit so the dropdown does not jump around.
-      } else {
+      }
+      else {
+        const bytes = Number(value);
+        this.maxSizeInvalid = !Number.isFinite(bytes) || bytes < 0;
+        if(this.maxSizeInvalid) {
+          this.sizeValue = bytes;
+          // Preserve the invalid value for correction, but do not retain it in
+          // the restriction model or export it as a FHIR valueDecimal.
+          this.setValueGuarded(null);
+          return;
+        }
         const best = RestrictionsValueComponent.bytesToBestUnit(bytes);
         this.sizeValue = best.value;
         this.sizeUnit = best.unit;
@@ -264,9 +287,14 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
    */
   private commitSize(): void {
     let byteString: string | null = null;
-    if (this.sizeValue !== null && !isNaN(this.sizeValue)) {
+    this.maxSizeInvalid = false;
+    if (this.sizeValue !== null) {
       const factor = RestrictionsValueComponent.factorFor(this.sizeUnit);
-      byteString = `${Math.round(this.sizeValue * factor)}`;
+      const bytes = this.sizeValue * factor;
+      this.maxSizeInvalid = !Number.isFinite(this.sizeValue) || this.sizeValue < 0 || !Number.isFinite(bytes);
+      if(!this.maxSizeInvalid) {
+        byteString = `${Math.round(bytes)}`;
+      }
     }
     this.setValueGuarded(byteString);
   }

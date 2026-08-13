@@ -166,35 +166,17 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
       }
     });
     this.subscriptions.push(sub);
-
-    // If a repeating attachment becomes singular, keep the first MIME type and
-    // remove the remaining MIME type rows/extensions. maxSize remains singular
-    // regardless of the repeats setting.
-    let repeatsInitialized = false;
-    let previousRepeats = this.formProperty.root.getProperty('repeats').value;
-    sub = this.formProperty.root.getProperty('repeats').valueChanges.subscribe((repeats) => {
-      if(repeatsInitialized && repeats !== previousRepeats) {
-        const restrictions = repeats === true ?
-          this.getRestrictions(this.formProperty.root, this.appliedOptions) :
-          this.normalizeRestrictionCardinality(this.formProperty.value || []);
-        this.updateSelectedOptions(restrictions);
-        this.formProperty.setValue(restrictions, false);
-      }
-      previousRepeats = repeats;
-      repeatsInitialized = true;
-    });
-    this.subscriptions.push(sub);
   }
 
   /**
-   * MIME type is the only repeatable restriction, and only when an attachment
-   * item explicitly allows repeating answers.
+   * MIME type is the only repeatable restriction for an attachment item.
+   * Its extension cardinality is independent of whether the item allows
+   * repeating answers.
    */
   isRepeatableOption(option: string): boolean {
     const root = this.formProperty.root;
     return option === 'mimeType' &&
-      root.getProperty('type').value === 'attachment' &&
-      root.getProperty('repeats').value === true;
+      root.getProperty('type').value === 'attachment';
   }
 
   /**
