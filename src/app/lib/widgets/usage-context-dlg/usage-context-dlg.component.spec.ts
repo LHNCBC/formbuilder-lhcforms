@@ -265,6 +265,16 @@ describe('UsageContextDlgComponent', () => {
       __$valueType: 'valueReference',
       valueReference: {display: 'Target', type: 'Observation'}
     })).toBe('');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {display: 'Target', type: 'foo/Patient'}
+    })).toBe('Type must be a valid FHIR R5 resource type.');
+    expect(internals.getReferenceValidationError({
+      code: {},
+      __$valueType: 'valueReference',
+      valueReference: {display: 'Target', type: 'https://example.org/not-fhir/Patient'}
+    })).toBe('Type must be a valid FHIR R5 resource type.');
   });
 
   it('should leave non-local References to external resolution', () => {
@@ -286,7 +296,7 @@ describe('UsageContextDlgComponent', () => {
       __$valueType: 'valueReference',
       valueReference: {
         reference: 'https://example.org/fhir/PlanDefinition/example',
-        type: 'http://hl7.org/fhir/StructureDefinition/PlanDefinition'
+        type: 'PlanDefinition'
       }
     })).toBe('');
     expect(internals.getReferenceValidationError({

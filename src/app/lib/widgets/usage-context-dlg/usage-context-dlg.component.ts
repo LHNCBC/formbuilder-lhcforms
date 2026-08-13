@@ -358,19 +358,20 @@ export class UsageContextDlgComponent extends TableRowDialogBase<UsageContextEdi
   }
 
   /**
-   * Normalize Reference.type from either its relative resource name or the
-   * canonical StructureDefinition URL form.
+   * Validate Reference.type as a relative FHIR resource name.
+   *
+   * In a resource, Reference.type is relative to the FHIR StructureDefinition
+   * base URL. Absolute URLs are reserved for references in logical models.
    *
    * @param referenceType - Reference.type value.
    * @returns Comparable FHIR resource type, or an empty string when absent.
    */
   private getDeclaredReferenceResourceType(referenceType: string | undefined): string {
-    const normalizedType = referenceType?.trim().replace(/\/+$/, '') || '';
+    const normalizedType = referenceType?.trim() || '';
     if(!normalizedType) {
       return '';
     }
-    const resourceType = normalizedType.substring(normalizedType.lastIndexOf('/') + 1);
-    return /^[A-Z][A-Za-z0-9]*$/.test(resourceType) ? resourceType : '';
+    return /^[A-Z][A-Za-z0-9]*$/.test(normalizedType) ? normalizedType : '';
   }
 
   /**
