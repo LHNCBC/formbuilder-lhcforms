@@ -1500,8 +1500,9 @@ export class FormService {
   }
 
   /**
-   * Check whether a target FHIR version can represent the Questionnaire's
-   * UsageContext Quantity comparators without changing their meaning.
+   * Check whether a target FHIR version can represent the Questionnaire's or
+   * its contained resources' UsageContext Quantity comparators without
+   * changing their meaning.
    *
    * @param fhirQ - Questionnaire in the internal R5 representation.
    * @param version - Requested output version.
@@ -1511,8 +1512,11 @@ export class FormService {
     if(version !== 'R4' && version !== 'STU3') {
       return '';
     }
-    const hasR5Comparator = fhirQ?.useContext?.some(
-      (usageContext) => (usageContext.valueQuantity?.comparator as string | undefined) === 'ad'
+    const resources = [fhirQ, ...(fhirQ?.contained || [])];
+    const hasR5Comparator = resources.some(
+      (resource) => (resource as fhir.Questionnaire)?.useContext?.some(
+        (usageContext) => (usageContext.valueQuantity?.comparator as string | undefined) === 'ad'
+      )
     );
     return hasR5Comparator ? FormService.R5_QUANTITY_COMPARATOR_ERROR : '';
   }

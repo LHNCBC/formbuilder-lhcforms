@@ -113,6 +113,32 @@ describe('FormService', () => {
       .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
   });
 
+  it('should reject older-version conversion when a contained resource has an ad Quantity comparator', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [{
+        resourceType: 'ValueSet',
+        id: 'contained-valueset',
+        status: 'active',
+        useContext: [{
+          code: {code: 'age'},
+          valueQuantity: {
+            value: 10,
+            comparator: 'ad',
+            unit: 'a'
+          }
+        }]
+      }]
+    } as unknown as fhir.Questionnaire;
+
+    expect(service.convertFromR5(questionnaire, 'R5')).toBe(questionnaire);
+    expect(() => service.convertFromR5(questionnaire, 'R4'))
+      .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+    expect(() => service.convertFromR5(questionnaire, 'STU3'))
+      .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+  });
+
   it('should report an incompatible opener notification without repeating the dialog', () => {
     const questionnaire = {
       resourceType: 'Questionnaire',
