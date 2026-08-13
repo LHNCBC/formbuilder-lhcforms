@@ -17,7 +17,8 @@ import {
   TYPE_DECIMAL, TYPE_INTEGER, TYPE_STRING, TYPE_TEXT, TYPE_QUANTITY, TYPE_CODING, TYPE_GROUP, TYPE_URL, TYPE_DISPLAY,
   TYPE_DATE, TYPE_DATETIME, TYPE_TIME,
   EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
-  EXTENSION_URL_CHOICE_ORIENTATION, PREFERRED_TERMINOLOGY_SERVER_URI
+  EXTENSION_URL_CHOICE_ORIENTATION, EXTENSION_URL_COLUMN_COUNT, EXTENSION_URL_COLUMN_COUNT_LEGACY,
+  PREFERRED_TERMINOLOGY_SERVER_URI
 } from './constants/constants';
 import { HttpClient } from '@angular/common/http';
 import JSON5 from 'json5';
@@ -1030,20 +1031,26 @@ export class Util {
   }
 
   /**
-   * Remove choiceOrientation from items whose types do not support the extension in R4/STU3.
+   * Remove choice-layout extensions from items whose types do not support
+   * choiceOrientation in R4/STU3.
    * Returns a copy so version-specific export cleanup does not modify the R5 form.
    *
    * @param questionnaire - Converted R4/STU3 Questionnaire.
-   * @returns Questionnaire copy with invalid choiceOrientation extensions removed.
+   * @returns Questionnaire copy with incompatible choice-layout extensions removed.
    */
-  static removeInvalidChoiceOrientation(questionnaire: fhir.Questionnaire): fhir.Questionnaire {
+  static removeInvalidChoiceLayoutExtensions(questionnaire: fhir.Questionnaire): fhir.Questionnaire {
     const ret = copy(questionnaire);
+    const choiceLayoutUrls = new Set([
+      EXTENSION_URL_CHOICE_ORIENTATION,
+      EXTENSION_URL_COLUMN_COUNT,
+      EXTENSION_URL_COLUMN_COUNT_LEGACY
+    ]);
 
     const removeFromItems = (items: fhir.QuestionnaireItem[] = []): void => {
       items.forEach((item) => {
         if(!['choice', 'open-choice'].includes(item.type) && item.extension?.length) {
           item.extension = item.extension.filter((extension) =>
-            extension.url !== EXTENSION_URL_CHOICE_ORIENTATION
+            !choiceLayoutUrls.has(extension.url)
           );
           if(!item.extension.length) {
             delete item.extension;

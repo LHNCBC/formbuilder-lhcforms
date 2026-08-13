@@ -1284,7 +1284,7 @@ export class FormService {
     } else if (version !== 'R5') {
       ret = Util.convertQuestionnaire(fhirQ, version);
       if(version === 'R4' || version === 'STU3') {
-        ret = Util.removeInvalidChoiceOrientation(ret);
+        ret = Util.removeInvalidChoiceLayoutExtensions(ret);
       }
       // Apply FHIR canonical field ordering after version conversion
       ret = Util.orderQuestionnaireFields(ret);

@@ -149,7 +149,7 @@ describe('Util', () => {
     });
   });
 
-  it('should remove choice orientation from incompatible R4/STU3 item types without changing the source', () => {
+  it('should remove choice-layout extensions from incompatible R4/STU3 item types without changing the source', () => {
     const choiceOrientation = {
       url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation',
       valueCode: 'horizontal'
@@ -157,6 +157,10 @@ describe('Util', () => {
     const columnCount = {
       url: 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-columnCount',
       valuePositiveInt: 3
+    };
+    const legacyColumnCount = {
+      url: 'http://hl7.org/fhir/StructureDefinition/questionnaire-columnCount',
+      valuePositiveInt: 2
     };
     const questionnaire: any = {
       resourceType: 'Questionnaire',
@@ -170,7 +174,7 @@ describe('Util', () => {
         {
           linkId: 'string',
           type: 'string',
-          extension: [choiceOrientation, columnCount],
+          extension: [choiceOrientation, columnCount, legacyColumnCount],
           item: [{
             linkId: 'nested-integer',
             type: 'integer',
@@ -180,12 +184,12 @@ describe('Util', () => {
       ]
     };
 
-    const cleaned = Util.removeInvalidChoiceOrientation(questionnaire);
+    const cleaned = Util.removeInvalidChoiceLayoutExtensions(questionnaire);
 
     expect(cleaned.item[0].extension).toEqual([choiceOrientation, columnCount]);
-    expect(cleaned.item[1].extension).toEqual([columnCount]);
+    expect(cleaned.item[1].extension).toBeUndefined();
     expect(cleaned.item[1].item[0].extension).toBeUndefined();
-    expect(questionnaire.item[1].extension).toEqual([choiceOrientation, columnCount]);
+    expect(questionnaire.item[1].extension).toEqual([choiceOrientation, columnCount, legacyColumnCount]);
     expect(questionnaire.item[1].item[0].extension).toEqual([choiceOrientation]);
   });
 
@@ -649,4 +653,3 @@ describe('Util', () => {
     });
   });
 });
-
