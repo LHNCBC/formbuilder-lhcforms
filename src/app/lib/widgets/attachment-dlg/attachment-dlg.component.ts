@@ -65,6 +65,11 @@ interface AttachmentMethodState {
   `]
 })
 export class AttachmentDlgComponent {
+  private static readonly CONTENT_METADATA_FIELDS: readonly string[] = [
+    'contentType', 'language', 'size', 'hash', 'creation',
+    'height', 'width', 'frames', 'duration', 'pages'
+  ];
+
   data = inject<DialogData>(MAT_DIALOG_DATA);
   matDialogRef = inject(MatDialogRef<AttachmentDlgComponent>);
   ngbModalService = inject(NgbModal);
@@ -263,8 +268,11 @@ export class AttachmentDlgComponent {
       }
     });
     if(previousUrl !== this.draft.url) {
-      delete this.draft.hash;
-      delete (this.draft as any)._hash;
+      this.clearAttachmentFields(this.draft, [
+        ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS,
+        '_url'
+      ]);
+      this.draft = {...this.draft};
     }
     if(changed) {
       this.markDirty();
@@ -293,10 +301,10 @@ export class AttachmentDlgComponent {
       }
       else {
         if(parsed.data !== previousData) {
-          delete state.attachment.contentType;
-          delete (state.attachment as any)._contentType;
-          delete state.attachment.url;
-          delete (state.attachment as any)._url;
+          this.clearAttachmentFields(state.attachment, [
+            ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS,
+            'url', '_url', '_data'
+          ]);
         }
         state.attachment.data = parsed.data;
         state.attachment.size = parsed.size;
@@ -385,10 +393,10 @@ export class AttachmentDlgComponent {
       const loaded = await AttachmentUtil.fileToAttachment(file);
       if(revision === state.dataRevision) {
         const attachment = {...state.attachment};
-        delete attachment.contentType;
-        delete (attachment as any)._contentType;
-        delete attachment.url;
-        delete (attachment as any)._url;
+        this.clearAttachmentFields(attachment, [
+          ...AttachmentDlgComponent.CONTENT_METADATA_FIELDS,
+          'data', '_data', 'url', '_url', '_title'
+        ]);
         state.attachment = {...attachment, ...loaded};
         if(state === this.activeState) {
           this.attachmentSchema = this.createAttachmentSchema();
@@ -463,12 +471,14 @@ export class AttachmentDlgComponent {
     }
 
     const urlState = this.methodStates.url;
-    urlState.dataRevision++;
-    urlState.attachment = {...state.attachment};
-    urlState.dataError = '';
-    urlState.fileError = '';
-    urlState.calculatingDataMetadata = false;
-    urlState.formValid = state.formValid;
+    if(Object.keys(AttachmentUtil.withoutEmptyFields(urlState.attachment)).length === 0) {
+      urlState.dataRevision++;
+      urlState.attachment = {...state.attachment};
+      urlState.dataError = '';
+      urlState.fileError = '';
+      urlState.calculatingDataMetadata = false;
+      urlState.formValid = state.formValid;
+    }
 
     // The URL-only draft has moved to its matching input method. Reset the
     // former state so switching back cannot save the same URL under a hidden,
@@ -481,6 +491,16 @@ export class AttachmentDlgComponent {
     state.formValid = true;
     this.inputMethod = 'url';
     return true;
+  }
+
+  /** Remove Attachment fields and any explicitly named primitive-extension siblings. */
+  private clearAttachmentFields(attachment: fhir.Attachment, fields: readonly string[]): void {
+    fields.forEach((field) => {
+      delete (attachment as any)[field];
+      if(!field.startsWith('_')) {
+        delete (attachment as any)[`_${field}`];
+      }
+    });
   }
 
   /**

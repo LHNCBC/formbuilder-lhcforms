@@ -101,7 +101,18 @@ export class AttachmentUtil {
     // parameters. Capture everything before the terminal `;base64` marker so
     // parameters such as `charset` remain part of Attachment.contentType.
     const dataUriMatch = trimmed.match(/^data:([^,]*);base64,([\s\S]*)$/i);
-    const contentType = dataUriMatch?.[1]?.trim() || undefined;
+    const dataUriMediaType = dataUriMatch?.[1]?.trim();
+    let contentType: string | undefined;
+    if(dataUriMatch) {
+      // RFC 2397 defaults an omitted media type to text/plain;charset=US-ASCII.
+      // It also permits the text/plain portion to be omitted when parameters
+      // such as charset are supplied as a shorthand.
+      contentType = !dataUriMediaType
+        ? 'text/plain;charset=US-ASCII'
+        : dataUriMediaType.startsWith(';')
+          ? `text/plain${dataUriMediaType}`
+          : dataUriMediaType;
+    }
     const data = (dataUriMatch ? dataUriMatch[2] : trimmed).replace(/\s/g, '');
 
     if(!AttachmentUtil.isValidBase64(data)) {

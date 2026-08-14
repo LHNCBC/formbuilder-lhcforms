@@ -18,6 +18,21 @@ describe('AttachmentUtil', () => {
     });
   });
 
+  it('applies the RFC 2397 default media type when a data URI omits it', () => {
+    expect(AttachmentUtil.parseBase64('data:;base64,SGVsbG8='))
+      .toEqual({
+        data: 'SGVsbG8=',
+        contentType: 'text/plain;charset=US-ASCII',
+        size: '5'
+      });
+    expect(AttachmentUtil.parseBase64('data:;charset=utf-8;base64,SGVsbG8='))
+      .toEqual({
+        data: 'SGVsbG8=',
+        contentType: 'text/plain;charset=utf-8',
+        size: '5'
+      });
+  });
+
   it('rejects malformed base64', () => {
     expect(AttachmentUtil.parseBase64('not base64!')).toBeNull();
     expect(AttachmentUtil.parseBase64('')).toBeNull();
