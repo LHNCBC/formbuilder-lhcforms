@@ -58,6 +58,10 @@ interface AttachmentMethodState {
     :host ::ng-deep .attachment-metadata-form sf-form-object > fieldset > div:hover {
       background-color: lightgoldenrodyellow;
     }
+    :host ::ng-deep .attachment-metadata-form input[name="size"][readonly] {
+      background-color: #e9ecef;
+      opacity: 1;
+    }
   `]
 })
 export class AttachmentDlgComponent {
@@ -74,9 +78,15 @@ export class AttachmentDlgComponent {
   readonly attachmentValidators = {
     '/url': (value: string) => this.validationError(!!value && /\s/.test(value),
       'URL_WHITESPACE', 'Whitespace is not allowed in a URL.'),
-    '/contentType': (value: string) => this.validationError(
-      !!value && !this.fhirService.isValidMimeType(value),
-      'INVALID_MIME_TYPE', 'Enter a valid IANA-registered MIME type.'),
+    '/contentType': (value: string) => {
+      if(this.draft.data && !value?.trim()) {
+        return this.validationError(true, 'CONTENT_TYPE_REQUIRED',
+          'Mime Type is required when attachment data is embedded.');
+      }
+      return this.validationError(
+        !!value && !this.fhirService.isValidMimeType(value),
+        'INVALID_MIME_TYPE', 'Enter a valid IANA-registered MIME type.');
+    },
     '/language': (value: string) => this.validationError(
       !!value && !AttachmentUtil.isValidLanguageTag(value),
       'INVALID_LANGUAGE', 'Enter a valid BCP-47 language tag, such as en, en-US, or zh-Hant-TW.'),
@@ -161,6 +171,11 @@ export class AttachmentDlgComponent {
     return !!this.draft.contentType && !this.fhirService.isValidMimeType(this.draft.contentType);
   }
 
+  /** Return whether embedded Attachment data violates the FHIR att-1 invariant. */
+  get embeddedDataContentTypeMissing(): boolean {
+    return !!this.draft.data && !this.draft.contentType?.trim();
+  }
+
   /** Return whether the current URL contains invalid whitespace. */
   get urlInvalid(): boolean {
     return !!this.draft.url && /\s/.test(this.draft.url);
@@ -194,8 +209,9 @@ export class AttachmentDlgComponent {
 
   /** Return whether any active Attachment field is invalid or still being processed. */
   get isInvalid(): boolean {
-    return !!this.dataError || !!this.fileError || this.calculatingDataMetadata || this.mimeTypeInvalid ||
-      this.urlInvalid || this.languageInvalid || this.sizeInvalid ||
+    return !!this.dataError || !!this.fileError || this.calculatingDataMetadata ||
+      this.embeddedDataContentTypeMissing || this.mimeTypeInvalid || this.urlInvalid ||
+      this.languageInvalid || this.sizeInvalid ||
       this.positiveIntegerInvalid(this.draft.height) || this.positiveIntegerInvalid(this.draft.width) ||
       this.positiveIntegerInvalid(this.draft.frames) || this.positiveIntegerInvalid(this.draft.pages) ||
       this.durationInvalid(this.draft.duration) || !this.attachmentFormValid;
@@ -257,6 +273,7 @@ export class AttachmentDlgComponent {
   async onDataChange(value: string): Promise<void> {
     const state = this.activeState;
     const revision = ++state.dataRevision;
+    let transitionedToUrl = false;
     state.calculatingDataMetadata = false;
     state.attachment.data = value;
     state.dataError = '';
@@ -296,10 +313,14 @@ export class AttachmentDlgComponent {
     }
     else {
       this.clearEmbeddedData(state, false);
+      transitionedToUrl = this.activateRetainedUrl(state);
     }
     // Shared schema-form widgets receive their model by reference. Replace the
     // attachment after derived metadata changes so sibling widgets refresh.
     state.attachment = {...state.attachment};
+    if(state === this.activeState || transitionedToUrl) {
+      this.attachmentSchema = this.createAttachmentSchema();
+    }
     this.markDirty();
   }
 
@@ -352,6 +373,9 @@ export class AttachmentDlgComponent {
       const loaded = await AttachmentUtil.fileToAttachment(file);
       if(revision === state.dataRevision) {
         state.attachment = {...state.attachment, ...loaded};
+        if(state === this.activeState) {
+          this.attachmentSchema = this.createAttachmentSchema();
+        }
       }
       this.markDirty();
     }
@@ -367,9 +391,12 @@ export class AttachmentDlgComponent {
     }
   }
 
-  /** Remove embedded data and its derived metadata from the active draft. */
+  /** Remove embedded data, retaining URL metadata when remote content remains available. */
   clearData(): void {
-    this.clearEmbeddedData(this.activeState);
+    const state = this.activeState;
+    this.clearEmbeddedData(state);
+    this.activateRetainedUrl(state);
+    this.attachmentSchema = this.createAttachmentSchema();
     this.markDirty();
   }
 
@@ -387,7 +414,9 @@ export class AttachmentDlgComponent {
   }
 
   /**
-   * Remove embedded data and metadata from an input method's state.
+   * Remove embedded data from an input method's state. Size and hash are
+   * retained when a URL remains because they also describe and verify the
+   * remotely available content.
    * @param state - The input method state to clear.
    * @param incrementRevision - Whether to invalidate in-flight metadata calculations.
    */
@@ -396,11 +425,45 @@ export class AttachmentDlgComponent {
       state.dataRevision++;
     }
     delete state.attachment.data;
-    delete state.attachment.size;
-    delete state.attachment.hash;
+    if(!state.attachment.url) {
+      delete state.attachment.size;
+      delete state.attachment.hash;
+    }
     state.dataError = '';
     state.fileError = '';
     state.calculatingDataMetadata = false;
+  }
+
+  /**
+   * Move a draft that became URL-only into URL mode so its retained URL is
+   * immediately visible and remains editable when the row is reopened.
+   * @param state - The state from which embedded data was removed.
+   * @returns Whether the active input method changed to URL.
+   */
+  private activateRetainedUrl(state: AttachmentMethodState): boolean {
+    if(!state.attachment.url || this.inputMethod === 'url') {
+      return false;
+    }
+
+    const urlState = this.methodStates.url;
+    urlState.dataRevision++;
+    urlState.attachment = {...state.attachment};
+    urlState.dataError = '';
+    urlState.fileError = '';
+    urlState.calculatingDataMetadata = false;
+    urlState.formValid = state.formValid;
+
+    // The URL-only draft has moved to its matching input method. Reset the
+    // former state so switching back cannot save the same URL under a hidden,
+    // incompatible base64/file input-method marker.
+    state.dataRevision++;
+    state.attachment = {};
+    state.dataError = '';
+    state.fileError = '';
+    state.calculatingDataMetadata = false;
+    state.formValid = true;
+    this.inputMethod = 'url';
+    return true;
   }
 
   /**
@@ -478,15 +541,20 @@ export class AttachmentDlgComponent {
     delete schema.order;
     const fieldNames = [
       ...(this.inputMethod === 'url' ? ['url'] : []), 'title', 'contentType', 'language',
-      ...(this.inputMethod === 'url' ? ['size'] : []),
-      'creation', 'height', 'width', 'frames', 'duration', 'pages'
+      'size', 'creation', 'height', 'width', 'frames', 'duration', 'pages'
     ];
     schema.properties = fieldNames.reduce((properties, field) => {
       if(schema.properties[field]) {
         properties[field] = schema.properties[field];
-        delete properties[field].readOnly;
-        if(properties[field].widget) {
-          delete properties[field].widget.readOnly;
+        if(field === 'size' && this.draft.data) {
+          properties[field].readOnly = true;
+          properties[field].widget = {...properties[field].widget, readOnly: true};
+        }
+        else {
+          delete properties[field].readOnly;
+          if(properties[field].widget) {
+            delete properties[field].widget.readOnly;
+          }
         }
       }
       return properties;
@@ -511,17 +579,9 @@ export class AttachmentDlgComponent {
     return invalid ? [{code, message, modifiedMessage: message}] : null;
   }
 
-  /** Return the active draft without fields belonging to another input method. */
+  /** Return the active input method's draft without empty fields. */
   private getActiveAttachment(): fhir.Attachment {
-    const attachment = {...this.draft};
-    if(this.inputMethod === 'url') {
-      delete attachment.data;
-      delete attachment.hash;
-    }
-    else {
-      delete attachment.url;
-    }
-    return AttachmentUtil.withoutEmptyFields(attachment);
+    return AttachmentUtil.withoutEmptyFields({...this.draft});
   }
 
   /** Close an unchanged dialog, or confirm before discarding user changes. */

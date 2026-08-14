@@ -307,7 +307,7 @@ export class AttachmentUtil {
     const size = typeof attachment.size === 'number'
       ? attachment.size.toString()
       : typeof attachment.size === 'string' ? attachment.size.trim() : undefined;
-    if(AttachmentUtil.isUnsignedIntegerInRange(size, '4294967295')) {
+    if(AttachmentUtil.isUnsignedIntegerInRange(size, '2147483647')) {
       attachment.size = Number(size);
     }
     else {

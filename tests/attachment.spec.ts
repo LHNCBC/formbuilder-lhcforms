@@ -202,7 +202,10 @@ test.describe('attachment data type', () => {
     await expect(attachmentDialog.getByRole('radio', {name: 'File upload'})).toBeChecked();
     await expect(attachmentDialog.getByRole('textbox', {name: 'URL'})).toHaveCount(0);
     await expect(attachmentDialog.getByRole('textbox', {name: 'Data', exact: true})).toHaveCount(0);
-    await expect(attachmentDialog.getByRole('textbox', {name: /^Size/})).toHaveCount(0);
+    const sizeInput = attachmentDialog.getByRole('textbox', {name: /^Size/});
+    await expect(sizeInput).toBeVisible();
+    await expect(sizeInput).toBeEditable();
+    await expect(sizeInput).toHaveValue('');
     await expect(attachmentDialog.getByLabel('Hash', {exact: true})).toHaveCount(0);
     await expect(attachmentDialog.locator('.row.mb-2')).toHaveCount(0);
     const fileInput = attachmentDialog.locator('input[type="file"]');
@@ -214,6 +217,9 @@ test.describe('attachment data type', () => {
 
     await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('hello.txt');
     await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('text/plain');
+    await expect(sizeInput).toHaveValue('5');
+    await expect(sizeInput).not.toBeEditable();
+    await expect(sizeInput).toHaveCSS('background-color', 'rgb(233, 236, 239)');
 
     const saveAttachment = attachmentDialog.getByRole('button', {name: 'Save and close'});
     await expect(saveAttachment).toBeEnabled();
@@ -243,6 +249,8 @@ test.describe('attachment data type', () => {
     await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
     await expect(attachmentDialog.getByRole('textbox', {name: 'URL'})).toHaveCount(0);
     await expect(attachmentDialog.getByRole('button', {name: 'Upload local file'})).toHaveCount(0);
+    await expect(sizeInput).toBeEditable();
+    await expect(sizeInput).toHaveValue('');
     const dataInput = attachmentDialog.getByRole('textbox', {name: 'Data', exact: true});
     await expect(dataInput.locator('xpath=ancestor::div[contains(@class, "attachment-field-row")]'))
       .toHaveCSS('border-bottom-width', '1px');
@@ -258,6 +266,8 @@ test.describe('attachment data type', () => {
     await expect(dataInput).toHaveValue('JVBERg==');
     await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('application/pdf');
     await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('');
+    await expect(sizeInput).toHaveValue('4');
+    await expect(sizeInput).not.toBeEditable();
     await attachmentDialog.getByRole('textbox', {name: /^Title/}).fill('pasted.pdf');
 
     // Each input method keeps an independent draft while the user switches between them.
@@ -265,20 +275,29 @@ test.describe('attachment data type', () => {
     await attachmentDialog.getByRole('textbox', {name: 'URL'}).fill('https://example.org/remote.pdf');
     await attachmentDialog.getByRole('textbox', {name: /^Title/}).fill('remote.pdf');
     await attachmentDialog.getByRole('combobox', {name: /^Mime Type/}).fill('application/pdf');
+    await expect(sizeInput).toBeEditable();
+    await sizeInput.fill('12');
+    await sizeInput.press('Tab');
 
     await attachmentDialog.getByRole('radio', {name: 'File upload'}).check();
     await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('hello.txt');
     await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('text/plain');
+    await expect(sizeInput).toHaveValue('5');
+    await expect(sizeInput).not.toBeEditable();
 
     await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
     await expect(attachmentDialog.getByRole('textbox', {name: 'Data', exact: true})).toHaveValue('JVBERg==');
     await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('pasted.pdf');
     await expect(attachmentDialog.getByRole('combobox', {name: /^Mime Type/})).toHaveValue('application/pdf');
+    await expect(sizeInput).toHaveValue('4');
+    await expect(sizeInput).not.toBeEditable();
 
     await attachmentDialog.getByRole('radio', {name: 'URL'}).check();
     await expect(attachmentDialog.getByRole('textbox', {name: 'URL'}))
       .toHaveValue('https://example.org/remote.pdf');
     await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('remote.pdf');
+    await expect(sizeInput).toHaveValue('12');
+    await expect(sizeInput).toBeEditable();
 
     // Saving base64Binary picks only that method's values.
     await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
@@ -299,6 +318,185 @@ test.describe('attachment data type', () => {
       hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
       size: 4,
       title: 'pasted.pdf'
+    });
+  });
+
+  test('should require a MIME type for plain base64 and files without a browser-provided type', async ({ page }) => {
+    await PWUtils.selectDataType(page, 'attachment');
+    await PWUtils.clickRadioButton(page, 'Value method', 'Type initial value');
+    await page.getByRole('button', {name: 'Add another value'}).click();
+
+    const attachmentDialog = page.locator('lfb-attachment-dlg');
+    const saveAttachment = attachmentDialog.getByRole('button', {name: 'Save and close'});
+    await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
+    const dataInput = attachmentDialog.getByRole('textbox', {name: 'Data', exact: true});
+    const sizeInput = attachmentDialog.getByRole('textbox', {name: /^Size/});
+    await dataInput.fill('SGVsbG8=');
+    await expect(sizeInput).toHaveValue('5');
+    await expect(sizeInput).not.toBeEditable();
+    await expect(saveAttachment).toBeDisabled();
+
+    await attachmentDialog.getByRole('button', {name: 'Clear data'}).click();
+    await expect(sizeInput).toHaveValue('');
+    await expect(sizeInput).toBeEditable();
+    await expect(sizeInput).not.toHaveCSS('background-color', 'rgb(233, 236, 239)');
+    await dataInput.fill('SGVsbG8=');
+    await expect(sizeInput).toHaveValue('5');
+    await expect(sizeInput).not.toBeEditable();
+
+    const mimeTypeInput = attachmentDialog.getByRole('combobox', {name: /^Mime Type/});
+    await mimeTypeInput.fill('text/plain');
+    await mimeTypeInput.press('Escape');
+    await expect(saveAttachment).toBeEnabled();
+    await mimeTypeInput.fill('');
+    await expect(saveAttachment).toBeDisabled();
+
+    await attachmentDialog.getByRole('radio', {name: 'File upload'}).check();
+    await attachmentDialog.locator('input[type="file"]').evaluate((input: HTMLInputElement) => {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(new File([new TextEncoder().encode('Hello')], 'unknown-content'));
+      Object.defineProperty(input, 'files', {value: dataTransfer.files, configurable: true});
+      input.dispatchEvent(new Event('change', {bubbles: true}));
+    });
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Title/})).toHaveValue('unknown-content');
+    await expect(mimeTypeInput).toHaveValue('');
+    await expect(sizeInput).toHaveValue('5');
+    await expect(sizeInput).not.toBeEditable();
+    await expect(saveAttachment).toBeDisabled();
+
+    await mimeTypeInput.fill('application/octet-stream');
+    await mimeTypeInput.press('Escape');
+    await attachmentDialog.getByRole('textbox', {name: /^Title/}).click();
+    await expect(mimeTypeInput).toHaveValue('application/octet-stream');
+    await expect(saveAttachment).toBeEnabled();
+    await saveAttachment.click();
+    await expect(attachmentDialog).not.toBeVisible();
+    await expect(page.locator('lfb-table').filter({hasText: 'Initial value'}).locator('tbody tr')).toHaveCount(1);
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.item[0].initial[0].valueAttachment).toEqual({
+      contentType: 'application/octet-stream',
+      data: 'SGVsbG8=',
+      hash: '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=',
+      size: '5',
+      title: 'unknown-content'
+    });
+  });
+
+  test('should preserve valid URL and hash fields when editing imported attachments', async ({ page }) => {
+    await PWUtils.uploadFile(page, 'attachment-preservation-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickTreeNode(page, 'Attachments with retained metadata');
+
+    const initialTable = page.locator('lfb-table').filter({hasText: 'Initial value'});
+    await expect(initialTable.locator('tbody tr')).toHaveCount(2);
+
+    await initialTable.locator('tbody tr').nth(0).getByLabel('Edit this row').click();
+    let attachmentDialog = page.locator('lfb-attachment-dlg');
+    await expect(attachmentDialog.getByRole('radio', {name: 'base64Binary'})).toBeChecked();
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Size/})).toHaveValue('5');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Size/})).not.toBeEditable();
+    const embeddedTitle = attachmentDialog.getByRole('textbox', {name: /^Title/});
+    await embeddedTitle.fill('Embedded and remote (edited)');
+    await embeddedTitle.press('Tab');
+    const saveEmbeddedAttachment = attachmentDialog.getByRole('button', {name: 'Save and close'});
+    await expect(saveEmbeddedAttachment).toBeEnabled();
+    await saveEmbeddedAttachment.click();
+    await expect(attachmentDialog).not.toBeVisible();
+
+    await initialTable.locator('tbody tr').nth(1).getByLabel('Edit this row').click();
+    attachmentDialog = page.locator('lfb-attachment-dlg');
+    await expect(attachmentDialog.getByRole('radio', {name: 'URL'})).toBeChecked();
+    const remoteSize = attachmentDialog.getByRole('textbox', {name: /^Size/});
+    await expect(remoteSize).toHaveValue('');
+    await expect(remoteSize).toBeEditable();
+    await remoteSize.fill('4');
+    await remoteSize.press('Tab');
+    const remoteTitle = attachmentDialog.getByRole('textbox', {name: /^Title/});
+    await remoteTitle.fill('Remote only (edited)');
+    await remoteTitle.press('Tab');
+    const saveRemoteAttachment = attachmentDialog.getByRole('button', {name: 'Save and close'});
+    await expect(saveRemoteAttachment).toBeEnabled();
+    await saveRemoteAttachment.click();
+    await expect(attachmentDialog).not.toBeVisible();
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(questionnaire.item[0].initial.map(({valueAttachment}) => valueAttachment)).toEqual([
+      {
+        contentType: 'text/plain',
+        data: 'SGVsbG8=',
+        url: 'https://example.org/hello.txt',
+        size: 5,
+        hash: '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=',
+        title: 'Embedded and remote (edited)'
+      },
+      {
+        contentType: 'application/pdf',
+        url: 'https://example.org/remote.pdf',
+        size: 4,
+        hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
+        title: 'Remote only (edited)'
+      }
+    ]);
+  });
+
+  test('should retain URL metadata and expose the URL after clearing embedded data', async ({ page }) => {
+    await PWUtils.uploadFile(page, 'attachment-preservation-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickTreeNode(page, 'Attachments with retained metadata');
+
+    const initialRow = page.locator('lfb-table')
+      .filter({hasText: 'Initial value'}).locator('tbody tr').first();
+    await initialRow.getByLabel('Edit this row').click();
+
+    let attachmentDialog = page.locator('lfb-attachment-dlg');
+    await expect(attachmentDialog.getByRole('radio', {name: 'base64Binary'})).toBeChecked();
+    await attachmentDialog.getByRole('button', {name: 'Clear data'}).click();
+
+    await expect(attachmentDialog.getByRole('radio', {name: 'URL'})).toBeChecked();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'}))
+      .toHaveValue('https://example.org/hello.txt');
+    const sizeInput = attachmentDialog.getByRole('textbox', {name: /^Size/});
+    await expect(sizeInput).toHaveValue('5');
+    await expect(sizeInput).toBeEditable();
+
+    // The migrated URL draft remains independent; returning to base64 starts
+    // with an empty draft rather than hiding the retained URL there.
+    await attachmentDialog.getByRole('radio', {name: 'base64Binary'}).check();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'})).toHaveCount(0);
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Size/})).toHaveValue('');
+    await attachmentDialog.getByRole('radio', {name: 'URL'}).check();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'}))
+      .toHaveValue('https://example.org/hello.txt');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Size/})).toHaveValue('5');
+
+    await attachmentDialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(attachmentDialog).not.toBeVisible();
+
+    let questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.item[0].initial[0].valueAttachment).toEqual({
+      contentType: 'text/plain',
+      url: 'https://example.org/hello.txt',
+      size: '5',
+      hash: '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=',
+      title: 'Embedded and remote'
+    });
+
+    await initialRow.getByLabel('Edit this row').click();
+    attachmentDialog = page.locator('lfb-attachment-dlg');
+    await expect(attachmentDialog.getByRole('radio', {name: 'URL'})).toBeChecked();
+    await expect(attachmentDialog.getByRole('textbox', {name: 'URL'}))
+      .toHaveValue('https://example.org/hello.txt');
+    await expect(attachmentDialog.getByRole('textbox', {name: /^Size/})).toHaveValue('5');
+    await attachmentDialog.getByRole('button', {name: 'Discard changes'}).click();
+
+    questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R4');
+    expect(questionnaire.item[0].initial[0].valueAttachment).toEqual({
+      contentType: 'text/plain',
+      url: 'https://example.org/hello.txt',
+      size: 5,
+      hash: '9/+ei3uy4Jtwk1pdeF4MxdnQq/A=',
+      title: 'Embedded and remote'
     });
   });
 

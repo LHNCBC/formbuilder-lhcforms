@@ -86,4 +86,20 @@ describe('AttachmentUtil', () => {
     AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, 'R4');
     expect(questionnaire.item[0].initial[0].valueAttachment.size).toBeUndefined();
   });
+
+  it('enforces the FHIR R4 unsignedInt upper bound for Attachment.size', () => {
+    const questionnaire: any = {
+      item: [{initial: [
+        {valueAttachment: {size: '2147483647'}},
+        {valueAttachment: {size: '2147483648'}},
+        {valueAttachment: {size: '4294967295'}}
+      ]}]
+    };
+
+    AttachmentUtil.normalizeQuestionnaireAttachments(questionnaire, 'R4');
+
+    expect(questionnaire.item[0].initial[0].valueAttachment.size).toBe(2147483647);
+    expect(questionnaire.item[0].initial[1].valueAttachment.size).toBeUndefined();
+    expect(questionnaire.item[0].initial[2].valueAttachment.size).toBeUndefined();
+  });
 });
