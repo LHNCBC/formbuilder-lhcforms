@@ -6,9 +6,16 @@ describe('AttachmentUtil', () => {
       .toEqual({data: 'SGVsbG8=', contentType: undefined, size: '5'});
   });
 
-  it('strips a data URI prefix and returns its MIME type', () => {
+  it('strips a data URI prefix and returns its complete MIME type', () => {
     expect(AttachmentUtil.parseBase64('data:text/plain;charset=utf-8;base64,SGVsbG8='))
-      .toEqual({data: 'SGVsbG8=', contentType: 'text/plain', size: '5'});
+      .toEqual({data: 'SGVsbG8=', contentType: 'text/plain;charset=utf-8', size: '5'});
+    expect(AttachmentUtil.parseBase64(
+      'data:application/example;version=1;charset=utf-8;base64,SGVsbG8='
+    )).toEqual({
+      data: 'SGVsbG8=',
+      contentType: 'application/example;version=1;charset=utf-8',
+      size: '5'
+    });
   });
 
   it('rejects malformed base64', () => {

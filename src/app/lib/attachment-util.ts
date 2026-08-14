@@ -97,7 +97,10 @@ export class AttachmentUtil {
       return null;
     }
 
-    const dataUriMatch = trimmed.match(/^data:([^;,]*)(?:;[^,]*)?;base64,([\s\S]*)$/i);
+    // RFC 2397 defines the media type as the type/subtype followed by any
+    // parameters. Capture everything before the terminal `;base64` marker so
+    // parameters such as `charset` remain part of Attachment.contentType.
+    const dataUriMatch = trimmed.match(/^data:([^,]*);base64,([\s\S]*)$/i);
     const contentType = dataUriMatch?.[1]?.trim() || undefined;
     const data = (dataUriMatch ? dataUriMatch[2] : trimmed).replace(/\s/g, '');
 

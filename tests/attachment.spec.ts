@@ -352,7 +352,17 @@ test.describe('attachment data type', () => {
     await expect(saveAttachment).toBeDisabled();
 
     await attachmentDialog.getByRole('radio', {name: 'File upload'}).check();
-    await attachmentDialog.locator('input[type="file"]').evaluate((input: HTMLInputElement) => {
+    const fileInput = attachmentDialog.locator('input[type="file"]');
+    await fileInput.setInputFiles({
+      name: 'known.txt',
+      mimeType: 'text/plain',
+      buffer: Buffer.from('Known')
+    });
+    await expect(mimeTypeInput).toHaveValue('text/plain');
+
+    // Replacing the file with content whose type is unknown must not inherit
+    // the MIME type of the previous file.
+    await fileInput.evaluate((input: HTMLInputElement) => {
       const dataTransfer = new DataTransfer();
       dataTransfer.items.add(new File([new TextEncoder().encode('Hello')], 'unknown-content'));
       Object.defineProperty(input, 'files', {value: dataTransfer.files, configurable: true});
@@ -436,6 +446,56 @@ test.describe('attachment data type', () => {
         size: 4,
         hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
         title: 'Remote only (edited)'
+      }
+    ]);
+  });
+
+  test('should invalidate stale content metadata when embedded data or a URL changes', async ({ page }) => {
+    await PWUtils.uploadFile(page, 'attachment-preservation-sample.json', true);
+    await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+    await PWUtils.clickTreeNode(page, 'Attachments with retained metadata');
+
+    const initialTable = page.locator('lfb-table').filter({hasText: 'Initial value'});
+    const attachmentDialog = page.locator('lfb-attachment-dlg');
+
+    // Replacing embedded content with plain base64 clears the previous MIME
+    // type and URL. A new MIME type is required before the row can be saved.
+    await initialTable.locator('tbody tr').nth(0).getByLabel('Edit this row').click();
+    const dataInput = attachmentDialog.getByRole('textbox', {name: 'Data', exact: true});
+    await dataInput.fill('JVBERg==');
+    await dataInput.press('Tab');
+    const mimeTypeInput = attachmentDialog.getByRole('combobox', {name: /^Mime Type/});
+    await expect(mimeTypeInput).toHaveValue('');
+    await expect(attachmentDialog.getByRole('button', {name: 'Save and close'})).toBeDisabled();
+    await mimeTypeInput.fill('application/pdf');
+    await mimeTypeInput.press('Escape');
+    await attachmentDialog.getByRole('textbox', {name: /^Title/}).click();
+    await attachmentDialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(attachmentDialog).not.toBeVisible();
+
+    // A hash is not editable in the dialog, so changing its URL must remove
+    // the digest that described the content at the previous URL.
+    await initialTable.locator('tbody tr').nth(1).getByLabel('Edit this row').click();
+    const urlInput = attachmentDialog.getByRole('textbox', {name: 'URL'});
+    await urlInput.fill('https://example.org/replacement.pdf');
+    await attachmentDialog.getByRole('textbox', {name: /^Title/}).fill('Replacement');
+    await attachmentDialog.getByRole('textbox', {name: /^Title/}).press('Tab');
+    await attachmentDialog.getByRole('button', {name: 'Save and close'}).click();
+    await expect(attachmentDialog).not.toBeVisible();
+
+    const questionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+    expect(questionnaire.item[0].initial.map(({valueAttachment}) => valueAttachment)).toEqual([
+      {
+        contentType: 'application/pdf',
+        data: 'JVBERg==',
+        size: '4',
+        hash: 'ObbXPv82STugZ05IJVqdgXJLRSE=',
+        title: 'Embedded and remote'
+      },
+      {
+        contentType: 'application/pdf',
+        url: 'https://example.org/replacement.pdf',
+        title: 'Replacement'
       }
     ]);
   });

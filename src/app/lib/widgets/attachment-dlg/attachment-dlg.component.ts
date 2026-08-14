@@ -246,6 +246,7 @@ export class AttachmentDlgComponent {
    * @param model - Attachment metadata emitted by the schema form.
    */
   onAttachmentChange(model: Partial<fhir.Attachment>): void {
+    const previousUrl = this.draft.url;
     let changed = false;
     Object.keys(this.attachmentSchema.properties || {}).forEach((field: keyof fhir.Attachment) => {
       const modelValue = model?.[field];
@@ -261,6 +262,10 @@ export class AttachmentDlgComponent {
         changed = true;
       }
     });
+    if(previousUrl !== this.draft.url) {
+      delete this.draft.hash;
+      delete (this.draft as any)._hash;
+    }
     if(changed) {
       this.markDirty();
     }
@@ -273,6 +278,7 @@ export class AttachmentDlgComponent {
   async onDataChange(value: string): Promise<void> {
     const state = this.activeState;
     const revision = ++state.dataRevision;
+    const previousData = AttachmentUtil.parseBase64(state.attachment.data || '')?.data;
     let transitionedToUrl = false;
     state.calculatingDataMetadata = false;
     state.attachment.data = value;
@@ -286,6 +292,12 @@ export class AttachmentDlgComponent {
         delete state.attachment.hash;
       }
       else {
+        if(parsed.data !== previousData) {
+          delete state.attachment.contentType;
+          delete (state.attachment as any)._contentType;
+          delete state.attachment.url;
+          delete (state.attachment as any)._url;
+        }
         state.attachment.data = parsed.data;
         state.attachment.size = parsed.size;
         if(parsed.contentType) {
@@ -372,7 +384,12 @@ export class AttachmentDlgComponent {
     try {
       const loaded = await AttachmentUtil.fileToAttachment(file);
       if(revision === state.dataRevision) {
-        state.attachment = {...state.attachment, ...loaded};
+        const attachment = {...state.attachment};
+        delete attachment.contentType;
+        delete (attachment as any)._contentType;
+        delete attachment.url;
+        delete (attachment as any)._url;
+        state.attachment = {...attachment, ...loaded};
         if(state === this.activeState) {
           this.attachmentSchema = this.createAttachmentSchema();
         }
