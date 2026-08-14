@@ -52,6 +52,17 @@ describe('UsageContextObjComponent', () => {
       .toBe('focus');
   });
 
+  it('should align the Usage Context type selector with the other dialog fields', () => {
+    const codeEditor = (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLElement>('lfb-usage-context-code');
+    const row = codeEditor?.querySelector<HTMLElement>(':scope > .row');
+
+    expect(row).withContext('Code editor Bootstrap row').not.toBeNull();
+    expect(row?.classList).toContain('m-0');
+    expect(row?.querySelector<HTMLElement>(':scope > .col-sm-2')).not.toBeNull();
+    expect(row?.querySelector<HTMLElement>(':scope > .col-sm-10')).not.toBeNull();
+  });
+
   it('should forward schema-form value changes', () => {
     const value: UsageContextEditModel = {
       code: {code: 'focus'},
