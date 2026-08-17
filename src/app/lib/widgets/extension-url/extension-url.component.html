@@ -29,13 +29,12 @@
       <ul class="mb-0 ps-0 list-unstyled">
         @for (error of errorsToDisplay; track error.code) {
           <li [attr.id]="error.code === 'DUPLICATE_EXTENSION_URL' ? duplicateErrorId : null">
-            @if (error.code === 'DUPLICATE_EXTENSION_URL') {
-              <fa-icon
-                [icon]="errorIcon"
-                class="duplicate-extension-url-error-icon text-danger me-1"
-                aria-hidden="true"
-              ></fa-icon>
-            }
+            <fa-icon
+              [icon]="errorIcon"
+              class="extension-url-error-icon text-danger me-1"
+              [class.duplicate-extension-url-error-icon]="error.code === 'DUPLICATE_EXTENSION_URL'"
+              aria-hidden="true"
+            ></fa-icon>
             <small class="text-danger form-text" role="alert">
               {{error.modifiedMessage || error.originalMessage}}
             </small>

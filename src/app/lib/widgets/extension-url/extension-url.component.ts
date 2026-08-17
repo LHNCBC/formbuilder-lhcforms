@@ -19,7 +19,13 @@ import {LfbDisableControlDirective} from '../../directives/lfb-disable-control.d
     LabelComponent,
     LfbDisableControlDirective
   ],
-  templateUrl: './extension-url.component.html'
+  templateUrl: './extension-url.component.html',
+  styles: [`
+    .extension-url-error-icon {
+      position: relative;
+      top: 0.125rem;
+    }
+  `]
 })
 export class ExtensionUrlComponent extends StringComponent {
   readonly errorIcon = faExclamationTriangle;

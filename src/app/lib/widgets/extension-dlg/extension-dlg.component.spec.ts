@@ -118,6 +118,21 @@ describe('ExtensionDlgComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('lfb-string .duplicate-extension-url-error-icon').length).toBe(0);
   });
 
+  it('should display the warning icon for a URL pattern error', async () => {
+    await createDialog([], -1);
+    const urlInput: HTMLInputElement = fixture.nativeElement.querySelector('input[id^="url"]');
+
+    urlInput.value = 'http://example.org/invalid url';
+    urlInput.dispatchEvent(new InputEvent('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const urlWidget: HTMLElement = urlInput.closest('lfb-extension-url');
+    expect(urlWidget.querySelector('.extension-url-error-icon')).not.toBeNull();
+    expect(urlWidget.querySelector('.duplicate-extension-url-error-icon')).toBeNull();
+    expect(urlWidget.textContent).toContain('Spaces and other whitespace characters are not allowed');
+  });
+
   it('should allow a duplicate unknown extension URL without warning when definition metadata is unavailable', async () => {
     await createDialog(inputExt, -1);
 
