@@ -2,6 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.2.2] 2026-08-04
+### Changed
+- Refactored option widget inheritance with enableWhen answer option service.
+- Migrated enableWhen answer-option inputs to directive-based wiring (replacing template-level service passing).
+- Updated related template/class markup for enableWhen answer-option inputs in date, string, and time widgets.
+
 ## [12.2.1] 2026-08-04
 ### Changed
 - Updated window-open API documentation.

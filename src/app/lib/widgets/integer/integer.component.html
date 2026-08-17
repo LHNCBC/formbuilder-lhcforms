@@ -14,9 +14,10 @@
 
     @if (hasAnswerOptions$ | async) {
       <div class="{{controlWidthClass}} p-0">
-        <input lfbInteger autocomplete="off" #enableWhenAnswerOptions type="number" [attr.id]="id" class="form-control"
+        <input lfbInteger autocomplete="off" lfbEnableWhenAnswerOptions
+               [enableWhenAnswerOptionsId]="id" type="number" [attr.id]="id" class="form-control form-control-sm"
                [min]="inputMin" [max]="inputMax"
-               (input)="onInput($event)" (blur)="suppressInvalidValue($event)" [value]="control?.value ?? ''"/>
+               [value]="control?.value ?? ''"/>
         @if (errors?.length && hasErrorDisplayValue) {
           @for (error of errors; track error.code) {
             <small class="text-danger form-text" role="alert"

@@ -139,7 +139,7 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
    */
   openDialog(contentData: DialogData, contentDlg: ComponentType<unknown>) {
     let dPosition: DialogPosition = null;
-    const previousDialogRef = this.matDialogService.openDialogs?.reverse().find((dRef) => {
+    const previousDialogRef = [...(this.matDialogService.openDialogs || [])].reverse().find((dRef) => {
       return dRef.componentInstance instanceof contentDlg;
     });
     if(previousDialogRef) {

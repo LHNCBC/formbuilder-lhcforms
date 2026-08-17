@@ -14,6 +14,8 @@ import {AsyncPipe, NgClass} from "@angular/common";
 import {LabelComponent} from "../label/label.component";
 import {LfbDisableControlDirective} from "../../directives/lfb-disable-control.directive";
 import {FontAwesomeModule} from "@fortawesome/angular-fontawesome";
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 
 @Injectable()
 export class LfbDateAdapter extends NgbDateAdapter<string> {
@@ -51,13 +53,14 @@ export class LfbDateParserFormatter extends NgbDateParserFormatter {
   selector: 'lfb-date',
   imports: [
     NgbDatepickerModule, FormsModule, ReactiveFormsModule, NgClass, LabelComponent, AsyncPipe,
-    LfbDisableControlDirective, FontAwesomeModule
+    LfbDisableControlDirective, FontAwesomeModule, EnableWhenAnswerOptionsDirective
   ],
   templateUrl: './date.component.html',
   styleUrls: ['./date.component.css'],
   providers: [
     {provide: NgbDateAdapter, useClass: LfbDateAdapter},
-    {provide: NgbDateParserFormatter, useClass: LfbDateParserFormatter}
+    {provide: NgbDateParserFormatter, useClass: LfbDateParserFormatter},
+    EnableWhenAnswerOptionsService
   ]
 })
 export class DateComponent extends StringComponent implements OnInit, AfterViewInit {
@@ -113,8 +116,9 @@ export class DateComponent extends StringComponent implements OnInit, AfterViewI
    */
   today() {
     const dateStruct = this.calendar.getToday();
-    let val: string = DateUtil.formatToISO({dateStruct, timeStruct: null, millis: NaN});
+    let val: string | null = DateUtil.formatToISO({dateStruct, timeStruct: null, millis: NaN});
     val = val.length > 0 ? val : null;
+    this.control.setValue(val, {emitEvent: false});
     this.formProperty.setValue(val, false);
   }
 

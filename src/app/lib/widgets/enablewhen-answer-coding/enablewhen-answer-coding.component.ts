@@ -10,22 +10,35 @@ import {Subscription} from 'rxjs';
 import {AutoCompleteComponent, AutoCompleteOptions} from '../auto-complete/auto-complete.component';
 import {FormsModule} from "@angular/forms";
 import {SharedObjectService} from "../../../services/shared-object.service";
-import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { LfbOptionControlWidgetComponent } from '../lfb-option-control-widget/lfb-option-control-widget.component';
 import { Util } from '../../util';
 import { TYPE_CODING } from '../../constants/constants';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
+import {
+  DEFAULT_WIDGET_MODIFIED_MESSAGES,
+  getModifiedErrorForPatternMismatch,
+  mapWidgetErrors,
+  ModifiedMessages,
+  WidgetValidationError
+} from '../../validation-utils';
 declare var LForms: any;
 
 @Component({
   selector: 'lfb-enablewhen-answer-coding',
-  imports: [AutoCompleteComponent, FormsModule],
+  imports: [AutoCompleteComponent, FormsModule, EnableWhenAnswerOptionsDirective],
+  providers: [EnableWhenAnswerOptionsService],
   template: `
     <div class="widget form-group form-group-sm m-0 p-0">
       @if (autoComplete) {
         <lfb-auto-complete [options]="acOptions" [model]="model" (selected)="modelChanged($event)" (removed)="modelChanged(null)"></lfb-auto-complete>
       } @else {
         <div class="p-0">
-          <input autocomplete="off" #enableWhenAnswerOptions type="text" [attr.id]="id" class="form-control form-control-sm" (input)="onInput($event)" (blur)="suppressInvalidValue($event)" />
+          <input lfbEnableWhenAnswerOptions
+                 [enableWhenAnswerOptionsId]="id"
+                 autocomplete="off"
+                 type="text"
+                 [attr.id]="id"
+                 class="form-control form-control-sm" />
         </div>
       }
     </div>
@@ -42,9 +55,10 @@ declare var LForms: any;
   ]
 })
 
-export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetComponent implements OnInit, AfterViewInit, OnDestroy {
+export class EnablewhenAnswerCodingComponent extends ObjectWidget implements OnInit, AfterViewInit, OnDestroy {
   private formService = inject(FormService);
   private modelService = inject(SharedObjectService);
+  enableWhenAnswerOptionsService = inject(EnableWhenAnswerOptionsService);
 
   subscriptions: Subscription [] = [];
   answerOptions: fhir.QuestionnaireItemAnswerOption [] = [];
@@ -66,15 +80,26 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
     }
   }
   model: fhir.Coding;
+  errors: WidgetValidationError[] | null = null;
+  modifiedMessages: ModifiedMessages = DEFAULT_WIDGET_MODIFIED_MESSAGES;
 
+  /**
+   * Initializes the enableWhen answer coding widget and answer-option autocomplete service.
+   *
+   */
   ngOnInit() {
-    super.ngOnInit();
-    this.init();
+    const initValue = this.formProperty.value;
+    if(initValue) {
+      this.model = initValue;
+    }
+    this.init(this.formProperty.searchProperty('question').value);
+    this.enableWhenAnswerOptionsService.init(this.formProperty, this.control);
   }
 
 
   /**
-   * Component initialization.
+   * Initializes subscriptions for model synchronization, source question changes, and validation errors.
+   *
    */
   ngAfterViewInit(): void {
     super.ngAfterViewInit();
@@ -102,45 +127,20 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
     this.subscriptions.push(sub);
 
     sub = this.formProperty.errorsChanges.subscribe((errors) => {
-      this.errors = null;
-      if (errors?.length) {
-        const errorsObj = {};
-        errors.reduce((acc, error) => {
-          if (error.code.startsWith('ENABLEWHEN_') && !acc[error.code]) {
-            acc[error.code] = error;
-          }
-
-          return acc;
-        }, errorsObj);
-
-        this.errors = Object.values(errorsObj)
-          .map((e: any) => {
-          let ret = {code: e.code, originalMessage: e.message, modifiedMessage: null};
-          if(!e.params[1]?.trim() && this.schema.widget.showEmptyError) {
-            // If the error is caused by an empty value, use a generic message.
-            ret.code = 'EMPTY_ERROR';
-            ret.modifiedMessage = 'This field is required.';
-          } else {
-            const modifiedMessage = e.code === 'PATTERN'
-              ? this.getModifiedErrorForPatternMismatch(e.params[0])
-              : this.modifiedMessages[e.code];
-            ret.code = e.code;
-            ret.originalMessage = e.message;
-            ret.modifiedMessage = modifiedMessage;
-          }
-          return ret;
-        });
-      }
+      this.errors = mapWidgetErrors(errors, this.modifiedMessages, {
+        showEmptyError: !!this.schema.widget.showEmptyError,
+        errorFilter: (error: any) => error.code.startsWith('ENABLEWHEN_')
+      });
     });
     this.subscriptions.push(sub);
   }
 
-
   /**
-   * Initialize the auto-complete widget
+   * Initializes answer coding choices for the selected enableWhen source question.
+   *
+   * @param sourceLinkId - Link id of the enableWhen source.
    */
-  init() {
-    const sourceLinkId = this.formProperty.searchProperty('question').value;
+  init(sourceLinkId = this.formProperty.searchProperty('question').value) {
     this.model = this.formProperty.value;
     this.answerOptions = [];
     this.autoComplete = false;
@@ -163,7 +163,9 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
 
   /**
    * Pick valid answers from the answerOption array.
-   * @param sourceItem - Source item
+   *
+   * @param sourceItem - Source questionnaire item.
+   * @returns Coding answer options that have either a code or display value.
    */
   processSourceAnswers(sourceItem: fhir.QuestionnaireItem): fhir.QuestionnaireItemAnswerOption [] {
     let ret: fhir.QuestionnaireItemAnswerOption [] = [];
@@ -178,47 +180,9 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
   }
 
   /**
-   * Handles the input event for the enableWhen date input field.
-   * Updates the formProperty value to match the UI input, triggering standard validation.
-   * Also triggers custom enableWhen validation after the value is set.
+   * Handles model changes from the FHIR value set autocomplete.
    *
-   * @param event - The input event from the date input element.
-   */
-  onInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-
-    setTimeout(() => {
-      // Set the formProperty value to match the UI input.
-      // This will trigger the standard validation.
-      if (this.formProperty) {
-        const newCoding = this.parseCoding(input.value);
-
-        this.formProperty.setValue(newCoding, true);
-        // Trigger the custom enableWhen validation
-        this.formProperty.updateValueAndValidity(false, true);
-      }
-    }, 0);
-  }
-
-  /**
-   * Reset formProperty if input box has invalid date format.
-   * Intended to be invoked on blur event of an input box.
-   * @param event - DOM event
-   */
-  suppressInvalidValue(event: Event) {
-    const inputEl = event.target as HTMLInputElement;
-
-    if(inputEl.classList.contains('ng-invalid')) {
-      this.formProperty.setValue(null, false);
-    } else if (this.findParentTdWithInvalid(inputEl)) {
-      inputEl.value = '';
-      this.formProperty.setValue(null, false);
-    }
-  }
-
-  /**
-   * Handle model change event in <select> tag.
-   * @param coding - Option value
+   * @param coding - Selected coding value, or null when the selection is removed.
    */
   modelChanged(coding: fhir.Coding) {
     this.model = coding || {};
@@ -232,6 +196,7 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
    *
    * @param c1 - Option value
    * @param c2 - Model object to compare
+   * @returns True if the two coding values represent the same selected option.
    */
   compareFn(c1: fhir.Coding, c2: fhir.Coding): boolean {
     return c1 && c2
@@ -241,10 +206,25 @@ export class EnablewhenAnswerCodingComponent extends LfbOptionControlWidgetCompo
       : c1 === c2;
   }
 
+  /**
+   * Cleans up the answer-options service and component subscriptions.
+   *
+   */
   ngOnDestroy() {
+    this.enableWhenAnswerOptionsService.destroy();
     this.subscriptions.forEach((sub) => {
       sub?.unsubscribe();
     })
+  }
+
+  /**
+   * Finds a friendlier validation message for a known pattern mismatch.
+   *
+   * @param pattern - Pattern string from the validation error.
+   * @returns A custom validation message when one is configured, otherwise null.
+   */
+  getModifiedErrorForPatternMismatch(pattern: string): string | null {
+    return getModifiedErrorForPatternMismatch(pattern, this.modifiedMessages);
   }
 
   /**
