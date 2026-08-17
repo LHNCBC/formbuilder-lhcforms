@@ -1,7 +1,7 @@
 import { test, expect, Locator, Page } from '@playwright/test';
 import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
-import { ExtensionDefs } from '../src/app/lib/extension-defs';
+import { PREFERRED_TERMINOLOGY_SERVER_URI } from '../src/app/lib/constants/constants';
 
 const olpExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationLinkPeriod';
 const observationExtractExtUrl = 'http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract';
@@ -52,7 +52,7 @@ test.describe('Home page', () => {
       await PWUtils.assertValueInQuestionnaire(page, '/item/0/extension', [
         {
           valueUrl: 'http://example.org/fhir',
-          url: ExtensionDefs.preferredTerminologyServer.url
+          url: PREFERRED_TERMINOLOGY_SERVER_URI
         }
       ]);
 
@@ -62,7 +62,7 @@ test.describe('Home page', () => {
       await tsUrl.fill('http://example.com/r4');
       await PWUtils.assertValueInQuestionnaire(page, '/item/0/extension', [
         {
-          url: ExtensionDefs.preferredTerminologyServer.url,
+          url: PREFERRED_TERMINOLOGY_SERVER_URI,
           valueUrl: 'http://example.com/r4'
         }
       ]);
@@ -88,10 +88,10 @@ test.describe('Home page', () => {
       await PWUtils.assertExtensionsInQuestionnaire(
         page,
         '/item/0/extension',
-        ExtensionDefs.preferredTerminologyServer.url,
+        PREFERRED_TERMINOLOGY_SERVER_URI,
         [
           {
-            url: ExtensionDefs.preferredTerminologyServer.url,
+            url: PREFERRED_TERMINOLOGY_SERVER_URI,
             valueUrl: 'http://example.com/r4'
           }
         ]
@@ -101,7 +101,7 @@ test.describe('Home page', () => {
       await PWUtils.assertExtensionsInQuestionnaire(
         page,
         '/item/0/extension',
-        ExtensionDefs.preferredTerminologyServer.url,
+        PREFERRED_TERMINOLOGY_SERVER_URI,
         []
       );
 
@@ -109,10 +109,10 @@ test.describe('Home page', () => {
       await PWUtils.assertExtensionsInQuestionnaire(
         page,
         '/item/0/extension',
-        ExtensionDefs.preferredTerminologyServer.url,
+        PREFERRED_TERMINOLOGY_SERVER_URI,
         [
           {
-            url: ExtensionDefs.preferredTerminologyServer.url,
+            url: PREFERRED_TERMINOLOGY_SERVER_URI,
             valueUrl: 'http://a.b'
           }
         ]

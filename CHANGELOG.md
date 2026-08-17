@@ -2,7 +2,12 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [12.2.2] 2026-08-04
+## [12.3.0] 2026-08-10
+### Added
+- Added cardinality validation for general extensions. Duplicate single-occurrence
+  extension URLs are rejected at the same scope with an inline validation message,
+  while known repeatable extensions can be added multiple times.
+
 ### Changed
 - Refactored option widget inheritance with enableWhen answer option service.
 - Migrated enableWhen answer-option inputs to directive-based wiring (replacing template-level service passing).
@@ -1027,4 +1032,3 @@ ranked higher during the auto-completion.
 - Fixed displaying other in answer list item.
 ### Changed
 - Changed Text and Code fields to be required.
-

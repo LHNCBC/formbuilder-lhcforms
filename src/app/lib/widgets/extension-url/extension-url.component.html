@@ -1,0 +1,50 @@
+<div [ngClass]="{'row': labelPosition === 'left', 'm-0': true}">
+  <lfb-label
+    [for]="id+_id"
+    [title]="schema.title"
+    [helpMessage]="schema.description"
+    [ngClass]="labelClasses"
+    class="form-label"
+  ></lfb-label>
+  <div class="col p-0 position-relative">
+    <input #inputEl [name]="name" [readonly]="schema.readOnly || schema.widget?.readOnly"
+           type="url"
+           class="form-control form-control-sm"
+           [ngClass]="controlClasses"
+           [class.invalid]="hasDuplicateUrlError"
+           [attr.aria-invalid]="hasDuplicateUrlError ? 'true' : null"
+           [attr.aria-describedby]="hasDuplicateUrlError ? duplicateErrorId : null"
+           [attr.id]="id+_id"
+           [formControl]="control"
+           [attr.placeholder]="schema.placeholder"
+           [attr.maxLength]="schema.maxLength || null"
+           [attr.minLength]="schema.minLength || null"
+           [attr.pattern]="schema.pattern || null"
+           [required]="isRequired"
+           [matTooltip]="getTooltipValue()"
+           matTooltipClass="lfb-tooltip-pre-wrap"
+           [lfbDisableControl]="schema.disabled">
+    @let errorsToDisplay = displayedErrors;
+    @if (errorsToDisplay?.length) {
+      <ul class="mb-0 ps-0 list-unstyled">
+        @for (error of errorsToDisplay; track error.code) {
+          <li [attr.id]="error.code === 'DUPLICATE_EXTENSION_URL' ? duplicateErrorId : null">
+            <fa-icon
+              [icon]="errorIcon"
+              class="extension-url-error-icon text-danger me-1"
+              [class.duplicate-extension-url-error-icon]="error.code === 'DUPLICATE_EXTENSION_URL'"
+              aria-hidden="true"
+            ></fa-icon>
+            <small class="text-danger form-text" role="alert">
+              {{error.modifiedMessage || error.originalMessage}}
+            </small>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (formProperty.schema.widget?.note) {
+      <p [attr.id]="'note_'+id" class="mb-1 ps-0"><small><em>{{formProperty.schema.widget.note}}</em></small></p>
+    }
+  </div>
+</div>

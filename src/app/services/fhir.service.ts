@@ -1,7 +1,7 @@
 import {Injectable, inject} from '@angular/core';
 import Client from 'fhirclient/lib/Client';
 import * as fhirClient from 'fhirclient';
-import {defer, from, mergeMap, Observable, of, timeout, TimeoutError} from 'rxjs';
+import {defer, from, mergeMap, Observable, of, Subject, timeout, TimeoutError} from 'rxjs';
 import fhir from 'fhir/r4';
 import {fhirPrimitives} from '../fhir';
 import {FormService} from './form.service';
@@ -79,6 +79,9 @@ export class FhirService {
     }
   ];
 
+  private readonly defaultFhirServer = this.fhirServerList[0];
+  private readonly fhirServerChanges = new Subject<FHIRServer>();
+  readonly fhirServerChanges$ = this.fhirServerChanges.asObservable();
   currentServer: FHIRServer;
   smartClient: Client;
 
@@ -87,7 +90,7 @@ export class FhirService {
   httpClient: HttpClient = inject<HttpClient>(HttpClient);
   constructor() {
     // this.smartClient = FHIR.client(window.location.href+'fhir-api');
-    this.setFhirServer(this.fhirServerList[0]);
+    this.setFhirServer(this.defaultFhirServer);
   }
 
     /**
@@ -180,10 +183,14 @@ export class FhirService {
     /**
      * Get FHIR results using a url. The paginated results are obtained using a url in the result bundle
      * @param url - The URL referring to the resource bundle on the FHIR server.
+     * @param client - FHIR client that should perform the request.
      * @returns - FHIR resource bundle
      */
-    getBundleByUrl(url: fhirPrimitives.url): Observable<fhir.Bundle> {
-      return this.promiseToObservable(this.smartClient.request(url));
+    getBundleByUrl(
+      url: fhirPrimitives.url,
+      client: Client = this.smartClient
+    ): Observable<fhir.Bundle> {
+      return this.promiseToObservable(client.request(url));
     };
 
     /**
@@ -215,10 +222,19 @@ export class FhirService {
     setFhirServer(fhirServer: FHIRServer): void {
       this.currentServer = fhirServer;
       this.smartClient = fhirClient.client(this.currentServer.endpoint);
+      this.fhirServerChanges.next(fhirServer);
     };
 
     getFhirServer(): FHIRServer {
       return this.currentServer;
+    }
+
+    /**
+     * Get the built-in FHIR server used when no user-selected server should
+     * influence an application-level lookup.
+     */
+    getDefaultFhirServer(): FHIRServer {
+      return this.defaultFhirServer;
     }
 
     /**
