@@ -7,7 +7,12 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Added cardinality validation for general extensions. Duplicate single-occurrence
   extension URLs are rejected at the same scope with an inline validation message,
   while known repeatable extensions can be added multiple times.
-  
+
+### Changed
+- Refactored option widget inheritance with enableWhen answer option service.
+- Migrated enableWhen answer-option inputs to directive-based wiring (replacing template-level service passing).
+- Updated related template/class markup for enableWhen answer-option inputs in date, string, and time widgets.
+
 ## [12.2.1] 2026-08-04
 ### Changed
 - Updated window-open API documentation.

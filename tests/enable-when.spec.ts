@@ -792,8 +792,11 @@ test.describe('enableWhen condition and behavior', () => {
       await enableWhenTimeOffListItem.click();
       await expect(enableWhenTimeOffListItem.locator('fa-icon#error')).toBeVisible();
       await expect(page.locator('[id^="enableWhen.0.answerTime"]')).toHaveValue('08:00:00');
-      await expect(page.locator('[id^="enableWhen.0_err"] small'))
+      const timeErrors = page.locator('[id^="enableWhen.0_err"] small');
+      await expect(timeErrors).toHaveCount(1);
+      await expect(timeErrors)
         .toContainText(enableWhenErrorMsg('time answerOptions', '657367236699'));
+      await expect(timeErrors).not.toContainText('Valid format is');
 
       // ---- string ----
       await PWUtils.clickTreeNode(page, 'string answerOptions');
@@ -900,6 +903,51 @@ test.describe('enableWhen condition and behavior', () => {
         .toContainText(enableWhenErrorMsg('coding answerOptions restricted', '264603036166'));
     });
 
+    test('should refresh answer options when source question changes at runtime', async ({ page }) => {
+      test.setTimeout(60000);
+
+      await PWUtils.uploadFile(page, 'enable-when-answer-options-R4-sample.json', false);
+      await PWUtils.clickButton(page, 'Toolbar with button groups', 'Edit questions');
+      await expect(page.locator('.spinner-border')).not.toBeVisible();
+
+      const enableWhenStringOnListItem = await PWUtils.getTreeNode(page, 'enableWhen string on-list', true);
+      await enableWhenStringOnListItem.click();
+      await PWUtils.expandAdvancedFields(page);
+
+      const sourceQuestionInput = page.locator('[id^="enableWhen.0.question"]');
+      const sourceAnswerInput = page.locator('input[id^="enableWhen.0.answerString"]');
+      const sourceError = page.locator('[id^="enableWhen.0_err"]');
+
+      await expect(sourceAnswerInput).toHaveValue('B');
+      await expect(sourceError).toHaveCount(0);
+
+      await sourceQuestionInput.click();
+      await sourceQuestionInput.press('Control+A');
+      await sourceQuestionInput.press('Backspace');
+      await PWUtils.typeSequentially(sourceQuestionInput, 'text answerOptions');
+
+      const questionOptions = page.locator('ngb-typeahead-window button');
+      await expect(questionOptions.first()).toBeVisible();
+      await page.locator('ngb-typeahead-window button', { hasText: 'text answerOptions' }).first().click();
+
+      await expect(sourceQuestionInput).toHaveValue(/text answerOptions/);
+      await expect(sourceError).toBeVisible();
+      await expect(sourceError.locator('small'))
+        .toContainText(enableWhenErrorMsg('text answerOptions', '174788656639'));
+
+      await sourceAnswerInput.click();
+      const options = page.locator('#completionOptions > ul > li');
+      await expect(options).toHaveCount(3);
+
+      const optionTexts = await options.allTextContents();
+      expect(optionTexts.some((txt) => txt.includes('BBBBBBBBB'))).toBeTruthy();
+      expect(optionTexts.some((txt) => txt.trim() === 'B')).toBeFalsy();
+
+      await sourceAnswerInput.fill('BBBBBBBBB');
+      await sourceAnswerInput.blur();
+      await expect(sourceError).toHaveCount(0);
+    });
+
     test('should display a validation error if the answer does not match any of the answerOptions for R5 questionnaire', async ({ page }) => {
       test.setTimeout(60000);
 
@@ -970,8 +1018,11 @@ test.describe('enableWhen condition and behavior', () => {
       await enableWhenTimeOffListItem.click();
       await expect(enableWhenTimeOffListItem.locator('fa-icon#error')).toBeVisible();
       await expect(page.locator('[id^="enableWhen.0.answerTime"]')).toHaveValue('08:00:00');
-      await expect(page.locator('[id^="enableWhen.0_err"] small'))
+      const r5TimeErrors = page.locator('[id^="enableWhen.0_err"] small');
+      await expect(r5TimeErrors).toHaveCount(1);
+      await expect(r5TimeErrors)
         .toContainText(enableWhenErrorMsg('time answerOptions', '657367236699'));
+      await expect(r5TimeErrors).not.toContainText('Valid format is');
 
       // ---- string ----
       await PWUtils.clickTreeNode(page, 'string answerOptions');
@@ -1091,6 +1142,25 @@ test.describe('enableWhen condition and behavior', () => {
       await enableWhenIntegerOffListItem.click();
       await expect(enableWhenIntegerOffListItem.locator('fa-icon#error')).toHaveCount(0);
       await expect(page.locator('[id^="enableWhen.0_err"]')).toHaveCount(0);
+
+      await PWUtils.clickTreeNode(page, 'coding answerOptions');
+      await PWUtils.clickRadioButton(page, 'Answer constraint', 'Allow free text');
+      await PWUtils.expectRadioChecked(page, 'Answer constraint', 'Allow free text');
+
+      const enableWhenCodingOffListItem = await PWUtils.getTreeNode(page, 'enableWhen coding off-list', true);
+      await enableWhenCodingOffListItem.click();
+      await expect(enableWhenCodingOffListItem.locator('fa-icon#error')).toHaveCount(0);
+
+      const freeTextCoding = 'Typed free text coding';
+      const codingAnswerInput = page.locator('[id^="enableWhen.0.answerCoding"]');
+      await codingAnswerInput.click();
+      await codingAnswerInput.fill(freeTextCoding);
+      await codingAnswerInput.blur();
+
+      q = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
+      expect(q.item[17].enableWhen[0].answerCoding.display).toEqual(freeTextCoding);
+      expect([null, undefined]).toContain(q.item[17].enableWhen[0].answerCoding.code);
+      expect([null, undefined]).toContain(q.item[17].enableWhen[0].answerCoding.system);
     });
 
   });

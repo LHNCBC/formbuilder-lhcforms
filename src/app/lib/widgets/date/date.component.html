@@ -17,11 +17,13 @@
 
       @if (hasAnswerOptions$ | async) {
         <div class="{{controlWidthClass}} p-0">
-          <input autocomplete="off" #enableWhenAnswerOptions type="text"
+          <input lfbEnableWhenAnswerOptions
+                 [enableWhenAnswerOptionsId]="id"
                  [formControl]="control"
-                 [attr.id]="id" class="form-control"
-                 (input)="onInput($event)"
-                 (blur)="suppressInvalidValue($event)" />
+                 autocomplete="off"
+                 type="text"
+                 [attr.id]="id"
+                 class="form-control form-control-sm" />
         </div>
       } @else {
         <div class="input-group input-group-sm">
@@ -61,6 +63,6 @@
   </div>
 
   <ng-template #footerTemplate>
-    <div class="text-center"><button (click)="navigateToToday()" class="btn btn-sm btn-link">Today</button></div>
+    <div class="text-center"><button type="button" (click)="navigateToToday()" class="btn btn-sm btn-link">Today</button></div>
   </ng-template>
 }

@@ -13,7 +13,7 @@ import {SharedObjectService} from "../../../services/shared-object.service";
   selector: 'lfb-row-layout',
   template: `
     @for (field of basicVisibleFields; track field.field) {
-      <div [class]="gridClass(field)" class="lfb-row" [class.lfb-row-object]="getWidgetId(field.field) === 'lfb-object'">
+      <div [ngClass]="gridClass(field)" class="lfb-row" [class.lfb-row-object]="getWidgetId(field.field) === 'lfb-object'">
         <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
       </div>
     }
@@ -28,7 +28,7 @@ import {SharedObjectService} from "../../../services/shared-object.service";
       <div #collapse="ngbCollapse" [(ngbCollapse)]="collapseAdvanced" (ngbCollapseChange)="handleAdvPanelCollapse($event)" id="advancedFields">
         <hr>
         @for (field of advancedVisibleFields; track field.field) {
-          <div [class]="gridClass(field)" class="lfb-row" [class.lfb-row-object]="getWidgetId(field.field) === 'lfb-object'">
+          <div [ngClass]="gridClass(field)" class="lfb-row" [class.lfb-row-object]="getWidgetId(field.field) === 'lfb-object'">
             <lfb-form-element [formProperty]="getShowFieldProperty(field)"></lfb-form-element>
           </div>
         }
@@ -89,7 +89,6 @@ export class RowLayoutComponent extends GridComponent implements OnInit {
     });
     this.subscriptions.push(sub);
   }
-
 
   /**
    * Initialize visible fields
