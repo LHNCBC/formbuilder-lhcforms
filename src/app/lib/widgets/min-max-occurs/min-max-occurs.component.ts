@@ -1,7 +1,7 @@
 /**
  * Component for questionnaire-minOccurs and questionnaire-maxOccurs extensions.
  * Displays two side-by-side integer inputs for min and max occurrence counts.
- * Visible only when 'repeats' is true.
+ * Visible only when 'repeats' is true. Min is enabled only when 'required' is true.
  */
 import {AfterViewInit, Component, inject, OnInit} from '@angular/core';
 import {StringComponent} from '../string/string.component';
@@ -26,6 +26,7 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
   elementId: string;
   minOccurs: number | null = null;
   maxOccurs: number | null = null;
+  minOccursAllowed = false;
   validationError: string | null = null;
   private syncingExtensions = false;
 
@@ -54,10 +55,24 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
 
     sub = this.formProperty.findRoot().getProperty('repeats').valueChanges.subscribe((repeats) => {
       if (repeats !== true) {
-        this.minOccurs = null;
+        this.minOccurs = 0;
         this.maxOccurs = null;
         this.validationError = null;
         this.removeOccursExtensions();
+      } else {
+        this.initFromExtensions();
+      }
+    });
+    this.subscriptions.push(sub);
+
+    sub = this.formProperty.findRoot().getProperty('required').valueChanges.subscribe((required) => {
+      this.minOccursAllowed = required === true;
+      if (this.minOccursAllowed) {
+        this.minOccurs = this.minOccurs && this.minOccurs > 0 ? this.minOccurs : 1;
+        this.validate();
+      } else {
+        this.minOccurs = 0;
+        this.syncExtensions();
       }
     });
     this.subscriptions.push(sub);
@@ -69,8 +84,12 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
   initFromExtensions() {
     const minExt = this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_MIN_OCCURS);
     const maxExt = this.extensionsService.getFirstExtensionByUrl(EXTENSION_URL_MAX_OCCURS);
-    this.minOccurs = minExt?.valueInteger ?? null;
+    this.minOccursAllowed = this.formProperty.findRoot().getProperty('required').value === true;
+    this.minOccurs = this.minOccursAllowed ? minExt?.valueInteger ?? 1 : 0;
     this.maxOccurs = maxExt?.valueInteger ?? null;
+    if (minExt && (!this.minOccursAllowed || minExt.valueInteger === 1)) {
+      this.removeMinOccursExtension();
+    }
     this.validate();
   }
 
@@ -79,7 +98,12 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
    * @param value - Value from the control.
    */
   onMinChange(value: string) {
-    this.minOccurs = this.parseInteger(value);
+    if (!this.minOccursAllowed) {
+      this.minOccurs = 0;
+      this.removeMinOccursExtension();
+      return;
+    }
+    this.minOccurs = this.parseInteger(value) ?? 1;
     this.validate();
     this.syncExtensions();
   }
@@ -115,12 +139,12 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
    * @return - Return true if valid, false if invalid. Sets validationError message if invalid.
    */
   validate(): boolean {
-    if (this.minOccurs != null && this.maxOccurs != null && this.minOccurs > this.maxOccurs) {
+    if (this.minOccursAllowed && this.minOccurs != null && this.minOccurs < 1) {
+      this.validationError = 'Min occurs must be greater than or equal to 1.';
+    } else if (this.maxOccurs != null && this.maxOccurs <= 1) {
+      this.validationError = 'Max occurs must be greater than 1.';
+    } else if (this.minOccurs != null && this.maxOccurs != null && this.minOccurs > this.maxOccurs) {
       this.validationError = 'Min occurs must be less than or equal to Max occurs.';
-    } else if (this.minOccurs != null && this.minOccurs < 0) {
-      this.validationError = 'Min occurs must be greater than or equal to 0.';
-    } else if (this.maxOccurs != null && this.maxOccurs < 1) {
-      this.validationError = 'Max occurs must be greater than or equal to 1.';
     } else {
       this.validationError = null;
     }
@@ -140,7 +164,10 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
 
     this.syncingExtensions = true;
     try {
-      this.updateExtension(EXTENSION_URL_MIN_OCCURS, this.minOccurs);
+      const minExtensionValue = this.minOccursAllowed && this.minOccurs != null && this.minOccurs > 1
+        ? this.minOccurs
+        : null;
+      this.updateExtension(EXTENSION_URL_MIN_OCCURS, minExtensionValue);
       this.updateExtension(EXTENSION_URL_MAX_OCCURS, this.maxOccurs);
     } finally {
       this.syncingExtensions = false;
@@ -157,6 +184,19 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
       this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_MAX_OCCURS);
     } finally {
       this.syncingExtensions = false;
+    }
+  }
+
+  /**
+   * Remove the minimum occurrence extension while preserving maxOccurs.
+   */
+  removeMinOccursExtension() {
+    const wasSyncingExtensions = this.syncingExtensions;
+    this.syncingExtensions = true;
+    try {
+      this.extensionsService.removeExtensionsByUrl(EXTENSION_URL_MIN_OCCURS);
+    } finally {
+      this.syncingExtensions = wasSyncingExtensions;
     }
   }
 
@@ -178,4 +218,3 @@ export class MinMaxOccursComponent extends StringComponent implements OnInit, Af
     }
   }
 }
-

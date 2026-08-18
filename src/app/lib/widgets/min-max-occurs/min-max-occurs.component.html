@@ -20,8 +20,9 @@
           [ngModel]="minOccurs"
           (change)="onMinChange($any($event.target).value)"
           [attr.aria-labelledby]="'minOccursLabel_'+elementId"
-          [min]="0"
-          placeholder="0" />
+          [disabled]="!minOccursAllowed"
+          [min]="minOccursAllowed ? 1 : 0"
+          [placeholder]="minOccursAllowed ? '1' : '0'" />
       </div>
 
       <!-- Max Occurs -->
@@ -34,7 +35,7 @@
           [ngModel]="maxOccurs"
           (change)="onMaxChange($any($event.target).value)"
           [attr.aria-labelledby]="'maxOccursLabel_'+elementId"
-          [min]="1"
+          [min]="2"
           placeholder="*" />
       </div>
     </div>
@@ -46,4 +47,3 @@
     }
   </div>
 </div>
-

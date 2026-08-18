@@ -53,7 +53,24 @@ test.describe('Min/Max Occurs', () => {
       await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
 
       await expect(getMinInput(page)).toBeVisible();
+      await expect(getMinInput(page)).toBeDisabled();
+      await expect(getMinInput(page)).toHaveValue('0');
       await expect(getMaxInput(page)).toBeVisible();
+      await expect(getMaxInput(page)).toBeEnabled();
+    });
+
+    test('should enable Min only when the repeating item is required', async ({ page }) => {
+      await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
+      await expect(getMinInput(page)).toBeDisabled();
+
+      await PWUtils.clickRadioButton(page, 'Answer required', 'Yes');
+      await expect(getMinInput(page)).toBeEnabled();
+      await expect(getMinInput(page)).toHaveValue('1');
+
+      await PWUtils.clickRadioButton(page, 'Answer required', 'No');
+      await expect(getMinInput(page)).toBeDisabled();
+      await expect(getMinInput(page)).toHaveValue('0');
+      await expect(getMaxInput(page)).toBeEnabled();
     });
 
     test('should hide min/max occurs when repeats is changed back to No', async ({ page }) => {
@@ -81,6 +98,7 @@ test.describe('Min/Max Occurs', () => {
     });
 
     test('should set minOccurs extension in questionnaire JSON', async ({ page }) => {
+      await PWUtils.clickRadioButton(page, 'Answer required', 'Yes');
       const minInput = getMinInput(page);
       await minInput.fill('2');
       await minInput.dispatchEvent('change');
@@ -89,6 +107,26 @@ test.describe('Min/Max Occurs', () => {
         page, '/item/0/extension', MIN_OCCURS_EXT_URL,
         [{ url: MIN_OCCURS_EXT_URL, valueInteger: 2 }]
       );
+    });
+
+    test('should represent Min 1 with required and omit the minOccurs extension', async ({ page }) => {
+      await PWUtils.clickRadioButton(page, 'Answer required', 'Yes');
+      const minInput = getMinInput(page);
+      const maxInput = getMaxInput(page);
+
+      await expect(minInput).toHaveValue('1');
+      await minInput.dispatchEvent('change');
+      await maxInput.fill('5');
+      await maxInput.dispatchEvent('change');
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[0].extension || [];
+      expect(qJson.item[0].required).toBe(true);
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({
+        url: MAX_OCCURS_EXT_URL,
+        valueInteger: 5
+      });
     });
 
     test('should set maxOccurs extension in questionnaire JSON', async ({ page }) => {
@@ -103,10 +141,11 @@ test.describe('Min/Max Occurs', () => {
     });
 
     test('should set both minOccurs and maxOccurs extensions', async ({ page }) => {
+      await PWUtils.clickRadioButton(page, 'Answer required', 'Yes');
       const minInput = getMinInput(page);
       const maxInput = getMaxInput(page);
 
-      await minInput.fill('1');
+      await minInput.fill('2');
       await minInput.dispatchEvent('change');
       await maxInput.fill('5');
       await maxInput.dispatchEvent('change');
@@ -116,11 +155,12 @@ test.describe('Min/Max Occurs', () => {
       const minExt = extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL);
       const maxExt = extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL);
 
-      expect(minExt).toEqual({ url: MIN_OCCURS_EXT_URL, valueInteger: 1 });
+      expect(minExt).toEqual({ url: MIN_OCCURS_EXT_URL, valueInteger: 2 });
       expect(maxExt).toEqual({ url: MAX_OCCURS_EXT_URL, valueInteger: 5 });
     });
 
-    test('should remove extension when value is cleared', async ({ page }) => {
+    test('should reset a cleared Min to 1 and remove the minOccurs extension', async ({ page }) => {
+      await PWUtils.clickRadioButton(page, 'Answer required', 'Yes');
       const minInput = getMinInput(page);
 
       await minInput.fill('3');
@@ -134,6 +174,8 @@ test.describe('Min/Max Occurs', () => {
       await minInput.clear();
       await minInput.dispatchEvent('change');
 
+      await expect(minInput).toHaveValue('1');
+
       await PWUtils.assertExtensionsInQuestionnaire(
         page, '/item/0/extension', MIN_OCCURS_EXT_URL,
         []
@@ -141,10 +183,11 @@ test.describe('Min/Max Occurs', () => {
     });
 
     test('should remove min/max extensions when repeats is changed to No', async ({ page }) => {
+      await PWUtils.clickRadioButton(page, 'Answer required', 'Yes');
       const minInput = getMinInput(page);
       const maxInput = getMaxInput(page);
 
-      await minInput.fill('1');
+      await minInput.fill('2');
       await minInput.dispatchEvent('change');
       await maxInput.fill('4');
       await maxInput.dispatchEvent('change');
@@ -159,6 +202,30 @@ test.describe('Min/Max Occurs', () => {
       expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
       expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
     });
+
+    test('should remove minOccurs when required is changed to No and preserve maxOccurs', async ({ page }) => {
+      await PWUtils.clickRadioButton(page, 'Answer required', 'Yes');
+      const minInput = getMinInput(page);
+      const maxInput = getMaxInput(page);
+
+      await minInput.fill('3');
+      await minInput.dispatchEvent('change');
+      await maxInput.fill('7');
+      await maxInput.dispatchEvent('change');
+
+      await PWUtils.clickRadioButton(page, 'Answer required', 'No');
+      await expect(minInput).toBeDisabled();
+      await expect(minInput).toHaveValue('0');
+      await expect(maxInput).toHaveValue('7');
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[0].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({
+        url: MAX_OCCURS_EXT_URL,
+        valueInteger: 7
+      });
+    });
   });
 
   test.describe('Validation', () => {
@@ -172,6 +239,7 @@ test.describe('Min/Max Occurs', () => {
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
 
       await PWUtils.clickRadioButton(page, 'Allow repeating question?', 'Yes');
+      await PWUtils.clickRadioButton(page, 'Answer required', 'Yes');
       await expect(getMinInput(page)).toBeVisible();
     });
 
@@ -192,7 +260,7 @@ test.describe('Min/Max Occurs', () => {
       const minInput = getMinInput(page);
       const maxInput = getMaxInput(page);
 
-      await minInput.fill('1');
+      await minInput.fill('2');
       await minInput.dispatchEvent('change');
       await maxInput.fill('4');
       await maxInput.dispatchEvent('change');
@@ -229,22 +297,30 @@ test.describe('Min/Max Occurs', () => {
       await expect(getValidationAlert(page)).toHaveCount(0);
     });
 
-    test('should show warning when min is negative', async ({ page }) => {
+    test('should reject minOccurs values less than 1', async ({ page }) => {
       const minInput = getMinInput(page);
-      await minInput.fill('-1');
+      await minInput.fill('0');
       await minInput.dispatchEvent('change');
 
       await expect(getValidationAlert(page)).toBeVisible();
-      await expect(getValidationAlert(page)).toContainText('Min occurs must be greater than or equal to 0');
+      await expect(getValidationAlert(page)).toContainText('Min occurs must be greater than or equal to 1');
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[0].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
     });
 
-    test('should show warning when max is less than 1', async ({ page }) => {
+    test('should reject maxOccurs values that are not greater than 1', async ({ page }) => {
       const maxInput = getMaxInput(page);
-      await maxInput.fill('0');
+      await maxInput.fill('1');
       await maxInput.dispatchEvent('change');
 
       await expect(getValidationAlert(page)).toBeVisible();
-      await expect(getValidationAlert(page)).toContainText('Max occurs must be greater than or equal to 1');
+      await expect(getValidationAlert(page)).toContainText('Max occurs must be greater than 1');
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[0].extension || [];
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
     });
   });
 
@@ -293,7 +369,8 @@ test.describe('Min/Max Occurs', () => {
       await PWUtils.clickTreeNode(page, 'Repeating min only');
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
 
-      await expect(getMinInput(page)).toHaveValue('1');
+      await expect(getMinInput(page)).toBeEnabled();
+      await expect(getMinInput(page)).toHaveValue('2');
       await expect(getMaxInput(page)).toHaveValue('');
     });
 
@@ -301,16 +378,33 @@ test.describe('Min/Max Occurs', () => {
       await PWUtils.clickTreeNode(page, 'Repeating max only');
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
 
-      await expect(getMinInput(page)).toHaveValue('');
+      await expect(getMinInput(page)).toHaveValue('0');
       await expect(getMaxInput(page)).toHaveValue('10');
     });
 
-    test('should show empty inputs for repeating item with no occurs extensions', async ({ page }) => {
+    test('should remove imported minOccurs from an optional item and preserve maxOccurs', async ({ page }) => {
+      await PWUtils.clickTreeNode(page, 'Repeating optional with invalid min');
+      await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
+
+      await expect(getMinInput(page)).toBeDisabled();
+      await expect(getMinInput(page)).toHaveValue('0');
+      await expect(getMaxInput(page)).toHaveValue('8');
+
+      const qJson = await PWUtils.getQuestionnaireJSONWithoutUI(page);
+      const extensions = qJson.item[6].extension || [];
+      expect(extensions.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toBeUndefined();
+      expect(extensions.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toEqual({
+        url: MAX_OCCURS_EXT_URL,
+        valueInteger: 8
+      });
+    });
+
+    test('should show the effective Min 1 for a required repeating item with no occurs extensions', async ({ page }) => {
       await PWUtils.clickTreeNode(page, 'Repeating no occurs');
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
 
       await expect(getMinInput(page)).toBeVisible();
-      await expect(getMinInput(page)).toHaveValue('');
+      await expect(getMinInput(page)).toHaveValue('1');
       await expect(getMaxInput(page)).toHaveValue('');
     });
 
@@ -358,7 +452,7 @@ test.describe('Min/Max Occurs', () => {
 
       await PWUtils.clickTreeNode(page, 'Repeating min only');
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
-      await expect(getMinInput(page)).toHaveValue('1');
+      await expect(getMinInput(page)).toHaveValue('2');
       await expect(getMaxInput(page)).toHaveValue('');
     });
 
@@ -378,7 +472,7 @@ test.describe('Min/Max Occurs', () => {
 
       await PWUtils.clickTreeNode(page, 'Repeating max only');
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
-      await expect(getMinInput(page)).toHaveValue('');
+      await expect(getMinInput(page)).toHaveValue('0');
       await expect(getMaxInput(page)).toHaveValue('10');
     });
 
@@ -388,7 +482,7 @@ test.describe('Min/Max Occurs', () => {
 
       await PWUtils.clickTreeNode(page, 'Repeating no occurs');
       await expect(page.locator('.spinner-border')).not.toBeVisible({ timeout: 10000 });
-      await expect(getMinInput(page)).toHaveValue('');
+      await expect(getMinInput(page)).toHaveValue('1');
       await expect(getMaxInput(page)).toHaveValue('');
     });
 
@@ -410,7 +504,7 @@ test.describe('Min/Max Occurs', () => {
       await expect(getMaxInput(page)).toHaveValue('5');
 
       await PWUtils.clickTreeNode(page, 'Repeating min only');
-      await expect(getMinInput(page)).toHaveValue('1');
+      await expect(getMinInput(page)).toHaveValue('2');
       await expect(getMaxInput(page)).toHaveValue('');
 
       // Verify full questionnaire JSON is correct
@@ -424,9 +518,9 @@ test.describe('Min/Max Occurs', () => {
       // q2: non-repeating, no extensions
       expect(qJson.item[1].extension).toBeUndefined();
 
-      // q3: min only (1)
+      // q3: min only (2)
       const q3Exts = qJson.item[2].extension || [];
-      expect(q3Exts.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({ url: MIN_OCCURS_EXT_URL, valueInteger: 1 });
+      expect(q3Exts.find((e: any) => e.url === MIN_OCCURS_EXT_URL)).toEqual({ url: MIN_OCCURS_EXT_URL, valueInteger: 2 });
       expect(q3Exts.find((e: any) => e.url === MAX_OCCURS_EXT_URL)).toBeUndefined();
 
       // q4: max only (10)

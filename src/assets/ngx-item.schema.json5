@@ -2353,7 +2353,7 @@
       }
     },
     "__$minMaxOccurs": {
-      "description": "Defines the minimum and maximum number of times a repeating item may appear. Applies only when the item allows repeats.",
+      "description": "Defines occurrence limits for a repeating item. A minimum of one is represented by making the item required; greater minimums use the minOccurs extension.",
       "title": "Repeat count range",
       "type": "string",
       "widget": {
