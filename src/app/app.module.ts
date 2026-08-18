@@ -79,6 +79,7 @@ import { EnableWhenComponent } from './lib/widgets/enable-when/enable-when.compo
 import { QuantityUnitComponent } from './lib/widgets/quantity-unit/quantity-unit.component';
 import { EwValidateDirective } from './lib/directives/ew-validate.directive';
 import {NodeDialogComponent} from './item/node-dialog.component';
+import {AddLoincItemDialogComponent} from './item/add-loinc-item-dialog.component';
 import { NumberComponent } from './lib/widgets/number/number.component';
 import { IntegerDirective } from './lib/directives/integer.directive';
 import { PositiveIntegerComponent } from './lib/widgets/positive-integer/positive-integer.component';
@@ -106,10 +107,10 @@ import { InitialNumberDirective } from './lib/directives/initial-number.directiv
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
-import { LfbOptionControlWidgetComponent } from './lib/widgets/lfb-option-control-widget/lfb-option-control-widget.component';
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './lib/widgets/enable-when-method/enable-when-method.component';
+import { MetaProfileComponent } from './lib/widgets/meta-profile/meta-profile.component';
 import { UnsignedIntegerComponent } from './lib/widgets/unsigned-integer/unsigned-integer.component';
 
 import { environment } from '../environments/environment';
@@ -149,6 +150,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     ObservationLinkPeriodComponent,
     QuantityUnitComponent,
     NodeDialogComponent,
+    AddLoincItemDialogComponent,
     NumberComponent,
     AnswerValueSetComponent,
     TextAreaComponent,
@@ -157,7 +159,7 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     AnswerExpressionComponent,
     ExpressionEditorDlgComponent,
     InitialNumberComponent,
-    LfbOptionControlWidgetComponent,
+    MetaProfileComponent
   ],
   imports: [
     AppFormElementComponent,

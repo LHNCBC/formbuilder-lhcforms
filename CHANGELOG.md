@@ -2,10 +2,68 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
-## [11.3.0] 2026-06-02
+## [12.4.0] 2026-08-18
 ### Added
 - Added support for `questionnaire-minOccurs` and `questionnaire-maxOccurs` extensions
   via a combined Min/Max Occurs widget that is shown when an item allows repeats.
+
+## [12.3.0] 2026-08-10
+### Added
+- Added cardinality validation for general extensions. Duplicate single-occurrence
+  extension URLs are rejected at the same scope with an inline validation message,
+  while known repeatable extensions can be added multiple times.
+- Added form-level support for FHIR Questionnaire Usage Context, including
+  CodeableConcept, Quantity, Range, and Reference values with FHIR validation
+  and version-compatible export handling.
+
+### Changed
+- Refactored option widget inheritance with enableWhen answer option service.
+- Migrated enableWhen answer-option inputs to directive-based wiring (replacing template-level service passing).
+- Updated related template/class markup for enableWhen answer-option inputs in date, string, and time widgets.
+
+## [12.2.1] 2026-08-04
+### Changed
+- Updated window-open API documentation.
+
+## [12.2.0] 2026-07-30
+### Added
+- Added form-level support for Questionnaire identifier.
+
+## [12.1.0] 2026-07-21
+### Added
+- When importing questions from LOINC, give option to the user to pick LOINC's LONG_COMMON_NAME/SHORTNAME/CONSUMER as text
+  field, instead of its 'text' field.
+
+- The preview dialog now warns when the questionnaire uses an answer value set but
+  does not specify a preferred terminology server. The rendered preview loads answer
+  lists using a default terminology server, but that default is not saved in the
+  questionnaire output.
+
+## [12.0.0] 2026-07-14
+### Fixed
+- Fix missing autocomplete-lhc styles after updating lforms@43.0.0.
+
+## [11.3.1] 2026-07-10
+### Fixed
+- Fix parsing `window-open` path.
+
+## [11.3.0] 2026-06-11
+### Added
+- Added form-level support for Questionnaire subjectType.
+- Added form-level support for Questionnaire meta.
+
+## [11.2.3] 2026-06-10
+### Fixed
+- Fix the change of SNOMED url.
+
+## [11.2.2] 2026-06-08
+### Fixed
+- Fixed a bug in the Period display when adding multiple items to an array property.
+
+## [11.2.1] 2026-05-22
+### Added
+- Exported Questionnaire JSON now follows FHIR canonical field order for all
+  backbone elements (Questionnaire, Item, EnableWhen, AnswerOption, Initial).
 
 ## [11.2.0] 2026-05-22
 ### Added

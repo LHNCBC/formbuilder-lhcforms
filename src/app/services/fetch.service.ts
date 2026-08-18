@@ -9,6 +9,7 @@ import {AutoCompleteResult} from '../lib/widgets/auto-complete/auto-complete.com
 import {Util} from '../lib/util';
 import fhir, {BundleEntry} from 'fhir/r4';
 import SNOMED_CT_Editions from '../../assets/SNOMED_CT_Editions.json';
+import {SNOMED_SERVER} from "../lib/constants/constants";
 declare var LForms: any;
 
 enum JsonFormatType {
@@ -18,6 +19,17 @@ enum JsonFormatType {
   LFORMS = 'lforms'
 }
 
+export interface AutoCompleteLoincItem {
+  LOINC_NUM: string,
+  text?: string,
+  COMPONENT?: string,
+  CONSUMER_NAME?: string,
+  SHORTNAME?: string,
+  LONG_COMMON_NAME?: string,
+  answers?: any[],
+  units?: any[],
+  datatype?: string
+}
 /**
  * A map with edition id as key and SNOMEDEdition as value.
  */
@@ -43,7 +55,7 @@ export class FetchService {
   static loincSearchUrl = FetchService.loincBaseUrl + '/api/loinc_items/v3/search';
   static loincFormsUrl = FetchService.loincBaseUrl + '/loinc_form_definitions';
   static fhirUrl = 'https://lforms-fhir.nlm.nih.gov/baseR4/Questionnaire';
-  static snomedCodeSystemsUrl = 'https://snowstorm.ihtsdotools.org/fhir/CodeSystem';
+  static snomedCodeSystemsUrl = SNOMED_SERVER + '/fhir/CodeSystem';
   _snomedEditions: SNOMEDEditions = null;
 
   assetsUrl = 'assets';
@@ -116,13 +128,15 @@ export class FetchService {
    * @param term - Search term.
    * @param loincType - Panel or question.
    * @param options - http request options.
+   * @return An observable of matching LOINC items.
    */
-  searchLoincItems(term: string, loincType?: LoincItemType, options?): Observable<AutoCompleteResult []> {
+  searchLoincItems(term: string, loincType?: LoincItemType, options?): Observable<AutoCompleteLoincItem []> {
     options = options || {};
     options.observe = options.observe || 'body' as const;
     options.responseType = options.responseType || 'json' as const;
     options.params = (options.params ||
       new HttpParams());
+    options.params = options.params.set('df', 'text,LONG_COMMON_NAME,COMPONENT,SHORTNAME,CONSUMER_NAME');
     if(loincType === LoincItemType.PANEL) {
       options.params = options.params.set('type', 'form_and_section').set('available', true);
     }
@@ -132,23 +146,27 @@ export class FetchService {
     options.params = options.params
       .set('terms', term)
       .set('maxList', 20);
-    return this.http.get<AutoCompleteResult []>(FetchService.loincSearchUrl, options).pipe(
+    return this.http.get<AutoCompleteLoincItem []>(FetchService.loincSearchUrl, options).pipe(
     // tap((resp: HttpResponse<AutoCompleteResult []>) => {console.log(resp)}),
       map((resp: any) => {
-        const results: AutoCompleteResult [] = [];
+        const results: AutoCompleteLoincItem [] = [];
         if (Array.isArray(resp)) {
           const loincNums: string[] = resp[1];
-          const texts: string [] = resp[3];
+          const texts: string [] [] = resp[3];
           const extraFields: any = resp[2];
           loincNums.forEach((loincNum, index) => {
-            const item: any = this.convertLoincQToItem(
-              loincNum,
-              texts[index][0],
-              extraFields ? extraFields.answers[index] : null,
-              extraFields ? extraFields.units[index] : null,
-              extraFields ? extraFields.datatype[index] : null);
-            results.push(item);
-            // results.push({id: loincNum[index], title: texts[index][0]});
+            const lItem: AutoCompleteLoincItem = {
+              LOINC_NUM: loincNum,
+              text: texts[index][0]?.trim(),
+              LONG_COMMON_NAME: texts[index][1]?.trim() || null,
+              COMPONENT: texts[index][2]?.trim() || null,
+              SHORTNAME: texts[index][3]?.trim() || null,
+              CONSUMER_NAME: texts[index][4]?.trim() || null,
+              answers: extraFields?.answers?.[index] || null,
+              units: extraFields?.units?.[index] || null,
+              datatype: extraFields?.datatype?.[index] || null,
+            };
+            results.push(lItem);
           });
         }
         return results;
@@ -195,20 +213,26 @@ export class FetchService {
   /**
    * Create FHIR Questionnaire.item from loinc question info.
    *
+   * @param loincItem - LOINC question information.
+   * @param displayField - LOINC field to use as the questionnaire item's display text.
+   * @return The converted FHIR Questionnaire item.
    */
-  convertLoincQToItem(loincNum: string, text: string, answers: any [], units: any[], datatype: string): any {
-    const ret: any = {};
+  convertLoincQToItem(loincItem: AutoCompleteLoincItem, displayField: string): any {
+    const ret: any = {
+      type: Util.getFhirType(loincItem.datatype),
+      linkId: Util.generateUniqueId()
+    };
     ret.code = [
       {
-        code: loincNum,
+        code: loincItem.LOINC_NUM,
         system: 'http://loinc.org',
-        display: text
+        display: loincItem.text
       }
     ];
-    ret.text = text;
-    if(answers) {
+    ret.text = loincItem[displayField];
+    if(loincItem.answers) {
       const answerOption: any[] = [];
-      answers.forEach((answer) => {
+      loincItem.answers.forEach((answer) => {
         const option: any = {
           valueCoding: {
             code: answer.AnswerStringID,
@@ -220,9 +244,8 @@ export class FetchService {
       });
       ret.answerOption = answerOption;
     }
-    ret.type = Util.getFhirType(datatype);
-    if(units) {
-      ret.extension = Util.convertUnitsToExtensions(units, ret.type);
+    if(loincItem.units) {
+      ret.extension = Util.convertUnitsToExtensions(loincItem.units, ret.type);
     }
     return ret;
   }
@@ -254,9 +277,10 @@ export class FetchService {
 
   /**
    * It parses a SNOMED CodeSystem bundle. Stores the editions
-   * in a map with its id as key and the iterator preserves the order of input array.
+   * in a map with its id as a key, and the iterator preserves the order of input array.
    *
    * @param snomedCSBundle - Response from SNOMED CodeSystem API.
+   * @return Map of SNOMED editions with their id as keys.
    */
   parseSNOMEDEditions(snomedCSBundle: fhir.Bundle): SNOMEDEditions {
     const editionVersionRE = /^http:\/\/snomed.info\/sct\/([^\/]+)\/version\/(.+)?$/;

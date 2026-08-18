@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import { format, parseISO } from 'date-fns';
 import { MainPO } from './po/main-po';
 import { PWUtils } from './pw-utils';
-import { ExtensionDefs } from '../src/app/lib/extension-defs';
+import { PREFERRED_TERMINOLOGY_SERVER_URI } from '../src/app/lib/constants/constants';
 
 const termsAcceptedKey = 'acceptedTermsOfUse';
 
@@ -525,7 +525,8 @@ test.describe('Home page', () => {
           responseStub.id = '1111';
           responseStub.meta = {
             versionId: '1',
-            lastUpdated: '2020-02-22T22:22:22.222-00:00'
+            lastUpdated: '2020-02-22T22:22:22.222-00:00',
+            source: '#3JO34SP5oR7bcwTb'
           };
 
           await PWUtils.uploadFile(page, `${testConfig.fixtureFile}`);
@@ -546,8 +547,20 @@ test.describe('Home page', () => {
 
           const created = await PWUtils.getFHIRServerResponse(page, 'Create a new questionnaire on a FHIR server...', testConfig.serverBaseUrl);
           expect(created).toEqual(responseStub);
+          const createdQuestionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, testConfig.version);
+          expect(createdQuestionnaire.id).toBe(responseStub.id);
+          expect(createdQuestionnaire.meta.versionId).toBe(responseStub.meta.versionId);
+          expect(createdQuestionnaire.meta.lastUpdated).toBe(responseStub.meta.lastUpdated);
+          if(testConfig.version !== 'STU3') {
+            expect(createdQuestionnaire.meta.source).toBe(responseStub.meta.source);
+          }
 
           responseStub.title = 'Modified title';
+          responseStub.meta = {
+            versionId: '2',
+            lastUpdated: '2020-02-23T22:22:22.222-00:00',
+            source: '#updatedSource'
+          };
           const titleField = await PWUtils.getByLabel(page, 'lfb-form-fields', 'Title');
           await titleField.clear();
           await titleField.fill(responseStub.title);
@@ -567,6 +580,12 @@ test.describe('Home page', () => {
 
           const updated = await PWUtils.getFHIRServerResponse(page, 'Update the questionnaire on the server');
           expect(updated).toEqual(responseStub);
+          const updatedQuestionnaire = await PWUtils.getQuestionnaireJSONWithoutUI(page, testConfig.version);
+          expect(updatedQuestionnaire.meta.versionId).toBe(responseStub.meta.versionId);
+          expect(updatedQuestionnaire.meta.lastUpdated).toBe(responseStub.meta.lastUpdated);
+          if(testConfig.version !== 'STU3') {
+            expect(updatedQuestionnaire.meta.source).toBe(responseStub.meta.source);
+          }
         });
       }
     });
@@ -605,7 +624,7 @@ test.describe('Home page', () => {
         await PWUtils.assertValueInQuestionnaire(page, '/extension', [
           {
             valueUrl: 'http://example.org/fhir',
-            url: ExtensionDefs.preferredTerminologyServer.url
+            url: PREFERRED_TERMINOLOGY_SERVER_URI
           }
         ]);
 
@@ -615,7 +634,7 @@ test.describe('Home page', () => {
         await tsUrl.fill('http://example.com/r4');
         await PWUtils.assertValueInQuestionnaire(page, '/extension', [
           {
-            url: ExtensionDefs.preferredTerminologyServer.url,
+            url: PREFERRED_TERMINOLOGY_SERVER_URI,
             valueUrl: 'http://example.com/r4'
           }
         ]);
@@ -635,26 +654,26 @@ test.describe('Home page', () => {
         await PWUtils.assertExtensionsInQuestionnaire(
           page,
           '/extension',
-          ExtensionDefs.preferredTerminologyServer.url,
+          PREFERRED_TERMINOLOGY_SERVER_URI,
           [
             {
-              url: ExtensionDefs.preferredTerminologyServer.url,
+              url: PREFERRED_TERMINOLOGY_SERVER_URI,
               valueUrl: 'https://example.org/fhir'
             }
           ]
         );
 
         await tsUrl.clear();
-        await PWUtils.assertExtensionsInQuestionnaire(page, '/extension', ExtensionDefs.preferredTerminologyServer.url, []);
+        await PWUtils.assertExtensionsInQuestionnaire(page, '/extension', PREFERRED_TERMINOLOGY_SERVER_URI, []);
 
         await tsUrl.fill('http://a.b');
         await PWUtils.assertExtensionsInQuestionnaire(
           page,
           '/extension',
-          ExtensionDefs.preferredTerminologyServer.url,
+          PREFERRED_TERMINOLOGY_SERVER_URI,
           [
             {
-              url: ExtensionDefs.preferredTerminologyServer.url,
+              url: PREFERRED_TERMINOLOGY_SERVER_URI,
               valueUrl: 'http://a.b'
             }
           ]
@@ -747,11 +766,18 @@ test.describe('Home page', () => {
           const datepicker = approvalDtInput.locator('xpath=following-sibling::ngb-datepicker');
           await expect(datepicker).toBeVisible();
 
-          await datepicker.getByText('Today').click();
-          await expect(approvalDtInput).toHaveValue(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/);
+          const todayButton = datepicker.getByRole('button', {name: 'Today', exact: true});
+          await expect(async () => {
+            await todayButton.click();
+            await expect(approvalDtInput).toHaveValue(dateRE, {timeout: 1000});
+          }).toPass({timeout: 10000});
 
           await approvalDtInput.clear();
           await approvalDtInput.fill('2021-01-01');
+          // Blur to commit the value to the model before reading the JSON without the UI
+          // (getQuestionnaireJSONWithoutUI reads the model synchronously and does not retry).
+          await approvalDtInput.blur();
+          await expect(approvalDtInput).toHaveValue('2021-01-01');
 
           const previewJson = await PWUtils.getQuestionnaireJSONWithoutUI(page, 'R5');
           expect(previewJson.approvalDate).toBe('2021-01-01');

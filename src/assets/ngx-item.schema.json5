@@ -1159,7 +1159,7 @@
                 "widget": {
                   "id": "coding-system",
                   "systemLookups": [
-                    {"systemUrl": "http://snomed.info/sct", "lookupUrl": "https://snowstorm.ihtsdotools.org/fhir/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs"},
+                    {"systemUrl": "http://snomed.info/sct", "lookupUrl": "https://snomedbrowser.org/fhir/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs"},
                     {"systemUrl": "http://loinc.org", "lookupUrl": "https://clinicaltables.nlm.nih.gov/api/loinc_items/v3/search"},
                     {"systemUrl": "http://unitsofmeasure.org", "lookupUrl": "https://clinicaltables.nlm.nih.gov/api/ucum/v3/search"}
                   ]

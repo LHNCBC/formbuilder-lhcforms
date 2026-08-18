@@ -1,10 +1,10 @@
-import {AfterViewInit, Component, DoCheck, inject, Input, OnInit} from '@angular/core';
+import {AfterViewInit, Component, DestroyRef, DoCheck, inject, Input, OnInit} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TableComponent } from '../table/table.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import {ArrayProperty, PropertyGroup, SchemaFormModule} from '@lhncbc/ngx-schema-form';
+import {ArrayProperty, FormProperty, PropertyGroup, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { AppFormElementComponent } from '../form-element/form-element.component';
 import { LabelComponent } from '../label/label.component';
 import { TitleComponent } from '../title/title.component';
@@ -14,6 +14,10 @@ import {MatTooltip} from "@angular/material/tooltip";
 import {ComponentType} from "@angular/cdk/portal";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
 import fhir from "fhir/r4";
+import {take} from 'rxjs/operators';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {Util} from '../../util';
+import {RawValueStoreService} from '../../../services/raw-value-store.service';
 
 export interface DialogData {
   arrayProperty: ArrayProperty;
@@ -53,10 +57,14 @@ export interface DialogData {
   `]
 })
 export class TableEditRowInDlgComponent extends TableComponent implements OnInit, AfterViewInit, DoCheck {
+  override includeActionColumn = true;
 
   @Input()
   dialogComponentType: ComponentType<unknown> = null;
+  dialogOffsetPx = 20;
   matDialogService: MatDialog = inject(MatDialog);
+  private rawValueStore = inject(RawValueStoreService);
+  private destroyRef = inject(DestroyRef);
 
   constructor() {
     super();
@@ -68,6 +76,36 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
   ngOnInit() {
     this.addDefaultItemIfEmpty = false;
     super.ngOnInit();
+    const widget = this.formProperty?.schema?.widget || {};
+    this.labelPosition = this.labelPosition || widget.labelPosition || 'top';
+    this.labelWidthClass = this.labelPosition === 'left'
+      ? (this.labelWidthClass || widget.labelWidthClass || 'col-sm') : '';
+    this.controlWidthClass = this.labelPosition === 'left'
+      ? (this.controlWidthClass || widget.controlWidthClass || 'col-sm') : '';
+    // Dialog row tables are always shown directly; avoid boolean-control toggles
+    // that can flip template conditions during dev-mode double-check.
+    this.booleanControlled = false;
+    this.booleanControlledOption = false;
+    this.includeActionColumn = true;
+  }
+
+  /**
+   * Finish initialization after schema-form has materialized the array rows.
+   */
+  override ngAfterViewInit(): void {
+    this.removeSyntheticEmptyRow();
+    super.ngAfterViewInit();
+  }
+
+  /**
+   * Remove an empty placeholder row from dialog-backed tables that start empty.
+   */
+  private removeSyntheticEmptyRow(): void {
+    const props = this.formProperty?.properties || [];
+    if(!this.addDefaultItemIfEmpty && props.length === 1 && Util.isEmpty(props[0]?.value)) {
+      this.formProperty.removeItem(props[0]);
+      this.cdr.markForCheck();
+    }
   }
 
   /**
@@ -75,7 +113,6 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
    * Use the hook to set the attribute on all the inputs.
    */
   ngDoCheck(): void {
-    this.includeActionColumn = true;
     const inputs = this.elementRef.nativeElement.querySelectorAll("input");
     inputs.forEach((input) => {
       input.setAttribute("readonly", true);
@@ -92,12 +129,44 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
       rowIndex: index
     }, this.dialogComponentType);
 
-    const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
+    matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue) => {
       if (submittedValue) {
-        this.formProperty.properties[index].setValue(submittedValue, false);
+        this.replaceRowValue(index, submittedValue);
       }
-      sub.unsubscribe();
     });
+  }
+
+  /**
+   * Replace a complete row by rebuilding the array property.
+   *
+   * ObjectProperty.reset() retains absent additionalProperties. Rebuilding the
+   * array prevents deleted schema-unknown descendants from surviving a dialog
+   * save while preserving complete values in all unaffected rows.
+   *
+   * @param index - Row index to replace.
+   * @param submittedValue - Complete value returned by the row dialog.
+   */
+  protected replaceRowValue(index: number, submittedValue: unknown): void {
+    const properties = Array.isArray(this.formProperty?.properties)
+      ? this.formProperty.properties as FormProperty[]
+      : [];
+    const values = properties.map((property, rowIndex) => {
+      if(rowIndex === index) {
+        return submittedValue;
+      }
+      return this.isIdentifierTable()
+        ? this.rawValueStore.getIdentifier(property) || property.value
+        : property.value;
+    });
+
+    this.formProperty.reset(values, false);
+    if(this.isIdentifierTable()) {
+      (this.formProperty.properties as FormProperty[]).forEach((property, rowIndex) => {
+        this.rawValueStore.setIdentifier(property, values[rowIndex] as fhir.Identifier);
+      });
+      this.rawValueStore.setIdentifierTable(this.formProperty, values as fhir.Identifier[]);
+      this.formProperty.updateValueAndValidity(false, true);
+    }
   }
 
   /**
@@ -108,16 +177,78 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
         arrayProperty: this.formProperty, rowIndex: -1
       },
       this.dialogComponentType);
-    const sub = matDialogRef.afterClosed().subscribe((submittedValue) => {
+    matDialogRef.afterClosed().pipe(take(1)).subscribe((submittedValue) => {
       if(submittedValue) {
         this.addNewItem(submittedValue);
       }
-      sub.unsubscribe();
     });
   }
 
+  /**
+   * Add a new table row and preserve the raw identifier value for nested dialog editing.
+   *
+   * @param newValue - Value to add to the table.
+   */
   addNewItem(newValue: fhir.Extension) {
-    this.formProperty.addItem(newValue);
+    const newProperty = this.formProperty.addItem(newValue);
+    if(this.isIdentifierTable() && newProperty) {
+      this.rawValueStore.setIdentifier(newProperty, newValue as unknown as fhir.Identifier);
+      this.storeCurrentIdentifierRows();
+      // addItem() emits before it returns the new row. Emit again after seeding
+      // the complete value so parent dialogs observe the committed Identifier.
+      this.formProperty.updateValueAndValidity(false, true);
+    }
+  }
+
+  /**
+   * Remove a dialog-backed row without allowing preserved schema-unknown
+   * Identifier descendants to keep the row alive.
+   *
+   * @param index - Index of the row to remove.
+   */
+  override removeProperty(index: number): void {
+    const rowProperty = this.formProperty?.properties?.[index] as FormProperty | undefined;
+    if(this.isIdentifierTable() && rowProperty) {
+      this.rawValueStore.markIdentifierDeleted(rowProperty);
+    }
+    super.removeProperty(index);
+    if(this.isIdentifierTable()) {
+      const values = this.storeCurrentIdentifierRows();
+      // Rebuild the ArrayProperty from the exact remaining rows. ObjectProperty
+      // reset does not remove absent additionalProperties, so removing only the
+      // visible row can otherwise leave a hidden Identifier descendant behind.
+      this.formProperty.reset(values, false);
+      (this.formProperty.properties as FormProperty[]).forEach((property, rowIndex) => {
+        this.rawValueStore.setIdentifier(property, values[rowIndex]);
+      });
+      this.rawValueStore.setIdentifierTable(this.formProperty, values);
+      this.formProperty.updateValueAndValidity(false, true);
+    }
+  }
+
+  /**
+   * Preserve the exact rows remaining after a structural Identifier table edit.
+   */
+  private storeCurrentIdentifierRows(): fhir.Identifier[] {
+    const properties = Array.isArray(this.formProperty?.properties)
+      ? this.formProperty.properties as FormProperty[]
+      : [];
+    const values = properties
+      .filter((property: FormProperty) => !this.rawValueStore.isIdentifierDeleted(property))
+      .map((property: FormProperty) =>
+        this.rawValueStore.getIdentifier(property) || property.value as fhir.Identifier
+      );
+    this.rawValueStore.setIdentifierTable(this.formProperty, values);
+    return values;
+  }
+
+  /**
+   * Check whether this table edits Identifier rows.
+   *
+   * @returns True for Identifier table widgets.
+   */
+  private isIdentifierTable(): boolean {
+    return this.formProperty.schema?.widget?.id === 'identifier';
   }
 
   /**
@@ -128,14 +259,25 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
    */
   openDialog(contentData: DialogData, contentDlg: ComponentType<unknown>) {
     let dPosition: DialogPosition = null;
-    const previousDialogRef = this.matDialogService.openDialogs?.reverse().find((dRef) => {
-      return dRef.componentInstance instanceof contentDlg;
-    });
-    if(previousDialogRef) {
-      const position= previousDialogRef.componentInstance?.dlgContainer?.nativeElement.getBoundingClientRect();
-      dPosition = {top: position.top + 20 + 'px', left: position.left + 20 + 'px'};
+    const overlayPanes = Array.from(
+      this.elementRef.nativeElement.ownerDocument.querySelectorAll('.cdk-overlay-pane')
+    ).filter((pane: Element) =>
+      pane.querySelector('.lfb-row-dialog')
+    ) as HTMLElement[];
+    const previousPanePosition = overlayPanes.length
+      ? overlayPanes[overlayPanes.length - 1].getBoundingClientRect()
+      : null;
+    const previousDialogRef = this.matDialogService.openDialogs?.slice().reverse().find((dRef) =>
+      !!dRef.componentInstance?.dlgContainer?.nativeElement
+    );
+    const position = previousPanePosition || previousDialogRef?.componentInstance?.dlgContainer?.nativeElement.getBoundingClientRect();
+    if(position) {
+      dPosition = this.getStackedDialogPosition(
+        position,
+        this.elementRef.nativeElement.ownerDocument
+      );
     }
-    return this.matDialogService.open(contentDlg, {
+    const matDialogRef = this.matDialogService.open(contentDlg, {
       data: contentData,
       width: '80vw',
       height: '80vh',
@@ -143,5 +285,34 @@ export class TableEditRowInDlgComponent extends TableComponent implements OnInit
       disableClose: true,
       closeOnNavigation: false
     });
+    if(dPosition) {
+      matDialogRef.updatePosition(dPosition);
+      matDialogRef.afterOpened().pipe(
+        take(1),
+        takeUntilDestroyed(this.destroyRef)
+      ).subscribe(() => {
+        matDialogRef.updatePosition(dPosition);
+      });
+    }
+    return matDialogRef;
   }
+
+  /**
+   * Offset a stacked dialog while keeping its full pane inside the viewport.
+   *
+   * @param previousPane - Bounding rectangle of the dialog beneath the new one.
+   * @param ownerDocument - Document that owns the dialog overlay.
+   * @returns Clamped top and left coordinates for MatDialog.
+   */
+  private getStackedDialogPosition(previousPane: DOMRect, ownerDocument: Document): DialogPosition {
+    const viewport = ownerDocument.defaultView;
+    const viewportWidth = viewport?.innerWidth || ownerDocument.documentElement.clientWidth;
+    const viewportHeight = viewport?.innerHeight || ownerDocument.documentElement.clientHeight;
+    const maxLeft = Math.max(0, viewportWidth - previousPane.width);
+    const maxTop = Math.max(0, viewportHeight - previousPane.height);
+    const left = Math.min(Math.max(0, previousPane.left + this.dialogOffsetPx), maxLeft);
+    const top = Math.min(Math.max(0, previousPane.top + this.dialogOffsetPx), maxTop);
+    return {top: `${top}px`, left: `${left}px`};
+  }
+
 }

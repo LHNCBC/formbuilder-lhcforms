@@ -7,6 +7,7 @@ import {provideHttpClient} from '@angular/common/http';
 import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {CommonTestingModule} from '../testing/common-testing.module';
 import fhir from "fhir/r4";
+import {MessageType} from '../lib/widgets/message-dlg/message-dlg.component';
 
 describe('FormService', () => {
   let service: FormService;
@@ -22,6 +23,158 @@ describe('FormService', () => {
   it('should be created', async () => {
     expect(service).toBeTruthy();
     expect(service.lformsVersion).toMatch(/^[0-9]+\.[0-9]+\.[0-9]+$/);
+  });
+
+  it('should apply explicitly requested widget presets without sharing mutable objects', () => {
+    const layout: any = {
+      widgetPresetMap: {
+        string: 'dialogStringField',
+        locallyCustomized: 'dialogStringField'
+      },
+      widgets: {
+        locallyCustomized: {id: 'custom-string'}
+      }
+    };
+    const presets = {
+      dialogStringField: {
+        id: 'string',
+        controlClasses: 'col-sm-10'
+      }
+    };
+
+    service.applyWidgetPresets(layout, presets);
+
+    expect(layout.widgets.string).toEqual(presets.dialogStringField);
+    expect(layout.widgets.string).not.toBe(presets.dialogStringField);
+    expect(layout.widgets.locallyCustomized).toEqual({id: 'custom-string'});
+  });
+
+  it('should reject an unknown widget preset', () => {
+    const layout: any = {
+      widgetPresetMap: {string: 'missingPreset'},
+      widgets: {}
+    };
+
+    expect(() => service.applyWidgetPresets(layout, {}))
+      .toThrowError('Unknown widget preset "missingPreset" requested for "string".');
+  });
+
+  it('should scope empty Select invalid-style suppression to the configured dialog fields', () => {
+    const usageContextSchema = service.cloneUsageContextSchema() as any;
+    const identifierSchema = service.cloneIdentifierSchema() as any;
+
+    expect(usageContextSchema.properties.__$valueType.widget.suppressEmptyInvalidStyle)
+      .withContext('Usage Context value type')
+      .toBeTrue();
+    expect(usageContextSchema.properties.valueQuantity.properties.comparator.widget.suppressEmptyInvalidStyle)
+      .withContext('Usage Context quantity comparator')
+      .toBeTrue();
+    expect(usageContextSchema.properties.valueQuantity.properties.comparator.enum)
+      .withContext('R5 Usage Context quantity comparators')
+      .toContain('ad');
+    expect(identifierSchema.properties.use.widget.suppressEmptyInvalidStyle)
+      .withContext('Identifier use')
+      .toBeTrue();
+  });
+
+  it('should remove invalid comparator fields from UsageContext Range endpoints', () => {
+    const usageContextSchema = service.cloneUsageContextSchema() as any;
+
+    expect(usageContextSchema.properties.valueRange.properties.low.properties.comparator)
+      .toBeUndefined();
+    expect(usageContextSchema.properties.valueRange.properties.high.properties.comparator)
+      .toBeUndefined();
+  });
+
+  it('should use the extensible UsageContextType editor for UsageContext.code', () => {
+    const usageContextSchema = service.cloneUsageContextSchema() as any;
+
+    expect(usageContextSchema.properties.code.widget.id).toBe('usage-context-code');
+  });
+
+  it('should preserve the R5 ad Quantity comparator and reject older-version conversion', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      useContext: [{
+        code: {code: 'age'},
+        valueQuantity: {
+          value: 10,
+          comparator: 'ad',
+          unit: 'mL'
+        }
+      }]
+    } as unknown as fhir.Questionnaire;
+
+    expect(service.convertFromR5(questionnaire, 'R5')).toBe(questionnaire);
+    expect(() => service.convertFromR5(questionnaire, 'R4'))
+      .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+    expect(() => service.convertFromR5(questionnaire, 'STU3'))
+      .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+  });
+
+  it('should reject older-version conversion when a contained resource has an ad Quantity comparator', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      contained: [{
+        resourceType: 'ValueSet',
+        id: 'contained-valueset',
+        status: 'active',
+        useContext: [{
+          code: {code: 'age'},
+          valueQuantity: {
+            value: 10,
+            comparator: 'ad',
+            unit: 'a'
+          }
+        }]
+      }]
+    } as unknown as fhir.Questionnaire;
+
+    expect(service.convertFromR5(questionnaire, 'R5')).toBe(questionnaire);
+    expect(() => service.convertFromR5(questionnaire, 'R4'))
+      .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+    expect(() => service.convertFromR5(questionnaire, 'STU3'))
+      .toThrowError(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+  });
+
+  it('should report an incompatible opener notification without repeating the dialog', () => {
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      useContext: [{
+        code: {code: 'age'},
+        valueQuantity: {
+          value: 10,
+          comparator: 'ad',
+          unit: 'mL'
+        }
+      }]
+    } as unknown as fhir.Questionnaire;
+    service.windowOpenerUrl = 'https://parent.example.com';
+    service['_windowOpenerFhirVersion'] = 'R4';
+    spyOn(console, 'error');
+    const showMessage = spyOn(service, 'showMessage');
+
+    expect(service.notifyWindowOpener({
+      type: 'updateQuestionnaire',
+      questionnaire
+    })).toBeFalse();
+    expect(service.notifyWindowOpener({
+      type: 'updateQuestionnaire',
+      questionnaire
+    })).toBeFalse();
+    expect(console.error).toHaveBeenCalledWith(
+      'Unable to send the questionnaire to the opener window.',
+      jasmine.any(Error)
+    );
+    expect(showMessage).toHaveBeenCalledOnceWith(
+      'Questionnaire update not sent',
+      FormService.R5_QUANTITY_COMPARATOR_ERROR +
+        ' The opener application has not received the latest Questionnaire.',
+      MessageType.DANGER
+    );
   });
 
   it('should update __$helpText', () => {
@@ -85,6 +238,100 @@ describe('FormService', () => {
     expect(service.treeNodeStatusMap.node1.errors.enableWhen_2).toBeUndefined();
     expect(service.treeNodeStatusMap.node1.errors.linkId).toEqual([{message: 'duplicate'}]);
     expect(service.treeNodeStatusMap.node1.hasError).toBeTrue();
+  });
+
+  it('should restore lazy Identifier.assigner.identifier schema', () => {
+    const identifierItems = service.getFormLevelSchema()?.properties?.identifier?.items as any;
+    const firstLevelIdentifier = identifierItems?.properties?.assigner?.properties?.identifier;
+    expect(firstLevelIdentifier)
+      .withContext('Identifier.assigner.identifier should be an object in the form-level schema')
+      .toBeDefined();
+    expect(firstLevelIdentifier?.type).toBe('object', 'Should keep FHIR object shape');
+    expect(firstLevelIdentifier?.properties?.assigner?.properties?.identifier)
+      .withContext('Form-level schema should not pre-expand nested identifier levels')
+      .toBeUndefined();
+    expect(firstLevelIdentifier?.properties?.assigner?.additionalProperties)
+      .withContext('Form-level child assigner should preserve deeper identifiers returned from dialogs')
+      .toBeTrue();
+
+    const dialogIdentifier = service.cloneIdentifierSchema() as any;
+    const firstLevelArray = dialogIdentifier?.properties?.assigner?.properties?.identifier;
+    expect(firstLevelArray)
+      .withContext('Identifier.assigner.identifier should be an array in the dialog schema')
+      .toBeDefined();
+    expect(firstLevelArray?.type).toBe('array', 'Dialog schema should use array type for table editing');
+    expect(firstLevelArray?.maxItems).toBe(1, 'Dialog schema should have maxItems: 1 for 0..1 cardinality');
+
+    expect(firstLevelArray?.items?.properties?.assigner?.properties?.identifier)
+      .withContext('Dialog schema should add only the next editable level; nested dialogs get a fresh schema')
+      .toBeUndefined();
+    expect(firstLevelArray?.items?.properties?.assigner?.additionalProperties)
+      .withContext('Dialog child assigner should preserve deeper identifiers returned from nested dialogs')
+      .toBeTrue();
+  });
+
+  it('should restore Reference.identifier only in cycle-safe scoped schemas', () => {
+    const valueSetSchema = service.getResourceSchema('ValueSet') as any;
+    expect(valueSetSchema?.definitions?.Reference?.properties?.identifier)
+      .withContext('Contained ValueSet References should preserve imported identifiers')
+      .toBeDefined();
+    expect(valueSetSchema?.definitions?.Reference?.properties?.identifier?.properties?.assigner?.$ref)
+      .withContext('The scoped Identifier assigner must not point back to the shared Reference')
+      .toBeUndefined();
+    expect(valueSetSchema?.definitions?.Reference?.properties?.identifier?.properties?.assigner?.additionalProperties)
+      .withContext('Deeper imported assigner identifiers should remain preserved')
+      .toBeTrue();
+
+    const formUsageContext = service.getFormLevelSchema()?.properties?.useContext?.items as any;
+    expect(formUsageContext?.properties?.valueReference?.properties?.identifier)
+      .withContext('Form-level Usage Context should retain Reference.identifier')
+      .toBeDefined();
+
+    const dialogUsageContext = service.cloneUsageContextSchema() as any;
+    const dialogIdentifier = dialogUsageContext?.properties?.valueReference?.properties?.identifier;
+    expect(dialogIdentifier)
+      .withContext('Usage Context dialog should retain Reference.identifier')
+      .toBeDefined();
+    expect(dialogIdentifier?.type).toBe('array');
+    expect(dialogIdentifier?.maxItems).toBe(1);
+
+    const importedValueSet = {
+      resourceType: 'ValueSet',
+      status: 'active',
+      identifier: [{
+        system: 'http://example.org/identifier',
+        value: 'example',
+        assigner: {
+          identifier: {
+            system: 'http://example.org/assigner-identifier',
+            value: 'nested-example',
+            assigner: {
+              identifier: {value: 'deep-example'}
+            }
+          }
+        }
+      }],
+      useContext: [{
+        code: {
+          system: 'http://terminology.hl7.org/CodeSystem/usage-context-type',
+          code: 'focus'
+        },
+        valueReference: {
+          reference: 'PlanDefinition/example',
+          identifier: {value: 'reference-identifier'}
+        }
+      }]
+    };
+    const valueSetProperty = CommonTestingModule.createProperty(valueSetSchema, importedValueSet);
+    expect(valueSetProperty.value.identifier[0].assigner.identifier.value)
+      .withContext('Imported ValueSet Identifier.assigner.identifier should be preserved')
+      .toBe('nested-example');
+    expect(valueSetProperty.value.identifier[0].assigner.identifier.assigner.identifier.value)
+      .withContext('Identifier descendants beyond the scoped schema should be preserved')
+      .toBe('deep-example');
+    expect(valueSetProperty.value.useContext[0].valueReference.identifier.value)
+      .withContext('Imported ValueSet UsageContext Reference.identifier should be preserved')
+      .toBe('reference-identifier');
   });
 
 });

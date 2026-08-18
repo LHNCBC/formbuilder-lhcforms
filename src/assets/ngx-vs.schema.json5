@@ -180,7 +180,7 @@
         "$ref": "#/definitions/UsageContext"
       },
       "type": "array",
-      "title": "Use context"
+      "title": "Usage Context"
     },
     "jurisdiction": {
       "description": "A legal or geographic region in which the value set is intended to be used.",

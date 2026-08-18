@@ -64,6 +64,21 @@ describe('FhirService', () => {
     expect(service).toBeTruthy();
     const serverUrl = service.getSmartClient().getState('serverUrl');
     expect(service.getFhirServer().endpoint).toBe(serverUrl);
+    expect(service.getDefaultFhirServer().endpoint).toBe('https://lforms-fhir.nlm.nih.gov/baseR5');
+  });
+
+  it('should announce changes to the selected FHIR server', () => {
+    const selectedServers = [];
+    const newServer = {
+      endpoint: 'https://example.org/fhir',
+      version: 'R4' as const
+    };
+    service.fhirServerChanges$.subscribe((server) => selectedServers.push(server));
+
+    service.setFhirServer(newServer);
+
+    expect(selectedServers).toEqual([newServer]);
+    expect(service.getFhirServer()).toBe(newServer);
   });
 
   it('should read()', (done) => {
@@ -161,6 +176,29 @@ describe('FhirService', () => {
     }, error: (error) => {
       done.fail(error);
     }});
+  });
+
+  it('should report an incompatible ad comparator before exporting to an R4 server', (done) => {
+    const r4Server = service.fhirServerList.find(({version}) => version === 'R4');
+    service.setFhirServer(r4Server);
+    const createSpy = spyOn(service.getSmartClient(), 'create');
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      useContext: [{
+        code: {code: 'age'},
+        valueQuantity: {value: 10, comparator: 'ad', unit: 'mL'}
+      }]
+    } as unknown as fhir.Questionnaire;
+
+    service.create(questionnaire, null).subscribe({
+      next: () => done.fail('Not expected to export an R5-only comparator to R4.'),
+      error: (error) => {
+        expect(error.message).toBe(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+        expect(createSpy).not.toHaveBeenCalled();
+        done();
+      }
+    });
   });
 
   it('Should update() fail', (done) => {

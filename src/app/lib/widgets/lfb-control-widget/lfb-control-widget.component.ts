@@ -6,6 +6,13 @@ import {ControlWidget} from '@lhncbc/ngx-schema-form';
 import {faInfoCircle} from '@fortawesome/free-solid-svg-icons';
 import {Subscription} from 'rxjs';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
+import {
+  DEFAULT_WIDGET_MODIFIED_MESSAGES,
+  getModifiedErrorForPatternMismatch,
+  mapWidgetErrors,
+  ModifiedMessages,
+  WidgetValidationError
+} from '../../validation-utils';
 
 import {Util} from '../../util';
 
@@ -42,48 +49,11 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
   isRequired = false;
 
   liveAnnouncer: LiveAnnouncer = inject(LiveAnnouncer);
-  errors: { code: string, originalMessage: string, modifiedMessage: string }[] = null;
+  errors: WidgetValidationError[] | null = null;
 
   // Replace standard error messages from schema validator with customized messages.
   // Keys are error codes from the validator.
-  modifiedMessages = {
-    PATTERN: [
-      {
-        pattern: "^[A-Za-z0-9\\-\\.]{1,64}$",
-        message: 'Only alphanumeric, hyphen and period characters are allowed in this field. Make sure any white space characters are not used.'
-      }, // id
-      {
-        pattern: '^\\S*$',
-        message: 'Spaces and other whitespace characters are not allowed in this field.'
-      }, // uri
-      {
-        pattern: '^[^\\s]+(\\s[^\\s]+)*$',
-        message: 'Spaces are not allowed at the beginning or end.'
-      },       // code
-      {
-        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1]))?)?$',
-        message: 'Valid format is yyyy-MM-dd.'
-      }, // Date
-      {
-        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)))?)?)?$',
-        message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM).'
-      }, // Datetime
-      {
-        pattern: '^([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|(\\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00))$',
-        message: 'Valid format is yyyy-MM-dd hh:mm:ss (AM|PM).'
-      }, // Instant
-      {
-        pattern: '^[1-9][0-9]*$',
-        message: 'Enter an integer greater than 0.'
-      }, // positiveInt
-      {
-        pattern: '^[0]|([1-9][0-9]*)$',
-        message: 'Enter an integer greater than or equal to 0.'
-      } // unsignedInt
-    ],
-    MIN_LENGTH: null,
-    MAX_LENGTH: null
-  }
+  modifiedMessages: ModifiedMessages = DEFAULT_WIDGET_MODIFIED_MESSAGES;
 
   ngOnInit() {
     // Determine if this field is required.
@@ -122,6 +92,15 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
       widget.booleanControlledInitial : this.booleanControlledInitial; // If not defined, show the control.
   }
 
+  protected subscribeToErrors() {
+    const sub = this.formProperty.errorsChanges.subscribe((errors) => {
+      this.errors = mapWidgetErrors(errors, this.modifiedMessages, {
+        showEmptyError: !!this.schema.widget.showEmptyError
+      });
+    });
+    this.subscriptions.push(sub);
+  }
+
 
   /**
    * Clear all subscriptions.
@@ -144,11 +123,8 @@ export class LfbControlWidgetComponent extends ControlWidget implements OnInit, 
    * Replace the standard schema validator error message with the customized message.
    * @param pattern - Pattern as specified in the schema to identify the replacement message.
    */
-  getModifiedErrorForPatternMismatch(pattern: string): string {
-    const messageObj = this.modifiedMessages.PATTERN.find((el) => {
-      return el.pattern === pattern;
-    });
-    return messageObj ? messageObj.message : null;
+  getModifiedErrorForPatternMismatch(pattern: string): string | null {
+    return getModifiedErrorForPatternMismatch(pattern, this.modifiedMessages);
   }
 
   /**

@@ -126,7 +126,7 @@
         </div>
         <div class="btn-group-sm ms-2" role="group" aria-label="Last group">
           <button type="button" class="btn btn-primary"
-            (click)="addLoincItem(addItemDlg)"
+            (click)="addLoincItem()"
             aria-label="Add new item from LOINC"
             aria-controls="itemContent"
           >Add new item from LOINC</button>
@@ -134,43 +134,6 @@
       </div>
     </mat-sidenav-content>
   </mat-sidenav-container>
-
-  <ng-template #addItemDlg let-modal>
-    <div class="modal-header btn-primary">
-      <h4 class="modal-title" id="modal-basic-title">Add LOINC item</h4>
-      <button type="button" class="btn-close btn-primary" aria-label="Close" (click)="modal.dismiss('Cross click')">
-      </button>
-    </div>
-    <div class="modal-body">
-      <form>
-        <div class="form-group">
-          <label for="loincTypeSelect1" class="align-middle" id="loincItemRadioGroupLabel">Select LOINC item type:</label>
-          <div class="btn-group" id="loincTypeSelect1" role="radiogroup" aria-labelledby="loincItemRadioGroupLabel">
-            @for (opt of loincTypeOpts; track opt.value) {
-              <label class="btn">
-                <input type="radio" name="loincType"
-                  [value]="opt.value"
-                  [(ngModel)]="loincType"
-                  [ngModelOptions]="{standalone: true}"> {{ opt.display }}
-                </label>
-              }
-            </div>
-            <label class="" for="acSearchBoxId">Search for a LOINC item:</label>
-            <input id="acSearchBoxId"  type="text" class="form-control form-control-sm"
-              [(ngModel)]="loincItem"
-              [ngModelOptions]="{standalone: true}"
-              [ngbTypeahead]="acSearch"
-              [resultFormatter]="formatter"
-              [inputFormatter]="formatter"
-              [editable]='false' />
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="modal.dismiss(false)">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="modal.close(loincItem)">Add</button>
-      </div>
-    </ng-template>
 
 
     <ng-template #nodeMenu let-node="node" let-parentTooltip="tooltip">

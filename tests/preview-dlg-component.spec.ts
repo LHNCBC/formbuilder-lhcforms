@@ -184,4 +184,85 @@ test.describe('preview-dlg-component.spec.ts', () => {
       await expect(noErrorAlertLocator).not.toBeAttached();
     });
   });
+
+  test.describe('Preferred terminology server warning', () => {
+    let mainPO: MainPO;
+
+    test.beforeEach(async ({page}) => {
+      await page.goto('/');
+      mainPO = new MainPO(page);
+      await mainPO.loadHomePage();
+      // Choose "Import existing" -> "Local file" so the file input is available on
+      // the home page (importLocalFile sets it directly; avoids the file-chooser race).
+      await page.locator('input[type="radio"][value="existing"]').click();
+      await page.locator('input[type="radio"][value="local"]').click();
+    });
+
+    test('should warn in the rendered preview when an item has an answerValueSet but no terminology server is set', async ({page}) => {
+      // answer-value-set-sample.json has a single 'choice' item (linkId '1') whose
+      // answerValueSet is 'http://example.org' and whose preferredTerminologyServer
+      // extension has an empty valueUrl, so no terminology server is in scope.
+      // Stub value set expansion to avoid a real network round-trip while the form renders;
+      // it does not affect the warning, which is derived from the questionnaire content.
+      await page.route('**/ValueSet/$expand**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/fhir+json',
+          json: {resourceType: 'ValueSet', expansion: {contains: []}}
+        });
+      });
+
+      await PWUtils.importLocalFile(page, 'answer-value-set-sample.json');
+      const titleField = page.locator('lfb-form-fields').getByLabel('Title', {exact: true});
+      await expect(titleField).toHaveValue('Answer value set form');
+
+      // Open the preview dialog and switch to the rendered LForms widget.
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      await page.getByRole('tab', {name: 'View Rendered Form'}).click();
+
+      const form = page.locator('wc-lhc-form');
+      await expect(form).toBeVisible({timeout: 15000});
+
+      // The warning is derived from the questionnaire content, so the user is warned about
+      // the missing preferred terminology server regardless of the default server the
+      // preview uses to render answer lists. It also names the affected item by linkId
+      // (the fixture item's linkId is '1').
+      const tsWarning = form.locator('..').locator('.preferred-terminology-server-warning');
+      await expect(tsWarning).toBeVisible();
+      await expect(tsWarning).toContainText('does not specify a preferred terminology server');
+      await expect(tsWarning).toContainText("'1'");
+
+
+      await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
+    });
+
+    test('should not warn in the preview when the questionnaire specifies a terminology server', async ({page}) => {
+      // This fixture's answerValueSet items point at real SNOMED/clinicaltables servers.
+      // Stub value set expansion only to avoid those real network round-trips while the form
+      // renders; it does not affect the warning, which is derived from the questionnaire.
+      await page.route('**/ValueSet/$expand**', async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/fhir+json',
+          json: {resourceType: 'ValueSet', expansion: {contains: []}}
+        });
+      });
+
+      // Every answerValueSet item in this fixture has a preferred terminology server extension.
+      await PWUtils.importLocalFile(page, 'snomed-answer-value-set-sample.json');
+      const titleField = page.locator('lfb-form-fields').getByLabel('Title', {exact: true});
+      await expect(titleField).toHaveValue('SNOMED answer value set form');
+
+      await PWUtils.clickMenuBarButton(page, 'Preview');
+      await page.getByRole('tab', {name: 'View Rendered Form'}).click();
+
+      const form = page.locator('wc-lhc-form');
+      await expect(form).toBeVisible({timeout: 15000});
+
+      // No proactive terminology-server warning, because the questionnaire includes one.
+      await expect(form.locator('..').locator('.preferred-terminology-server-warning')).toHaveCount(0);
+
+      await PWUtils.clickDialogButton(page, {selector: 'lfb-preview-dlg'}, 'Close');
+    });
+  });
 });

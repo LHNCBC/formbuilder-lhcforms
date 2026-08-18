@@ -7,7 +7,7 @@ import {Util} from '../../util';
 import { HttpParams } from "@angular/common/http";
 import { FormService } from 'src/app/services/form.service';
 import { AnswerOptionService } from 'src/app/services/answer-option.service';
-import { TYPE_CODING, ANSWER_OPTION_METHOD_ANSWER_OPTION } from '../../constants/constants';
+import {TYPE_CODING, ANSWER_OPTION_METHOD_ANSWER_OPTION, SNOMED_SERVER} from '../../constants/constants';
 import {SharedObjectService} from "../../../services/shared-object.service";
 import {CommonModule} from "@angular/common";
 import {SchemaFormModule} from "@lhncbc/ngx-schema-form";
@@ -34,7 +34,7 @@ export class PickAnswerComponent extends LfbControlWidgetComponent implements On
 
   @ViewChild('autoComplete') autoCompleteElement;
 
-  static snomedValueSetUrl = "https://snowstorm.ihtsdotools.org/fhir/ValueSet/$expand?url=";
+  static snomedValueSetUrl = SNOMED_SERVER + "/fhir/ValueSet/$expand?url=";
   private _loading$ = new BehaviorSubject<string | null>(null);
 
   autoComplete;

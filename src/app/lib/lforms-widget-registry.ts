@@ -61,15 +61,20 @@ import {TableEditRowInDlgComponent} from "./widgets/table-edit-row-in-dlg/table-
 import {LfbObjectComponent} from "./widgets/lfb-object/lfb-object.component";
 import {LfbArrayComponent} from "./widgets/lfb-array/lfb-array.component";
 import {ExtensionContainerComponent} from "./widgets/extension-container/extension-container.component";
+import { IdentifierComponent } from './widgets/identifier/identifier.component';
 import { CodingSystemComponent } from './widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './widgets/coding-display/coding-display.component';
 import { EnableWhenMethodComponent } from './widgets/enable-when-method/enable-when-method.component';
 import {UnsignedIntegerComponent} from './widgets/unsigned-integer/unsigned-integer.component';
+import { MetaProfileComponent } from './widgets/meta-profile/meta-profile.component';
+import { UsageContextComponent } from './widgets/usage-context/usage-context.component';
+import {UsageContextCodeComponent} from './widgets/usage-context-code/usage-context-code.component';
 import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
 import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
 import {MinMaxOccursComponent} from './widgets/min-max-occurs/min-max-occurs.component';
+import {ExtensionUrlComponent} from './widgets/extension-url/extension-url.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -87,6 +92,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('instant', InstantComponent);
     this.register('time', TimeComponent);
     this.register('url', StringComponent);
+    this.register('extension-url', ExtensionUrlComponent);
     this.register('select', SelectComponent);
     this.register('checkbox', CheckboxComponent);
     this.register('boolean', CheckboxComponent);
@@ -130,6 +136,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('answer-value-set-coding-display', AnswerValueSetCodingDisplayComponent);
     this.register('extension', ExtensionComponent);
     this.register('extension-container', ExtensionContainerComponent);
+    this.register('identifier', IdentifierComponent);
     this.register('table-edit-row-in-dlg', TableEditRowInDlgComponent);
     this.register('lfb-object', LfbObjectComponent);
     this.register('array', LfbArrayComponent);
@@ -139,6 +146,9 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('enable-when-expression', EnableWhenExpressionComponent);
     this.register('min-max-occurs', MinMaxOccursComponent);
 
+    this.register('meta-profile', MetaProfileComponent);
+    this.register('usage-context', UsageContextComponent);
+    this.register('usage-context-code', UsageContextCodeComponent);
     this.setDefaultWidget(StringComponent);
   }
 }

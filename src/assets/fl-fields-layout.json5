@@ -20,7 +20,10 @@
           { field:  "implicitRules", col:  12},
           { field:  "version", col:  12},
           { field:  "name", col:  12},
-          { field:  "meta/tag", col:  12},
+          { field:  "identifier", col:  12},
+          { field:  "meta", col:  12},
+          { field:  "useContext", col:  12},
+          { field:  "subjectType", "col": 12},
           { field:  "date", col:  12},
           { field:  "publisher", col:  12},
           { field:  "copyright", col:  12},
@@ -42,24 +45,30 @@
     '$.properties.name': 'Questionnaire name',
     '$.properties.date': 'Revision date',
     '$.properties.meta.properties.tag': 'Tags',
+    '$.properties.identifier': 'Identifiers',
+    '$.properties.meta': 'Meta',
+    '$.properties.useContext': 'Usage Context',
+    '$.properties.useContext.items.properties.__$valueSummary': 'Value',
+    '$.definitions.Meta.properties.versionId': 'Version ID (Read-only)',
+    '$.definitions.Meta.properties.lastUpdated': 'Last updated (Read-only)',
+    '$.definitions.Meta.properties.source': 'Source',
+    '$.definitions.Meta.properties.profile': 'Profiles',
+    '$.definitions.Meta.properties.security': 'Security labels',
+    '$.definitions.Meta.properties.tag': 'Tags',
     '$.definitions.ValueSet.properties.resourceType': 'Type',
   },
   // Specify widget layout.
   // id is widget schema registry defined in lforms-widget-registry.ts
   // Label classes and control classes are used in the widget templates to fine tune widget layout positions
+  widgetPresetMap: {
+    inputBox: 'formStringField',
+    textArea: 'formTextareaField',
+    instant: 'formInstantField',
+    'positive-integer': 'formPositiveIntegerField',
+    'unsigned-integer': 'formUnsignedIntegerField'
+  },
+
   widgets: {
-    inputBox: {
-      id: "string",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
-    textArea: {
-      id: "textarea",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
     inputDate: {
       id: "date",
       labelPosition: "left",
@@ -74,6 +83,12 @@
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
+    url: {
+      id: "url",
+      labelPosition: "left",
+      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
+      controlClasses: "col-sm-10 form-control"
+    },
     dateRange: {
       id: "date-range",
       labelPosition: "left",
@@ -83,25 +98,6 @@
         {"field": "start", "col": 6},
         {"field": "end", "col": 6}
       ]
-    },
-    instant: {
-      id: "instant",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-3",
-      placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
-    },
-    "positive-integer": {
-      id: "positive-integer",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
-    "unsigned-integer": {
-      id: "unsigned-integer",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 ps-0 pe-1",
-      controlClasses: "col-sm-10 m-0 p-0"
     },
     __$terminologyServer: {
       "id": "terminology-server",
@@ -114,13 +110,78 @@
     coding: {
       "id": "table",
       "labelPosition": "left",
-      "labelClasses": "col-sm-2 ps-0 pe-1",
-      "controlClasses": "col-sm-10",
+      "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+      "controlClasses": "col-sm-10 ps-0 pe-0",
+      "noTableLabel": false,
+      "noCollapseButton": true,
       "addButtonLabel": "Add new tag",
       "showFields": [
         {"field": "display", "col": 4, "nolabel": true},
         {"field": "code", "col": 3, "nolabel": true},
         {"field": "system", "col": 4, "nolabel": true}
+      ]
+    },
+    identifier: {
+      "id": "identifier",
+      "addDefaultItemIfEmpty": false,
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "addButtonLabel": "Add new identifier",
+      "showFields": [
+        {"field": "value", "col": 4, "nolabel": true},
+        {"field": "system", "col": 4, "nolabel": true},
+        {"field": "use", "col": 3, "nolabel": true}
+      ]
+    },
+    metaSecurity: {
+      "id": "table",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+      "controlClasses": "col-sm-10 ps-0 pe-0",
+      "noTableLabel": false,
+      "noCollapseButton": true,
+      "addButtonLabel": "Add new security",
+      "showFields": [
+        {"field": "display", "col": 4, "nolabel": true},
+        {"field": "code", "col": 3, "nolabel": true},
+        {"field": "system", "col": 4, "nolabel": true}
+      ]
+    },
+    metaProfile: {
+      "id": "meta-profile",
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 m-0 ps-0 pe-1",
+      "controlClasses": "col-sm-10 ps-0 pe-0",
+      "noCollapseButton": true,
+      "noTableLabel": false,
+      "addButtonLabel": "Add profile"
+    },
+    metaGroup: {
+      "id": "lfb-object",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "showFields": [
+        {"field": "versionId", "col": 12},
+        {"field": "lastUpdated", "col": 12},
+        {"field": "source", "col": 12},
+        {"field": "profile", "col": 12},
+        {"field": "security", "col": 12},
+        {"field": "tag", "col": 12}
+      ]
+    },
+    usageContext: {
+      "id": "usage-context",
+      "addEditAction": true,
+      "labelPosition": "left",
+      "labelClasses": "col-sm-2 ps-0 pe-1",
+      "controlClasses": "col-sm-10",
+      "noTableLabel": false,
+      "addButtonLabel": "Add Usage Context",
+      "showFields": [
+        {"field": "code.display", "title": "Display", "col": 4, "nolabel": true},
+        {"field": "code.code", "title": "Code", "col": 3, "nolabel": true},
+        {"field": "__$valueSummary", "title": "Value", "col": 4, "nolabel": true}
       ]
     },
     contained: {
@@ -227,6 +288,11 @@
       '$.properties.publisher',
       '$.properties.description',
       '$.properties.purpose',
+      '$.definitions.Meta.properties.versionId',
+      '$.definitions.Meta.properties.lastUpdated',
+    ],
+    url: [
+      '$.definitions.Meta.properties.source',
     ],
     textArea: [
       '$.properties.copyright',
@@ -236,7 +302,7 @@
       '$.properties.lastReviewDate'
     ],
     inputDateTime: [
-      '$.properties.date'
+      '$.properties.date',
     ],
     dateRange: [
       '$.properties.effectivePeriod'
@@ -245,10 +311,25 @@
       '$.properties.__$terminologyServer'
     ],
     coding: [
-      '$.properties.meta.properties.tag',
+      '$.definitions.Meta.properties.tag',
+    ],
+    metaSecurity: [
+      '$.definitions.Meta.properties.security',
+    ],
+    metaProfile: [
+      '$.definitions.Meta.properties.profile',
+    ],
+    metaGroup: [
+      '$.properties.meta',
+    ],
+    usageContext: [
+      '$.properties.useContext'
     ],
     extension: [
       '$.properties.extension'
+    ],
+    identifier: [
+      '$.properties.identifier'
     ],
     contained: [
       '$.properties.contained'

@@ -16,7 +16,8 @@ import {
   EXTENSION_URL_ITEM_CONTROL, EXTENSION_URL_RENDERING_XHTML,
   TYPE_DECIMAL, TYPE_INTEGER, TYPE_STRING, TYPE_TEXT, TYPE_QUANTITY, TYPE_CODING, TYPE_GROUP, TYPE_URL, TYPE_DISPLAY,
   TYPE_DATE, TYPE_DATETIME, TYPE_TIME,
-  EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION
+  EXTENSION_URL_UCUM_SYSTEM, EXTENSION_URL_QUESTIONNAIRE_UNIT, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION,
+  PREFERRED_TERMINOLOGY_SERVER_URI
 } from './constants/constants';
 import { HttpClient } from '@angular/common/http';
 import JSON5 from 'json5';
@@ -97,6 +98,275 @@ export class Util {
     url: 'valueUri'
   };
 
+  /**
+   * Canonical FHIR Questionnaire field order.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire.
+   * Field inclusion/exclusion is handled by questionnaire-version-converter;
+   * this map ensures consistent key order across all versions.
+   */
+  private static readonly QUESTIONNAIRE_FIELD_ORDER: readonly string[] = [
+    'resourceType',
+    'id',
+    'meta',
+    'implicitRules',
+    '_implicitRules',
+    'language',
+    '_language',
+    'text',
+    'contained',
+    'extension',
+    'modifierExtension',
+    'url',
+    '_url',
+    'identifier',
+    'version',
+    '_version',
+    'name',
+    '_name',
+    'title',
+    '_title',
+    'derivedFrom',
+    'status',
+    '_status',
+    'experimental',
+    '_experimental',
+    'subjectType',
+    '_subjectType',
+    'date',
+    '_date',
+    'publisher',
+    '_publisher',
+    'contact',
+    'description',
+    '_description',
+    'useContext',
+    'jurisdiction',
+    'purpose',
+    '_purpose',
+    'copyright',
+    '_copyright',
+    'approvalDate',
+    '_approvalDate',
+    'lastReviewDate',
+    '_lastReviewDate',
+    'effectivePeriod',
+    'code',
+    'item'
+  ];
+
+  /**
+   * Canonical field order for Questionnaire_Item.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire_Item.
+   */
+  private static readonly QUESTIONNAIRE_ITEM_FIELD_ORDER: readonly string[] = [
+    'id',
+    'extension',
+    'modifierExtension',
+    'linkId',
+    '_linkId',
+    'definition',
+    '_definition',
+    'code',
+    'prefix',
+    '_prefix',
+    'text',
+    '_text',
+    'type',
+    '_type',
+    'enableWhen',
+    'enableBehavior',
+    '_enableBehavior',
+    'disabledDisplay',
+    'required',
+    '_required',
+    'repeats',
+    '_repeats',
+    'readOnly',
+    '_readOnly',
+    'maxLength',
+    '_maxLength',
+    'answerConstraint',
+    'answerValueSet',
+    'answerOption',
+    'initial',
+    'item'
+  ];
+
+  /**
+   * Canonical field order for Questionnaire_EnableWhen.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire_EnableWhen.
+   */
+  private static readonly ENABLE_WHEN_FIELD_ORDER: readonly string[] = [
+    'id',
+    'extension',
+    'modifierExtension',
+    'question',
+    '_question',
+    'operator',
+    '_operator',
+    'answerBoolean',
+    '_answerBoolean',
+    'answerDecimal',
+    '_answerDecimal',
+    'answerInteger',
+    '_answerInteger',
+    'answerDate',
+    '_answerDate',
+    'answerDateTime',
+    '_answerDateTime',
+    'answerTime',
+    '_answerTime',
+    'answerString',
+    '_answerString',
+    'answerCoding',
+    'answerQuantity',
+    'answerReference',
+    'answerUri',
+    'answerAttachment'
+  ];
+
+  /**
+   * Canonical field order for Questionnaire_AnswerOption.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire_AnswerOption.
+   */
+  private static readonly ANSWER_OPTION_FIELD_ORDER: readonly string[] = [
+    'id',
+    'extension',
+    'modifierExtension',
+    'valueDecimal',
+    'valueInteger',
+    '_valueInteger',
+    'valueDate',
+    'valueDateTime',
+    'valueTime',
+    '_valueTime',
+    'valueString',
+    'valueUri',
+    'valueCoding',
+    'valueReference',
+    'initialSelected',
+    '_initialSelected'
+  ];
+
+  /**
+   * Canonical field order for Questionnaire_Initial.
+   * Derived from src/assets/fhir.schema.json #/definitions/Questionnaire_Initial.
+   */
+  private static readonly INITIAL_FIELD_ORDER: readonly string[] = [
+    'id',
+    'extension',
+    'modifierExtension',
+    'valueBoolean',
+    '_valueBoolean',
+    'valueDecimal',
+    '_valueDecimal',
+    'valueInteger',
+    '_valueInteger',
+    'valueDate',
+    '_valueDate',
+    'valueDateTime',
+    '_valueDateTime',
+    'valueTime',
+    '_valueTime',
+    'valueString',
+    '_valueString',
+    'valueUri',
+    '_valueUri',
+    'valueAttachment',
+    'valueCoding',
+    'valueQuantity',
+    'valueReference'
+  ];
+
+  /**
+   * Map of an element type to its canonical field order.
+   * Used to determine which order map applies to a given object.
+   */
+  private static readonly FIELD_ORDER_MAP = new Map<string, readonly string[]>([
+    ['Questionnaire', Util.QUESTIONNAIRE_FIELD_ORDER],
+    ['QuestionnaireItem', Util.QUESTIONNAIRE_ITEM_FIELD_ORDER],
+    ['EnableWhen', Util.ENABLE_WHEN_FIELD_ORDER],
+    ['AnswerOption', Util.ANSWER_OPTION_FIELD_ORDER],
+    ['Initial', Util.INITIAL_FIELD_ORDER]
+  ]);
+
+  /**
+   * A mapping of field names to their nested relationships.
+   * This map defines the structure for nested fields within a specified entity.
+   * Each key is the name of an entity, and the associated value is an array
+   * of tuples that describe the nested fields for that entity.
+   *
+   * Each tuple contains:
+   * - The name of a field within the entity.
+   * - The type of the related nested entity.
+   *
+   * Example mapping relationships:
+   * - `Questionnaire` includes a nested field `item` of the type `QuestionnaireItem`.
+   * - `QuestionnaireItem` includes nested fields such as `item`, `enableWhen`,
+   *   `answerOption`, and `initial` with their respective types.
+   */
+  private static readonly NESTED_FIELD_MAP: Record<string, Array<[string, string]>> = {
+    Questionnaire: [
+      ['item', 'QuestionnaireItem']
+    ],
+    QuestionnaireItem: [
+      ['item', 'QuestionnaireItem'],
+      ['enableWhen', 'EnableWhen'],
+      ['answerOption', 'AnswerOption'],
+      ['initial', 'Initial']
+    ]
+  };
+
+  /**
+   * Recursively order fields in a Questionnaire object and nested elements
+   * according to FHIR canonical field order.
+   *
+   * Unknown keys are appended at the end (after known keys) for forward compatibility.
+   *
+   * @param obj - Object to order (typically a Questionnaire or backbone element)
+   * @param elementType - Type of element (determines which order map to use)
+   * @returns - Ordered copy of the input object
+   */
+  static orderQuestionnaireFields(obj: any, elementType: string = 'Questionnaire'): any {
+    if (!obj || typeof obj !== 'object') {
+      return obj;
+    }
+
+    const orderMap = this.FIELD_ORDER_MAP.get(elementType);
+    if (!orderMap) {
+      // Unknown element type, return as-is
+      return obj;
+    }
+
+    const ordered: any = {};
+    const processed = new Set<string>();
+
+    // 1. Add known keys in canonical order
+    for (const key of orderMap) {
+      if (key in obj) {
+        ordered[key] = obj[key];
+        processed.add(key);
+      }
+    }
+
+    // 2. Add remaining unknown keys at the end (alphabetically sorted)
+    const unknownKeys = Object.keys(obj).filter(key => !processed.has(key)).sort();
+    for (const key of unknownKeys) {
+      ordered[key] = obj[key];
+    }
+
+    // 3. Recursively order nested elements
+    const nestedFields = this.NESTED_FIELD_MAP[elementType] || [];
+    for (const [fieldName, fieldType] of nestedFields) {
+      if (Array.isArray(ordered[fieldName])) {
+        ordered[fieldName] = ordered[fieldName].map((entry: any) =>
+          Util.orderQuestionnaireFields(entry, fieldType)
+        );
+      }
+    }
+
+    return ordered;
+  }
 
   /**
    * A helper to fetch a `.json5` from a list of urls, intended to fetch json5
@@ -417,7 +687,8 @@ export class Util {
         }
       });
     });
-    return value;
+    // Apply FHIR canonical field ordering to the final output
+    return Util.orderQuestionnaireFields(value);
   }
 
   /**
@@ -1012,6 +1283,65 @@ export class Util {
       return ret;
     };
     return search(items, linkId).extensions;
+  }
+
+
+  /**
+   * Collect the linkIds of items that use an answer value set requiring a terminology server
+   * to expand, but do not have a preferred terminology server in scope (the questionnaire
+   * root, the item itself, or an ancestor item).
+   *
+   * Contained value sets (referenced with a leading '#') are excluded, since they are
+   * resolved from the questionnaire's contained resources and do not need a terminology
+   * server.
+   *
+   * This is used to warn the user that, although the preview renders answer lists using a
+   * default terminology server, that server is not part of the questionnaire output.
+   *
+   * @param questionnaire - FHIR Questionnaire (any version; shares item/extension shape).
+   * @return linkIds (in document order) of items with an external answerValueSet and no
+   *   terminology server in scope. Empty when none are missing one.
+   */
+  static getItemsMissingPreferredTerminologyServer(questionnaire: fhir.Questionnaire): string [] {
+    const linkIds: string [] = [];
+    if(!questionnaire?.item?.length) {
+      return linkIds;
+    }
+    const rootHasServer = Util.hasPreferredTerminologyServer(questionnaire.extension);
+    Util.collectItemsMissingTerminologyServer(questionnaire.item, rootHasServer, linkIds);
+    return linkIds;
+  }
+
+  /**
+   * Check whether an extensions array contains a preferred terminology server extension.
+   * @param extensions - Array of FHIR extensions (may be undefined).
+   * @return true when a preferred terminology server extension is present.
+   */
+  private static hasPreferredTerminologyServer(extensions: fhir.Extension []): boolean {
+    const tsExt = Util.findExtensionByUrl(extensions, PREFERRED_TERMINOLOGY_SERVER_URI);
+    return !!(tsExt?.valueUrl?.length);
+  }
+
+  /**
+   * Recursively collect linkIds of items (and descendants) that have an external
+   * answerValueSet not covered by a preferred terminology server in scope.
+   * @param items - Questionnaire items to inspect.
+   * @param ancestorHasServer - Whether an ancestor (or the root) already provides a server.
+   * @param linkIds - Accumulator for the linkIds of items missing a terminology server.
+   */
+  private static collectItemsMissingTerminologyServer(
+    items: fhir.QuestionnaireItem [],
+    ancestorHasServer: boolean,
+    linkIds: string []
+  ): void {
+    (items || []).forEach((item) => {
+      const inScope = ancestorHasServer || Util.hasPreferredTerminologyServer(item.extension);
+      const needsServer = !!item.answerValueSet && !item.answerValueSet.startsWith('#');
+      if(needsServer && !inScope) {
+        linkIds.push(item.linkId);
+      }
+      Util.collectItemsMissingTerminologyServer(item.item, inScope, linkIds);
+    });
   }
 
   private static resolveSchemaRef(schema: ISchema, rootSchema: ISchema): ISchema {
