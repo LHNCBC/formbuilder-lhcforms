@@ -64,6 +64,21 @@ describe('FhirService', () => {
     expect(service).toBeTruthy();
     const serverUrl = service.getSmartClient().getState('serverUrl');
     expect(service.getFhirServer().endpoint).toBe(serverUrl);
+    expect(service.getDefaultFhirServer().endpoint).toBe('https://lforms-fhir.nlm.nih.gov/baseR5');
+  });
+
+  it('should announce changes to the selected FHIR server', () => {
+    const selectedServers = [];
+    const newServer = {
+      endpoint: 'https://example.org/fhir',
+      version: 'R4' as const
+    };
+    service.fhirServerChanges$.subscribe((server) => selectedServers.push(server));
+
+    service.setFhirServer(newServer);
+
+    expect(selectedServers).toEqual([newServer]);
+    expect(service.getFhirServer()).toBe(newServer);
   });
 
   it('should read()', (done) => {

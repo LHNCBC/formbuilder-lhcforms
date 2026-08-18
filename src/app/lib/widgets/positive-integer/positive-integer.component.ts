@@ -5,10 +5,13 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {AsyncPipe, NgClass} from "@angular/common";
 import {LabelComponent} from "../label/label.component";
 import {IntegerDirective} from "../../directives/integer.directive";
+import { EnableWhenAnswerOptionsDirective } from '../../directives/enable-when-answer-options.directive';
+import { EnableWhenAnswerOptionsService } from '../../../services/enable-when-answer-options.service';
 
 @Component({
   selector: 'lfb-positive-integer-widget',
-  imports: [ReactiveFormsModule, AsyncPipe, NgClass, LabelComponent, IntegerDirective],
+  imports: [ReactiveFormsModule, AsyncPipe, NgClass, LabelComponent, IntegerDirective, EnableWhenAnswerOptionsDirective],
+  providers: [EnableWhenAnswerOptionsService],
   templateUrl: '../integer/integer.component.html',
   styles: []
 })

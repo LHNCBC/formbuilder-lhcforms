@@ -73,6 +73,7 @@ import {
   CalculatedInitialExpressionComponent
 } from "./widgets/expression-editor/calculated-initial-expression/calculated-initial-expression.component";
 import {EnableWhenExpressionComponent} from "./widgets/expression-editor/enable-when-expression/enable-when-expression.component";
+import {ExtensionUrlComponent} from './widgets/extension-url/extension-url.component';
 
 @Injectable()
 export class LformsWidgetRegistry extends DefaultWidgetRegistry {
@@ -90,6 +91,7 @@ export class LformsWidgetRegistry extends DefaultWidgetRegistry {
     this.register('instant', InstantComponent);
     this.register('time', TimeComponent);
     this.register('url', StringComponent);
+    this.register('extension-url', ExtensionUrlComponent);
     this.register('select', SelectComponent);
     this.register('checkbox', CheckboxComponent);
     this.register('boolean', CheckboxComponent);
