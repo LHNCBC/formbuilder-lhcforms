@@ -10,6 +10,8 @@ import { ValueSetResourceComponent } from '../value-set-resource/value-set-resou
 import fhir from 'fhir/r4';
 import {MessageDlgComponent} from "../message-dlg/message-dlg.component";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {hasUsageContextLocalReference} from '../usage-context/usage-context-reference.util';
+import type {UsageContextEditModel} from '../usage-context/usage-context.types';
 
 /**
  * Define the data structure for the dialog input.
@@ -45,11 +47,13 @@ export class ResourceDlgComponent {
   matDialogRef = inject(MatDialogRef<ResourceDlgComponent>);
   formService: FormService = inject(FormService);
   ngbModalService: NgbModal = inject(NgbModal);
+  private readonly originalResourceId: string | undefined;
 
   constructor() {
     this.input = this.data.formProperty?.value;
     this.changedValue = this.input;
-      this.resourceType = this.data.formProperty?.schema.properties.resourceType?.enum[0] || this.data.resourceType || this.resourceType;
+    this.originalResourceId = this.input?.id;
+    this.resourceType = this.data.formProperty?.schema.properties.resourceType?.enum[0] || this.data.resourceType || this.resourceType;
     this.schema = this.formService.getResourceSchema(this.resourceType);
   }
 
@@ -67,9 +71,31 @@ export class ResourceDlgComponent {
         this.alertErrors('There are errors in the form. Please correct them before closing.');
         return;
       }
+      else if(this.isReferencedResourceIdChanged()) {
+        this.alertErrors(
+          `Id cannot be changed because Usage Context references #${this.originalResourceId}.`
+        );
+        return;
+      }
       this.changedValue['date'] = new Date().toISOString();
     }
     this.matDialogRef.close(this.changedValue);
+  }
+
+  /**
+   * Check whether an edited id would break a local Usage Context reference.
+   *
+   * @returns True when the original id is referenced and the edited id differs.
+   */
+  private isReferencedResourceIdChanged(): boolean {
+    if(!this.data.formProperty || this.changedValue?.id === this.originalResourceId) {
+      return false;
+    }
+    const usageContexts = this.data.formProperty
+      .findRoot()
+      ?.getProperty('useContext')
+      ?.value as UsageContextEditModel[] | undefined;
+    return hasUsageContextLocalReference(usageContexts, this.originalResourceId);
   }
 
   /**

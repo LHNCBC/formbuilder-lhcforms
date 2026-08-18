@@ -13,6 +13,9 @@ import { ResourceDlgComponent, ResourceData } from '../resource-dlg/resource-dlg
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import {MatTooltip} from "@angular/material/tooltip";
 import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
+import {MessageType} from '../message-dlg/message-dlg.component';
+import {hasUsageContextLocalReference} from '../usage-context/usage-context-reference.util';
+import type {UsageContextEditModel} from '../usage-context/usage-context.types';
 
 
 @Component({
@@ -43,6 +46,8 @@ import {IsDisabledPipe} from "../../pipes/is-disabled.pipe";
   `]
 })
 export class ContainedComponent extends TableComponent implements OnInit, AfterViewInit, DoCheck {
+
+  private readonly referencedResourceButtons = [{label: 'Close', value: 'close'}];
 
   matDialogService: MatDialog = inject(MatDialog);
 
@@ -89,6 +94,27 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   }
 
   /**
+   * Prevent deletion from leaving a dangling local Usage Context reference.
+   *
+   * @param index - Index of the contained resource to delete.
+   * @param message - Standard confirmation message used for unreferenced rows.
+   */
+  override confirmRemoveProperty(index: number, message = 'Are you sure you want to delete this row?'): void {
+    const resourceId = this.formProperty?.properties?.[index]?.value?.id as string | undefined;
+    if(this.isReferencedByUsageContext(resourceId)) {
+      this.dialogService.showDialog(
+        MessageType.WARNING,
+        'Contained resource is in use',
+        `The contained resource #${resourceId} is referenced by Usage Context and cannot be deleted.`,
+        this.referencedResourceButtons
+      );
+      return;
+    }
+
+    super.confirmRemoveProperty(index, message);
+  }
+
+  /**
    * Override the addItem method to open a dialog for adding a new resource.
    */
   addItemWithAlert(popover): void {
@@ -128,4 +154,18 @@ export class ContainedComponent extends TableComponent implements OnInit, AfterV
   }
 
   override isDisabled = this._isDisabled.bind(this);
+
+  /**
+   * Check whether Usage Context currently targets a contained resource id.
+   *
+   * @param resourceId - Contained resource id.
+   * @returns True when a Usage Context valueReference targets the resource.
+   */
+  private isReferencedByUsageContext(resourceId: string | undefined): boolean {
+    const usageContexts = this.formProperty
+      ?.findRoot()
+      ?.getProperty('useContext')
+      ?.value as UsageContextEditModel[] | undefined;
+    return hasUsageContextLocalReference(usageContexts, resourceId);
+  }
 }

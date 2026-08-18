@@ -88,6 +88,7 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   inputUrlErrors: string;
   validationErrors: {FHIR_VERSION_TYPE?: string[]} = {};
   compatibilityWarnings: {[key: string]: string} = {};
+  conversionErrors: {[key: string]: string} = {};
   vServer: fhirPrimitives.url;
   spinner$ = new BehaviorSubject<boolean>(false);
   @ViewChild('autoCompNgb', { static: false, read: NgbTypeahead }) autoCompNgb: NgbTypeahead;
@@ -192,7 +193,14 @@ export class PreviewDlgComponent implements OnInit, OnDestroy {
   onJsonVersionSelected(ngEvent: number) {
     this.format = FHIR_VERSIONS[ngEvent] as FHIR_VERSION_TYPE;
     this.vServer = this.fhirService.getLastUsedValidationServer(this.format);
-    this.codeMirrorModel = JSON.stringify(this.getQuestionnaire(this.format), null, 2);
+    const conversionError = this.formService.getQuantityComparatorCompatibilityError(
+      this.data.questionnaire,
+      this.format
+    );
+    this.conversionErrors[this.format] = conversionError;
+    this.codeMirrorModel = conversionError
+      ? ''
+      : JSON.stringify(this.getQuestionnaire(this.format), null, 2);
     this.compatibilityWarnings[this.format] =
       this.subjectTypeService.getSubjectTypeCompatibilityWarning(this.data.questionnaire, this.format, 'preview');
   }

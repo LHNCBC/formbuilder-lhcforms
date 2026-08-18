@@ -30,13 +30,13 @@ import { suppressInvalidInputValue } from '../../validation-utils';
 })
 export class StringComponent extends LfbControlWidgetComponent implements OnInit, AfterViewChecked, OnDestroy {
   @ViewChild('inputEl') inputElRef!: ElementRef;
-  showTooltip = true;
+  showTooltip = false;
   enableWhenAnswerOptionsService = inject(EnableWhenAnswerOptionsService, { optional: true });
   hasAnswerOptions$: Observable<boolean> = of(false);
 
   Array = Array; // To use in templates.
-
   cdr = inject(ChangeDetectorRef);
+
   constructor() {
     super();
   }
@@ -50,6 +50,25 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
     this.subscribeToErrors();
     this.initEnableWhenAnswerOptions();
     this.controlClasses = this.controlClasses || '';
+  }
+
+  /**
+   * Check whether the rendered input text exceeds its visible width.
+   */
+  hasOverflow(): boolean {
+    const el = this.inputElRef?.nativeElement;
+    const width = el?.clientWidth;
+    if(!width) {
+      return false;
+    }
+    return el.scrollWidth > width;
+  }
+
+  /**
+   * Refresh tooltip visibility immediately before hover or focus display.
+   */
+  updateTooltipVisibility(): void {
+    this.showTooltip = this.hasOverflow();
   }
 
   /**
@@ -67,15 +86,15 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   /**
    * Get the value shown in the tooltip, formatting JSON fields when requested.
    */
-  getTooltipValue(): string | null {
+  getTooltipValue(): string {
     if(!this.showTooltip) {
-      return null;
+      return '';
     }
     const value = this.formProperty.value;
     if(this.shouldFormatTooltipAsJson()) {
       return this.formatJsonTooltip(value);
     }
-    return value == null ? null : String(value);
+    return value == null ? '' : String(value);
   }
 
   /**
@@ -92,9 +111,9 @@ export class StringComponent extends LfbControlWidgetComponent implements OnInit
   /**
    * Pretty-print a JSON string for tooltip display, falling back to the original value.
    */
-  private formatJsonTooltip(value: unknown): string | null {
+  private formatJsonTooltip(value: unknown): string {
     if(typeof value !== 'string') {
-      return value == null ? null : String(value);
+      return value == null ? '' : String(value);
     }
     try {
       return JSON.stringify(JSON.parse(value), null, 2);

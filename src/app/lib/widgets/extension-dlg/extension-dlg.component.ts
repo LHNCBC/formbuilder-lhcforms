@@ -481,8 +481,7 @@ export class ExtensionDlgComponent extends TableRowDialogBase<fhir.Extension> im
   /**
    * Stop observers, subscriptions, and any open cardinality selection dialog.
    */
-  override ngOnDestroy(): void {
-    super.ngOnDestroy();
+  ngOnDestroy(): void {
     this.cardinalityLookupSubscription?.unsubscribe();
     this.cardinalitySelectionWaitSubscription?.unsubscribe();
     this.cardinalityGenerationSubscription?.unsubscribe();

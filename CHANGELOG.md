@@ -7,6 +7,9 @@ This project follows [Semantic Versioning](http://semver.org/).
 - Added cardinality validation for general extensions. Duplicate single-occurrence
   extension URLs are rejected at the same scope with an inline validation message,
   while known repeatable extensions can be added multiple times.
+- Added form-level support for FHIR Questionnaire Usage Context, including
+  CodeableConcept, Quantity, Range, and Reference values with FHIR validation
+  and version-compatible export handling.
 
 ### Changed
 - Refactored option widget inheritance with enableWhen answer option service.

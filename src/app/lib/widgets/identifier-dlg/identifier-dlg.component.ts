@@ -5,8 +5,7 @@ import {
   ElementRef,
   OnInit,
   AfterViewInit,
-  ChangeDetectionStrategy,
-  OnDestroy
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   MatDialogTitle,
@@ -20,6 +19,8 @@ import fhir from 'fhir/r4';
 import { FormService } from 'src/app/services/form.service';
 import {IdentifierObjComponent} from "../identifier-obj/identifier-obj.component";
 import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base";
+import {FormProperty} from '@lhncbc/ngx-schema-form';
+import {RawValueStoreService} from '../../../services/raw-value-store.service';
 
 /**
  * A dialog component to edit a FHIR Identifier object.
@@ -43,12 +44,13 @@ import {TableRowDialogBase} from "../table-row-dialog-base/table-row-dialog-base
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> implements OnInit, AfterViewInit, OnDestroy {
+export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> implements OnInit, AfterViewInit {
   @ViewChild('dlgContent', {static: false, read: ElementRef}) declare dlgContent: ElementRef;
   @ViewChild('dlgContainer', {static: false, read: ElementRef}) declare dlgContainer: ElementRef;
   @ViewChild(IdentifierObjComponent) identifierObj!: IdentifierObjComponent;
 
   formService: FormService = inject(FormService);
+  private rawValueStore = inject(RawValueStoreService);
   // Lazy recursive Identifier editing returns deeper assigner.identifier values
   // through parent dialogs whose one-level schema does not render those fields.
   protected override preserveUnknownObjectFields = true;
@@ -60,6 +62,22 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
    */
   protected createNewModel(): fhir.Identifier {
     return {} as fhir.Identifier;
+  }
+
+  /**
+   * Prefer the complete Identifier preserved for a table row over the
+   * depth-limited schema-form value.
+   */
+  protected override getExistingRowValue(rowProperty: FormProperty): fhir.Identifier {
+    return this.rawValueStore.getIdentifier(rowProperty) || rowProperty.value as fhir.Identifier;
+  }
+
+  /**
+   * Preserve complete nested rows after the schema form is materialized.
+   */
+  override ngAfterViewInit() {
+    super.ngAfterViewInit();
+    this.seedOriginalAssignerIdentifierRows();
   }
 
   /**
@@ -86,7 +104,7 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
     const model = this.cloneIdentifier(currentValue);
     // Nested identifier dialogs must keep the UI array wrapper so parent dialogs
     // can continue editing recursive rows without type-mismatch resets.
-    if (this.isNestedIdentifierDialog()) {
+    if (this.isNestedIdentifierDialog() || this.isUsageContextReferenceIdentifierDialog()) {
       return model;
     }
     return this.unwrapAssignerIdentifierForFhir(model);
@@ -101,6 +119,72 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
     return this.identifierObj?.sfFormRootProperty
       ? this.getCurrentFormPropertyValue(this.identifierObj.sfFormRootProperty)
       : this.changedValue;
+  }
+
+  /**
+   * Resolve nested Identifier tables from complete row values before falling
+   * back to the depth-limited live form tree.
+   */
+  protected override getCurrentFormPropertyValue(property: any): any {
+    if(property
+        && Array.isArray(property.properties)
+        && property.schema?.widget?.id === 'identifier'
+        && Array.isArray(property.value)) {
+      const storedRows = this.rawValueStore.getIdentifierTable(property);
+      if(storedRows) {
+        const value = storedRows
+          .map((row) => this.cloneIdentifier(row))
+          .filter((row) => row && Object.keys(row).length);
+        return value.length ? value : undefined;
+      }
+      const originalRows = this.getOriginalAssignerIdentifierRows(property);
+      const value = property.properties
+        .map((child: FormProperty, index: number) => {
+          if(this.rawValueStore.isIdentifierDeleted(child)) {
+            return undefined;
+          }
+          return this.rawValueStore.getIdentifier(child) ||
+            originalRows?.[index] ||
+            super.getCurrentFormPropertyValue(child);
+        })
+        .map((childValue) => this.cloneIdentifier(childValue))
+        .filter((childValue) => childValue && Object.keys(childValue).length);
+      return value.length ? value : undefined;
+    }
+    return super.getCurrentFormPropertyValue(property);
+  }
+
+  /**
+   * Resolve imported assigner.identifier rows without relying on lifecycle seeding.
+   *
+   * @param property - Identifier table property being rebuilt.
+   * @returns Original rows for the direct assigner.identifier table.
+   */
+  private getOriginalAssignerIdentifierRows(property: FormProperty): fhir.Identifier[] | undefined {
+    const identifiers = this.inputModel?.assigner?.identifier;
+    if(!property.path?.endsWith('/assigner/identifier') || !Array.isArray(identifiers)) {
+      return undefined;
+    }
+    return identifiers as fhir.Identifier[];
+  }
+
+  /**
+   * Associate the visible assigner.identifier row with its complete original
+   * value, including descendants beyond the generated schema depth.
+   */
+  private seedOriginalAssignerIdentifierRows(): void {
+    const identifierProperty = this.identifierObj?.sfFormRootProperty?.getProperty?.('assigner/identifier');
+    const identifiers = (this.inputModel as any)?.assigner?.identifier;
+    if(!identifierProperty?.properties || !Array.isArray(identifiers)) {
+      return;
+    }
+    identifierProperty.properties.forEach((rowProperty: FormProperty, index: number) => {
+      const identifier = identifiers[index] as fhir.Identifier;
+      if(identifier && Object.keys(identifier).length) {
+        const original = this.cloneIdentifier(identifier);
+        this.rawValueStore.setIdentifier(rowProperty, original);
+      }
+    });
   }
 
   /**
@@ -244,5 +328,19 @@ export class IdentifierDlgComponent extends TableRowDialogBase<fhir.Identifier> 
       dialogRef.componentInstance instanceof IdentifierDlgComponent
     ).length;
     return count > 1;
+  }
+
+  /**
+   * True when this Identifier row is owned by UsageContext.valueReference.identifier.
+   *
+   * That parent field is array-wrapped for the table UI and gets unwrapped by
+   * UsageContextDlgComponent on save, so the identifier dialog must keep nested
+   * assigner.identifier rows in UI shape while returning to that parent.
+   *
+   * @returns True when this dialog is editing UsageContext.valueReference.identifier.
+   */
+  private isUsageContextReferenceIdentifierDialog(): boolean {
+    const path = this.data.arrayProperty?.path || '';
+    return path.includes('valueReference') && path.includes('identifier');
   }
 }

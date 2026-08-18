@@ -1,0 +1,7 @@
+<sf-form
+  #sfForm
+  [schema]="usageContextSchema"
+  [model]="model"
+  (onChange)="handleChange($event.value)"
+  (isValid)="handleValidityChange($event)"
+></sf-form>

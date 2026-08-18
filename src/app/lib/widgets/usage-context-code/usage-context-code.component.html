@@ -1,0 +1,32 @@
+<div class="row m-0">
+  @if(!widgetInfo.nolabel) {
+    <div [ngClass]="widgetInfo.labelClasses">
+      <lfb-label
+        [for]="id + '-usage-context-type'"
+        [title]="schema.title"
+        [helpMessage]="codeHelpMessage"
+      ></lfb-label>
+    </div>
+  }
+  <div class="lfb-hover-scope" [ngClass]="widgetInfo.objectBodyClasses">
+    <select
+      name="usageContextType"
+      [attr.id]="id + '-usage-context-type'"
+      class="form-select form-select-sm"
+      [attr.disabled]="schema.readOnly ? '' : null"
+      (change)="selectType($event)">
+      <option value="" disabled hidden [selected]="selectedType() === ''">Select a Usage Context type</option>
+      @for(option of typeOptions; track option.code) {
+        <option [value]="option.code" [selected]="selectedType() === option.code">{{option.display}}</option>
+      }
+      <option [value]="customType" [selected]="selectedType() === customType">Other/custom coding</option>
+    </select>
+    @if(selectedType() === customType) {
+      @for(field of ['display', 'code', 'system']; track field) {
+        <div class="lfb-object-subfield my-2">
+          <lfb-form-element [formProperty]="formProperties[field]"></lfb-form-element>
+        </div>
+      }
+    }
+  </div>
+</div>

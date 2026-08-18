@@ -178,6 +178,29 @@ describe('FhirService', () => {
     }});
   });
 
+  it('should report an incompatible ad comparator before exporting to an R4 server', (done) => {
+    const r4Server = service.fhirServerList.find(({version}) => version === 'R4');
+    service.setFhirServer(r4Server);
+    const createSpy = spyOn(service.getSmartClient(), 'create');
+    const questionnaire = {
+      resourceType: 'Questionnaire',
+      status: 'draft',
+      useContext: [{
+        code: {code: 'age'},
+        valueQuantity: {value: 10, comparator: 'ad', unit: 'mL'}
+      }]
+    } as unknown as fhir.Questionnaire;
+
+    service.create(questionnaire, null).subscribe({
+      next: () => done.fail('Not expected to export an R5-only comparator to R4.'),
+      error: (error) => {
+        expect(error.message).toBe(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+        expect(createSpy).not.toHaveBeenCalled();
+        done();
+      }
+    });
+  });
+
   it('Should update() fail', (done) => {
     const reqSpy = createSpy(service.getSmartClient(), {
         url: 'Questionnaire/12345-6',

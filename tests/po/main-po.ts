@@ -97,6 +97,7 @@ export class MainPO {
     await this._page.locator('#useSnomed').click();
     await this._page.locator('#acceptSnomed').click();
     await this._page.locator('lfb-loinc-notice button').filter({hasText: 'Accept'}).click();
+    await expect(this._page.getByRole('dialog')).toHaveCount(0);
   }
 
 
@@ -106,6 +107,7 @@ export class MainPO {
   async acceptLoincOnly() {
     await this._page.locator('#acceptLoinc').click();
     await this._page.locator('lfb-loinc-notice button').filter({hasText: 'Accept'}).click();
+    await expect(this._page.getByRole('dialog')).toHaveCount(0);
   }
 
 

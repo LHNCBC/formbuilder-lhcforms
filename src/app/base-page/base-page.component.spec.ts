@@ -33,6 +33,23 @@ describe('BasePageComponent', () => {
     });
   });
 
+  it('should show a compatibility error instead of starting an invalid file export', async () => {
+    const formService = TestBed.inject(FormService);
+    const compatibilityError = new Error(FormService.R5_QUANTITY_COMPARATOR_ERROR);
+    component.formValue = {
+      resourceType: 'Questionnaire',
+      status: 'draft'
+    };
+    spyOn(component, 'resolveSubjectTypeExportQuestionnaire')
+      .and.resolveTo(component.formValue);
+    spyOn(formService, 'convertFromR5').and.throwError(compatibilityError);
+    spyOn(component, 'showError');
+
+    await component.saveToFile('R4');
+
+    expect(component.showError).toHaveBeenCalledOnceWith(compatibilityError);
+  });
+
   it('should clear extension cardinality selections when loading a Questionnaire', async () => {
     const cardinalityService = TestBed.inject(ExtensionCardinalityService);
     const clearSelectionsSpy = spyOn(cardinalityService, 'clearSelections');

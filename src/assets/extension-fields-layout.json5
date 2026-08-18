@@ -47,13 +47,13 @@
   // Specify widget layout.
   // id is widget schema registry defined in lforms-widget-registry.ts
   // Label classes and control classes are used in the widget templates to fine tune widget layout positions
+  widgetPresetMap: {
+    string: 'dialogStringField',
+    dateRange: 'dialogDateRangeField',
+    number: 'dialogNumberField'
+  },
+
   widgets: {
-    string: {
-      id: "string",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 px-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
     textarea: {
       id: "textarea",
       labelPosition: "left",
@@ -154,16 +154,6 @@
       controlClasses: "col-sm-3",
       placeholder: 'yyyy-MM-dd hh:mm:ss (AM|PM)'
     },
-    dateRange: {
-      id: "date-range",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 px-1",
-      controlClasses: "col-sm-6",
-      showFields: [
-        {"field": "start", "col": 6},
-        {"field": "end", "col": 6}
-      ]
-    },
     instant: {
       id: "instant",
       labelPosition: "left",
@@ -192,12 +182,6 @@
     },
     "unsigned-integer": {
       id: "unsigned-integer",
-      labelPosition: "left",
-      labelClasses: "col-sm-2 m-0 px-1",
-      controlClasses: "col-sm-10 m-0 p-0"
-    },
-    number: {
-      id: "number",
       labelPosition: "left",
       labelClasses: "col-sm-2 m-0 px-1",
       controlClasses: "col-sm-10 m-0 p-0"

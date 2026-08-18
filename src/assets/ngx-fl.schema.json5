@@ -900,7 +900,8 @@
                   "<",
                   "<=",
                   ">=",
-                  ">"
+                  ">",
+                  "ad"
                 ],
                 "type": "string"
               },
@@ -1085,6 +1086,16 @@
             },
             "additionalProperties": false,
             "type": "object"
+          },
+          "__$valueSummary": {
+            "description": "Generated summary of the selected UsageContext value.",
+            "title": "Value",
+            "pattern": "^[ \\r\\n\\t\\S]+$",
+            "type": "string",
+            "widget": {
+              "id": "string",
+              "tooltipFormat": "json"
+            }
           }
         },
         "additionalProperties": false,
@@ -1094,7 +1105,7 @@
         "type": "object"
       },
       "type": "array",
-      "title": "Use context"
+      "title": "Usage Context"
     },
     "jurisdiction": {
       "description": "A legal or geographic region in which the questionnaire is intended to be used.",
