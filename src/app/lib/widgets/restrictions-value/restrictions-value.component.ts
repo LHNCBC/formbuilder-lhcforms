@@ -32,7 +32,7 @@ interface SizeUnit {
   imports: [FormsModule],
   template: `
     @if (isMaxSize) {
-      <div class="d-flex restrictions-value-size">
+      <div class="restrictions-value-size">
         <input type="number" min="0" step="any"
                name="{{name}}_size"
                [attr.id]="id"
@@ -92,10 +92,25 @@ interface SizeUnit {
     }
   `,
   styles: [`
-    .restrictions-value-size { flex-wrap: wrap; gap: 0.25rem; }
-    .restrictions-value-size__number { flex: 1 1 auto; min-width: 0; }
-    .restrictions-value-size__unit { flex: 0 0 auto; width: auto; }
-    .restrictions-value-size .invalid-feedback { flex-basis: 100%; }
+    .restrictions-value-size {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 0;
+      row-gap: 0.25rem;
+      padding-right: 0.25rem;
+    }
+    .restrictions-value-size__number {
+      min-width: 0;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .restrictions-value-size__unit {
+      width: auto;
+      margin-left: -1px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    .restrictions-value-size .invalid-feedback { grid-column: 1 / -1; }
   `]
 })
 export class RestrictionsValueComponent extends LfbControlWidgetComponent implements OnInit {

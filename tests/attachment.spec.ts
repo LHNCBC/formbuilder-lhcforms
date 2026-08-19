@@ -633,6 +633,22 @@ test.describe('attachment data type', () => {
     const sizeUnit = page.locator('select[aria-label="Maximum size unit"]');
     await expect(sizeValue).toBeVisible();
 
+    // Keep the value and its unit selector together on the same row.
+    const sizeEditor = sizeValue.locator('..');
+    const [sizeEditorBox, sizeValueBox, sizeUnitBox] = await Promise.all([
+      sizeEditor.boundingBox(),
+      sizeValue.boundingBox(),
+      sizeUnit.boundingBox()
+    ]);
+    expect(sizeEditorBox).not.toBeNull();
+    expect(sizeValueBox).not.toBeNull();
+    expect(sizeUnitBox).not.toBeNull();
+    expect(Math.abs(sizeUnitBox!.x - (sizeValueBox!.x + sizeValueBox!.width)))
+      .toBeLessThanOrEqual(1);
+    expect(sizeUnitBox!.y).toBeCloseTo(sizeValueBox!.y, 0);
+    expect(sizeEditorBox!.x + sizeEditorBox!.width - (sizeUnitBox!.x + sizeUnitBox!.width))
+      .toBeGreaterThanOrEqual(3);
+
     // Negative sizes are invalid and must not produce an extension.
     await sizeValue.fill('-1');
     await expect(sizeValue).toHaveAttribute('aria-invalid', 'true');
