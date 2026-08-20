@@ -1,7 +1,7 @@
 /**
  * Customize layout of form-element from ngx-schema-form
  */
-import {Component, Input, OnInit, SimpleChanges} from '@angular/core';
+import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {FormElementComponent, SchemaFormModule} from '@lhncbc/ngx-schema-form';
 import { Widget } from '@lhncbc/ngx-schema-form';
 import { ElementChooserComponent } from '../element-chooser/element-chooser.component';
@@ -13,7 +13,7 @@ import { ElementChooserComponent } from '../element-chooser/element-chooser.comp
   imports: [SchemaFormModule, ElementChooserComponent],
   selector: 'lfb-form-element',
   template: `
-    @if (formProperty.visible) {
+    @if (formProperty?.visible) {
       <div
         class="lfb-hover-scope"
         [class.has-error]="!formProperty.valid"
@@ -36,8 +36,9 @@ import { ElementChooserComponent } from '../element-chooser/element-chooser.comp
     `,
   styles: []
 })
-export class AppFormElementComponent extends FormElementComponent implements OnInit {
+export class AppFormElementComponent extends FormElementComponent implements OnInit, OnChanges {
   static seqNum = 0;
+  private baseInitialized = false;
   // Input properties, typically read from layout schema json.
   @Input()
   nolabel = false;
@@ -58,32 +59,26 @@ export class AppFormElementComponent extends FormElementComponent implements OnI
   @Input()
   booleanLabel: string;
 
-  /**
-   * --- Used for debugging ----
-   */
-  /*
   ngOnChanges(changes: SimpleChanges): void {
-    for (const prop in changes) {
-      if (prop === 'formProperty') {
-        console.log(
-          `${prop}: ${changes[prop].previousValue ?
-            changes[prop].previousValue.path +'(visible:'+changes[prop].previousValue.visible+')' : ''} /
-            ${changes[prop].currentValue ? changes[prop].currentValue.path +'(visible:'+changes[prop].currentValue.visible+')' : ''} /
-            ${changes[prop].firstChange}`);
-      } else if (prop === 'control') {
-        console.log(
-          `${prop}: ${changes[prop].previousValue ? changes[prop].previousValue.valid : ''} /
-          ${changes[prop].currentValue ? changes[prop].currentValue.valid : ''} / ${changes[prop].firstChange}`);
-      } else {
-        console.log(
-          `${prop}: ${changes[prop].previousValue} / ${changes[prop].currentValue} / ${changes[prop].firstChange}`);
-      }
+    if (changes.formProperty?.currentValue) {
+      this.initializeBaseComponent();
     }
   }
-  */
 
   ngOnInit() {
-    super.ngOnInit();
+    this.initializeBaseComponent();
+  }
+
+  /**
+   * Initialize the schema-form base only after a bound FormProperty exists.
+   * Conditional layouts can briefly create this wrapper with an undefined
+   * property while switching visible fields.
+   */
+  private initializeBaseComponent(): void {
+    if (!this.baseInitialized && this.formProperty) {
+      super.ngOnInit();
+      this.baseInitialized = true;
+    }
   }
   /**
    * Override to add custom properties
