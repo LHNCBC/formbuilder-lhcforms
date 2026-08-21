@@ -12,19 +12,19 @@ describe('FormElementComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AppFormElementComponent);
     component = fixture.componentInstance;
-    component.formProperty = CommonTestingModule.createProperty({type: 'string'}, 'value');
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.componentRef.setInput(
+      'formProperty',
+      CommonTestingModule.createProperty({type: 'string'}, 'value')
+    );
+    fixture.detectChanges();
+
     expect(component).toBeTruthy();
   });
 
   it('should not fail when the form property is temporarily unavailable', () => {
-    fixture.destroy();
-    fixture = TestBed.createComponent(AppFormElementComponent);
-    component = fixture.componentInstance;
-
     expect(() => fixture.detectChanges()).not.toThrow();
 
     fixture.componentRef.setInput(

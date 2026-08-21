@@ -59,6 +59,10 @@ export class AppFormElementComponent extends FormElementComponent implements OnI
   @Input()
   booleanLabel: string;
 
+  /**
+   * Initialize when FormProperty is bound. This also completes initialization
+   * deferred by ngOnInit when a conditional layout initially supplies no property.
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.formProperty?.currentValue) {
       this.initializeBaseComponent();
@@ -70,9 +74,7 @@ export class AppFormElementComponent extends FormElementComponent implements OnI
   }
 
   /**
-   * Initialize the schema-form base only after a bound FormProperty exists.
-   * Conditional layouts can briefly create this wrapper with an undefined
-   * property while switching visible fields.
+   * Initialize the schema-form base once if a bound FormProperty is available.
    */
   private initializeBaseComponent(): void {
     if (!this.baseInitialized && this.formProperty) {
