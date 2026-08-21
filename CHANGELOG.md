@@ -2,6 +2,11 @@
 
 This project follows [Semantic Versioning](http://semver.org/).
 
+## [12.3.1] 2026-08-20
+### Fixed
+- Fixed preview failing to render for an item configured with both enableWhenExpression
+  and enableWhen condition and behavior.
+
 ## [12.3.0] 2026-08-10
 ### Added
 - Added cardinality validation for general extensions. Duplicate single-occurrence
