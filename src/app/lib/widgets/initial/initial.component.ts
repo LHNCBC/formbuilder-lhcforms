@@ -111,7 +111,10 @@ export class InitialComponent extends TableEditRowInDlgComponent implements OnIn
     }
   }
 
-  /** Return the table columns relevant to the current initial-value type. */
+  /**
+   * Return the table columns relevant to the current initial-value type.
+   * @returns The columns to display for the current item type.
+   */
   override getShowTableFields(): any[] {
     const fields = super.getShowTableFields();
     return this.attachmentType
@@ -162,6 +165,7 @@ export class InitialComponent extends TableEditRowInDlgComponent implements OnIn
   /**
    * Return a row with compact Attachment JSON for display in the table.
    * @param row - The initial-value row to prepare.
+   * @returns The row with its Attachment display value populated, or the original row.
    */
   private withAttachmentDisplay(row: any): any {
     if(!row?.valueAttachment) {

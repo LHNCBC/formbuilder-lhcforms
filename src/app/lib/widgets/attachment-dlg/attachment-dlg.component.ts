@@ -121,77 +121,122 @@ export class AttachmentDlgComponent {
     }
   }
 
-  /** Return the Attachment draft for the active input method. */
+  /**
+   * Return the Attachment draft for the active input method.
+   * @returns The active input method's Attachment draft.
+   */
   get draft(): fhir.Attachment {
     return this.activeState.attachment;
   }
 
-  /** Replace the Attachment draft for the active input method. */
+  /**
+   * Replace the Attachment draft for the active input method.
+   * @param value - The replacement Attachment draft.
+   */
   set draft(value: fhir.Attachment) {
     this.activeState.attachment = value;
   }
 
-  /** Return the base64 validation error for the active input method. */
+  /**
+   * Return the base64 validation error for the active input method.
+   * @returns The current base64 validation message, or an empty string when valid.
+   */
   get dataError(): string {
     return this.activeState.dataError;
   }
 
-  /** Set the base64 validation error for the active input method. */
+  /**
+   * Set the base64 validation error for the active input method.
+   * @param value - The validation message, or an empty string to clear it.
+   */
   set dataError(value: string) {
     this.activeState.dataError = value;
   }
 
-  /** Return the file-reading error for the active input method. */
+  /**
+   * Return the file-reading error for the active input method.
+   * @returns The current file-reading error, or an empty string when no error exists.
+   */
   get fileError(): string {
     return this.activeState.fileError;
   }
 
-  /** Set the file-reading error for the active input method. */
+  /**
+   * Set the file-reading error for the active input method.
+   * @param value - The file-reading error, or an empty string to clear it.
+   */
   set fileError(value: string) {
     this.activeState.fileError = value;
   }
 
-  /** Return whether attachment data metadata is being calculated. */
+  /**
+   * Return whether attachment data metadata is being calculated.
+   * @returns True while size and hash metadata are being calculated.
+   */
   get calculatingDataMetadata(): boolean {
     return this.activeState.calculatingDataMetadata;
   }
 
-  /** Set whether attachment data metadata is being calculated. */
+  /**
+   * Set whether attachment data metadata is being calculated.
+   * @param value - True while metadata calculation is in progress.
+   */
   set calculatingDataMetadata(value: boolean) {
     this.activeState.calculatingDataMetadata = value;
   }
 
-  /** Return whether the shared Attachment metadata form is valid. */
+  /**
+   * Return whether the shared Attachment metadata form is valid.
+   * @returns True when the metadata form is valid.
+   */
   get attachmentFormValid(): boolean {
     return this.activeState.formValid;
   }
 
-  /** Set whether the shared Attachment metadata form is valid. */
+  /**
+   * Set whether the shared Attachment metadata form is valid.
+   * @param value - The latest validity state emitted by the metadata form.
+   */
   set attachmentFormValid(value: boolean) {
     this.activeState.formValid = value;
   }
 
-  /** Return whether the current content type is not an IANA-registered MIME type. */
+  /**
+   * Return whether the current content type is not an IANA-registered MIME type.
+   * @returns True when a populated content type is invalid.
+   */
   get mimeTypeInvalid(): boolean {
     return !!this.draft.contentType && !this.fhirService.isValidMimeType(this.draft.contentType);
   }
 
-  /** Return whether embedded Attachment data violates the FHIR att-1 invariant. */
+  /**
+   * Return whether embedded Attachment data violates the FHIR att-1 invariant.
+   * @returns True when embedded data has no content type.
+   */
   get embeddedDataContentTypeMissing(): boolean {
     return !!this.draft.data && !this.draft.contentType?.trim();
   }
 
-  /** Return whether the current URL contains invalid whitespace. */
+  /**
+   * Return whether the current URL contains invalid whitespace.
+   * @returns True when a populated URL contains whitespace.
+   */
   get urlInvalid(): boolean {
     return !!this.draft.url && /\s/.test(this.draft.url);
   }
 
-  /** Return whether the current language is not a well-formed BCP-47 tag. */
+  /**
+   * Return whether the current language is not a well-formed BCP-47 tag.
+   * @returns True when a populated language tag is invalid.
+   */
   get languageInvalid(): boolean {
     return !!this.draft.language && !AttachmentUtil.isValidLanguageTag(this.draft.language);
   }
 
-  /** Return whether a populated R5 Attachment.size is not a non-negative integer64. */
+  /**
+   * Return whether a populated R5 Attachment.size is not a non-negative integer64.
+   * @returns True when the populated size is outside the FHIR integer64 range.
+   */
   get sizeInvalid(): boolean {
     const value = this.draft.size;
     if(value === undefined || value === null || value === '') {
@@ -201,18 +246,29 @@ export class AttachmentDlgComponent {
       (value.length === 19 && value > '9223372036854775807');
   }
 
-  /** Return whether a value is outside the FHIR positiveInt range. */
+  /**
+   * Return whether a value is outside the FHIR positiveInt range.
+   * @param value - The numeric value to validate, or undefined when absent.
+   * @returns True when the populated value is outside the positiveInt range.
+   */
   positiveIntegerInvalid(value: number | undefined): boolean {
     return value !== undefined && value !== null &&
       (!Number.isInteger(value) || value < 1 || value > 2147483647);
   }
 
-  /** Return whether a duration is not a finite, non-negative number of seconds. */
+  /**
+   * Return whether a duration is not a finite, non-negative number of seconds.
+   * @param value - The duration to validate, or undefined when absent.
+   * @returns True when the populated duration is invalid.
+   */
   durationInvalid(value: number | undefined): boolean {
     return value !== undefined && value !== null && (!Number.isFinite(value) || value < 0);
   }
 
-  /** Return whether any active Attachment field is invalid or still being processed. */
+  /**
+   * Return whether any active Attachment field is invalid or still being processed.
+   * @returns True when saving the active Attachment must be prevented.
+   */
   get isInvalid(): boolean {
     return !!this.dataError || !!this.fileError || this.calculatingDataMetadata ||
       this.embeddedDataContentTypeMissing || this.mimeTypeInvalid || this.urlInvalid ||
@@ -222,7 +278,10 @@ export class AttachmentDlgComponent {
       this.durationInvalid(this.draft.duration) || !this.attachmentFormValid;
   }
 
-  /** Return whether the active Attachment has no populated fields. */
+  /**
+   * Return whether the active Attachment has no populated fields.
+   * @returns True when the cleaned active Attachment is empty.
+   */
   get isEmpty(): boolean {
     return Object.keys(this.getActiveAttachment()).length === 0;
   }
@@ -493,7 +552,11 @@ export class AttachmentDlgComponent {
     return true;
   }
 
-  /** Remove Attachment fields and any explicitly named primitive-extension siblings. */
+  /**
+   * Remove Attachment fields and any explicitly named primitive-extension siblings.
+   * @param attachment - The Attachment from which fields are removed.
+   * @param fields - The field names to remove.
+   */
   private clearAttachmentFields(attachment: fhir.Attachment, fields: readonly string[]): void {
     fields.forEach((field) => {
       delete (attachment as any)[field];
@@ -540,12 +603,18 @@ export class AttachmentDlgComponent {
       });
   }
 
-  /** Return the state associated with the selected input method. */
+  /**
+   * Return the state associated with the selected input method.
+   * @returns The state for the currently selected input method.
+   */
   private get activeState(): AttachmentMethodState {
     return this.methodStates[this.inputMethod];
   }
 
-  /** Create an empty state for one Attachment input method. */
+  /**
+   * Create an empty state for one Attachment input method.
+   * @returns A newly initialized input-method state.
+   */
   private createMethodState(): AttachmentMethodState {
     return {
       attachment: {},
@@ -560,6 +629,7 @@ export class AttachmentDlgComponent {
   /**
    * Clone the Attachment schema carried by the edited ArrayProperty and retain
    * only the metadata fields rendered by the shared schema-form widgets.
+   * @returns The schema used to render the active Attachment metadata form.
    */
   private createAttachmentSchema(): ISchema {
     const sourceSchema = Util.getSchemaFromArrayProperty(this.data.arrayProperty, 'valueAttachment');
@@ -611,12 +681,21 @@ export class AttachmentDlgComponent {
     return schema;
   }
 
-  /** Build a schema-form validation error when a field fails attachment-specific validation. */
+  /**
+   * Build a schema-form validation error when a field fails attachment-specific validation.
+   * @param invalid - Whether validation failed.
+   * @param code - The validation error code.
+   * @param message - The validation error message.
+   * @returns A schema-form error array when invalid, otherwise null.
+   */
   private validationError(invalid: boolean, code: string, message: string): any[] | null {
     return invalid ? [{code, message, modifiedMessage: message}] : null;
   }
 
-  /** Return the active input method's draft without empty fields. */
+  /**
+   * Return the active input method's draft without empty fields.
+   * @returns A cleaned copy of the active Attachment draft.
+   */
   private getActiveAttachment(): fhir.Attachment {
     return AttachmentUtil.withoutEmptyFields({...this.draft});
   }

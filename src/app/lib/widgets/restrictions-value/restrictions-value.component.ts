@@ -170,6 +170,7 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
    * A restriction value has no meaning until the operator control commits one
    * of its type-filtered options. This also avoids treating the select element's
    * visually displayed first option as a real selection.
+   * @returns True when the value editor must be disabled.
    */
   get isValueDisabled(): boolean {
     const invalidAttachmentOperator = this.dataType === 'attachment' &&
@@ -347,6 +348,7 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
   /**
    * Return the byte multiplier for a unit code.
    * @param unit - One of 'B' | 'KB' | 'MB' | 'GB'.
+   * @returns The unit's byte multiplier, or 1 for an unknown unit.
    */
   static factorFor(unit: string): number {
     const found = RestrictionsValueComponent.SIZE_UNITS.find((u) => u.value === unit);
@@ -357,6 +359,7 @@ export class RestrictionsValueComponent extends LfbControlWidgetComponent implem
    * Choose the largest unit that represents the given byte count exactly, so that a value
    * round-trips without loss. Falls back to Bytes when no larger unit divides evenly.
    * @param bytes - The size in bytes.
+   * @returns The exact display value and its selected unit.
    */
   static bytesToBestUnit(bytes: number): {value: number, unit: string} {
     if (!bytes) {

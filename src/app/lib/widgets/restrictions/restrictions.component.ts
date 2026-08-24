@@ -112,6 +112,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   /**
    * Get list of optionsDef objects for list of options.
    * @param optKeys - List of keys as defined in this.optionsDef.
+   * @returns The restriction option definitions for the requested keys.
    */
   static getOptions(optKeys: string[]) {
     return optKeys.map((opt) => {
@@ -119,7 +120,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
     });
   }
 
-
+  /** Initialize restriction options and synchronize form values with item extensions. */
   ngOnInit(): void {
     super.ngOnInit();
     let sub = this.formProperty.root.getProperty('type').valueChanges.subscribe((type) => {
@@ -172,6 +173,8 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    * MIME type is the only repeatable restriction for an attachment item.
    * Its extension cardinality is independent of whether the item allows
    * repeating answers.
+   * @param option - The restriction operator to inspect.
+   * @returns True when the operator may be repeated for the current item type.
    */
   isRepeatableOption(option: string): boolean {
     const root = this.formProperty.root;
@@ -181,6 +184,8 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
 
   /**
    * Enforce the FHIR extension cardinalities represented by this widget.
+   * @param restrictions - The restrictions to normalize.
+   * @returns The restrictions with duplicate singular operators removed.
    */
   normalizeRestrictionCardinality(restrictions: any[]): any[] {
     const seenOptions = new Set<string>();
@@ -222,6 +227,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    * Get list of restrictions reading the fhir extensions and maxLength.
    * @param rootProperty - Root form property which represents an item level data.
    * @param appliedOptions - The options that are applicable to selected data type.
+   * @returns The restrictions represented by the item's fields and extensions.
    */
   getRestrictions(rootProperty: PropertyGroup, appliedOptions: any []): any [] {
     const ret = [];
@@ -260,7 +266,8 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   /**
    * Update item level fhir extensions array with relevant restrictions.
    * @param extensions - Array of item level extensions.
-   * @param restrictions - Arary of internally defined restriction objects.
+   * @param restrictions - Array of internally defined restriction objects.
+   * @returns True when the extensions were changed.
    */
   updateRelevantExtensions(extensions: fhir.Extension [], restrictions: any []) {
     let ret = false; // Return true if extensions are changed.
@@ -287,6 +294,10 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    * Synchronize all extensions for one restriction operator. This deliberately
    * handles every matching extension rather than only the first, so singular
    * restrictions cannot leave duplicate extensions behind.
+   * @param extensions - The item-level extensions to synchronize in place.
+   * @param option - The restriction operator whose extensions are synchronized.
+   * @param restrictions - The normalized restrictions for the operator.
+   * @returns True when an extension was added, updated, or removed.
    */
   updateOptionExtensions(extensions: fhir.Extension[], option: string, restrictions: any[]): boolean {
     const extUrl = RestrictionsComponent.optionsDef[option].extUrl;
@@ -329,6 +340,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    * Convert to string representation of value to appropriate value
    * @param value - String representation of value.
    * @param valueType - fhir data type of the value.
+   * @returns The value converted to the requested FHIR primitive type.
    */
   getValue(value: string, valueType: string): number | string {
     let ret: number | string = value;
@@ -351,6 +363,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
   /**
    * Given a fhir extension, convert to restriction object.
    * @param ext - fhir extension representing a restriction.
+   * @returns The internal restriction object, or null for an unsupported extension.
    */
   getRestrictionValue(ext: fhir.Extension) {
     let ret = null;
@@ -367,6 +380,7 @@ export class RestrictionsComponent extends TableComponent implements OnInit {
    * Return value[x] field based on option and data type.
    * @param option - 'maxLength'|'minLength'|'maxSize'|'minValue'|'maxValue'|'mimeType'|'regex'
    * @param type - one of the fhir data types.
+   * @returns The value field name and primitive type for the restriction.
    */
   getValueFieldName(option: string, type: string): any {
     const ret = {fieldName: '', fieldType: ''};

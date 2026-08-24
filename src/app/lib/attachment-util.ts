@@ -86,6 +86,8 @@ export class AttachmentUtil {
   /**
    * Parse plain base64 or a base64 data URI into the representation required by
    * FHIR Attachment.data. Whitespace is ignored and data URI metadata is removed.
+   * @param value - The plain base64 value or base64 data URI to parse.
+   * @returns The normalized base64 data and metadata, or null when invalid or empty.
    */
   static parseBase64(value: string): ParsedBase64 | null {
     if(typeof value !== 'string') {
@@ -129,6 +131,7 @@ export class AttachmentUtil {
   /**
    * Return whether a string is canonical, correctly padded base64 data.
    * @param value - The base64 data to validate.
+   * @returns True when the value is canonical base64 data.
    */
   static isValidBase64(value: string): boolean {
     if(!value || value.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) {
@@ -151,13 +154,18 @@ export class AttachmentUtil {
   /**
    * Calculate the decoded byte length of canonical base64 data.
    * @param value - The base64 data whose decoded length is required.
+   * @returns The number of decoded bytes.
    */
   static base64ByteLength(value: string): number {
     const padding = value.endsWith('==') ? 2 : value.endsWith('=') ? 1 : 0;
     return (value.length * 3 / 4) - padding;
   }
 
-  /** Return whether a value is a well-formed BCP-47 language tag. */
+  /**
+   * Return whether a value is a well-formed BCP-47 language tag.
+   * @param value - The language tag to validate.
+   * @returns True when the value is a valid BCP-47 language tag.
+   */
   static isValidLanguageTag(value: string): boolean {
     const tag = value?.trim();
     if(!tag || /\s/.test(tag)) {
@@ -175,7 +183,11 @@ export class AttachmentUtil {
     }
   }
 
-  /** Calculate the FHIR Attachment.hash value (SHA-1, encoded as base64). */
+  /**
+   * Calculate the FHIR Attachment.hash value (SHA-1, encoded as base64).
+   * @param data - Plain base64 data or a base64 data URI to hash.
+   * @returns The base64-encoded SHA-1 digest.
+   */
   static async sha1Base64(data: string): Promise<string> {
     const parsed = AttachmentUtil.parseBase64(data);
     if(!parsed) {
@@ -187,6 +199,7 @@ export class AttachmentUtil {
   /**
    * Read a browser file into a FHIR Attachment with data, size, and hash metadata.
    * @param file - The file to convert.
+   * @returns The populated Attachment.
    */
   static async fileToAttachment(file: File): Promise<fhir.Attachment> {
     const buffer = await file.arrayBuffer();
@@ -212,6 +225,7 @@ export class AttachmentUtil {
   /**
    * Serialize an Attachment after removing fields that have no meaningful value.
    * @param attachment - The Attachment to serialize.
+   * @returns Compact JSON for the cleaned Attachment.
    */
   static compactJson(attachment: fhir.Attachment): string {
     return JSON.stringify(AttachmentUtil.withoutEmptyFields(attachment || {}));
@@ -220,6 +234,7 @@ export class AttachmentUtil {
   /**
    * Return a shallow copy of an Attachment without empty fields or empty nested values.
    * @param attachment - The Attachment to clean.
+   * @returns The cleaned Attachment copy.
    */
   static withoutEmptyFields(attachment: fhir.Attachment): fhir.Attachment {
     return Object.entries(attachment || {}).reduce((result, [key, value]) => {
@@ -248,6 +263,9 @@ export class AttachmentUtil {
    * Normalize every Attachment value in a Questionnaire for the requested FHIR release.
    * R5 integer64 values are JSON strings; earlier releases use a JSON number and do not
    * contain the media-specific fields introduced in R5.
+   * @param questionnaire - The Questionnaire-like object to normalize in place.
+   * @param version - The target FHIR release, such as R4 or R5.
+   * @returns The same Questionnaire-like object after normalization.
    */
   static normalizeQuestionnaireAttachments<T>(questionnaire: T, version: string): T {
     AttachmentUtil.visitAttachmentValues(questionnaire, (attachment) => {
@@ -264,6 +282,7 @@ export class AttachmentUtil {
   /**
    * Decode canonical base64 data into bytes.
    * @param value - The base64 data to decode.
+   * @returns The decoded byte array.
    */
   private static base64ToBytes(value: string): Uint8Array {
     const binary = atob(value);
@@ -273,6 +292,7 @@ export class AttachmentUtil {
   /**
    * Calculate a base64-encoded SHA-1 digest for a byte array.
    * @param bytes - The bytes to hash.
+   * @returns The base64-encoded SHA-1 digest.
    */
   private static async sha1Base64Bytes(bytes: Uint8Array): Promise<string> {
     const source = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
@@ -282,7 +302,11 @@ export class AttachmentUtil {
     return btoa(binary);
   }
 
-  /** Visit valueAttachment/answerAttachment properties at any Questionnaire nesting level. */
+  /**
+   * Visit valueAttachment/answerAttachment properties at any Questionnaire nesting level.
+   * @param value - The value whose nested Attachment properties are traversed.
+   * @param visitor - The callback invoked for every Attachment object.
+   */
   private static visitAttachmentValues(value: unknown, visitor: (attachment: Record<string, any>) => void): void {
     if(!value || typeof value !== 'object') {
       return;
@@ -300,7 +324,10 @@ export class AttachmentUtil {
     });
   }
 
-  /** Convert Attachment.size to the R5 integer64 JSON representation. */
+  /**
+   * Convert Attachment.size to the R5 integer64 JSON representation.
+   * @param attachment - The Attachment object to normalize in place.
+   */
   private static normalizeR5Size(attachment: Record<string, any>): void {
     const size = attachment.size;
     if(typeof size === 'number' && Number.isSafeInteger(size) && size >= 0) {
@@ -316,7 +343,10 @@ export class AttachmentUtil {
     }
   }
 
-  /** Convert an R5 Attachment to the fields and primitive representation supported before R5. */
+  /**
+   * Convert an R5 Attachment to the fields and primitive representation supported before R5.
+   * @param attachment - The Attachment object to normalize in place.
+   */
   private static normalizeLegacyAttachment(attachment: Record<string, any>): void {
     const size = typeof attachment.size === 'number'
       ? attachment.size.toString()
@@ -335,7 +365,12 @@ export class AttachmentUtil {
     });
   }
 
-  /** Check a canonical unsigned integer string against an inclusive decimal upper bound. */
+  /**
+   * Check a canonical unsigned integer string against an inclusive decimal upper bound.
+   * @param value - The candidate unsigned integer string.
+   * @param maximum - The inclusive decimal upper bound.
+   * @returns True when the value is canonical and within the bound.
+   */
   private static isUnsignedIntegerInRange(value: unknown, maximum: string): value is string {
     if(typeof value !== 'string' || !/^(0|[1-9][0-9]*)$/.test(value)) {
       return false;
