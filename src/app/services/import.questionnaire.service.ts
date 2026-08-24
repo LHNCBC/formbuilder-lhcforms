@@ -9,7 +9,7 @@ import {
   EXTENSION_URL_ANSWER_EXPRESSION, EXTENSION_URL_CALCULATED_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION, EXTENSION_URL_ENTRY_FORMAT,
   EXTENSION_URL_INITIAL_EXPRESSION, EXTENSION_URL_QUESTIONNAIRE_UNIT,
-  EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, EXTENSION_URL_VARIABLE,
+  EXTENSION_URL_QUESTIONNAIRE_HIDDEN, EXTENSION_URL_QUESTIONNAIRE_UNIT_OPTION, EXTENSION_URL_VARIABLE,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from "../lib/constants/constants";
 // import {TerminologyServerComponent} from "../lib/widgets/terminology-server/terminology-server.component";
@@ -135,6 +135,12 @@ export class ImportQuestionnaireService {
 
         case EXTENSION_URL_ENTRY_FORMAT:
           extParent.__$entryFormat = extension.valueString;
+          break;
+
+        case EXTENSION_URL_QUESTIONNAIRE_HIDDEN:
+          // Keep the imported extension unchanged for lossless round trips. The
+          // custom field is only a UI projection of its effective state.
+          extParent.__$hidden = extParent.__$hidden || extension.valueBoolean === true;
           break;
 
         case EXTENSION_URL_QUESTIONNAIRE_UNIT:

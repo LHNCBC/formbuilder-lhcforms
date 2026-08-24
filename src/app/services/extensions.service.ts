@@ -13,6 +13,7 @@ import {
   EXTENSION_URL_ANSWER_EXPRESSION,
   EXTENSION_URL_ENABLEWHEN_EXPRESSION,
   EXTENSION_URL_ITEM_CONTROL,
+  EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
   PREFERRED_TERMINOLOGY_SERVER_URI
 } from '../lib/constants/constants';
 import {ObservationLinkPeriodComponent} from "../lib/widgets/observation-link-period/observation-link-period.component";
@@ -42,6 +43,7 @@ export class ExtensionsService {
     EXTENSION_URL_ANSWER_EXPRESSION,
     EXTENSION_URL_ENABLEWHEN_EXPRESSION,
     EXTENSION_URL_ITEM_CONTROL,
+    EXTENSION_URL_QUESTIONNAIRE_HIDDEN,
     PREFERRED_TERMINOLOGY_SERVER_URI,
     ObservationLinkPeriodComponent.extUrl,
     ObservationExtractComponent.extUrl

@@ -943,6 +943,18 @@
         "controlClasses": "col-auto btn-group btn-group-sm ps-0"
       }
     },
+    "__$hidden": {
+      "description": "If enabled, this item is not displayed to the user. All descendant items are hidden as well. Descendants remain visible in Form Builder so they can still be edited.",
+      "title": "Hide this item from users?",
+      "type": "boolean",
+      "default": false,
+      "widget": {
+        "id": "questionnaire-hidden",
+        "optionLabels": [[false, "No"], [true, "Yes"]],
+        "labelClasses": "col-2 ps-0 pe-1",
+        "controlClasses": "col-auto btn-group btn-group-sm ps-0"
+      }
+    },
     "__$isAnswerList": {
       "description": "An indication, when true, that the value cannot be changed by a human respondent to the Questionnaire.",
       "title": "Create answer list",
@@ -2674,6 +2686,17 @@
         {
           "field": "required",
           "col": 4
+        }
+      ]
+    },
+    {
+      "fields": [
+        "__$hidden"
+      ],
+      "showFields": [
+        {
+          "field": "__$hidden",
+          "col": 12
         }
       ]
     },

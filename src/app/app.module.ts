@@ -106,6 +106,7 @@ import { VariableComponent } from './lib/widgets/variable/variable.component';
 import { InitialNumberDirective } from './lib/directives/initial-number.directive';
 import { InitialNumberComponent } from './lib/widgets/initial-number/initial-number.component';
 import { EntryFormatComponent } from './lib/widgets/entry-format/entry-format.component';
+import { QuestionnaireHiddenComponent } from './lib/widgets/questionnaire-hidden/questionnaire-hidden.component';
 import { AnswerValueSetCodingDisplayComponent } from './lib/widgets/answer-value-set-coding-display/answer-value-set-coding-display.component';
 import { CodingSystemComponent } from './lib/widgets/coding-system/coding-system.component';
 import { CodingDisplayComponent } from './lib/widgets/coding-display/coding-display.component';
@@ -159,7 +160,8 @@ import {IsDisabledPipe} from "./lib/pipes/is-disabled.pipe";
     AnswerExpressionComponent,
     ExpressionEditorDlgComponent,
     InitialNumberComponent,
-    MetaProfileComponent
+    MetaProfileComponent,
+    QuestionnaireHiddenComponent
   ],
   imports: [
     AppFormElementComponent,
